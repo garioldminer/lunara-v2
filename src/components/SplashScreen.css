@@ -5,6 +5,9 @@
   height: 100dvh;
   overflow: hidden;
   background: #0a0600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .background-video {
@@ -13,7 +16,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover; /* შეავსებს ეკრანს, crop თუ საჭიროა */
+  object-fit: contain; /* არ იჭრება, სრულად ჩანს */
   object-position: center;
   z-index: 1;
 }
