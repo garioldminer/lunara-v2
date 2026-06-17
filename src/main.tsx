@@ -10,6 +10,8 @@ declare global {
       WebApp: {
         ready: () => void;
         expand: () => void;
+        viewportHeight: string;
+        viewportStableHeight: string;
         MainButton: any;
         themeParams: any;
       };
@@ -20,9 +22,20 @@ declare global {
 // ინიციალიზაცია
 if (window.Telegram?.WebApp) {
   window.Telegram.WebApp.ready();
-  window.Telegram.WebApp.expand();
+  window.Telegram.WebApp.expand(); // სრულ ეკრანზე გაშლა
+  
+  // CSS variables Telegram viewport-ისთვის
+  document.documentElement.style.setProperty(
+    '--tg-viewport-height',
+    window.Telegram.WebApp.viewportHeight + 'px'
+  );
+  document.documentElement.style.setProperty(
+    '--tg-viewport-stable-height',
+    window.Telegram.WebApp.viewportStableHeight + 'px'
+  );
   
   console.log('✅ Telegram WebApp initialized');
+  console.log('📱 Viewport height:', window.Telegram.WebApp.viewportHeight);
 } else {
   console.log('⚠️ Telegram WebApp not detected (running in browser)');
 }
