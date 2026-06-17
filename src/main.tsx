@@ -10,35 +10,82 @@ declare global {
       WebApp: {
         ready: () => void;
         expand: () => void;
-        viewportHeight: string;
-        viewportStableHeight: string;
+        requestFullscreen: () => void;
+        setHeaderColor: (color: string) => void;
+        setBackgroundColor: (color: string) => void;
+        disableVerticalSwipes: () => void;
+        enableVerticalSwipes: () => void;
+        viewportHeight: number;
+        viewportStableHeight: number;
+        isFullscreen: boolean;
+        isExpanded: boolean;
         MainButton: any;
+        BackButton: any;
         themeParams: any;
+        version: string;
       };
     };
   }
 }
 
 // ინიციალიზაცია
-if (window.Telegram?.WebApp) {
-  window.Telegram.WebApp.ready();
-  window.Telegram.WebApp.expand(); // სრულ ეკრანზე გაშლა
-  
-  // CSS variables Telegram viewport-ისთვის
-  document.documentElement.style.setProperty(
-    '--tg-viewport-height',
-    window.Telegram.WebApp.viewportHeight + 'px'
-  );
-  document.documentElement.style.setProperty(
-    '--tg-viewport-stable-height',
-    window.Telegram.WebApp.viewportStableHeight + 'px'
-  );
-  
-  console.log('✅ Telegram WebApp initialized');
-  console.log('📱 Viewport height:', window.Telegram.WebApp.viewportHeight);
-} else {
-  console.log('⚠️ Telegram WebApp not detected (running in browser)');
+function initTelegram() {
+  if (window.Telegram?.WebApp) {
+    const tg = window.Telegram.WebApp;
+    
+    console.log('📱 Telegram WebApp version:', tg.version);
+    
+    // მზადყოფნა
+    tg.ready();
+    
+    // გაფართოება
+    tg.expand();
+    
+    // სრული ეკრანის მოთხოვნა (Bot API 8.0+)
+    setTimeout(() => {
+      if (tg.requestFullscreen) {
+        tg.requestFullscreen();
+        console.log('✅ Fullscreen requested');
+      } else {
+        console.log('⚠️ requestFullscreen not available');
+      }
+    }, 100);
+    
+    // ვერტიკალური swipe-ის გამორთვა (Bot API 7.7+)
+    if (tg.disableVerticalSwipes) {
+      tg.disableVerticalSwipes();
+      console.log('✅ Vertical swipes disabled');
+    } else {
+      console.log('⚠️ disableVerticalSwipes not available');
+    }
+    
+    // Header-ის გამჭვირვალე გაკეთება
+    tg.setHeaderColor('transparent');
+    
+    // Background-ის ფერი
+    tg.setBackgroundColor('#0a0600');
+    
+    // CSS variables
+    document.documentElement.style.setProperty(
+      '--tg-viewport-height',
+      tg.viewportHeight + 'px'
+    );
+    document.documentElement.style.setProperty(
+      '--tg-viewport-stable-height',
+      tg.viewportStableHeight + 'px'
+    );
+    
+    console.log('✅ Telegram WebApp initialized');
+    console.log('📱 Viewport height:', tg.viewportHeight);
+    console.log('🔲 Is fullscreen:', tg.isFullscreen);
+    console.log('🔲 Is expanded:', tg.isExpanded);
+  } else {
+    console.log('⚠️ Telegram WebApp not detected (running in browser)');
+  }
 }
+
+// გაშვება
+initTelegram();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
