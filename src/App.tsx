@@ -20,10 +20,14 @@ function App() {
 
   // Telegram Header-ის ფერის დაყენება
   useEffect(() => {
-    if (window.Telegram?.WebApp) {
-      const tg = window.Telegram.WebApp;
-      tg.setHeaderColor('#0a0600');
-      tg.setBackgroundColor('#0a0600');
+    const tg = (window as any).Telegram?.WebApp;
+    if (tg) {
+      if (typeof tg.setHeaderColor === 'function') {
+        tg.setHeaderColor('#0a0600');
+      }
+      if (typeof tg.setBackgroundColor === 'function') {
+        tg.setBackgroundColor('#0a0600');
+      }
     }
   }, []);
 
