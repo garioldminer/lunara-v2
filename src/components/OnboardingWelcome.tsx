@@ -12,15 +12,20 @@ export default function OnboardingWelcome({ onFinish }: Props) {
 
   return (
     <div className="screen-container welcome">
-      {/* სტატიკური სურათი ფონად */}
-      <div 
-        className="background-image"
-        style={{ backgroundImage: "url('/images/welcome.png')" }}
-      />
+      {/* ვიდეო ფონი */}
+      <video 
+        className="background-video"
+        autoPlay 
+        loop 
+        muted 
+        playsInline
+      >
+        <source src="/videos/welcome.mp4" type="video/mp4" />
+      </video>
 
-      {/* CSS ნაწილაკები */}
+      {/* CSS ნაწილაკები (დამატებითი ეფექტი) */}
       <div className="particles-container">
-        {[...Array(15)].map((_, i) => (
+        {[...Array(10)].map((_, i) => (
           <div 
             key={i} 
             className="particle"
@@ -29,18 +34,18 @@ export default function OnboardingWelcome({ onFinish }: Props) {
               top: `${Math.random() * 100}%`,
               animationDelay: `${Math.random() * 5}s`,
               animationDuration: `${4 + Math.random() * 3}s`,
-              width: `${2 + Math.random() * 3}px`,
-              height: `${2 + Math.random() * 3}px`,
+              width: `${2 + Math.random() * 2}px`,
+              height: `${2 + Math.random() * 2}px`,
             }}
           />
         ))}
       </div>
 
-      {/* ღილაკი - ხილვადი */}
+      {/* GET STARTED ღილაკი */}
       <button 
         className="btn-get-started" 
         onClick={() => {
-          console.log(' GET STARTED clicked, going to zodiac');
+          console.log('⬆️ GET STARTED clicked, going to zodiac');
           onFinish();
         }}
       >
