@@ -7,7 +7,7 @@
   background: #0a0600;
   display: flex;
   flex-direction: column;
-  padding-top: 70px; /* ← 70px Close ღილაკისთვის */
+  padding-top: 70px;
 }
 
 /* ნაწილაკები */
@@ -45,7 +45,7 @@
   overflow-x: hidden;
   z-index: 2;
   padding: 10px;
-  padding-bottom: 90px;
+  padding-bottom: 100px; /* 90px → 100px (უფრო დიდი BottomNav-ისთვის) */
 }
 
 /* 1. HEADER - კომპაქტური */
@@ -501,68 +501,6 @@
 /* Bottom Spacer */
 .bottom-spacer {
   height: 15px;
-}
-
-/* 8. BOTTOM NAVIGATION */
-.bottom-nav {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: space-around;
-  background: rgba(10, 6, 0, 0.95);
-  border-top: 1px solid rgba(200, 120, 0, 0.4);
-  padding: 8px 0;
-  z-index: 10;
-  backdrop-filter: blur(10px);
-}
-
-.nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px 8px;
-  position: relative;
-  transition: all 0.3s ease;
-}
-
-.nav-icon {
-  font-size: 20px;
-  opacity: 0.5;
-  transition: all 0.3s ease;
-}
-
-.nav-label {
-  font-family: 'Georgia', serif;
-  font-size: 9px;
-  color: #886600;
-  letter-spacing: 1px;
-  transition: all 0.3s ease;
-}
-
-.nav-item.active .nav-icon {
-  opacity: 1;
-  filter: drop-shadow(0 0 8px rgba(255, 229, 102, 0.8));
-}
-
-.nav-item.active .nav-label {
-  color: #ffe566;
-  font-weight: bold;
-}
-
-.nav-dot {
-  position: absolute;
-  bottom: -2px;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: #ffe566;
-  box-shadow: 0 0 6px rgba(255, 229, 102, 0.8);
 }
 
 /* Scrollbar */

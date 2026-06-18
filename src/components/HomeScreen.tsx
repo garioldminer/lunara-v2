@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import BottomNav from './BottomNav';
 import './HomeScreen.css';
 
 interface Props {
@@ -15,6 +16,7 @@ interface Quest {
 }
 
 export default function HomeScreen({ onNavigate }: Props) {
+  const [activeTab, setActiveTab] = useState('home');
   const [quests] = useState<Quest[]>([
     { id: 1, icon: '📖', title: 'Draw 3 Cards', current: 2, target: 3, reward: 20 },
     { id: 2, icon: '⭐', title: 'Win 2 Readings', current: 1, target: 2, reward: 25 },
@@ -24,6 +26,14 @@ export default function HomeScreen({ onNavigate }: Props) {
   useEffect(() => {
     console.log('🏠 HomeScreen mounted');
   }, []);
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    console.log(`Tab changed to: ${tab}`);
+    if (onNavigate && tab !== 'home') {
+      onNavigate(tab);
+    }
+  };
 
   const handleQuestClick = (questId: number) => {
     console.log(`Quest clicked: ${questId}`);
@@ -69,7 +79,7 @@ export default function HomeScreen({ onNavigate }: Props) {
           </div>
           <div className="badges">
             <div className="badge gems">
-              <span className="badge-icon">🔮</span>
+              <span className="badge-icon"></span>
               <span className="badge-value">2,450</span>
             </div>
             <div className="badge energy">
@@ -84,7 +94,7 @@ export default function HomeScreen({ onNavigate }: Props) {
           <h3 className="section-label">🌙 TODAY'S COSMIC ENERGY</h3>
           <div className="cosmic-grid">
             <div className="cosmic-item" onClick={() => handleQuickAction('moon')}>
-              <div className="cosmic-icon">🌕</div>
+              <div className="cosmic-icon"></div>
               <div className="cosmic-text">
                 <span className="cosmic-title">Waxing</span>
                 <span className="cosmic-subtitle">Gibbous</span>
@@ -114,7 +124,7 @@ export default function HomeScreen({ onNavigate }: Props) {
             <div className="card-image">
               <div className="tarot-card">
                 <span className="card-number">XIII</span>
-                <div className="card-symbol"></div>
+                <div className="card-symbol">🌙</div>
               </div>
             </div>
             <div className="card-info">
@@ -162,7 +172,7 @@ export default function HomeScreen({ onNavigate }: Props) {
             </div>
             <div className="progress-box" onClick={() => handleQuickAction('streak')}>
               <div className="progress-value">12</div>
-              <div className="progress-icon"></div>
+              <div className="progress-icon">🔥</div>
               <div className="progress-label">Streak</div>
             </div>
             <div className="progress-box" onClick={() => handleQuickAction('level')}>
@@ -214,30 +224,8 @@ export default function HomeScreen({ onNavigate }: Props) {
         <div className="bottom-spacer"></div>
       </div>
 
-      {/* 8. BOTTOM NAVIGATION */}
-      <div className="bottom-nav">
-        <button className="nav-item active">
-          <span className="nav-icon">🏠</span>
-          <span className="nav-label">HOME</span>
-          <div className="nav-dot"></div>
-        </button>
-        <button className="nav-item" onClick={() => onNavigate && onNavigate('cards')}>
-          <span className="nav-icon">🃏</span>
-          <span className="nav-label">CARDS</span>
-        </button>
-        <button className="nav-item" onClick={() => onNavigate && onNavigate('reading')}>
-          <span className="nav-icon">🔮</span>
-          <span className="nav-label">READING</span>
-        </button>
-        <button className="nav-item" onClick={() => onNavigate && onNavigate('astro')}>
-          <span className="nav-icon">🌟</span>
-          <span className="nav-label">ASTRO</span>
-        </button>
-        <button className="nav-item" onClick={() => onNavigate && onNavigate('profile')}>
-          <span className="nav-icon">👤</span>
-          <span className="nav-label">PROFILE</span>
-        </button>
-      </div>
+      {/* 8. BOTTOM NAVIGATION - ახალი დიზაინი! */}
+      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
     </div>
   );
 }
