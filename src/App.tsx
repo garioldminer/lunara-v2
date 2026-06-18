@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import SplashScreen from './components/SplashScreen';
 import OnboardingWelcome from './components/OnboardingWelcome';
 import OnboardingZodiac from './components/OnboardingZodiac';
@@ -17,6 +17,15 @@ type Screen =
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('splash');
+
+  // Telegram Header-ის ფერის დაყენება
+  useEffect(() => {
+    if (window.Telegram?.WebApp) {
+      const tg = window.Telegram.WebApp;
+      tg.setHeaderColor('#0a0600');
+      tg.setBackgroundColor('#0a0600');
+    }
+  }, []);
 
   const goTo = (screen: Screen) => {
     setCurrentScreen(screen);

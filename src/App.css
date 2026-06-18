@@ -13,4 +13,5 @@
   align-items: center;
   font-family: 'Georgia', serif;
   overflow: hidden;
+  padding-top: 60px; /* ← დამატებულია Close ღილაკისთვის */
 }
