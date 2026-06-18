@@ -37,7 +37,7 @@ function App() {
         <OnboardingFirstReading onFinish={() => goTo('home')} />
       )}
       {currentScreen === 'home' && (
-        <HomeScreen onPricing={() => goTo('pricing')} />
+        <HomeScreen onNavigate={(screen) => goTo(screen as Screen)} />
       )}
       {currentScreen === 'pricing' && (
         <PricingScreen onBack={() => goTo('home')} />

@@ -15,7 +15,7 @@ interface Quest {
 }
 
 export default function HomeScreen({ onNavigate }: Props) {
-  const [quests, setQuests] = useState<Quest[]>([
+  const [quests] = useState<Quest[]>([
     { id: 1, icon: '📖', title: 'Draw 3 Cards', current: 2, target: 3, reward: 20 },
     { id: 2, icon: '⭐', title: 'Win 2 Readings', current: 1, target: 2, reward: 25 },
     { id: 3, icon: '🌙', title: 'Check Horoscope', current: 1, target: 1, reward: 15 },
@@ -27,7 +27,6 @@ export default function HomeScreen({ onNavigate }: Props) {
 
   const handleQuestClick = (questId: number) => {
     console.log(`Quest clicked: ${questId}`);
-    // აქ იქნება ლოგიკა დავალების შესასრულებლად
   };
 
   const handleQuickAction = (action: string) => {
