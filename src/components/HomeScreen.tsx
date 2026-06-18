@@ -3,9 +3,10 @@ import './HomeScreen.css';
 
 interface Props {
   onBack?: () => void;
+  onPricing?: () => void;
 }
 
-export default function HomeScreen({ onBack }: Props) {
+export default function HomeScreen({ onBack, onPricing }: Props) {
   useEffect(() => {
     console.log('🏠 HomeScreen mounted');
   }, []);
@@ -44,17 +45,10 @@ export default function HomeScreen({ onBack }: Props) {
               <span className="value">2,450</span>
             </div>
             <div className="badge">
-              <span className="icon">⚡</span>
+              <span className="icon"></span>
               <span className="value">50</span>
             </div>
           </div>
-        </div>
-
-        {/* HEADER */}
-        <div className="header">
-          <h1 className="logo">ARCANA</h1>
-          <p className="subtitle">✦ YOUR MYSTIC COMPANION </p>
-          <div className="divider"></div>
         </div>
 
         {/* CARD OF THE DAY */}
@@ -65,7 +59,7 @@ export default function HomeScreen({ onBack }: Props) {
               <div className="tarot-card">
                 <div className="card-content">
                   <span className="card-number">XIII</span>
-                  <div className="card-illustration"></div>
+                  <div className="card-illustration">🌙</div>
                 </div>
               </div>
             </div>
@@ -84,7 +78,7 @@ export default function HomeScreen({ onBack }: Props) {
         <div className="stats-row">
           <div className="stat-box">
             <div className="stat-value">78/78</div>
-            <div className="stat-icon">🃏</div>
+            <div className="stat-icon"></div>
             <div className="stat-label">Cards</div>
           </div>
           <div className="stat-box">
@@ -104,7 +98,7 @@ export default function HomeScreen({ onBack }: Props) {
           <h2 className="section-title">✦ DAILY QUESTS ✦</h2>
           <div className="quests-list">
             <div className="quest-item">
-              <div className="quest-icon"></div>
+              <div className="quest-icon">🃏</div>
               <div className="quest-info">
                 <div className="quest-header">
                   <span className="quest-title">Draw 3 Cards</span>
@@ -128,7 +122,7 @@ export default function HomeScreen({ onBack }: Props) {
                   <div className="progress-fill" style={{width: '50%'}}></div>
                 </div>
               </div>
-              <div className="quest-reward">+25🔮</div>
+              <div className="quest-reward">+25</div>
             </div>
 
             <div className="quest-item completed">
@@ -142,7 +136,7 @@ export default function HomeScreen({ onBack }: Props) {
                   <div className="progress-fill" style={{width: '100%'}}></div>
                 </div>
               </div>
-              <div className="quest-reward">+15🔮</div>
+              <div className="quest-reward">+15</div>
             </div>
 
             <div className="quest-item">
@@ -160,6 +154,16 @@ export default function HomeScreen({ onBack }: Props) {
             </div>
           </div>
         </div>
+
+        {/* Premium Banner */}
+        <button 
+          className="premium-banner" 
+          onClick={() => onPricing && onPricing()}
+        >
+          <span className="premium-icon"></span>
+          <span className="premium-text">UPGRADE TO PREMIUM</span>
+          <span className="premium-arrow">→</span>
+        </button>
 
         {/* Bottom spacing for navigation */}
         <div className="bottom-spacer"></div>

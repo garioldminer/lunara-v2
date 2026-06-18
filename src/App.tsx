@@ -1,39 +1,47 @@
-import { useState, useEffect } from 'react';
-import './App.css';
+import { useState } from 'react';
 import SplashScreen from './components/SplashScreen';
 import OnboardingWelcome from './components/OnboardingWelcome';
 import OnboardingZodiac from './components/OnboardingZodiac';
 import OnboardingFirstReading from './components/OnboardingFirstReading';
 import HomeScreen from './components/HomeScreen';
+import PricingScreen from './components/PricingScreen';
+import './App.css';
 
-type Screen = 'splash' | 'welcome' | 'zodiac' | 'first-reading' | 'home';
+type Screen = 
+  | 'splash' 
+  | 'welcome' 
+  | 'zodiac' 
+  | 'first-reading' 
+  | 'home' 
+  | 'pricing';
 
 function App() {
-  const [screen, setScreen] = useState<Screen>('splash');
+  const [currentScreen, setCurrentScreen] = useState<Screen>('splash');
 
-  useEffect(() => {
-    console.log('🎯 Current screen:', screen);
-  }, [screen]);
+  const goTo = (screen: Screen) => {
+    setCurrentScreen(screen);
+  };
 
   return (
-    <div className="app">
-      {screen === 'splash' && (
-        <SplashScreen onFinish={() => setScreen('welcome')} />
+    <div className="app-container">
+      {currentScreen === 'splash' && (
+        <SplashScreen onFinish={() => goTo('welcome')} />
       )}
-      
-      {screen === 'welcome' && (
-        <OnboardingWelcome onFinish={() => setScreen('zodiac')} />
+      {currentScreen === 'welcome' && (
+        <OnboardingWelcome onFinish={() => goTo('zodiac')} />
       )}
-      
-      {screen === 'zodiac' && (
-        <OnboardingZodiac onFinish={() => setScreen('first-reading')} />
+      {currentScreen === 'zodiac' && (
+        <OnboardingZodiac onFinish={() => goTo('first-reading')} />
       )}
-      
-      {screen === 'first-reading' && (
-        <OnboardingFirstReading onFinish={() => setScreen('home')} />
+      {currentScreen === 'first-reading' && (
+        <OnboardingFirstReading onFinish={() => goTo('home')} />
       )}
-      
-      {screen === 'home' && <HomeScreen />}
+      {currentScreen === 'home' && (
+        <HomeScreen onPricing={() => goTo('pricing')} />
+      )}
+      {currentScreen === 'pricing' && (
+        <PricingScreen onBack={() => goTo('home')} />
+      )}
     </div>
   );
 }
