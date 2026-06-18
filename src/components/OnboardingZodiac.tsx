@@ -7,7 +7,7 @@ interface Props {
 
 export default function OnboardingZodiac({ onFinish }: Props) {
   useEffect(() => {
-    console.log('♏ OnboardingZodiac mounted');
+    console.log(' OnboardingZodiac mounted');
   }, []);
 
   return (
