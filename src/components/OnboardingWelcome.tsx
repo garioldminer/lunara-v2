@@ -12,7 +12,6 @@ export default function OnboardingWelcome({ onFinish }: Props) {
 
   return (
     <div className="screen-container welcome">
-      {/* ვიდეო ფონი */}
       <video 
         className="background-video"
         autoPlay 
@@ -23,7 +22,6 @@ export default function OnboardingWelcome({ onFinish }: Props) {
         <source src="/videos/welcome.mp4" type="video/mp4" />
       </video>
 
-      {/* CSS ნაწილაკები (დამატებითი ეფექტი) */}
       <div className="particles-container">
         {[...Array(10)].map((_, i) => (
           <div 
@@ -41,11 +39,10 @@ export default function OnboardingWelcome({ onFinish }: Props) {
         ))}
       </div>
 
-      {/* GET STARTED ღილაკი */}
       <button 
-        className="btn-get-started" 
+        className="btn-primary" 
         onClick={() => {
-          console.log('⬆️ GET STARTED clicked, going to zodiac');
+          console.log('⬆️ GET STARTED clicked');
           onFinish();
         }}
       >

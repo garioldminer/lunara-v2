@@ -12,7 +12,6 @@ export default function OnboardingFirstReading({ onFinish }: Props) {
 
   return (
     <div className="screen-container first-reading">
-      {/* ვიდეო ფონი */}
       <video 
         className="background-video"
         autoPlay 
@@ -23,7 +22,6 @@ export default function OnboardingFirstReading({ onFinish }: Props) {
         <source src="/videos/first-reading.mp4" type="video/mp4" />
       </video>
 
-      {/* CSS ნაწილაკები (დამატებითი ეფექტი) */}
       <div className="particles-container">
         {[...Array(10)].map((_, i) => (
           <div 
@@ -41,15 +39,14 @@ export default function OnboardingFirstReading({ onFinish }: Props) {
         ))}
       </div>
 
-      {/* BEGIN YOUR JOURNEY ღილაკი */}
       <button 
-        className="btn-begin" 
+        className="btn-primary" 
         onClick={() => {
-          console.log('⬆️ BEGIN YOUR JOURNEY clicked, going to home');
+          console.log('⬆️ BEGIN YOUR JOURNEY clicked');
           onFinish();
         }}
       >
-        BEGIN YOUR JOURNEY
+        BEGIN YOUR<br/>JOURNEY
       </button>
     </div>
   );

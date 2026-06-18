@@ -45,22 +45,25 @@
   }
 }
 
-/* GET STARTED ილაკი - დახვეწილი */
-.btn-get-started {
+/* === ერთიანი ილაკის სტილი === */
+.btn-primary {
   position: absolute;
-  bottom: 60px; /* 80px → 60px (ქვემოთ) */
+  bottom: 60px;
   left: 50%;
   transform: translateX(-50%);
-  width: 70%;
-  max-width: 280px;
-  padding: 12px 36px; /* 18px → 12px (თხელი) */
+  width: 260px;
+  height: 52px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: linear-gradient(135deg, #c87800 0%, #e8a020 40%, #ffe566 100%);
   border: 1.5px solid rgba(255, 229, 102, 0.6);
-  border-radius: 40px;
+  border-radius: 26px;
   color: #0a0600;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: bold;
-  letter-spacing: 4px;
+  letter-spacing: 3px;
   font-family: 'Georgia', serif;
   cursor: pointer;
   z-index: 10;
@@ -71,6 +74,7 @@
   animation: buttonPulse 3s ease-in-out infinite;
   transition: all 0.3s ease;
   text-transform: uppercase;
+  line-height: 1.2;
 }
 
 @keyframes buttonPulse {
@@ -88,7 +92,7 @@
   }
 }
 
-.btn-get-started:active {
+.btn-primary:active {
   transform: translateX(-50%) scale(0.96);
   box-shadow: 
     0 2px 10px rgba(200, 120, 0, 0.3),

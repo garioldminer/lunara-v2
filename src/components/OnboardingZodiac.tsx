@@ -7,12 +7,11 @@ interface Props {
 
 export default function OnboardingZodiac({ onFinish }: Props) {
   useEffect(() => {
-    console.log(' OnboardingZodiac mounted');
+    console.log('♏ OnboardingZodiac mounted');
   }, []);
 
   return (
     <div className="screen-container zodiac">
-      {/* ვიდეო ფონი */}
       <video 
         className="background-video"
         autoPlay 
@@ -23,7 +22,6 @@ export default function OnboardingZodiac({ onFinish }: Props) {
         <source src="/videos/zodiac.mp4" type="video/mp4" />
       </video>
 
-      {/* CSS ნაწილაკები (დამატებითი ეფექტი) */}
       <div className="particles-container">
         {[...Array(10)].map((_, i) => (
           <div 
@@ -41,11 +39,10 @@ export default function OnboardingZodiac({ onFinish }: Props) {
         ))}
       </div>
 
-      {/* CONTINUE ღილაკი */}
       <button 
-        className="btn-continue" 
+        className="btn-primary" 
         onClick={() => {
-          console.log('⬆️ CONTINUE clicked, going to first-reading');
+          console.log('⬆️ CONTINUE clicked');
           onFinish();
         }}
       >
