@@ -45,7 +45,7 @@ export default function OnboardingFirstReading({ onFinish }: Props) {
       <button 
         className="btn-begin" 
         onClick={() => {
-          console.log('🌟 BEGIN YOUR JOURNEY clicked, going to home');
+          console.log('⬆️ BEGIN YOUR JOURNEY clicked, going to home');
           onFinish();
         }}
       >
