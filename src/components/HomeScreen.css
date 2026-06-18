@@ -1,194 +1,445 @@
-.phone {
-    width: 390px;
-    height: 844px;
-    background: #0a0600;
-    border-radius: 32px;
-    overflow: hidden;
-    position: relative;
-    border: 1.5px solid #3a2000;
-    box-shadow: 0 0 40px rgba(200,120,0,0.2);
-    display: flex;
-    flex-direction: column;
+.screen-container.home {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  background: #0a0600;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ნაწილაკები */
+.particles-container {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  background: #ffe566;
+  border-radius: 50%;
+  opacity: 0;
+  animation: floatParticle ease-in-out infinite;
+  box-shadow: 0 0 6px rgba(255, 229, 102, 0.6);
+}
+
+@keyframes floatParticle {
+  0%, 100% { 
+    transform: translateY(0) translateX(0); 
+    opacity: 0.2; 
   }
-  
-  .status-bar {
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 16px;
-    background: rgba(0,0,0,0.5);
-    border-bottom: 1px solid rgba(200,120,0,0.15);
-    flex-shrink: 0;
+  50% { 
+    transform: translateY(-30px) translateX(15px); 
+    opacity: 0.8; 
   }
-  
-  .sb-left { display: flex; align-items: center; gap: 8px; }
-  
-  .avatar {
-    width: 26px; height: 26px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #c87800, #ffe566);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; color: #0a0600; font-weight: bold;
-  }
-  
-  .username { color: #ffe566; font-size: 12px; }
-  
-  .sb-right { display: flex; gap: 6px; }
-  
-  .badge {
-    display: flex; align-items: center; gap: 3px;
-    background: rgba(200,120,0,0.15);
-    border: 1px solid rgba(200,120,0,0.3);
-    border-radius: 10px; padding: 2px 8px;
-    color: #ffe566; font-size: 10px;
-  }
-  
-  .scroll-area {
-    flex: 1;
-    overflow-y: auto;
-    scrollbar-width: none;
-    padding-bottom: 70px;
-  }
-  
-  .scroll-area::-webkit-scrollbar { display: none; }
-  
-  .app-title {
-    text-align: center;
-    padding: 14px 0 4px;
-    font-size: 28px;
-    letter-spacing: 8px;
-    background: linear-gradient(135deg, #fff0a0, #c87800, #ffd040);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: glow 3s ease-in-out infinite;
-  }
-  
-  @keyframes glow { 0%,100%{opacity:.6} 50%{opacity:1} }
-  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
-  @keyframes shimmer { 0%,100%{opacity:.4} 50%{opacity:1} }
-  
-  .app-sub {
-    text-align: center;
-    color: #5a3000;
-    font-size: 9px;
-    letter-spacing: 4px;
-    margin-bottom: 8px;
-  }
-  
-  .divider {
-    height: 1px;
-    margin: 0 20px 12px;
-    background: linear-gradient(90deg, transparent, #c87800, transparent);
-    animation: shimmer 3s ease-in-out infinite;
-  }
-  
-  .section-title {
-    color: #6a3c00;
-    font-size: 8px;
-    letter-spacing: 4px;
-    text-align: center;
-    margin-bottom: 10px;
-  }
-  
-  .daily-card {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    background: linear-gradient(135deg, #120a00, #1e1000);
-    border: 1px solid #4a2800;
-    border-radius: 14px;
-    padding: 14px;
-    margin: 0 14px 12px;
-  }
-  
-  .mini-card {
-    width: 64px; height: 96px;
-    border-radius: 8px;
-    background: #1a1000;
-    border: 1.5px solid #c87800;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    flex-shrink: 0;
-    box-shadow: 0 0 16px rgba(200,120,0,0.3);
-    animation: pulse 3s ease-in-out infinite;
-  }
-  
-  .mc-num { color: #c87800; font-size: 9px; }
-  .mc-sym { font-size: 22px; margin: 4px 0; }
-  .mc-name { color: #ffe566; font-size: 7px; letter-spacing: 1px; }
-  
-  .card-info { flex: 1; }
-  .card-title { color: #ffe566; font-size: 15px; letter-spacing: 2px; margin-bottom: 3px; }
-  .card-zodiac { color: #6a3c00; font-size: 9px; letter-spacing: 2px; margin-bottom: 6px; }
-  .card-desc { color: #9a7040; font-size: 10px; line-height: 1.5; margin-bottom: 8px; }
-  
-  .btn-gold {
-    background: linear-gradient(135deg, #c87800, #ffe566);
-    border: none; border-radius: 16px;
-    padding: 6px 16px;
-    color: #0a0600; font-size: 9px;
-    letter-spacing: 2px; cursor: pointer;
-    font-family: Georgia, serif;
-    animation: pulse 2s ease-in-out infinite;
-  }
-  
-  .stats-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 8px;
-    margin: 0 14px 14px;
-  }
-  
-  .stat-box {
-    background: #120a00;
-    border: 1px solid #2a1600;
-    border-radius: 12px;
-    padding: 10px 8px;
-    text-align: center;
-  }
-  
-  .stat-icon { font-size: 16px; margin-bottom: 3px; }
-  .stat-val { color: #ffe566; font-size: 13px; font-weight: bold; }
-  .stat-lbl { color: #4a2800; font-size: 7px; letter-spacing: 1px; margin-top: 2px; }
-  
-  .quest-item {
-    display: flex; align-items: center; gap: 10px;
-    background: #120a00; border: 1px solid #2a1600;
-    border-radius: 10px; padding: 8px 12px;
-    margin: 0 14px 8px;
-  }
-  
-  .q-icon { font-size: 18px; flex-shrink: 0; }
-  .q-text { flex: 1; }
-  .q-title { color: #c8a060; font-size: 10px; margin-bottom: 4px; }
-  .q-bar { height: 3px; background: #1e1200; border-radius: 2px; overflow: hidden; }
-  .q-fill { height: 100%; background: linear-gradient(90deg, #c87800, #ffe566); border-radius: 2px; }
-  .q-reward { color: #ffe566; font-size: 9px; white-space: nowrap; }
-  
-  .bottom-nav {
-    position: absolute; bottom: 0; left: 0; right: 0;
-    height: 64px;
-    background: rgba(8,5,0,0.97);
-    border-top: 1px solid #3a2000;
-    display: flex; align-items: center;
-    justify-content: space-around;
-    padding-bottom: 8px;
-  }
-  
-  .nav-item {
-    display: flex; flex-direction: column;
-    align-items: center; gap: 2px; cursor: pointer;
-  }
-  
-  .nav-icon { font-size: 18px; }
-  .nav-label { color: #4a2800; font-size: 7px; letter-spacing: 1px; }
-  .nav-item.active .nav-label { color: #c87800; }
-  .nav-item.active .nav-icon { filter: drop-shadow(0 0 4px rgba(200,120,0,0.9)); }
-  
-  .nav-dot {
-    width: 3px; height: 3px; border-radius: 50%;
-    background: #c87800;
-    animation: pulse 2s ease-in-out infinite;
-  }
+}
+
+/* Scrollable content */
+.content-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 2;
+  padding: 0 20px;
+  padding-bottom: 80px;
+}
+
+/* TOP STATUS BAR */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  margin-bottom: 10px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #c87800, #ffe566);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0a0600;
+  font-weight: bold;
+  font-size: 16px;
+  font-family: 'Georgia', serif;
+  border: 2px solid #ffe566;
+}
+
+.username {
+  color: #ffe566;
+  font-size: 14px;
+  font-family: 'Georgia', serif;
+  letter-spacing: 0.5px;
+}
+
+.badges {
+  display: flex;
+  gap: 12px;
+}
+
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(200, 120, 0, 0.2);
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(200, 120, 0, 0.4);
+}
+
+.badge .icon {
+  font-size: 14px;
+}
+
+.badge .value {
+  color: #ffe566;
+  font-size: 13px;
+  font-weight: bold;
+  font-family: 'Georgia', serif;
+}
+
+/* HEADER */
+.header {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.logo {
+  font-family: 'Georgia', serif;
+  font-size: 42px;
+  font-weight: bold;
+  background: linear-gradient(135deg, #c87800 0%, #ffe566 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 8px 0;
+  letter-spacing: 4px;
+  text-shadow: 0 0 30px rgba(200, 120, 0, 0.5);
+}
+
+.subtitle {
+  font-family: 'Georgia', serif;
+  font-size: 11px;
+  color: #c87800;
+  letter-spacing: 2px;
+  margin: 0 0 15px 0;
+}
+
+.divider {
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #c87800, #ffe566, #c87800, transparent);
+  margin: 0 auto;
+}
+
+/* SECTIONS */
+.section {
+  margin-bottom: 25px;
+}
+
+.section-title {
+  font-family: 'Georgia', serif;
+  font-size: 16px;
+  color: #ffe566;
+  text-align: center;
+  margin: 0 0 15px 0;
+  letter-spacing: 2px;
+  font-weight: normal;
+}
+
+/* CARD OF THE DAY */
+.card-of-day {
+  display: flex;
+  background: rgba(20, 12, 5, 0.8);
+  border: 1px solid rgba(200, 120, 0, 0.4);
+  border-radius: 12px;
+  padding: 12px;
+  gap: 12px;
+  backdrop-filter: blur(5px);
+}
+
+.card-image {
+  flex-shrink: 0;
+  width: 100px;
+}
+
+.tarot-card {
+  width: 100%;
+  height: 140px;
+  background: linear-gradient(135deg, #1a0f05, #0a0600);
+  border: 2px solid #c87800;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 20px rgba(200, 120, 0, 0.3);
+}
+
+.card-content {
+  text-align: center;
+  color: #ffe566;
+}
+
+.card-number {
+  font-family: 'Georgia', serif;
+  font-size: 14px;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.card-illustration {
+  font-size: 40px;
+}
+
+.card-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.card-title {
+  font-family: 'Georgia', serif;
+  font-size: 20px;
+  color: #ffe566;
+  margin: 0 0 5px 0;
+  letter-spacing: 2px;
+}
+
+.card-subtitle {
+  font-family: 'Georgia', serif;
+  font-size: 11px;
+  color: #c87800;
+  margin: 0 0 10px 0;
+  letter-spacing: 1px;
+}
+
+.card-description {
+  font-family: 'Georgia', serif;
+  font-size: 12px;
+  color: #886600;
+  margin: 0 0 15px 0;
+  line-height: 1.4;
+}
+
+.btn-read-more {
+  background: linear-gradient(135deg, #c87800, #e8a020);
+  border: 1px solid #ffe566;
+  color: #0a0600;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-family: 'Georgia', serif;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: all 0.3s ease;
+}
+
+.btn-read-more:active {
+  transform: scale(0.95);
+}
+
+/* STATS ROW */
+.stats-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+.stat-box {
+  flex: 1;
+  background: rgba(20, 12, 5, 0.8);
+  border: 1px solid rgba(200, 120, 0, 0.4);
+  border-radius: 10px;
+  padding: 12px 8px;
+  text-align: center;
+  backdrop-filter: blur(5px);
+}
+
+.stat-value {
+  font-family: 'Georgia', serif;
+  font-size: 18px;
+  color: #ffe566;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.stat-icon {
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-family: 'Georgia', serif;
+  font-size: 10px;
+  color: #c87800;
+  letter-spacing: 1px;
+}
+
+/* DAILY QUESTS */
+.quests-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.quest-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(20, 12, 5, 0.6);
+  border: 1px solid rgba(200, 120, 0, 0.3);
+  border-radius: 10px;
+  padding: 12px;
+  transition: all 0.3s ease;
+}
+
+.quest-item.completed {
+  border-color: rgba(255, 229, 102, 0.6);
+  background: rgba(200, 120, 0, 0.1);
+}
+
+.quest-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.quest-info {
+  flex: 1;
+}
+
+.quest-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.quest-title {
+  font-family: 'Georgia', serif;
+  font-size: 13px;
+  color: #ffe566;
+}
+
+.quest-progress {
+  font-family: 'Georgia', serif;
+  font-size: 12px;
+  color: #c87800;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(200, 120, 0, 0.2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #c87800, #ffe566);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.quest-reward {
+  font-family: 'Georgia', serif;
+  font-size: 12px;
+  color: #ffe566;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+/* BOTTOM SPACER */
+.bottom-spacer {
+  height: 20px;
+}
+
+/* BOTTOM NAVIGATION */
+.bottom-nav {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+  background: rgba(10, 6, 0, 0.95);
+  border-top: 1px solid rgba(200, 120, 0, 0.4);
+  padding: 10px 0;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px 10px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.nav-icon {
+  font-size: 22px;
+  opacity: 0.5;
+  transition: all 0.3s ease;
+}
+
+.nav-label {
+  font-family: 'Georgia', serif;
+  font-size: 10px;
+  color: #886600;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+}
+
+.nav-item.active .nav-icon {
+  opacity: 1;
+  filter: drop-shadow(0 0 8px rgba(255, 229, 102, 0.8));
+}
+
+.nav-item.active .nav-label {
+  color: #ffe566;
+  font-weight: bold;
+}
+
+.nav-dot {
+  position: absolute;
+  bottom: -2px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #ffe566;
+  box-shadow: 0 0 6px rgba(255, 229, 102, 0.8);
+}
+
+/* Scrollbar styling */
+.content-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.content-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.content-scroll::-webkit-scrollbar-thumb {
+  background: rgba(200, 120, 0, 0.3);
+  border-radius: 2px;
+}
