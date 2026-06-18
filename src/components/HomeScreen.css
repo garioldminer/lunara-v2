@@ -27,44 +27,43 @@
 }
 
 @keyframes floatParticle {
-  0%, 100% { 
-    transform: translateY(0) translateX(0); 
-    opacity: 0.2; 
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+    opacity: 0.2;
   }
-  50% { 
-    transform: translateY(-30px) translateX(15px); 
-    opacity: 0.8; 
+  50% {
+    transform: translateY(-30px) translateX(15px);
+    opacity: 0.8;
   }
 }
 
-/* Scrollable content */
+/* Scrollable Content */
 .content-scroll {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
   z-index: 2;
-  padding: 0 20px;
-  padding-bottom: 140px;
+  padding: 15px;
+  padding-bottom: 100px;
 }
 
-/* TOP STATUS BAR */
-.top-bar {
+/* 1. HEADER */
+.header-section {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 0;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .user-info {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .avatar {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: linear-gradient(135deg, #c87800, #ffe566);
   display: flex;
@@ -72,60 +71,128 @@
   justify-content: center;
   color: #0a0600;
   font-weight: bold;
-  font-size: 16px;
+  font-size: 18px;
   font-family: 'Georgia', serif;
   border: 2px solid #ffe566;
+  cursor: pointer;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
 }
 
 .username {
   color: #ffe566;
   font-size: 14px;
   font-family: 'Georgia', serif;
-  letter-spacing: 0.5px;
+  font-weight: bold;
+}
+
+.level {
+  color: #c87800;
+  font-size: 11px;
+  font-family: 'Georgia', serif;
 }
 
 .badges {
   display: flex;
-  gap: 12px;
+  gap: 8px;
 }
 
 .badge {
   display: flex;
   align-items: center;
   gap: 4px;
-  background: rgba(200, 120, 0, 0.2);
-  padding: 6px 12px;
-  border-radius: 20px;
+  padding: 6px 10px;
+  border-radius: 16px;
   border: 1px solid rgba(200, 120, 0, 0.4);
+  cursor: pointer;
 }
 
-.badge .icon {
+.badge.gems {
+  background: rgba(200, 120, 0, 0.2);
+}
+
+.badge.energy {
+  background: rgba(255, 229, 102, 0.15);
+}
+
+.badge-icon {
   font-size: 14px;
 }
 
-.badge .value {
+.badge-value {
   color: #ffe566;
   font-size: 13px;
   font-weight: bold;
   font-family: 'Georgia', serif;
 }
 
-/* SECTIONS */
-.section {
-  margin-bottom: 25px;
+/* 2. COSMIC SNAPSHOT */
+.cosmic-snapshot {
+  margin-bottom: 20px;
 }
 
-.section-title {
+.section-label {
   font-family: 'Georgia', serif;
-  font-size: 16px;
+  font-size: 12px;
   color: #ffe566;
   text-align: center;
-  margin: 0 0 15px 0;
+  margin: 0 0 12px 0;
   letter-spacing: 2px;
   font-weight: normal;
 }
 
-/* CARD OF THE DAY */
+.cosmic-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.cosmic-item {
+  background: rgba(20, 12, 5, 0.8);
+  border: 1px solid rgba(200, 120, 0, 0.3);
+  border-radius: 10px;
+  padding: 12px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cosmic-item:active {
+  transform: scale(0.95);
+  border-color: #ffe566;
+}
+
+.cosmic-icon {
+  font-size: 24px;
+  margin-bottom: 6px;
+}
+
+.cosmic-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.cosmic-title {
+  font-family: 'Georgia', serif;
+  font-size: 11px;
+  color: #ffe566;
+  font-weight: bold;
+}
+
+.cosmic-subtitle {
+  font-family: 'Georgia', serif;
+  font-size: 10px;
+  color: #c87800;
+}
+
+/* 3. CARD OF THE DAY */
+.card-of-day-section {
+  margin-bottom: 20px;
+}
+
 .card-of-day {
   display: flex;
   background: rgba(20, 12, 5, 0.8);
@@ -133,40 +200,41 @@
   border-radius: 12px;
   padding: 12px;
   gap: 12px;
-  backdrop-filter: blur(5px);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.card-of-day:active {
+  transform: scale(0.98);
+  border-color: #ffe566;
 }
 
 .card-image {
   flex-shrink: 0;
-  width: 100px;
 }
 
 .tarot-card {
-  width: 100%;
-  height: 140px;
+  width: 80px;
+  height: 120px;
   background: linear-gradient(135deg, #1a0f05, #0a0600);
   border: 2px solid #c87800;
   border-radius: 8px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   box-shadow: 0 0 20px rgba(200, 120, 0, 0.3);
 }
 
-.card-content {
-  text-align: center;
-  color: #ffe566;
-}
-
 .card-number {
   font-family: 'Georgia', serif;
-  font-size: 14px;
-  display: block;
-  margin-bottom: 5px;
+  font-size: 12px;
+  color: #ffe566;
+  margin-bottom: 8px;
 }
 
-.card-illustration {
-  font-size: 40px;
+.card-symbol {
+  font-size: 32px;
 }
 
 .card-info {
@@ -178,9 +246,9 @@
 
 .card-title {
   font-family: 'Georgia', serif;
-  font-size: 20px;
+  font-size: 18px;
   color: #ffe566;
-  margin: 0 0 5px 0;
+  margin: 0 0 4px 0;
   letter-spacing: 2px;
 }
 
@@ -188,15 +256,14 @@
   font-family: 'Georgia', serif;
   font-size: 11px;
   color: #c87800;
-  margin: 0 0 10px 0;
-  letter-spacing: 1px;
+  margin: 0 0 8px 0;
 }
 
 .card-description {
   font-family: 'Georgia', serif;
   font-size: 12px;
   color: #886600;
-  margin: 0 0 15px 0;
+  margin: 0 0 12px 0;
   line-height: 1.4;
 }
 
@@ -204,10 +271,10 @@
   background: linear-gradient(135deg, #c87800, #e8a020);
   border: 1px solid #ffe566;
   color: #0a0600;
-  padding: 8px 16px;
-  border-radius: 20px;
+  padding: 6px 12px;
+  border-radius: 16px;
   font-family: 'Georgia', serif;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: bold;
   letter-spacing: 1px;
   cursor: pointer;
@@ -219,24 +286,80 @@
   transform: scale(0.95);
 }
 
-/* STATS ROW */
-.stats-row {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 25px;
+/* 4. QUICK ACTIONS */
+.quick-actions-section {
+  margin-bottom: 20px;
 }
 
-.stat-box {
-  flex: 1;
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.quick-action-btn {
+  background: rgba(20, 12, 5, 0.8);
+  border: 1px solid rgba(200, 120, 0, 0.4);
+  border-radius: 12px;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.quick-action-btn:active {
+  transform: scale(0.95);
+  border-color: #ffe566;
+  background: rgba(200, 120, 0, 0.15);
+}
+
+.action-icon {
+  font-size: 28px;
+}
+
+.action-title {
+  font-family: 'Georgia', serif;
+  font-size: 14px;
+  color: #ffe566;
+  font-weight: bold;
+}
+
+.action-subtitle {
+  font-family: 'Georgia', serif;
+  font-size: 11px;
+  color: #c87800;
+}
+
+/* 5. PROGRESS */
+.progress-section {
+  margin-bottom: 20px;
+}
+
+.progress-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.progress-box {
   background: rgba(20, 12, 5, 0.8);
   border: 1px solid rgba(200, 120, 0, 0.4);
   border-radius: 10px;
   padding: 12px 8px;
   text-align: center;
-  backdrop-filter: blur(5px);
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.stat-value {
+.progress-box:active {
+  transform: scale(0.95);
+  border-color: #ffe566;
+}
+
+.progress-value {
   font-family: 'Georgia', serif;
   font-size: 18px;
   color: #ffe566;
@@ -244,23 +367,26 @@
   margin-bottom: 4px;
 }
 
-.stat-icon {
+.progress-icon {
   font-size: 20px;
   margin-bottom: 4px;
 }
 
-.stat-label {
+.progress-label {
   font-family: 'Georgia', serif;
   font-size: 10px;
   color: #c87800;
-  letter-spacing: 1px;
 }
 
-/* DAILY QUESTS */
+/* 6. QUESTS */
+.quests-section {
+  margin-bottom: 20px;
+}
+
 .quests-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .quest-item {
@@ -271,7 +397,12 @@
   border: 1px solid rgba(200, 120, 0, 0.3);
   border-radius: 10px;
   padding: 12px;
+  cursor: pointer;
   transition: all 0.3s ease;
+}
+
+.quest-item:active {
+  transform: scale(0.98);
 }
 
 .quest-item.completed {
@@ -329,32 +460,32 @@
   flex-shrink: 0;
 }
 
-/* Premium Banner */
+/* 7. PREMIUM BANNER */
 .premium-banner {
-  position: relative;
-  width: 100%;
-  height: 50px;
   background: linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2));
   border: 1px solid rgba(255, 229, 102, 0.4);
   border-radius: 12px;
+  padding: 14px 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
   cursor: pointer;
-  z-index: 10;
-  backdrop-filter: blur(5px);
+  transition: all 0.3s ease;
   animation: bannerGlow 3s ease-in-out infinite;
-  margin-top: 10px;
 }
 
 @keyframes bannerGlow {
-  0%, 100% { 
-    box-shadow: 0 0 15px rgba(200, 120, 0, 0.2); 
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(200, 120, 0, 0.2);
   }
-  50% { 
-    box-shadow: 0 0 25px rgba(255, 229, 102, 0.4); 
+  50% {
+    box-shadow: 0 0 25px rgba(255, 229, 102, 0.4);
   }
+}
+
+.premium-banner:active {
+  transform: scale(0.98);
 }
 
 .premium-icon {
@@ -366,7 +497,7 @@
   font-size: 13px;
   color: #ffe566;
   font-weight: bold;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
 }
 
 .premium-arrow {
@@ -374,16 +505,12 @@
   font-size: 16px;
 }
 
-.premium-banner:active {
-  transform: scale(0.98);
-}
-
-/* BOTTOM SPACER */
+/* Bottom Spacer */
 .bottom-spacer {
   height: 20px;
 }
 
-/* BOTTOM NAVIGATION */
+/* 8. BOTTOM NAVIGATION */
 .bottom-nav {
   position: absolute;
   bottom: 0;
@@ -445,7 +572,7 @@
   box-shadow: 0 0 6px rgba(255, 229, 102, 0.8);
 }
 
-/* Scrollbar styling */
+/* Scrollbar */
 .content-scroll::-webkit-scrollbar {
   width: 4px;
 }
