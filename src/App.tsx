@@ -9,6 +9,7 @@ import ReadingScreen from './components/ReadingScreen';
 import AstroScreen from './components/AstroScreen';
 import ProfileScreen from './components/ProfileScreen';
 import PricingScreen from './components/PricingScreen';
+import CardFanScreen from './components/CardFanScreen';
 import BottomNav from './components/BottomNav';
 import './App.css';
 
@@ -22,13 +23,13 @@ type Screen =
   | 'reading'
   | 'astro'
   | 'profile'
-  | 'pricing';
+  | 'pricing'
+  | 'card-fan';
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('splash');
   const [activeTab, setActiveTab] = useState('home');
 
-  // Telegram Header-ის ფერის დაყენება
   useEffect(() => {
     const tg = (window as any).Telegram?.WebApp;
     if (tg) {
@@ -53,6 +54,8 @@ function App() {
   const handleNavigate = (screen: string) => {
     if (screen === 'pricing') {
       goTo('pricing');
+    } else if (screen === 'card-fan') {
+      goTo('card-fan');
     } else {
       handleTabChange(screen);
     }
@@ -104,6 +107,9 @@ function App() {
       )}
       {currentScreen === 'pricing' && (
         <PricingScreen onBack={() => goTo('home')} />
+      )}
+      {currentScreen === 'card-fan' && (
+        <CardFanScreen onBack={() => goTo('home')} />
       )}
     </div>
   );
