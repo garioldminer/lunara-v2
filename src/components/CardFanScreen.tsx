@@ -44,15 +44,19 @@ export default function CardFanScreen({ onBack }: Props) {
   const [isRevealed, setIsRevealed] = useState(false);
   const [isSpinning, setIsSpinning] = useState(false);
   
-  const [fanCards] = useState<TarotCard[]>(() => {
-    const shuffled = [...tarotCards].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, 7);
+  // 60 კარტი ჰორიზონტალურ ოლზე (case opening სტილი)
+  const [spinCards] = useState<TarotCard[]>(() => {
+    const cards = [];
+    for (let i = 0; i < 60; i++) {
+      const randomCard = tarotCards[Math.floor(Math.random() * tarotCards.length)];
+      cards.push(randomCard);
+    }
+    return cards;
   });
 
-  // Framer Motion - მთლიანი fan-ის ბრუნვა
-  const rotation = useMotionValue(0);
-  const springConfig = { damping: 30, stiffness: 100 };
-  const smoothRotation = useSpring(rotation, springConfig);
+  const xPosition = useMotionValue(0);
+  const springConfig = { damping: 25, stiffness: 80 };
+  const smoothX = useSpring(xPosition, springConfig);
 
   useEffect(() => {
     console.log('🎴 CardFanScreen mounted!');
@@ -68,26 +72,28 @@ export default function CardFanScreen({ onBack }: Props) {
     setSelectedCard(null);
     setIsRevealed(false);
 
-    // 5-8 სრული ბრუნვა + რენდომული
-    const randomRotations = 5 + Math.random() * 3;
-    const randomStop = Math.random() * 360;
-    const totalRotation = (randomRotations * 360) + randomStop;
+    // Case Opening ლოგიკა:
+    // - კარტის სიგანე: 100px (80px + 20px gap)
+    // - 60 კარტი × 100px = 6000px
+    // - ჩვენ გვინდა რომ 40-50 კარტზე გაჩერდეს
+    const cardWidth = 100;
+    const stopAtCard = 40 + Math.floor(Math.random() * 10); // 40-50 კარტი
+    const randomOffset = Math.random() * 80; // დნავ რენდომული პოზიცია
+    const totalDistance = (stopAtCard * cardWidth) + randomOffset;
     
-    // Framer Motion-ით ანიმაცია
-    rotation.set(totalRotation);
+    xPosition.set(-totalDistance);
     
     setTimeout(() => {
       console.log('✨ Spin finished!');
       setIsSpinning(false);
-      const randomIndex = Math.floor(Math.random() * fanCards.length);
-      setSelectedCard(fanCards[randomIndex]);
-      console.log('🎴 Selected card:', fanCards[randomIndex].name);
+      setSelectedCard(spinCards[stopAtCard]);
+      console.log('🎴 Selected card:', spinCards[stopAtCard].name);
     }, 4000);
   };
 
   const handleCardTap = () => {
     if (!selectedCard || isRevealed) return;
-    console.log('👆 Card tapped - revealing!');
+    console.log(' Card tapped - revealing!');
     setIsRevealed(true);
   };
 
@@ -95,7 +101,7 @@ export default function CardFanScreen({ onBack }: Props) {
     console.log('🔄 Resetting...');
     setSelectedCard(null);
     setIsRevealed(false);
-    rotation.set(0);
+    xPosition.set(0);
     setTimeout(() => {
       startSpin();
     }, 500);
@@ -103,7 +109,6 @@ export default function CardFanScreen({ onBack }: Props) {
 
   return (
     <div className="screen-container card-fan">
-      {/* Particles */}
       <div className="particles-container">
         {[...Array(20)].map((_, i) => (
           <div
@@ -121,7 +126,6 @@ export default function CardFanScreen({ onBack }: Props) {
         ))}
       </div>
 
-      {/* Header */}
       <div className="fan-header">
         {onBack && (
           <button className="back-btn" onClick={onBack}>←</button>
@@ -136,107 +140,59 @@ export default function CardFanScreen({ onBack }: Props) {
         <h1 className="fan-title">Tarot Reader</h1>
       </div>
 
-      {/* Instruction */}
       <div className="instruction">
         <p className="instruction-text">
           {isSpinning ? 'Cards are spinning...' : 
-           selectedCard && !isRevealed ? 'Tap to pick your card' : 
+           selectedCard && !isRevealed ? 'Tap to reveal your card' : 
            isRevealed ? 'Your card has been revealed' : 'Get ready...'}
         </p>
-        <div className="ornament">✦</div>
+        <div className="ornament"></div>
       </div>
 
-      {/* Cards Fan - SPINNER STYLE (მხოლოდ ზედა ნახევარი ჩანს) */}
-      <div className="spinner-container">
-        <motion.div
-          className="spinner-wrapper"
-          drag="x"
-          dragConstraints={{ left: -200, right: 200 }}
-          style={{
-            rotate: smoothRotation,
-            cursor: isSpinning ? 'not-allowed' : 'grab'
-          }}
-          onDragEnd={() => {
-            if (!isSpinning) {
-              const currentRotation = rotation.get();
-              const nearestCard = Math.round(currentRotation / 15) * 15;
-              rotation.set(nearestCard);
-            }
-          }}
-        >
-          {fanCards.map((card, index) => {
-            const totalCards = fanCards.length;
-            const centerIndex = Math.floor(totalCards / 2);
-            const offsetFromCenter = index - centerIndex;
-            
-            // ნახევარწრიული განლაგება: -36° to +36°
-            const angle = offsetFromCenter * 12;
-            const radius = 180;
-            const angleRad = (angle * Math.PI) / 180;
-            
-            // პოზიცია რკალზე
-            const x = Math.sin(angleRad) * radius;
-            const y = -Math.cos(angleRad) * radius + 80;
-            
-            const isCenter = index === centerIndex;
-            const isSelected = selectedCard?.id === card.id;
-
-            return (
+      {/* 
+        CASE OPENING SPINNER:
+        - ჰორიზონტალური ზოლი 60 კარტით
+        - ცენტრში pointer (ოქროს ხაზი)
+        - ზოლი ტრიალებს მარცხნივ
+        - ჩერდება ერთ კარტზე (ცენტრში)
+      */}
+      <div className="case-opening-container">
+        {/* Pointer - ცენტრალური ხაზი */}
+        <div className="pointer-line"></div>
+        <div className="pointer-arrow">▼</div>
+        
+        {/* Spinner Track */}
+        <div className="spinner-viewport">
+          <motion.div
+            className="spinner-track"
+            style={{
+              x: smoothX,
+            }}
+          >
+            {spinCards.map((card, index) => (
               <div
-                key={card.id}
-                className={`card-on-spinner ${isSelected ? 'selected' : ''} ${isCenter ? 'center-card' : ''}`}
-                onClick={() => !isSpinning && handleCardTap()}
-                style={{
-                  '--card-x': `${x}px`,
-                  '--card-y': `${y}px`,
-                  '--card-rotation': `${angle}deg`,
-                  transform: `translate(${x}px, ${y}px) rotate(${angle}deg)`,
-                  zIndex: isSelected ? 100 : isCenter ? 10 : 5 - Math.abs(offsetFromCenter),
-                } as React.CSSProperties}
+                key={`${card.id}-${index}`}
+                className="card-in-track"
               >
                 <CardBack />
               </div>
-            );
-          })}
-        </motion.div>
+            ))}
+          </motion.div>
+        </div>
       </div>
 
-      {/* Drag hint */}
-      {!selectedCard && !isSpinning && (
-        <div className="drag-hint">
-          <svg width="120" height="30" viewBox="0 0 120 30">
-            <path d="M 10 15 Q 60 5 110 15" stroke="#c87800" strokeWidth="1.5" fill="none" opacity="0.6"/>
-            <polygon points="105,12 110,15 105,18" fill="#c87800" opacity="0.6"/>
-          </svg>
-          <span className="drag-text">Drag to move</span>
+      {selectedCard && !isSpinning && !isRevealed && (
+        <div className="selected-card-hint">
+          <p>Tap to reveal</p>
         </div>
       )}
 
-      {/* Selected Card (rises to top) */}
-      {selectedCard && !isSpinning && (
-        <div 
-          className={`selected-card ${isRevealed ? 'revealed' : ''}`}
-          onClick={handleCardTap}
-        >
-          {!isRevealed ? (
-            <CardBack />
-          ) : (
-            <div className="card-front">
-              <div className="card-symbol">{selectedCard.astrologicalSymbol || '✦'}</div>
-              <div className="card-number">{selectedCard.number}</div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Spin Button */}
       {!isSpinning && !selectedCard && (
         <button className="spin-btn" onClick={startSpin}>
-          SPIN
+          OPEN CASE
         </button>
       )}
 
-      {/* Reveal Modal */}
       {isRevealed && selectedCard && (
         <div className="reveal-overlay" onClick={handleReset}>
           <div className="reveal-content" onClick={(e) => e.stopPropagation()}>
@@ -259,7 +215,7 @@ export default function CardFanScreen({ onBack }: Props) {
             </div>
 
             <button className="reveal-cta" onClick={handleReset}>
-              SPIN AGAIN
+              OPEN ANOTHER
             </button>
           </div>
         </div>

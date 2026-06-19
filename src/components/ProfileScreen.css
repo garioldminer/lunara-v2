@@ -37,166 +37,1170 @@
     }
   }
   
-  .content-scroll {
+  .profile-content {
     flex: 1;
     overflow-y: auto;
-    overflow-x: hidden;
     z-index: 2;
-    padding: 15px;
-    padding-bottom: 100px;
+    padding: 15px 12px;
+    padding-bottom: 90px;
   }
   
-  .user-section {
+  /* ===== HERO CARD ===== */
+  .hero-card {
+    position: relative;
+    background: linear-gradient(135deg, #1a0f05 0%, #0a0600 50%, #1a0f05 100%);
+    border: 1px solid rgba(200, 120, 0, 0.4);
+    border-radius: 14px;
+    padding: 12px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    box-shadow: 
+      0 6px 24px rgba(0, 0, 0, 0.5),
+      0 0 16px rgba(200, 120, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    animation: heroCardFloat 6s ease-in-out infinite;
+  }
+  
+  @keyframes heroCardFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+  }
+  
+  .hero-shimmer {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 229, 102, 0.03) 50%, transparent 100%);
+    animation: shimmerMove 4s ease-in-out infinite;
+    pointer-events: none;
+  }
+  
+  @keyframes shimmerMove {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+  
+  .hero-plan-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    background: rgba(255, 229, 102, 0.1);
+    border: 1px solid var(--plan-color);
+    border-radius: 12px;
+    padding: 3px 7px;
+    box-shadow: 0 0 8px var(--plan-color);
+    animation: badgePulse 3s ease-in-out infinite;
+  }
+  
+  @keyframes badgePulse {
+    0%, 100% { box-shadow: 0 0 6px var(--plan-color); }
+    50% { box-shadow: 0 0 12px var(--plan-color); }
+  }
+  
+  .plan-badge-icon { font-size: 10px; }
+  
+  .plan-badge-text {
+    font-family: 'Georgia', serif;
+    font-size: 7px;
+    font-weight: bold;
+    color: var(--plan-color);
+    letter-spacing: 0.6px;
+  }
+  
+  .hero-top-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .hero-avatar {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+  }
+  
+  .avatar-letter {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #c87800, #ffe566);
+    border-radius: 50%;
+    color: #0a0600;
+    font-weight: bold;
+    font-size: 18px;
+    font-family: 'Georgia', serif;
+    z-index: 2;
+  }
+  
+  .avatar-ring {
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    border: 1.5px solid #ffe566;
+    animation: ringRotate 8s linear infinite;
+    background: conic-gradient(from 0deg, transparent 0%, #ffe566 25%, transparent 50%, #c87800 75%, transparent 100%);
+    mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #fff calc(100% - 1.5px));
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #fff calc(100% - 1.5px));
+  }
+  
+  @keyframes ringRotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  
+  .avatar-edit-btn {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg, #c87800, #ffe566);
+    border: 2px solid #0a0600;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    cursor: pointer;
+    z-index: 10;
+    padding: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  }
+  
+  .avatar-edit-btn:active { transform: scale(0.9); }
+  
+  .hero-user-info { flex: 1; }
+  
+  .hero-username {
+    font-family: 'Georgia', serif;
+    font-size: 15px;
+    color: #ffe566;
+    margin: 0 0 2px;
+    font-weight: bold;
+    letter-spacing: 0.6px;
+    text-shadow: 0 0 8px rgba(255, 229, 102, 0.3);
+  }
+  
+  .hero-zodiac {
+    font-family: 'Georgia', serif;
+    font-size: 9px;
+    color: #c87800;
+    margin: 0;
+    letter-spacing: 0.3px;
+  }
+  
+  .hero-level-section {
+    margin-bottom: 10px;
+    padding: 7px 9px;
+    background: rgba(20, 12, 5, 0.6);
+    border: 1px solid rgba(200, 120, 0, 0.2);
+    border-radius: 7px;
+  }
+  
+  .hero-level-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+  }
+  
+  .hero-level-text {
+    font-family: 'Georgia', serif;
+    font-size: 10px;
+    color: #ffe566;
+    font-weight: bold;
+  }
+  
+  .level-title {
+    color: #c87800;
+    font-weight: normal;
+    font-size: 9px;
+    margin-left: 3px;
+  }
+  
+  .hero-xp-text {
+    font-family: 'Georgia', serif;
+    font-size: 8px;
+    color: #886600;
+  }
+  
+  .hero-progress-bar {
+    width: 100%;
+    height: 4px;
+    background: rgba(200, 120, 0, 0.15);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .hero-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #c87800, #ffe566);
+    border-radius: 2px;
+    position: relative;
+    transition: width 0.5s ease;
+    box-shadow: 0 0 4px rgba(255, 229, 102, 0.4);
+  }
+  
+  .progress-shimmer {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+    animation: progressShimmer 2s ease-in-out infinite;
+  }
+  
+  @keyframes progressShimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+  
+  .hero-stats-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding-top: 7px;
+    border-top: 1px solid rgba(200, 120, 0, 0.15);
+  }
+  
+  .hero-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    flex: 1;
+  }
+  
+  .hero-stat-icon { font-size: 14px; }
+  
+  .hero-stat-value {
+    font-family: 'Georgia', serif;
+    font-size: 12px;
+    color: #ffe566;
+    font-weight: bold;
+  }
+  
+  .hero-stat-label {
+    font-family: 'Georgia', serif;
+    font-size: 7px;
+    color: #886600;
+    letter-spacing: 0.3px;
+  }
+  
+  .hero-stat-divider {
+    width: 1px;
+    height: 24px;
+    background: linear-gradient(180deg, transparent, rgba(200, 120, 0, 0.3), transparent);
+  }
+  
+  /* ===== UNIFIED CARD STYLE ===== */
+  .moon-phase-card,
+  .collection-card,
+  .recent-readings-card,
+  .my-signs-card {
+    background: linear-gradient(135deg, #1a0f05 0%, #0a0600 50%, #1a0f05 100%);
+    border: 1px solid rgba(200, 120, 0, 0.35);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+    box-shadow: 
+      0 4px 20px rgba(0, 0, 0, 0.4),
+      0 0 12px rgba(200, 120, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+  
+  .card-title {
+    font-family: 'Georgia', serif;
+    font-size: 10px;
+    color: #ffe566;
     text-align: center;
-    margin-bottom: 24px;
+    margin: 0 0 10px;
+    letter-spacing: 1.5px;
   }
   
-  .avatar-large {
-    width: 80px;
-    height: 80px;
+  /* ===== MOON PHASE ===== */
+  .moon-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .moon-symbol {
+    font-size: 36px;
+    filter: drop-shadow(0 0 8px rgba(255, 229, 102, 0.4));
+    flex-shrink: 0;
+  }
+  
+  .moon-info { flex: 1; }
+  
+  .moon-phase-name {
+    font-family: 'Georgia', serif;
+    font-size: 12px;
+    color: #ffe566;
+    font-weight: bold;
+    margin-bottom: 3px;
+  }
+  
+  .moon-details {
+    font-family: 'Georgia', serif;
+    font-size: 9px;
+    color: #c87800;
+    margin-bottom: 4px;
+  }
+  
+  .moon-best-for,
+  .moon-next-full {
+    font-family: 'Georgia', serif;
+    font-size: 8px;
+    color: #886600;
+    margin-bottom: 2px;
+  }
+  
+  /* ===== CARD COLLECTION ===== */
+  .collection-progress { margin-bottom: 10px; }
+  
+  .collection-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+  }
+  
+  .collection-count {
+    font-family: 'Georgia', serif;
+    font-size: 16px;
+    color: #ffe566;
+    font-weight: bold;
+  }
+  
+  .collection-label {
+    font-family: 'Georgia', serif;
+    font-size: 9px;
+    color: #c87800;
+  }
+  
+  .collection-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(200, 120, 0, 0.15);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  
+  .collection-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #c87800, #ffe566);
+    border-radius: 3px;
+    transition: width 0.5s ease;
+    box-shadow: 0 0 6px rgba(255, 229, 102, 0.4);
+  }
+  
+  .collection-suits {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  
+  .suit-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    background: rgba(20, 12, 5, 0.6);
+    border: 1px solid rgba(200, 120, 0, 0.2);
+    border-radius: 7px;
+    padding: 6px 3px;
+  }
+  
+  .suit-icon { font-size: 16px; }
+  
+  .suit-name {
+    font-family: 'Georgia', serif;
+    font-size: 7px;
+    color: #c87800;
+  }
+  
+  .suit-count {
+    font-family: 'Georgia', serif;
+    font-size: 8px;
+    color: #ffe566;
+    font-weight: bold;
+  }
+  
+  /* ===== RECENT READINGS ===== */
+  .readings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  
+  .reading-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(20, 12, 5, 0.6);
+    border: 1px solid rgba(200, 120, 0, 0.2);
+    border-radius: 8px;
+    padding: 10px;
+    transition: all 0.3s ease;
+  }
+  
+  .reading-item:active {
+    transform: scale(0.98);
+    border-color: #ffe566;
+  }
+  
+  .reading-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  
+  .reading-info { flex: 1; }
+  
+  .reading-type {
+    font-family: 'Georgia', serif;
+    font-size: 11px;
+    color: #ffe566;
+    font-weight: bold;
+    margin-bottom: 2px;
+  }
+  
+  .reading-cards {
+    font-family: 'Georgia', serif;
+    font-size: 8px;
+    color: #c87800;
+    line-height: 1.3;
+  }
+  
+  .reading-date {
+    font-family: 'Georgia', serif;
+    font-size: 8px;
+    color: #886600;
+    white-space: nowrap;
+  }
+  
+  /* ===== MY SIGNS ===== */
+  .signs-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  
+  .sign-item {
+    background: rgba(20, 12, 5, 0.6);
+    border: 1px solid rgba(200, 120, 0, 0.2);
+    border-radius: 8px;
+    padding: 10px 6px;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+  
+  .sign-item:active {
+    transform: scale(0.95);
+    border-color: #ffe566;
+  }
+  
+  .sign-icon {
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+  
+  .sign-label {
+    font-family: 'Georgia', serif;
+    font-size: 7px;
+    color: #886600;
+    letter-spacing: 0.4px;
+    margin-bottom: 3px;
+  }
+  
+  .sign-name {
+    font-family: 'Georgia', serif;
+    font-size: 11px;
+    color: #ffe566;
+    font-weight: bold;
+    margin-bottom: 2px;
+  }
+  
+  .sign-details {
+    font-family: 'Georgia', serif;
+    font-size: 7px;
+    color: #c87800;
+  }
+  
+  /* ===== BUTTONS ===== */
+  .birth-chart-btn,
+  .view-collection-btn,
+  .view-all-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    background: rgba(200, 120, 0, 0.12);
+    border: 1px solid rgba(200, 120, 0, 0.25);
+    border-radius: 8px;
+    padding: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Georgia', serif;
+    font-size: 10px;
+    color: #ffe566;
+    letter-spacing: 0.8px;
+  }
+  
+  .birth-chart-btn:active,
+  .view-collection-btn:active,
+  .view-all-btn:active {
+    background: rgba(200, 120, 0, 0.22);
+    transform: scale(0.98);
+  }
+  
+  .arrow { font-size: 12px; }
+  
+  /* ===== STATS GRID ===== */
+  .stats-grid-section {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  
+  .stat-card {
+    background: rgba(20, 12, 5, 0.8);
+    border: 1px solid rgba(200, 120, 0, 0.25);
+    border-radius: 10px;
+    padding: 10px 6px;
+    text-align: center;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  .stat-card:active {
+    transform: scale(0.95);
+    border-color: #ffe566;
+  }
+  
+  .stat-icon { font-size: 20px; }
+  
+  .stat-value {
+    font-family: 'Georgia', serif;
+    font-size: 14px;
+    color: #ffe566;
+    font-weight: bold;
+  }
+  
+  .stat-label {
+    font-family: 'Georgia', serif;
+    font-size: 8px;
+    color: #c87800;
+    letter-spacing: 0.4px;
+  }
+  
+  /* ===== TABS ===== */
+  .profile-tabs {
+    display: flex;
+    gap: 6px;
+    padding: 10px 12px;
+    z-index: 10;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(10, 6, 0, 0.95);
+    border-top: 1px solid rgba(200, 120, 0, 0.3);
+    backdrop-filter: blur(10px);
+  }
+  
+  .tab {
+    flex: 1;
+    background: rgba(20, 12, 5, 0.8);
+    border: 1px solid rgba(200, 120, 0, 0.25);
+    border-radius: 8px;
+    padding: 9px;
+    color: #c87800;
+    font-family: 'Georgia', serif;
+    font-size: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 0.8px;
+  }
+  
+  .tab.active {
+    background: linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2));
+    border-color: #ffe566;
+    color: #ffe566;
+    box-shadow: 0 0 12px rgba(200, 120, 0, 0.3);
+  }
+  
+  .tab:active { transform: scale(0.95); }
+  
+  /* ===== SECTION TITLE ===== */
+  .section-title {
+    font-family: 'Georgia', serif;
+    font-size: 12px;
+    color: #ffe566;
+    text-align: center;
+    margin: 0 0 12px;
+    letter-spacing: 1.5px;
+  }
+  
+  /* ===== ACHIEVEMENTS ===== */
+  .achievements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .achievement-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(20, 12, 5, 0.8);
+    border: 1px solid rgba(200, 120, 0, 0.25);
+    border-radius: 10px;
+    padding: 12px;
+    transition: all 0.3s ease;
+  }
+  
+  .achievement-card.unlocked {
+    border-color: rgba(255, 229, 102, 0.35);
+  }
+  
+  .achievement-card.locked { opacity: 0.6; }
+  
+  .achievement-icon {
+    font-size: 28px;
+    flex-shrink: 0;
+  }
+  
+  .achievement-info { flex: 1; }
+  
+  .achievement-title {
+    font-family: 'Georgia', serif;
+    font-size: 12px;
+    color: #ffe566;
+    margin: 0 0 3px;
+    font-weight: bold;
+  }
+  
+  .achievement-desc {
+    font-family: 'Georgia', serif;
+    font-size: 10px;
+    color: #c87800;
+    margin: 0 0 6px;
+  }
+  
+  .achievement-progress {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .progress-bar-small {
+    flex: 1;
+    height: 3px;
+    background: rgba(200, 120, 0, 0.2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  
+  .progress-fill-small {
+    height: 100%;
+    background: linear-gradient(90deg, #c87800, #ffe566);
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+  
+  .progress-text {
+    font-family: 'Georgia', serif;
+    font-size: 9px;
+    color: #c87800;
+    white-space: nowrap;
+  }
+  
+  /* ===== SETTINGS ===== */
+  .settings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  
+  .setting-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(20, 12, 5, 0.8);
+    border: 1px solid rgba(200, 120, 0, 0.25);
+    border-radius: 10px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .setting-item:active {
+    background: rgba(200, 120, 0, 0.15);
+    transform: scale(0.98);
+  }
+  
+  .setting-item.premium {
+    border-color: rgba(255, 229, 102, 0.35);
+  }
+  
+  .setting-item.danger {
+    border-color: rgba(220, 38, 38, 0.3);
+  }
+  
+  .setting-item.danger:active {
+    background: rgba(220, 38, 38, 0.15);
+  }
+  
+  .setting-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  
+  .setting-label {
+    flex: 1;
+    font-family: 'Georgia', serif;
+    font-size: 12px;
+    color: #ffe566;
+  }
+  
+  .setting-badge {
+    background: linear-gradient(135deg, #c87800, #ffe566);
+    color: #0a0600;
+    font-family: 'Georgia', serif;
+    font-size: 8px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 6px;
+    letter-spacing: 0.8px;
+  }
+  
+  .setting-arrow {
+    font-size: 12px;
+    color: #c87800;
+  }
+  
+  /* ===== MODAL STYLES ===== */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    animation: fadeIn 0.3s ease;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  .modal-content {
+    background: linear-gradient(135deg, #1a0f05, #0a0600);
+    border: 2px solid rgba(200, 120, 0, 0.5);
+    border-radius: 18px;
+    padding: 20px 18px;
+    max-width: 340px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 
+      0 0 40px rgba(200, 120, 0, 0.4),
+      0 0 80px rgba(200, 120, 0, 0.2);
+    animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .modal-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(200, 120, 0, 0.2);
+    border: 1px solid rgba(200, 120, 0, 0.4);
+    color: #ffe566;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+  }
+  
+  .modal-close:active {
+    background: rgba(200, 120, 0, 0.4);
+    transform: scale(0.9);
+  }
+  
+  .modal-title {
+    font-family: 'Georgia', serif;
+    font-size: 18px;
+    color: #ffe566;
+    text-align: center;
+    margin: 0 0 6px;
+    letter-spacing: 1.5px;
+  }
+  
+  .modal-subtitle {
+    font-family: 'Georgia', serif;
+    font-size: 10px;
+    color: #c87800;
+    text-align: center;
+    margin: 0 0 16px;
+  }
+  
+  .form-group { margin-bottom: 14px; }
+  
+  .form-label {
+    display: block;
+    font-family: 'Georgia', serif;
+    font-size: 10px;
+    color: #c87800;
+    margin-bottom: 5px;
+    letter-spacing: 0.4px;
+  }
+  
+  .form-input {
+    width: 100%;
+    background: rgba(20, 12, 5, 0.8);
+    border: 1px solid rgba(200, 120, 0, 0.3);
+    border-radius: 8px;
+    padding: 10px;
+    color: #ffe566;
+    font-family: 'Georgia', serif;
+    font-size: 12px;
+    outline: none;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+  }
+  
+  .form-input:focus {
+    border-color: #ffe566;
+    box-shadow: 0 0 8px rgba(255, 229, 102, 0.3);
+  }
+  
+  .form-input::placeholder { color: #886600; }
+  
+  .modal-submit-btn {
+    width: 100%;
+    height: 40px;
+    background: linear-gradient(135deg, #c87800, #e8a020, #ffe566);
+    border: 2px solid #ffe566;
+    border-radius: 20px;
+    color: #0a0600;
+    font-family: 'Georgia', serif;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 
+      0 4px 16px rgba(200, 120, 0, 0.4),
+      0 0 30px rgba(200, 120, 0, 0.2);
+    margin-top: 6px;
+  }
+  
+  .modal-submit-btn:active { transform: scale(0.96); }
+  
+  /* ===== EDIT MODAL ===== */
+  .edit-modal {
+    max-height: 90vh;
+  }
+  
+  .edit-section-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(200, 120, 0, 0.2);
+  }
+  
+  .edit-tab {
+    flex: 1;
+    background: rgba(20, 12, 5, 0.6);
+    border: 1px solid rgba(200, 120, 0, 0.25);
+    border-radius: 8px;
+    padding: 8px;
+    color: #c87800;
+    font-family: 'Georgia', serif;
+    font-size: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .edit-tab.active {
+    background: linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2));
+    border-color: #ffe566;
+    color: #ffe566;
+  }
+  
+  .edit-tab:active { transform: scale(0.95); }
+  
+  .edit-section { margin-bottom: 16px; }
+  
+  /* Avatar Section */
+  .edit-avatar-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 12px;
+    background: rgba(20, 12, 5, 0.6);
+    border: 1px solid rgba(200, 120, 0, 0.2);
+    border-radius: 10px;
+  }
+  
+  .edit-avatar-circle {
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     background: linear-gradient(135deg, #c87800, #ffe566);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #0a0600;
+    font-size: 22px;
     font-weight: bold;
-    font-size: 32px;
+    color: #0a0600;
     font-family: 'Georgia', serif;
-    border: 3px solid #ffe566;
-    margin: 0 auto 12px;
+    flex-shrink: 0;
   }
   
-  .username {
-    font-family: 'Georgia', serif;
-    font-size: 20px;
-    color: #ffe566;
-    margin: 0 0 4px 0;
-  }
-  
-  .zodiac-sign {
-    font-family: 'Georgia', serif;
-    font-size: 13px;
-    color: #c87800;
-    margin: 0 0 16px 0;
-  }
-  
-  .level-progress {
-    background: rgba(20, 12, 5, 0.8);
-    border: 1px solid rgba(200, 120, 0, 0.3);
-    border-radius: 12px;
-    padding: 12px;
-  }
-  
-  .level-info {
+  .edit-avatar-info {
+    flex: 1;
     display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  
+  .edit-telegram-name {
+    font-family: 'Georgia', serif;
+    font-size: 11px;
+    color: #886600;
+  }
+  
+  .edit-avatar-btn {
+    background: rgba(200, 120, 0, 0.15);
+    border: 1px solid rgba(200, 120, 0, 0.3);
+    border-radius: 6px;
+    padding: 5px 10px;
+    color: #ffe566;
+    font-family: 'Georgia', serif;
+    font-size: 9px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    align-self: flex-start;
+  }
+  
+  .edit-avatar-btn:active {
+    background: rgba(200, 120, 0, 0.25);
+  }
+  
+  /* Textarea */
+  .form-textarea {
+    resize: none;
+    min-height: 70px;
+  }
+  
+  .char-count {
+    display: block;
+    text-align: right;
+    font-family: 'Georgia', serif;
+    font-size: 9px;
+    color: #886600;
+    margin-top: 4px;
+  }
+  
+  /* Select */
+  .form-select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23c87800' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+  }
+  
+  /* Toggle Switch */
+  .toggle-group {
+    display: flex;
+    align-items: center;
     justify-content: space-between;
+    padding: 10px 12px;
+    background: rgba(20, 12, 5, 0.6);
+    border: 1px solid rgba(200, 120, 0, 0.2);
+    border-radius: 8px;
     margin-bottom: 8px;
   }
   
-  .level-text {
-    font-family: 'Georgia', serif;
-    font-size: 13px;
-    color: #ffe566;
-    font-weight: bold;
-  }
-  
-  .xp-text {
-    font-family: 'Georgia', serif;
-    font-size: 11px;
-    color: #c87800;
-  }
-  
-  .progress-bar {
-    width: 100%;
-    height: 6px;
-    background: rgba(200, 120, 0, 0.2);
-    border-radius: 3px;
-    overflow: hidden;
-  }
-  
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #c87800, #ffe566);
-    border-radius: 3px;
-    transition: width 0.5s ease;
-  }
-  
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    margin-bottom: 24px;
-  }
-  
-  .stat-card {
-    background: rgba(20, 12, 5, 0.8);
-    border: 1px solid rgba(200, 120, 0, 0.3);
-    border-radius: 12px;
-    padding: 16px;
-    text-align: center;
-  }
-  
-  .stat-value {
-    font-family: 'Georgia', serif;
-    font-size: 20px;
-    color: #ffe566;
-    font-weight: bold;
-    margin-bottom: 4px;
-  }
-  
-  .stat-label {
-    font-family: 'Georgia', serif;
-    font-size: 11px;
-    color: #c87800;
-  }
-  
-  .settings-menu {
-    background: rgba(20, 12, 5, 0.6);
-    border: 1px solid rgba(200, 120, 0, 0.3);
-    border-radius: 12px;
-    padding: 12px;
-  }
-  
-  .menu-title {
-    font-family: 'Georgia', serif;
-    font-size: 14px;
-    color: #ffe566;
-    text-align: center;
-    margin: 0 0 12px 0;
-    letter-spacing: 2px;
-  }
-  
-  .menu-item {
+  .toggle-info {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px;
+    gap: 8px;
+  }
+  
+  .toggle-icon {
+    font-size: 16px;
+  }
+  
+  .toggle-label {
+    font-family: 'Georgia', serif;
+    font-size: 11px;
+    color: #ffe566;
+  }
+  
+  .toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 22px;
+    flex-shrink: 0;
+  }
+  
+  .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  .toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(200, 120, 0, 0.2);
+    border-radius: 22px;
+    transition: 0.3s;
+  }
+  
+  .toggle-slider:before {
+    position: absolute;
+    content: '';
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background: #c87800;
+    border-radius: 50%;
+    transition: 0.3s;
+  }
+  
+  .toggle-switch input:checked + .toggle-slider {
+    background: rgba(255, 229, 102, 0.3);
+  }
+  
+  .toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(18px);
+    background: #ffe566;
+  }
+  
+  .time-input {
+    margin-top: -4px;
+    margin-bottom: 12px;
+  }
+  
+  /* Theme Selector */
+  .theme-selector {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .theme-option {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: rgba(20, 12, 5, 0.6);
+    border: 1px solid rgba(200, 120, 0, 0.2);
     border-radius: 8px;
+    padding: 10px 8px;
+    color: #c87800;
+    font-family: 'Georgia', serif;
+    font-size: 10px;
     cursor: pointer;
     transition: all 0.3s ease;
   }
   
-  .menu-item:active {
-    background: rgba(200, 120, 0, 0.15);
-  }
-  
-  .menu-item.premium {
-    border: 1px solid rgba(255, 229, 102, 0.3);
-  }
-  
-  .menu-icon {
-    font-size: 18px;
-  }
-  
-  .menu-text {
-    flex: 1;
-    font-family: 'Georgia', serif;
-    font-size: 13px;
+  .theme-option.active {
+    background: rgba(200, 120, 0, 0.2);
+    border-color: #ffe566;
     color: #ffe566;
   }
   
-  .menu-arrow {
-    font-size: 14px;
-    color: #c87800;
+  .theme-option:active {
+    transform: scale(0.95);
+  }
+  
+  /* Birth Info Button */
+  .edit-birth-info-btn {
+    width: 100%;
+    background: rgba(200, 120, 0, 0.12);
+    border: 1px solid rgba(200, 120, 0, 0.25);
+    border-radius: 8px;
+    padding: 10px;
+    color: #ffe566;
+    font-family: 'Georgia', serif;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 8px;
+  }
+  
+  .edit-birth-info-btn:active {
+    background: rgba(200, 120, 0, 0.22);
+  }
+  
+  /* ===== SCROLLBAR ===== */
+  .profile-content::-webkit-scrollbar,
+  .modal-content::-webkit-scrollbar {
+    width: 3px;
+  }
+  
+  .profile-content::-webkit-scrollbar-track,
+  .modal-content::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .profile-content::-webkit-scrollbar-thumb,
+  .modal-content::-webkit-scrollbar-thumb {
+    background: rgba(200, 120, 0, 0.3);
+    border-radius: 2px;
   }
