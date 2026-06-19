@@ -1,10 +1,46 @@
 import { useEffect, useState, useRef } from 'react';
-import { tarotCards, TarotCard, getRandomCard } from '../data/tarotCards';
-import CardBack from './CardBack';
+import { tarotCards, TarotCard } from '../data/tarotCards';
 import './CardFanScreen.css';
 
 interface Props {
   onBack?: () => void;
+}
+
+// Card Back SVG Component (inline)
+function CardBack() {
+  return (
+    <svg viewBox="0 0 100 160" className="card-svg">
+      <rect width="100" height="160" fill="#1a0f05" rx="6"/>
+      <rect x="3" y="3" width="94" height="154" stroke="#c87800" strokeWidth="1.5" fill="none" rx="5"/>
+      <rect x="7" y="7" width="86" height="146" stroke="#ffe566" strokeWidth="0.5" fill="none" opacity="0.4" rx="4"/>
+      
+      {/* Moon phases */}
+      <circle cx="50" cy="35" r="11" fill="#ffe566" opacity="0.9"/>
+      <circle cx="50" cy="35" r="9" fill="#1a0f05" opacity="0.2"/>
+      <circle cx="50" cy="65" r="11" fill="#1a0f05" stroke="#ffe566" strokeWidth="1.5" opacity="0.8"/>
+      <path d="M 50 54 A 11 11 0 0 1 50 76" fill="#ffe566" opacity="0.8"/>
+      <circle cx="50" cy="95" r="11" fill="#1a0f05" stroke="#ffe566" strokeWidth="1.5" opacity="0.7"/>
+      <path d="M 47 84 A 9 9 0 0 1 47 106" fill="#ffe566" opacity="0.7"/>
+      <circle cx="50" cy="125" r="11" fill="#ffe566" opacity="0.5"/>
+      <circle cx="50" cy="125" r="9" fill="#1a0f05" opacity="0.5"/>
+      
+      {/* Stars */}
+      <circle cx="25" cy="50" r="1.5" fill="#ffe566" opacity="0.7"/>
+      <circle cx="75" cy="50" r="1.5" fill="#ffe566" opacity="0.7"/>
+      <circle cx="25" cy="110" r="1.5" fill="#ffe566" opacity="0.7"/>
+      <circle cx="75" cy="110" r="1.5" fill="#ffe566" opacity="0.7"/>
+      
+      {/* Corner ornaments */}
+      <path d="M 10 10 L 18 10 L 10 18 Z" fill="#c87800" opacity="0.8"/>
+      <path d="M 90 10 L 82 10 L 90 18 Z" fill="#c87800" opacity="0.8"/>
+      <path d="M 10 150 L 18 150 L 10 142 Z" fill="#c87800" opacity="0.8"/>
+      <path d="M 90 150 L 82 150 L 90 142 Z" fill="#c87800" opacity="0.8"/>
+      
+      {/* Center eye */}
+      <ellipse cx="50" cy="80" rx="8" ry="5" fill="none" stroke="#ffe566" strokeWidth="1" opacity="0.6"/>
+      <circle cx="50" cy="80" r="2.5" fill="#ffe566" opacity="0.6"/>
+    </svg>
+  );
 }
 
 export default function CardFanScreen({ onBack }: Props) {
@@ -22,25 +58,26 @@ export default function CardFanScreen({ onBack }: Props) {
   });
 
   useEffect(() => {
-    console.log('🎴 CardFanScreen mounted');
+    console.log('🎴 CardFanScreen mounted!');
   }, []);
 
   const handleCardTap = (card: TarotCard) => {
-    if (selectedCard) return; // უკვე არჩეულია
+    if (selectedCard) return;
+    console.log('🎴 Card selected:', card.name);
     setSelectedCard(card);
     
-    // 1 წამის შემდეგ გამოვლინდეს
     setTimeout(() => {
       setIsRevealed(true);
     }, 800);
   };
 
   const handleReset = () => {
+    console.log(' Resetting fan');
     setSelectedCard(null);
     setIsRevealed(false);
   };
 
-  // Drag functionality
+  // Touch drag
   const handleTouchStart = (e: React.TouchEvent) => {
     if (selectedCard) return;
     setIsDragging(true);
@@ -56,13 +93,10 @@ export default function CardFanScreen({ onBack }: Props) {
 
   const handleTouchEnd = () => {
     setIsDragging(false);
-    // Return to center smoothly
-    setTimeout(() => {
-      setFanOffset(0);
-    }, 300);
+    setTimeout(() => setFanOffset(0), 300);
   };
 
-  // Mouse drag (desktop)
+  // Mouse drag
   const handleMouseDown = (e: React.MouseEvent) => {
     if (selectedCard) return;
     setIsDragging(true);
@@ -78,14 +112,12 @@ export default function CardFanScreen({ onBack }: Props) {
 
   const handleMouseUp = () => {
     setIsDragging(false);
-    setTimeout(() => {
-      setFanOffset(0);
-    }, 300);
+    setTimeout(() => setFanOffset(0), 300);
   };
 
   return (
     <div className="screen-container card-fan">
-      {/* Background particles */}
+      {/* Particles */}
       <div className="particles-container">
         {[...Array(20)].map((_, i) => (
           <div
@@ -154,10 +186,9 @@ export default function CardFanScreen({ onBack }: Props) {
               className={`card-in-fan ${isSelected ? 'selected' : ''} ${isCenter ? 'center-card' : ''}`}
               onClick={() => handleCardTap(card)}
               style={{
-                '--rotation': `${rotation}deg`,
-                '--x-position': `${xPosition}px`,
-                '--z-index': isSelected ? 100 : isCenter ? 10 : 5 - Math.abs(offsetFromCenter),
-              } as React.CSSProperties}
+                transform: `translateX(${xPosition}px) rotate(${rotation}deg)`,
+                zIndex: isSelected ? 100 : isCenter ? 10 : 5 - Math.abs(offsetFromCenter),
+              }}
             >
               <CardBack />
             </div>
@@ -169,31 +200,21 @@ export default function CardFanScreen({ onBack }: Props) {
       {!selectedCard && (
         <div className="drag-hint">
           <svg width="120" height="30" viewBox="0 0 120 30">
-            <path 
-              d="M 10 15 Q 60 5 110 15" 
-              stroke="#c87800" 
-              strokeWidth="1.5" 
-              fill="none"
-              opacity="0.6"
-            />
-            <polygon 
-              points="105,12 110,15 105,18" 
-              fill="#c87800" 
-              opacity="0.6"
-            />
+            <path d="M 10 15 Q 60 5 110 15" stroke="#c87800" strokeWidth="1.5" fill="none" opacity="0.6"/>
+            <polygon points="105,12 110,15 105,18" fill="#c87800" opacity="0.6"/>
           </svg>
           <span className="drag-text">Drag to move</span>
         </div>
       )}
 
-      {/* Card Reveal Modal */}
+      {/* Reveal Modal */}
       {selectedCard && isRevealed && (
         <div className="reveal-overlay" onClick={handleReset}>
           <div className="reveal-content" onClick={(e) => e.stopPropagation()}>
             <button className="reveal-close" onClick={handleReset}>✕</button>
             
             <div className="reveal-card">
-              <div className="reveal-symbol">{selectedCard.astrologicalSymbol || ''}</div>
+              <div className="reveal-symbol">{selectedCard.astrologicalSymbol || '✦'}</div>
               <div className="reveal-number">{selectedCard.number}</div>
             </div>
 

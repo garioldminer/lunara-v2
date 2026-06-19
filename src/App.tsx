@@ -43,23 +43,35 @@ function App() {
   }, []);
 
   const goTo = (screen: Screen) => {
+    console.log('🔄 Navigating to:', screen);
     setCurrentScreen(screen);
   };
 
   const handleTabChange = (tab: string) => {
+    console.log('📑 Tab change:', tab);
     setActiveTab(tab);
     goTo(tab as Screen);
   };
 
   const handleNavigate = (screen: string) => {
-    if (screen === 'pricing') {
-      goTo('pricing');
-    } else if (screen === 'card-fan') {
+    console.log('🧭 handleNavigate called with:', screen);
+    
+    // 'draw' → 'card-fan' mapping
+    if (screen === 'draw' || screen === 'card-fan') {
+      console.log('✅ Going to card-fan screen');
       goTo('card-fan');
-    } else {
+    } else if (screen === 'pricing') {
+      console.log('✅ Going to pricing screen');
+      goTo('pricing');
+    } else if (screen === 'home' || screen === 'cards' || screen === 'reading' || screen === 'astro' || screen === 'profile') {
+      console.log('✅ Tab change to:', screen);
       handleTabChange(screen);
+    } else {
+      console.log(' Unknown screen:', screen);
     }
   };
+
+  console.log('📱 Current screen:', currentScreen);
 
   return (
     <div className="app-container">
