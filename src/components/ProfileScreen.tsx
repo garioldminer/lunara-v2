@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import './ProfileScreen.css';
-import { getTelegramUser } from '../lib/telegramAuth';
+import { getTelegramUser, debugTelegramData } from '../lib/telegramAuth';
 import { getOrCreateUser, updateUser, User } from '../lib/userService';
 
 interface Props {
@@ -79,29 +79,53 @@ export default function ProfileScreen({ onNavigate }: Props) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Telegram-იდან მომხმარებლის ჩატვირთვა
+  // Telegram-იდან მომხმარებლის ჩატვირთვა - DEBUG VERSION
   useEffect(() => {
     async function loadUser() {
+      console.log('🔍 ===== ProfileScreen loadUser() START =====');
+      console.log('🔍 Current time:', new Date().toISOString());
+      
       try {
+        // დამატებითი debug - ყველა Telegram მონაცემის ნახვა
+        const tg = (window as any).Telegram?.WebApp;
+        if (tg) {
+          console.log('🔍 Calling debugTelegramData()...');
+          try {
+            debugTelegramData();
+          } catch (debugErr) {
+            console.error('❌ Error in debugTelegramData:', debugErr);
+          }
+        } else {
+          console.warn('⚠️ Telegram WebApp not available for debug');
+        }
+        
+        console.log('🔍 Calling getTelegramUser()...');
         const tgUser = getTelegramUser();
+        console.log('🔍 getTelegramUser() returned:', tgUser);
         
         if (!tgUser) {
           console.warn('⚠️ No Telegram user - using mock data');
           setLoading(false);
+          console.log('🔍 ===== ProfileScreen loadUser() END (no user) =====');
           return;
         }
 
         console.log('🔄 Loading user from Supabase...');
         const user = await getOrCreateUser(tgUser);
+        console.log('🔍 getOrCreateUser() returned:', user);
         
         if (user) {
           setCurrentUser(user);
-          console.log('✅ User loaded:', user);
+          console.log('✅ User loaded successfully:', user);
+        } else {
+          console.warn('⚠️ Could not load user from Supabase - using mock data');
         }
       } catch (error) {
         console.error('❌ Error loading user:', error);
+        console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack');
       } finally {
         setLoading(false);
+        console.log('🔍 ===== ProfileScreen loadUser() END =====');
       }
     }
 

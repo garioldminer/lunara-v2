@@ -6,13 +6,53 @@
     <meta name="theme-color" content="#0a0600" />
     <meta name="description" content="LUNARA - Your Mystic Companion" />
     
-    <!-- Telegram Web App Script -->
+    <!-- Telegram Web App Script - აუცილებელია -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
     <title>LUNARA</title>
+    
+    <style>
+      /* Loading state Telegram-ისთვის */
+      body {
+        background: #0a0600;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+      }
+      #root {
+        min-height: 100vh;
+      }
+      .initial-loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        color: #ffe566;
+        font-family: Georgia, serif;
+        font-size: 16px;
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="initial-loading">✦ Loading...</div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Global error handler Telegram-ისთვის -->
+    <script>
+      window.addEventListener('error', function(e) {
+        console.error('Global error:', e.error);
+        document.getElementById('root').innerHTML = 
+          '<div style="padding:20px;color:#ff6666;font-family:monospace;font-size:12px;">' +
+          '<h3>❌ Error</h3>' +
+          '<pre>' + (e.error?.message || e.message || 'Unknown error') + '</pre>' +
+          '</div>';
+      });
+      
+      window.addEventListener('unhandledrejection', function(e) {
+        console.error('Unhandled promise rejection:', e.reason);
+      });
+    </script>
   </body>
 </html>

@@ -24,8 +24,12 @@ export interface User {
   updated_at: string;
 }
 
-// მომხმარებლის მოძიება Telegram ID-ით
 export async function getUserByTelegramId(telegramId: number): Promise<User | null> {
+  if (!supabase) {
+    console.warn('⚠️ Supabase not available');
+    return null;
+  }
+  
   const { data, error } = await supabase
     .from('users')
     .select('*')
@@ -40,8 +44,12 @@ export async function getUserByTelegramId(telegramId: number): Promise<User | nu
   return data as User;
 }
 
-// ახალი მომხმარებლის შექმნა
 export async function createUser(tgUser: TelegramUser): Promise<User | null> {
+  if (!supabase) {
+    console.warn('⚠️ Supabase not available');
+    return null;
+  }
+  
   const userData = createUserDataFromTelegram(tgUser);
   
   const { data, error } = await supabase
@@ -59,9 +67,7 @@ export async function createUser(tgUser: TelegramUser): Promise<User | null> {
   return data as User;
 }
 
-// მომხმარებლის მიღება ან შექმნა (upsert)
 export async function getOrCreateUser(tgUser: TelegramUser): Promise<User | null> {
-  // ჯერ ვცადოთ მოძიება
   let user = await getUserByTelegramId(tgUser.id);
   
   if (user) {
@@ -69,14 +75,17 @@ export async function getOrCreateUser(tgUser: TelegramUser): Promise<User | null
     return user;
   }
 
-  // თუ არ არსებობს, შევქმნათ
   console.log('🆕 Creating new user...');
   user = await createUser(tgUser);
   return user;
 }
 
-// მომხმარებლის განახლება
 export async function updateUser(userId: string, updates: Partial<User>): Promise<User | null> {
+  if (!supabase) {
+    console.warn('⚠️ Supabase not available');
+    return null;
+  }
+  
   const { data, error } = await supabase
     .from('users')
     .update({ ...updates, updated_at: new Date().toISOString() })
