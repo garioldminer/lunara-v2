@@ -170,7 +170,6 @@ export default function CardFanScreen({ onBack }: Props) {
             const xOffset = offsetFromCenter * 50; // გადაადგილება გვერდზე
             const yOffset = Math.abs(offsetFromCenter) * 10; // ქვემოთ გადაადგილება გვერდებზე
             
-            const isCenter = index === centerIndex;
             const isSelected = selectedCard?.id === card.id;
 
             return (
