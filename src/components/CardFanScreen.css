@@ -101,58 +101,38 @@
     opacity: 0.8;
   }
   
-  /* Cards Fan Container */
-  .cards-fan-container {
+  /* Wheel Container - ზედა ნახევარი ჩანს, ქვედა იმალება */
+  .wheel-container {
     position: relative;
     flex: 1;
+    width: 100%;
+    overflow: hidden; /* ქვედა ნაწილი იმალება */
     display: flex;
     justify-content: center;
-    align-items: center;
-    z-index: 5;
-    overflow: visible;
+    align-items: flex-end; /* ბორბალი ქვემოთ არის */
   }
   
-  .cards-fan-wrapper {
+  /* Wheel - დიდი წრე რომელიც ტრიალებს */
+  .wheel {
     position: relative;
     width: 400px;
-    height: 300px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    height: 400px;
+    /* ცენტრი ქვემოთ */
+    transform-origin: 200px 350px;
+    transition: transform 0.1s linear;
   }
   
-  .card-in-fan {
+  /* Card on Wheel */
+  .card-on-wheel {
     position: absolute;
     width: 80px;
     height: 130px;
-    bottom: 50px;
-    cursor: pointer;
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+    transition: filter 0.3s ease;
   }
   
-  .card-in-fan.center-card {
-    filter: drop-shadow(0 4px 12px rgba(200, 120, 0, 0.3));
-  }
-  
-  .card-in-fan:active {
+  .card-on-wheel:active {
     filter: drop-shadow(0 8px 16px rgba(200, 120, 0, 0.4));
-  }
-  
-  .card-in-fan.selected {
-    animation: cardRise 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-    filter: drop-shadow(0 0 30px rgba(255, 229, 102, 0.8));
-  }
-  
-  @keyframes cardRise {
-    0% {
-      opacity: 0;
-      transform: translate(-50%, 100px) scale(0.5);
-    }
-    100% {
-      opacity: 1;
-      transform: translate(-50%, -50%) scale(1.2);
-    }
   }
   
   .card-svg {
@@ -165,7 +145,7 @@
   /* Drag Hint */
   .drag-hint {
     position: absolute;
-    bottom: 100px;
+    bottom: 80px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -186,7 +166,7 @@
   /* Selected Card */
   .selected-card {
     position: absolute;
-    top: 50%;
+    top: 45%;
     left: 50%;
     transform: translate(-50%, -50%);
     width: 120px;
@@ -195,6 +175,17 @@
     cursor: pointer;
     animation: cardRise 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     filter: drop-shadow(0 0 20px rgba(255, 229, 102, 0.6));
+  }
+  
+  @keyframes cardRise {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, 100px) scale(0.5);
+    }
+    100% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
   }
   
   .selected-card:active {
@@ -253,7 +244,7 @@
   /* Spin Button */
   .spin-btn {
     position: absolute;
-    bottom: 120px;
+    bottom: 100px;
     left: 50%;
     transform: translateX(-50%);
     background: linear-gradient(135deg, #c87800, #e8a020, #ffe566);

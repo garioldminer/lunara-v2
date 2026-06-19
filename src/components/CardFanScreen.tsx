@@ -43,9 +43,11 @@ export default function CardFanScreen({ onBack }: Props) {
   const [isRevealed, setIsRevealed] = useState(false);
   const [isSpinning, setIsSpinning] = useState(false);
   const [rotationOffset, setRotationOffset] = useState(0);
-  const [fanCards] = useState<TarotCard[]>(() => {
+  
+  // 12 ბარათი წრეზე (მეტი ბარათი = უკეთესი ეფექტი)
+  const [wheelCards] = useState<TarotCard[]>(() => {
     const shuffled = [...tarotCards].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, 7);
+    return shuffled.slice(0, 12);
   });
 
   useEffect(() => {
@@ -57,24 +59,25 @@ export default function CardFanScreen({ onBack }: Props) {
   }, []);
 
   const startSpin = () => {
-    console.log('🌀 Starting spin...');
+    console.log(' Starting spin...');
     setIsSpinning(true);
     setSelectedCard(null);
     setIsRevealed(false);
     setRotationOffset(0);
 
-    // Random rotations (5-8 full rotations)
+    // 5-8 სრული ბრუნვა + რენდომული გაჩერება
     const randomRotations = 5 + Math.random() * 3;
-    const totalRotation = randomRotations * 360;
+    const randomStop = Math.random() * 360;
+    const totalRotation = (randomRotations * 360) + randomStop;
     
-    const duration = 4000; // 4 seconds
+    const duration = 4000; // 4 წამი
     const startTime = Date.now();
     
     const animate = () => {
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
       
-      // Easing function (ease-out)
+      // Easing function (ease-out cubic)
       const eased = 1 - Math.pow(1 - progress, 3);
       
       const currentRotation = totalRotation * eased;
@@ -85,10 +88,11 @@ export default function CardFanScreen({ onBack }: Props) {
       } else {
         console.log('✨ Spin finished!');
         setIsSpinning(false);
-        // Select random card
-        const randomIndex = Math.floor(Math.random() * fanCards.length);
-        setSelectedCard(fanCards[randomIndex]);
-        console.log('🎴 Selected card:', fanCards[randomIndex].name);
+        
+        // რენდომული ბარათის არჩევა
+        const randomIndex = Math.floor(Math.random() * wheelCards.length);
+        setSelectedCard(wheelCards[randomIndex]);
+        console.log('🎴 Selected card:', wheelCards[randomIndex].name);
       }
     };
     
@@ -109,6 +113,11 @@ export default function CardFanScreen({ onBack }: Props) {
       startSpin();
     }, 500);
   };
+
+  // წრის პარამეტრები
+  const wheelRadius = 280; // რადიუსი
+  const wheelCenterY = 350; // ცენტრი Y (ეკრანის ქვემოთ)
+  const wheelCenterX = 200; // ცენტრი X (შუაში)
 
   return (
     <div className="screen-container card-fan">
@@ -155,40 +164,33 @@ export default function CardFanScreen({ onBack }: Props) {
         <div className="ornament">✦</div>
       </div>
 
-      {/* Cards Fan - Semi-circular layout */}
-      <div className="cards-fan-container">
+      {/* Wheel Container - ზედა ნახევარი ჩანს */}
+      <div className="wheel-container">
         <div 
-          className="cards-fan-wrapper"
+          className="wheel"
           style={{ 
             transform: `rotate(${rotationOffset}deg)`,
-            transition: isSpinning ? 'none' : 'transform 0.5s ease'
           }}
         >
-          {fanCards.map((card, index) => {
-            const totalCards = fanCards.length;
-            const centerIndex = Math.floor(totalCards / 2);
-            const offsetFromCenter = index - centerIndex;
-            
-            // Semi-circular fan: -60deg to +60deg (120deg total arc)
-            const angle = offsetFromCenter * 20; // -60, -40, -20, 0, 20, 40, 60
-            const radius = 150;
+          {wheelCards.map((card, index) => {
+            const angle = (index / wheelCards.length) * 360;
             const angleRad = (angle * Math.PI) / 180;
             
-            // Position cards in arc
-            const x = Math.sin(angleRad) * radius;
-            const y = -Math.cos(angleRad) * radius + 50;
+            // ბარათის პოზიცია წრეზე
+            const x = wheelCenterX + Math.sin(angleRad) * wheelRadius - 40; // 40 = ბარათის სიგანის ნახევარი
+            const y = wheelCenterY - Math.cos(angleRad) * wheelRadius - 65; // 65 = ბარათის სიმაღლის ნახევარი
             
-            const isCenter = index === centerIndex;
-            const isSelected = selectedCard?.id === card.id;
+            // ბარათი უნდა იყოს წრის ტანგენსის მიმართულებით
+            const cardRotation = angle + 90;
 
             return (
               <div
                 key={card.id}
-                className={`card-in-fan ${isSelected ? 'selected' : ''} ${isCenter ? 'center-card' : ''}`}
-                onClick={() => !isSpinning && handleCardTap()}
+                className="card-on-wheel"
                 style={{
-                  transform: `translate(${x}px, ${y}px) rotate(${angle}deg)`,
-                  zIndex: isSelected ? 100 : isCenter ? 10 : 5 - Math.abs(offsetFromCenter),
+                  left: `${x}px`,
+                  top: `${y}px`,
+                  transform: `rotate(${cardRotation}deg)`,
                 }}
               >
                 <CardBack />
@@ -209,7 +211,7 @@ export default function CardFanScreen({ onBack }: Props) {
         </div>
       )}
 
-      {/* Selected Card (rises to top) */}
+      {/* Selected Card (rises to top center) */}
       {selectedCard && !isSpinning && (
         <div 
           className={`selected-card ${isRevealed ? 'revealed' : ''}`}
