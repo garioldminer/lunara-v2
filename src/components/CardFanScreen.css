@@ -109,23 +109,50 @@
     justify-content: center;
     align-items: center;
     z-index: 5;
+    overflow: visible;
   }
   
-  .cards-fan {
+  .cards-fan-wrapper {
     position: relative;
-    width: 300px;
+    width: 400px;
     height: 300px;
     display: flex;
     justify-content: center;
     align-items: center;
   }
   
-  .card-in-circle {
+  .card-in-fan {
     position: absolute;
-    width: 70px;
-    height: 110px;
-    transition: all 0.3s ease;
+    width: 80px;
+    height: 130px;
+    bottom: 50px;
+    cursor: pointer;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+  }
+  
+  .card-in-fan.center-card {
+    filter: drop-shadow(0 4px 12px rgba(200, 120, 0, 0.3));
+  }
+  
+  .card-in-fan:active {
+    filter: drop-shadow(0 8px 16px rgba(200, 120, 0, 0.4));
+  }
+  
+  .card-in-fan.selected {
+    animation: cardRise 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    filter: drop-shadow(0 0 30px rgba(255, 229, 102, 0.8));
+  }
+  
+  @keyframes cardRise {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, 100px) scale(0.5);
+    }
+    100% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1.2);
+    }
   }
   
   .card-svg {
@@ -133,6 +160,27 @@
     height: 100%;
     display: block;
     border-radius: 6px;
+  }
+  
+  /* Drag Hint */
+  .drag-hint {
+    position: absolute;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    z-index: 10;
+    opacity: 0.7;
+  }
+  
+  .drag-text {
+    font-family: 'Georgia', serif;
+    font-size: 12px;
+    color: #c87800;
+    letter-spacing: 1px;
   }
   
   /* Selected Card */
@@ -147,17 +195,6 @@
     cursor: pointer;
     animation: cardRise 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     filter: drop-shadow(0 0 20px rgba(255, 229, 102, 0.6));
-  }
-  
-  @keyframes cardRise {
-    0% {
-      opacity: 0;
-      transform: translate(-50%, 100px) scale(0.5);
-    }
-    100% {
-      opacity: 1;
-      transform: translate(-50%, -50%) scale(1);
-    }
   }
   
   .selected-card:active {

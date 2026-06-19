@@ -42,7 +42,7 @@ export default function CardFanScreen({ onBack }: Props) {
   const [selectedCard, setSelectedCard] = useState<TarotCard | null>(null);
   const [isRevealed, setIsRevealed] = useState(false);
   const [isSpinning, setIsSpinning] = useState(false);
-  const [spinAngle, setSpinAngle] = useState(0);
+  const [rotationOffset, setRotationOffset] = useState(0);
   const [fanCards] = useState<TarotCard[]>(() => {
     const shuffled = [...tarotCards].sort(() => Math.random() - 0.5);
     return shuffled.slice(0, 7);
@@ -61,27 +61,31 @@ export default function CardFanScreen({ onBack }: Props) {
     setIsSpinning(true);
     setSelectedCard(null);
     setIsRevealed(false);
-    setSpinAngle(0);
+    setRotationOffset(0);
 
-    const randomRotations = 3 + Math.random() * 2;
-    const randomStop = Math.random() * 360;
-    const totalRotation = (randomRotations * 360) + randomStop;
+    // Random rotations (5-8 full rotations)
+    const randomRotations = 5 + Math.random() * 3;
+    const totalRotation = randomRotations * 360;
     
-    const duration = 3000;
+    const duration = 4000; // 4 seconds
     const startTime = Date.now();
     
     const animate = () => {
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
+      
+      // Easing function (ease-out)
       const eased = 1 - Math.pow(1 - progress, 3);
-      const currentAngle = totalRotation * eased;
-      setSpinAngle(currentAngle);
+      
+      const currentRotation = totalRotation * eased;
+      setRotationOffset(currentRotation);
       
       if (progress < 1) {
         requestAnimationFrame(animate);
       } else {
         console.log('✨ Spin finished!');
         setIsSpinning(false);
+        // Select random card
         const randomIndex = Math.floor(Math.random() * fanCards.length);
         setSelectedCard(fanCards[randomIndex]);
         console.log('🎴 Selected card:', fanCards[randomIndex].name);
@@ -108,6 +112,7 @@ export default function CardFanScreen({ onBack }: Props) {
 
   return (
     <div className="screen-container card-fan">
+      {/* Particles */}
       <div className="particles-container">
         {[...Array(20)].map((_, i) => (
           <div
@@ -125,6 +130,7 @@ export default function CardFanScreen({ onBack }: Props) {
         ))}
       </div>
 
+      {/* Header */}
       <div className="fan-header">
         {onBack && (
           <button className="back-btn" onClick={onBack}>←</button>
@@ -139,35 +145,50 @@ export default function CardFanScreen({ onBack }: Props) {
         <h1 className="fan-title">Tarot Reader</h1>
       </div>
 
+      {/* Instruction */}
       <div className="instruction">
         <p className="instruction-text">
           {isSpinning ? 'Cards are spinning...' : 
-           selectedCard && !isRevealed ? 'Tap the card to reveal' : 
+           selectedCard && !isRevealed ? 'Tap to pick your card' : 
            isRevealed ? 'Your card has been revealed' : 'Get ready...'}
         </p>
         <div className="ornament">✦</div>
       </div>
 
+      {/* Cards Fan - Semi-circular layout */}
       <div className="cards-fan-container">
         <div 
-          className="cards-fan"
+          className="cards-fan-wrapper"
           style={{ 
-            transform: `rotate(${spinAngle}deg)`,
+            transform: `rotate(${rotationOffset}deg)`,
             transition: isSpinning ? 'none' : 'transform 0.5s ease'
           }}
         >
           {fanCards.map((card, index) => {
-            const angle = (index / fanCards.length) * 360;
-            const radius = 120;
-            const x = Math.cos((angle * Math.PI) / 180) * radius;
-            const y = Math.sin((angle * Math.PI) / 180) * radius;
+            const totalCards = fanCards.length;
+            const centerIndex = Math.floor(totalCards / 2);
+            const offsetFromCenter = index - centerIndex;
+            
+            // Semi-circular fan: -60deg to +60deg (120deg total arc)
+            const angle = offsetFromCenter * 20; // -60, -40, -20, 0, 20, 40, 60
+            const radius = 150;
+            const angleRad = (angle * Math.PI) / 180;
+            
+            // Position cards in arc
+            const x = Math.sin(angleRad) * radius;
+            const y = -Math.cos(angleRad) * radius + 50;
+            
+            const isCenter = index === centerIndex;
+            const isSelected = selectedCard?.id === card.id;
 
             return (
               <div
                 key={card.id}
-                className="card-in-circle"
+                className={`card-in-fan ${isSelected ? 'selected' : ''} ${isCenter ? 'center-card' : ''}`}
+                onClick={() => !isSpinning && handleCardTap()}
                 style={{
-                  transform: `translate(${x}px, ${y}px) rotate(${angle + 90}deg)`,
+                  transform: `translate(${x}px, ${y}px) rotate(${angle}deg)`,
+                  zIndex: isSelected ? 100 : isCenter ? 10 : 5 - Math.abs(offsetFromCenter),
                 }}
               >
                 <CardBack />
@@ -177,6 +198,18 @@ export default function CardFanScreen({ onBack }: Props) {
         </div>
       </div>
 
+      {/* Drag hint */}
+      {!selectedCard && !isSpinning && (
+        <div className="drag-hint">
+          <svg width="120" height="30" viewBox="0 0 120 30">
+            <path d="M 10 15 Q 60 5 110 15" stroke="#c87800" strokeWidth="1.5" fill="none" opacity="0.6"/>
+            <polygon points="105,12 110,15 105,18" fill="#c87800" opacity="0.6"/>
+          </svg>
+          <span className="drag-text">Drag to move</span>
+        </div>
+      )}
+
+      {/* Selected Card (rises to top) */}
       {selectedCard && !isSpinning && (
         <div 
           className={`selected-card ${isRevealed ? 'revealed' : ''}`}
@@ -193,12 +226,14 @@ export default function CardFanScreen({ onBack }: Props) {
         </div>
       )}
 
+      {/* Spin Button */}
       {!isSpinning && !selectedCard && (
         <button className="spin-btn" onClick={startSpin}>
           SPIN
         </button>
       )}
 
+      {/* Reveal Modal */}
       {isRevealed && selectedCard && (
         <div className="reveal-overlay" onClick={handleReset}>
           <div className="reveal-content" onClick={(e) => e.stopPropagation()}>
