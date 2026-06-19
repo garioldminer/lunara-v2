@@ -23,7 +23,6 @@ export default function CardsScreen({ onNavigate }: Props) {
   const handleCardClick = (card: TarotCard) => {
     console.log(`Card clicked: ${card.name}`);
     setSelectedCard(card);
-    // მომავალში: onNavigate && onNavigate('card-detail');
   };
 
   const handleCloseModal = () => {
@@ -32,7 +31,6 @@ export default function CardsScreen({ onNavigate }: Props) {
 
   const handleAddToCollection = () => {
     console.log(`Adding to collection: ${selectedCard?.name}`);
-    // მომავალში: onNavigate && onNavigate('collection');
   };
 
   return (
@@ -88,7 +86,7 @@ export default function CardsScreen({ onNavigate }: Props) {
           </div>
         </div>
 
-        {/* Cards Grid */}
+        {/* Cards Grid - 4 COLUMNS */}
         <div className="cards-grid">
           {filteredCards.map((card) => (
             <div 
@@ -96,8 +94,8 @@ export default function CardsScreen({ onNavigate }: Props) {
               className="card-item"
               onClick={() => handleCardClick(card)}
             >
-              <div className="card-thumb">{card.symbol}</div>
               <div className="card-number">{card.number}</div>
+              <div className="card-symbol">{card.symbol}</div>
               <div className="card-name">{card.name}</div>
             </div>
           ))}
