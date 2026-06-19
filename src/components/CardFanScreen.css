@@ -101,38 +101,53 @@
     opacity: 0.8;
   }
   
-  /* Wheel Container - ზედა ნახევარი ჩანს, ქვედა იმალება */
-  .wheel-container {
+  /* Cards Fan Container */
+  .cards-fan-container {
     position: relative;
     flex: 1;
-    width: 100%;
-    overflow: hidden; /* ქვედა ნაწილი იმალება */
     display: flex;
     justify-content: center;
-    align-items: flex-end; /* ბორბალი ქვემოთ არის */
+    align-items: flex-end;
+    padding-bottom: 80px;
+    overflow: visible;
   }
   
-  /* Wheel - დიდი წრე რომელიც ტრიალებს */
-  .wheel {
+  .cards-fan-wrapper {
     position: relative;
     width: 400px;
-    height: 400px;
-    /* ცენტრი ქვემოთ */
-    transform-origin: 200px 350px;
-    transition: transform 0.1s linear;
+    height: 250px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   
-  /* Card on Wheel */
-  .card-on-wheel {
+  .card-in-fan {
     position: absolute;
     width: 80px;
     height: 130px;
+    left: 50%;
+    top: 50%;
+    margin-left: -40px;
+    margin-top: -65px;
+    cursor: pointer;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
-    transition: filter 0.3s ease;
   }
   
-  .card-on-wheel:active {
-    filter: drop-shadow(0 8px 16px rgba(200, 120, 0, 0.4));
+  .card-in-fan.selected {
+    animation: cardRise 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    filter: drop-shadow(0 0 30px rgba(255, 229, 102, 0.8));
+  }
+  
+  @keyframes cardRise {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, 100px) scale(0.5);
+    }
+    100% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1.2);
+    }
   }
   
   .card-svg {
@@ -175,17 +190,6 @@
     cursor: pointer;
     animation: cardRise 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     filter: drop-shadow(0 0 20px rgba(255, 229, 102, 0.6));
-  }
-  
-  @keyframes cardRise {
-    0% {
-      opacity: 0;
-      transform: translate(-50%, 100px) scale(0.5);
-    }
-    100% {
-      opacity: 1;
-      transform: translate(-50%, -50%) scale(1);
-    }
   }
   
   .selected-card:active {
