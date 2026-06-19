@@ -1,0 +1,130 @@
+.screen-container.astro {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    overflow: hidden;
+    background: #0a0600;
+    display: flex;
+    flex-direction: column;
+    padding-top: 70px;
+  }
+  
+  .particles-container {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+  
+  .particle {
+    position: absolute;
+    background: #ffe566;
+    border-radius: 50%;
+    opacity: 0;
+    animation: floatParticle ease-in-out infinite;
+    box-shadow: 0 0 6px rgba(255, 229, 102, 0.6);
+  }
+  
+  @keyframes floatParticle {
+    0%, 100% {
+      transform: translateY(0) translateX(0);
+      opacity: 0.2;
+    }
+    50% {
+      transform: translateY(-30px) translateX(15px);
+      opacity: 0.8;
+    }
+  }
+  
+  .content-scroll {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 2;
+    padding: 15px;
+    padding-bottom: 100px;
+  }
+  
+  .header-section {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .page-title {
+    font-family: 'Georgia', serif;
+    font-size: 20px;
+    color: #ffe566;
+    margin: 0 0 5px 0;
+    letter-spacing: 2px;
+  }
+  
+  .page-subtitle {
+    font-family: 'Georgia', serif;
+    font-size: 11px;
+    color: #c87800;
+    margin: 0;
+  }
+  
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  
+  .tab {
+    flex: 1;
+    background: rgba(20, 12, 5, 0.8);
+    border: 1px solid rgba(200, 120, 0, 0.3);
+    border-radius: 10px;
+    padding: 10px;
+    color: #c87800;
+    font-family: 'Georgia', serif;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+  }
+  
+  .tab.active {
+    background: rgba(200, 120, 0, 0.2);
+    border-color: #ffe566;
+    color: #ffe566;
+  }
+  
+  .tab:active {
+    transform: scale(0.95);
+  }
+  
+  .zodiac-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  
+  .zodiac-item {
+    background: rgba(20, 12, 5, 0.8);
+    border: 1px solid rgba(200, 120, 0, 0.3);
+    border-radius: 12px;
+    padding: 16px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .zodiac-item:active {
+    transform: scale(0.95);
+    border-color: #ffe566;
+  }
+  
+  .zodiac-symbol {
+    font-size: 28px;
+    margin-bottom: 6px;
+  }
+  
+  .zodiac-name {
+    font-family: 'Georgia', serif;
+    font-size: 10px;
+    color: #c87800;
+  }
