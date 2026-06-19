@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { tarotCards, TarotCard } from '../data/tarotCards';
 import './CardFanScreen.css';
 
@@ -50,7 +50,6 @@ export default function CardFanScreen({ onBack }: Props) {
 
   useEffect(() => {
     console.log('🎴 CardFanScreen mounted!');
-    // Auto-start spin after 1 second
     const timer = setTimeout(() => {
       startSpin();
     }, 1000);
@@ -64,29 +63,23 @@ export default function CardFanScreen({ onBack }: Props) {
     setIsRevealed(false);
     setSpinAngle(0);
 
-    // Random rotation (3-5 full rotations + random stop)
-    const randomRotations = 3 + Math.random() * 2; // 3-5 full rotations
-    const randomStop = Math.random() * 360; // Random angle
+    const randomRotations = 3 + Math.random() * 2;
+    const randomStop = Math.random() * 360;
     const totalRotation = (randomRotations * 360) + randomStop;
     
-    // Animate rotation
-    const duration = 3000; // 3 seconds
+    const duration = 3000;
     const startTime = Date.now();
     
     const animate = () => {
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      
-      // Easing function (ease-out)
       const eased = 1 - Math.pow(1 - progress, 3);
-      
       const currentAngle = totalRotation * eased;
       setSpinAngle(currentAngle);
       
       if (progress < 1) {
         requestAnimationFrame(animate);
       } else {
-        // Spin finished - select random card
         console.log('✨ Spin finished!');
         setIsSpinning(false);
         const randomIndex = Math.floor(Math.random() * fanCards.length);
@@ -115,7 +108,6 @@ export default function CardFanScreen({ onBack }: Props) {
 
   return (
     <div className="screen-container card-fan">
-      {/* Particles */}
       <div className="particles-container">
         {[...Array(20)].map((_, i) => (
           <div
@@ -133,7 +125,6 @@ export default function CardFanScreen({ onBack }: Props) {
         ))}
       </div>
 
-      {/* Header */}
       <div className="fan-header">
         {onBack && (
           <button className="back-btn" onClick={onBack}>←</button>
@@ -148,7 +139,6 @@ export default function CardFanScreen({ onBack }: Props) {
         <h1 className="fan-title">Tarot Reader</h1>
       </div>
 
-      {/* Instruction */}
       <div className="instruction">
         <p className="instruction-text">
           {isSpinning ? 'Cards are spinning...' : 
@@ -158,7 +148,6 @@ export default function CardFanScreen({ onBack }: Props) {
         <div className="ornament">✦</div>
       </div>
 
-      {/* Spinning Cards Fan */}
       <div className="cards-fan-container">
         <div 
           className="cards-fan"
@@ -188,7 +177,6 @@ export default function CardFanScreen({ onBack }: Props) {
         </div>
       </div>
 
-      {/* Selected Card (rises to top) */}
       {selectedCard && !isSpinning && (
         <div 
           className={`selected-card ${isRevealed ? 'revealed' : ''}`}
@@ -205,14 +193,12 @@ export default function CardFanScreen({ onBack }: Props) {
         </div>
       )}
 
-      {/* Spin Button (when not spinning) */}
       {!isSpinning && !selectedCard && (
         <button className="spin-btn" onClick={startSpin}>
           SPIN
         </button>
       )}
 
-      {/* Reveal Modal */}
       {isRevealed && selectedCard && (
         <div className="reveal-overlay" onClick={handleReset}>
           <div className="reveal-content" onClick={(e) => e.stopPropagation()}>
