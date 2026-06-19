@@ -12,7 +12,8 @@ export default function CardsScreen({ onNavigate }: Props) {
 
   useEffect(() => {
     console.log('🃏 CardsScreen mounted');
-  }, []);
+    console.log('onNavigate available:', !!onNavigate);
+  }, [onNavigate]);
 
   const filteredCards = tarotCards.filter(card => {
     if (filter === 'all') return true;
@@ -22,10 +23,16 @@ export default function CardsScreen({ onNavigate }: Props) {
   const handleCardClick = (card: TarotCard) => {
     console.log(`Card clicked: ${card.name}`);
     setSelectedCard(card);
+    // მომავალში: onNavigate && onNavigate('card-detail');
   };
 
   const handleCloseModal = () => {
     setSelectedCard(null);
+  };
+
+  const handleAddToCollection = () => {
+    console.log(`Adding to collection: ${selectedCard?.name}`);
+    // მომავალში: onNavigate && onNavigate('collection');
   };
 
   return (
@@ -134,7 +141,12 @@ export default function CardsScreen({ onNavigate }: Props) {
               </div>
             </div>
 
-            <button className="modal-cta">ADD TO COLLECTION</button>
+            <button 
+              className="modal-cta"
+              onClick={handleAddToCollection}
+            >
+              ADD TO COLLECTION
+            </button>
           </div>
         </div>
       )}
