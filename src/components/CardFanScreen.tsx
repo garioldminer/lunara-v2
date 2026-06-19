@@ -4,7 +4,7 @@ import { tarotCards, TarotCard } from '../data/tarotCards';
 import './CardFanScreen.css';
 
 interface Props {
-  onBack?: () => void;
+  onNavigate?: (screen: string) => void;
 }
 
 function CardBack() {
@@ -39,12 +39,11 @@ function CardBack() {
   );
 }
 
-export default function CardFanScreen({ onBack }: Props) {
+export default function CardFanScreen({ onNavigate }: Props) {
   const [selectedCard, setSelectedCard] = useState<TarotCard | null>(null);
   const [isRevealed, setIsRevealed] = useState(false);
   const [isSpinning, setIsSpinning] = useState(false);
   
-  // 60 კარტი ჰორიზონტალურ ოლზე (case opening სტილი)
   const [spinCards] = useState<TarotCard[]>(() => {
     const cards = [];
     for (let i = 0; i < 60; i++) {
@@ -72,13 +71,9 @@ export default function CardFanScreen({ onBack }: Props) {
     setSelectedCard(null);
     setIsRevealed(false);
 
-    // Case Opening ლოგიკა:
-    // - კარტის სიგანე: 100px (80px + 20px gap)
-    // - 60 კარტი × 100px = 6000px
-    // - ჩვენ გვინდა რომ 40-50 კარტზე გაჩერდეს
     const cardWidth = 100;
-    const stopAtCard = 40 + Math.floor(Math.random() * 10); // 40-50 კარტი
-    const randomOffset = Math.random() * 80; // დნავ რენდომული პოზიცია
+    const stopAtCard = 40 + Math.floor(Math.random() * 10);
+    const randomOffset = Math.random() * 80;
     const totalDistance = (stopAtCard * cardWidth) + randomOffset;
     
     xPosition.set(-totalDistance);
@@ -89,12 +84,6 @@ export default function CardFanScreen({ onBack }: Props) {
       setSelectedCard(spinCards[stopAtCard]);
       console.log('🎴 Selected card:', spinCards[stopAtCard].name);
     }, 4000);
-  };
-
-  const handleCardTap = () => {
-    if (!selectedCard || isRevealed) return;
-    console.log(' Card tapped - revealing!');
-    setIsRevealed(true);
   };
 
   const handleReset = () => {
@@ -127,8 +116,8 @@ export default function CardFanScreen({ onBack }: Props) {
       </div>
 
       <div className="fan-header">
-        {onBack && (
-          <button className="back-btn" onClick={onBack}>←</button>
+        {onNavigate && (
+          <button className="back-btn" onClick={() => onNavigate('home')}>←</button>
         )}
         <div className="date">
           {new Date().toLocaleDateString('en-US', { 
@@ -146,22 +135,13 @@ export default function CardFanScreen({ onBack }: Props) {
            selectedCard && !isRevealed ? 'Tap to reveal your card' : 
            isRevealed ? 'Your card has been revealed' : 'Get ready...'}
         </p>
-        <div className="ornament"></div>
+        <div className="ornament">✦</div>
       </div>
 
-      {/* 
-        CASE OPENING SPINNER:
-        - ჰორიზონტალური ზოლი 60 კარტით
-        - ცენტრში pointer (ოქროს ხაზი)
-        - ზოლი ტრიალებს მარცხნივ
-        - ჩერდება ერთ კარტზე (ცენტრში)
-      */}
       <div className="case-opening-container">
-        {/* Pointer - ცენტრალური ხაზი */}
         <div className="pointer-line"></div>
         <div className="pointer-arrow">▼</div>
         
-        {/* Spinner Track */}
         <div className="spinner-viewport">
           <motion.div
             className="spinner-track"
