@@ -9,16 +9,13 @@ const tabs = [
   { id: 'home', icon: '🏠', label: 'HOME' },
   { id: 'cards', icon: '🃏', label: 'CARDS' },
   { id: 'reading', icon: '🔮', label: 'READING' },
-  { id: 'astro', icon: '', label: 'ASTRO' },
+  { id: 'astro', icon: '🪐', label: 'ASTRO' }, // ← 🌟 → 🪐
   { id: 'profile', icon: '👤', label: 'PROFILE' },
 ];
 
 export default function BottomNav({ activeTab, onTabChange }: Props) {
   return (
     <div className="bottom-nav-container">
-      {/* Glow effect behind nav */}
-      <div className="nav-glow"></div>
-      
       {/* Main nav bar */}
       <div className="bottom-nav">
         {tabs.map((tab) => (
