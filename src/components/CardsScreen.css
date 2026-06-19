@@ -1,80 +1,342 @@
-/* Modal Styles */
-.modal-overlay {
+.screen-container.cards {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    overflow: hidden;
+    background: #0a0600;
+    display: flex;
+    flex-direction: column;
+    padding-top: 70px;
+  }
+  
+  .particles-container {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+  
+  .particle {
+    position: absolute;
+    background: #ffe566;
+    border-radius: 50%;
+    opacity: 0;
+    animation: floatParticle ease-in-out infinite;
+    box-shadow: 0 0 6px rgba(255, 229, 102, 0.6);
+  }
+  
+  @keyframes floatParticle {
+    0%, 100% {
+      transform: translateY(0) translateX(0);
+      opacity: 0.2;
+    }
+    50% {
+      transform: translateY(-30px) translateX(15px);
+      opacity: 0.8;
+    }
+  }
+  
+  .content-scroll {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 2;
+    padding: 15px;
+    padding-bottom: 100px;
+  }
+  
+  /* Header */
+  .header-section {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .page-title {
+    font-family: 'Georgia', serif;
+    font-size: 22px;
+    color: #ffe566;
+    margin: 0 0 6px 0;
+    letter-spacing: 3px;
+    text-shadow: 0 0 20px rgba(200, 120, 0, 0.5);
+  }
+  
+  .page-subtitle {
+    font-family: 'Georgia', serif;
+    font-size: 11px;
+    color: #c87800;
+    margin: 0;
+    letter-spacing: 1px;
+  }
+  
+  /* Search & Filter */
+  .search-filter {
+    margin-bottom: 20px;
+  }
+  
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(20, 12, 5, 0.8);
+    border: 1px solid rgba(200, 120, 0, 0.3);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    backdrop-filter: blur(10px);
+  }
+  
+  .search-icon {
+    font-size: 16px;
+    opacity: 0.6;
+  }
+  
+  .search-input {
+    flex: 1;
+    background: none;
+    border: none;
+    color: #ffe566;
+    font-family: 'Georgia', serif;
+    font-size: 13px;
+    outline: none;
+  }
+  
+  .search-input::placeholder {
+    color: #886600;
+  }
+  
+  /* Filter Buttons - Horizontal Scroll */
+  .filter-buttons {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  
+  .filter-buttons::-webkit-scrollbar {
+    height: 3px;
+  }
+  
+  .filter-buttons::-webkit-scrollbar-thumb {
+    background: rgba(200, 120, 0, 0.3);
+    border-radius: 2px;
+  }
+  
+  .filter-btn {
+    flex-shrink: 0;
+    background: rgba(20, 12, 5, 0.8);
+    border: 1px solid rgba(200, 120, 0, 0.3);
+    border-radius: 20px;
+    padding: 8px 16px;
+    color: #c87800;
+    font-family: 'Georgia', serif;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 1px;
+  }
+  
+  .filter-btn.active {
+    background: linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2));
+    border-color: #ffe566;
+    color: #ffe566;
+    box-shadow: 0 0 15px rgba(200, 120, 0, 0.3);
+  }
+  
+  .filter-btn:active {
+    transform: scale(0.95);
+  }
+  
+  /* Cards Grid - 3 COLUMNS */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  
+  /* Card Item - Enhanced Design */
+  .card-item {
+    position: relative;
+    background: linear-gradient(135deg, rgba(20, 12, 5, 0.9), rgba(30, 18, 8, 0.9));
+    border: 2px solid rgba(200, 120, 0, 0.3);
+    border-radius: 12px;
+    padding: 16px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    box-shadow: 
+      0 4px 12px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+  
+  .card-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #ffe566, transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .card-item:active {
+    transform: scale(0.95) translateY(-2px);
+    border-color: #ffe566;
+    box-shadow: 
+      0 8px 20px rgba(200, 120, 0, 0.4),
+      0 0 30px rgba(255, 229, 102, 0.2);
+  }
+  
+  .card-item:active::before {
+    opacity: 1;
+  }
+  
+  /* Card Thumbnail - Large & Centered */
+  .card-thumb {
+    font-size: 42px;
+    margin-bottom: 10px;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+    transition: transform 0.3s ease;
+  }
+  
+  .card-item:active .card-thumb {
+    transform: scale(1.1) rotate(5deg);
+  }
+  
+  /* Card Number - Small & Elegant */
+  .card-number {
+    font-family: 'Georgia', serif;
+    font-size: 10px;
+    color: #c87800;
+    margin-bottom: 4px;
+    letter-spacing: 1px;
+    opacity: 0.8;
+  }
+  
+  /* Card Name - Bold & Clear */
+  .card-name {
+    font-family: 'Georgia', serif;
+    font-size: 10px;
+    color: #ffe566;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    line-height: 1.3;
+    word-wrap: break-word;
+  }
+  
+  /* Modal Styles - Enhanced */
+  .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.9);
     z-index: 1000;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 20px;
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(10px);
+    animation: fadeIn 0.3s ease;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
   
   .modal-content {
     background: linear-gradient(135deg, #1a0f05, #0a0600);
     border: 2px solid rgba(200, 120, 0, 0.5);
-    border-radius: 20px;
-    padding: 25px 20px;
-    max-width: 340px;
+    border-radius: 24px;
+    padding: 28px 24px;
+    max-width: 360px;
     width: 100%;
     max-height: 85vh;
     overflow-y: auto;
     position: relative;
     box-shadow: 
-      0 0 40px rgba(200, 120, 0, 0.3),
-      0 0 80px rgba(200, 120, 0, 0.1);
+      0 0 50px rgba(200, 120, 0, 0.4),
+      0 0 100px rgba(200, 120, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  @keyframes slideUp {
+    from { 
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to { 
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
   
   .modal-close {
     position: absolute;
-    top: 12px;
-    right: 12px;
+    top: 14px;
+    right: 14px;
     background: rgba(200, 120, 0, 0.2);
     border: 1px solid rgba(200, 120, 0, 0.4);
     color: #ffe566;
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    font-size: 16px;
+    font-size: 18px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 10;
   }
   
   .modal-close:active {
     background: rgba(200, 120, 0, 0.4);
+    transform: scale(0.9);
   }
   
   .modal-header {
     text-align: center;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
+    margin-bottom: 24px;
+    padding-bottom: 18px;
     border-bottom: 1px solid rgba(200, 120, 0, 0.3);
   }
   
   .modal-symbol {
-    font-size: 48px;
-    margin-bottom: 10px;
+    font-size: 64px;
+    margin-bottom: 12px;
+    filter: drop-shadow(0 0 20px rgba(255, 229, 102, 0.6));
+    animation: symbolGlow 3s ease-in-out infinite;
+  }
+  
+  @keyframes symbolGlow {
+    0%, 100% { filter: drop-shadow(0 0 20px rgba(255, 229, 102, 0.6)); }
+    50% { filter: drop-shadow(0 0 30px rgba(255, 229, 102, 0.9)); }
   }
   
   .modal-title {
     font-family: 'Georgia', serif;
-    font-size: 24px;
+    font-size: 26px;
     color: #ffe566;
-    margin: 0 0 5px;
-    letter-spacing: 2px;
+    margin: 0 0 6px;
+    letter-spacing: 3px;
+    text-shadow: 0 0 20px rgba(200, 120, 0, 0.5);
   }
   
   .modal-number {
     font-family: 'Georgia', serif;
     font-size: 14px;
     color: #c87800;
-    margin: 0 0 8px;
+    margin: 0 0 10px;
+    letter-spacing: 2px;
   }
   
   .modal-meta {
@@ -82,59 +344,64 @@
     font-size: 11px;
     color: #886600;
     margin: 0;
+    letter-spacing: 1px;
   }
   
   .modal-body {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
   }
   
   .meaning-section {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
   }
   
   .section-title {
     font-family: 'Georgia', serif;
     font-size: 13px;
     color: #ffe566;
-    margin: 0 0 8px;
-    letter-spacing: 1px;
+    margin: 0 0 10px;
+    letter-spacing: 2px;
+    font-weight: bold;
   }
   
   .meaning-text {
     font-family: 'Georgia', serif;
-    font-size: 12px;
+    font-size: 13px;
     color: #d4a84a;
-    line-height: 1.5;
-    margin: 0 0 10px;
+    line-height: 1.6;
+    margin: 0 0 12px;
   }
   
   .keywords {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 8px;
   }
   
   .keyword-tag {
-    background: rgba(200, 120, 0, 0.2);
+    background: linear-gradient(135deg, rgba(200, 120, 0, 0.2), rgba(255, 229, 102, 0.1));
     border: 1px solid rgba(200, 120, 0, 0.4);
-    border-radius: 12px;
-    padding: 4px 10px;
+    border-radius: 14px;
+    padding: 5px 12px;
     font-family: 'Georgia', serif;
     font-size: 10px;
     color: #ffe566;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
   }
   
   .keyword-tag.reversed {
     background: rgba(200, 120, 0, 0.1);
     color: #c87800;
+    border-color: rgba(200, 120, 0, 0.3);
   }
   
   .modal-cta {
     width: 100%;
-    height: 44px;
+    height: 48px;
     background: linear-gradient(135deg, #c87800, #e8a020, #ffe566);
     border: 2px solid #ffe566;
-    border-radius: 22px;
+    border-radius: 24px;
     color: #0a0600;
     font-family: 'Georgia', serif;
     font-size: 13px;
@@ -142,43 +409,31 @@
     letter-spacing: 2px;
     cursor: pointer;
     transition: all 0.3s ease;
+    box-shadow: 
+      0 4px 20px rgba(200, 120, 0, 0.4),
+      0 0 40px rgba(200, 120, 0, 0.2);
   }
   
   .modal-cta:active {
     transform: scale(0.96);
+    box-shadow: 
+      0 2px 10px rgba(200, 120, 0, 0.6),
+      0 0 20px rgba(200, 120, 0, 0.4);
   }
   
-  /* Card Item Styles */
-  .card-item {
-    background: rgba(20, 12, 5, 0.8);
-    border: 1px solid rgba(200, 120, 0, 0.3);
-    border-radius: 10px;
-    padding: 12px 8px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
+  /* Scrollbar */
+  .content-scroll::-webkit-scrollbar,
+  .modal-content::-webkit-scrollbar {
+    width: 4px;
   }
   
-  .card-item:active {
-    transform: scale(0.95);
-    border-color: #ffe566;
+  .content-scroll::-webkit-scrollbar-track,
+  .modal-content::-webkit-scrollbar-track {
+    background: transparent;
   }
   
-  .card-thumb {
-    font-size: 32px;
-    margin-bottom: 6px;
-  }
-  
-  .card-number {
-    font-family: 'Georgia', serif;
-    font-size: 9px;
-    color: #c87800;
-    margin-bottom: 4px;
-  }
-  
-  .card-name {
-    font-family: 'Georgia', serif;
-    font-size: 9px;
-    color: #ffe566;
-    font-weight: bold;
+  .content-scroll::-webkit-scrollbar-thumb,
+  .modal-content::-webkit-scrollbar-thumb {
+    background: rgba(200, 120, 0, 0.3);
+    border-radius: 2px;
   }
