@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import './ProfileScreen.css';
+import { getTelegramUser } from '../lib/telegramAuth';
+import { getOrCreateUser, updateUser, User } from '../lib/userService';
 
 interface Props {
   onNavigate?: (screen: string) => void;
@@ -74,8 +76,41 @@ export default function ProfileScreen({ onNavigate }: Props) {
   const [showBirthInfo, setShowBirthInfo] = useState(false);
   const [editSection, setEditSection] = useState<'personal' | 'astrology' | 'preferences'>('personal');
   const [mounted, setMounted] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const [userData, setUserData] = useState({
+  // Telegram-იდან მომხმარებლის ჩატვირთვა
+  useEffect(() => {
+    async function loadUser() {
+      try {
+        const tgUser = getTelegramUser();
+        
+        if (!tgUser) {
+          console.warn('⚠️ No Telegram user - using mock data');
+          setLoading(false);
+          return;
+        }
+
+        console.log('🔄 Loading user from Supabase...');
+        const user = await getOrCreateUser(tgUser);
+        
+        if (user) {
+          setCurrentUser(user);
+          console.log('✅ User loaded:', user);
+        }
+      } catch (error) {
+        console.error('❌ Error loading user:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadUser();
+    setMounted(true);
+  }, []);
+
+  // Mock data მხოლოდ მაშინ თუ Telegram არ არის
+  const mockUserData = {
     telegramUsername: '@ArcanaSeeker',
     displayName: 'ArcanaSeeker',
     bio: 'Seeking truth through the cards ✦',
@@ -106,7 +141,41 @@ export default function ProfileScreen({ onNavigate }: Props) {
     currentPlan: 'MYSTIC',
     gems: 2450,
     streak: 12,
-  });
+  };
+
+  // გამოიყენე currentUser თუ არსებობს, წინააღმდეგ შემთხვევაში mock
+  const userData = currentUser ? {
+    telegramUsername: '@' + (currentUser.username || 'user'),
+    displayName: currentUser.display_name || 'User',
+    bio: currentUser.bio || '',
+    sunSign: currentUser.sun_sign || '',
+    moonSign: currentUser.moon_sign || '',
+    risingSign: currentUser.rising_sign || '',
+    partnerSign: currentUser.partner_sign || '',
+    dailyReminder: true,
+    reminderTime: '09:00',
+    horoscopeNotifs: true,
+    moonPhaseAlerts: true,
+    soundEffects: true,
+    hapticFeedback: true,
+    theme: 'dark',
+    language: 'en',
+    birthDate: currentUser.birth_date || '',
+    birthTime: currentUser.birth_time || '',
+    birthPlace: currentUser.birth_place || '',
+    zodiac: currentUser.sun_sign || 'Scorpio',
+    zodiacSymbol: '♏',
+    element: 'Water',
+    level: currentUser.level,
+    levelTitle: currentUser.level >= 20 ? 'MYSTIC' : 'SEEKER',
+    xp: currentUser.xp,
+    xpToNext: 3000,
+    memberSince: new Date(currentUser.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+    avatar: currentUser.display_name?.charAt(0).toUpperCase() || 'U',
+    currentPlan: currentUser.current_plan,
+    gems: currentUser.gems,
+    streak: currentUser.streak,
+  } : mockUserData;
 
   const collectionData = {
     total: 78,
@@ -135,16 +204,16 @@ export default function ProfileScreen({ onNavigate }: Props) {
   ];
 
   const mySigns: { label: string; icon: string; sign: SignInfo }[] = [
-    { label: 'Sun Sign', icon: '☀️', sign: { name: 'Scorpio', symbol: '♏', element: 'Water', planet: 'Mars' } },
-    { label: 'Moon Sign', icon: '🌙', sign: { name: 'Pisces', symbol: '♓', element: 'Water', planet: 'Neptune' } },
-    { label: 'Rising Sign', icon: '⬆️', sign: { name: 'Libra', symbol: '♎', element: 'Air', planet: 'Venus' } },
+    { label: 'Sun Sign', icon: '☀️', sign: { name: userData.sunSign || 'Scorpio', symbol: '♏', element: 'Water', planet: 'Mars' } },
+    { label: 'Moon Sign', icon: '🌙', sign: { name: userData.moonSign || 'Pisces', symbol: '♓', element: 'Water', planet: 'Neptune' } },
+    { label: 'Rising Sign', icon: '⬆️', sign: { name: userData.risingSign || 'Libra', symbol: '♎', element: 'Air', planet: 'Venus' } },
   ];
 
   const stats: Stat[] = [
     { label: 'Readings', value: 156, icon: '🔮' },
     { label: 'Cards', value: '78/78', icon: '🃏' },
-    { label: 'Streak', value: 12, icon: '🔥' },
-    { label: 'Gems', value: 2450, icon: '💎' },
+    { label: 'Streak', value: userData.streak, icon: '🔥' },
+    { label: 'Gems', value: userData.gems, icon: '💎' },
   ];
 
   const achievements: Achievement[] = [
@@ -158,11 +227,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
     { id: '8', icon: '💰', title: 'High Roller', description: 'Spin the wheel 100 times', unlocked: false, progress: 23, total: 100 },
   ];
 
-  useEffect(() => {
-    console.log('👤 ProfileScreen mounted');
-    setMounted(true);
-  }, []);
-
   const handleSettingClick = (setting: string) => {
     console.log(`Setting clicked: ${setting}`);
     if (setting === 'subscription' && onNavigate) {
@@ -170,18 +234,53 @@ export default function ProfileScreen({ onNavigate }: Props) {
     }
   };
 
-  const handleSaveEdit = (section: string, data: any) => {
-    setUserData(prev => ({ ...prev, ...data }));
-    console.log(`Saved ${section}:`, data);
+  const handleSaveEdit = async (section: string, data: any) => {
+    if (!currentUser) {
+      console.warn('⚠️ No current user - cannot save to Supabase');
+      return;
+    }
+
+    const updates: any = {};
+    
+    if (section === 'personal') {
+      if (data.displayName) updates.display_name = data.displayName;
+      if (data.bio !== undefined) updates.bio = data.bio;
+    } else if (section === 'astrology') {
+      if (data.sunSign) updates.sun_sign = data.sunSign;
+      if (data.moonSign) updates.moon_sign = data.moonSign;
+      if (data.risingSign) updates.rising_sign = data.risingSign;
+      if (data.partnerSign !== undefined) updates.partner_sign = data.partnerSign;
+      if (data.birthDate) updates.birth_date = data.birthDate;
+      if (data.birthTime) updates.birth_time = data.birthTime;
+      if (data.birthPlace) updates.birth_place = data.birthPlace;
+    }
+
+    const updatedUser = await updateUser(currentUser.id, updates);
+    if (updatedUser) {
+      setCurrentUser(updatedUser);
+      console.log(`✅ Saved ${section}:`, updates);
+    }
   };
 
-  const handleSaveBirthInfo = (date: string, time: string, place: string) => {
-    setUserData(prev => ({
-      ...prev,
-      birthDate: date,
-      birthTime: time,
-      birthPlace: place,
-    }));
+  const handleSaveBirthInfo = async (date: string, time: string, place: string) => {
+    if (!currentUser) {
+      console.warn('⚠️ No current user - cannot save birth info');
+      setShowBirthInfo(false);
+      return;
+    }
+
+    const updates = {
+      birth_date: date,
+      birth_time: time,
+      birth_place: place,
+    };
+
+    const updatedUser = await updateUser(currentUser.id, updates);
+    if (updatedUser) {
+      setCurrentUser(updatedUser);
+      console.log('✅ Birth info saved:', updates);
+    }
+    
     setShowBirthInfo(false);
   };
 
@@ -194,11 +293,22 @@ export default function ProfileScreen({ onNavigate }: Props) {
       MYSTIC: { icon: '🌙', color: '#ffe566', glow: 'rgba(255, 229, 102, 0.5)' },
       ORACLE: { icon: '🌕', color: '#a78bfa', glow: 'rgba(167, 139, 250, 0.5)' },
       CELESTIAL: { icon: '✨', color: '#60a5fa', glow: 'rgba(96, 165, 250, 0.5)' },
+      FREE: { icon: '🌑', color: '#888', glow: 'rgba(136, 136, 136, 0.5)' },
     };
-    return configs[plan] || configs.SEEKER;
+    return configs[plan] || configs.FREE;
   };
 
   const planConfig = getPlanConfig(userData.currentPlan);
+
+  if (loading) {
+    return (
+      <div className="screen-container profile">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#ffe566' }}>
+          Loading...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="screen-container profile">
