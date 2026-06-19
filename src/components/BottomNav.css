@@ -5,25 +5,26 @@
     left: 0;
     right: 0;
     z-index: 100;
-    padding: 0 12px 8px;
+    padding: 0 16px 12px;
   }
   
-  /* Main navigation bar - Frosted Glass */
+  /* Main navigation bar - Compact Frosted Glass with 3D */
   .bottom-nav {
     position: relative;
     display: flex;
     justify-content: space-around;
     align-items: center;
-    padding: 12px 8px 14px;
-    background: rgba(10, 6, 0, 0.65); /* გამჭვირვალე */
-    backdrop-filter: blur(20px) saturate(180%); /* Apple-ის frosted glass */
+    padding: 10px 6px 12px;
+    background: rgba(10, 6, 0, 0.7);
+    backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(255, 229, 102, 0.15); /* ნაზი ოქროს border */
-    border-radius: 24px; /* მომრგვალებული კუთხეები */
+    border: 1px solid rgba(255, 229, 102, 0.2);
+    border-radius: 20px;
     box-shadow: 
-      0 8px 32px rgba(0, 0, 0, 0.4), /* სიღრმე */
-      0 2px 8px rgba(0, 0, 0, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05); /* ედა highlight */
+      0 8px 32px rgba(0, 0, 0, 0.5),
+      0 2px 8px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.2);
   }
   
   /* Individual nav item */
@@ -32,100 +33,142 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
     background: none;
     border: none;
     cursor: pointer;
-    padding: 8px 16px;
+    padding: 6px 10px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     -webkit-tap-highlight-color: transparent;
   }
   
-  /* Icon wrapper */
+  /* Icon wrapper with 3D */
   .icon-wrapper {
     position: relative;
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
   }
   
   /* Icon */
   .nav-icon {
-    font-size: 22px;
+    font-size: 20px;
     opacity: 0.5;
     filter: grayscale(0.2);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateZ(0);
+  }
+  
+  /* Icon glow (hidden by default) */
+  .icon-glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      circle,
+      rgba(255, 229, 102, 0.4) 0%,
+      transparent 70%
+    );
+    opacity: 0;
+    filter: blur(6px);
+    transition: all 0.3s ease;
   }
   
   /* Label */
   .nav-label {
     font-family: 'Georgia', serif;
-    font-size: 9px;
-    color: rgba(200, 120, 0, 0.6);
-    letter-spacing: 1px;
+    font-size: 8px;
+    color: rgba(200, 120, 0, 0.5);
+    letter-spacing: 0.8px;
     font-weight: normal;
     transition: all 0.3s ease;
+    white-space: nowrap;
   }
   
   /* Active dot */
   .nav-dot {
     position: absolute;
     bottom: 0;
-    width: 4px;
-    height: 4px;
+    width: 3px;
+    height: 3px;
     border-radius: 50%;
     background: #ffe566;
-    box-shadow: 0 0 8px rgba(255, 229, 102, 0.8);
+    box-shadow: 0 0 6px rgba(255, 229, 102, 0.8);
     transition: all 0.3s ease;
+    animation: dotPulse 2s ease-in-out infinite;
+  }
+  
+  @keyframes dotPulse {
+    0%, 100% { 
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% { 
+      transform: scale(1.3);
+      opacity: 0.7;
+    }
   }
   
   /* Shimmer effect on active */
   .nav-shimmer {
     position: absolute;
-    top: -4px;
+    top: -3px;
     left: 50%;
     transform: translateX(-50%);
-    width: 40px;
-    height: 2px;
+    width: 36px;
+    height: 1.5px;
     background: linear-gradient(
       90deg,
       transparent 0%,
-      rgba(255, 229, 102, 0.6) 50%,
+      rgba(255, 229, 102, 0.8) 50%,
       transparent 100%
     );
     border-radius: 2px;
-    animation: shimmer 3s ease-in-out infinite;
+    animation: shimmer 2.5s ease-in-out infinite;
   }
   
   @keyframes shimmer {
-    0%, 100% { opacity: 0.3; }
-    50% { opacity: 0.8; }
+    0%, 100% { 
+      opacity: 0.3;
+      transform: translateX(-50%) scaleX(0.7);
+    }
+    50% { 
+      opacity: 1;
+      transform: translateX(-50%) scaleX(1);
+    }
   }
   
-  /* ===== ACTIVE STATE ===== */
+  /* ===== ACTIVE STATE - 3D FLOAT ===== */
   .nav-item.active .icon-wrapper {
-    transform: translateY(-2px);
+    transform: translateY(-4px) translateZ(10px);
   }
   
   .nav-item.active .nav-icon {
     opacity: 1;
     filter: 
       grayscale(0) 
-      drop-shadow(0 0 8px rgba(255, 229, 102, 0.6));
-    transform: scale(1.05);
+      drop-shadow(0 0 10px rgba(255, 229, 102, 0.7))
+      drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+    transform: translateZ(15px) scale(1.1);
+  }
+  
+  .nav-item.active .icon-glow {
+    opacity: 0.6;
   }
   
   .nav-item.active .nav-label {
     color: #ffe566;
     font-weight: bold;
+    text-shadow: 0 0 6px rgba(255, 229, 102, 0.5);
+    transform: translateY(-2px);
   }
   
   /* ===== HOVER EFFECTS ===== */
   .nav-item:not(.active):hover .icon-wrapper {
-    transform: translateY(-1px);
+    transform: translateY(-2px);
   }
   
   .nav-item:not(.active):hover .nav-icon {
@@ -139,9 +182,36 @@
   
   /* ===== PRESS EFFECT ===== */
   .nav-item:active {
-    transform: scale(0.95);
+    transform: scale(0.92);
   }
   
   .nav-item:active .icon-wrapper {
-    transform: translateY(0);
+    transform: translateY(-1px) translateZ(5px);
+  }
+  
+  /* ===== ORNAMENTAL DETAILS ===== */
+  .bottom-nav::before,
+  .bottom-nav::after {
+    content: '✦';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 10px;
+    color: rgba(200, 120, 0, 0.25);
+    animation: ornamentGlow 3s ease-in-out infinite;
+    pointer-events: none;
+  }
+  
+  .bottom-nav::before {
+    left: 8px;
+  }
+  
+  .bottom-nav::after {
+    right: 8px;
+    animation-delay: 1.5s;
+  }
+  
+  @keyframes ornamentGlow {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 0.6; }
   }
