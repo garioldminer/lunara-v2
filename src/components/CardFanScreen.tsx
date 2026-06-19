@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { motion, useMotionValue, useSpring } from 'framer-motion';
 import { tarotCards, TarotCard } from '../data/tarotCards';
 import './CardFanScreen.css';
 
@@ -42,12 +43,16 @@ export default function CardFanScreen({ onBack }: Props) {
   const [selectedCard, setSelectedCard] = useState<TarotCard | null>(null);
   const [isRevealed, setIsRevealed] = useState(false);
   const [isSpinning, setIsSpinning] = useState(false);
-  const [rotationOffset, setRotationOffset] = useState(0);
   
   const [fanCards] = useState<TarotCard[]>(() => {
     const shuffled = [...tarotCards].sort(() => Math.random() - 0.5);
     return shuffled.slice(0, 7);
   });
+
+  // Framer Motion - მთლიანი fan-ის ბრუნვა
+  const rotation = useMotionValue(0);
+  const springConfig = { damping: 30, stiffness: 100 };
+  const smoothRotation = useSpring(rotation, springConfig);
 
   useEffect(() => {
     console.log('🎴 CardFanScreen mounted!');
@@ -62,34 +67,22 @@ export default function CardFanScreen({ onBack }: Props) {
     setIsSpinning(true);
     setSelectedCard(null);
     setIsRevealed(false);
-    setRotationOffset(0);
 
+    // 5-8 სრული ბრუნვა + რენდომული
     const randomRotations = 5 + Math.random() * 3;
     const randomStop = Math.random() * 360;
     const totalRotation = (randomRotations * 360) + randomStop;
     
-    const duration = 4000;
-    const startTime = Date.now();
+    // Framer Motion-ით ანიმაცია
+    rotation.set(totalRotation);
     
-    const animate = () => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      const currentRotation = totalRotation * eased;
-      setRotationOffset(currentRotation);
-      
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      } else {
-        console.log('✨ Spin finished!');
-        setIsSpinning(false);
-        const randomIndex = Math.floor(Math.random() * fanCards.length);
-        setSelectedCard(fanCards[randomIndex]);
-        console.log('🎴 Selected card:', fanCards[randomIndex].name);
-      }
-    };
-    
-    requestAnimationFrame(animate);
+    setTimeout(() => {
+      console.log('✨ Spin finished!');
+      setIsSpinning(false);
+      const randomIndex = Math.floor(Math.random() * fanCards.length);
+      setSelectedCard(fanCards[randomIndex]);
+      console.log('🎴 Selected card:', fanCards[randomIndex].name);
+    }, 4000);
   };
 
   const handleCardTap = () => {
@@ -102,6 +95,7 @@ export default function CardFanScreen({ onBack }: Props) {
     console.log('🔄 Resetting...');
     setSelectedCard(null);
     setIsRevealed(false);
+    rotation.set(0);
     setTimeout(() => {
       startSpin();
     }, 500);
@@ -152,12 +146,22 @@ export default function CardFanScreen({ onBack }: Props) {
         <div className="ornament">✦</div>
       </div>
 
-      {/* Cards Fan - Overlapping */}
-      <div className="cards-fan-container">
-        <div 
-          className="cards-fan-wrapper"
-          style={{ 
-            transform: `rotate(${rotationOffset}deg)`,
+      {/* Cards Fan - SPINNER STYLE (მხოლოდ ზედა ნახევარი ჩანს) */}
+      <div className="spinner-container">
+        <motion.div
+          className="spinner-wrapper"
+          drag="x"
+          dragConstraints={{ left: -200, right: 200 }}
+          style={{
+            rotate: smoothRotation,
+            cursor: isSpinning ? 'not-allowed' : 'grab'
+          }}
+          onDragEnd={() => {
+            if (!isSpinning) {
+              const currentRotation = rotation.get();
+              const nearestCard = Math.round(currentRotation / 15) * 15;
+              rotation.set(nearestCard);
+            }
           }}
         >
           {fanCards.map((card, index) => {
@@ -165,31 +169,36 @@ export default function CardFanScreen({ onBack }: Props) {
             const centerIndex = Math.floor(totalCards / 2);
             const offsetFromCenter = index - centerIndex;
             
-            // Overlapping fan layout
-            const angle = offsetFromCenter * 12; // -36, -24, -12, 0, 12, 24, 36 degrees
-            const xOffset = offsetFromCenter * 50; // გადაადგილება გვერდზე
-            const yOffset = Math.abs(offsetFromCenter) * 10; // ქვემოთ გადაადგილება გვერდებზე
+            // ნახევარწრიული განლაგება: -36° to +36°
+            const angle = offsetFromCenter * 12;
+            const radius = 180;
+            const angleRad = (angle * Math.PI) / 180;
             
+            // პოზიცია რკალზე
+            const x = Math.sin(angleRad) * radius;
+            const y = -Math.cos(angleRad) * radius + 80;
+            
+            const isCenter = index === centerIndex;
             const isSelected = selectedCard?.id === card.id;
 
             return (
               <div
                 key={card.id}
-                className={`card-in-fan ${isSelected ? 'selected' : ''}`}
+                className={`card-on-spinner ${isSelected ? 'selected' : ''} ${isCenter ? 'center-card' : ''}`}
                 onClick={() => !isSpinning && handleCardTap()}
                 style={{
-                  '--x-offset': `${xOffset}px`,
-                  '--y-offset': `${yOffset}px`,
-                  '--rotation': `${angle}deg`,
-                  transform: `translate(${xOffset}px, ${yOffset}px) rotate(${angle}deg)`,
-                  zIndex: isSelected ? 100 : index + 1, // თითოეული შემდეგი ზემოთაა
+                  '--card-x': `${x}px`,
+                  '--card-y': `${y}px`,
+                  '--card-rotation': `${angle}deg`,
+                  transform: `translate(${x}px, ${y}px) rotate(${angle}deg)`,
+                  zIndex: isSelected ? 100 : isCenter ? 10 : 5 - Math.abs(offsetFromCenter),
                 } as React.CSSProperties}
               >
                 <CardBack />
               </div>
             );
           })}
-        </div>
+        </motion.div>
       </div>
 
       {/* Drag hint */}
@@ -203,7 +212,7 @@ export default function CardFanScreen({ onBack }: Props) {
         </div>
       )}
 
-      {/* Selected Card */}
+      {/* Selected Card (rises to top) */}
       {selectedCard && !isSpinning && (
         <div 
           className={`selected-card ${isRevealed ? 'revealed' : ''}`}

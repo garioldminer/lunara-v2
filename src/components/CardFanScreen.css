@@ -101,27 +101,26 @@
     opacity: 0.8;
   }
   
-  /* Cards Fan Container */
-  .cards-fan-container {
+  /* SPINNER CONTAINER - მხოლოდ ზედა ნახევარი ჩანს */
+  .spinner-container {
     position: relative;
     flex: 1;
     display: flex;
     justify-content: center;
     align-items: flex-end;
-    padding-bottom: 80px;
-    overflow: visible;
+    padding-bottom: 100px;
+    overflow: hidden; /* ქვედა ნახევარი იმალება! */
+    height: 300px;
   }
   
-  .cards-fan-wrapper {
+  .spinner-wrapper {
     position: relative;
-    width: 400px;
-    height: 250px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    width: 500px;
+    height: 400px;
+    transform-origin: 250px 280px; /* ცენტრი ქვემოთ */
   }
   
-  .card-in-fan {
+  .card-on-spinner {
     position: absolute;
     width: 80px;
     height: 130px;
@@ -134,7 +133,11 @@
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
   }
   
-  .card-in-fan.selected {
+  .card-on-spinner.center-card {
+    filter: drop-shadow(0 4px 12px rgba(200, 120, 0, 0.3));
+  }
+  
+  .card-on-spinner.selected {
     animation: cardRise 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
     filter: drop-shadow(0 0 30px rgba(255, 229, 102, 0.8));
   }
