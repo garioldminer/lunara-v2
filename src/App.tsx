@@ -56,7 +56,6 @@ function App() {
   const handleNavigate = (screen: string) => {
     console.log('🧭 handleNavigate called with:', screen);
     
-    // 'draw' → 'card-fan' mapping
     if (screen === 'draw' || screen === 'card-fan') {
       console.log('✅ Going to card-fan screen');
       goTo('card-fan');
@@ -67,7 +66,7 @@ function App() {
       console.log('✅ Tab change to:', screen);
       handleTabChange(screen);
     } else {
-      console.log(' Unknown screen:', screen);
+      console.log('⚠️ Unknown screen:', screen);
     }
   };
 
@@ -121,7 +120,7 @@ function App() {
         <PricingScreen onBack={() => goTo('home')} />
       )}
       {currentScreen === 'card-fan' && (
-        <CardFanScreen onBack={() => goTo('home')} />
+        <CardFanScreen onNavigate={handleNavigate} />
       )}
     </div>
   );
