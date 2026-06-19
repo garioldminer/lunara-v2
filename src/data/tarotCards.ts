@@ -4,7 +4,7 @@ export interface TarotCard {
     number: string;
     arcana: 'major' | 'minor';
     suit?: 'wands' | 'cups' | 'swords' | 'pentacles';
-    symbol: string;
+    astrologicalSymbol: string; // ახალი ველი
     zodiac: string;
     element: string;
     keywords: {
@@ -24,7 +24,7 @@ export interface TarotCard {
       name: 'The Fool',
       number: '0',
       arcana: 'major',
-      symbol: '🃏',
+      astrologicalSymbol: '', // Uranus
       zodiac: 'Uranus',
       element: 'Air',
       keywords: {
@@ -41,7 +41,7 @@ export interface TarotCard {
       name: 'The Magician',
       number: 'I',
       arcana: 'major',
-      symbol: '🎩',
+      astrologicalSymbol: '☿', // Mercury
       zodiac: 'Mercury',
       element: 'Air',
       keywords: {
@@ -58,7 +58,7 @@ export interface TarotCard {
       name: 'The High Priestess',
       number: 'II',
       arcana: 'major',
-      symbol: '🌙',
+      astrologicalSymbol: '☽', // Moon
       zodiac: 'Moon',
       element: 'Water',
       keywords: {
@@ -75,7 +75,7 @@ export interface TarotCard {
       name: 'The Empress',
       number: 'III',
       arcana: 'major',
-      symbol: '👑',
+      astrologicalSymbol: '♀', // Venus
       zodiac: 'Venus',
       element: 'Earth',
       keywords: {
@@ -92,7 +92,7 @@ export interface TarotCard {
       name: 'The Emperor',
       number: 'IV',
       arcana: 'major',
-      symbol: '🏛️',
+      astrologicalSymbol: '♈', // Aries
       zodiac: 'Aries',
       element: 'Fire',
       keywords: {
@@ -109,7 +109,7 @@ export interface TarotCard {
       name: 'The Hierophant',
       number: 'V',
       arcana: 'major',
-      symbol: '⛪',
+      astrologicalSymbol: '♉', // Taurus
       zodiac: 'Taurus',
       element: 'Earth',
       keywords: {
@@ -126,7 +126,7 @@ export interface TarotCard {
       name: 'The Lovers',
       number: 'VI',
       arcana: 'major',
-      symbol: '💕',
+      astrologicalSymbol: '♊', // Gemini
       zodiac: 'Gemini',
       element: 'Air',
       keywords: {
@@ -143,7 +143,7 @@ export interface TarotCard {
       name: 'The Chariot',
       number: 'VII',
       arcana: 'major',
-      symbol: '🏆',
+      astrologicalSymbol: '♋', // Cancer
       zodiac: 'Cancer',
       element: 'Water',
       keywords: {
@@ -160,7 +160,7 @@ export interface TarotCard {
       name: 'Strength',
       number: 'VIII',
       arcana: 'major',
-      symbol: '🦁',
+      astrologicalSymbol: '♌', // Leo
       zodiac: 'Leo',
       element: 'Fire',
       keywords: {
@@ -177,7 +177,7 @@ export interface TarotCard {
       name: 'The Hermit',
       number: 'IX',
       arcana: 'major',
-      symbol: '🏔️',
+      astrologicalSymbol: '♍', // Virgo
       zodiac: 'Virgo',
       element: 'Earth',
       keywords: {
@@ -194,7 +194,7 @@ export interface TarotCard {
       name: 'Wheel of Fortune',
       number: 'X',
       arcana: 'major',
-      symbol: '🎡',
+      astrologicalSymbol: '', // Jupiter
       zodiac: 'Jupiter',
       element: 'Fire',
       keywords: {
@@ -211,7 +211,7 @@ export interface TarotCard {
       name: 'Justice',
       number: 'XI',
       arcana: 'major',
-      symbol: '⚖️',
+      astrologicalSymbol: '♎', // Libra
       zodiac: 'Libra',
       element: 'Air',
       keywords: {
@@ -228,7 +228,7 @@ export interface TarotCard {
       name: 'The Hanged Man',
       number: 'XII',
       arcana: 'major',
-      symbol: '🙃',
+      astrologicalSymbol: '♆', // Neptune
       zodiac: 'Neptune',
       element: 'Water',
       keywords: {
@@ -245,7 +245,7 @@ export interface TarotCard {
       name: 'Death',
       number: 'XIII',
       arcana: 'major',
-      symbol: '💀',
+      astrologicalSymbol: '♏', // Scorpio
       zodiac: 'Scorpio',
       element: 'Water',
       keywords: {
@@ -262,7 +262,7 @@ export interface TarotCard {
       name: 'Temperance',
       number: 'XIV',
       arcana: 'major',
-      symbol: '⚗️',
+      astrologicalSymbol: '♐', // Sagittarius
       zodiac: 'Sagittarius',
       element: 'Fire',
       keywords: {
@@ -279,7 +279,7 @@ export interface TarotCard {
       name: 'The Devil',
       number: 'XV',
       arcana: 'major',
-      symbol: '😈',
+      astrologicalSymbol: '♑', // Capricorn
       zodiac: 'Capricorn',
       element: 'Earth',
       keywords: {
@@ -296,7 +296,7 @@ export interface TarotCard {
       name: 'The Tower',
       number: 'XVI',
       arcana: 'major',
-      symbol: '🗼',
+      astrologicalSymbol: '♂', // Mars
       zodiac: 'Mars',
       element: 'Fire',
       keywords: {
@@ -313,7 +313,7 @@ export interface TarotCard {
       name: 'The Star',
       number: 'XVII',
       arcana: 'major',
-      symbol: '⭐',
+      astrologicalSymbol: '♒', // Aquarius
       zodiac: 'Aquarius',
       element: 'Air',
       keywords: {
@@ -330,7 +330,7 @@ export interface TarotCard {
       name: 'The Moon',
       number: 'XVIII',
       arcana: 'major',
-      symbol: '🌕',
+      astrologicalSymbol: '☽', // Moon
       zodiac: 'Pisces',
       element: 'Water',
       keywords: {
@@ -347,7 +347,7 @@ export interface TarotCard {
       name: 'The Sun',
       number: 'XIX',
       arcana: 'major',
-      symbol: '☀️',
+      astrologicalSymbol: '☉', // Sun
       zodiac: 'Sun',
       element: 'Fire',
       keywords: {
@@ -364,7 +364,7 @@ export interface TarotCard {
       name: 'Judgement',
       number: 'XX',
       arcana: 'major',
-      symbol: '📯',
+      astrologicalSymbol: '♇', // Pluto
       zodiac: 'Pluto',
       element: 'Fire',
       keywords: {
@@ -381,7 +381,7 @@ export interface TarotCard {
       name: 'The World',
       number: 'XXI',
       arcana: 'major',
-      symbol: '🌍',
+      astrologicalSymbol: '♄', // Saturn
       zodiac: 'Saturn',
       element: 'Earth',
       keywords: {
@@ -394,14 +394,14 @@ export interface TarotCard {
       }
     },
     
-    // MINOR ARCANA - WANDS (14 cards)
+    // MINOR ARCANA - WANDS (Fire - 🜂)
     {
       id: 22,
       name: 'Ace of Wands',
       number: 'Ace',
       arcana: 'minor',
       suit: 'wands',
-      symbol: '🔥',
+      astrologicalSymbol: '',
       zodiac: 'Aries',
       element: 'Fire',
       keywords: {
@@ -419,7 +419,7 @@ export interface TarotCard {
       number: 'II',
       arcana: 'minor',
       suit: 'wands',
-      symbol: '🌍',
+      astrologicalSymbol: '🜂',
       zodiac: 'Mars',
       element: 'Fire',
       keywords: {
@@ -431,22 +431,18 @@ export interface TarotCard {
         reversed: 'Fear of unknown, lack of planning, playing it safe, playing small.'
       }
     },
-    // ... დანარჩენი 54 minor arcana ბარათი
-    // (შეგიძლია დავამატოთ მოგვიანებით)
   ];
   
-  // Helper function to get card by ID
+  // Helper functions
   export const getCardById = (id: number): TarotCard | undefined => {
     return tarotCards.find(card => card.id === id);
   };
   
-  // Helper function to get random card
   export const getRandomCard = (): TarotCard => {
     const randomIndex = Math.floor(Math.random() * tarotCards.length);
     return tarotCards[randomIndex];
   };
   
-  // Helper function to get daily card (based on date)
   export const getDailyCard = (): TarotCard => {
     const today = new Date();
     const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000);

@@ -11,7 +11,7 @@ export default function CardsScreen({ onNavigate }: Props) {
   const [filter, setFilter] = useState<'all' | 'major' | 'minor'>('all');
 
   useEffect(() => {
-    console.log('🃏 CardsScreen mounted');
+    console.log(' CardsScreen mounted');
     console.log('onNavigate available:', !!onNavigate);
   }, [onNavigate]);
 
@@ -94,9 +94,8 @@ export default function CardsScreen({ onNavigate }: Props) {
               className="card-item"
               onClick={() => handleCardClick(card)}
             >
+              <div className="card-astro-symbol">{card.astrologicalSymbol}</div>
               <div className="card-number">{card.number}</div>
-              <div className="card-symbol">{card.symbol}</div>
-              <div className="card-name">{card.name}</div>
             </div>
           ))}
         </div>
@@ -109,7 +108,7 @@ export default function CardsScreen({ onNavigate }: Props) {
             <button className="modal-close" onClick={handleCloseModal}>✕</button>
             
             <div className="modal-header">
-              <div className="modal-symbol">{selectedCard.symbol}</div>
+              <div className="modal-astro-symbol">{selectedCard.astrologicalSymbol}</div>
               <h2 className="modal-title">{selectedCard.name}</h2>
               <p className="modal-number">{selectedCard.number}</p>
               <p className="modal-meta">
