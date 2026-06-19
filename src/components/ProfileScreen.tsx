@@ -128,7 +128,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
 
   useEffect(() => {
     console.log('👤 ProfileScreen mounted');
-    // Trigger animations after mount
     setMounted(true);
   }, []);
 
@@ -191,7 +190,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
       <div className="profile-content">
         {activeTab === 'profile' && (
           <div className="profile-tab">
-            {/* HERO CARD */}
+            {/* HERO CARD - ახლა tabs აქ არის */}
             <div className="hero-card animate-fade-in stagger-1">
               <div className="hero-shimmer"></div>
               
@@ -235,6 +234,28 @@ export default function ProfileScreen({ onNavigate }: Props) {
                     <div className="progress-shimmer"></div>
                   </div>
                 </div>
+              </div>
+
+              {/* ✨ ახალი PILL TABS - Hero Card-ში */}
+              <div className="pill-tabs">
+                <button 
+                  className={`pill-tab ${activeTab === 'profile' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('profile')}
+                >
+                  👤 Profile
+                </button>
+                <button 
+                  className={`pill-tab ${activeTab === 'achievements' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('achievements')}
+                >
+                  🏆 Awards
+                </button>
+                <button 
+                  className={`pill-tab ${activeTab === 'settings' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('settings')}
+                >
+                  ⚙️ Settings
+                </button>
               </div>
 
               <div className="hero-stats-row">
@@ -385,6 +406,28 @@ export default function ProfileScreen({ onNavigate }: Props) {
 
         {activeTab === 'achievements' && (
           <div className="achievements-tab">
+            {/* ✨ Pill tabs აქაც - თანმიმდევრულობისთვის */}
+            <div className="pill-tabs" style={{ marginBottom: '16px' }}>
+              <button 
+                className={`pill-tab ${activeTab === 'profile' ? 'active' : ''}`}
+                onClick={() => setActiveTab('profile')}
+              >
+                👤 Profile
+              </button>
+              <button 
+                className={`pill-tab ${activeTab === 'achievements' ? 'active' : ''}`}
+                onClick={() => setActiveTab('achievements')}
+              >
+                🏆 Awards
+              </button>
+              <button 
+                className={`pill-tab ${activeTab === 'settings' ? 'active' : ''}`}
+                onClick={() => setActiveTab('settings')}
+              >
+                ⚙️ Settings
+              </button>
+            </div>
+
             <h3 className="section-title">✦ ACHIEVEMENTS ✦</h3>
             <div className="achievements-list">
               {achievements.map((achievement, index) => (
@@ -420,6 +463,28 @@ export default function ProfileScreen({ onNavigate }: Props) {
 
         {activeTab === 'settings' && (
           <div className="settings-tab">
+            {/* ✨ Pill tabs აქაც */}
+            <div className="pill-tabs" style={{ marginBottom: '16px' }}>
+              <button 
+                className={`pill-tab ${activeTab === 'profile' ? 'active' : ''}`}
+                onClick={() => setActiveTab('profile')}
+              >
+                👤 Profile
+              </button>
+              <button 
+                className={`pill-tab ${activeTab === 'achievements' ? 'active' : ''}`}
+                onClick={() => setActiveTab('achievements')}
+              >
+                🏆 Awards
+              </button>
+              <button 
+                className={`pill-tab ${activeTab === 'settings' ? 'active' : ''}`}
+                onClick={() => setActiveTab('settings')}
+              >
+                ⚙️ Settings
+              </button>
+            </div>
+
             <h3 className="section-title">✦ SETTINGS ✦</h3>
             <div className="settings-list">
               <div className="setting-item animate-fade-in stagger-1" onClick={() => handleSettingClick('notifications')}>
@@ -468,6 +533,8 @@ export default function ProfileScreen({ onNavigate }: Props) {
         )}
       </div>
 
+      {/* ✨ ქვედა tabs წაშლილია - ახლა Hero Card-შია */}
+
       {/* EDIT PROFILE MODAL */}
       {showEditProfile && (
         <EditProfileModal
@@ -493,19 +560,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
           onClose={() => setShowBirthInfo(false)}
         />
       )}
-
-      {/* TABS */}
-      <div className="profile-tabs">
-        <button className={`tab ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
-          Profile
-        </button>
-        <button className={`tab ${activeTab === 'achievements' ? 'active' : ''}`} onClick={() => setActiveTab('achievements')}>
-          Achievements
-        </button>
-        <button className={`tab ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>
-          Settings
-        </button>
-      </div>
     </div>
   );
 }

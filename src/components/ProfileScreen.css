@@ -45,7 +45,7 @@
     overflow-x: hidden;
     z-index: 2;
     padding: 15px 12px;
-    padding-bottom: calc(90px + env(safe-area-inset-bottom, 0));
+    padding-bottom: calc(70px + env(safe-area-inset-bottom, 0));
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
   }
@@ -328,6 +328,51 @@
   @keyframes progressShimmer {
     0% { left: -100%; }
     100% { left: 100%; }
+  }
+  
+  /* ===== PILL TABS - მრგვალი ღილაკები Hero Card-ში ===== */
+  .pill-tabs {
+    display: flex;
+    gap: 6px;
+    margin: 10px 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+  }
+  
+  .pill-tab {
+    flex: 1;
+    background: rgba(20, 12, 5, 0.6);
+    border: 1px solid rgba(200, 120, 0, 0.25);
+    border-radius: 20px;
+    padding: 8px 10px;
+    color: #c87800;
+    font-family: 'Georgia', serif;
+    font-size: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 0.5px;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  
+  .pill-tab.active {
+    background: linear-gradient(135deg, rgba(200, 120, 0, 0.35), rgba(255, 229, 102, 0.25));
+    border-color: #ffe566;
+    color: #ffe566;
+    box-shadow: 
+      0 0 12px rgba(255, 229, 102, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  
+  .pill-tab:active {
+    transform: scale(0.95);
   }
   
   .hero-stats-row {
@@ -783,65 +828,10 @@
     letter-spacing: 0.4px;
   }
   
-  /* ===== TABS ===== */
+  /* ===== OLD TABS - დამალულია ===== */
   .profile-tabs {
-    display: flex;
-    gap: 6px;
-    padding: 10px 12px;
-    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0));
-    z-index: 10;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(10, 6, 0, 0.95);
-    border-top: 1px solid rgba(200, 120, 0, 0.3);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    display: none;
   }
-  
-  .tab {
-    flex: 1;
-    background: rgba(20, 12, 5, 0.8);
-    border: 1px solid rgba(200, 120, 0, 0.25);
-    border-radius: 8px;
-    padding: 10px;
-    color: #c87800;
-    font-family: 'Georgia', serif;
-    font-size: 10px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    letter-spacing: 0.8px;
-    min-height: 44px;
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .tab.active {
-    background: linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2));
-    border-color: #ffe566;
-    color: #ffe566;
-    box-shadow: 0 0 12px rgba(200, 120, 0, 0.3);
-  }
-  
-  .tab::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    width: 0;
-    height: 2px;
-    background: #ffe566;
-    transform: translateX(-50%);
-    transition: width 0.3s ease;
-  }
-  
-  .tab.active::after {
-    width: 60%;
-  }
-  
-  .tab:active { transform: scale(0.95); }
   
   /* ===== SECTION TITLE ===== */
   .section-title {
@@ -1432,11 +1422,16 @@
   @media (max-width: 380px) {
     .profile-content {
       padding: 12px 10px;
-      padding-bottom: calc(85px + env(safe-area-inset-bottom, 0));
+      padding-bottom: calc(70px + env(safe-area-inset-bottom, 0));
     }
     
     .hero-card {
       padding: 10px;
+    }
+    
+    .pill-tab {
+      font-size: 9px;
+      padding: 7px 6px;
     }
     
     .stats-grid-section {
