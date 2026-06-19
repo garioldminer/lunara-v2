@@ -7,8 +7,14 @@ interface Props {
 
 export default function ReadingScreen({ onNavigate }: Props) {
   useEffect(() => {
-    console.log(' ReadingScreen mounted');
-  }, []);
+    console.log('🔮 ReadingScreen mounted');
+    console.log('onNavigate available:', !!onNavigate);
+  }, [onNavigate]);
+
+  const handleSpreadClick = (spreadName: string) => {
+    console.log(`Spread selected: ${spreadName}`);
+    // მომავალში: onNavigate && onNavigate('reading-detail');
+  };
 
   return (
     <div className="screen-container reading">
@@ -36,15 +42,21 @@ export default function ReadingScreen({ onNavigate }: Props) {
         </div>
 
         <div className="spreads-list">
-          <div className="spread-item">
-            <div className="spread-icon"></div>
+          <div 
+            className="spread-item"
+            onClick={() => handleSpreadClick('Single Card')}
+          >
+            <div className="spread-icon">🎴</div>
             <div className="spread-info">
               <h3 className="spread-title">Single Card</h3>
               <p className="spread-desc">Quick answer to your question</p>
             </div>
           </div>
 
-          <div className="spread-item">
+          <div 
+            className="spread-item"
+            onClick={() => handleSpreadClick('3-Card Spread')}
+          >
             <div className="spread-icon">🔮</div>
             <div className="spread-info">
               <h3 className="spread-title">3-Card Spread</h3>
@@ -52,7 +64,10 @@ export default function ReadingScreen({ onNavigate }: Props) {
             </div>
           </div>
 
-          <div className="spread-item premium">
+          <div 
+            className="spread-item premium"
+            onClick={() => handleSpreadClick('Celtic Cross')}
+          >
             <div className="spread-icon">✨</div>
             <div className="spread-info">
               <h3 className="spread-title">Celtic Cross</h3>
@@ -61,7 +76,10 @@ export default function ReadingScreen({ onNavigate }: Props) {
             <div className="premium-badge">👑</div>
           </div>
 
-          <div className="spread-item premium">
+          <div 
+            className="spread-item premium"
+            onClick={() => handleSpreadClick('Love Spread')}
+          >
             <div className="spread-icon">💕</div>
             <div className="spread-info">
               <h3 className="spread-title">Love Spread</h3>
@@ -70,8 +88,11 @@ export default function ReadingScreen({ onNavigate }: Props) {
             <div className="premium-badge">👑</div>
           </div>
 
-          <div className="spread-item premium">
-            <div className="spread-icon"></div>
+          <div 
+            className="spread-item premium"
+            onClick={() => handleSpreadClick('Career Spread')}
+          >
+            <div className="spread-icon">💼</div>
             <div className="spread-info">
               <h3 className="spread-title">Career Spread</h3>
               <p className="spread-desc">Professional path</p>

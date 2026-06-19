@@ -8,7 +8,13 @@ interface Props {
 export default function CardsScreen({ onNavigate }: Props) {
   useEffect(() => {
     console.log('🃏 CardsScreen mounted');
-  }, []);
+    console.log('onNavigate available:', !!onNavigate);
+  }, [onNavigate]);
+
+  const handleCardClick = (cardIndex: number) => {
+    console.log(`Card clicked: ${cardIndex}`);
+    // მომავალში: onNavigate && onNavigate('card-detail');
+  };
 
   return (
     <div className="screen-container cards">
@@ -33,7 +39,7 @@ export default function CardsScreen({ onNavigate }: Props) {
       {/* Content */}
       <div className="content-scroll">
         <div className="header-section">
-          <h1 className="page-title">✦ TAROT COLLECTION </h1>
+          <h1 className="page-title">✦ TAROT COLLECTION ✦</h1>
           <p className="page-subtitle">78 cards of ancient wisdom</p>
         </div>
 
@@ -53,7 +59,11 @@ export default function CardsScreen({ onNavigate }: Props) {
         {/* Cards Grid */}
         <div className="cards-grid">
           {[...Array(78)].map((_, i) => (
-            <div key={i} className="card-item">
+            <div 
+              key={i} 
+              className="card-item"
+              onClick={() => handleCardClick(i)}
+            >
               <div className="card-thumb">🃏</div>
               <div className="card-name">Card {i + 1}</div>
             </div>

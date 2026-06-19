@@ -12,12 +12,12 @@ const zodiacSigns = [
   { name: 'Cancer', symbol: '♋', dates: 'Jun 21 - Jul 22' },
   { name: 'Leo', symbol: '♌', dates: 'Jul 23 - Aug 22' },
   { name: 'Virgo', symbol: '♍', dates: 'Aug 23 - Sep 22' },
-  { name: 'Libra', symbol: '', dates: 'Sep 23 - Oct 22' },
+  { name: 'Libra', symbol: '♎', dates: 'Sep 23 - Oct 22' },
   { name: 'Scorpio', symbol: '♏', dates: 'Oct 23 - Nov 21' },
   { name: 'Sagittarius', symbol: '♐', dates: 'Nov 22 - Dec 21' },
   { name: 'Capricorn', symbol: '♑', dates: 'Dec 22 - Jan 19' },
   { name: 'Aquarius', symbol: '♒', dates: 'Jan 20 - Feb 18' },
-  { name: 'Pisces', symbol: '', dates: 'Feb 19 - Mar 20' },
+  { name: 'Pisces', symbol: '♓', dates: 'Feb 19 - Mar 20' },
 ];
 
 export default function AstroScreen({ onNavigate }: Props) {
@@ -25,7 +25,13 @@ export default function AstroScreen({ onNavigate }: Props) {
 
   useEffect(() => {
     console.log('🌟 AstroScreen mounted');
-  }, []);
+    console.log('onNavigate available:', !!onNavigate);
+  }, [onNavigate]);
+
+  const handleZodiacClick = (signName: string) => {
+    console.log(`Zodiac selected: ${signName}`);
+    // მომავალში: onNavigate && onNavigate('horoscope-detail');
+  };
 
   return (
     <div className="screen-container astro">
@@ -83,7 +89,11 @@ export default function AstroScreen({ onNavigate }: Props) {
         {/* Zodiac Grid */}
         <div className="zodiac-grid">
           {zodiacSigns.map((sign) => (
-            <div key={sign.name} className="zodiac-item">
+            <div 
+              key={sign.name} 
+              className="zodiac-item"
+              onClick={() => handleZodiacClick(sign.name)}
+            >
               <div className="zodiac-symbol">{sign.symbol}</div>
               <div className="zodiac-name">{sign.name}</div>
             </div>
