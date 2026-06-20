@@ -4,7 +4,7 @@ import {
   Gem, Zap, Trophy, Flame, Star, 
   Sparkles, LayoutGrid, Moon, Hash, 
   Wind, Droplets, Brain, Crown,
-  Scroll, Activity, ChevronRight
+  Scroll, Activity, ChevronRight, Gift
 } from 'lucide-react';
 import './HomeScreen.css';
 
@@ -111,63 +111,67 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* 2+3. COMBINED REWARDS ROW (Daily + Streak + Rank) */}
-      <div className="combined-rewards-row">
-        {/* Daily Reward - Compact */}
-        <div className="daily-reward-compact">
-          <div className="reward-text-small">
-            <h3>DAILY</h3>
-            <p>Reward</p>
+      {/* 2. CARD SECTION - 60/40 Split (Horizontal) */}
+      <div className="card-section-split">
+        {/* LEFT - Card of the Day (60%) - Horizontal Layout */}
+        <div className="card-left-horizontal">
+          {/* Card Image - Left Side */}
+          <div className="card-art-horizontal">
+            <span className="card-number-h">XIII</span>
+            <div className="card-symbol-h">💀</div>
+            <span className="card-name-h">DEATH</span>
           </div>
-          <button 
-            className={`claim-btn-small ${rewardClaimed ? 'claimed' : ''}`}
-            onClick={handleClaimReward}
-            disabled={rewardClaimed}
-          >
-            {rewardClaimed ? '✓' : <Gem size={14} />}
-          </button>
-        </div>
 
-        {/* Streak */}
-        <div className="stat-compact streak">
-          <Flame size={20} className="stat-icon-compact flame" />
-          <div className="stat-info-compact">
-            <span className="stat-value-compact">{user?.streak || 12}</span>
-            <span className="stat-label-compact">Streak</span>
+          {/* Card Info - Right Side */}
+          <div className="card-info-horizontal">
+            <h3>DEATH</h3>
+            <p className="card-meaning-h">Transformation</p>
+            <p className="card-zodiac-h">Scorpio · Water</p>
+            <button className="read-guidance-btn-h">
+              READ GUIDANCE
+              <ChevronRight size={12} />
+            </button>
           </div>
         </div>
 
-        {/* Rank */}
-        <div className="stat-compact rank">
-          <Trophy size={20} className="stat-icon-compact trophy" />
-          <div className="stat-info-compact">
-            <span className="stat-value-compact">TOP</span>
-            <span className="stat-label-compact">8%</span>
+        {/* RIGHT - Single Card with 4 Action Buttons (40%) */}
+        <div className="card-right-single">
+          <div className="action-grid">
+            {/* Daily Reward */}
+            <button 
+              className={`action-btn ${rewardClaimed ? 'claimed' : ''}`}
+              onClick={handleClaimReward}
+              disabled={rewardClaimed}
+            >
+              <Gift size={24} className="action-icon" />
+              {!rewardClaimed && <div className="action-badge">50</div>}
+            </button>
+
+            {/* Streak */}
+            <button className="action-btn streak-btn">
+              <Flame size={24} className="action-icon flame-icon" />
+              <div className="action-badge">{user?.streak || 12}</div>
+            </button>
+
+            {/* Rank */}
+            <button className="action-btn rank-btn">
+              <Trophy size={24} className="action-icon trophy-icon" />
+              <div className="action-badge">TOP</div>
+            </button>
+
+            {/* Upgrade */}
+            <button 
+              className="action-btn upgrade-btn"
+              onClick={() => onNavigate && onNavigate('pricing')}
+            >
+              <Crown size={24} className="action-icon crown-icon" />
+              <div className="action-badge">PRO</div>
+            </button>
           </div>
         </div>
       </div>
 
-      {/* 4. CARD OF THE DAY */}
-      <div className="card-of-day">
-        <div className="card-image">
-          <div className="card-art">
-            <span className="card-number">XIII</span>
-            <div className="card-symbol">💀</div>
-            <span className="card-name-bottom">DEATH</span>
-          </div>
-        </div>
-        <div className="card-info">
-          <h3>DEATH</h3>
-          <p className="card-meaning">Transformation</p>
-          <p className="card-zodiac">Scorpio · Water</p>
-          <button className="read-guidance-btn">
-            READ GUIDANCE
-            <ChevronRight size={14} />
-          </button>
-        </div>
-      </div>
-
-      {/* 5. DAILY QUESTS */}
+      {/* 3. DAILY QUESTS */}
       <div className="daily-quests">
         <div className="quests-header">
           <h3>DAILY QUESTS</h3>
@@ -192,7 +196,7 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* 6. QUICK ACCESS GRID */}
+      {/* 4. QUICK ACCESS GRID */}
       <div className="quick-access">
         <h3>QUICK ACCESS</h3>
         <div className="quick-grid">
@@ -211,18 +215,6 @@ export default function HomeScreen({ onNavigate }: Props) {
             </button>
           ))}
         </div>
-      </div>
-
-      {/* 7. UPGRADE BANNER */}
-      <div className="upgrade-banner">
-        <div className="upgrade-content">
-          <Crown size={36} className="upgrade-icon" />
-          <div className="upgrade-text">
-            <h3>UPGRADE TO MYSTIC</h3>
-            <p>Unlimited readings, full access & more</p>
-          </div>
-        </div>
-        <button className="upgrade-btn" onClick={() => onNavigate && onNavigate('pricing')}>UPGRADE</button>
       </div>
     </div>
   );
