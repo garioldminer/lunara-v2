@@ -75,7 +75,7 @@ function AppContent() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('splash');
   const [activeTab, setActiveTab] = useState('home');
   const [userReady, setUserReady] = useState(false);
-  const { user, loading } = useUser();
+  const { user } = useUser();  // ✅ მხოლოდ user, loading არ გვჭირდება
 
   useEffect(() => {
     const tg = (window as any).Telegram?.WebApp;
@@ -144,7 +144,6 @@ function AppContent() {
 
   return (
     <div className="app-container">
-      {/* 👤 USER LOADER - Splash Screen-ზევე ტვირთავს */}
       {!userReady && <UserLoader onReady={handleUserReady} />}
 
       {currentScreen === 'splash' && (
