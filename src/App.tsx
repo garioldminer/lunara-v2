@@ -11,7 +11,10 @@ import ProfileScreen from './components/ProfileScreen';
 import PricingScreen from './components/PricingScreen';
 import CardFanScreen from './components/CardFanScreen';
 import BottomNav from './components/BottomNav';
-import DebugPanel from './components/DebugPanel'; // 👈 DebugPanel import
+import DebugPanel from './components/DebugPanel';
+import { UserProvider, useUser } from './context/UserContext';
+import { getTelegramUser } from './lib/telegramAuth';
+import { getOrCreateUser } from './lib/userService';
 import './App.css';
 
 type Screen = 
@@ -27,10 +30,59 @@ type Screen =
   | 'pricing'
   | 'card-fan';
 
-function App() {
+// ===== USER LOADER COMPONENT =====
+// Splash Screen-ზევე ტვირთავს user-ს
+function UserLoader({ onReady }: { onReady: () => void }) {
+  const { setUser, setLoading } = useUser();
+
+  useEffect(() => {
+    async function loadUser() {
+      console.log('🔵 [UserLoader] Starting user load...');
+      
+      try {
+        // 1. Telegram user-ის მიღება
+        const tgUser = getTelegramUser();
+        console.log('🔵 [UserLoader] Telegram user:', tgUser);
+        
+        if (!tgUser) {
+          console.warn('⚠️ [UserLoader] No Telegram user found');
+          setLoading(false);
+          onReady();
+          return;
+        }
+
+        // 2. Supabase-ში ჩაწერა/მოძიება
+        console.log('🔵 [UserLoader] Loading from Supabase...');
+        const user = await getOrCreateUser(tgUser);
+        console.log('🔵 [UserLoader] User from Supabase:', user);
+        
+        if (user) {
+          // 3. Context-ში შენახვა
+          setUser(user);
+          console.log('✅ [UserLoader] User saved to context!');
+        }
+      } catch (error) {
+        console.error('❌ [UserLoader] Error:', error);
+      } finally {
+        setLoading(false);
+        onReady();
+      }
+    }
+
+    loadUser();
+  }, [setUser, setLoading, onReady]);
+
+  return null; // არაფერს არ აჩვენებს
+}
+
+// ===== MAIN APP CONTENT =====
+function AppContent() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('splash');
   const [activeTab, setActiveTab] = useState('home');
+  const [userReady, setUserReady] = useState(false);
+  const { user, loading } = useUser();
 
+  // Telegram WebApp ინიციალიზაცია
   useEffect(() => {
     const tg = (window as any).Telegram?.WebApp;
     if (tg) {
@@ -41,7 +93,6 @@ function App() {
       if (typeof tg.setBackgroundColor === 'function') {
         tg.setBackgroundColor('#0a0600');
       }
-      // ავტომატური გაფართოება
       if (typeof tg.expand === 'function') {
         tg.expand();
       }
@@ -78,15 +129,46 @@ function App() {
     }
   };
 
+  // User-ის ჩატვირთვა დასრულდა
+  const handleUserReady = () => {
+    console.log('✅ User loading complete!');
+    setUserReady(true);
+  };
+
+  // Splash Screen დასრულდა
+  const handleSplashFinish = () => {
+    console.log('🎬 Splash finished');
+    if (userReady) {
+      console.log('✅ User ready, going to welcome...');
+      goTo('welcome');
+    } else {
+      console.log('⏳ Waiting for user to load...');
+      // დაველოდოთ user-ს
+      const checkInterval = setInterval(() => {
+        if (userReady) {
+          clearInterval(checkInterval);
+          console.log('✅ User loaded, going to welcome...');
+          goTo('welcome');
+        }
+      }, 100);
+    }
+  };
+
   console.log('📱 Current screen:', currentScreen);
+  console.log('👤 User loaded:', user ? user.display_name : 'null');
+  console.log('⏳ Loading:', loading);
+  console.log('✅ User ready:', userReady);
 
   return (
     <div className="app-container">
-      {/* 🔍 DEBUG PANEL - აჩვენებს Telegram-ის მონაცემებს */}
+      {/* 🔍 DEBUG PANEL */}
       <DebugPanel />
 
+      {/* 👤 USER LOADER - Splash Screen-ზევე ტვირთავს */}
+      {!userReady && <UserLoader onReady={handleUserReady} />}
+
       {currentScreen === 'splash' && (
-        <SplashScreen onFinish={() => goTo('welcome')} />
+        <SplashScreen onFinish={handleSplashFinish} />
       )}
       {currentScreen === 'welcome' && (
         <OnboardingWelcome onFinish={() => goTo('zodiac')} />
@@ -134,6 +216,15 @@ function App() {
         <CardFanScreen onNavigate={handleNavigate} />
       )}
     </div>
+  );
+}
+
+// ===== MAIN APP WITH PROVIDER =====
+function App() {
+  return (
+    <UserProvider>
+      <AppContent />
+    </UserProvider>
   );
 }
 

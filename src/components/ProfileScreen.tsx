@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import './ProfileScreen.css';
-import { getTelegramUser, debugTelegramData } from '../lib/telegramAuth';
-import { getOrCreateUser, updateUser, User } from '../lib/userService';
+import { useUser } from '../context/UserContext';
+import { updateUser } from '../lib/userService';
 
 interface Props {
   onNavigate?: (screen: string) => void;
@@ -76,72 +76,25 @@ export default function ProfileScreen({ onNavigate }: Props) {
   const [showBirthInfo, setShowBirthInfo] = useState(false);
   const [editSection, setEditSection] = useState<'personal' | 'astrology' | 'preferences'>('personal');
   const [mounted, setMounted] = useState(false);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  
+  // ✅ User-ს ვიღებთ Context-დან (App.tsx-ში უკვე ჩატვირთულია)
+  const { user, setUser, loading } = useUser();
 
-  // Telegram-იდან მომხმარებლის ჩატვირთვა - DEBUG VERSION
   useEffect(() => {
-    async function loadUser() {
-      console.log('🔍 ===== ProfileScreen loadUser() START =====');
-      console.log('🔍 Current time:', new Date().toISOString());
-      
-      try {
-        // დამატებითი debug - ყველა Telegram მონაცემის ნახვა
-        const tg = (window as any).Telegram?.WebApp;
-        if (tg) {
-          console.log('🔍 Calling debugTelegramData()...');
-          try {
-            debugTelegramData();
-          } catch (debugErr) {
-            console.error('❌ Error in debugTelegramData:', debugErr);
-          }
-        } else {
-          console.warn('⚠️ Telegram WebApp not available for debug');
-        }
-        
-        console.log('🔍 Calling getTelegramUser()...');
-        const tgUser = getTelegramUser();
-        console.log('🔍 getTelegramUser() returned:', tgUser);
-        
-        if (!tgUser) {
-          console.warn('⚠️ No Telegram user - using mock data');
-          setLoading(false);
-          console.log('🔍 ===== ProfileScreen loadUser() END (no user) =====');
-          return;
-        }
-
-        console.log('🔄 Loading user from Supabase...');
-        const user = await getOrCreateUser(tgUser);
-        console.log('🔍 getOrCreateUser() returned:', user);
-        
-        if (user) {
-          setCurrentUser(user);
-          console.log('✅ User loaded successfully:', user);
-        } else {
-          console.warn('⚠️ Could not load user from Supabase - using mock data');
-        }
-      } catch (error) {
-        console.error('❌ Error loading user:', error);
-        console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack');
-      } finally {
-        setLoading(false);
-        console.log('🔍 ===== ProfileScreen loadUser() END =====');
-      }
-    }
-
-    loadUser();
+    console.log('👤 ProfileScreen mounted');
+    console.log('👤 User from context:', user);
     setMounted(true);
-  }, []);
+  }, [user]);
 
-  // Mock data მხოლოდ მაშინ თუ Telegram არ არის
-  const mockUserData = {
-    telegramUsername: '@ArcanaSeeker',
-    displayName: 'ArcanaSeeker',
-    bio: 'Seeking truth through the cards ✦',
-    sunSign: 'Scorpio',
-    moonSign: 'Pisces',
-    risingSign: 'Libra',
-    partnerSign: '',
+  // ✅ userData-ს ვქმნით context-ის user-ისგან
+  const userData = user ? {
+    telegramUsername: '@' + (user.username || 'user'),
+    displayName: user.display_name || 'User',
+    bio: user.bio || '',
+    sunSign: user.sun_sign || '',
+    moonSign: user.moon_sign || '',
+    risingSign: user.rising_sign || '',
+    partnerSign: user.partner_sign || '',
     dailyReminder: true,
     reminderTime: '09:00',
     horoscopeNotifs: true,
@@ -150,56 +103,22 @@ export default function ProfileScreen({ onNavigate }: Props) {
     hapticFeedback: true,
     theme: 'dark',
     language: 'en',
-    birthDate: '1990-10-14',
-    birthTime: '14:30',
-    birthPlace: 'Tbilisi, Georgia',
-    zodiac: 'Scorpio',
+    birthDate: user.birth_date || '',
+    birthTime: user.birth_time || '',
+    birthPlace: user.birth_place || '',
+    zodiac: user.sun_sign || '',
     zodiacSymbol: '♏',
     element: 'Water',
-    level: 24,
-    levelTitle: 'MYSTIC',
-    xp: 2450,
+    level: user.level,
+    levelTitle: user.level >= 20 ? 'MYSTIC' : 'SEEKER',
+    xp: user.xp,
     xpToNext: 3000,
-    memberSince: 'Oct 2024',
-    avatar: 'A',
-    currentPlan: 'MYSTIC',
-    gems: 2450,
-    streak: 12,
-  };
-
-  // გამოიყენე currentUser თუ არსებობს, წინააღმდეგ შემთხვევაში mock
-  const userData = currentUser ? {
-    telegramUsername: '@' + (currentUser.username || 'user'),
-    displayName: currentUser.display_name || 'User',
-    bio: currentUser.bio || '',
-    sunSign: currentUser.sun_sign || '',
-    moonSign: currentUser.moon_sign || '',
-    risingSign: currentUser.rising_sign || '',
-    partnerSign: currentUser.partner_sign || '',
-    dailyReminder: true,
-    reminderTime: '09:00',
-    horoscopeNotifs: true,
-    moonPhaseAlerts: true,
-    soundEffects: true,
-    hapticFeedback: true,
-    theme: 'dark',
-    language: 'en',
-    birthDate: currentUser.birth_date || '',
-    birthTime: currentUser.birth_time || '',
-    birthPlace: currentUser.birth_place || '',
-    zodiac: currentUser.sun_sign || 'Scorpio',
-    zodiacSymbol: '♏',
-    element: 'Water',
-    level: currentUser.level,
-    levelTitle: currentUser.level >= 20 ? 'MYSTIC' : 'SEEKER',
-    xp: currentUser.xp,
-    xpToNext: 3000,
-    memberSince: new Date(currentUser.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-    avatar: currentUser.display_name?.charAt(0).toUpperCase() || 'U',
-    currentPlan: currentUser.current_plan,
-    gems: currentUser.gems,
-    streak: currentUser.streak,
-  } : mockUserData;
+    memberSince: new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+    avatar: user.display_name?.charAt(0).toUpperCase() || 'U',
+    currentPlan: user.current_plan,
+    gems: user.gems,
+    streak: user.streak,
+  } : null;
 
   const collectionData = {
     total: 78,
@@ -228,16 +147,16 @@ export default function ProfileScreen({ onNavigate }: Props) {
   ];
 
   const mySigns: { label: string; icon: string; sign: SignInfo }[] = [
-    { label: 'Sun Sign', icon: '☀️', sign: { name: userData.sunSign || 'Scorpio', symbol: '♏', element: 'Water', planet: 'Mars' } },
-    { label: 'Moon Sign', icon: '🌙', sign: { name: userData.moonSign || 'Pisces', symbol: '♓', element: 'Water', planet: 'Neptune' } },
-    { label: 'Rising Sign', icon: '⬆️', sign: { name: userData.risingSign || 'Libra', symbol: '♎', element: 'Air', planet: 'Venus' } },
+    { label: 'Sun Sign', icon: '☀️', sign: { name: userData?.sunSign || '', symbol: '♏', element: 'Water', planet: 'Mars' } },
+    { label: 'Moon Sign', icon: '🌙', sign: { name: userData?.moonSign || '', symbol: '♓', element: 'Water', planet: 'Neptune' } },
+    { label: 'Rising Sign', icon: '⬆️', sign: { name: userData?.risingSign || '', symbol: '♎', element: 'Air', planet: 'Venus' } },
   ];
 
   const stats: Stat[] = [
     { label: 'Readings', value: 156, icon: '🔮' },
     { label: 'Cards', value: '78/78', icon: '🃏' },
-    { label: 'Streak', value: userData.streak, icon: '🔥' },
-    { label: 'Gems', value: userData.gems, icon: '💎' },
+    { label: 'Streak', value: userData?.streak || 0, icon: '🔥' },
+    { label: 'Gems', value: userData?.gems || 0, icon: '💎' },
   ];
 
   const achievements: Achievement[] = [
@@ -259,7 +178,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
   };
 
   const handleSaveEdit = async (section: string, data: any) => {
-    if (!currentUser) {
+    if (!user) {
       console.warn('⚠️ No current user - cannot save to Supabase');
       return;
     }
@@ -279,15 +198,15 @@ export default function ProfileScreen({ onNavigate }: Props) {
       if (data.birthPlace) updates.birth_place = data.birthPlace;
     }
 
-    const updatedUser = await updateUser(currentUser.id, updates);
+    const updatedUser = await updateUser(user.id, updates);
     if (updatedUser) {
-      setCurrentUser(updatedUser);
+      setUser(updatedUser);
       console.log(`✅ Saved ${section}:`, updates);
     }
   };
 
   const handleSaveBirthInfo = async (date: string, time: string, place: string) => {
-    if (!currentUser) {
+    if (!user) {
       console.warn('⚠️ No current user - cannot save birth info');
       setShowBirthInfo(false);
       return;
@@ -299,16 +218,16 @@ export default function ProfileScreen({ onNavigate }: Props) {
       birth_place: place,
     };
 
-    const updatedUser = await updateUser(currentUser.id, updates);
+    const updatedUser = await updateUser(user.id, updates);
     if (updatedUser) {
-      setCurrentUser(updatedUser);
+      setUser(updatedUser);
       console.log('✅ Birth info saved:', updates);
     }
     
     setShowBirthInfo(false);
   };
 
-  const xpProgress = (userData.xp / userData.xpToNext) * 100;
+  const xpProgress = userData ? (userData.xp / userData.xpToNext) * 100 : 0;
   const collectionProgress = (collectionData.collected / collectionData.total) * 100;
 
   const getPlanConfig = (plan: string) => {
@@ -322,13 +241,14 @@ export default function ProfileScreen({ onNavigate }: Props) {
     return configs[plan] || configs.FREE;
   };
 
-  const planConfig = getPlanConfig(userData.currentPlan);
+  const planConfig = userData ? getPlanConfig(userData.currentPlan) : getPlanConfig('FREE');
 
-  if (loading) {
+  // ✅ Loading state - თუ user ჯერ არ არის ჩატვირთული
+  if (loading || !userData) {
     return (
       <div className="screen-container profile">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#ffe566' }}>
-          Loading...
+          Loading profile...
         </div>
       </div>
     );
