@@ -5,8 +5,7 @@
 
    .home-screen {
     width: 100%;
-    padding: 16px;
-    padding-bottom: 100px;
+    padding: 70px 16px 100px 16px; /* ✅ ზედა 70px, ქვედა 100px (BottomNav-ისთვის) */
     max-width: 480px;
     margin: 0 auto;
     color: #fff;
