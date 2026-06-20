@@ -11,7 +11,6 @@ import ProfileScreen from './components/ProfileScreen';
 import PricingScreen from './components/PricingScreen';
 import CardFanScreen from './components/CardFanScreen';
 import BottomNav from './components/BottomNav';
-import DebugPanel from './components/DebugPanel';
 import { UserProvider, useUser } from './context/UserContext';
 import { getTelegramUser } from './lib/telegramAuth';
 import { getOrCreateUser } from './lib/userService';
@@ -31,7 +30,6 @@ type Screen =
   | 'card-fan';
 
 // ===== USER LOADER COMPONENT =====
-// Splash Screen-ზევე ტვირთავს user-ს
 function UserLoader({ onReady }: { onReady: () => void }) {
   const { setUser, setLoading } = useUser();
 
@@ -40,7 +38,6 @@ function UserLoader({ onReady }: { onReady: () => void }) {
       console.log('🔵 [UserLoader] Starting user load...');
       
       try {
-        // 1. Telegram user-ის მიღება
         const tgUser = getTelegramUser();
         console.log('🔵 [UserLoader] Telegram user:', tgUser);
         
@@ -51,13 +48,11 @@ function UserLoader({ onReady }: { onReady: () => void }) {
           return;
         }
 
-        // 2. Supabase-ში ჩაწერა/მოძიება
         console.log('🔵 [UserLoader] Loading from Supabase...');
         const user = await getOrCreateUser(tgUser);
         console.log('🔵 [UserLoader] User from Supabase:', user);
         
         if (user) {
-          // 3. Context-ში შენახვა
           setUser(user);
           console.log('✅ [UserLoader] User saved to context!');
         }
@@ -72,7 +67,7 @@ function UserLoader({ onReady }: { onReady: () => void }) {
     loadUser();
   }, [setUser, setLoading, onReady]);
 
-  return null; // არაფერს არ აჩვენებს
+  return null;
 }
 
 // ===== MAIN APP CONTENT =====
@@ -82,7 +77,6 @@ function AppContent() {
   const [userReady, setUserReady] = useState(false);
   const { user, loading } = useUser();
 
-  // Telegram WebApp ინიციალიზაცია
   useEffect(() => {
     const tg = (window as any).Telegram?.WebApp;
     if (tg) {
@@ -116,38 +110,29 @@ function AppContent() {
     console.log('🧭 handleNavigate called with:', screen);
     
     if (screen === 'draw' || screen === 'card-fan') {
-      console.log('✅ Going to card-fan screen');
       goTo('card-fan');
     } else if (screen === 'pricing') {
-      console.log('✅ Going to pricing screen');
       goTo('pricing');
-    } else if (screen === 'home' || screen === 'cards' || screen === 'reading' || screen === 'astro' || screen === 'profile') {
-      console.log('✅ Tab change to:', screen);
+    } else if (['home', 'cards', 'reading', 'astro', 'profile'].includes(screen)) {
       handleTabChange(screen);
     } else {
       console.log('⚠️ Unknown screen:', screen);
     }
   };
 
-  // User-ის ჩატვირთვა დასრულდა
   const handleUserReady = () => {
     console.log('✅ User loading complete!');
     setUserReady(true);
   };
 
-  // Splash Screen დასრულდა
   const handleSplashFinish = () => {
     console.log('🎬 Splash finished');
     if (userReady) {
-      console.log('✅ User ready, going to welcome...');
       goTo('welcome');
     } else {
-      console.log('⏳ Waiting for user to load...');
-      // დაველოდოთ user-ს
       const checkInterval = setInterval(() => {
         if (userReady) {
           clearInterval(checkInterval);
-          console.log('✅ User loaded, going to welcome...');
           goTo('welcome');
         }
       }, 100);
@@ -156,14 +141,9 @@ function AppContent() {
 
   console.log('📱 Current screen:', currentScreen);
   console.log('👤 User loaded:', user ? user.display_name : 'null');
-  console.log('⏳ Loading:', loading);
-  console.log('✅ User ready:', userReady);
 
   return (
     <div className="app-container">
-      {/* 🔍 DEBUG PANEL */}
-      <DebugPanel />
-
       {/* 👤 USER LOADER - Splash Screen-ზევე ტვირთავს */}
       {!userReady && <UserLoader onReady={handleUserReady} />}
 
