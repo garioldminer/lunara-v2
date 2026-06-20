@@ -24,22 +24,22 @@
     background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
     border: 1px solid #332a1a;
     border-radius: 16px;
-    padding: 10px 14px; /* ✅ 16px → 10px (სიმაღლე შემცირდა) */
-    margin-bottom: 8px; /* ✅ 16px → 8px */
+    padding: 10px 14px;
+    margin-bottom: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   }
   
   .user-main-row {
     display: flex;
     align-items: center;
-    gap: 10px; /* ✅ 12px → 10px */
-    margin-bottom: 8px; /* ✅ 12px → 8px */
+    gap: 10px;
+    margin-bottom: 8px;
   }
   
   .avatar-section {
     position: relative;
-    width: 48px; /* ✅ 56px → 48px */
-    height: 48px; /* ✅ 56px → 48px */
+    width: 48px;
+    height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -61,14 +61,14 @@
   }
   
   .avatar-image {
-    width: 48px; /* ✅ 56px → 48px */
-    height: 48px; /* ✅ 56px → 48px */
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
     background: linear-gradient(135deg, #C5A059, #8B6914);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px; /* ✅ 24px → 20px */
+    font-size: 20px;
     font-weight: 700;
     color: #0a0600;
     position: relative;
@@ -81,7 +81,7 @@
   }
   
   .username {
-    font-size: 16px; /* ✅ 18px → 16px */
+    font-size: 16px;
     font-weight: 700;
     margin: 0;
     color: #fff;
@@ -89,7 +89,7 @@
   }
   
   .user-level {
-    font-size: 12px; /* ✅ 13px → 12px */
+    font-size: 12px;
     color: #b3a68c;
     margin: 2px 0 0;
     font-weight: 500;
@@ -104,7 +104,7 @@
   .user-resources {
     display: flex;
     flex-direction: column;
-    gap: 4px; /* ✅ 6px → 4px */
+    gap: 4px;
     flex-shrink: 0;
   }
   
@@ -113,9 +113,9 @@
     align-items: center;
     gap: 6px;
     background: rgba(255, 255, 255, 0.08);
-    padding: 3px 8px; /* ✅ 4px 10px → 3px 8px */
+    padding: 3px 8px;
     border-radius: 20px;
-    font-size: 12px; /* ✅ 13px → 12px */
+    font-size: 12px;
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
   
@@ -126,7 +126,7 @@
   .resource .value {
     font-weight: 600;
     color: #fff;
-    min-width: 36px; /* ✅ 40px → 36px */
+    min-width: 36px;
   }
   
   .add-btn {
@@ -134,9 +134,9 @@
     color: #0a0600;
     border: none;
     border-radius: 50%;
-    width: 16px; /* ✅ 18px → 16px */
-    height: 16px; /* ✅ 18px → 16px */
-    font-size: 12px; /* ✅ 14px → 12px */
+    width: 16px;
+    height: 16px;
+    font-size: 12px;
     font-weight: 700;
     cursor: pointer;
     display: flex;
@@ -152,12 +152,12 @@
   .xp-section {
     display: flex;
     align-items: center;
-    gap: 8px; /* ✅ 10px → 8px */
+    gap: 8px;
   }
   
   .xp-bar {
     flex: 1;
-    height: 6px; /* ✅ 8px → 6px */
+    height: 6px;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 4px;
     overflow: hidden;
@@ -180,12 +180,12 @@
   }
   
   .xp-text {
-    font-size: 10px; /* ✅ 11px → 10px */
+    font-size: 10px;
     color: #b3a68c;
   }
   
   .xp-percent {
-    font-size: 10px; /* ✅ 11px → 10px */
+    font-size: 10px;
     color: #C5A059;
     font-weight: 600;
   }
@@ -200,7 +200,7 @@
   .card-section-split {
     display: flex;
     gap: 12px;
-    margin-bottom: 8px; /* ✅ 16px → 8px */
+    margin-bottom: 8px;
     align-items: stretch;
     width: 100%;
   }
@@ -260,15 +260,20 @@
     flex-direction: column;
     justify-content: center;
     gap: 3px;
+    min-width: 0; /* ✅ ახალი - ტექსტი არ გადავიდეს */
+    overflow: hidden; /* ✅ ახალი */
   }
   
   .card-info-horizontal h3 {
     margin: 0;
-    font-size: 14px;
+    font-size: 13px; /* ✅ 14px → 13px */
     color: #C5A059;
     letter-spacing: 0.5px;
     font-weight: 700;
     line-height: 1.1;
+    white-space: nowrap; /* ✅ ახალი */
+    overflow: hidden; /* ✅ ახალი */
+    text-overflow: ellipsis; /* ✅ ახალი */
   }
   
   .card-meaning-h {
@@ -277,6 +282,9 @@
     color: #b3a68c;
     font-style: italic;
     line-height: 1.1;
+    white-space: nowrap; /* ✅ ახალი */
+    overflow: hidden; /* ✅ ახალი */
+    text-overflow: ellipsis; /* ✅ ახალი */
   }
   
   .card-zodiac-h {
@@ -284,25 +292,31 @@
     font-size: 9px;
     color: #888;
     line-height: 1.1;
+    white-space: nowrap; /* ✅ ახალი */
+    overflow: hidden; /* ✅ ახალი */
+    text-overflow: ellipsis; /* ✅ ახალი */
   }
   
   .read-guidance-btn-h {
     background: transparent;
     border: 1px solid #C5A059;
     color: #C5A059;
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 9px;
+    padding: 3px 6px; /* ✅ 4px 8px → 3px 6px */
+    border-radius: 5px; /* ✅ 6px → 5px */
+    font-size: 8px; /* ✅ 9px → 8px */
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px; /* ✅ 0.5px → 0.3px */
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 4px;
-    width: fit-content;
-    align-self: flex-start;
+    gap: 3px; /* ✅ 4px → 3px */
+    width: 100%; /* ✅ fit-content → 100% */
+    max-width: 100%; /* ✅ ახალი */
+    align-self: stretch; /* ✅ flex-start → stretch */
+    box-sizing: border-box; /* ✅ ახალი */
+    white-space: nowrap; /* ✅ ახალი */
   }
   
   .read-guidance-btn-h:hover {
@@ -457,7 +471,7 @@
     border: 1px solid #2a2215;
     border-radius: 12px;
     padding: 10px;
-    margin-bottom: 8px; /* ✅ 16px → 8px */
+    margin-bottom: 8px;
     width: 100%;
   }
   
@@ -551,32 +565,28 @@
   }
   
   /* ============================================
-     4. QUICK ACCESS GRID
+     4. QUICK ACCESS GRID - NO TITLE
      ============================================ */
-  .quick-access { margin-bottom: 8px; width: 100%; } /* ✅ 16px → 8px */
+  .quick-access { margin-bottom: 8px; width: 100%; }
   .quick-access h3 { 
-    margin: 0 0 10px; /* ✅ 12px → 10px */
-    font-size: 14px;
-    color: #C5A059;
-    letter-spacing: 0.5px;
-    font-weight: 700;
+    display: none; /* ✅ წარწერა ამოღებულია */
   }
   
   .quick-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 8px; /* ✅ 10px → 8px */
+    gap: 8px;
   }
   
   .quick-item {
     background: #1a1510;
     border: 1px solid #2a2215;
     border-radius: 12px;
-    padding: 12px 6px; /* ✅ 14px 8px → 12px 6px */
+    padding: 12px 6px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px; /* ✅ 6px → 4px */
+    gap: 4px;
     color: #fff;
     cursor: pointer;
     transition: all 0.2s;
@@ -613,7 +623,7 @@
   }
   
   .q-label { 
-    font-size: 10px; /* ✅ 11px → 10px */
+    font-size: 10px;
     color: #fff;
     font-weight: 600;
     position: relative;
@@ -622,7 +632,7 @@
   }
   
   .q-sublabel { 
-    font-size: 9px; /* ✅ 10px → 9px */
+    font-size: 9px;
     color: #b3a68c;
     position: relative;
     z-index: 1;

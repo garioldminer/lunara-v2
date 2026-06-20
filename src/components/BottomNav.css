@@ -5,7 +5,7 @@
   left: 0;
   right: 0;
   z-index: 1000;
-  padding: 0 12px 12px; /* ✅ კიდეებიდან 12px დაშორება */
+  padding: 0 4px 12px; /* ✅ 12px → 4px (იგივე რაც პროფილს) */
   pointer-events: none;
 }
 
@@ -20,7 +20,7 @@
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
   border: 1px solid rgba(197, 160, 89, 0.2);
-  border-radius: 24px; /* ✅ Apple-style დიდი მრგვალი კუთხეები */
+  border-radius: 24px;
   box-shadow: 
     0 8px 32px rgba(0, 0, 0, 0.6),
     0 2px 8px rgba(0, 0, 0, 0.4),
@@ -28,8 +28,9 @@
     inset 0 -1px 0 rgba(0, 0, 0, 0.3);
   pointer-events: auto;
   width: 100%;
-  max-width: 480px; /* ✅ იგივე max-width რაც კონტენტს */
-  margin: 0 auto; /* ✅ ცენტრში */
+  max-width: calc(480px - 8px); /* ✅ 480px → calc(480px - 8px) */
+  margin: 0 auto;
+  box-sizing: border-box; /* ✅ ახალი */
 }
 
 /* Individual nav item */
@@ -45,7 +46,7 @@
   padding: 6px 10px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   -webkit-tap-highlight-color: transparent;
-  flex: 1; /* ✅ თანაბარი განაწილება */
+  flex: 1;
 }
 
 /* Icon wrapper with 3D */

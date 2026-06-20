@@ -198,7 +198,6 @@ export default function HomeScreen({ onNavigate }: Props) {
 
       {/* 4. QUICK ACCESS GRID */}
       <div className="quick-access">
-        <h3>QUICK ACCESS</h3>
         <div className="quick-grid">
           {quickActions.map((action, index) => (
             <button 
