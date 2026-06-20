@@ -111,43 +111,38 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* 2. DAILY REWARD */}
-      <div className="daily-reward-banner">
-        <div className="reward-content">
-          <div className="reward-text">
-            <h3>DAILY REWARD</h3>
-            <p>Claim your free reward</p>
+      {/* 2+3. COMBINED REWARDS ROW (Daily + Streak + Rank) */}
+      <div className="combined-rewards-row">
+        {/* Daily Reward - Compact */}
+        <div className="daily-reward-compact">
+          <div className="reward-text-small">
+            <h3>DAILY</h3>
+            <p>Reward</p>
           </div>
-          <div className="reward-chest">
-            <div className="chest-animation">
-              <Gift size={48} className="chest-icon" />
-            </div>
-          </div>
+          <button 
+            className={`claim-btn-small ${rewardClaimed ? 'claimed' : ''}`}
+            onClick={handleClaimReward}
+            disabled={rewardClaimed}
+          >
+            {rewardClaimed ? '✓' : <Gem size={14} />}
+          </button>
         </div>
-        <button 
-          className={`claim-btn ${rewardClaimed ? 'claimed' : ''}`}
-          onClick={handleClaimReward}
-          disabled={rewardClaimed}
-        >
-          {rewardClaimed ? 'CLAIMED' : 'CLAIM'}
-          {!rewardClaimed && <div className="claim-reward"><Gem size={12} /> 50</div>}
-        </button>
-      </div>
 
-      {/* 3. STATS ROW */}
-      <div className="stats-row">
-        <div className="stat-card streak">
-          <Flame size={32} className="stat-icon flame" />
-          <div className="stat-info">
-            <span className="stat-value">{user?.streak || 12} DAY STREAK</span>
-            <span className="stat-label">Keep it up!</span>
+        {/* Streak */}
+        <div className="stat-compact streak">
+          <Flame size={20} className="stat-icon-compact flame" />
+          <div className="stat-info-compact">
+            <span className="stat-value-compact">{user?.streak || 12}</span>
+            <span className="stat-label-compact">Streak</span>
           </div>
         </div>
-        <div className="stat-card rank">
-          <Trophy size={32} className="stat-icon trophy" />
-          <div className="stat-info">
-            <span className="stat-value">RANK</span>
-            <span className="stat-label">TOP 8%</span>
+
+        {/* Rank */}
+        <div className="stat-compact rank">
+          <Trophy size={20} className="stat-icon-compact trophy" />
+          <div className="stat-info-compact">
+            <span className="stat-value-compact">TOP</span>
+            <span className="stat-label-compact">8%</span>
           </div>
         </div>
       </div>
@@ -157,7 +152,7 @@ export default function HomeScreen({ onNavigate }: Props) {
         <div className="card-image">
           <div className="card-art">
             <span className="card-number">XIII</span>
-            <div className="card-symbol">💀</div>
+            <div className="card-symbol"></div>
             <span className="card-name-bottom">DEATH</span>
           </div>
         </div>
