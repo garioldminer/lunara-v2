@@ -8,7 +8,11 @@ import {
 } from 'lucide-react';
 import './HomeScreen.css';
 
-export default function HomeScreen() {
+interface Props {
+  onNavigate?: (screen: string) => void;
+}
+
+export default function HomeScreen({ onNavigate }: Props) {
   const { user } = useUser();
   const [rewardClaimed, setRewardClaimed] = useState(false);
   const [timeLeft, setTimeLeft] = useState('14:32:18');
@@ -35,15 +39,26 @@ export default function HomeScreen() {
     }
   };
 
+  const handleQuickAction = (action: string) => {
+    console.log('Quick action:', action);
+    if (onNavigate) {
+      if (action === 'Tarot') {
+        onNavigate('card-fan');
+      } else if (action === 'Astrology') {
+        onNavigate('astro');
+      }
+    }
+  };
+
   const quickActions = [
-    { icon: <LayoutGrid size={28} />, label: 'Tarot', sublabel: 'Readings', color: '#C5A059' },
-    { icon: <Sparkles size={28} />, label: 'Astrology', sublabel: 'Today', color: '#a78bfa' },
-    { icon: <Hash size={28} />, label: 'Numerology', sublabel: 'Report', color: '#60a5fa' },
-    { icon: <Moon size={28} />, label: 'Moon', sublabel: 'Rituals', color: '#fbbf24' },
-    { icon: <Gem size={28} />, label: 'Crystals', sublabel: '', color: '#f472b6' },
-    { icon: <Droplets size={28} />, label: 'Chakras', sublabel: '', color: '#34d399' },
-    { icon: <Wind size={28} />, label: 'Runes', sublabel: '', color: '#fb923c' },
-    { icon: <Brain size={28} />, label: 'Dreams', sublabel: '', color: '#c084fc' },
+    { icon: <LayoutGrid size={28} />, label: 'Tarot', sublabel: 'Readings', color: '#C5A059', action: 'Tarot' },
+    { icon: <Sparkles size={28} />, label: 'Astrology', sublabel: 'Today', color: '#a78bfa', action: 'Astrology' },
+    { icon: <Hash size={28} />, label: 'Numerology', sublabel: 'Report', color: '#60a5fa', action: 'Numerology' },
+    { icon: <Moon size={28} />, label: 'Moon', sublabel: 'Rituals', color: '#fbbf24', action: 'Moon' },
+    { icon: <Gem size={28} />, label: 'Crystals', sublabel: '', color: '#f472b6', action: 'Crystals' },
+    { icon: <Droplets size={28} />, label: 'Chakras', sublabel: '', color: '#34d399', action: 'Chakras' },
+    { icon: <Wind size={28} />, label: 'Runes', sublabel: '', color: '#fb923c', action: 'Runes' },
+    { icon: <Brain size={28} />, label: 'Dreams', sublabel: '', color: '#c084fc', action: 'Dreams' },
   ];
 
   const quests = [
@@ -187,7 +202,12 @@ export default function HomeScreen() {
         <h3>QUICK ACCESS</h3>
         <div className="quick-grid">
           {quickActions.map((action, index) => (
-            <button key={index} className="quick-item" style={{ '--glow-color': action.color } as React.CSSProperties}>
+            <button 
+              key={index} 
+              className="quick-item" 
+              style={{ '--glow-color': action.color } as React.CSSProperties}
+              onClick={() => handleQuickAction(action.action)}
+            >
               <div className="q-icon-wrapper" style={{ color: action.color }}>
                 {action.icon}
               </div>
@@ -207,7 +227,7 @@ export default function HomeScreen() {
             <p>Unlimited readings, full access & more</p>
           </div>
         </div>
-        <button className="upgrade-btn">UPGRADE</button>
+        <button className="upgrade-btn" onClick={() => onNavigate && onNavigate('pricing')}>UPGRADE</button>
       </div>
     </div>
   );
