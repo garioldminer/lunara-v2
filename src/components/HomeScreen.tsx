@@ -4,7 +4,7 @@ import {
   Gem, Zap, Trophy, Flame, Star, 
   Sparkles, LayoutGrid, Moon, Hash, 
   Wind, Droplets, Brain, Crown,
-  Gift, Scroll, Activity, ChevronRight
+  Scroll, Activity, ChevronRight
 } from 'lucide-react';
 import './HomeScreen.css';
 
@@ -152,7 +152,7 @@ export default function HomeScreen({ onNavigate }: Props) {
         <div className="card-image">
           <div className="card-art">
             <span className="card-number">XIII</span>
-            <div className="card-symbol"></div>
+            <div className="card-symbol">💀</div>
             <span className="card-name-bottom">DEATH</span>
           </div>
         </div>
