@@ -5,7 +5,7 @@ export interface TelegramUser {
   first_name: string;
   last_name?: string;
   username?: string;
-  photo_url?: string;
+  photo_url?: string | null; // 👈 აქ დავამატეთ null
   language_code?: string;
 }
 
@@ -15,7 +15,7 @@ const MOCK_USER: TelegramUser = {
   first_name: 'Test',
   last_name: 'User',
   username: 'test_user',
-  photo_url: null,
+  photo_url: undefined, // 👈 null → undefined
   language_code: 'en',
 };
 
@@ -23,7 +23,6 @@ export function getTelegramUser(): TelegramUser | null {
   console.log('🔍 ===== getTelegramUser() called =====');
   
   try {
-    // Step 1: შევამოწმოთ window.Telegram
     console.log('🔍 Step 1: Checking window.Telegram...');
     console.log('🔍 window.Telegram exists?', !!(window as any).Telegram);
     
@@ -36,37 +35,28 @@ export function getTelegramUser(): TelegramUser | null {
       console.warn('💡 Possible reasons:');
       console.warn('   1. App opened in browser (not Telegram)');
       console.warn('   2. telegram-web-app.js script not loaded');
-      console.warn('   3. Script loading failed');
       console.log('🔍 Returning MOCK_USER for testing');
       return MOCK_USER;
     }
 
-    // Step 3: Telegram WebApp არსებობს - ვნახოთ რა არის შიგნით
     console.log('✅ Step 3: Telegram WebApp found!');
-    console.log('🔍 Telegram.WebApp object:', tg);
     
-    // Step 4: შევამოწმოთ initData
     console.log('🔍 Step 4: Checking initData...');
     console.log('🔍 tg.initData:', tg.initData ? 'exists' : 'null/undefined');
     if (tg.initData) {
       console.log('🔍 tg.initData (first 100 chars):', tg.initData.substring(0, 100));
     }
     
-    // Step 5: შევამოწმოთ initDataUnsafe
     console.log('🔍 Step 5: Checking initDataUnsafe...');
     console.log('🔍 tg.initDataUnsafe:', tg.initDataUnsafe);
     
     if (!tg.initDataUnsafe) {
       console.warn('⚠️ initDataUnsafe is null/undefined!');
-      console.warn('💡 This means Telegram did not pass user data');
-      console.warn('💡 Check BotFather settings:');
-      console.warn('   - Menu Button URL is correct');
-      console.warn('   - Bot is started (/start command)');
+      console.warn('💡 Check BotFather settings');
       console.log('🔍 Returning MOCK_USER for testing');
       return MOCK_USER;
     }
     
-    // Step 6: შევამოწმოთ user
     console.log('🔍 Step 6: Checking initDataUnsafe.user...');
     const user = tg.initDataUnsafe?.user;
     
@@ -74,30 +64,18 @@ export function getTelegramUser(): TelegramUser | null {
     
     if (!user) {
       console.warn('⚠️ User not found in initDataUnsafe!');
-      console.warn('💡 This usually means:');
-      console.warn('   1. Bot Menu Button not configured in BotFather');
-      console.warn('   2. Web App opened directly (not via Menu Button)');
-      console.warn('   3. User did not click /start on bot');
       console.log('🔍 Returning MOCK_USER for testing');
       return MOCK_USER;
     }
     
-    // Step 7: User მოიძებნა!
     console.log('✅ Step 7: User found!');
     console.log('✅ Telegram user loaded:', user);
-    console.log('🔍 User details:');
-    console.log('   - ID:', user.id);
-    console.log('   - First name:', user.first_name);
-    console.log('   - Last name:', user.last_name || 'N/A');
-    console.log('   - Username:', user.username || 'N/A');
-    console.log('   - Language:', user.language_code || 'N/A');
     console.log('🔍 ===== getTelegramUser() SUCCESS =====');
     
     return user as TelegramUser;
     
   } catch (err) {
     console.error('❌ Exception in getTelegramUser:', err);
-    console.error('❌ Error stack:', err instanceof Error ? err.stack : 'No stack');
     console.log('🔍 Returning MOCK_USER due to error');
     return MOCK_USER;
   }
@@ -114,7 +92,7 @@ export function getTelegramWebApp() {
   }
 }
 
-// დამატებითი debug ფუნქცია - ყველა Telegram მონაცემის ნახვა
+// დამატებითი debug ფუნქცია
 export function debugTelegramData() {
   console.log('🔍 ===== DEBUG TELEGRAM DATA =====');
   
@@ -129,10 +107,8 @@ export function debugTelegramData() {
   console.log('   - version:', tg.version);
   console.log('   - platform:', tg.platform);
   console.log('   - colorScheme:', tg.colorScheme);
-  console.log('   - themeParams:', tg.themeParams);
   console.log('   - isExpanded:', tg.isExpanded);
   console.log('   - viewportHeight:', tg.viewportHeight);
-  console.log('   - viewportStableHeight:', tg.viewportStableHeight);
   
   console.log('🔍 initData:', tg.initData);
   console.log('🔍 initDataUnsafe:', JSON.stringify(tg.initDataUnsafe, null, 2));
