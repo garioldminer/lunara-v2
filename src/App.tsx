@@ -11,6 +11,7 @@ import ProfileScreen from './components/ProfileScreen';
 import PricingScreen from './components/PricingScreen';
 import CardFanScreen from './components/CardFanScreen';
 import BottomNav from './components/BottomNav';
+import DebugPanel from './components/DebugPanel'; // 👈 DebugPanel import
 import './App.css';
 
 type Screen = 
@@ -33,12 +34,19 @@ function App() {
   useEffect(() => {
     const tg = (window as any).Telegram?.WebApp;
     if (tg) {
+      console.log('🔵 Telegram WebApp detected');
       if (typeof tg.setHeaderColor === 'function') {
         tg.setHeaderColor('#0a0600');
       }
       if (typeof tg.setBackgroundColor === 'function') {
         tg.setBackgroundColor('#0a0600');
       }
+      // ავტომატური გაფართოება
+      if (typeof tg.expand === 'function') {
+        tg.expand();
+      }
+    } else {
+      console.warn('⚠️ Telegram WebApp NOT detected');
     }
   }, []);
 
@@ -74,6 +82,9 @@ function App() {
 
   return (
     <div className="app-container">
+      {/* 🔍 DEBUG PANEL - აჩვენებს Telegram-ის მონაცემებს */}
+      <DebugPanel />
+
       {currentScreen === 'splash' && (
         <SplashScreen onFinish={() => goTo('welcome')} />
       )}
