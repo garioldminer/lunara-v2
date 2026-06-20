@@ -20,6 +20,7 @@ export interface User {
   gems: number;
   streak: number;
   current_plan: string;
+  onboarding_completed: boolean; // ✅ ახალი field
   created_at: string;
   updated_at: string;
 }
@@ -68,16 +69,23 @@ export async function createUser(tgUser: TelegramUser): Promise<User | null> {
 }
 
 export async function getOrCreateUser(tgUser: TelegramUser): Promise<User | null> {
-  let user = await getUserByTelegramId(tgUser.id);
+  if (!supabase) return null;
   
-  if (user) {
-    console.log('✅ Existing user found:', user);
-    return user;
-  }
+  try {
+    let user = await getUserByTelegramId(tgUser.id);
+    
+    if (user) {
+      console.log('✅ Existing user found:', user);
+      return user;
+    }
 
-  console.log('🆕 Creating new user...');
-  user = await createUser(tgUser);
-  return user;
+    console.log('🆕 Creating new user...');
+    user = await createUser(tgUser);
+    return user;
+  } catch (err) {
+    console.error('Exception:', err);
+    return null;
+  }
 }
 
 export async function updateUser(userId: string, updates: Partial<User>): Promise<User | null> {
@@ -100,4 +108,10 @@ export async function updateUser(userId: string, updates: Partial<User>): Promis
 
   console.log('✅ User updated:', data);
   return data as User;
+}
+
+// ✅ ახალი ფუნქცია - onboarding completion-ისთვის
+export async function completeOnboarding(userId: string): Promise<User | null> {
+  console.log('✅ Completing onboarding for user:', userId);
+  return updateUser(userId, { onboarding_completed: true });
 }

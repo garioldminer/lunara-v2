@@ -1,11 +1,11 @@
-// Telegram WebApp-ის მონაცემების ამოღება - დებაგინგ ვერსია
+// Telegram WebApp-ის მონაცემების ამოღება
 
 export interface TelegramUser {
   id: number;
   first_name: string;
   last_name?: string;
   username?: string;
-  photo_url?: string | null; // 👈 აქ დავამატეთ null
+  photo_url?: string | null;
   language_code?: string;
 }
 
@@ -15,110 +15,45 @@ const MOCK_USER: TelegramUser = {
   first_name: 'Test',
   last_name: 'User',
   username: 'test_user',
-  photo_url: undefined, // 👈 null → undefined
+  photo_url: undefined,
   language_code: 'en',
 };
 
 export function getTelegramUser(): TelegramUser | null {
-  console.log('🔍 ===== getTelegramUser() called =====');
-  
   try {
-    console.log('🔍 Step 1: Checking window.Telegram...');
-    console.log('🔍 window.Telegram exists?', !!(window as any).Telegram);
-    
     const tg = (window as any).Telegram?.WebApp;
     
-    console.log('🔍 Step 2: Telegram.WebApp exists?', !!tg);
-    
     if (!tg) {
-      console.warn('⚠️ Telegram WebApp not found!');
-      console.warn('💡 Possible reasons:');
-      console.warn('   1. App opened in browser (not Telegram)');
-      console.warn('   2. telegram-web-app.js script not loaded');
-      console.log('🔍 Returning MOCK_USER for testing');
+      console.warn('⚠️ Telegram SDK not found - using mock');
       return MOCK_USER;
     }
 
-    console.log('✅ Step 3: Telegram WebApp found!');
-    
-    console.log('🔍 Step 4: Checking initData...');
-    console.log('🔍 tg.initData:', tg.initData ? 'exists' : 'null/undefined');
-    if (tg.initData) {
-      console.log('🔍 tg.initData (first 100 chars):', tg.initData.substring(0, 100));
-    }
-    
-    console.log('🔍 Step 5: Checking initDataUnsafe...');
-    console.log('🔍 tg.initDataUnsafe:', tg.initDataUnsafe);
-    
-    if (!tg.initDataUnsafe) {
-      console.warn('⚠️ initDataUnsafe is null/undefined!');
-      console.warn('💡 Check BotFather settings');
-      console.log('🔍 Returning MOCK_USER for testing');
-      return MOCK_USER;
-    }
-    
-    console.log('🔍 Step 6: Checking initDataUnsafe.user...');
     const user = tg.initDataUnsafe?.user;
     
-    console.log('🔍 user object:', user);
-    
     if (!user) {
-      console.warn('⚠️ User not found in initDataUnsafe!');
-      console.log('🔍 Returning MOCK_USER for testing');
+      console.warn('⚠️ No Telegram user - using mock');
       return MOCK_USER;
     }
-    
-    console.log('✅ Step 7: User found!');
+
     console.log('✅ Telegram user loaded:', user);
-    console.log('🔍 ===== getTelegramUser() SUCCESS =====');
-    
     return user as TelegramUser;
-    
   } catch (err) {
-    console.error('❌ Exception in getTelegramUser:', err);
-    console.log('🔍 Returning MOCK_USER due to error');
+    console.error('❌ Error:', err);
     return MOCK_USER;
   }
 }
 
 export function getTelegramWebApp() {
   try {
-    const tg = (window as any).Telegram?.WebApp;
-    console.log('🔍 getTelegramWebApp() called - WebApp exists?', !!tg);
-    return tg;
-  } catch (err) {
-    console.error('❌ Error in getTelegramWebApp:', err);
+    return (window as any).Telegram?.WebApp;
+  } catch {
     return null;
   }
 }
 
-// დამატებითი debug ფუნქცია
-export function debugTelegramData() {
-  console.log('🔍 ===== DEBUG TELEGRAM DATA =====');
-  
-  const tg = (window as any).Telegram?.WebApp;
-  
-  if (!tg) {
-    console.log('❌ Telegram WebApp not available');
-    return;
-  }
-  
-  console.log('🔍 Telegram WebApp properties:');
-  console.log('   - version:', tg.version);
-  console.log('   - platform:', tg.platform);
-  console.log('   - colorScheme:', tg.colorScheme);
-  console.log('   - isExpanded:', tg.isExpanded);
-  console.log('   - viewportHeight:', tg.viewportHeight);
-  
-  console.log('🔍 initData:', tg.initData);
-  console.log('🔍 initDataUnsafe:', JSON.stringify(tg.initDataUnsafe, null, 2));
-  
-  console.log('🔍 ===== END DEBUG =====');
-}
-
 // Telegram-ის მონაცემებიდან Supabase user-ის ობიექტის შექმნა
 export function createUserDataFromTelegram(tgUser: TelegramUser) {
-  console.log('🔍 createUserDataFromTelegram called with:', tgUser);
+  console.log('🔍 Creating user data from Telegram:', tgUser);
   
   const userData = {
     telegram_id: tgUser.id,
@@ -138,8 +73,9 @@ export function createUserDataFromTelegram(tgUser: TelegramUser) {
     gems: 100,
     streak: 0,
     current_plan: 'FREE',
+    onboarding_completed: false, // ✅ ახალი field
   };
   
-  console.log('🔍 Created user data:', userData);
+  console.log('✅ User data created:', userData);
   return userData;
 }

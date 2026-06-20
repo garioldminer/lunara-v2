@@ -20,6 +20,7 @@ export interface User {
   gems: number;
   streak: number;
   current_plan: string;
+  onboarding_completed: boolean; // ✅ ახალი field
   created_at: string;
   updated_at: string;
 }

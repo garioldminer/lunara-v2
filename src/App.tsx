@@ -13,7 +13,7 @@ import CardFanScreen from './components/CardFanScreen';
 import BottomNav from './components/BottomNav';
 import { UserProvider, useUser } from './context/UserContext';
 import { getTelegramUser } from './lib/telegramAuth';
-import { getOrCreateUser } from './lib/userService';
+import { getOrCreateUser, completeOnboarding } from './lib/userService';
 import './App.css';
 
 type Screen = 
@@ -55,6 +55,7 @@ function UserLoader({ onReady }: { onReady: () => void }) {
         if (user) {
           setUser(user);
           console.log('✅ [UserLoader] User saved to context!');
+          console.log('📊 Onboarding completed:', user.onboarding_completed);
         }
       } catch (error) {
         console.error('❌ [UserLoader] Error:', error);
@@ -75,7 +76,7 @@ function AppContent() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('splash');
   const [activeTab, setActiveTab] = useState('home');
   const [userReady, setUserReady] = useState(false);
-  const { user } = useUser();  // ✅ მხოლოდ user, loading არ გვჭირდება
+  const { user, setUser } = useUser();
 
   useEffect(() => {
     const tg = (window as any).Telegram?.WebApp;
@@ -125,22 +126,51 @@ function AppContent() {
     setUserReady(true);
   };
 
+  // ✅ Splash Screen დასრულდა - გადავწყვიტოთ სად წავიდეთ
   const handleSplashFinish = () => {
     console.log('🎬 Splash finished');
-    if (userReady) {
-      goTo('welcome');
-    } else {
+    console.log('📊 User onboarding_completed:', user?.onboarding_completed);
+    
+    if (!userReady) {
+      // User ჯერ არ არის მზად - დაველოდოთ
+      console.log('⏳ Waiting for user to load...');
       const checkInterval = setInterval(() => {
         if (userReady) {
           clearInterval(checkInterval);
-          goTo('welcome');
+          handleSplashFinish(); // ხელახლა გამოვიძახოთ
         }
       }, 100);
+      return;
     }
+    
+    // User მზადაა - გადავწყვიტოთ სად წავიდეთ
+    if (user?.onboarding_completed) {
+      console.log('✅ User already completed onboarding → going to HOME');
+      goTo('home');
+    } else {
+      console.log('🆕 New user → starting onboarding');
+      goTo('welcome');
+    }
+  };
+
+  // ✅ Onboarding დასრულდა - ბაზაში განვაახლოთ
+  const handleOnboardingComplete = async () => {
+    console.log('🎉 Onboarding completed!');
+    
+    if (user) {
+      const updatedUser = await completeOnboarding(user.id);
+      if (updatedUser) {
+        setUser(updatedUser);
+        console.log('✅ Onboarding status updated in database');
+      }
+    }
+    
+    goTo('home');
   };
 
   console.log('📱 Current screen:', currentScreen);
   console.log('👤 User loaded:', user ? user.display_name : 'null');
+  console.log('📊 Onboarding completed:', user?.onboarding_completed);
 
   return (
     <div className="app-container">
@@ -156,7 +186,7 @@ function AppContent() {
         <OnboardingZodiac onFinish={() => goTo('first-reading')} />
       )}
       {currentScreen === 'first-reading' && (
-        <OnboardingFirstReading onFinish={() => goTo('home')} />
+        <OnboardingFirstReading onFinish={handleOnboardingComplete} />
       )}
       {currentScreen === 'home' && (
         <>
