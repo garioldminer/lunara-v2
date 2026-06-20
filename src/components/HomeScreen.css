@@ -202,11 +202,12 @@
     gap: 12px;
     margin-bottom: 16px;
     align-items: stretch;
+    width: 100%;
   }
   
   /* LEFT - Card of the Day (60%) - HORIZONTAL LAYOUT */
   .card-left-horizontal {
-    flex: 0 0 60%;
+    flex: 1 1 calc(60% - 6px);
     background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
     border: 1px solid #332a1a;
     border-radius: 16px;
@@ -312,7 +313,7 @@
   
   /* RIGHT - Single Card Container (40%) */
   .card-right-single {
-    flex: 0 0 40%;
+    flex: 0 0 calc(40% - 6px);
     background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
     border: 1px solid #332a1a;
     border-radius: 16px;
@@ -449,21 +450,22 @@
   }
   
   /* ============================================
-     3. DAILY QUESTS
+     3. DAILY QUESTS - 30% SMALLER
      ============================================ */
   .daily-quests {
     background: #15120c;
     border: 1px solid #2a2215;
     border-radius: 12px;
-    padding: 14px;
+    padding: 10px; /* ✅ 14px → 10px (28% ნაკლები) */
     margin-bottom: 16px;
+    width: 100%;
   }
   
   .quests-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 8px; /* ✅ 12px → 8px (33% ნაკლები) */
   }
   
   .quests-header h3 { 
@@ -484,7 +486,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 0;
+    padding: 7px 0; /* ✅ 10px → 7px (30% ნაკლები) */
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   }
   
@@ -518,7 +520,7 @@
   
   .progress-bar {
     width: 60px;
-    height: 6px;
+    height: 5px; /* ✅ 6px → 5px */
     background: rgba(255, 255, 255, 0.1);
     border-radius: 3px;
     overflow: hidden;
@@ -551,7 +553,7 @@
   /* ============================================
      4. QUICK ACCESS GRID
      ============================================ */
-  .quick-access { margin-bottom: 16px; }
+  .quick-access { margin-bottom: 16px; width: 100%; }
   .quick-access h3 { 
     margin: 0 0 12px; 
     font-size: 14px;
