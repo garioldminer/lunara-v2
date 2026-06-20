@@ -5,7 +5,7 @@
 
    .home-screen {
     width: 100%;
-    padding: 70px 16px 100px 16px;
+    padding: 70px 4px 100px 4px; /* ✅ 16px → 4px */
     max-width: 480px;
     margin: 0 auto;
     color: #fff;
@@ -456,7 +456,7 @@
     background: #15120c;
     border: 1px solid #2a2215;
     border-radius: 12px;
-    padding: 10px; /* ✅ 14px → 10px (28% ნაკლები) */
+    padding: 10px;
     margin-bottom: 16px;
     width: 100%;
   }
@@ -465,7 +465,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px; /* ✅ 12px → 8px (33% ნაკლები) */
+    margin-bottom: 8px;
   }
   
   .quests-header h3 { 
@@ -486,7 +486,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 7px 0; /* ✅ 10px → 7px (30% ნაკლები) */
+    padding: 7px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   }
   
@@ -520,7 +520,7 @@
   
   .progress-bar {
     width: 60px;
-    height: 5px; /* ✅ 6px → 5px */
+    height: 5px;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 3px;
     overflow: hidden;

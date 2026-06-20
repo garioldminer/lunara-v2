@@ -9,7 +9,7 @@ const tabs = [
   { id: 'home', icon: '🏠', label: 'HOME' },
   { id: 'cards', icon: '🃏', label: 'CARDS' },
   { id: 'reading', icon: '🔮', label: 'READING' },
-  { id: 'astro', icon: '🪐', label: 'ASTRO' }, // ← 🌟 → 🪐
+  { id: 'astro', icon: '🪐', label: 'ASTRO' },
   { id: 'profile', icon: '👤', label: 'PROFILE' },
 ];
 
