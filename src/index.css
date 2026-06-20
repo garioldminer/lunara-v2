@@ -7,19 +7,23 @@
 html, body {
   width: 100%;
   height: 100%;
-  height: 100dvh; /* Dynamic viewport height - mobile-ისთვის */
-  overflow: hidden;
+  height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto; /* ✅ hidden → auto */
   background: #0a0600;
   font-family: 'Georgia', serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-overflow-scrolling: touch;
 }
 
 #root {
   width: 100%;
   height: 100%;
   height: 100dvh;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto; /* ✅ hidden → auto */
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Telegram Web App-ისთვის */
@@ -28,5 +32,7 @@ html, body {
   height: 100%;
   height: 100dvh;
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto; /* ✅ hidden → auto */
+  -webkit-overflow-scrolling: touch;
 }

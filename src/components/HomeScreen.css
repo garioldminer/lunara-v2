@@ -1,518 +1,693 @@
-.screen-container.home {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  height: 100dvh;
-  overflow: hidden;
-  background: #0a0600;
-  display: flex;
-  flex-direction: column;
-  padding-top: 70px;
-}
+/* ============================================
+   HOME SCREEN - GAMIFIED DASHBOARD
+   Dark Mystic Theme with Gold Accents
+   ============================================ */
 
-/* ნაწილაკები */
-.particles-container {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.particle {
-  position: absolute;
-  background: #ffe566;
-  border-radius: 50%;
-  opacity: 0;
-  animation: floatParticle ease-in-out infinite;
-  box-shadow: 0 0 6px rgba(255, 229, 102, 0.6);
-}
-
-@keyframes floatParticle {
-  0%, 100% {
-    transform: translateY(0) translateX(0);
-    opacity: 0.2;
+   .home-screen {
+    width: 100%;
+    padding: 16px;
+    padding-bottom: 100px;
+    max-width: 480px;
+    margin: 0 auto;
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    background: #0a0600;
+    min-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
   }
-  50% {
-    transform: translateY(-30px) translateX(15px);
-    opacity: 0.8;
+  
+  /* ============================================
+     1. USER HEADER
+     ============================================ */
+  .user-header {
+    background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
+    border: 1px solid #332a1a;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   }
-}
-
-/* Scrollable Content - კომპაქტური */
-.content-scroll {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  z-index: 2;
-  padding: 10px;
-  padding-bottom: 100px; /* 90px → 100px (უფრო დიდი BottomNav-ისთვის) */
-}
-
-/* 1. HEADER - კომპაქტური */
-.header-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #c87800, #ffe566);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #0a0600;
-  font-weight: bold;
-  font-size: 14px;
-  font-family: 'Georgia', serif;
-  border: 2px solid #ffe566;
-  cursor: pointer;
-}
-
-.user-details {
-  display: flex;
-  flex-direction: column;
-}
-
-.username {
-  color: #ffe566;
-  font-size: 12px;
-  font-family: 'Georgia', serif;
-  font-weight: bold;
-}
-
-.level {
-  color: #c87800;
-  font-size: 9px;
-  font-family: 'Georgia', serif;
-}
-
-.badges {
-  display: flex;
-  gap: 6px;
-}
-
-.badge {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  border-radius: 12px;
-  border: 1px solid rgba(200, 120, 0, 0.4);
-  cursor: pointer;
-}
-
-.badge-icon {
-  font-size: 12px;
-}
-
-.badge-value {
-  color: #ffe566;
-  font-size: 11px;
-  font-weight: bold;
-  font-family: 'Georgia', serif;
-}
-
-/* 2. COSMIC SNAPSHOT - კომპაქტური */
-.cosmic-snapshot {
-  margin-bottom: 12px;
-}
-
-.section-label {
-  font-family: 'Georgia', serif;
-  font-size: 10px;
-  color: #ffe566;
-  text-align: center;
-  margin: 0 0 8px 0;
-  letter-spacing: 2px;
-  font-weight: normal;
-}
-
-.cosmic-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-}
-
-.cosmic-item {
-  background: rgba(20, 12, 5, 0.8);
-  border: 1px solid rgba(200, 120, 0, 0.3);
-  border-radius: 8px;
-  padding: 8px 6px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.cosmic-item:active {
-  transform: scale(0.95);
-  border-color: #ffe566;
-}
-
-.cosmic-icon {
-  font-size: 20px;
-  margin-bottom: 4px;
-}
-
-.cosmic-text {
-  display: flex;
-  flex-direction: column;
-}
-
-.cosmic-title {
-  font-family: 'Georgia', serif;
-  font-size: 9px;
-  color: #ffe566;
-  font-weight: bold;
-}
-
-.cosmic-subtitle {
-  font-family: 'Georgia', serif;
-  font-size: 8px;
-  color: #c87800;
-}
-
-/* 3. CARD OF THE DAY - კომპაქტური */
-.card-of-day-section {
-  margin-bottom: 12px;
-}
-
-.card-of-day {
-  display: flex;
-  background: rgba(20, 12, 5, 0.8);
-  border: 1px solid rgba(200, 120, 0, 0.4);
-  border-radius: 10px;
-  padding: 10px;
-  gap: 10px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.card-of-day:active {
-  transform: scale(0.98);
-  border-color: #ffe566;
-}
-
-.card-image {
-  flex-shrink: 0;
-}
-
-.tarot-card {
-  width: 70px;
-  height: 100px;
-  background: linear-gradient(135deg, #1a0f05, #0a0600);
-  border: 2px solid #c87800;
-  border-radius: 6px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 20px rgba(200, 120, 0, 0.3);
-}
-
-.card-number {
-  font-family: 'Georgia', serif;
-  font-size: 11px;
-  color: #ffe566;
-  margin-bottom: 6px;
-}
-
-.card-symbol {
-  font-size: 28px;
-}
-
-.card-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.card-title {
-  font-family: 'Georgia', serif;
-  font-size: 16px;
-  color: #ffe566;
-  margin: 0 0 3px 0;
-  letter-spacing: 2px;
-}
-
-.card-subtitle {
-  font-family: 'Georgia', serif;
-  font-size: 10px;
-  color: #c87800;
-  margin: 0 0 6px 0;
-}
-
-.card-description {
-  font-family: 'Georgia', serif;
-  font-size: 11px;
-  color: #886600;
-  margin: 0 0 8px 0;
-  line-height: 1.3;
-}
-
-.btn-read-more {
-  background: linear-gradient(135deg, #c87800, #e8a020);
-  border: 1px solid #ffe566;
-  color: #0a0600;
-  padding: 5px 10px;
-  border-radius: 14px;
-  font-family: 'Georgia', serif;
-  font-size: 9px;
-  font-weight: bold;
-  letter-spacing: 1px;
-  cursor: pointer;
-  align-self: flex-start;
-  transition: all 0.3s ease;
-}
-
-.btn-read-more:active {
-  transform: scale(0.95);
-}
-
-/* 4. QUICK ACTIONS - კომპაქტური */
-.quick-actions-section {
-  margin-bottom: 12px;
-}
-
-.quick-actions-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-}
-
-.quick-action-btn {
-  background: rgba(20, 12, 5, 0.8);
-  border: 1px solid rgba(200, 120, 0, 0.4);
-  border-radius: 10px;
-  padding: 12px 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.quick-action-btn:active {
-  transform: scale(0.95);
-  border-color: #ffe566;
-  background: rgba(200, 120, 0, 0.15);
-}
-
-.action-icon {
-  font-size: 24px;
-}
-
-.action-title {
-  font-family: 'Georgia', serif;
-  font-size: 12px;
-  color: #ffe566;
-  font-weight: bold;
-}
-
-.action-subtitle {
-  font-family: 'Georgia', serif;
-  font-size: 9px;
-  color: #c87800;
-}
-
-/* 5. PROGRESS - კომპაქტური */
-.progress-section {
-  margin-bottom: 12px;
-}
-
-.progress-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-}
-
-.progress-box {
-  background: rgba(20, 12, 5, 0.8);
-  border: 1px solid rgba(200, 120, 0, 0.4);
-  border-radius: 8px;
-  padding: 10px 6px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.progress-box:active {
-  transform: scale(0.95);
-  border-color: #ffe566;
-}
-
-.progress-value {
-  font-family: 'Georgia', serif;
-  font-size: 16px;
-  color: #ffe566;
-  font-weight: bold;
-  margin-bottom: 3px;
-}
-
-.progress-icon {
-  font-size: 18px;
-  margin-bottom: 3px;
-}
-
-.progress-label {
-  font-family: 'Georgia', serif;
-  font-size: 9px;
-  color: #c87800;
-}
-
-/* 6. QUESTS - კომპაქტური */
-.quests-section {
-  margin-bottom: 12px;
-}
-
-.quests-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.quest-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: rgba(20, 12, 5, 0.6);
-  border: 1px solid rgba(200, 120, 0, 0.3);
-  border-radius: 8px;
-  padding: 10px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.quest-item:active {
-  transform: scale(0.98);
-}
-
-.quest-item.completed {
-  border-color: rgba(255, 229, 102, 0.6);
-  background: rgba(200, 120, 0, 0.1);
-}
-
-.quest-icon {
-  font-size: 20px;
-  flex-shrink: 0;
-}
-
-.quest-info {
-  flex: 1;
-}
-
-.quest-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 4px;
-}
-
-.quest-title {
-  font-family: 'Georgia', serif;
-  font-size: 11px;
-  color: #ffe566;
-}
-
-.quest-progress {
-  font-family: 'Georgia', serif;
-  font-size: 10px;
-  color: #c87800;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 5px;
-  background: rgba(200, 120, 0, 0.2);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #c87800, #ffe566);
-  border-radius: 3px;
-  transition: width 0.5s ease;
-}
-
-.quest-reward {
-  font-family: 'Georgia', serif;
-  font-size: 11px;
-  color: #ffe566;
-  font-weight: bold;
-  flex-shrink: 0;
-}
-
-/* 7. PREMIUM BANNER - კომპაქტური */
-.premium-banner {
-  background: linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2));
-  border: 1px solid rgba(255, 229, 102, 0.4);
-  border-radius: 10px;
-  padding: 12px 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  animation: bannerGlow 3s ease-in-out infinite;
-}
-
-@keyframes bannerGlow {
-  0%, 100% {
-    box-shadow: 0 0 15px rgba(200, 120, 0, 0.2);
+  
+  .user-main-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
   }
-  50% {
-    box-shadow: 0 0 25px rgba(255, 229, 102, 0.4);
+  
+  .avatar-section {
+    position: relative;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
   }
-}
-
-.premium-banner:active {
-  transform: scale(0.98);
-}
-
-.premium-icon {
-  font-size: 18px;
-}
-
-.premium-text {
-  font-family: 'Georgia', serif;
-  font-size: 11px;
-  color: #ffe566;
-  font-weight: bold;
-  letter-spacing: 1px;
-}
-
-.premium-arrow {
-  color: #ffe566;
-  font-size: 14px;
-}
-
-/* Bottom Spacer */
-.bottom-spacer {
-  height: 15px;
-}
-
-/* Scrollbar */
-.content-scroll::-webkit-scrollbar {
-  width: 4px;
-}
-
-.content-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.content-scroll::-webkit-scrollbar-thumb {
-  background: rgba(200, 120, 0, 0.3);
-  border-radius: 2px;
-}
+  
+  .avatar-ring-glow {
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    border: 2px solid #C5A059;
+    box-shadow: 0 0 12px rgba(197, 160, 89, 0.6);
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 12px rgba(197, 160, 89, 0.6); }
+    50% { box-shadow: 0 0 20px rgba(197, 160, 89, 0.9); }
+  }
+  
+  .avatar-image {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #C5A059, #8B6914);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    color: #0a0600;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .user-info-section {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .username {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+    color: #fff;
+    letter-spacing: 0.3px;
+  }
+  
+  .user-level {
+    font-size: 13px;
+    color: #b3a68c;
+    margin: 2px 0 0;
+    font-weight: 500;
+  }
+  
+  .user-title {
+    color: #C5A059;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  
+  .user-resources {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  
+  .resource {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 13px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .resource-icon { flex-shrink: 0; }
+  .gem-icon { color: #a78bfa; }
+  .energy-icon { color: #fbbf24; }
+  
+  .resource .value {
+    font-weight: 600;
+    color: #fff;
+    min-width: 40px;
+  }
+  
+  .add-btn {
+    background: #C5A059;
+    color: #0a0600;
+    border: none;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 4px;
+    transition: transform 0.2s;
+    line-height: 1;
+  }
+  
+  .add-btn:hover { transform: scale(1.1); }
+  
+  .xp-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .xp-bar {
+    flex: 1;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .xp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #C5A059, #ffe566);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+    box-shadow: 0 0 10px rgba(197, 160, 89, 0.5);
+  }
+  
+  .xp-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  
+  .xp-text {
+    font-size: 11px;
+    color: #b3a68c;
+  }
+  
+  .xp-percent {
+    font-size: 11px;
+    color: #C5A059;
+    font-weight: 600;
+  }
+  
+  .star-icon {
+    color: #C5A059;
+  }
+  
+  /* ============================================
+     2. DAILY REWARD
+     ============================================ */
+  .daily-reward-banner {
+    background: linear-gradient(135deg, #2a1f0a 0%, #151005 100%);
+    border: 1px solid #4a3a1a;
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    gap: 12px;
+    box-shadow: 0 4px 15px rgba(197, 160, 89, 0.1);
+  }
+  
+  .reward-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+  }
+  
+  .reward-text h3 {
+    margin: 0;
+    font-size: 14px;
+    color: #C5A059;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  
+  .reward-text p {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: #b3a68c;
+  }
+  
+  .reward-chest {
+    flex-shrink: 0;
+  }
+  
+  .chest-animation {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  .chest-icon {
+    color: #C5A059;
+    filter: drop-shadow(0 0 10px rgba(197, 160, 89, 0.6));
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+  
+  .claim-btn {
+    background: linear-gradient(135deg, #C5A059, #8B6914);
+    color: #0a0600;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    box-shadow: 0 4px 10px rgba(197, 160, 89, 0.3);
+    flex-shrink: 0;
+  }
+  
+  .claim-reward {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 11px;
+  }
+  
+  .claim-btn:hover { 
+    transform: scale(1.05); 
+    box-shadow: 0 6px 15px rgba(197, 160, 89, 0.4);
+  }
+  
+  .claim-btn.claimed { 
+    background: #444; 
+    color: #888; 
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  
+  /* ============================================
+     3. STATS ROW
+     ============================================ */
+  .stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  
+  .stat-card {
+    background: #15120c;
+    border: 1px solid #2a2215;
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: transform 0.2s;
+  }
+  
+  .stat-card:hover {
+    transform: translateY(-2px);
+    border-color: #C5A059;
+  }
+  
+  .stat-icon {
+    flex-shrink: 0;
+  }
+  
+  .stat-icon.flame { 
+    color: #ff6b35; 
+    filter: drop-shadow(0 0 8px rgba(255, 107, 53, 0.6)); 
+  }
+  
+  .stat-icon.trophy { 
+    color: #ffd700; 
+    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6)); 
+  }
+  
+  .stat-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  
+  .stat-value {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.3px;
+  }
+  
+  .stat-label {
+    font-size: 11px;
+    color: #b3a68c;
+  }
+  
+  /* ============================================
+     4. CARD OF THE DAY
+     ============================================ */
+  .card-of-day {
+    background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
+    border: 1px solid #332a1a;
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+  
+  .card-image {
+    width: 90px;
+    height: 130px;
+    flex-shrink: 0;
+  }
+  
+  .card-art {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #2a2215, #1a1510);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #4a3a1a;
+    box-shadow: 0 4px 15px rgba(197, 160, 89, 0.2);
+    padding: 8px;
+    gap: 4px;
+  }
+  
+  .card-number { 
+    font-size: 14px; 
+    font-weight: 700; 
+    color: #C5A059;
+    letter-spacing: 1px;
+  }
+  
+  .card-symbol {
+    font-size: 32px;
+    filter: drop-shadow(0 0 8px rgba(197, 160, 89, 0.5));
+  }
+  
+  .card-name-bottom {
+    font-size: 11px;
+    font-weight: 700;
+    color: #C5A059;
+    letter-spacing: 0.5px;
+  }
+  
+  .card-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .card-info h3 {
+    margin: 0 0 4px;
+    font-size: 20px;
+    color: #C5A059;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+  }
+  
+  .card-meaning {
+    margin: 0 0 2px;
+    font-size: 13px;
+    color: #b3a68c;
+    font-style: italic;
+  }
+  
+  .card-zodiac {
+    margin: 0 0 12px;
+    font-size: 12px;
+    color: #888;
+  }
+  
+  .read-guidance-btn {
+    background: transparent;
+    border: 1px solid #C5A059;
+    color: #C5A059;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    align-self: flex-start;
+  }
+  
+  .read-guidance-btn:hover {
+    background: #C5A059;
+    color: #0a0600;
+    box-shadow: 0 4px 10px rgba(197, 160, 89, 0.3);
+  }
+  
+  /* ============================================
+     5. DAILY QUESTS
+     ============================================ */
+  .daily-quests {
+    background: #15120c;
+    border: 1px solid #2a2215;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 16px;
+  }
+  
+  .quests-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  
+  .quests-header h3 { 
+    margin: 0; 
+    font-size: 14px;
+    color: #C5A059;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+  }
+  
+  .quests-timer { 
+    font-size: 12px; 
+    color: #b3a68c;
+    font-family: monospace;
+  }
+  
+  .quest-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  .quest-item:last-child { border-bottom: none; }
+  
+  .quest-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .quest-icon {
+    color: #C5A059;
+    flex-shrink: 0;
+  }
+  
+  .quest-name {
+    color: #fff;
+    font-weight: 500;
+  }
+  
+  .quest-progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  
+  .progress-bar {
+    width: 60px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #C5A059, #ffe566);
+    border-radius: 3px;
+    box-shadow: 0 0 5px rgba(197, 160, 89, 0.5);
+    transition: width 0.3s ease;
+  }
+  
+  .progress-text { 
+    font-size: 12px; 
+    color: #b3a68c;
+    min-width: 28px;
+    text-align: center;
+  }
+  
+  .quest-reward { 
+    font-size: 12px; 
+    color: #C5A059; 
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  
+  /* ============================================
+     6. QUICK ACCESS GRID
+     ============================================ */
+  .quick-access { margin-bottom: 16px; }
+  .quick-access h3 { 
+    margin: 0 0 12px; 
+    font-size: 14px;
+    color: #C5A059;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+  }
+  
+  .quick-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  
+  .quick-item {
+    background: #1a1510;
+    border: 1px solid #2a2215;
+    border-radius: 12px;
+    padding: 14px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .quick-item::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, var(--glow-color, #C5A059) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  
+  .quick-item:hover { 
+    transform: translateY(-2px);
+    border-color: var(--glow-color, #C5A059);
+    box-shadow: 0 4px 15px rgba(197, 160, 89, 0.3);
+  }
+  
+  .quick-item:hover::before {
+    opacity: 0.1;
+  }
+  
+  .q-icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 0 6px var(--glow-color, #C5A059));
+  }
+  
+  .q-label { 
+    font-size: 11px; 
+    color: #fff;
+    font-weight: 600;
+    position: relative;
+    z-index: 1;
+    text-align: center;
+  }
+  
+  .q-sublabel { 
+    font-size: 10px; 
+    color: #b3a68c;
+    position: relative;
+    z-index: 1;
+    text-align: center;
+  }
+  
+  /* ============================================
+     7. UPGRADE BANNER
+     ============================================ */
+  .upgrade-banner {
+    background: linear-gradient(135deg, #2a1f0a 0%, #151005 100%);
+    border: 1px solid #4a3a1a;
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    box-shadow: 0 4px 15px rgba(197, 160, 89, 0.1);
+  }
+  
+  .upgrade-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+  }
+  
+  .upgrade-icon { 
+    color: #C5A059;
+    filter: drop-shadow(0 0 10px rgba(197, 160, 89, 0.6));
+    flex-shrink: 0;
+  }
+  
+  .upgrade-text h3 { 
+    margin: 0; 
+    font-size: 14px; 
+    color: #C5A059;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+  }
+  
+  .upgrade-text p { 
+    margin: 2px 0 0; 
+    font-size: 12px; 
+    color: #b3a68c;
+  }
+  
+  .upgrade-btn {
+    background: linear-gradient(135deg, #C5A059, #8B6914);
+    color: #0a0600;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 4px 10px rgba(197, 160, 89, 0.3);
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  
+  .upgrade-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 15px rgba(197, 160, 89, 0.4);
+  }
