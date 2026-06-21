@@ -12,9 +12,8 @@ interface Props {
 export default function CardsScreen({ onNavigate }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
-  const [selectedCard, setSelectedCard] = useState(tarotCards[0]); // The Fool as default
+  const [selectedCard, setSelectedCard] = useState(tarotCards[0]);
 
-  // Filter cards
   const filteredCards = tarotCards.filter((card) => {
     const matchesSearch = card.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter =
@@ -83,7 +82,7 @@ export default function CardsScreen({ onNavigate }: Props) {
         </button>
       </div>
 
-      {/* Cards Grid - 5 Columns */}
+      {/* Cards Grid - 5 Columns, NO banner, NO text */}
       <div className="cards-grid">
         {filteredCards.map((card) => (
           <div
@@ -91,24 +90,19 @@ export default function CardsScreen({ onNavigate }: Props) {
             className={`card-item ${selectedCard?.id === card.id ? 'selected' : ''}`}
             onClick={() => handleCardSelect(card)}
           >
-            <div className="card-banner">
-              <span className="card-number">{card.number}</span>
-              <div className="card-image-container">
-                {card.image_url ? (
-                  <img 
-                    src={card.image_url} 
-                    alt={card.name}
-                    className="card-image"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="card-image-placeholder">
-                    <span className="placeholder-text">CARD</span>
-                  </div>
-                )}
+            {card.image_url ? (
+              <img 
+                src={card.image_url} 
+                alt={card.name}
+                className="card-image"
+                loading="lazy"
+              />
+            ) : (
+              <div className="card-image-placeholder">
+                <span className="placeholder-number">{card.number}</span>
+                <span className="placeholder-text">{card.name}</span>
               </div>
-              <span className="card-name" title={card.name}>{card.name}</span>
-            </div>
+            )}
           </div>
         ))}
       </div>
