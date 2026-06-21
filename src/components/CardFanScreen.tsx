@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
-import { tarotCards, TarotCard } from '../data/tarotCards';
+import { tarotCards, TarotCard, SUITS } from '../data/tarotCards';
 import './CardFanScreen.css';
 
 interface Props {
@@ -96,6 +96,16 @@ export default function CardFanScreen({ onNavigate }: Props) {
     }, 500);
   };
 
+  // Helper function to get card metadata
+  const getCardMeta = (card: TarotCard) => {
+    if (card.arcana === 'major') {
+      return 'Major Arcana';
+    } else if (card.suit && SUITS[card.suit]) {
+      return `${SUITS[card.suit].name} · ${SUITS[card.suit].element}`;
+    }
+    return 'Minor Arcana';
+  };
+
   return (
     <div className="screen-container card-fan">
       <div className="particles-container">
@@ -180,16 +190,16 @@ export default function CardFanScreen({ onNavigate }: Props) {
             
             <h2 className="reveal-title">{selectedCard.name}</h2>
             <p className="reveal-meta">
-              {selectedCard.zodiac} · {selectedCard.element}
+              {getCardMeta(selectedCard)}
             </p>
 
             <div className="reveal-meaning">
-              <h3 className="meaning-label">Upright Meaning</h3>
-              <p className="meaning-text">{selectedCard.meaning.upright}</p>
+              <h3 className="meaning-label">Meaning</h3>
+              <p className="meaning-text">{selectedCard.meaning}</p>
             </div>
 
             <div className="reveal-keywords">
-              {selectedCard.keywords.upright.map((keyword, idx) => (
+              {selectedCard.keywords.map((keyword: string, idx: number) => (
                 <span key={idx} className="keyword-tag">{keyword}</span>
               ))}
             </div>
