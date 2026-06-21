@@ -1,150 +1,149 @@
-import { useEffect, useState } from 'react';
-import { tarotCards, TarotCard } from '../data/tarotCards';
+import { useState } from 'react';
+import { tarotCards } from '../data/tarotCards';
+import { Search, Filter } from 'lucide-react';
 import './CardsScreen.css';
+
+type FilterType = 'all' | 'major' | 'minor';
 
 interface Props {
   onNavigate?: (screen: string) => void;
 }
 
 export default function CardsScreen({ onNavigate }: Props) {
-  const [selectedCard, setSelectedCard] = useState<TarotCard | null>(null);
-  const [filter, setFilter] = useState<'all' | 'major' | 'minor'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState<FilterType>('all');
+  const [selectedCard, setSelectedCard] = useState(tarotCards[0]); // The Fool as default
 
-  useEffect(() => {
-    console.log(' CardsScreen mounted');
-    console.log('onNavigate available:', !!onNavigate);
-  }, [onNavigate]);
-
-  const filteredCards = tarotCards.filter(card => {
-    if (filter === 'all') return true;
-    return card.arcana === filter;
+  // Filter cards
+  const filteredCards = tarotCards.filter((card) => {
+    const matchesSearch = card.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesFilter =
+      activeFilter === 'all'
+        ? true
+        : activeFilter === 'major'
+        ? card.arcana === 'major'
+        : card.arcana === 'minor';
+    return matchesSearch && matchesFilter;
   });
 
-  const handleCardClick = (card: TarotCard) => {
-    console.log(`Card clicked: ${card.name}`);
+  const handleCardSelect = (card: typeof tarotCards[0]) => {
     setSelectedCard(card);
   };
 
-  const handleCloseModal = () => {
-    setSelectedCard(null);
-  };
-
-  const handleAddToCollection = () => {
-    console.log(`Adding to collection: ${selectedCard?.name}`);
+  const handleViewCard = () => {
+    if (selectedCard && onNavigate) {
+      onNavigate(`card-detail-${selectedCard.id}`);
+    }
   };
 
   return (
-    <div className="screen-container cards">
-      <div className="particles-container">
-        {[...Array(15)].map((_, i) => (
-          <div
-            key={i}
-            className="particle"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 5}s`,
-              animationDuration: `${4 + Math.random() * 3}s`,
-              width: `${2 + Math.random() * 2}px`,
-              height: `${2 + Math.random() * 2}px`,
-            }}
+    <div className="cards-screen">
+      {/* Header */}
+      <div className="cards-header">
+        <h1 className="cards-title">TAROT CARDS</h1>
+        <div className="header-ornament">✦ ─── ✦</div>
+      </div>
+
+      {/* Search Bar */}
+      <div className="search-container">
+        <div className="search-box">
+          <Search size={18} className="search-icon" />
+          <input
+            type="text"
+            placeholder="Search cards..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="search-input"
           />
+        </div>
+        <button className="filter-btn">
+          <Filter size={18} />
+        </button>
+      </div>
+
+      {/* Filter Tabs */}
+      <div className="filter-tabs">
+        <button
+          className={`filter-tab ${activeFilter === 'all' ? 'active' : ''}`}
+          onClick={() => setActiveFilter('all')}
+        >
+          ALL
+        </button>
+        <button
+          className={`filter-tab ${activeFilter === 'major' ? 'active' : ''}`}
+          onClick={() => setActiveFilter('major')}
+        >
+          MAJOR ARCANA
+        </button>
+        <button
+          className={`filter-tab ${activeFilter === 'minor' ? 'active' : ''}`}
+          onClick={() => setActiveFilter('minor')}
+        >
+          MINOR ARCANA
+        </button>
+      </div>
+
+      {/* Cards Grid */}
+      <div className="cards-grid">
+        {filteredCards.map((card) => (
+          <div
+            key={card.id}
+            className={`card-item ${selectedCard?.id === card.id ? 'selected' : ''}`}
+            onClick={() => handleCardSelect(card)}
+          >
+            <div className="card-placeholder">
+              <span className="card-number">{card.number}</span>
+              <div className="card-image-container">
+                {card.image_url ? (
+                  <img 
+                    src={card.image_url} 
+                    alt={card.name}
+                    className="card-image"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="card-image-placeholder">
+                    <span className="placeholder-text">CARD</span>
+                  </div>
+                )}
+              </div>
+              <span className="card-name">{card.name}</span>
+            </div>
+          </div>
         ))}
       </div>
 
-      <div className="content-scroll">
-        <div className="header-section">
-          <h1 className="page-title">✦ TAROT COLLECTION ✦</h1>
-          <p className="page-subtitle">{tarotCards.length} cards of ancient wisdom</p>
-        </div>
-
-        {/* Search & Filter */}
-        <div className="search-filter">
-          <div className="search-bar">
-            <span className="search-icon">🔍</span>
-            <input type="text" placeholder="Search cards..." className="search-input" />
-          </div>
-          <div className="filter-buttons">
-            <button 
-              className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
-              onClick={() => setFilter('all')}
-            >
-              All ({tarotCards.length})
-            </button>
-            <button 
-              className={`filter-btn ${filter === 'major' ? 'active' : ''}`}
-              onClick={() => setFilter('major')}
-            >
-              Major (22)
-            </button>
-            <button 
-              className={`filter-btn ${filter === 'minor' ? 'active' : ''}`}
-              onClick={() => setFilter('minor')}
-            >
-              Minor
-            </button>
-          </div>
-        </div>
-
-        {/* Cards Grid - 4 COLUMNS */}
-        <div className="cards-grid">
-          {filteredCards.map((card) => (
-            <div 
-              key={card.id} 
-              className="card-item"
-              onClick={() => handleCardClick(card)}
-            >
-              <div className="card-astro-symbol">{card.astrologicalSymbol}</div>
-              <div className="card-number">{card.number}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Card Detail Modal */}
+      {/* Floating Preview */}
       {selectedCard && (
-        <div className="modal-overlay" onClick={handleCloseModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={handleCloseModal}>✕</button>
-            
-            <div className="modal-header">
-              <div className="modal-astro-symbol">{selectedCard.astrologicalSymbol}</div>
-              <h2 className="modal-title">{selectedCard.name}</h2>
-              <p className="modal-number">{selectedCard.number}</p>
-              <p className="modal-meta">
-                {selectedCard.zodiac} · {selectedCard.element}
+        <div className="floating-preview">
+          <div className="preview-card">
+            <div className="preview-card-image">
+              {selectedCard.image_url ? (
+                <img 
+                  src={selectedCard.image_url} 
+                  alt={selectedCard.name}
+                  className="preview-image"
+                />
+              ) : (
+                <>
+                  <span className="preview-number">{selectedCard.number}</span>
+                  <div className="preview-placeholder">
+                    <span>{selectedCard.name}</span>
+                  </div>
+                </>
+              )}
+            </div>
+            <div className="preview-info">
+              <h3>{selectedCard.name}</h3>
+              <p className="preview-arcana">
+                {selectedCard.arcana === 'major' ? 'Major Arcana' : selectedCard.suit}
               </p>
+              <p className="preview-meaning">{selectedCard.meaning}</p>
             </div>
-
-            <div className="modal-body">
-              <div className="meaning-section">
-                <h3 className="section-title">Upright Meaning</h3>
-                <p className="meaning-text">{selectedCard.meaning.upright}</p>
-                <div className="keywords">
-                  {selectedCard.keywords.upright.map((keyword, idx) => (
-                    <span key={idx} className="keyword-tag">{keyword}</span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="meaning-section">
-                <h3 className="section-title">Reversed Meaning</h3>
-                <p className="meaning-text">{selectedCard.meaning.reversed}</p>
-                <div className="keywords">
-                  {selectedCard.keywords.reversed.map((keyword, idx) => (
-                    <span key={idx} className="keyword-tag reversed">{keyword}</span>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <button 
-              className="modal-cta"
-              onClick={handleAddToCollection}
-            >
-              ADD TO COLLECTION
-            </button>
           </div>
+          <button className="view-card-btn" onClick={handleViewCard}>
+            VIEW CARD
+          </button>
         </div>
       )}
     </div>
