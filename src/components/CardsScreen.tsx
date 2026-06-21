@@ -83,7 +83,7 @@ export default function CardsScreen({ onNavigate }: Props) {
         </button>
       </div>
 
-      {/* Cards Grid */}
+      {/* Cards Grid - 5 Columns */}
       <div className="cards-grid">
         {filteredCards.map((card) => (
           <div
@@ -91,7 +91,7 @@ export default function CardsScreen({ onNavigate }: Props) {
             className={`card-item ${selectedCard?.id === card.id ? 'selected' : ''}`}
             onClick={() => handleCardSelect(card)}
           >
-            <div className="card-placeholder">
+            <div className="card-banner">
               <span className="card-number">{card.number}</span>
               <div className="card-image-container">
                 {card.image_url ? (
@@ -107,7 +107,7 @@ export default function CardsScreen({ onNavigate }: Props) {
                   </div>
                 )}
               </div>
-              <span className="card-name">{card.name}</span>
+              <span className="card-name" title={card.name}>{card.name}</span>
             </div>
           </div>
         ))}
