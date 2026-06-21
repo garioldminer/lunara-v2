@@ -22,7 +22,7 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'New beginnings, innocence, spontaneity',
     keywords: ['beginnings', 'innocence', 'spontaneity', 'free spirit'],
-    image_url: `${SUPABASE_STORAGE_URL}/front/0-the-fool.png`,
+    image_url: `${SUPABASE_STORAGE_URL}/front/0-the-fool.jpg`,
     back_image_url: ''
   },
   {
@@ -32,7 +32,7 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Manifestation, resourcefulness, power',
     keywords: ['manifestation', 'resourcefulness', 'power', 'inspired action'],
-    image_url: `${SUPABASE_STORAGE_URL}/front/1-the-magician.png`,
+    image_url: `${SUPABASE_STORAGE_URL}/front/1-the-magician.jpg`,
     back_image_url: ''
   },
   {
@@ -42,7 +42,7 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Intuition, sacred knowledge, divine feminine',
     keywords: ['intuition', 'sacred knowledge', 'divine feminine', 'subconscious mind'],
-    image_url: `${SUPABASE_STORAGE_URL}/front/2-the-high-priestess.png`,
+    image_url: `${SUPABASE_STORAGE_URL}/front/2-the-high-priestess.jpg`,
     back_image_url: ''
   },
   {
@@ -52,7 +52,7 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Femininity, beauty, nature, nurturing',
     keywords: ['femininity', 'beauty', 'nature', 'nurturing', 'abundance'],
-    image_url: `${SUPABASE_STORAGE_URL}/front/3-the-empress.png`,
+    image_url: `${SUPABASE_STORAGE_URL}/front/3-the-empress.jpg`,
     back_image_url: ''
   },
   {
@@ -62,7 +62,7 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Authority, establishment, structure, father figure',
     keywords: ['authority', 'establishment', 'structure', 'father figure'],
-    image_url: `${SUPABASE_STORAGE_URL}/front/4-the-emperor.png`,
+    image_url: `${SUPABASE_STORAGE_URL}/front/4-the-emperor.jpg`,
     back_image_url: ''
   },
   {
