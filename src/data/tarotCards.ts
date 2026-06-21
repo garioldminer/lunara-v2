@@ -72,7 +72,7 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Spiritual wisdom, religious beliefs, conformity',
     keywords: ['spiritual wisdom', 'religious beliefs', 'conformity', 'tradition'],
-    image_url: `${SUPABASE_STORAGE_URL}/front/5-the-hierophant.png`,
+    image_url: `${SUPABASE_STORAGE_URL}/front/5-the-hierophant.jpg`,
     back_image_url: ''
   },
   {
@@ -82,7 +82,7 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Love, harmony, relationships, values alignment',
     keywords: ['love', 'harmony', 'relationships', 'values alignment'],
-    image_url: `${SUPABASE_STORAGE_URL}/front/6-the-lovers.png`,
+    image_url: `${SUPABASE_STORAGE_URL}/front/6-the-lovers.jpg`,
     back_image_url: ''
   },
   {
@@ -92,7 +92,7 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Control, willpower, success, determination',
     keywords: ['control', 'willpower', 'success', 'determination'],
-    image_url: `${SUPABASE_STORAGE_URL}/front/7-the-chariot.png`,
+    image_url: `${SUPABASE_STORAGE_URL}/front/7-the-chariot.jpg`,
     back_image_url: ''
   },
   {
@@ -102,7 +102,7 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Strength, courage, persuasion, influence',
     keywords: ['strength', 'courage', 'persuasion', 'influence'],
-    image_url: `${SUPABASE_STORAGE_URL}/front/8-strength.png`,
+    image_url: `${SUPABASE_STORAGE_URL}/front/8-strength.jpg`,
     back_image_url: ''
   },
   {
@@ -112,7 +112,7 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Soul searching, introspection, inner guidance',
     keywords: ['soul searching', 'introspection', 'inner guidance', 'solitude'],
-    image_url: `${SUPABASE_STORAGE_URL}/front/9-the-hermit.png`,
+    image_url: `${SUPABASE_STORAGE_URL}/front/9-the-hermit.jpg`,
     back_image_url: ''
   },
   {
@@ -122,7 +122,7 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Good luck, karma, life cycles, destiny',
     keywords: ['good luck', 'karma', 'life cycles', 'destiny'],
-    image_url: `${SUPABASE_STORAGE_URL}/front/10-wheel-of-fortune.png`,
+    image_url: `${SUPABASE_STORAGE_URL}/front/10-wheel-of-fortune.jpg`,
     back_image_url: ''
   },
   {
@@ -132,7 +132,7 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Justice, fairness, truth, cause and effect',
     keywords: ['justice', 'fairness', 'truth', 'cause and effect'],
-    image_url: `${SUPABASE_STORAGE_URL}/front/11-justice.png`,
+    image_url: `${SUPABASE_STORAGE_URL}/front/11-justice.jpg`,
     back_image_url: ''
   },
   {
@@ -142,7 +142,7 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Pause, surrender, letting go, new perspectives',
     keywords: ['pause', 'surrender', 'letting go', 'new perspectives'],
-    image_url: `${SUPABASE_STORAGE_URL}/front/12-the-hanged-man.png`,
+    image_url: `${SUPABASE_STORAGE_URL}/front/12-the-hanged-man.jpg`,
     back_image_url: ''
   },
   {
@@ -152,7 +152,7 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Endings, change, transformation, transition',
     keywords: ['endings', 'change', 'transformation', 'transition'],
-    image_url: `${SUPABASE_STORAGE_URL}/front/13-death.png`,
+    image_url: `${SUPABASE_STORAGE_URL}/front/13-death.jpg`,
     back_image_url: ''
   },
   {
@@ -162,7 +162,7 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Balance, moderation, patience, purpose',
     keywords: ['balance', 'moderation', 'patience', 'purpose'],
-    image_url: `${SUPABASE_STORAGE_URL}/front/14-temperance.png`,
+    image_url: `${SUPABASE_STORAGE_URL}/front/14-temperance.jpg`,
     back_image_url: ''
   },
   {
@@ -172,7 +172,7 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Shadow self, attachment, addiction, restriction',
     keywords: ['shadow self', 'attachment', 'addiction', 'restriction'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/15-the-devil.jpg`,
     back_image_url: ''
   },
   {
@@ -182,7 +182,7 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Sudden change, upheaval, chaos, revelation',
     keywords: ['sudden change', 'upheaval', 'chaos', 'revelation'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/16-the-tower.jpg`,
     back_image_url: ''
   },
   {
