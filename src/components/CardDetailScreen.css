@@ -160,6 +160,8 @@
   .detail-section:nth-child(1) { animation-delay: 0.1s; }
   .detail-section:nth-child(2) { animation-delay: 0.2s; }
   .detail-section:nth-child(3) { animation-delay: 0.3s; }
+  .detail-section:nth-child(4) { animation-delay: 0.4s; }
+  .detail-section:nth-child(5) { animation-delay: 0.5s; }
   
   @keyframes slideUp {
     from {
@@ -209,6 +211,28 @@
   .detail-keyword-tag:hover {
     background: rgba(197, 160, 89, 0.2);
     transform: translateY(-2px);
+  }
+  
+  /* Reversed Keyword Tag */
+  .detail-keyword-tag.reversed {
+    background: rgba(167, 139, 250, 0.15);
+    border: 1px solid rgba(167, 139, 250, 0.3);
+    color: #a78bfa;
+  }
+  
+  .detail-keyword-tag.reversed:hover {
+    background: rgba(167, 139, 250, 0.25);
+    transform: translateY(-2px);
+  }
+  
+  /* Reversed Meaning Section - განსხვავებული სტილი */
+  .detail-section.reversed-section .detail-section-title {
+    color: #a78bfa;
+  }
+  
+  .detail-section.reversed-section .detail-section-text {
+    color: rgba(167, 139, 250, 0.85);
+    font-style: italic;
   }
   
   /* Info Grid */

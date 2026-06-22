@@ -9,7 +9,7 @@ interface Props {
 }
 
 export default function CardDetailScreen({ cardId, onNavigate }: Props) {
-  const [card, setCard] = useState(tarotCards.find(c => c.id === cardId));
+  const card = tarotCards.find(c => c.id === cardId);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
@@ -82,12 +82,28 @@ export default function CardDetailScreen({ cardId, onNavigate }: Props) {
           <p className="detail-section-text">{card.meaning}</p>
         </div>
 
+        {/* Reversed Meaning Section */}
+        <div className="detail-section">
+          <h2 className="detail-section-title">Reversed Meaning</h2>
+          <p className="detail-section-text">{card.reversed_meaning}</p>
+        </div>
+
         {/* Keywords Section */}
         <div className="detail-section">
           <h2 className="detail-section-title">Keywords</h2>
           <div className="detail-keywords">
             {card.keywords.map((keyword: string, idx: number) => (
               <span key={idx} className="detail-keyword-tag">{keyword}</span>
+            ))}
+          </div>
+        </div>
+
+        {/* Reversed Keywords Section */}
+        <div className="detail-section">
+          <h2 className="detail-section-title">Reversed Keywords</h2>
+          <div className="detail-keywords">
+            {card.reversed_keywords.map((keyword: string, idx: number) => (
+              <span key={idx} className="detail-keyword-tag reversed">{keyword}</span>
             ))}
           </div>
         </div>
