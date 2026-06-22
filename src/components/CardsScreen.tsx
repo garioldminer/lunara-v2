@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { tarotCards } from '../data/tarotCards';
-import { Search, Filter } from 'lucide-react';
+import { tarotCards, SUITS } from '../data/tarotCards';
+import { X } from 'lucide-react';
 import './CardsScreen.css';
 
 type FilterType = 'all' | 'major' | 'minor';
@@ -10,19 +10,15 @@ interface Props {
 }
 
 export default function CardsScreen({ onNavigate }: Props) {
-  const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [selectedCard, setSelectedCard] = useState(tarotCards[0]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Filter cards
   const filteredCards = tarotCards.filter((card) => {
-    const matchesSearch = card.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter =
-      activeFilter === 'all'
-        ? true
-        : activeFilter === 'major'
-        ? card.arcana === 'major'
-        : card.arcana === 'minor';
-    return matchesSearch && matchesFilter;
+    if (activeFilter === 'all') return true;
+    if (activeFilter === 'major') return card.arcana === 'major';
+    return card.arcana === 'minor';
   });
 
   const handleCardSelect = (card: typeof tarotCards[0]) => {
@@ -30,37 +26,33 @@ export default function CardsScreen({ onNavigate }: Props) {
   };
 
   const handleViewCard = () => {
-    if (selectedCard && onNavigate) {
-      onNavigate(`card-detail-${selectedCard.id}`);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  // Helper function to get card metadata
+  const getCardMeta = (card: typeof tarotCards[0]) => {
+    if (card.arcana === 'major') {
+      return 'Major Arcana';
+    } else if (card.suit && SUITS[card.suit]) {
+      return `${SUITS[card.suit].name} · ${SUITS[card.suit].element}`;
     }
+    return 'Minor Arcana';
   };
 
   return (
     <div className="cards-screen">
-      {/* Header */}
+      {/* Elegant Header */}
       <div className="cards-header">
-        <h1 className="cards-title">TAROT CARDS</h1>
-        <div className="header-ornament">✦ ─── ✦</div>
+        <div className="header-ornament-top">✦ ─── ✦</div>
+        <h1 className="cards-title">Tarot Cards</h1>
+        <div className="header-ornament-bottom">✦ ─── ✦</div>
       </div>
 
-      {/* Search Bar */}
-      <div className="search-container">
-        <div className="search-box">
-          <Search size={18} className="search-icon" />
-          <input
-            type="text"
-            placeholder="Search cards..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-input"
-          />
-        </div>
-        <button className="filter-btn">
-          <Filter size={18} />
-        </button>
-      </div>
-
-      {/* Filter Tabs */}
+      {/* Filter Tabs - Elegant */}
       <div className="filter-tabs">
         <button
           className={`filter-tab ${activeFilter === 'all' ? 'active' : ''}`}
@@ -82,7 +74,7 @@ export default function CardsScreen({ onNavigate }: Props) {
         </button>
       </div>
 
-      {/* Cards Grid - 5 Columns, NO banner, NO text */}
+      {/* Cards Grid - 5 Columns */}
       <div className="cards-grid">
         {filteredCards.map((card) => (
           <div
@@ -130,7 +122,7 @@ export default function CardsScreen({ onNavigate }: Props) {
             <div className="preview-info">
               <h3>{selectedCard.name}</h3>
               <p className="preview-arcana">
-                {selectedCard.arcana === 'major' ? 'Major Arcana' : selectedCard.suit}
+                {getCardMeta(selectedCard)}
               </p>
               <p className="preview-meaning">{selectedCard.meaning}</p>
             </div>
@@ -138,6 +130,51 @@ export default function CardsScreen({ onNavigate }: Props) {
           <button className="view-card-btn" onClick={handleViewCard}>
             VIEW CARD
           </button>
+        </div>
+      )}
+
+      {/* Card Detail Modal */}
+      {isModalOpen && selectedCard && (
+        <div className="card-modal-overlay" onClick={handleCloseModal}>
+          <div className="card-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={handleCloseModal}>
+              <X size={20} />
+            </button>
+            
+            <div className="modal-card-image">
+              {selectedCard.image_url ? (
+                <img 
+                  src={selectedCard.image_url} 
+                  alt={selectedCard.name}
+                  className="modal-image"
+                />
+              ) : (
+                <div className="modal-placeholder">
+                  <span className="modal-number">{selectedCard.number}</span>
+                  <span className="modal-name">{selectedCard.name}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="modal-content">
+              <h2 className="modal-title">{selectedCard.name}</h2>
+              <p className="modal-meta">{getCardMeta(selectedCard)}</p>
+
+              <div className="modal-meaning">
+                <h3 className="modal-label">Meaning</h3>
+                <p className="modal-text">{selectedCard.meaning}</p>
+              </div>
+
+              <div className="modal-keywords">
+                <h3 className="modal-label">Keywords</h3>
+                <div className="keywords-container">
+                  {selectedCard.keywords.map((keyword: string, idx: number) => (
+                    <span key={idx} className="keyword-tag">{keyword}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
