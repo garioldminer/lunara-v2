@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { tarotCards, SUITS } from '../data/tarotCards';
-import { X } from 'lucide-react';
+import { X, ArrowLeft } from 'lucide-react';
 import './CardsScreen.css';
 
 type FilterType = 'all' | 'major' | 'minor';
@@ -33,6 +33,12 @@ export default function CardsScreen({ onNavigate }: Props) {
     setIsModalOpen(false);
   };
 
+  const handleBack = () => {
+    if (onNavigate) {
+      onNavigate('home');
+    }
+  };
+
   // Helper function to get card metadata
   const getCardMeta = (card: typeof tarotCards[0]) => {
     if (card.arcana === 'major') {
@@ -45,8 +51,13 @@ export default function CardsScreen({ onNavigate }: Props) {
 
   return (
     <div className="cards-screen">
-      {/* Elegant Header */}
+      {/* Elegant Header with Back Button */}
       <div className="cards-header">
+        {onNavigate && (
+          <button className="cards-back-btn" onClick={handleBack}>
+            <ArrowLeft size={18} />
+          </button>
+        )}
         <div className="header-ornament-top">✦ ─── ✦</div>
         <h1 className="cards-title">Tarot Cards</h1>
         <div className="header-ornament-bottom">✦ ─── ✦</div>
