@@ -6,29 +6,23 @@
     font-family: 'Georgia', serif;
     overflow-y: auto;
     overflow-x: hidden;
-    padding-bottom: 40px;
-    padding-top: 52px; /* ✅ Telegram header (48px) + 4px gap */
+    padding: 70px 4px 100px 4px;
   }
   
   .tcr-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 20px;
-    position: sticky;
-    top: 52px; /* ✅ Telegram header (48px) + 4px gap */
-    z-index: 100;
-    background: rgba(10, 6, 0, 0.95);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(197, 160, 89, 0.2);
+    padding: 10px 14px;
+    margin-bottom: 8px;
   }
   
   .tcr-back-btn {
     background: rgba(197, 160, 89, 0.1);
     border: 1px solid rgba(197, 160, 89, 0.3);
     color: #C5A059;
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     cursor: pointer;
     display: flex;
@@ -68,7 +62,7 @@
   }
   
   .tcr-header-spacer {
-    width: 40px;
+    width: 36px;
   }
   
   .tcr-intro {
