@@ -388,7 +388,7 @@ export const tarotCards: TarotCard[] = [
     suit: 'wands',
     meaning: 'Natural-born leader, vision, entrepreneur',
     keywords: ['natural-born leader', 'vision', 'entrepreneur'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/35-king-of-wands.jpg`,
     back_image_url: ''
   },
 
@@ -401,7 +401,7 @@ export const tarotCards: TarotCard[] = [
     suit: 'cups',
     meaning: 'Love, new relationships, compassion, creativity',
     keywords: ['love', 'new relationships', 'compassion', 'creativity'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/36-ace-of-cups.jpg`,
     back_image_url: ''
   },
   {
@@ -412,7 +412,7 @@ export const tarotCards: TarotCard[] = [
     suit: 'cups',
     meaning: 'Unified love, partnership, mutual attraction',
     keywords: ['unified love', 'partnership', 'mutual attraction'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/37-two-of-cups.jpg`,
     back_image_url: ''
   },
   {
@@ -423,7 +423,7 @@ export const tarotCards: TarotCard[] = [
     suit: 'cups',
     meaning: 'Celebration, friendship, creativity, collaborations',
     keywords: ['celebration', 'friendship', 'creativity', 'collaborations'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/38-three-of-cups.jpg`,
     back_image_url: ''
   },
   {
@@ -434,7 +434,7 @@ export const tarotCards: TarotCard[] = [
     suit: 'cups',
     meaning: 'Meditation, contemplation, apathy, reevaluation',
     keywords: ['meditation', 'contemplation', 'apathy', 'reevaluation'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/39-four-of-cups.jpg`,
     back_image_url: ''
   },
   {
@@ -445,7 +445,7 @@ export const tarotCards: TarotCard[] = [
     suit: 'cups',
     meaning: 'Regret, failure, disappointment, pessimism',
     keywords: ['regret', 'failure', 'disappointment', 'pessimism'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/40-five-of-cups.jpg`,
     back_image_url: ''
   },
   {
@@ -456,7 +456,7 @@ export const tarotCards: TarotCard[] = [
     suit: 'cups',
     meaning: 'Revisiting the past, childhood memories, innocence',
     keywords: ['revisiting the past', 'childhood memories', 'innocence'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/41-six-of-cups.jpg`,
     back_image_url: ''
   },
   {
@@ -467,7 +467,7 @@ export const tarotCards: TarotCard[] = [
     suit: 'cups',
     meaning: 'Opportunities, choices, wishful thinking, illusion',
     keywords: ['opportunities', 'choices', 'wishful thinking', 'illusion'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/42-seven-of-cups.jpg`,
     back_image_url: ''
   },
   {
@@ -478,7 +478,7 @@ export const tarotCards: TarotCard[] = [
     suit: 'cups',
     meaning: 'Disappointment, abandonment, withdrawal, escapism',
     keywords: ['disappointment', 'abandonment', 'withdrawal', 'escapism'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/43-eight-of-cups.jpg`,
     back_image_url: ''
   },
   {
@@ -489,7 +489,7 @@ export const tarotCards: TarotCard[] = [
     suit: 'cups',
     meaning: 'Contentment, satisfaction, gratitude, wish come true',
     keywords: ['contentment', 'satisfaction', 'gratitude', 'wish come true'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/44-nine-of-cups.jpg`,
     back_image_url: ''
   },
   {
