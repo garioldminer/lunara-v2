@@ -192,7 +192,7 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Hope, faith, purpose, renewal, spirituality',
     keywords: ['hope', 'faith', 'purpose', 'renewal', 'spirituality'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/17-the-star.jpg`,
     back_image_url: ''
   },
   {
@@ -202,7 +202,7 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Illusion, fear, anxiety, subconscious, intuition',
     keywords: ['illusion', 'fear', 'anxiety', 'subconscious', 'intuition'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/18-the-moon.jpg`,
     back_image_url: ''
   },
   {
@@ -212,7 +212,7 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Positivity, fun, warmth, success, vitality',
     keywords: ['positivity', 'fun', 'warmth', 'success', 'vitality'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/19-the-sun.jpg`,
     back_image_url: ''
   },
   {
@@ -222,7 +222,7 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Judgement, rebirth, inner calling, absolution',
     keywords: ['judgement', 'rebirth', 'inner calling', 'absolution'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/20-judgement.jpg`,
     back_image_url: ''
   },
   {
@@ -232,7 +232,7 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Completion, integration, accomplishment, travel',
     keywords: ['completion', 'integration', 'accomplishment', 'travel'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/21-the-world.jpg`,
     back_image_url: ''
   },
 
@@ -245,7 +245,7 @@ export const tarotCards: TarotCard[] = [
     suit: 'wands',
     meaning: 'Inspiration, new opportunities, growth',
     keywords: ['inspiration', 'new opportunities', 'growth'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/22-ace-of-wands.jpg`,
     back_image_url: ''
   },
   {
@@ -256,7 +256,7 @@ export const tarotCards: TarotCard[] = [
     suit: 'wands',
     meaning: 'Future planning, progress, decisions',
     keywords: ['future planning', 'progress', 'decisions'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/23-two-of-wands.jpg`,
     back_image_url: ''
   },
   {
@@ -267,7 +267,7 @@ export const tarotCards: TarotCard[] = [
     suit: 'wands',
     meaning: 'Progress, expansion, foresight',
     keywords: ['progress', 'expansion', 'foresight'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/24-three-of-wands.jpg`,
     back_image_url: ''
   },
   {
@@ -278,7 +278,7 @@ export const tarotCards: TarotCard[] = [
     suit: 'wands',
     meaning: 'Celebration, joy, harmony, relaxation',
     keywords: ['celebration', 'joy', 'harmony', 'relaxation'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/25-four-of-wands.jpg`,
     back_image_url: ''
   },
   {
@@ -289,7 +289,7 @@ export const tarotCards: TarotCard[] = [
     suit: 'wands',
     meaning: 'Conflict, disagreements, competition',
     keywords: ['conflict', 'disagreements', 'competition'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/26-five-of-wands.jpg`,
     back_image_url: ''
   },
   {
@@ -300,7 +300,7 @@ export const tarotCards: TarotCard[] = [
     suit: 'wands',
     meaning: 'Success, public recognition, progress',
     keywords: ['success', 'public recognition', 'progress'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/27-six-of-wands.jpg`,
     back_image_url: ''
   },
   {
@@ -311,7 +311,7 @@ export const tarotCards: TarotCard[] = [
     suit: 'wands',
     meaning: 'Challenge, competition, protection',
     keywords: ['challenge', 'competition', 'protection'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/28-seven-of-wands.jpg`,
     back_image_url: ''
   },
   {
@@ -322,7 +322,7 @@ export const tarotCards: TarotCard[] = [
     suit: 'wands',
     meaning: 'Movement, fast paced change, action',
     keywords: ['movement', 'fast paced change', 'action'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/29-eight-of-wands.jpg`,
     back_image_url: ''
   },
   {
@@ -333,7 +333,7 @@ export const tarotCards: TarotCard[] = [
     suit: 'wands',
     meaning: 'Resilience, courage, persistence',
     keywords: ['resilience', 'courage', 'persistence'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/30-nine-of-wands.jpg`,
     back_image_url: ''
   },
   {
@@ -344,7 +344,7 @@ export const tarotCards: TarotCard[] = [
     suit: 'wands',
     meaning: 'Burden, extra responsibility, hard work',
     keywords: ['burden', 'extra responsibility', 'hard work'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/31-ten-of-wands.jpg`,
     back_image_url: ''
   },
   {
@@ -355,7 +355,7 @@ export const tarotCards: TarotCard[] = [
     suit: 'wands',
     meaning: 'Inspiration, ideas, discovery, limitless potential',
     keywords: ['inspiration', 'ideas', 'discovery', 'limitless potential'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/32-page-of-wands.jpg`,
     back_image_url: ''
   },
   {
@@ -366,7 +366,7 @@ export const tarotCards: TarotCard[] = [
     suit: 'wands',
     meaning: 'Energy, passion, inspired action, adventure',
     keywords: ['energy', 'passion', 'inspired action', 'adventure'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/33-knight-of-wands.jpg`,
     back_image_url: ''
   },
   {
@@ -377,7 +377,7 @@ export const tarotCards: TarotCard[] = [
     suit: 'wands',
     meaning: 'Courage, confidence, independence, social butterfly',
     keywords: ['courage', 'confidence', 'independence', 'social butterfly'],
-    image_url: '',
+    image_url: `${SUPABASE_STORAGE_URL}/front/34-queen-of-wands.jpg`,
     back_image_url: ''
   },
   {
