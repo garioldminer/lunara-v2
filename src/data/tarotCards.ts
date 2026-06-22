@@ -13,6 +13,9 @@ export interface TarotCard {
 // Supabase Storage URL
 const SUPABASE_STORAGE_URL = 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/tarot-cards';
 
+// Card Back URL - ერთი უკანა მხარე ყველა კარტისთვის
+export const CARD_BACK_URL = `${SUPABASE_STORAGE_URL}/back/card-back.jpg`;
+
 export const tarotCards: TarotCard[] = [
   // ===== MAJOR ARCANA (22 კარტი) =====
   {
@@ -23,7 +26,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'New beginnings, innocence, spontaneity',
     keywords: ['beginnings', 'innocence', 'spontaneity', 'free spirit'],
     image_url: `${SUPABASE_STORAGE_URL}/front/0-the-fool.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 2,
@@ -33,7 +36,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Manifestation, resourcefulness, power',
     keywords: ['manifestation', 'resourcefulness', 'power', 'inspired action'],
     image_url: `${SUPABASE_STORAGE_URL}/front/1-the-magician.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 3,
@@ -43,7 +46,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Intuition, sacred knowledge, divine feminine',
     keywords: ['intuition', 'sacred knowledge', 'divine feminine', 'subconscious mind'],
     image_url: `${SUPABASE_STORAGE_URL}/front/2-the-high-priestess.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 4,
@@ -53,7 +56,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Femininity, beauty, nature, nurturing',
     keywords: ['femininity', 'beauty', 'nature', 'nurturing', 'abundance'],
     image_url: `${SUPABASE_STORAGE_URL}/front/3-the-empress.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 5,
@@ -63,7 +66,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Authority, establishment, structure, father figure',
     keywords: ['authority', 'establishment', 'structure', 'father figure'],
     image_url: `${SUPABASE_STORAGE_URL}/front/4-the-emperor.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 6,
@@ -73,7 +76,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Spiritual wisdom, religious beliefs, conformity',
     keywords: ['spiritual wisdom', 'religious beliefs', 'conformity', 'tradition'],
     image_url: `${SUPABASE_STORAGE_URL}/front/5-the-hierophant.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 7,
@@ -83,7 +86,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Love, harmony, relationships, values alignment',
     keywords: ['love', 'harmony', 'relationships', 'values alignment'],
     image_url: `${SUPABASE_STORAGE_URL}/front/6-the-lovers.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 8,
@@ -93,7 +96,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Control, willpower, success, determination',
     keywords: ['control', 'willpower', 'success', 'determination'],
     image_url: `${SUPABASE_STORAGE_URL}/front/7-the-chariot.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 9,
@@ -103,7 +106,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Strength, courage, persuasion, influence',
     keywords: ['strength', 'courage', 'persuasion', 'influence'],
     image_url: `${SUPABASE_STORAGE_URL}/front/8-strength.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 10,
@@ -113,7 +116,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Soul searching, introspection, inner guidance',
     keywords: ['soul searching', 'introspection', 'inner guidance', 'solitude'],
     image_url: `${SUPABASE_STORAGE_URL}/front/9-the-hermit.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 11,
@@ -123,7 +126,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Good luck, karma, life cycles, destiny',
     keywords: ['good luck', 'karma', 'life cycles', 'destiny'],
     image_url: `${SUPABASE_STORAGE_URL}/front/10-wheel-of-fortune.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 12,
@@ -133,7 +136,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Justice, fairness, truth, cause and effect',
     keywords: ['justice', 'fairness', 'truth', 'cause and effect'],
     image_url: `${SUPABASE_STORAGE_URL}/front/11-justice.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 13,
@@ -143,7 +146,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Pause, surrender, letting go, new perspectives',
     keywords: ['pause', 'surrender', 'letting go', 'new perspectives'],
     image_url: `${SUPABASE_STORAGE_URL}/front/12-the-hanged-man.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 14,
@@ -153,7 +156,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Endings, change, transformation, transition',
     keywords: ['endings', 'change', 'transformation', 'transition'],
     image_url: `${SUPABASE_STORAGE_URL}/front/13-death.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 15,
@@ -163,7 +166,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Balance, moderation, patience, purpose',
     keywords: ['balance', 'moderation', 'patience', 'purpose'],
     image_url: `${SUPABASE_STORAGE_URL}/front/14-temperance.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 16,
@@ -173,7 +176,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Shadow self, attachment, addiction, restriction',
     keywords: ['shadow self', 'attachment', 'addiction', 'restriction'],
     image_url: `${SUPABASE_STORAGE_URL}/front/15-the-devil.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 17,
@@ -183,7 +186,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Sudden change, upheaval, chaos, revelation',
     keywords: ['sudden change', 'upheaval', 'chaos', 'revelation'],
     image_url: `${SUPABASE_STORAGE_URL}/front/16-the-tower.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 18,
@@ -193,7 +196,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Hope, faith, purpose, renewal, spirituality',
     keywords: ['hope', 'faith', 'purpose', 'renewal', 'spirituality'],
     image_url: `${SUPABASE_STORAGE_URL}/front/17-the-star.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 19,
@@ -203,7 +206,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Illusion, fear, anxiety, subconscious, intuition',
     keywords: ['illusion', 'fear', 'anxiety', 'subconscious', 'intuition'],
     image_url: `${SUPABASE_STORAGE_URL}/front/18-the-moon.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 20,
@@ -213,7 +216,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Positivity, fun, warmth, success, vitality',
     keywords: ['positivity', 'fun', 'warmth', 'success', 'vitality'],
     image_url: `${SUPABASE_STORAGE_URL}/front/19-the-sun.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 21,
@@ -223,7 +226,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Judgement, rebirth, inner calling, absolution',
     keywords: ['judgement', 'rebirth', 'inner calling', 'absolution'],
     image_url: `${SUPABASE_STORAGE_URL}/front/20-judgement.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 22,
@@ -233,7 +236,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Completion, integration, accomplishment, travel',
     keywords: ['completion', 'integration', 'accomplishment', 'travel'],
     image_url: `${SUPABASE_STORAGE_URL}/front/21-the-world.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
 
   // ===== MINOR ARCANA - WANDS (14 კარტი) =====
@@ -246,7 +249,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Inspiration, new opportunities, growth',
     keywords: ['inspiration', 'new opportunities', 'growth'],
     image_url: `${SUPABASE_STORAGE_URL}/front/22-ace-of-wands.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 24,
@@ -257,7 +260,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Future planning, progress, decisions',
     keywords: ['future planning', 'progress', 'decisions'],
     image_url: `${SUPABASE_STORAGE_URL}/front/23-two-of-wands.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 25,
@@ -268,7 +271,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Progress, expansion, foresight',
     keywords: ['progress', 'expansion', 'foresight'],
     image_url: `${SUPABASE_STORAGE_URL}/front/24-three-of-wands.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 26,
@@ -279,7 +282,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Celebration, joy, harmony, relaxation',
     keywords: ['celebration', 'joy', 'harmony', 'relaxation'],
     image_url: `${SUPABASE_STORAGE_URL}/front/25-four-of-wands.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 27,
@@ -290,7 +293,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Conflict, disagreements, competition',
     keywords: ['conflict', 'disagreements', 'competition'],
     image_url: `${SUPABASE_STORAGE_URL}/front/26-five-of-wands.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 28,
@@ -301,7 +304,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Success, public recognition, progress',
     keywords: ['success', 'public recognition', 'progress'],
     image_url: `${SUPABASE_STORAGE_URL}/front/27-six-of-wands.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 29,
@@ -312,7 +315,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Challenge, competition, protection',
     keywords: ['challenge', 'competition', 'protection'],
     image_url: `${SUPABASE_STORAGE_URL}/front/28-seven-of-wands.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 30,
@@ -323,7 +326,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Movement, fast paced change, action',
     keywords: ['movement', 'fast paced change', 'action'],
     image_url: `${SUPABASE_STORAGE_URL}/front/29-eight-of-wands.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 31,
@@ -334,7 +337,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Resilience, courage, persistence',
     keywords: ['resilience', 'courage', 'persistence'],
     image_url: `${SUPABASE_STORAGE_URL}/front/30-nine-of-wands.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 32,
@@ -345,7 +348,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Burden, extra responsibility, hard work',
     keywords: ['burden', 'extra responsibility', 'hard work'],
     image_url: `${SUPABASE_STORAGE_URL}/front/31-ten-of-wands.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 33,
@@ -356,7 +359,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Inspiration, ideas, discovery, limitless potential',
     keywords: ['inspiration', 'ideas', 'discovery', 'limitless potential'],
     image_url: `${SUPABASE_STORAGE_URL}/front/32-page-of-wands.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 34,
@@ -367,7 +370,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Energy, passion, inspired action, adventure',
     keywords: ['energy', 'passion', 'inspired action', 'adventure'],
     image_url: `${SUPABASE_STORAGE_URL}/front/33-knight-of-wands.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 35,
@@ -378,7 +381,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Courage, confidence, independence, social butterfly',
     keywords: ['courage', 'confidence', 'independence', 'social butterfly'],
     image_url: `${SUPABASE_STORAGE_URL}/front/34-queen-of-wands.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 36,
@@ -389,7 +392,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Natural-born leader, vision, entrepreneur',
     keywords: ['natural-born leader', 'vision', 'entrepreneur'],
     image_url: `${SUPABASE_STORAGE_URL}/front/35-king-of-wands.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
 
   // ===== MINOR ARCANA - CUPS (14 კარტი) =====
@@ -402,7 +405,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Love, new relationships, compassion, creativity',
     keywords: ['love', 'new relationships', 'compassion', 'creativity'],
     image_url: `${SUPABASE_STORAGE_URL}/front/36-ace-of-cups.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 38,
@@ -413,7 +416,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Unified love, partnership, mutual attraction',
     keywords: ['unified love', 'partnership', 'mutual attraction'],
     image_url: `${SUPABASE_STORAGE_URL}/front/37-two-of-cups.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 39,
@@ -424,7 +427,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Celebration, friendship, creativity, collaborations',
     keywords: ['celebration', 'friendship', 'creativity', 'collaborations'],
     image_url: `${SUPABASE_STORAGE_URL}/front/38-three-of-cups.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 40,
@@ -435,7 +438,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Meditation, contemplation, apathy, reevaluation',
     keywords: ['meditation', 'contemplation', 'apathy', 'reevaluation'],
     image_url: `${SUPABASE_STORAGE_URL}/front/39-four-of-cups.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 41,
@@ -446,7 +449,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Regret, failure, disappointment, pessimism',
     keywords: ['regret', 'failure', 'disappointment', 'pessimism'],
     image_url: `${SUPABASE_STORAGE_URL}/front/40-five-of-cups.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 42,
@@ -457,7 +460,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Revisiting the past, childhood memories, innocence',
     keywords: ['revisiting the past', 'childhood memories', 'innocence'],
     image_url: `${SUPABASE_STORAGE_URL}/front/41-six-of-cups.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 43,
@@ -468,7 +471,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Opportunities, choices, wishful thinking, illusion',
     keywords: ['opportunities', 'choices', 'wishful thinking', 'illusion'],
     image_url: `${SUPABASE_STORAGE_URL}/front/42-seven-of-cups.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 44,
@@ -479,7 +482,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Disappointment, abandonment, withdrawal, escapism',
     keywords: ['disappointment', 'abandonment', 'withdrawal', 'escapism'],
     image_url: `${SUPABASE_STORAGE_URL}/front/43-eight-of-cups.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 45,
@@ -490,7 +493,7 @@ export const tarotCards: TarotCard[] = [
     meaning: 'Contentment, satisfaction, gratitude, wish come true',
     keywords: ['contentment', 'satisfaction', 'gratitude', 'wish come true'],
     image_url: `${SUPABASE_STORAGE_URL}/front/44-nine-of-cups.jpg`,
-    back_image_url: ''
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 46,
@@ -500,8 +503,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'cups',
     meaning: 'Divine love, blissful relationships, harmony, alignment',
     keywords: ['divine love', 'blissful relationships', 'harmony', 'alignment'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/45-ten-of-cups.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 47,
@@ -511,8 +514,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'cups',
     meaning: 'Creative opportunities, curiosity, possibility',
     keywords: ['creative opportunities', 'curiosity', 'possibility'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/46-page-of-cups.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 48,
@@ -522,8 +525,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'cups',
     meaning: 'Creativity, romance, charm, imagination',
     keywords: ['creativity', 'romance', 'charm', 'imagination'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/47-knight-of-cups.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 49,
@@ -533,8 +536,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'cups',
     meaning: 'Compassion, calm, comfort, emotional security',
     keywords: ['compassion', 'calm', 'comfort', 'emotional security'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/48-queen-of-cups.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 50,
@@ -544,8 +547,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'cups',
     meaning: 'Emotionally balanced, compassionate, diplomatic',
     keywords: ['emotionally balanced', 'compassionate', 'diplomatic'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/49-king-of-cups.jpg`,
+    back_image_url: CARD_BACK_URL
   },
 
   // ===== MINOR ARCANA - SWORDS (14 კარტი) =====
@@ -557,8 +560,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'swords',
     meaning: 'Breakthroughs, new ideas, mental clarity, success',
     keywords: ['breakthroughs', 'new ideas', 'mental clarity', 'success'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/50-ace-of-swords.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 52,
@@ -568,8 +571,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'swords',
     meaning: 'Difficult decisions, weighing options, stalemate',
     keywords: ['difficult decisions', 'weighing options', 'stalemate'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/51-two-of-swords.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 53,
@@ -579,8 +582,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'swords',
     meaning: 'Heartbreak, emotional pain, sorrow, grief',
     keywords: ['heartbreak', 'emotional pain', 'sorrow', 'grief'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/52-three-of-swords.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 54,
@@ -590,8 +593,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'swords',
     meaning: 'Rest, relaxation, meditation, contemplation',
     keywords: ['rest', 'relaxation', 'meditation', 'contemplation'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/53-four-of-swords.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 55,
@@ -601,8 +604,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'swords',
     meaning: 'Conflict, disagreements, competition, defeat',
     keywords: ['conflict', 'disagreements', 'competition', 'defeat'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/54-five-of-swords.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 56,
@@ -612,8 +615,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'swords',
     meaning: 'Transition, change, rite of passage, releasing baggage',
     keywords: ['transition', 'change', 'rite of passage', 'releasing baggage'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/55-six-of-swords.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 57,
@@ -623,8 +626,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'swords',
     meaning: 'Betrayal, deception, getting away with something',
     keywords: ['betrayal', 'deception', 'getting away with something'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/56-seven-of-swords.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 58,
@@ -634,8 +637,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'swords',
     meaning: 'Negative thoughts, self-imposed restriction, imprisonment',
     keywords: ['negative thoughts', 'self-imposed restriction', 'imprisonment'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/57-eight-of-swords.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 59,
@@ -645,8 +648,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'swords',
     meaning: 'Anxiety, worry, fear, depression, nightmares',
     keywords: ['anxiety', 'worry', 'fear', 'depression', 'nightmares'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/58-nine-of-swords.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 60,
@@ -656,8 +659,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'swords',
     meaning: 'Painful endings, deep wounds, betrayal, loss',
     keywords: ['painful endings', 'deep wounds', 'betrayal', 'loss'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/59-ten-of-swords.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 61,
@@ -667,8 +670,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'swords',
     meaning: 'New ideas, curiosity, thirst for knowledge',
     keywords: ['new ideas', 'curiosity', 'thirst for knowledge'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/60-page-of-swords.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 62,
@@ -678,8 +681,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'swords',
     meaning: 'Ambitious, action-oriented, driven to succeed',
     keywords: ['ambitious', 'action-oriented', 'driven to succeed'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/61-knight-of-swords.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 63,
@@ -689,8 +692,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'swords',
     meaning: 'Independent, unbiased judgement, clear boundaries',
     keywords: ['independent', 'unbiased judgement', 'clear boundaries'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/62-queen-of-swords.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 64,
@@ -700,8 +703,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'swords',
     meaning: 'Mental clarity, intellectual power, authority, truth',
     keywords: ['mental clarity', 'intellectual power', 'authority', 'truth'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/63-king-of-swords.jpg`,
+    back_image_url: CARD_BACK_URL
   },
 
   // ===== MINOR ARCANA - PENTACLES (14 კარტი) =====
@@ -713,8 +716,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'pentacles',
     meaning: 'A new financial or career opportunity, manifestation',
     keywords: ['new financial opportunity', 'career opportunity', 'manifestation'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/64-ace-of-pentacles.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 66,
@@ -724,8 +727,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'pentacles',
     meaning: 'Multiple priorities, time management, prioritization',
     keywords: ['multiple priorities', 'time management', 'prioritization'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/65-two-of-pentacles.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 67,
@@ -735,8 +738,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'pentacles',
     meaning: 'Teamwork, collaboration, learning, implementation',
     keywords: ['teamwork', 'collaboration', 'learning', 'implementation'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/66-three-of-pentacles.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 68,
@@ -746,8 +749,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'pentacles',
     meaning: 'Saving money, security, conservatism, scarcity',
     keywords: ['saving money', 'security', 'conservatism', 'scarcity'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/67-four-of-pentacles.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 69,
@@ -757,8 +760,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'pentacles',
     meaning: 'Financial loss, poverty, lack mindset, isolation',
     keywords: ['financial loss', 'poverty', 'lack mindset', 'isolation'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/68-five-of-pentacles.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 70,
@@ -768,8 +771,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'pentacles',
     meaning: 'Giving, receiving, sharing wealth, generosity',
     keywords: ['giving', 'receiving', 'sharing wealth', 'generosity'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/69-six-of-pentacles.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 71,
@@ -779,8 +782,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'pentacles',
     meaning: 'Long-term view, sustainable results, perseverance',
     keywords: ['long-term view', 'sustainable results', 'perseverance'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/70-seven-of-pentacles.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 72,
@@ -790,8 +793,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'pentacles',
     meaning: 'Apprenticeship, repetitive tasks, mastery, skill development',
     keywords: ['apprenticeship', 'repetitive tasks', 'mastery', 'skill development'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/71-eight-of-pentacles.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 73,
@@ -801,8 +804,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'pentacles',
     meaning: 'Abundance, luxury, self-sufficiency, financial independence',
     keywords: ['abundance', 'luxury', 'self-sufficiency', 'financial independence'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/72-nine-of-pentacles.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 74,
@@ -812,8 +815,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'pentacles',
     meaning: 'Wealth, financial security, family, long-term success',
     keywords: ['wealth', 'financial security', 'family', 'long-term success'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/73-ten-of-pentacles.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 75,
@@ -823,8 +826,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'pentacles',
     meaning: 'Manifestation, financial opportunity, skill development',
     keywords: ['manifestation', 'financial opportunity', 'skill development'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/74-page-of-pentacles.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 76,
@@ -834,8 +837,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'pentacles',
     meaning: 'Hard work, productivity, routine, conservatism',
     keywords: ['hard work', 'productivity', 'routine', 'conservatism'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/75-knight-of-pentacles.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 77,
@@ -845,8 +848,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'pentacles',
     meaning: 'Nurturing, practical, providing financially, working parent',
     keywords: ['nurturing', 'practical', 'providing financially', 'working parent'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/76-queen-of-pentacles.jpg`,
+    back_image_url: CARD_BACK_URL
   },
   {
     id: 78,
@@ -856,8 +859,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'pentacles',
     meaning: 'Wealth, business, leadership, security, discipline',
     keywords: ['wealth', 'business', 'leadership', 'security', 'discipline'],
-    image_url: '',
-    back_image_url: ''
+    image_url: `${SUPABASE_STORAGE_URL}/front/77-king-of-pentacles.jpg`,
+    back_image_url: CARD_BACK_URL
   }
 ];
 
