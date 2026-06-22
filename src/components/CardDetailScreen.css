@@ -8,6 +8,7 @@
     overflow-x: hidden;
     opacity: 0;
     transition: opacity 0.5s ease;
+    padding-top: 70px; /* ✅ 70px ზედა დაშორება */
   }
   
   .card-detail-screen.loaded {
@@ -17,7 +18,7 @@
   /* Header */
   .detail-header {
     position: sticky;
-    top: 0;
+    top: 70px; /* ✅ 70px-ზე sticky */
     z-index: 100;
     display: flex;
     align-items: center;
@@ -225,7 +226,7 @@
     transform: translateY(-2px);
   }
   
-  /* Reversed Meaning Section - განსხვავებული სტილი */
+  /* Reversed Meaning Section */
   .detail-section.reversed-section .detail-section-title {
     color: #a78bfa;
   }

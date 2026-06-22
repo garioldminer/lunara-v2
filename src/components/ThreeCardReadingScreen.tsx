@@ -1,11 +1,81 @@
-import { ArrowLeft } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, RotateCcw } from 'lucide-react';
+import { tarotCards, TarotCard, SUITS } from '../data/tarotCards';
 import './ThreeCardReadingScreen.css';
 
 interface Props {
   onNavigate?: (screen: string) => void;
 }
 
+type ReadingPhase = 'intro' | 'revealing' | 'complete';
+
+interface ReadingCard {
+  card: TarotCard;
+  isReversed: boolean;
+  position: 'past' | 'present' | 'future';
+  revealed: boolean;
+}
+
 export default function ThreeCardReadingScreen({ onNavigate }: Props) {
+  const [phase, setPhase] = useState<ReadingPhase>('intro');
+  const [reading, setReading] = useState<ReadingCard[]>([]);
+  const [activeCard, setActiveCard] = useState<number | null>(null);
+
+  const positions = [
+    { key: 'past', label: 'Past', subtitle: 'What led you here' },
+    { key: 'present', label: 'Present', subtitle: 'Current energy' },
+    { key: 'future', label: 'Future', subtitle: "What's coming" },
+  ];
+
+  const startReading = () => {
+    const shuffled = [...tarotCards].sort(() => Math.random() - 0.5);
+    const selected = shuffled.slice(0, 3);
+    
+    const newReading: ReadingCard[] = [
+      { card: selected[0], isReversed: Math.random() < 0.5, position: 'past', revealed: false },
+      { card: selected[1], isReversed: Math.random() < 0.5, position: 'present', revealed: false },
+      { card: selected[2], isReversed: Math.random() < 0.5, position: 'future', revealed: false },
+    ];
+    
+    setReading(newReading);
+    setPhase('revealing');
+    setActiveCard(null);
+
+    setTimeout(() => revealCard(0), 800);
+    setTimeout(() => revealCard(1), 1800);
+    setTimeout(() => revealCard(2), 2800);
+    setTimeout(() => setPhase('complete'), 3800);
+  };
+
+  const revealCard = (index: number) => {
+    setReading(prev => prev.map((r, i) => i === index ? { ...r, revealed: true } : r));
+  };
+
+  const resetReading = () => {
+    setPhase('intro');
+    setReading([]);
+    setActiveCard(null);
+  };
+
+  const getCardMeta = (card: TarotCard) => {
+    if (card.arcana === 'major') return 'Major Arcana';
+    if (card.suit && SUITS[card.suit]) {
+      return `${SUITS[card.suit].name} · ${SUITS[card.suit].element}`;
+    }
+    return 'Minor Arcana';
+  };
+
+  const getPositionInterpretation = (position: string, card: TarotCard, isReversed: boolean) => {
+    const meaning = isReversed ? card.reversed_meaning : card.meaning;
+    const interpretations: Record<string, string> = {
+      past: `This card reveals the energies and events that have shaped your current path. ${meaning}`,
+      present: `The present moment is defined by this energy. ${meaning}`,
+      future: `This card illuminates what is emerging in your life. ${meaning}`,
+    };
+    return interpretations[position] || meaning;
+  };
+
   return (
     <div className="three-card-screen">
       <div className="tcr-header">
@@ -22,16 +92,168 @@ export default function ThreeCardReadingScreen({ onNavigate }: Props) {
         <div className="tcr-header-spacer" />
       </div>
 
-      <div className="tcr-intro">
-        <div className="tcr-intro-icon">🔮</div>
-        <h2 className="tcr-intro-title">Coming Soon</h2>
-        <p className="tcr-intro-text">
-          Three Card Reading feature is under development. Check back soon!
-        </p>
-        <button className="tcr-begin-btn" onClick={() => onNavigate && onNavigate('home')}>
-          <span>Back to Home</span>
-        </button>
-      </div>
+      {phase === 'intro' && (
+        <motion.div 
+          className="tcr-intro"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="tcr-intro-icon">🔮</div>
+          <h2 className="tcr-intro-title">Past · Present · Future</h2>
+          <p className="tcr-intro-text">
+            Take a deep breath and focus on your question. The cards will reveal the energies surrounding your situation.
+          </p>
+          <button className="tcr-begin-btn" onClick={startReading}>
+            <span>Begin Reading</span>
+            <span className="tcr-btn-ornament">✦</span>
+          </button>
+        </motion.div>
+      )}
+
+      {(phase === 'revealing' || phase === 'complete') && (
+        <div className="tcr-reading">
+          <div className="tcr-cards-row">
+            {reading.map((readingCard, idx) => (
+              <motion.div
+                key={idx}
+                className={`tcr-card-slot ${readingCard.revealed ? 'revealed' : ''} ${activeCard === idx ? 'active' : ''}`}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.15, duration: 0.5 }}
+                onClick={() => phase === 'complete' && setActiveCard(activeCard === idx ? null : idx)}
+              >
+                <div className="tcr-position-label">{positions[idx].label}</div>
+                <div className="tcr-position-subtitle">{positions[idx].subtitle}</div>
+                
+                <div className="tcr-card-wrapper">
+                  <AnimatePresence mode="wait">
+                    {!readingCard.revealed ? (
+                      <motion.div
+                        key="back"
+                        className="tcr-card-back"
+                        initial={{ rotateY: 0 }}
+                        exit={{ rotateY: 180 }}
+                        transition={{ duration: 0.6 }}
+                      >
+                        <div className="tcr-card-back-design">✦</div>
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="front"
+                        className="tcr-card-front"
+                        initial={{ rotateY: -180 }}
+                        animate={{ rotateY: 0 }}
+                        transition={{ duration: 0.6 }}
+                      >
+                        {readingCard.card.image_url ? (
+                          <img 
+                            src={readingCard.card.image_url} 
+                            alt={readingCard.card.name}
+                            className="tcr-card-image"
+                            style={{ transform: readingCard.isReversed ? 'rotate(180deg)' : 'none' }}
+                          />
+                        ) : (
+                          <div className="tcr-card-placeholder">
+                            <span className="tcr-placeholder-num">{readingCard.card.number}</span>
+                            <span className="tcr-placeholder-name">{readingCard.card.name}</span>
+                          </div>
+                        )}
+                        {readingCard.isReversed && (
+                          <div className="tcr-reversed-badge">R</div>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {readingCard.revealed && (
+                  <motion.div 
+                    className="tcr-card-name"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    {readingCard.card.name}
+                  </motion.div>
+                )}
+              </motion.div>
+            ))}
+          </div>
+
+          <AnimatePresence>
+            {phase === 'complete' && (
+              <motion.div 
+                className="tcr-interpretation"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.6 }}
+              >
+                <div className="tcr-ornament-line">✦ ─── ✦</div>
+                
+                {activeCard !== null ? (
+                  <motion.div 
+                    key={activeCard}
+                    className="tcr-single-interpretation"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                  >
+                    <div className="tcr-interp-position">
+                      {positions[activeCard].label}
+                    </div>
+                    <h3 className="tcr-interp-card-name">
+                      {reading[activeCard].card.name}
+                    </h3>
+                    {reading[activeCard].isReversed && (
+                      <div className="tcr-interp-reversed">(Reversed)</div>
+                    )}
+                    <p className="tcr-interp-meta">
+                      {getCardMeta(reading[activeCard].card)}
+                    </p>
+                    <p className="tcr-interp-text">
+                      {getPositionInterpretation(
+                        reading[activeCard].position, 
+                        reading[activeCard].card,
+                        reading[activeCard].isReversed
+                      )}
+                    </p>
+                    <div className="tcr-interp-keywords">
+                      {(reading[activeCard].isReversed 
+                        ? reading[activeCard].card.reversed_keywords 
+                        : reading[activeCard].card.keywords
+                      ).map((kw, i) => (
+                        <span key={i} className="tcr-keyword">{kw}</span>
+                      ))}
+                    </div>
+                  </motion.div>
+                ) : (
+                  <div className="tcr-all-interpretations">
+                    {reading.map((rc, idx) => (
+                      <div key={idx} className="tcr-interp-block">
+                        <div className="tcr-interp-header">
+                          <span className="tcr-interp-position">{positions[idx].label}</span>
+                          <span className="tcr-interp-dot">·</span>
+                          <span className="tcr-interp-card-name-small">{rc.card.name}</span>
+                          {rc.isReversed && <span className="tcr-interp-reversed-small">(R)</span>}
+                        </div>
+                        <p className="tcr-interp-text">
+                          {getPositionInterpretation(rc.position, rc.card, rc.isReversed)}
+                        </p>
+                      </div>
+                    ))}
+                    <p className="tcr-tap-hint">Tap a card for more details</p>
+                  </div>
+                )}
+
+                <button className="tcr-new-reading-btn" onClick={resetReading}>
+                  <RotateCcw size={16} />
+                  <span>New Reading</span>
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
     </div>
   );
 }
