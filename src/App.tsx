@@ -10,6 +10,7 @@ import AstroScreen from './components/AstroScreen';
 import ProfileScreen from './components/ProfileScreen';
 import PricingScreen from './components/PricingScreen';
 import CardFanScreen from './components/CardFanScreen';
+import CardDetailScreen from './components/CardDetailScreen';
 import BottomNav from './components/BottomNav';
 import { UserProvider, useUser } from './context/UserContext';
 import { getTelegramUser } from './lib/telegramAuth';
@@ -27,7 +28,8 @@ type Screen =
   | 'astro'
   | 'profile'
   | 'pricing'
-  | 'card-fan';
+  | 'card-fan'
+  | 'card-detail';
 
 // ===== USER LOADER COMPONENT =====
 function UserLoader({ onReady }: { onReady: () => void }) {
@@ -74,6 +76,7 @@ function UserLoader({ onReady }: { onReady: () => void }) {
 // ===== MAIN APP CONTENT =====
 function AppContent() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('splash');
+  const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState('home');
   const [userReady, setUserReady] = useState(false);
   const { user, setUser } = useUser();
@@ -110,7 +113,14 @@ function AppContent() {
   const handleNavigate = (screen: string) => {
     console.log('🧭 handleNavigate called with:', screen);
     
-    if (screen === 'draw' || screen === 'card-fan') {
+    // Card Detail navigation: "card-detail-123" → extract ID
+    if (screen.startsWith('card-detail-')) {
+      const cardId = parseInt(screen.split('-')[2]);
+      console.log('💎 Opening card detail for ID:', cardId);
+      setSelectedCardId(cardId);
+      goTo('card-detail');
+    }
+    else if (screen === 'draw' || screen === 'card-fan') {
       goTo('card-fan');
     } else if (screen === 'pricing') {
       goTo('pricing');
@@ -223,6 +233,12 @@ function AppContent() {
       )}
       {currentScreen === 'card-fan' && (
         <CardFanScreen onNavigate={handleNavigate} />
+      )}
+      {currentScreen === 'card-detail' && selectedCardId && (
+        <CardDetailScreen 
+          cardId={selectedCardId} 
+          onNavigate={handleNavigate} 
+        />
       )}
     </div>
   );

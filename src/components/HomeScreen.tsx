@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '../context/UserContext';
+import { tarotCards, SUITS } from '../data/tarotCards';
 import { 
   Gem, Zap, Trophy, Flame, Star, 
   Sparkles, LayoutGrid, Moon, Hash, 
@@ -16,6 +17,49 @@ export default function HomeScreen({ onNavigate }: Props) {
   const { user } = useUser();
   const [rewardClaimed, setRewardClaimed] = useState(false);
   const [timeLeft, setTimeLeft] = useState('14:32:18');
+  const [dailyCard, setDailyCard] = useState<typeof tarotCards[0] | null>(null);
+  const [isDailyReversed, setIsDailyReversed] = useState(false);
+
+  // Daily Card - მიიღე დღის კარტი
+  useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+    const stored = localStorage.getItem('dailyCard');
+    
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed.date === today) {
+        setDailyCard(parsed.card);
+        setIsDailyReversed(parsed.isReversed);
+        return;
+      }
+    }
+
+    // ახალი კარტი
+    const dayOfYear = getDayOfYear(new Date());
+    const cardIndex = dayOfYear % tarotCards.length;
+    const card = tarotCards[cardIndex];
+    const isReversed = Math.random() < 0.5;
+    
+    const newReading = { card, isReversed, date: today };
+    localStorage.setItem('dailyCard', JSON.stringify(newReading));
+    setDailyCard(card);
+    setIsDailyReversed(isReversed);
+  }, []);
+
+  const getDayOfYear = (date: Date): number => {
+    const start = new Date(date.getFullYear(), 0, 0);
+    const diff = date.getTime() - start.getTime();
+    const oneDay = 1000 * 60 * 60 * 24;
+    return Math.floor(diff / oneDay);
+  };
+
+  const getCardMeta = (card: typeof tarotCards[0]) => {
+    if (card.arcana === 'major') return 'Major Arcana';
+    if (card.suit && SUITS[card.suit]) {
+      return `${SUITS[card.suit].element}`;
+    }
+    return '';
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -44,17 +88,23 @@ export default function HomeScreen({ onNavigate }: Props) {
     if (onNavigate) {
       if (action === 'Tarot') {
         onNavigate('card-fan');
+      } else if (action === 'Daily') {
+        onNavigate('daily-card');
+      } else if (action === '3Cards') {
+        onNavigate('three-card-reading');
       } else if (action === 'Astrology') {
         onNavigate('astro');
+      } else if (action === 'Cards') {
+        onNavigate('cards');
       }
     }
   };
 
   const quickActions = [
-    { icon: <LayoutGrid size={28} />, label: 'Tarot', sublabel: 'Readings', color: '#C5A059', action: 'Tarot' },
-    { icon: <Sparkles size={28} />, label: 'Astrology', sublabel: 'Today', color: '#a78bfa', action: 'Astrology' },
-    { icon: <Hash size={28} />, label: 'Numerology', sublabel: 'Report', color: '#60a5fa', action: 'Numerology' },
-    { icon: <Moon size={28} />, label: 'Moon', sublabel: 'Rituals', color: '#fbbf24', action: 'Moon' },
+    { icon: <Sparkles size={28} />, label: 'Daily', sublabel: 'Card', color: '#C5A059', action: 'Daily' },
+    { icon: <LayoutGrid size={28} />, label: '3 Cards', sublabel: 'Reading', color: '#a78bfa', action: '3Cards' },
+    { icon: <Moon size={28} />, label: 'Tarot', sublabel: 'Draw', color: '#60a5fa', action: 'Tarot' },
+    { icon: <Hash size={28} />, label: 'Cards', sublabel: 'Gallery', color: '#fbbf24', action: 'Cards' },
     { icon: <Gem size={28} />, label: 'Crystals', sublabel: '', color: '#f472b6', action: 'Crystals' },
     { icon: <Droplets size={28} />, label: 'Chakras', sublabel: '', color: '#34d399', action: 'Chakras' },
     { icon: <Wind size={28} />, label: 'Runes', sublabel: '', color: '#fb923c', action: 'Runes' },
@@ -70,6 +120,14 @@ export default function HomeScreen({ onNavigate }: Props) {
   const xpPercent = 78;
   const xpCurrent = 7850;
   const xpTotal = 10000;
+
+  // Daily Card display info
+  const dailyCardName = dailyCard?.name || 'THE FOOL';
+  const dailyCardNumber = dailyCard?.number || '0';
+  const dailyCardMeaning = isDailyReversed 
+    ? (dailyCard?.reversed_keywords?.[0] || 'Reflection')
+    : (dailyCard?.keywords?.[0] || 'New Beginnings');
+  const dailyCardElement = dailyCard ? getCardMeta(dailyCard) : '';
 
   return (
     <div className="home-screen">
@@ -113,20 +171,40 @@ export default function HomeScreen({ onNavigate }: Props) {
 
       {/* 2. CARD SECTION - 60/40 Split (Horizontal) */}
       <div className="card-section-split">
-        {/* LEFT - Card of the Day (60%) - Horizontal Layout */}
-        <div className="card-left-horizontal">
+        {/* LEFT - Card of the Day (60%) - Clickable */}
+        <div 
+          className="card-left-horizontal clickable-card"
+          onClick={() => onNavigate && onNavigate('daily-card')}
+        >
           {/* Card Image - Left Side */}
           <div className="card-art-horizontal">
-            <span className="card-number-h">XIII</span>
-            <div className="card-symbol-h">💀</div>
-            <span className="card-name-h">DEATH</span>
+            {dailyCard?.image_url ? (
+              <img 
+                src={dailyCard.image_url} 
+                alt={dailyCardName}
+                className="card-art-image-h"
+                style={{ transform: isDailyReversed ? 'rotate(180deg)' : 'none' }}
+              />
+            ) : (
+              <>
+                <span className="card-number-h">{dailyCardNumber}</span>
+                <div className="card-symbol-h">✦</div>
+                <span className="card-name-h">{dailyCardName}</span>
+              </>
+            )}
+            {isDailyReversed && (
+              <div className="card-reversed-indicator">R</div>
+            )}
           </div>
 
           {/* Card Info - Right Side */}
           <div className="card-info-horizontal">
-            <h3>DEATH</h3>
-            <p className="card-meaning-h">Transformation</p>
-            <p className="card-zodiac-h">Scorpio · Water</p>
+            <div className="card-day-label">CARD OF THE DAY</div>
+            <h3>{dailyCardName}</h3>
+            <p className="card-meaning-h">{dailyCardMeaning}</p>
+            {dailyCardElement && (
+              <p className="card-zodiac-h">{dailyCardElement}</p>
+            )}
             <button className="read-guidance-btn-h">
               READ GUIDANCE
               <ChevronRight size={12} />

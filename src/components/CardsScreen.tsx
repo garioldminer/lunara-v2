@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { tarotCards, SUITS } from '../data/tarotCards';
-import { X, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import './CardsScreen.css';
 
 type FilterType = 'all' | 'major' | 'minor';
@@ -12,7 +12,6 @@ interface Props {
 export default function CardsScreen({ onNavigate }: Props) {
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [selectedCard, setSelectedCard] = useState(tarotCards[0]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Filter cards
   const filteredCards = tarotCards.filter((card) => {
@@ -26,11 +25,9 @@ export default function CardsScreen({ onNavigate }: Props) {
   };
 
   const handleViewCard = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
+    if (onNavigate && selectedCard) {
+      onNavigate(`card-detail-${selectedCard.id}`);
+    }
   };
 
   const handleBack = () => {
@@ -141,51 +138,6 @@ export default function CardsScreen({ onNavigate }: Props) {
           <button className="view-card-btn" onClick={handleViewCard}>
             VIEW CARD
           </button>
-        </div>
-      )}
-
-      {/* Card Detail Modal */}
-      {isModalOpen && selectedCard && (
-        <div className="card-modal-overlay" onClick={handleCloseModal}>
-          <div className="card-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={handleCloseModal}>
-              <X size={20} />
-            </button>
-            
-            <div className="modal-card-image">
-              {selectedCard.image_url ? (
-                <img 
-                  src={selectedCard.image_url} 
-                  alt={selectedCard.name}
-                  className="modal-image"
-                />
-              ) : (
-                <div className="modal-placeholder">
-                  <span className="modal-number">{selectedCard.number}</span>
-                  <span className="modal-name">{selectedCard.name}</span>
-                </div>
-              )}
-            </div>
-
-            <div className="modal-content">
-              <h2 className="modal-title">{selectedCard.name}</h2>
-              <p className="modal-meta">{getCardMeta(selectedCard)}</p>
-
-              <div className="modal-meaning">
-                <h3 className="modal-label">Meaning</h3>
-                <p className="modal-text">{selectedCard.meaning}</p>
-              </div>
-
-              <div className="modal-keywords">
-                <h3 className="modal-label">Keywords</h3>
-                <div className="keywords-container">
-                  {selectedCard.keywords.map((keyword: string, idx: number) => (
-                    <span key={idx} className="keyword-tag">{keyword}</span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       )}
     </div>

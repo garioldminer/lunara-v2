@@ -217,6 +217,24 @@
     gap: 10px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     min-height: 90px;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  /* Clickable Card of the Day */
+  .clickable-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .clickable-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(197, 160, 89, 0.4);
+    box-shadow: 0 8px 25px rgba(197, 160, 89, 0.3);
+  }
+  
+  .clickable-card:active {
+    transform: translateY(0);
   }
   
   /* Card Art - Left Side */
@@ -232,6 +250,18 @@
     box-shadow: 0 4px 15px rgba(197, 160, 89, 0.2);
     padding: 6px;
     gap: 2px;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  /* Card Art Image */
+  .card-art-image-h {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 6px;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
   .card-number-h { 
@@ -253,6 +283,26 @@
     letter-spacing: 0.5px;
   }
   
+  /* Reversed Indicator */
+  .card-reversed-indicator {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: rgba(167, 139, 250, 0.95);
+    color: #fff;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 6px rgba(167, 139, 250, 0.5);
+    z-index: 2;
+  }
+  
   /* Card Info - Right Side */
   .card-info-horizontal {
     flex: 1;
@@ -260,20 +310,31 @@
     flex-direction: column;
     justify-content: center;
     gap: 3px;
-    min-width: 0; /* ✅ ახალი - ტექსტი არ გადავიდეს */
-    overflow: hidden; /* ✅ ახალი */
+    min-width: 0;
+    overflow: hidden;
+  }
+  
+  /* Card Day Label */
+  .card-day-label {
+    font-size: 8px;
+    color: #C5A059;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+    opacity: 0.7;
+    font-weight: 600;
   }
   
   .card-info-horizontal h3 {
     margin: 0;
-    font-size: 13px; /* ✅ 14px → 13px */
+    font-size: 13px;
     color: #C5A059;
     letter-spacing: 0.5px;
     font-weight: 700;
     line-height: 1.1;
-    white-space: nowrap; /* ✅ ახალი */
-    overflow: hidden; /* ✅ ახალი */
-    text-overflow: ellipsis; /* ✅ ახალი */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
   .card-meaning-h {
@@ -282,9 +343,9 @@
     color: #b3a68c;
     font-style: italic;
     line-height: 1.1;
-    white-space: nowrap; /* ✅ ახალი */
-    overflow: hidden; /* ✅ ახალი */
-    text-overflow: ellipsis; /* ✅ ახალი */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
   .card-zodiac-h {
@@ -292,31 +353,31 @@
     font-size: 9px;
     color: #888;
     line-height: 1.1;
-    white-space: nowrap; /* ✅ ახალი */
-    overflow: hidden; /* ✅ ახალი */
-    text-overflow: ellipsis; /* ✅ ახალი */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
   .read-guidance-btn-h {
     background: transparent;
     border: 1px solid #C5A059;
     color: #C5A059;
-    padding: 3px 6px; /* ✅ 4px 8px → 3px 6px */
-    border-radius: 5px; /* ✅ 6px → 5px */
-    font-size: 8px; /* ✅ 9px → 8px */
+    padding: 3px 6px;
+    border-radius: 5px;
+    font-size: 8px;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s;
-    letter-spacing: 0.3px; /* ✅ 0.5px → 0.3px */
+    letter-spacing: 0.3px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 3px; /* ✅ 4px → 3px */
-    width: 100%; /* ✅ fit-content → 100% */
-    max-width: 100%; /* ✅ ახალი */
-    align-self: stretch; /* ✅ flex-start → stretch */
-    box-sizing: border-box; /* ✅ ახალი */
-    white-space: nowrap; /* ✅ ახალი */
+    gap: 3px;
+    width: 100%;
+    max-width: 100%;
+    align-self: stretch;
+    box-sizing: border-box;
+    white-space: nowrap;
   }
   
   .read-guidance-btn-h:hover {
@@ -569,7 +630,7 @@
      ============================================ */
   .quick-access { margin-bottom: 8px; width: 100%; }
   .quick-access h3 { 
-    display: none; /* ✅ წარწერა ამოღებულია */
+    display: none;
   }
   
   .quick-grid {

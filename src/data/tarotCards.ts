@@ -6,6 +6,8 @@ export interface TarotCard {
   suit?: 'wands' | 'cups' | 'swords' | 'pentacles';
   meaning: string;
   keywords: string[];
+  reversed_meaning: string;
+  reversed_keywords: string[];
   image_url: string;
   back_image_url: string;
 }
@@ -25,6 +27,8 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'New beginnings, innocence, spontaneity',
     keywords: ['beginnings', 'innocence', 'spontaneity', 'free spirit'],
+    reversed_meaning: 'Recklessness, risk-taking, holding back, naivety',
+    reversed_keywords: ['recklessness', 'risk-taking', 'holding back', 'naivety'],
     image_url: `${SUPABASE_STORAGE_URL}/front/0-the-fool.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -35,6 +39,8 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Manifestation, resourcefulness, power',
     keywords: ['manifestation', 'resourcefulness', 'power', 'inspired action'],
+    reversed_meaning: 'Manipulation, poor planning, untapped talents, deception',
+    reversed_keywords: ['manipulation', 'poor planning', 'untapped talents', 'deception'],
     image_url: `${SUPABASE_STORAGE_URL}/front/1-the-magician.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -45,6 +51,8 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Intuition, sacred knowledge, divine feminine',
     keywords: ['intuition', 'sacred knowledge', 'divine feminine', 'subconscious mind'],
+    reversed_meaning: 'Secrets, withdrawal, silence, disconnection from intuition',
+    reversed_keywords: ['secrets', 'withdrawal', 'silence', 'disconnection'],
     image_url: `${SUPABASE_STORAGE_URL}/front/2-the-high-priestess.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -55,6 +63,8 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Femininity, beauty, nature, nurturing',
     keywords: ['femininity', 'beauty', 'nature', 'nurturing', 'abundance'],
+    reversed_meaning: 'Creative block, dependence, smothering, emptiness',
+    reversed_keywords: ['creative block', 'dependence', 'smothering', 'emptiness'],
     image_url: `${SUPABASE_STORAGE_URL}/front/3-the-empress.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -65,6 +75,8 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Authority, establishment, structure, father figure',
     keywords: ['authority', 'establishment', 'structure', 'father figure'],
+    reversed_meaning: 'Domination, rigidity, stubbornness, loss of control',
+    reversed_keywords: ['domination', 'rigidity', 'stubbornness', 'loss of control'],
     image_url: `${SUPABASE_STORAGE_URL}/front/4-the-emperor.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -75,6 +87,8 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Spiritual wisdom, religious beliefs, conformity',
     keywords: ['spiritual wisdom', 'religious beliefs', 'conformity', 'tradition'],
+    reversed_meaning: 'Rebellion, unconventionality, personal beliefs, freedom',
+    reversed_keywords: ['rebellion', 'unconventionality', 'personal beliefs', 'freedom'],
     image_url: `${SUPABASE_STORAGE_URL}/front/5-the-hierophant.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -85,6 +99,8 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Love, harmony, relationships, values alignment',
     keywords: ['love', 'harmony', 'relationships', 'values alignment'],
+    reversed_meaning: 'Disharmony, imbalance, misalignment of values, conflict',
+    reversed_keywords: ['disharmony', 'imbalance', 'misalignment', 'conflict'],
     image_url: `${SUPABASE_STORAGE_URL}/front/6-the-lovers.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -95,6 +111,8 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Control, willpower, success, determination',
     keywords: ['control', 'willpower', 'success', 'determination'],
+    reversed_meaning: 'Lack of direction, aggression, no control, defeat',
+    reversed_keywords: ['lack of direction', 'aggression', 'no control', 'defeat'],
     image_url: `${SUPABASE_STORAGE_URL}/front/7-the-chariot.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -105,6 +123,8 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Strength, courage, persuasion, influence',
     keywords: ['strength', 'courage', 'persuasion', 'influence'],
+    reversed_meaning: 'Self-doubt, weakness, insecurity, lack of courage',
+    reversed_keywords: ['self-doubt', 'weakness', 'insecurity', 'lack of courage'],
     image_url: `${SUPABASE_STORAGE_URL}/front/8-strength.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -115,6 +135,8 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Soul searching, introspection, inner guidance',
     keywords: ['soul searching', 'introspection', 'inner guidance', 'solitude'],
+    reversed_meaning: 'Isolation, loneliness, withdrawal, feeling lost',
+    reversed_keywords: ['isolation', 'loneliness', 'withdrawal', 'feeling lost'],
     image_url: `${SUPABASE_STORAGE_URL}/front/9-the-hermit.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -125,6 +147,8 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Good luck, karma, life cycles, destiny',
     keywords: ['good luck', 'karma', 'life cycles', 'destiny'],
+    reversed_meaning: 'Bad luck, resistance to change, breaking cycles',
+    reversed_keywords: ['bad luck', 'resistance to change', 'breaking cycles'],
     image_url: `${SUPABASE_STORAGE_URL}/front/10-wheel-of-fortune.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -135,6 +159,8 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Justice, fairness, truth, cause and effect',
     keywords: ['justice', 'fairness', 'truth', 'cause and effect'],
+    reversed_meaning: 'Unfairness, dishonesty, lack of accountability',
+    reversed_keywords: ['unfairness', 'dishonesty', 'lack of accountability'],
     image_url: `${SUPABASE_STORAGE_URL}/front/11-justice.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -145,6 +171,8 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Pause, surrender, letting go, new perspectives',
     keywords: ['pause', 'surrender', 'letting go', 'new perspectives'],
+    reversed_meaning: 'Stall, resistance, unnecessary sacrifice, indecision',
+    reversed_keywords: ['stall', 'resistance', 'unnecessary sacrifice', 'indecision'],
     image_url: `${SUPABASE_STORAGE_URL}/front/12-the-hanged-man.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -155,6 +183,8 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Endings, change, transformation, transition',
     keywords: ['endings', 'change', 'transformation', 'transition'],
+    reversed_meaning: 'Resistance to change, stagnation, decay, fear',
+    reversed_keywords: ['resistance to change', 'stagnation', 'decay', 'fear'],
     image_url: `${SUPABASE_STORAGE_URL}/front/13-death.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -165,6 +195,8 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Balance, moderation, patience, purpose',
     keywords: ['balance', 'moderation', 'patience', 'purpose'],
+    reversed_meaning: 'Imbalance, excess, lack of long-term vision, discord',
+    reversed_keywords: ['imbalance', 'excess', 'lack of vision', 'discord'],
     image_url: `${SUPABASE_STORAGE_URL}/front/14-temperance.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -175,6 +207,8 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Shadow self, attachment, addiction, restriction',
     keywords: ['shadow self', 'attachment', 'addiction', 'restriction'],
+    reversed_meaning: 'Releasing limiting beliefs, exploring darkness, recovery',
+    reversed_keywords: ['releasing beliefs', 'exploring darkness', 'recovery'],
     image_url: `${SUPABASE_STORAGE_URL}/front/15-the-devil.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -185,6 +219,8 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Sudden change, upheaval, chaos, revelation',
     keywords: ['sudden change', 'upheaval', 'chaos', 'revelation'],
+    reversed_meaning: 'Fear of change, avoiding disaster, delaying the inevitable',
+    reversed_keywords: ['fear of change', 'avoiding disaster', 'delaying'],
     image_url: `${SUPABASE_STORAGE_URL}/front/16-the-tower.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -195,6 +231,8 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Hope, faith, purpose, renewal, spirituality',
     keywords: ['hope', 'faith', 'purpose', 'renewal', 'spirituality'],
+    reversed_meaning: 'Hopelessness, despair, lack of faith, disconnection',
+    reversed_keywords: ['hopelessness', 'despair', 'lack of faith', 'disconnection'],
     image_url: `${SUPABASE_STORAGE_URL}/front/17-the-star.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -205,6 +243,8 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Illusion, fear, anxiety, subconscious, intuition',
     keywords: ['illusion', 'fear', 'anxiety', 'subconscious', 'intuition'],
+    reversed_meaning: 'Confusion, deception, anxiety releasing, clarity',
+    reversed_keywords: ['confusion', 'deception', 'anxiety releasing', 'clarity'],
     image_url: `${SUPABASE_STORAGE_URL}/front/18-the-moon.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -215,6 +255,8 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Positivity, fun, warmth, success, vitality',
     keywords: ['positivity', 'fun', 'warmth', 'success', 'vitality'],
+    reversed_meaning: 'Negativity, depression, sadness, lack of clarity',
+    reversed_keywords: ['negativity', 'depression', 'sadness', 'lack of clarity'],
     image_url: `${SUPABASE_STORAGE_URL}/front/19-the-sun.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -225,6 +267,8 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Judgement, rebirth, inner calling, absolution',
     keywords: ['judgement', 'rebirth', 'inner calling', 'absolution'],
+    reversed_meaning: 'Self-doubt, refusal, harsh self-criticism, delay',
+    reversed_keywords: ['self-doubt', 'refusal', 'harsh self-criticism', 'delay'],
     image_url: `${SUPABASE_STORAGE_URL}/front/20-judgement.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -235,6 +279,8 @@ export const tarotCards: TarotCard[] = [
     arcana: 'major',
     meaning: 'Completion, integration, accomplishment, travel',
     keywords: ['completion', 'integration', 'accomplishment', 'travel'],
+    reversed_meaning: 'Incompletion, delays, lack of closure, shortcuts',
+    reversed_keywords: ['incompletion', 'delays', 'lack of closure', 'shortcuts'],
     image_url: `${SUPABASE_STORAGE_URL}/front/21-the-world.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -248,6 +294,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'wands',
     meaning: 'Inspiration, new opportunities, growth',
     keywords: ['inspiration', 'new opportunities', 'growth'],
+    reversed_meaning: 'Delays, lack of direction, distraction, hesitation',
+    reversed_keywords: ['delays', 'lack of direction', 'distraction', 'hesitation'],
     image_url: `${SUPABASE_STORAGE_URL}/front/22-ace-of-wands.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -259,6 +307,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'wands',
     meaning: 'Future planning, progress, decisions',
     keywords: ['future planning', 'progress', 'decisions'],
+    reversed_meaning: 'Fear, hesitation, planning without action, playing safe',
+    reversed_keywords: ['fear', 'hesitation', 'no action', 'playing safe'],
     image_url: `${SUPABASE_STORAGE_URL}/front/23-two-of-wands.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -270,6 +320,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'wands',
     meaning: 'Progress, expansion, foresight',
     keywords: ['progress', 'expansion', 'foresight'],
+    reversed_meaning: 'Obstacles, delays, frustration, lack of foresight',
+    reversed_keywords: ['obstacles', 'delays', 'frustration', 'lack of foresight'],
     image_url: `${SUPABASE_STORAGE_URL}/front/24-three-of-wands.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -281,6 +333,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'wands',
     meaning: 'Celebration, joy, harmony, relaxation',
     keywords: ['celebration', 'joy', 'harmony', 'relaxation'],
+    reversed_meaning: 'Personal conflict, tension, transition, lack of support',
+    reversed_keywords: ['personal conflict', 'tension', 'transition', 'lack of support'],
     image_url: `${SUPABASE_STORAGE_URL}/front/25-four-of-wands.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -292,6 +346,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'wands',
     meaning: 'Conflict, disagreements, competition',
     keywords: ['conflict', 'disagreements', 'competition'],
+    reversed_meaning: 'Conflict avoidance, resolution, agreement, reconciliation',
+    reversed_keywords: ['conflict avoidance', 'resolution', 'agreement', 'reconciliation'],
     image_url: `${SUPABASE_STORAGE_URL}/front/26-five-of-wands.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -303,6 +359,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'wands',
     meaning: 'Success, public recognition, progress',
     keywords: ['success', 'public recognition', 'progress'],
+    reversed_meaning: 'Fall from grace, egotism, vanity, lack of recognition',
+    reversed_keywords: ['fall from grace', 'egotism', 'vanity', 'lack of recognition'],
     image_url: `${SUPABASE_STORAGE_URL}/front/27-six-of-wands.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -314,6 +372,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'wands',
     meaning: 'Challenge, competition, protection',
     keywords: ['challenge', 'competition', 'protection'],
+    reversed_meaning: 'Overwhelm, exhaustion, giving up, feeling defeated',
+    reversed_keywords: ['overwhelm', 'exhaustion', 'giving up', 'feeling defeated'],
     image_url: `${SUPABASE_STORAGE_URL}/front/28-seven-of-wands.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -325,6 +385,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'wands',
     meaning: 'Movement, fast paced change, action',
     keywords: ['movement', 'fast paced change', 'action'],
+    reversed_meaning: 'Delays, frustration, resisting change, slow progress',
+    reversed_keywords: ['delays', 'frustration', 'resisting change', 'slow progress'],
     image_url: `${SUPABASE_STORAGE_URL}/front/29-eight-of-wands.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -336,6 +398,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'wands',
     meaning: 'Resilience, courage, persistence',
     keywords: ['resilience', 'courage', 'persistence'],
+    reversed_meaning: 'Exhaustion, giving up, paranoia, defensiveness',
+    reversed_keywords: ['exhaustion', 'giving up', 'paranoia', 'defensiveness'],
     image_url: `${SUPABASE_STORAGE_URL}/front/30-nine-of-wands.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -347,6 +411,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'wands',
     meaning: 'Burden, extra responsibility, hard work',
     keywords: ['burden', 'extra responsibility', 'hard work'],
+    reversed_meaning: 'Burnout, stress, releasing burdens, delegation',
+    reversed_keywords: ['burnout', 'stress', 'releasing burdens', 'delegation'],
     image_url: `${SUPABASE_STORAGE_URL}/front/31-ten-of-wands.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -358,6 +424,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'wands',
     meaning: 'Inspiration, ideas, discovery, limitless potential',
     keywords: ['inspiration', 'ideas', 'discovery', 'limitless potential'],
+    reversed_meaning: 'Lack of direction, procrastination, creating hurdles',
+    reversed_keywords: ['lack of direction', 'procrastination', 'creating hurdles'],
     image_url: `${SUPABASE_STORAGE_URL}/front/32-page-of-wands.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -369,6 +437,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'wands',
     meaning: 'Energy, passion, inspired action, adventure',
     keywords: ['energy', 'passion', 'inspired action', 'adventure'],
+    reversed_meaning: 'Passionless, hasty, scattered energy, delays',
+    reversed_keywords: ['passionless', 'hasty', 'scattered energy', 'delays'],
     image_url: `${SUPABASE_STORAGE_URL}/front/33-knight-of-wands.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -380,6 +450,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'wands',
     meaning: 'Courage, confidence, independence, social butterfly',
     keywords: ['courage', 'confidence', 'independence', 'social butterfly'],
+    reversed_meaning: 'Jealousy, insecurity, temper, selfishness',
+    reversed_keywords: ['jealousy', 'insecurity', 'temper', 'selfishness'],
     image_url: `${SUPABASE_STORAGE_URL}/front/34-queen-of-wands.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -391,6 +463,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'wands',
     meaning: 'Natural-born leader, vision, entrepreneur',
     keywords: ['natural-born leader', 'vision', 'entrepreneur'],
+    reversed_meaning: 'Impulsive, reckless, domineering, unrealistic',
+    reversed_keywords: ['impulsive', 'reckless', 'domineering', 'unrealistic'],
     image_url: `${SUPABASE_STORAGE_URL}/front/35-king-of-wands.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -404,6 +478,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'cups',
     meaning: 'Love, new relationships, compassion, creativity',
     keywords: ['love', 'new relationships', 'compassion', 'creativity'],
+    reversed_meaning: 'Blocked creativity, emptiness, repressed emotions',
+    reversed_keywords: ['blocked creativity', 'emptiness', 'repressed emotions'],
     image_url: `${SUPABASE_STORAGE_URL}/front/36-ace-of-cups.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -415,6 +491,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'cups',
     meaning: 'Unified love, partnership, mutual attraction',
     keywords: ['unified love', 'partnership', 'mutual attraction'],
+    reversed_meaning: 'Imbalance, broken communication, tension, separation',
+    reversed_keywords: ['imbalance', 'broken communication', 'tension', 'separation'],
     image_url: `${SUPABASE_STORAGE_URL}/front/37-two-of-cups.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -426,6 +504,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'cups',
     meaning: 'Celebration, friendship, creativity, collaborations',
     keywords: ['celebration', 'friendship', 'creativity', 'collaborations'],
+    reversed_meaning: 'Overindulgence, gossip, isolation, excess',
+    reversed_keywords: ['overindulgence', 'gossip', 'isolation', 'excess'],
     image_url: `${SUPABASE_STORAGE_URL}/front/38-three-of-cups.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -437,6 +517,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'cups',
     meaning: 'Meditation, contemplation, apathy, reevaluation',
     keywords: ['meditation', 'contemplation', 'apathy', 'reevaluation'],
+    reversed_meaning: 'Apathy, boredom, missed opportunities, withdrawal',
+    reversed_keywords: ['apathy', 'boredom', 'missed opportunities', 'withdrawal'],
     image_url: `${SUPABASE_STORAGE_URL}/front/39-four-of-cups.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -448,6 +530,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'cups',
     meaning: 'Regret, failure, disappointment, pessimism',
     keywords: ['regret', 'failure', 'disappointment', 'pessimism'],
+    reversed_meaning: 'Acceptance, moving on, forgiveness, recovery',
+    reversed_keywords: ['acceptance', 'moving on', 'forgiveness', 'recovery'],
     image_url: `${SUPABASE_STORAGE_URL}/front/40-five-of-cups.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -459,6 +543,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'cups',
     meaning: 'Revisiting the past, childhood memories, innocence',
     keywords: ['revisiting the past', 'childhood memories', 'innocence'],
+    reversed_meaning: 'Stuck in past, unrealistic, homesickness, moving forward',
+    reversed_keywords: ['stuck in past', 'unrealistic', 'homesickness', 'moving forward'],
     image_url: `${SUPABASE_STORAGE_URL}/front/41-six-of-cups.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -470,6 +556,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'cups',
     meaning: 'Opportunities, choices, wishful thinking, illusion',
     keywords: ['opportunities', 'choices', 'wishful thinking', 'illusion'],
+    reversed_meaning: 'Indecision, wishful thinking, fantasy, clarity',
+    reversed_keywords: ['indecision', 'wishful thinking', 'fantasy', 'clarity'],
     image_url: `${SUPABASE_STORAGE_URL}/front/42-seven-of-cups.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -481,6 +569,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'cups',
     meaning: 'Disappointment, abandonment, withdrawal, escapism',
     keywords: ['disappointment', 'abandonment', 'withdrawal', 'escapism'],
+    reversed_meaning: 'Indecision, abandonment, walking away, fear of change',
+    reversed_keywords: ['indecision', 'abandonment', 'walking away', 'fear of change'],
     image_url: `${SUPABASE_STORAGE_URL}/front/43-eight-of-cups.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -492,6 +582,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'cups',
     meaning: 'Contentment, satisfaction, gratitude, wish come true',
     keywords: ['contentment', 'satisfaction', 'gratitude', 'wish come true'],
+    reversed_meaning: 'Inner happiness, materialism, dissatisfaction, indulgence',
+    reversed_keywords: ['inner happiness', 'materialism', 'dissatisfaction', 'indulgence'],
     image_url: `${SUPABASE_STORAGE_URL}/front/44-nine-of-cups.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -503,6 +595,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'cups',
     meaning: 'Divine love, blissful relationships, harmony, alignment',
     keywords: ['divine love', 'blissful relationships', 'harmony', 'alignment'],
+    reversed_meaning: 'Broken family, domestic dispute, shattered dreams',
+    reversed_keywords: ['broken family', 'domestic dispute', 'shattered dreams'],
     image_url: `${SUPABASE_STORAGE_URL}/front/45-ten-of-cups.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -514,6 +608,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'cups',
     meaning: 'Creative opportunities, curiosity, possibility',
     keywords: ['creative opportunities', 'curiosity', 'possibility'],
+    reversed_meaning: 'Emotional immaturity, creative blocks, insecurity',
+    reversed_keywords: ['emotional immaturity', 'creative blocks', 'insecurity'],
     image_url: `${SUPABASE_STORAGE_URL}/front/46-page-of-cups.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -525,6 +621,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'cups',
     meaning: 'Creativity, romance, charm, imagination',
     keywords: ['creativity', 'romance', 'charm', 'imagination'],
+    reversed_meaning: 'Moodiness, disappointment, unrealistic, jealousy',
+    reversed_keywords: ['moodiness', 'disappointment', 'unrealistic', 'jealousy'],
     image_url: `${SUPABASE_STORAGE_URL}/front/47-knight-of-cups.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -536,6 +634,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'cups',
     meaning: 'Compassion, calm, comfort, emotional security',
     keywords: ['compassion', 'calm', 'comfort', 'emotional security'],
+    reversed_meaning: 'Codependency, emotional manipulation, martyrdom',
+    reversed_keywords: ['codependency', 'emotional manipulation', 'martyrdom'],
     image_url: `${SUPABASE_STORAGE_URL}/front/48-queen-of-cups.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -547,6 +647,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'cups',
     meaning: 'Emotionally balanced, compassionate, diplomatic',
     keywords: ['emotionally balanced', 'compassionate', 'diplomatic'],
+    reversed_meaning: 'Emotional manipulation, volatility, coldness',
+    reversed_keywords: ['emotional manipulation', 'volatility', 'coldness'],
     image_url: `${SUPABASE_STORAGE_URL}/front/49-king-of-cups.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -560,6 +662,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'swords',
     meaning: 'Breakthroughs, new ideas, mental clarity, success',
     keywords: ['breakthroughs', 'new ideas', 'mental clarity', 'success'],
+    reversed_meaning: 'Confusion, chaos, lack of clarity, miscommunication',
+    reversed_keywords: ['confusion', 'chaos', 'lack of clarity', 'miscommunication'],
     image_url: `${SUPABASE_STORAGE_URL}/front/50-ace-of-swords.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -571,6 +675,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'swords',
     meaning: 'Difficult decisions, weighing options, stalemate',
     keywords: ['difficult decisions', 'weighing options', 'stalemate'],
+    reversed_meaning: 'Indecision, stalemate, confusion, information overload',
+    reversed_keywords: ['indecision', 'stalemate', 'confusion', 'information overload'],
     image_url: `${SUPABASE_STORAGE_URL}/front/51-two-of-swords.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -582,6 +688,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'swords',
     meaning: 'Heartbreak, emotional pain, sorrow, grief',
     keywords: ['heartbreak', 'emotional pain', 'sorrow', 'grief'],
+    reversed_meaning: 'Recovery, forgiveness, moving on, healing',
+    reversed_keywords: ['recovery', 'forgiveness', 'moving on', 'healing'],
     image_url: `${SUPABASE_STORAGE_URL}/front/52-three-of-swords.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -593,6 +701,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'swords',
     meaning: 'Rest, relaxation, meditation, contemplation',
     keywords: ['rest', 'relaxation', 'meditation', 'contemplation'],
+    reversed_meaning: 'Restlessness, burnout, stagnation, forced rest',
+    reversed_keywords: ['restlessness', 'burnout', 'stagnation', 'forced rest'],
     image_url: `${SUPABASE_STORAGE_URL}/front/53-four-of-swords.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -604,6 +714,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'swords',
     meaning: 'Conflict, disagreements, competition, defeat',
     keywords: ['conflict', 'disagreements', 'competition', 'defeat'],
+    reversed_meaning: 'Reconciliation, making amends, resentment, forgiveness',
+    reversed_keywords: ['reconciliation', 'making amends', 'resentment', 'forgiveness'],
     image_url: `${SUPABASE_STORAGE_URL}/front/54-five-of-swords.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -615,6 +727,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'swords',
     meaning: 'Transition, change, rite of passage, releasing baggage',
     keywords: ['transition', 'change', 'rite of passage', 'releasing baggage'],
+    reversed_meaning: 'Stuck, unresolved issues, resistance to change',
+    reversed_keywords: ['stuck', 'unresolved issues', 'resistance to change'],
     image_url: `${SUPABASE_STORAGE_URL}/front/55-six-of-swords.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -626,6 +740,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'swords',
     meaning: 'Betrayal, deception, getting away with something',
     keywords: ['betrayal', 'deception', 'getting away with something'],
+    reversed_meaning: 'Imposter syndrome, self-deceit, confession, truth',
+    reversed_keywords: ['imposter syndrome', 'self-deceit', 'confession', 'truth'],
     image_url: `${SUPABASE_STORAGE_URL}/front/56-seven-of-swords.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -637,6 +753,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'swords',
     meaning: 'Negative thoughts, self-imposed restriction, imprisonment',
     keywords: ['negative thoughts', 'self-imposed restriction', 'imprisonment'],
+    reversed_meaning: 'Self-limiting beliefs, victim mentality, new perspectives',
+    reversed_keywords: ['self-limiting beliefs', 'victim mentality', 'new perspectives'],
     image_url: `${SUPABASE_STORAGE_URL}/front/57-eight-of-swords.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -648,6 +766,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'swords',
     meaning: 'Anxiety, worry, fear, depression, nightmares',
     keywords: ['anxiety', 'worry', 'fear', 'depression', 'nightmares'],
+    reversed_meaning: 'Hope, despair releasing, anxiety relief, recovery',
+    reversed_keywords: ['hope', 'despair releasing', 'anxiety relief', 'recovery'],
     image_url: `${SUPABASE_STORAGE_URL}/front/58-nine-of-swords.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -659,6 +779,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'swords',
     meaning: 'Painful endings, deep wounds, betrayal, loss',
     keywords: ['painful endings', 'deep wounds', 'betrayal', 'loss'],
+    reversed_meaning: 'Recovery, regeneration, resisting change, survival',
+    reversed_keywords: ['recovery', 'regeneration', 'resisting change', 'survival'],
     image_url: `${SUPABASE_STORAGE_URL}/front/59-ten-of-swords.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -670,6 +792,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'swords',
     meaning: 'New ideas, curiosity, thirst for knowledge',
     keywords: ['new ideas', 'curiosity', 'thirst for knowledge'],
+    reversed_meaning: 'Lack of planning, haphazard action, gossip',
+    reversed_keywords: ['lack of planning', 'haphazard action', 'gossip'],
     image_url: `${SUPABASE_STORAGE_URL}/front/60-page-of-swords.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -681,6 +805,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'swords',
     meaning: 'Ambitious, action-oriented, driven to succeed',
     keywords: ['ambitious', 'action-oriented', 'driven to succeed'],
+    reversed_meaning: 'Impulsiveness, haste, reckless action, no direction',
+    reversed_keywords: ['impulsiveness', 'haste', 'reckless action', 'no direction'],
     image_url: `${SUPABASE_STORAGE_URL}/front/61-knight-of-swords.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -692,6 +818,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'swords',
     meaning: 'Independent, unbiased judgement, clear boundaries',
     keywords: ['independent', 'unbiased judgement', 'clear boundaries'],
+    reversed_meaning: 'Cold-hearted, bitter, harsh judgment, cruelty',
+    reversed_keywords: ['cold-hearted', 'bitter', 'harsh judgment', 'cruelty'],
     image_url: `${SUPABASE_STORAGE_URL}/front/62-queen-of-swords.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -703,6 +831,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'swords',
     meaning: 'Mental clarity, intellectual power, authority, truth',
     keywords: ['mental clarity', 'intellectual power', 'authority', 'truth'],
+    reversed_meaning: 'Manipulative, cruel, tyrannical, abusive',
+    reversed_keywords: ['manipulative', 'cruel', 'tyrannical', 'abusive'],
     image_url: `${SUPABASE_STORAGE_URL}/front/63-king-of-swords.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -716,6 +846,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'pentacles',
     meaning: 'A new financial or career opportunity, manifestation',
     keywords: ['new financial opportunity', 'career opportunity', 'manifestation'],
+    reversed_meaning: 'Lost opportunity, lack of planning, scarcity',
+    reversed_keywords: ['lost opportunity', 'lack of planning', 'scarcity'],
     image_url: `${SUPABASE_STORAGE_URL}/front/64-ace-of-pentacles.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -727,6 +859,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'pentacles',
     meaning: 'Multiple priorities, time management, prioritization',
     keywords: ['multiple priorities', 'time management', 'prioritization'],
+    reversed_meaning: 'Overcommitment, disorganization, imbalance',
+    reversed_keywords: ['overcommitment', 'disorganization', 'imbalance'],
     image_url: `${SUPABASE_STORAGE_URL}/front/65-two-of-pentacles.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -738,6 +872,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'pentacles',
     meaning: 'Teamwork, collaboration, learning, implementation',
     keywords: ['teamwork', 'collaboration', 'learning', 'implementation'],
+    reversed_meaning: 'Disharmony, misalignment, poor teamwork, lack of effort',
+    reversed_keywords: ['disharmony', 'misalignment', 'poor teamwork', 'lack of effort'],
     image_url: `${SUPABASE_STORAGE_URL}/front/66-three-of-pentacles.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -749,6 +885,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'pentacles',
     meaning: 'Saving money, security, conservatism, scarcity',
     keywords: ['saving money', 'security', 'conservatism', 'scarcity'],
+    reversed_meaning: 'Greed, materialism, control, stringency',
+    reversed_keywords: ['greed', 'materialism', 'control', 'stringency'],
     image_url: `${SUPABASE_STORAGE_URL}/front/67-four-of-pentacles.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -760,6 +898,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'pentacles',
     meaning: 'Financial loss, poverty, lack mindset, isolation',
     keywords: ['financial loss', 'poverty', 'lack mindset', 'isolation'],
+    reversed_meaning: 'Recovery, financial improvement, spiritual poverty',
+    reversed_keywords: ['recovery', 'financial improvement', 'spiritual poverty'],
     image_url: `${SUPABASE_STORAGE_URL}/front/68-five-of-pentacles.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -771,6 +911,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'pentacles',
     meaning: 'Giving, receiving, sharing wealth, generosity',
     keywords: ['giving', 'receiving', 'sharing wealth', 'generosity'],
+    reversed_meaning: 'Strings attached, one-sided charity, power dynamics',
+    reversed_keywords: ['strings attached', 'one-sided charity', 'power dynamics'],
     image_url: `${SUPABASE_STORAGE_URL}/front/69-six-of-pentacles.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -782,6 +924,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'pentacles',
     meaning: 'Long-term view, sustainable results, perseverance',
     keywords: ['long-term view', 'sustainable results', 'perseverance'],
+    reversed_meaning: 'Impatience, poor returns, short-term view, laziness',
+    reversed_keywords: ['impatience', 'poor returns', 'short-term view', 'laziness'],
     image_url: `${SUPABASE_STORAGE_URL}/front/70-seven-of-pentacles.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -793,6 +937,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'pentacles',
     meaning: 'Apprenticeship, repetitive tasks, mastery, skill development',
     keywords: ['apprenticeship', 'repetitive tasks', 'mastery', 'skill development'],
+    reversed_meaning: 'Perfectionism, misdirected activity, no ambition',
+    reversed_keywords: ['perfectionism', 'misdirected activity', 'no ambition'],
     image_url: `${SUPABASE_STORAGE_URL}/front/71-eight-of-pentacles.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -804,6 +950,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'pentacles',
     meaning: 'Abundance, luxury, self-sufficiency, financial independence',
     keywords: ['abundance', 'luxury', 'self-sufficiency', 'financial independence'],
+    reversed_meaning: 'Financial setback, over-investment, self-worth issues',
+    reversed_keywords: ['financial setback', 'over-investment', 'self-worth issues'],
     image_url: `${SUPABASE_STORAGE_URL}/front/72-nine-of-pentacles.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -815,6 +963,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'pentacles',
     meaning: 'Wealth, financial security, family, long-term success',
     keywords: ['wealth', 'financial security', 'family', 'long-term success'],
+    reversed_meaning: 'Financial loss, bankruptcy, family disputes',
+    reversed_keywords: ['financial loss', 'bankruptcy', 'family disputes'],
     image_url: `${SUPABASE_STORAGE_URL}/front/73-ten-of-pentacles.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -826,6 +976,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'pentacles',
     meaning: 'Manifestation, financial opportunity, skill development',
     keywords: ['manifestation', 'financial opportunity', 'skill development'],
+    reversed_meaning: 'Procrastination, missed chances, lack of progress',
+    reversed_keywords: ['procrastination', 'missed chances', 'lack of progress'],
     image_url: `${SUPABASE_STORAGE_URL}/front/74-page-of-pentacles.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -837,6 +989,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'pentacles',
     meaning: 'Hard work, productivity, routine, conservatism',
     keywords: ['hard work', 'productivity', 'routine', 'conservatism'],
+    reversed_meaning: 'Stagnation, boredom, feeling stuck, laziness',
+    reversed_keywords: ['stagnation', 'boredom', 'feeling stuck', 'laziness'],
     image_url: `${SUPABASE_STORAGE_URL}/front/75-knight-of-pentacles.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -848,6 +1002,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'pentacles',
     meaning: 'Nurturing, practical, providing financially, working parent',
     keywords: ['nurturing', 'practical', 'providing financially', 'working parent'],
+    reversed_meaning: 'Financial insecurity, neglecting self-care, smothering',
+    reversed_keywords: ['financial insecurity', 'neglecting self-care', 'smothering'],
     image_url: `${SUPABASE_STORAGE_URL}/front/76-queen-of-pentacles.jpg`,
     back_image_url: CARD_BACK_URL
   },
@@ -859,6 +1015,8 @@ export const tarotCards: TarotCard[] = [
     suit: 'pentacles',
     meaning: 'Wealth, business, leadership, security, discipline',
     keywords: ['wealth', 'business', 'leadership', 'security', 'discipline'],
+    reversed_meaning: 'Financially inept, corrupt, stubborn, materialistic',
+    reversed_keywords: ['financially inept', 'corrupt', 'stubborn', 'materialistic'],
     image_url: `${SUPABASE_STORAGE_URL}/front/77-king-of-pentacles.jpg`,
     back_image_url: CARD_BACK_URL
   }
