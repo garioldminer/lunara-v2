@@ -1,0 +1,125 @@
+.three-card-screen {
+    width: 100%;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #0a0600 0%, #1a0f05 50%, #0a0600 100%);
+    color: #fff;
+    font-family: 'Georgia', serif;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 40px;
+  }
+  
+  .tcr-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10, 6, 0, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(197, 160, 89, 0.2);
+  }
+  
+  .tcr-back-btn {
+    background: rgba(197, 160, 89, 0.1);
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    color: #C5A059;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  
+  .tcr-back-btn:hover {
+    background: rgba(197, 160, 89, 0.2);
+    transform: scale(1.05);
+  }
+  
+  .tcr-header-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+  }
+  
+  .tcr-ornament {
+    font-size: 10px;
+    color: #C5A059;
+    opacity: 0.6;
+    letter-spacing: 2px;
+  }
+  
+  .tcr-title {
+    font-size: 16px;
+    color: #C5A059;
+    margin: 0;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-style: italic;
+    font-weight: 400;
+  }
+  
+  .tcr-header-spacer {
+    width: 40px;
+  }
+  
+  .tcr-intro {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 30px;
+    text-align: center;
+    min-height: calc(100vh - 80px);
+  }
+  
+  .tcr-intro-icon {
+    font-size: 64px;
+    margin-bottom: 24px;
+    filter: drop-shadow(0 0 20px rgba(197, 160, 89, 0.4));
+  }
+  
+  .tcr-intro-title {
+    font-size: 22px;
+    color: #C5A059;
+    margin: 0 0 20px;
+    letter-spacing: 2px;
+    font-weight: 400;
+    font-style: italic;
+  }
+  
+  .tcr-intro-text {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.7;
+    margin: 0 0 40px;
+    max-width: 320px;
+  }
+  
+  .tcr-begin-btn {
+    background: linear-gradient(135deg, #C5A059 0%, #8B6914 100%);
+    border: 1px solid #C5A059;
+    border-radius: 30px;
+    padding: 14px 36px;
+    color: #0a0600;
+    font-family: 'Georgia', serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 20px rgba(197, 160, 89, 0.4);
+  }
+  
+  .tcr-begin-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(197, 160, 89, 0.5);
+  }

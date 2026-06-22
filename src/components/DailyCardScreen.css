@@ -1,0 +1,332 @@
+.daily-card-screen {
+    width: 100%;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #0a0600 0%, #1a0f05 50%, #0a0600 100%);
+    color: #fff;
+    font-family: 'Georgia', serif;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 40px;
+  }
+  
+  .daily-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10, 6, 0, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(197, 160, 89, 0.2);
+  }
+  
+  .daily-back-btn {
+    background: rgba(197, 160, 89, 0.1);
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    color: #C5A059;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  
+  .daily-back-btn:hover {
+    background: rgba(197, 160, 89, 0.2);
+    transform: scale(1.05);
+  }
+  
+  .daily-header-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+  }
+  
+  .daily-ornament {
+    font-size: 10px;
+    color: #C5A059;
+    opacity: 0.6;
+    letter-spacing: 2px;
+  }
+  
+  .daily-title {
+    font-size: 16px;
+    color: #C5A059;
+    margin: 0;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-style: italic;
+    font-weight: 400;
+  }
+  
+  .daily-date {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 1px;
+  }
+  
+  .daily-header-spacer {
+    width: 40px;
+  }
+  
+  .daily-card-section {
+    padding: 30px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .daily-card-hidden {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+  
+  .daily-card-back {
+    width: 240px;
+    height: 360px;
+    background: linear-gradient(135deg, #1a0f2e 0%, #2d1b4e 100%);
+    border: 2px solid #C5A059;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 
+      0 10px 30px rgba(197, 160, 89, 0.3),
+      0 0 50px rgba(197, 160, 89, 0.1);
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  
+  .daily-card-back-design {
+    font-size: 64px;
+    color: #C5A059;
+    text-shadow: 0 0 30px rgba(197, 160, 89, 0.6);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  
+  @keyframes pulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+  }
+  
+  .daily-tap-hint {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+    margin: 0;
+  }
+  
+  .daily-reveal-btn {
+    background: linear-gradient(135deg, #C5A059 0%, #8B6914 100%);
+    border: 1px solid #C5A059;
+    border-radius: 30px;
+    padding: 14px 36px;
+    color: #0a0600;
+    font-family: 'Georgia', serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 20px rgba(197, 160, 89, 0.4);
+  }
+  
+  .daily-reveal-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(197, 160, 89, 0.5);
+  }
+  
+  .daily-card-revealed {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  .daily-card-image-wrapper {
+    position: relative;
+    width: 240px;
+    height: 360px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid #C5A059;
+    box-shadow: 
+      0 10px 30px rgba(197, 160, 89, 0.3),
+      0 0 50px rgba(197, 160, 89, 0.1);
+  }
+  
+  .daily-card-image-wrapper.reversed {
+    border-color: #a78bfa;
+    box-shadow: 
+      0 10px 30px rgba(167, 139, 250, 0.3),
+      0 0 50px rgba(167, 139, 250, 0.1);
+  }
+  
+  .daily-card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .daily-card-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #2a2215 0%, #1a1510 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+  
+  .daily-placeholder-num {
+    font-size: 48px;
+    color: #C5A059;
+    font-weight: 700;
+    letter-spacing: 2px;
+  }
+  
+  .daily-placeholder-name {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+  }
+  
+  .daily-reversed-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(167, 139, 250, 0.9);
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  
+  .daily-card-info {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .daily-card-number {
+    font-size: 14px;
+    color: #C5A059;
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  
+  .daily-card-name {
+    font-size: 26px;
+    color: #C5A059;
+    margin: 0 0 4px;
+    letter-spacing: 2px;
+    font-weight: 700;
+  }
+  
+  .daily-reversed-label {
+    font-size: 12px;
+    color: #a78bfa;
+    font-style: italic;
+    margin-bottom: 8px;
+  }
+  
+  .daily-card-meta {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin: 0 0 20px;
+  }
+  
+  .daily-ornament-line {
+    font-size: 12px;
+    color: #C5A059;
+    opacity: 0.5;
+    letter-spacing: 2px;
+    margin: 20px 0;
+  }
+  
+  .daily-meaning-section,
+  .daily-keywords-section {
+    margin-bottom: 24px;
+    text-align: left;
+  }
+  
+  .daily-section-title {
+    font-size: 12px;
+    color: #C5A059;
+    margin: 0 0 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  
+  .daily-meaning-text {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.7;
+    margin: 0;
+  }
+  
+  .daily-keywords {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .daily-keyword-tag {
+    background: rgba(197, 160, 89, 0.1);
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    border-radius: 16px;
+    padding: 6px 14px;
+    font-size: 11px;
+    color: #C5A059;
+    letter-spacing: 0.5px;
+  }
+  
+  .daily-message {
+    background: rgba(197, 160, 89, 0.05);
+    border: 1px solid rgba(197, 160, 89, 0.2);
+    border-radius: 16px;
+    padding: 20px;
+    margin-top: 20px;
+  }
+  
+  .daily-message-text {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.7;
+    margin: 0;
+    font-style: italic;
+  }
+  
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.6);
+  }

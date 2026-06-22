@@ -11,6 +11,8 @@ import ProfileScreen from './components/ProfileScreen';
 import PricingScreen from './components/PricingScreen';
 import CardFanScreen from './components/CardFanScreen';
 import CardDetailScreen from './components/CardDetailScreen';
+import DailyCardScreen from './components/DailyCardScreen';
+import ThreeCardReadingScreen from './components/ThreeCardReadingScreen';
 import BottomNav from './components/BottomNav';
 import { UserProvider, useUser } from './context/UserContext';
 import { getTelegramUser } from './lib/telegramAuth';
@@ -29,7 +31,9 @@ type Screen =
   | 'profile'
   | 'pricing'
   | 'card-fan'
-  | 'card-detail';
+  | 'card-detail'
+  | 'daily-card'
+  | 'three-card-reading';
 
 // ===== USER LOADER COMPONENT =====
 function UserLoader({ onReady }: { onReady: () => void }) {
@@ -120,13 +124,29 @@ function AppContent() {
       setSelectedCardId(cardId);
       goTo('card-detail');
     }
+    // Daily Card
+    else if (screen === 'daily-card') {
+      console.log('🌅 Opening Daily Card');
+      goTo('daily-card');
+    }
+    // Three Card Reading
+    else if (screen === 'three-card-reading') {
+      console.log('🔮 Opening Three Card Reading');
+      goTo('three-card-reading');
+    }
+    // Card Fan / Draw
     else if (screen === 'draw' || screen === 'card-fan') {
       goTo('card-fan');
-    } else if (screen === 'pricing') {
+    }
+    // Pricing
+    else if (screen === 'pricing') {
       goTo('pricing');
-    } else if (['home', 'cards', 'reading', 'astro', 'profile'].includes(screen)) {
+    }
+    // Main tabs
+    else if (['home', 'cards', 'reading', 'astro', 'profile'].includes(screen)) {
       handleTabChange(screen);
-    } else {
+    }
+    else {
       console.log('⚠️ Unknown screen:', screen);
     }
   };
@@ -142,18 +162,16 @@ function AppContent() {
     console.log('📊 User onboarding_completed:', user?.onboarding_completed);
     
     if (!userReady) {
-      // User ჯერ არ არის მზად - დაველოდოთ
       console.log('⏳ Waiting for user to load...');
       const checkInterval = setInterval(() => {
         if (userReady) {
           clearInterval(checkInterval);
-          handleSplashFinish(); // ხელახლა გამოვიძახოთ
+          handleSplashFinish();
         }
       }, 100);
       return;
     }
     
-    // User მზადაა - გადავწყვიტოთ სად წავიდეთ
     if (user?.onboarding_completed) {
       console.log('✅ User already completed onboarding → going to HOME');
       goTo('home');
@@ -239,6 +257,12 @@ function AppContent() {
           cardId={selectedCardId} 
           onNavigate={handleNavigate} 
         />
+      )}
+      {currentScreen === 'daily-card' && (
+        <DailyCardScreen onNavigate={handleNavigate} />
+      )}
+      {currentScreen === 'three-card-reading' && (
+        <ThreeCardReadingScreen onNavigate={handleNavigate} />
       )}
     </div>
   );
