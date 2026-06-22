@@ -7,7 +7,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     padding-bottom: 40px;
-    padding-top: 70px; /* ✅ 70px ზედა დაშორება */
+    padding-top: 52px; /* ✅ Telegram header (48px) + 4px gap */
   }
   
   .tcr-header {
@@ -16,7 +16,7 @@
     justify-content: space-between;
     padding: 16px 20px;
     position: sticky;
-    top: 70px; /* ✅ 70px-ზე sticky */
+    top: 52px; /* ✅ Telegram header (48px) + 4px gap */
     z-index: 100;
     background: rgba(10, 6, 0, 0.95);
     backdrop-filter: blur(10px);
