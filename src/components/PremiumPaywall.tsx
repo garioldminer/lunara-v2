@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check, Crown, Sparkles } from 'lucide-react';
 import { PREMIUM_FEATURES, formatPrice, PremiumFeatureId } from '../lib/premiumService';
+import { completePurchase, formatStars, STARS_PRICING } from '../lib/telegramPaymentService';
+import { useUser } from '../context/UserContext';
 import './PremiumPaywall.css';
 
 interface Props {
@@ -17,19 +19,52 @@ export default function PremiumPaywall({
   highlightedFeature,
   onPurchase 
 }: Props) {
+  const { user } = useUser();
   const [selectedFeature, setSelectedFeature] = useState<string>(
     highlightedFeature || 'subscription_monthly'
   );
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const handlePurchase = () => {
-    if (onPurchase) {
-      onPurchase(selectedFeature as PremiumFeatureId);
+  const handlePurchase = async () => {
+    if (!user) {
+      alert('Please log in first');
+      return;
     }
-    // TODO: Telegram Payment integration will be here
-    console.log('💳 Purchasing:', selectedFeature);
+
+    setIsProcessing(true);
+
+    try {
+      const result = await completePurchase(
+        selectedFeature as PremiumFeatureId,
+        user.id
+      );
+
+      if (result === 'success') {
+        // Notify parent component
+        if (onPurchase) {
+          onPurchase(selectedFeature as PremiumFeatureId);
+        }
+        // Close modal after short delay
+        setTimeout(() => {
+          onClose();
+          // Reload page to refresh premium status
+          window.location.reload();
+        }, 2000);
+      } else if (result === 'cancelled') {
+        // User cancelled - do nothing
+        setIsProcessing(false);
+      } else {
+        // Error
+        setIsProcessing(false);
+      }
+    } catch (error) {
+      console.error('❌ Purchase error:', error);
+      setIsProcessing(false);
+    }
   };
 
   const feature = PREMIUM_FEATURES[selectedFeature as PremiumFeatureId] || PREMIUM_FEATURES.subscription_monthly;
+  const stars = STARS_PRICING[selectedFeature as PremiumFeatureId] || 0;
 
   const isSubscriptionTab = selectedFeature === 'subscription_monthly' || selectedFeature === 'subscription_yearly';
   const isSingleTab = selectedFeature === 'celtic_cross' || selectedFeature === 'horseshoe' || selectedFeature === 'relationship';
@@ -52,7 +87,7 @@ export default function PremiumPaywall({
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button */}
-            <button className="premium-close-btn" onClick={onClose}>
+            <button className="premium-close-btn" onClick={onClose} disabled={isProcessing}>
               <X size={20} />
             </button>
 
@@ -72,6 +107,7 @@ export default function PremiumPaywall({
               <button
                 className={`premium-tab ${isSubscriptionTab ? 'active' : ''}`}
                 onClick={() => setSelectedFeature('subscription_monthly')}
+                disabled={isProcessing}
               >
                 <Crown size={16} />
                 <span>Subscription</span>
@@ -79,6 +115,7 @@ export default function PremiumPaywall({
               <button
                 className={`premium-tab ${isSingleTab ? 'active' : ''}`}
                 onClick={() => setSelectedFeature('celtic_cross')}
+                disabled={isProcessing}
               >
                 <Sparkles size={16} />
                 <span>Single Reading</span>
@@ -91,7 +128,7 @@ export default function PremiumPaywall({
                 <>
                   <div 
                     className={`premium-feature-item ${selectedFeature === 'subscription_monthly' ? 'selected' : ''}`}
-                    onClick={() => setSelectedFeature('subscription_monthly')}
+                    onClick={() => !isProcessing && setSelectedFeature('subscription_monthly')}
                   >
                     <div className="premium-feature-icon">💎</div>
                     <div className="premium-feature-info">
@@ -101,12 +138,13 @@ export default function PremiumPaywall({
                     <div className="premium-feature-price">
                       {formatPrice(999)}
                       <span>/mo</span>
+                      <div className="premium-stars">{formatStars(499)}</div>
                     </div>
                   </div>
 
                   <div 
                     className={`premium-feature-item ${selectedFeature === 'subscription_yearly' ? 'selected' : ''}`}
-                    onClick={() => setSelectedFeature('subscription_yearly')}
+                    onClick={() => !isProcessing && setSelectedFeature('subscription_yearly')}
                   >
                     <div className="premium-feature-badge">SAVE 33%</div>
                     <div className="premium-feature-icon">💎</div>
@@ -117,6 +155,7 @@ export default function PremiumPaywall({
                     <div className="premium-feature-price">
                       {formatPrice(7999)}
                       <span>/yr</span>
+                      <div className="premium-stars">{formatStars(3999)}</div>
                     </div>
                   </div>
 
@@ -137,7 +176,7 @@ export default function PremiumPaywall({
                 <>
                   <div 
                     className={`premium-feature-item ${selectedFeature === 'celtic_cross' ? 'selected' : ''}`}
-                    onClick={() => setSelectedFeature('celtic_cross')}
+                    onClick={() => !isProcessing && setSelectedFeature('celtic_cross')}
                   >
                     <div className="premium-feature-icon">✝️</div>
                     <div className="premium-feature-info">
@@ -146,12 +185,13 @@ export default function PremiumPaywall({
                     </div>
                     <div className="premium-feature-price">
                       {formatPrice(299)}
+                      <div className="premium-stars">{formatStars(150)}</div>
                     </div>
                   </div>
 
                   <div 
                     className={`premium-feature-item ${selectedFeature === 'horseshoe' ? 'selected' : ''}`}
-                    onClick={() => setSelectedFeature('horseshoe')}
+                    onClick={() => !isProcessing && setSelectedFeature('horseshoe')}
                   >
                     <div className="premium-feature-icon">🐎</div>
                     <div className="premium-feature-info">
@@ -160,12 +200,13 @@ export default function PremiumPaywall({
                     </div>
                     <div className="premium-feature-price">
                       {formatPrice(199)}
+                      <div className="premium-stars">{formatStars(100)}</div>
                     </div>
                   </div>
 
                   <div 
                     className={`premium-feature-item ${selectedFeature === 'relationship' ? 'selected' : ''}`}
-                    onClick={() => setSelectedFeature('relationship')}
+                    onClick={() => !isProcessing && setSelectedFeature('relationship')}
                   >
                     <div className="premium-feature-icon">❤️</div>
                     <div className="premium-feature-info">
@@ -174,6 +215,7 @@ export default function PremiumPaywall({
                     </div>
                     <div className="premium-feature-price">
                       {formatPrice(399)}
+                      <div className="premium-stars">{formatStars(200)}</div>
                     </div>
                   </div>
                 </>
@@ -184,13 +226,23 @@ export default function PremiumPaywall({
             <button 
               className="premium-purchase-btn"
               onClick={handlePurchase}
+              disabled={isProcessing}
             >
-              <span>Unlock for {formatPrice(feature.price)}</span>
+              {isProcessing ? (
+                <>
+                  <div className="premium-spinner"></div>
+                  <span>Processing...</span>
+                </>
+              ) : (
+                <>
+                  <span>Unlock for {formatStars(stars)}</span>
+                </>
+              )}
             </button>
 
             {/* Footer */}
             <p className="premium-footer">
-              Secure payment via Telegram
+              💳 Secure payment via Telegram Stars
             </p>
           </motion.div>
         </motion.div>

@@ -51,6 +51,16 @@
     transform: scale(1.1);
   }
   
+  .premium-close-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .premium-close-btn:disabled:hover {
+    transform: none;
+    background: rgba(197, 160, 89, 0.1);
+  }
+  
   /* Header */
   .premium-header {
     text-align: center;
@@ -121,6 +131,15 @@
   .premium-tab.active {
     background: linear-gradient(135deg, #C5A059 0%, #8B6914 100%);
     color: #0a0600;
+  }
+  
+  .premium-tab:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .premium-tab:disabled:hover {
+    color: rgba(255, 255, 255, 0.6);
   }
   
   /* Features List */
@@ -197,12 +216,27 @@
     color: #C5A059;
     font-weight: 700;
     flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
   }
   
   .premium-feature-price span {
     font-size: 11px;
     color: rgba(197, 160, 89, 0.7);
     font-weight: 400;
+  }
+  
+  /* Premium Stars Display */
+  .premium-stars {
+    font-size: 11px;
+    color: #fbbf24;
+    font-weight: 600;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
   }
   
   /* Benefits */
@@ -274,6 +308,30 @@
   
   .premium-purchase-btn:active {
     transform: translateY(0);
+  }
+  
+  .premium-purchase-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+  
+  .premium-purchase-btn:disabled:hover {
+    transform: none;
+    box-shadow: 0 10px 30px rgba(197, 160, 89, 0.3);
+  }
+  
+  /* Spinner */
+  .premium-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(10, 6, 0, 0.3);
+    border-top-color: #0a0600;
+    border-radius: 50%;
+    animation: premiumSpin 0.8s linear infinite;
+  }
+  
+  @keyframes premiumSpin {
+    to { transform: rotate(360deg); }
   }
   
   /* Footer */
