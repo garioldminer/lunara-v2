@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, RotateCcw } from 'lucide-react';
 import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards';
 import QuestionInput from './QuestionInput';
+import { saveReading } from '../lib/readingService';
+import { useUser } from '../context/UserContext';
 import './DailyCardScreen.css';
 
 interface Props {
@@ -20,6 +22,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
   const [dailyReading, setDailyReading] = useState<DailyReading | null>(null);
   const [isRevealed, setIsRevealed] = useState(false);
   const [showQuestion, setShowQuestion] = useState(true);
+  const { user } = useUser();
 
   const getTodayDate = () => {
     const today = new Date();
@@ -80,8 +83,22 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     setShowQuestion(false);
   };
 
-  const handleReveal = () => {
+  const handleReveal = async () => {
     setIsRevealed(true);
+    
+    // შეინახე წაკითხვა Supabase-ში
+    if (user && dailyReading) {
+      await saveReading({
+        user_id: user.id,
+        reading_type: 'daily',
+        question: dailyReading.question,
+        cards: [{
+          id: dailyReading.card.id,
+          name: dailyReading.card.name,
+          is_reversed: dailyReading.isReversed
+        }]
+      });
+    }
   };
 
   const handleNewQuestion = () => {

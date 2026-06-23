@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '../context/UserContext';
 import { tarotCards, SUITS } from '../data/tarotCards';
+import { getUserStreak } from '../lib/readingService';
 import { 
   Gem, Zap, Trophy, Flame, Star, 
   Sparkles, LayoutGrid, Moon, Hash, 
@@ -19,6 +20,7 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [timeLeft, setTimeLeft] = useState('14:32:18');
   const [dailyCard, setDailyCard] = useState<typeof tarotCards[0] | null>(null);
   const [isDailyReversed, setIsDailyReversed] = useState(false);
+  const [currentStreak, setCurrentStreak] = useState(0);
 
   // Daily Card - მიიღე დღის კარტი
   useEffect(() => {
@@ -45,6 +47,15 @@ export default function HomeScreen({ onNavigate }: Props) {
     setDailyCard(card);
     setIsDailyReversed(isReversed);
   }, []);
+
+  // Streak - მიიღე Supabase-დან
+  useEffect(() => {
+    if (user) {
+      getUserStreak(user.id).then(streakData => {
+        setCurrentStreak(streakData.current_streak || 0);
+      });
+    }
+  }, [user]);
 
   const getDayOfYear = (date: Date): number => {
     const start = new Date(date.getFullYear(), 0, 0);
@@ -228,7 +239,7 @@ export default function HomeScreen({ onNavigate }: Props) {
             {/* Streak */}
             <button className="action-btn streak-btn">
               <Flame size={24} className="action-icon flame-icon" />
-              <div className="action-badge">{user?.streak || 12}</div>
+              <div className="action-badge">{currentStreak}</div>
             </button>
 
             {/* Rank */}

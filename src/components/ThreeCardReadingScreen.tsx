@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, RotateCcw } from 'lucide-react';
 import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards';
 import QuestionInput from './QuestionInput';
+import { saveReading } from '../lib/readingService';
+import { useUser } from '../context/UserContext';
 import './ThreeCardReadingScreen.css';
 
 interface Props {
@@ -23,6 +25,7 @@ export default function ThreeCardReadingScreen({ onNavigate }: Props) {
   const [reading, setReading] = useState<ReadingCard[]>([]);
   const [activeCard, setActiveCard] = useState<number | null>(null);
   const [question, setQuestion] = useState<string>('');
+  const { user } = useUser();
 
   const positions = [
     { key: 'past', label: 'Past', subtitle: 'What led you here' },
@@ -52,7 +55,24 @@ export default function ThreeCardReadingScreen({ onNavigate }: Props) {
     setTimeout(() => revealCard(0), 800);
     setTimeout(() => revealCard(1), 1800);
     setTimeout(() => revealCard(2), 2800);
-    setTimeout(() => setPhase('complete'), 3800);
+    setTimeout(() => {
+      setPhase('complete');
+      
+      // შეინახე წაკითხვა Supabase-ში
+      if (user) {
+        saveReading({
+          user_id: user.id,
+          reading_type: 'three-card',
+          question: question,
+          cards: newReading.map(rc => ({
+            id: rc.card.id,
+            name: rc.card.name,
+            is_reversed: rc.isReversed,
+            position: rc.position
+          }))
+        });
+      }
+    }, 3800);
   };
 
   const revealCard = (index: number) => {
