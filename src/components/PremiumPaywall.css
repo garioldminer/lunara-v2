@@ -1,0 +1,304 @@
+/* Overlay */
+.premium-paywall-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+  }
+  
+  /* Modal */
+  .premium-paywall-modal {
+    background: linear-gradient(180deg, #1a0f05 0%, #0a0600 100%);
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    border-radius: 24px;
+    padding: 24px;
+    max-width: 420px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 
+      0 20px 60px rgba(197, 160, 89, 0.2),
+      0 0 100px rgba(197, 160, 89, 0.1);
+  }
+  
+  /* Close Button */
+  .premium-close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(197, 160, 89, 0.1);
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    color: #C5A059;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    z-index: 10;
+  }
+  
+  .premium-close-btn:hover {
+    background: rgba(197, 160, 89, 0.2);
+    transform: scale(1.1);
+  }
+  
+  /* Header */
+  .premium-header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  
+  .premium-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    background: linear-gradient(135deg, #C5A059 0%, #8B6914 100%);
+    border-radius: 50%;
+    color: #0a0600;
+    margin-bottom: 16px;
+    box-shadow: 0 10px 30px rgba(197, 160, 89, 0.4);
+  }
+  
+  .premium-title {
+    font-size: 24px;
+    color: #C5A059;
+    margin: 0 0 8px;
+    letter-spacing: 2px;
+    font-weight: 700;
+  }
+  
+  .premium-subtitle {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+    line-height: 1.5;
+  }
+  
+  /* Tabs */
+  .premium-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding: 4px;
+    background: rgba(197, 160, 89, 0.05);
+    border-radius: 16px;
+    border: 1px solid rgba(197, 160, 89, 0.2);
+  }
+  
+  .premium-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-radius: 12px;
+    padding: 10px;
+    color: rgba(255, 255, 255, 0.6);
+    font-family: 'Georgia', serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  
+  .premium-tab:hover {
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .premium-tab.active {
+    background: linear-gradient(135deg, #C5A059 0%, #8B6914 100%);
+    color: #0a0600;
+  }
+  
+  /* Features List */
+  .premium-features-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .premium-feature-item {
+    background: rgba(197, 160, 89, 0.05);
+    border: 1px solid rgba(197, 160, 89, 0.2);
+    border-radius: 14px;
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+  }
+  
+  .premium-feature-item:hover {
+    background: rgba(197, 160, 89, 0.1);
+    border-color: rgba(197, 160, 89, 0.4);
+    transform: translateX(4px);
+  }
+  
+  .premium-feature-item.selected {
+    background: rgba(197, 160, 89, 0.15);
+    border-color: #C5A059;
+    box-shadow: 0 0 20px rgba(197, 160, 89, 0.2);
+  }
+  
+  .premium-feature-badge {
+    position: absolute;
+    top: -8px;
+    right: 12px;
+    background: linear-gradient(135deg, #C5A059 0%, #8B6914 100%);
+    color: #0a0600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  
+  .premium-feature-icon {
+    font-size: 28px;
+    flex-shrink: 0;
+  }
+  
+  .premium-feature-info {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .premium-feature-info h4 {
+    font-size: 14px;
+    color: #fff;
+    margin: 0 0 4px;
+    font-weight: 600;
+  }
+  
+  .premium-feature-info p {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0;
+  }
+  
+  .premium-feature-price {
+    font-size: 18px;
+    color: #C5A059;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  
+  .premium-feature-price span {
+    font-size: 11px;
+    color: rgba(197, 160, 89, 0.7);
+    font-weight: 400;
+  }
+  
+  /* Benefits */
+  .premium-benefits {
+    background: rgba(197, 160, 89, 0.05);
+    border: 1px solid rgba(197, 160, 89, 0.2);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  
+  .premium-benefits h4 {
+    font-size: 12px;
+    color: #C5A059;
+    margin: 0 0 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  
+  .premium-benefits ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .premium-benefits li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .premium-benefits li svg {
+    color: #C5A059;
+    flex-shrink: 0;
+  }
+  
+  /* Purchase Button */
+  .premium-purchase-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #C5A059 0%, #8B6914 100%);
+    border: 1px solid #C5A059;
+    border-radius: 24px;
+    padding: 16px;
+    color: #0a0600;
+    font-family: 'Georgia', serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 10px 30px rgba(197, 160, 89, 0.3);
+  }
+  
+  .premium-purchase-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 40px rgba(197, 160, 89, 0.4);
+  }
+  
+  .premium-purchase-btn:active {
+    transform: translateY(0);
+  }
+  
+  /* Footer */
+  .premium-footer {
+    text-align: center;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+    margin: 16px 0 0;
+  }
+  
+  /* Scrollbar */
+  .premium-paywall-modal::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .premium-paywall-modal::-webkit-scrollbar-track {
+    background: rgba(197, 160, 89, 0.05);
+    border-radius: 3px;
+  }
+  
+  .premium-paywall-modal::-webkit-scrollbar-thumb {
+    background: rgba(197, 160, 89, 0.3);
+    border-radius: 3px;
+  }
+  
+  .premium-paywall-modal::-webkit-scrollbar-thumb:hover {
+    background: rgba(197, 160, 89, 0.5);
+  }

@@ -109,6 +109,8 @@ export default function HomeScreen({ onNavigate }: Props) {
         onNavigate('cards');
       } else if (action === 'History') {
         onNavigate('reading-history');
+      } else if (action === 'CelticCross') {
+        onNavigate('celtic-cross');
       }
     }
   };
@@ -119,6 +121,7 @@ export default function HomeScreen({ onNavigate }: Props) {
     { icon: <Moon size={28} />, label: 'Tarot', sublabel: 'Draw', color: '#60a5fa', action: 'Tarot' },
     { icon: <Hash size={28} />, label: 'Cards', sublabel: 'Gallery', color: '#fbbf24', action: 'Cards' },
     { icon: <Scroll size={28} />, label: 'History', sublabel: 'Readings', color: '#34d399', action: 'History' },
+    { icon: <Crown size={28} />, label: 'Celtic', sublabel: 'Cross', color: '#C5A059', action: 'CelticCross', isPremium: true },
     { icon: <Gem size={28} />, label: 'Crystals', sublabel: '', color: '#f472b6', action: 'Crystals' },
     { icon: <Droplets size={28} />, label: 'Chakras', sublabel: '', color: '#34d399', action: 'Chakras' },
     { icon: <Wind size={28} />, label: 'Runes', sublabel: '', color: '#fb923c', action: 'Runes' },
@@ -293,10 +296,13 @@ export default function HomeScreen({ onNavigate }: Props) {
           {quickActions.map((action, index) => (
             <button 
               key={index} 
-              className="quick-item" 
+              className={`quick-item ${action.isPremium ? 'premium-item' : ''}`}
               style={{ '--glow-color': action.color } as React.CSSProperties}
               onClick={() => handleQuickAction(action.action)}
             >
+              {action.isPremium && (
+                <div className="premium-badge">💎</div>
+              )}
               <div className="q-icon-wrapper" style={{ color: action.color }}>
                 {action.icon}
               </div>
