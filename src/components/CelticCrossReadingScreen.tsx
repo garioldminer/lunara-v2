@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, RotateCcw, Lock } from 'lucide-react';
 import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards';
 import QuestionInput from './QuestionInput';
-import PremiumGate from './PremiumGate';
+import PremiumPaywall from './PremiumPaywall';
+import { isPremium, PremiumFeatureId } from '../lib/premiumService';
 import { saveReading } from '../lib/readingService';
 import { useUser } from '../context/UserContext';
 import './CelticCrossReadingScreen.css';
@@ -40,11 +41,30 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
   const [reading, setReading] = useState<ReadingCard[]>([]);
   const [activeCard, setActiveCard] = useState<number | null>(null);
   const [question, setQuestion] = useState<string>('');
+  const [showPaywall, setShowPaywall] = useState(false);
 
   const handleQuestionSubmit = (q: string) => {
     setQuestion(q);
     setPhase('revealing');
     startReading();
+  };
+
+  const handleBeginReading = async () => {
+    if (!user) {
+      alert('Please log in first');
+      return;
+    }
+
+    // შეამოწმე Premium სტატუსი
+    const hasPremium = await isPremium(user.id);
+
+    if (hasPremium) {
+      // Premium მომხმარებელი - პირდაპირ კითხვაზე
+      setPhase('question');
+    } else {
+      // არ არის Premium - აჩვენე Paywall
+      setShowPaywall(true);
+    }
   };
 
   const startReading = () => {
@@ -155,12 +175,13 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
             <Lock size={14} />
             <span>Premium Reading</span>
           </div>
-          <PremiumGate featureId="celtic_cross">
-            <button className="cc-begin-btn" onClick={() => setPhase('question')}>
-              <span>Begin Reading</span>
-              <span className="cc-btn-ornament">✦</span>
-            </button>
-          </PremiumGate>
+          <button 
+            className="cc-begin-btn" 
+            onClick={handleBeginReading}
+          >
+            <span>Begin Reading</span>
+            <span className="cc-btn-ornament">✦</span>
+          </button>
         </motion.div>
       )}
 
@@ -325,6 +346,19 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
           </AnimatePresence>
         </div>
       )}
+
+      {/* Premium Paywall Modal */}
+      <PremiumPaywall
+        isOpen={showPaywall}
+        onClose={() => setShowPaywall(false)}
+        highlightedFeature="celtic_cross"
+        onPurchase={(featureId: PremiumFeatureId) => {
+          console.log('✅ Purchased:', featureId);
+          setShowPaywall(false);
+          // Reload page to refresh premium status
+          window.location.reload();
+        }}
+      />
     </div>
   );
 }
