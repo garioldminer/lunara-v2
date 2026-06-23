@@ -10,7 +10,7 @@ import { PREMIUM_FEATURES, PremiumFeatureId } from './premiumService';
 export const STARS_PRICING: Record<PremiumFeatureId, number> = {
   subscription_monthly: 499,
   subscription_yearly: 3999,
-  celtic_cross: 150,
+  celtic_cross: 1, // 🧪 TEST MODE - 1 Star
   horseshoe: 100,
   relationship: 200,
   ai_weekly: 250,

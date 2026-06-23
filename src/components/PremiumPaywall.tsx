@@ -165,14 +165,14 @@ export default function PremiumPaywall({
                     className={`premium-feature-item ${selectedFeature === 'celtic_cross' ? 'selected' : ''}`}
                     onClick={() => !isProcessing && setSelectedFeature('celtic_cross')}
                   >
-                    <div className="premium-feature-icon">️</div>
+                    <div className="premium-feature-icon">✝️</div>
                     <div className="premium-feature-info">
                       <h4>Celtic Cross Reading</h4>
                       <p>10-card deep analysis</p>
                     </div>
                     <div className="premium-feature-price">
                       <span className="price-usd">{formatPrice(299)}</span>
-                      <span className="price-stars">{formatStars(150)}</span>
+                      <span className="price-stars">{formatStars(1)}</span>
                     </div>
                   </div>
 
