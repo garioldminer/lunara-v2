@@ -18,6 +18,11 @@ export interface Reading {
 // SAVE READING - წაკითხვის შენახვა
 // ============================================
 export async function saveReading(reading: Reading) {
+  if (!supabase) {
+    console.error('❌ Supabase not initialized');
+    return null;
+  }
+
   try {
     const { data, error } = await supabase
       .from('readings')
@@ -46,6 +51,11 @@ export async function saveReading(reading: Reading) {
 // GET USER READINGS - მომხმარებლის წაკითხვები
 // ============================================
 export async function getUserReadings(userId: string, limit: number = 50) {
+  if (!supabase) {
+    console.error('❌ Supabase not initialized');
+    return [];
+  }
+
   try {
     const { data, error } = await supabase
       .from('readings')
@@ -70,6 +80,11 @@ export async function getUserReadings(userId: string, limit: number = 50) {
 // GET RECENT READINGS - ბოლო X დღის წაკითხვები
 // ============================================
 export async function getRecentReadings(userId: string, days: number = 30) {
+  if (!supabase) {
+    console.error('❌ Supabase not initialized');
+    return [];
+  }
+
   try {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
@@ -97,6 +112,11 @@ export async function getRecentReadings(userId: string, days: number = 30) {
 // UPDATE USER PATTERNS - პატერნების განახლება
 // ============================================
 async function updateUserPatterns(userId: string) {
+  if (!supabase) {
+    console.error('❌ Supabase not initialized');
+    return;
+  }
+
   try {
     // მიიღე ბოლო 30 დღის წაკითხვები
     const readings = await getRecentReadings(userId, 30);
@@ -140,10 +160,12 @@ async function updateUserPatterns(userId: string) {
       hourCounts[hour] = (hourCounts[hour] || 0) + 1;
     });
 
-    const preferredHour = Object.entries(hourCounts)
-      .sort((a, b) => b[1] - a[1])[0]?.[0];
+    const sortedHours = Object.entries(hourCounts)
+      .sort((a, b) => b[1] - a[1]);
+    
+    const preferredHour = sortedHours.length > 0 ? sortedHours[0][0] : null;
 
-    const preferredTime = preferredHour 
+    const preferredTime = preferredHour !== null
       ? `${String(preferredHour).padStart(2, '0')}:00:00`
       : null;
 
@@ -198,6 +220,11 @@ function extractTopic(question: string): string | null {
 // GET USER STREAK - streak-ის მიღება
 // ============================================
 export async function getUserStreak(userId: string) {
+  if (!supabase) {
+    console.error('❌ Supabase not initialized');
+    return { current_streak: 0, longest_streak: 0 };
+  }
+
   try {
     const { data, error } = await supabase
       .from('streaks')
@@ -221,6 +248,11 @@ export async function getUserStreak(userId: string) {
 // GET USER PATTERNS - პატერნების მიღება
 // ============================================
 export async function getUserPatterns(userId: string) {
+  if (!supabase) {
+    console.error('❌ Supabase not initialized');
+    return null;
+  }
+
   try {
     const { data, error } = await supabase
       .from('user_patterns')
