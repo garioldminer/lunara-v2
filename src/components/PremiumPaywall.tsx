@@ -21,7 +21,7 @@ export default function PremiumPaywall({
 }: Props) {
   const { user } = useUser();
   const [selectedFeature, setSelectedFeature] = useState<string>(
-    highlightedFeature || 'subscription_monthly'
+    highlightedFeature || 'celtic_cross'
   );
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -75,9 +75,10 @@ export default function PremiumPaywall({
         >
           <motion.div
             className="premium-paywall-modal"
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            initial={{ opacity: 0, scale: 0.9, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button */}
@@ -87,12 +88,17 @@ export default function PremiumPaywall({
 
             {/* Header */}
             <div className="premium-header">
-              <div className="premium-icon">
-                <Crown size={40} />
-              </div>
+              <motion.div 
+                className="premium-crown-icon"
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ delay: 0.2, type: 'spring', damping: 15 }}
+              >
+                👑
+              </motion.div>
               <h2 className="premium-title">Unlock Premium</h2>
               <p className="premium-subtitle">
-                Discover deeper insights with our premium features
+                Discover deeper insights
               </p>
             </div>
 
@@ -103,7 +109,7 @@ export default function PremiumPaywall({
                 onClick={() => setSelectedFeature('subscription_monthly')}
                 disabled={isProcessing}
               >
-                <Crown size={16} />
+                <Crown size={14} />
                 <span>Subscription</span>
               </button>
               <button
@@ -111,7 +117,7 @@ export default function PremiumPaywall({
                 onClick={() => setSelectedFeature('celtic_cross')}
                 disabled={isProcessing}
               >
-                <Sparkles size={16} />
+                <Sparkles size={14} />
                 <span>Single Reading</span>
               </button>
             </div>
@@ -130,9 +136,8 @@ export default function PremiumPaywall({
                       <p>Unlimited readings + AI Insights</p>
                     </div>
                     <div className="premium-feature-price">
-                      {formatPrice(999)}
-                      <span>/mo</span>
-                      <div className="premium-stars">{formatStars(499)}</div>
+                      <span className="price-usd">{formatPrice(999)}</span>
+                      <span className="price-stars">{formatStars(499)}</span>
                     </div>
                   </div>
 
@@ -147,21 +152,9 @@ export default function PremiumPaywall({
                       <p>Full year access - Best value!</p>
                     </div>
                     <div className="premium-feature-price">
-                      {formatPrice(7999)}
-                      <span>/yr</span>
-                      <div className="premium-stars">{formatStars(3999)}</div>
+                      <span className="price-usd">{formatPrice(7999)}</span>
+                      <span className="price-stars">{formatStars(3999)}</span>
                     </div>
-                  </div>
-
-                  <div className="premium-benefits">
-                    <h4>What's included:</h4>
-                    <ul>
-                      <li><Check size={14} /> Unlimited 3-Card Readings</li>
-                      <li><Check size={14} /> All Premium Spreads (Celtic Cross, Horseshoe, etc.)</li>
-                      <li><Check size={14} /> AI Weekly Insights</li>
-                      <li><Check size={14} /> Personalized Pattern Analysis</li>
-                      <li><Check size={14} /> Ad-free Experience</li>
-                    </ul>
                   </div>
                 </>
               )}
@@ -172,14 +165,14 @@ export default function PremiumPaywall({
                     className={`premium-feature-item ${selectedFeature === 'celtic_cross' ? 'selected' : ''}`}
                     onClick={() => !isProcessing && setSelectedFeature('celtic_cross')}
                   >
-                    <div className="premium-feature-icon">✝️</div>
+                    <div className="premium-feature-icon">️</div>
                     <div className="premium-feature-info">
-                      <h4>Celtic Cross</h4>
+                      <h4>Celtic Cross Reading</h4>
                       <p>10-card deep analysis</p>
                     </div>
                     <div className="premium-feature-price">
-                      {formatPrice(299)}
-                      <div className="premium-stars">{formatStars(150)}</div>
+                      <span className="price-usd">{formatPrice(299)}</span>
+                      <span className="price-stars">{formatStars(150)}</span>
                     </div>
                   </div>
 
@@ -189,12 +182,12 @@ export default function PremiumPaywall({
                   >
                     <div className="premium-feature-icon">🐎</div>
                     <div className="premium-feature-info">
-                      <h4>Horseshoe</h4>
+                      <h4>Horseshoe Reading</h4>
                       <p>7-card life path</p>
                     </div>
                     <div className="premium-feature-price">
-                      {formatPrice(199)}
-                      <div className="premium-stars">{formatStars(100)}</div>
+                      <span className="price-usd">{formatPrice(199)}</span>
+                      <span className="price-stars">{formatStars(100)}</span>
                     </div>
                   </div>
 
@@ -208,8 +201,8 @@ export default function PremiumPaywall({
                       <p>6-card love analysis</p>
                     </div>
                     <div className="premium-feature-price">
-                      {formatPrice(399)}
-                      <div className="premium-stars">{formatStars(200)}</div>
+                      <span className="price-usd">{formatPrice(399)}</span>
+                      <span className="price-stars">{formatStars(200)}</span>
                     </div>
                   </div>
                 </>
