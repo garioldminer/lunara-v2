@@ -5,7 +5,7 @@ import { getUserStreak } from '../lib/readingService';
 import { 
   Gem, Zap, Trophy, Flame, Star, 
   Sparkles, LayoutGrid, Moon, Hash, 
-  Wind, Droplets, Brain, Crown,
+  Wind, Droplets, Crown,
   Scroll, Activity, ChevronRight, Gift
 } from 'lucide-react';
 import './HomeScreen.css';
