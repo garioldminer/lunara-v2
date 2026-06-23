@@ -153,21 +153,27 @@ async function updateUserPatterns(userId: string) {
       .slice(0, 3)
       .map(([topic]) => topic);
 
-    // საყვარელი დრო
+    // საყვარელი დრო - ✅ მარტივი მიდგომა
     const hourCounts: Record<number, number> = {};
     readings.forEach(r => {
       const hour = new Date(r.created_at).getHours();
       hourCounts[hour] = (hourCounts[hour] || 0) + 1;
     });
 
-    // ✅ გასწორებულია: String() cast TypeScript-ისთვის
-    const sortedHourEntries = Object.entries(hourCounts)
-      .sort((a, b) => b[1] - a[1]);
-
     let preferredTime: string | null = null;
-    if (sortedHourEntries.length > 0) {
-      const topHourKey = String(sortedHourEntries[0][0]);
-      preferredTime = `${topHourKey.padStart(2, '0')}:00:00`;
+    let maxHour = -1;
+    let maxCount = 0;
+    
+    Object.keys(hourCounts).forEach(key => {
+      const count = hourCounts[Number(key)];
+      if (count > maxCount) {
+        maxCount = count;
+        maxHour = Number(key);
+      }
+    });
+    
+    if (maxHour >= 0) {
+      preferredTime = `${String(maxHour).padStart(2, '0')}:00:00`;
     }
 
     // შენახვა
