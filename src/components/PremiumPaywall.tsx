@@ -40,21 +40,16 @@ export default function PremiumPaywall({
       );
 
       if (result === 'success') {
-        // Notify parent component
         if (onPurchase) {
           onPurchase(selectedFeature as PremiumFeatureId);
         }
-        // Close modal after short delay
         setTimeout(() => {
           onClose();
-          // Reload page to refresh premium status
           window.location.reload();
         }, 2000);
       } else if (result === 'cancelled') {
-        // User cancelled - do nothing
         setIsProcessing(false);
       } else {
-        // Error
         setIsProcessing(false);
       }
     } catch (error) {
@@ -63,7 +58,6 @@ export default function PremiumPaywall({
     }
   };
 
-  const feature = PREMIUM_FEATURES[selectedFeature as PremiumFeatureId] || PREMIUM_FEATURES.subscription_monthly;
   const stars = STARS_PRICING[selectedFeature as PremiumFeatureId] || 0;
 
   const isSubscriptionTab = selectedFeature === 'subscription_monthly' || selectedFeature === 'subscription_yearly';
