@@ -4,33 +4,6 @@ import { PREMIUM_FEATURES, PremiumFeatureId } from './premiumService';
 // TELEGRAM PAYMENT SERVICE
 // ============================================
 
-// Telegram WebApp type
-declare global {
-  interface Window {
-    Telegram?: {
-      WebApp?: {
-        openInvoice?: (url: string, callback?: (status: string) => void) => void;
-        showPopup?: (params: {
-          title?: string;
-          message: string;
-          buttons?: Array<{
-            id?: string;
-            type?: 'default' | 'ok' | 'close' | 'cancel' | 'destructive';
-            text?: string;
-          }>;
-        }, callback?: (buttonId: string) => void) => void;
-        showAlert?: (message: string, callback?: () => void) => void;
-        showConfirm?: (message: string, callback?: (ok: boolean) => void) => void;
-        HapticFeedback?: {
-          impactOccurred: (style: 'light' | 'medium' | 'heavy') => void;
-          notificationOccurred: (type: 'error' | 'success' | 'warning') => void;
-          selectionChanged: () => void;
-        };
-      };
-    };
-  }
-}
-
 // ============================================
 // STARS PRICING - Telegram Stars-ში
 // ============================================
@@ -42,6 +15,13 @@ export const STARS_PRICING: Record<PremiumFeatureId, number> = {
   relationship: 200,
   ai_weekly: 250,
 };
+
+// ============================================
+// HELPER: Get Telegram WebApp
+// ============================================
+function getTg() {
+  return (window as any).Telegram?.WebApp;
+}
 
 // ============================================
 // CREATE INVOICE URL
@@ -95,7 +75,7 @@ export async function createInvoiceUrl(
 // ============================================
 export function openPayment(invoiceUrl: string): Promise<'paid' | 'cancelled' | 'failed' | 'pending'> {
   return new Promise((resolve) => {
-    const tg = window.Telegram?.WebApp;
+    const tg = getTg();
     
     if (!tg?.openInvoice) {
       console.error('❌ Telegram WebApp not available');
@@ -105,7 +85,7 @@ export function openPayment(invoiceUrl: string): Promise<'paid' | 'cancelled' | 
 
     tg.HapticFeedback?.impactOccurred('medium');
 
-    tg.openInvoice(invoiceUrl, (status) => {
+    tg.openInvoice(invoiceUrl, (status: string) => {
       console.log('💳 Payment status:', status);
       
       switch (status) {
@@ -176,7 +156,7 @@ export async function completePurchase(
 // HELPER: SHOW MESSAGES
 // ============================================
 function showSuccess(message: string) {
-  const tg = window.Telegram?.WebApp;
+  const tg = getTg();
   if (tg?.showPopup) {
     tg.showPopup({
       title: '✨ Success',
@@ -189,7 +169,7 @@ function showSuccess(message: string) {
 }
 
 function showError(message: string) {
-  const tg = window.Telegram?.WebApp;
+  const tg = getTg();
   if (tg?.showAlert) {
     tg.showAlert(message);
   } else {
@@ -198,7 +178,7 @@ function showError(message: string) {
 }
 
 function showInfo(message: string) {
-  const tg = window.Telegram?.WebApp;
+  const tg = getTg();
   if (tg?.showAlert) {
     tg.showAlert(message);
   } else {

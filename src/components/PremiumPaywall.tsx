@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check, Crown, Sparkles } from 'lucide-react';
-import { PREMIUM_FEATURES, formatPrice, PremiumFeatureId } from '../lib/premiumService';
+import { formatPrice, PremiumFeatureId } from '../lib/premiumService';
 import { completePurchase, formatStars, STARS_PRICING } from '../lib/telegramPaymentService';
 import { useUser } from '../context/UserContext';
 import './PremiumPaywall.css';
