@@ -163,12 +163,11 @@ async function updateUserPatterns(userId: string) {
     const sortedHours = Object.entries(hourCounts)
       .sort((a, b) => b[1] - a[1]);
     
-    // ✅ გასწორებულია: ცალკე ცვლადები
+    // ✅ გასწორებულია: მარტივი null check
     let preferredTime: string | null = null;
-    if (sortedHours.length > 0) {
-      const firstEntry = sortedHours[0];
-      const hourStr = firstEntry[0];
-      preferredTime = `${hourStr.padStart(2, '0')}:00:00`;
+    const topHour = sortedHours[0];
+    if (topHour) {
+      preferredTime = `${topHour[0].padStart(2, '0')}:00:00`;
     }
 
     // შენახვა
