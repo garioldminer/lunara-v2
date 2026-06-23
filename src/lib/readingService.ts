@@ -127,12 +127,12 @@ async function updateUserPatterns(userId: string) {
     const allCards = readings.flatMap(r => r.cards);
     
     // საყვარელი კარტები (ყველაზე ხშირი)
-    const cardCounts: Record<string, number> = {};
+    const cardCounts = new Map<string, number>();
     allCards.forEach(card => {
-      cardCounts[card.name] = (cardCounts[card.name] || 0) + 1;
+      cardCounts.set(card.name, (cardCounts.get(card.name) || 0) + 1);
     });
     
-    const favoriteCards = Object.entries(cardCounts)
+    const favoriteCards = Array.from(cardCounts.entries())
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5)
       .map(([name]) => name);
@@ -141,20 +141,39 @@ async function updateUserPatterns(userId: string) {
     const topics = readings
       .filter(r => r.question)
       .map(r => extractTopic(r.question!))
-      .filter(Boolean);
+      .filter((t): t is string => t !== null);
 
-    const topicCounts: Record<string, number> = {};
+    const topicCounts = new Map<string, number>();
     topics.forEach(topic => {
-      topicCounts[topic] = (topicCounts[topic] || 0) + 1;
+      topicCounts.set(topic, (topicCounts.get(topic) || 0) + 1);
     });
 
-    const favoriteTopics = Object.entries(topicCounts)
+    const favoriteTopics = Array.from(topicCounts.entries())
       .sort((a, b) => b[1] - a[1])
       .slice(0, 3)
       .map(([topic]) => topic);
 
-    // ✅ preferredTime დროებით null-ზე (MVP-სთვის საკმარისია)
-    const preferredTime: string | null = null;
+    // საყვარელი დრო - Map-ით (ტიპ-უსაფრთხო)
+    const hourCounts = new Map<number, number>();
+    readings.forEach(r => {
+      const hour = new Date(r.created_at).getHours();
+      hourCounts.set(hour, (hourCounts.get(hour) || 0) + 1);
+    });
+
+    let preferredTime: string | null = null;
+    let maxHour = -1;
+    let maxCount = 0;
+    
+    hourCounts.forEach((count, hour) => {
+      if (count > maxCount) {
+        maxCount = count;
+        maxHour = hour;
+      }
+    });
+    
+    if (maxHour >= 0) {
+      preferredTime = `${maxHour.toString().padStart(2, '0')}:00:00`;
+    }
 
     // შენახვა
     const { error } = await supabase
