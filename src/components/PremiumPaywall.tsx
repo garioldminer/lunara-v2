@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Crown, Sparkles } from 'lucide-react';
+import { X, Crown, Sparkles, CheckCircle, XCircle } from 'lucide-react';
 import { formatPrice, PremiumFeatureId } from '../lib/premiumService';
 import { completePurchase, formatStars, STARS_PRICING } from '../lib/telegramPaymentService';
 import { useUser } from '../context/UserContext';
@@ -24,6 +24,9 @@ export default function PremiumPaywall({
     highlightedFeature || 'celtic_cross'
   );
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handlePurchase = async () => {
     if (!user) {
@@ -40,20 +43,32 @@ export default function PremiumPaywall({
       );
 
       if (result === 'success') {
+        // წარმატება!
+        setShowSuccess(true);
+        
         if (onPurchase) {
           onPurchase(selectedFeature as PremiumFeatureId);
         }
+        
+        // 3 წამის შემდეგ დავხუროთ და გადავიტვირთოთ
         setTimeout(() => {
+          setShowSuccess(false);
           onClose();
           window.location.reload();
-        }, 2000);
+        }, 3000);
       } else if (result === 'cancelled') {
+        // მომხმარებელმა გააუქმა
         setIsProcessing(false);
       } else {
+        // შეცდომა
+        setErrorMessage('ტრანზაქცია ვერ განხორციელდა. გთხოვთ სცადოთ ხელახლა.');
+        setShowError(true);
         setIsProcessing(false);
       }
     } catch (error) {
       console.error('❌ Purchase error:', error);
+      setErrorMessage('რაღაც შეცდომა მოხდა. გთხოვთ სცადოთ ხელახლა.');
+      setShowError(true);
       setIsProcessing(false);
     }
   };
@@ -232,6 +247,80 @@ export default function PremiumPaywall({
               💳 Secure payment via Telegram Stars
             </p>
           </motion.div>
+
+          {/* Success Banner */}
+          <AnimatePresence>
+            {showSuccess && (
+              <motion.div
+                className="success-banner-overlay"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <motion.div
+                  className="success-banner"
+                  initial={{ scale: 0.5, opacity: 0, y: 50 }}
+                  animate={{ scale: 1, opacity: 1, y: 0 }}
+                  exit={{ scale: 0.5, opacity: 0, y: 50 }}
+                  transition={{ type: 'spring', damping: 15, stiffness: 300 }}
+                >
+                  <motion.div 
+                    className="success-icon"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.2, type: 'spring', damping: 10 }}
+                  >
+                    <CheckCircle size={80} />
+                  </motion.div>
+                  <h3 className="success-title">წარმატებით!</h3>
+                  <p className="success-message">
+                    ტრანზაქცია წარმატებით განხორციელდა.<br />
+                    Premium ფუნქციები აქტიურებულია!
+                  </p>
+                  <div className="success-stars">
+                    ⭐ {stars} Stars დახარჯული
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Error Banner */}
+          <AnimatePresence>
+            {showError && (
+              <motion.div
+                className="error-banner-overlay"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <motion.div
+                  className="error-banner"
+                  initial={{ scale: 0.5, opacity: 0, y: 50 }}
+                  animate={{ scale: 1, opacity: 1, y: 0 }}
+                  exit={{ scale: 0.5, opacity: 0, y: 50 }}
+                  transition={{ type: 'spring', damping: 15, stiffness: 300 }}
+                >
+                  <motion.div 
+                    className="error-icon"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.2, type: 'spring', damping: 10 }}
+                  >
+                    <XCircle size={80} />
+                  </motion.div>
+                  <h3 className="error-title">ვერ განხორციელდა</h3>
+                  <p className="error-message">{errorMessage}</p>
+                  <button 
+                    className="error-close-btn"
+                    onClick={() => setShowError(false)}
+                  >
+                    კარგი
+                  </button>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       )}
     </AnimatePresence>
