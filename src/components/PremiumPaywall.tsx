@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Check, Crown, Sparkles, Lock } from 'lucide-react';
+import { X, Check, Crown, Sparkles } from 'lucide-react';
 import { PREMIUM_FEATURES, formatPrice, PremiumFeatureId } from '../lib/premiumService';
 import './PremiumPaywall.css';
 
@@ -17,19 +17,22 @@ export default function PremiumPaywall({
   highlightedFeature,
   onPurchase 
 }: Props) {
-  const [selectedFeature, setSelectedFeature] = useState<PremiumFeatureId>(
+  const [selectedFeature, setSelectedFeature] = useState<string>(
     highlightedFeature || 'subscription_monthly'
   );
 
   const handlePurchase = () => {
     if (onPurchase) {
-      onPurchase(selectedFeature);
+      onPurchase(selectedFeature as PremiumFeatureId);
     }
     // TODO: Telegram Payment integration will be here
     console.log('💳 Purchasing:', selectedFeature);
   };
 
-  const feature = PREMIUM_FEATURES[selectedFeature];
+  const feature = PREMIUM_FEATURES[selectedFeature as PremiumFeatureId] || PREMIUM_FEATURES.subscription_monthly;
+
+  const isSubscriptionTab = selectedFeature === 'subscription_monthly' || selectedFeature === 'subscription_yearly';
+  const isSingleTab = selectedFeature === 'celtic_cross' || selectedFeature === 'horseshoe' || selectedFeature === 'relationship';
 
   return (
     <AnimatePresence>
@@ -67,14 +70,14 @@ export default function PremiumPaywall({
             {/* Feature Tabs */}
             <div className="premium-tabs">
               <button
-                className={`premium-tab ${selectedFeature === 'subscription_monthly' ? 'active' : ''}`}
+                className={`premium-tab ${isSubscriptionTab ? 'active' : ''}`}
                 onClick={() => setSelectedFeature('subscription_monthly')}
               >
                 <Crown size={16} />
                 <span>Subscription</span>
               </button>
               <button
-                className={`premium-tab ${selectedFeature === 'celtic_cross' ? 'active' : ''}`}
+                className={`premium-tab ${isSingleTab ? 'active' : ''}`}
                 onClick={() => setSelectedFeature('celtic_cross')}
               >
                 <Sparkles size={16} />
@@ -84,7 +87,7 @@ export default function PremiumPaywall({
 
             {/* Feature List */}
             <div className="premium-features-list">
-              {selectedFeature === 'subscription_monthly' && (
+              {isSubscriptionTab && (
                 <>
                   <div 
                     className={`premium-feature-item ${selectedFeature === 'subscription_monthly' ? 'selected' : ''}`}
@@ -130,7 +133,7 @@ export default function PremiumPaywall({
                 </>
               )}
 
-              {selectedFeature === 'celtic_cross' && (
+              {isSingleTab && (
                 <>
                   <div 
                     className={`premium-feature-item ${selectedFeature === 'celtic_cross' ? 'selected' : ''}`}
@@ -182,7 +185,6 @@ export default function PremiumPaywall({
               className="premium-purchase-btn"
               onClick={handlePurchase}
             >
-              <Lock size={16} />
               <span>Unlock for {formatPrice(feature.price)}</span>
             </button>
 

@@ -142,11 +142,9 @@ export async function getActiveSubscription(userId: string) {
 // ============================================
 // CHECK IF USER CAN ACCESS FEATURE
 // ============================================
-export async function canAccessFeature(userId: string, featureId: PremiumFeatureId): Promise<boolean> {
-  const feature = PREMIUM_FEATURES[featureId];
-  
+export async function canAccessFeature(userId: string, featureId: string): Promise<boolean> {
   // Daily and 3-card readings are always free
-  if (featureId === 'daily' || featureId === 'three_card') {
+  if (featureId === 'daily' || featureId === 'three-card') {
     return true;
   }
   
