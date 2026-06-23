@@ -13,6 +13,7 @@ import CardFanScreen from './components/CardFanScreen';
 import CardDetailScreen from './components/CardDetailScreen';
 import DailyCardScreen from './components/DailyCardScreen';
 import ThreeCardReadingScreen from './components/ThreeCardReadingScreen';
+import ReadingHistoryScreen from './components/ReadingHistoryScreen';
 import BottomNav from './components/BottomNav';
 import { UserProvider, useUser } from './context/UserContext';
 import { getTelegramUser } from './lib/telegramAuth';
@@ -33,7 +34,8 @@ type Screen =
   | 'card-fan'
   | 'card-detail'
   | 'daily-card'
-  | 'three-card-reading';
+  | 'three-card-reading'
+  | 'reading-history';
 
 // ===== USER LOADER COMPONENT =====
 function UserLoader({ onReady }: { onReady: () => void }) {
@@ -133,6 +135,11 @@ function AppContent() {
     else if (screen === 'three-card-reading') {
       console.log('🔮 Opening Three Card Reading');
       goTo('three-card-reading');
+    }
+    // Reading History
+    else if (screen === 'reading-history') {
+      console.log('📚 Opening Reading History');
+      goTo('reading-history');
     }
     // Card Fan / Draw
     else if (screen === 'draw' || screen === 'card-fan') {
@@ -263,6 +270,9 @@ function AppContent() {
       )}
       {currentScreen === 'three-card-reading' && (
         <ThreeCardReadingScreen onNavigate={handleNavigate} />
+      )}
+      {currentScreen === 'reading-history' && (
+        <ReadingHistoryScreen onNavigate={handleNavigate} />
       )}
     </div>
   );

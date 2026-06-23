@@ -107,6 +107,8 @@ export default function HomeScreen({ onNavigate }: Props) {
         onNavigate('astro');
       } else if (action === 'Cards') {
         onNavigate('cards');
+      } else if (action === 'History') {
+        onNavigate('reading-history');
       }
     }
   };
@@ -116,10 +118,10 @@ export default function HomeScreen({ onNavigate }: Props) {
     { icon: <LayoutGrid size={28} />, label: '3 Cards', sublabel: 'Reading', color: '#a78bfa', action: '3Cards' },
     { icon: <Moon size={28} />, label: 'Tarot', sublabel: 'Draw', color: '#60a5fa', action: 'Tarot' },
     { icon: <Hash size={28} />, label: 'Cards', sublabel: 'Gallery', color: '#fbbf24', action: 'Cards' },
+    { icon: <Scroll size={28} />, label: 'History', sublabel: 'Readings', color: '#34d399', action: 'History' },
     { icon: <Gem size={28} />, label: 'Crystals', sublabel: '', color: '#f472b6', action: 'Crystals' },
     { icon: <Droplets size={28} />, label: 'Chakras', sublabel: '', color: '#34d399', action: 'Chakras' },
     { icon: <Wind size={28} />, label: 'Runes', sublabel: '', color: '#fb923c', action: 'Runes' },
-    { icon: <Brain size={28} />, label: 'Dreams', sublabel: '', color: '#c084fc', action: 'Dreams' },
   ];
 
   const quests = [
