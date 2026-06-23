@@ -153,28 +153,8 @@ async function updateUserPatterns(userId: string) {
       .slice(0, 3)
       .map(([topic]) => topic);
 
-    // საყვარელი დრო - ✅ მარტივი მიდგომა
-    const hourCounts: Record<number, number> = {};
-    readings.forEach(r => {
-      const hour = new Date(r.created_at).getHours();
-      hourCounts[hour] = (hourCounts[hour] || 0) + 1;
-    });
-
-    let preferredTime: string | null = null;
-    let maxHour = -1;
-    let maxCount = 0;
-    
-    Object.keys(hourCounts).forEach(key => {
-      const count = hourCounts[Number(key)];
-      if (count > maxCount) {
-        maxCount = count;
-        maxHour = Number(key);
-      }
-    });
-    
-    if (maxHour >= 0) {
-      preferredTime = `${String(maxHour).padStart(2, '0')}:00:00`;
-    }
+    // ✅ preferredTime დროებით null-ზე (MVP-სთვის საკმარისია)
+    const preferredTime: string | null = null;
 
     // შენახვა
     const { error } = await supabase
