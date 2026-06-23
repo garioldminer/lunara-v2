@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
-import { tarotCards, TarotCard, SUITS } from '../data/tarotCards';
+import { ArrowLeft, RotateCcw } from 'lucide-react';
+import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards';
+import QuestionInput from './QuestionInput';
 import './DailyCardScreen.css';
 
 interface Props {
@@ -12,11 +13,13 @@ interface DailyReading {
   card: TarotCard;
   isReversed: boolean;
   date: string;
+  question?: string;
 }
 
 export default function DailyCardScreen({ onNavigate }: Props) {
   const [dailyReading, setDailyReading] = useState<DailyReading | null>(null);
   const [isRevealed, setIsRevealed] = useState(false);
+  const [showQuestion, setShowQuestion] = useState(true);
 
   const getTodayDate = () => {
     const today = new Date();
@@ -31,7 +34,12 @@ export default function DailyCardScreen({ onNavigate }: Props) {
       const parsed: DailyReading = JSON.parse(stored);
       if (parsed.date === today) {
         setDailyReading(parsed);
-        setIsRevealed(true);
+        if (parsed.question) {
+          setIsRevealed(true);
+          setShowQuestion(false);
+        } else {
+          setShowQuestion(true);
+        }
         return;
       }
     }
@@ -63,8 +71,27 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     return Math.floor(diff / oneDay);
   };
 
+  const handleQuestionSubmit = (question: string) => {
+    if (dailyReading) {
+      const updatedReading = { ...dailyReading, question };
+      setDailyReading(updatedReading);
+      localStorage.setItem('dailyCard', JSON.stringify(updatedReading));
+    }
+    setShowQuestion(false);
+  };
+
   const handleReveal = () => {
     setIsRevealed(true);
+  };
+
+  const handleNewQuestion = () => {
+    if (dailyReading) {
+      const updatedReading = { ...dailyReading, question: undefined };
+      setDailyReading(updatedReading);
+      localStorage.setItem('dailyCard', JSON.stringify(updatedReading));
+    }
+    setIsRevealed(false);
+    setShowQuestion(true);
   };
 
   const getCardMeta = (card: TarotCard) => {
@@ -83,7 +110,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     );
   }
 
-  const { card, isReversed } = dailyReading;
+  const { card, isReversed, question } = dailyReading;
   const meaning = isReversed ? card.reversed_meaning : card.meaning;
   const keywords = isReversed ? card.reversed_keywords : card.keywords;
 
@@ -110,17 +137,40 @@ export default function DailyCardScreen({ onNavigate }: Props) {
       </div>
 
       <div className="daily-card-section">
-        {!isRevealed ? (
+        {showQuestion ? (
+          <motion.div
+            className="daily-question-phase"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="daily-question-icon">🔮</div>
+            <h2 className="daily-question-title">Ask Your Question</h2>
+            <p className="daily-question-text">
+              Take a moment to focus on what you'd like guidance about today.
+            </p>
+            <QuestionInput onSubmit={handleQuestionSubmit} />
+          </motion.div>
+        ) : !isRevealed ? (
           <motion.div 
             className="daily-card-hidden"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6 }}
           >
-            <div className="daily-card-back">
-              <div className="daily-card-back-design">
-                <span className="daily-back-symbol">✦</span>
+            {question && (
+              <div className="daily-question-display">
+                <span className="daily-question-label">Your question:</span>
+                <p className="daily-question-text-display">"{question}"</p>
               </div>
+            )}
+            <div className="daily-card-back">
+              <img 
+                src={CARD_BACK_URL} 
+                alt="Card Back"
+                className="daily-card-back-image"
+                draggable={false}
+              />
             </div>
             <p className="daily-tap-hint">Tap to reveal your daily card</p>
             <button className="daily-reveal-btn" onClick={handleReveal}>
@@ -134,6 +184,13 @@ export default function DailyCardScreen({ onNavigate }: Props) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
+            {question && (
+              <div className="daily-question-display">
+                <span className="daily-question-label">Your question:</span>
+                <p className="daily-question-text-display">"{question}"</p>
+              </div>
+            )}
+
             <div className={`daily-card-image-wrapper ${isReversed ? 'reversed' : ''}`}>
               {card.image_url ? (
                 <img 
@@ -187,6 +244,11 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                   }
                 </p>
               </div>
+
+              <button className="daily-new-question-btn" onClick={handleNewQuestion}>
+                <RotateCcw size={14} />
+                <span>Ask New Question</span>
+              </button>
             </div>
           </motion.div>
         )}

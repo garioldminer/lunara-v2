@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, RotateCcw } from 'lucide-react';
-import { tarotCards, TarotCard, SUITS } from '../data/tarotCards';
+import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards';
+import QuestionInput from './QuestionInput';
 import './ThreeCardReadingScreen.css';
 
 interface Props {
   onNavigate?: (screen: string) => void;
 }
 
-type ReadingPhase = 'intro' | 'revealing' | 'complete';
+type ReadingPhase = 'intro' | 'question' | 'revealing' | 'complete';
 
 interface ReadingCard {
   card: TarotCard;
@@ -21,12 +22,19 @@ export default function ThreeCardReadingScreen({ onNavigate }: Props) {
   const [phase, setPhase] = useState<ReadingPhase>('intro');
   const [reading, setReading] = useState<ReadingCard[]>([]);
   const [activeCard, setActiveCard] = useState<number | null>(null);
+  const [question, setQuestion] = useState<string>('');
 
   const positions = [
     { key: 'past', label: 'Past', subtitle: 'What led you here' },
     { key: 'present', label: 'Present', subtitle: 'Current energy' },
     { key: 'future', label: 'Future', subtitle: "What's coming" },
   ];
+
+  const handleQuestionSubmit = (q: string) => {
+    setQuestion(q);
+    setPhase('revealing');
+    startReading();
+  };
 
   const startReading = () => {
     const shuffled = [...tarotCards].sort(() => Math.random() - 0.5);
@@ -39,7 +47,6 @@ export default function ThreeCardReadingScreen({ onNavigate }: Props) {
     ];
     
     setReading(newReading);
-    setPhase('revealing');
     setActiveCard(null);
 
     setTimeout(() => revealCard(0), 800);
@@ -56,6 +63,7 @@ export default function ThreeCardReadingScreen({ onNavigate }: Props) {
     setPhase('intro');
     setReading([]);
     setActiveCard(null);
+    setQuestion('');
   };
 
   const getCardMeta = (card: TarotCard) => {
@@ -92,6 +100,7 @@ export default function ThreeCardReadingScreen({ onNavigate }: Props) {
         <div className="tcr-header-spacer" />
       </div>
 
+      {/* INTRO PHASE */}
       {phase === 'intro' && (
         <motion.div 
           className="tcr-intro"
@@ -102,17 +111,43 @@ export default function ThreeCardReadingScreen({ onNavigate }: Props) {
           <div className="tcr-intro-icon">🔮</div>
           <h2 className="tcr-intro-title">Past · Present · Future</h2>
           <p className="tcr-intro-text">
-            Take a deep breath and focus on your question. The cards will reveal the energies surrounding your situation.
+            This reading reveals the energies of your past, present, and future. Take a moment to center yourself.
           </p>
-          <button className="tcr-begin-btn" onClick={startReading}>
+          <button className="tcr-begin-btn" onClick={() => setPhase('question')}>
             <span>Begin Reading</span>
             <span className="tcr-btn-ornament">✦</span>
           </button>
         </motion.div>
       )}
 
+      {/* QUESTION PHASE */}
+      {phase === 'question' && (
+        <motion.div
+          className="tcr-question-phase"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="tcr-question-icon">✨</div>
+          <h2 className="tcr-question-title">Ask Your Question</h2>
+          <p className="tcr-question-text">
+            Focus on what you'd like guidance about. The cards will reveal insights across time.
+          </p>
+          <QuestionInput onSubmit={handleQuestionSubmit} />
+        </motion.div>
+      )}
+
+      {/* REVEALING / COMPLETE PHASE */}
       {(phase === 'revealing' || phase === 'complete') && (
         <div className="tcr-reading">
+          {/* Question Display */}
+          {question && (
+            <div className="tcr-question-display">
+              <span className="tcr-question-label">Your question:</span>
+              <p className="tcr-question-text-display">"{question}"</p>
+            </div>
+          )}
+
           <div className="tcr-cards-row">
             {reading.map((readingCard, idx) => (
               <motion.div
@@ -136,7 +171,12 @@ export default function ThreeCardReadingScreen({ onNavigate }: Props) {
                         exit={{ rotateY: 180 }}
                         transition={{ duration: 0.6 }}
                       >
-                        <div className="tcr-card-back-design">✦</div>
+                        <img 
+                          src={CARD_BACK_URL} 
+                          alt="Card Back"
+                          className="tcr-card-back-image"
+                          draggable={false}
+                        />
                       </motion.div>
                     ) : (
                       <motion.div

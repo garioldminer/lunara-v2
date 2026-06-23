@@ -1,0 +1,125 @@
+.question-input-container {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .question-input-wrapper {
+    background: rgba(197, 160, 89, 0.05);
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    border-radius: 16px;
+    padding: 16px;
+    transition: all 0.3s;
+  }
+  
+  .question-input-wrapper:focus-within {
+    border-color: rgba(197, 160, 89, 0.6);
+    box-shadow: 0 0 20px rgba(197, 160, 89, 0.2);
+  }
+  
+  .question-textarea {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-family: 'Georgia', serif;
+    font-size: 14px;
+    line-height: 1.6;
+    resize: none;
+    outline: none;
+  }
+  
+  .question-textarea::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+    font-style: italic;
+  }
+  
+  .question-input-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(197, 160, 89, 0.2);
+  }
+  
+  .char-count {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+    font-family: monospace;
+  }
+  
+  .question-submit-btn {
+    background: linear-gradient(135deg, #C5A059 0%, #8B6914 100%);
+    border: 1px solid #C5A059;
+    border-radius: 20px;
+    padding: 8px 16px;
+    color: #0a0600;
+    font-family: 'Georgia', serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(197, 160, 89, 0.3);
+  }
+  
+  .question-submit-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(197, 160, 89, 0.4);
+  }
+  
+  .question-submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .examples-toggle {
+    background: transparent;
+    border: none;
+    color: rgba(197, 160, 89, 0.7);
+    font-family: 'Georgia', serif;
+    font-size: 12px;
+    font-style: italic;
+    cursor: pointer;
+    margin-top: 16px;
+    padding: 8px;
+    transition: color 0.2s;
+  }
+  
+  .examples-toggle:hover {
+    color: #C5A059;
+  }
+  
+  .examples-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+    overflow: hidden;
+  }
+  
+  .example-item {
+    background: rgba(197, 160, 89, 0.08);
+    border: 1px solid rgba(197, 160, 89, 0.2);
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: rgba(255, 255, 255, 0.8);
+    font-family: 'Georgia', serif;
+    font-size: 13px;
+    font-style: italic;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .example-item:hover {
+    background: rgba(197, 160, 89, 0.15);
+    border-color: rgba(197, 160, 89, 0.4);
+    transform: translateX(4px);
+  }
