@@ -160,14 +160,14 @@ async function updateUserPatterns(userId: string) {
       hourCounts[hour] = (hourCounts[hour] || 0) + 1;
     });
 
-    const sortedHours = Object.entries(hourCounts)
+    // ✅ გასწორებულია: String() cast TypeScript-ისთვის
+    const sortedHourEntries = Object.entries(hourCounts)
       .sort((a, b) => b[1] - a[1]);
-    
-    // ✅ გასწორებულია: მარტივი null check
+
     let preferredTime: string | null = null;
-    const topHour = sortedHours[0];
-    if (topHour) {
-      preferredTime = `${topHour[0].padStart(2, '0')}:00:00`;
+    if (sortedHourEntries.length > 0) {
+      const topHourKey = String(sortedHourEntries[0][0]);
+      preferredTime = `${topHourKey.padStart(2, '0')}:00:00`;
     }
 
     // შენახვა
