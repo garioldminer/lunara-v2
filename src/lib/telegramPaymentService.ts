@@ -39,12 +39,15 @@ export async function createInvoiceUrl(
   }
 
   try {
+    console.log('📦 Creating invoice for:', { featureId, userId, stars });
+
     const response = await fetch(
       `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-invoice`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({
           feature_id: featureId,
@@ -56,6 +59,8 @@ export async function createInvoiceUrl(
       }
     );
 
+    console.log('📡 Response status:', response.status);
+
     if (!response.ok) {
       const error = await response.text();
       console.error('❌ Invoice creation failed:', error);
@@ -63,6 +68,7 @@ export async function createInvoiceUrl(
     }
 
     const data = await response.json();
+    console.log('✅ Invoice created:', data);
     return data.invoice_url;
   } catch (error) {
     console.error('❌ Error creating invoice:', error);
