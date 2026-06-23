@@ -163,11 +163,13 @@ async function updateUserPatterns(userId: string) {
     const sortedHours = Object.entries(hourCounts)
       .sort((a, b) => b[1] - a[1]);
     
-    const preferredHour = sortedHours.length > 0 ? sortedHours[0][0] : null;
-
-    const preferredTime = preferredHour !== null
-      ? `${String(preferredHour).padStart(2, '0')}:00:00`
-      : null;
+    // ✅ გასწორებულია: ცალკე ცვლადები
+    let preferredTime: string | null = null;
+    if (sortedHours.length > 0) {
+      const firstEntry = sortedHours[0];
+      const hourStr = firstEntry[0];
+      preferredTime = `${hourStr.padStart(2, '0')}:00:00`;
+    }
 
     // შენახვა
     const { error } = await supabase
