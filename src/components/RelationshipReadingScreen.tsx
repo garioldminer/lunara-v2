@@ -41,7 +41,6 @@ export default function RelationshipReadingScreen({ onNavigate }: Props) {
   const [creditsRemaining, setCreditsRemaining] = useState<number | null>(null);
   const [activeFeature] = useState<PremiumFeatureId>('relationship');
 
-  // ✅ Smart Paywall: შეამოწმე access (subscription ან credits)
   const checkAccess = async (): Promise<boolean> => {
     if (!user) return false;
     const hasPremium = await isPremium(user.id);
@@ -50,7 +49,6 @@ export default function RelationshipReadingScreen({ onNavigate }: Props) {
     return (credits[activeFeature] || 0) > 0;
   };
 
-  // ✅ BEGIN READING - თუ აქვს access, პირდაპირ კითხვაზე
   const handleBeginReading = async () => {
     if (!user) {
       alert('Please log in first');
@@ -64,7 +62,6 @@ export default function RelationshipReadingScreen({ onNavigate }: Props) {
     }
   };
 
-  // ✅ კითხვის გაგზავნა - დააკელი credit და დაიწყე reading
   const handleQuestionSubmit = async (q: string) => {
     if (!user) return;
 
@@ -136,7 +133,6 @@ export default function RelationshipReadingScreen({ onNavigate }: Props) {
     setReading(prev => prev.map((r, i) => i === index ? { ...r, revealed: true } : r));
   };
 
-  // ✅ NEW READING - Smart Paywall: თუ credits > 0 პირდაპირ კითხვაზე, თუ = 0 Paywall
   const handleNewReading = async () => {
     setReading([]);
     setActiveCard(null);
@@ -171,6 +167,10 @@ export default function RelationshipReadingScreen({ onNavigate }: Props) {
     };
     return interpretations[position] || meaning;
   };
+
+  // ✅ რი რიგი: პირველი 3 კარტი, მეორე 3 კარტი (ცენტრში)
+  const topRow = reading.slice(0, 3);    // კარტები 1-3
+  const bottomRow = reading.slice(3, 6); // კარტები 4-6
 
   return (
     <div className="relationship-reading-screen">
@@ -239,65 +239,131 @@ export default function RelationshipReadingScreen({ onNavigate }: Props) {
             </div>
           )}
 
-          <div className="rr-cards-layout">
-            {reading.map((readingCard, idx) => (
-              <motion.div
-                key={idx}
-                className={`rr-card-slot ${readingCard.revealed ? 'revealed' : ''} ${activeCard === idx ? 'active' : ''} position-${idx + 1}`}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: idx * 0.1, duration: 0.4 }}
-                onClick={() => phase === 'complete' && setActiveCard(activeCard === idx ? null : idx)}
-              >
-                <div className="rr-position-label">{RELATIONSHIP_POSITIONS[idx].short}</div>
-                
-                <div className="rr-card-wrapper">
-                  <AnimatePresence mode="wait">
-                    {!readingCard.revealed ? (
-                      <motion.div
-                        key="back"
-                        className="rr-card-back"
-                        initial={{ rotateY: 0 }}
-                        exit={{ rotateY: 180 }}
-                        transition={{ duration: 0.5 }}
-                      >
-                        <img 
-                          src={CARD_BACK_URL} 
-                          alt="Card Back"
-                          className="rr-card-back-image"
-                          draggable={false}
-                        />
-                      </motion.div>
-                    ) : (
-                      <motion.div
-                        key="front"
-                        className="rr-card-front"
-                        initial={{ rotateY: -180 }}
-                        animate={{ rotateY: 0 }}
-                        transition={{ duration: 0.5 }}
-                      >
-                        {readingCard.card.image_url ? (
-                          <img 
-                            src={readingCard.card.image_url} 
-                            alt={readingCard.card.name}
-                            className="rr-card-image"
-                            style={{ transform: readingCard.isReversed ? 'rotate(180deg)' : 'none' }}
-                          />
-                        ) : (
-                          <div className="rr-card-placeholder">
-                            <span className="rr-placeholder-num">{readingCard.card.number}</span>
-                            <span className="rr-placeholder-name">{readingCard.card.name}</span>
-                          </div>
-                        )}
-                        {readingCard.isReversed && (
-                          <div className="rr-reversed-badge">R</div>
-                        )}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </motion.div>
-            ))}
+          {/* ✅ Relationship Layout - 2 რიგი: 3 + 3 (ცენტრში) */}
+          <div className="rr-cards-container">
+            {/* პირველი რიგი: კარტები 1-3, ნუმერაცია ზემოთ */}
+            <div className="rr-cards-row">
+              {topRow.map((readingCard, idx) => {
+                const realIndex = idx; // 0-2
+                return (
+                  <motion.div
+                    key={realIndex}
+                    className={`rr-card-slot ${readingCard.revealed ? 'revealed' : ''} ${activeCard === realIndex ? 'active' : ''}`}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: realIndex * 0.1, duration: 0.4 }}
+                    onClick={() => phase === 'complete' && setActiveCard(activeCard === realIndex ? null : realIndex)}
+                  >
+                    {/* ნუმერაცია ემოთ */}
+                    <div className="rr-position-label">{RELATIONSHIP_POSITIONS[realIndex].short}</div>
+                    
+                    {/* 3D Flip ანიმაცია */}
+                    <motion.div
+                      className="rr-card-wrapper"
+                      initial={{ rotateY: 0, translateY: 0, scale: 1 }}
+                      animate={readingCard.revealed ? {
+                        rotateY: 180,
+                        translateY: [0, -12, 0],
+                        scale: [1, 1.03, 1]
+                      } : {
+                        rotateY: 0,
+                        translateY: 0,
+                        scale: 1
+                      }}
+                      transition={{
+                        rotateY: { duration: 0.8, ease: [0.4, 0, 0.2, 1] },
+                        translateY: { duration: 0.8, ease: "easeInOut" },
+                        scale: { duration: 0.8, ease: "easeInOut" }
+                      }}
+                    >
+                      <div className="rr-card-back">
+                        <img src={CARD_BACK_URL} alt="Card Back" className="rr-card-back-image" draggable={false} />
+                      </div>
+                      <div className="rr-card-front">
+                        <div className="rr-card-front-content">
+                          {readingCard.card.image_url ? (
+                            <img 
+                              src={readingCard.card.image_url} 
+                              alt={readingCard.card.name} 
+                              className="rr-card-image" 
+                              style={{ transform: readingCard.isReversed ? 'rotate(180deg)' : 'none' }} 
+                            />
+                          ) : (
+                            <div className="rr-card-placeholder">
+                              <span className="rr-placeholder-num">{readingCard.card.number}</span>
+                              <span className="rr-placeholder-name">{readingCard.card.name}</span>
+                            </div>
+                          )}
+                          {readingCard.isReversed && <div className="rr-reversed-badge">R</div>}
+                        </div>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {/* მეორე რიგი: კარტები 4-6, ნუმერაცია ქვემოთ, ცენტრში */}
+            <div className="rr-cards-row rr-cards-row-bottom">
+              {bottomRow.map((readingCard, idx) => {
+                const realIndex = idx + 3; // 3-5
+                return (
+                  <motion.div
+                    key={realIndex}
+                    className={`rr-card-slot ${readingCard.revealed ? 'revealed' : ''} ${activeCard === realIndex ? 'active' : ''}`}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: realIndex * 0.1, duration: 0.4 }}
+                    onClick={() => phase === 'complete' && setActiveCard(activeCard === realIndex ? null : realIndex)}
+                  >
+                    {/* 3D Flip ანიმაცია */}
+                    <motion.div
+                      className="rr-card-wrapper"
+                      initial={{ rotateY: 0, translateY: 0, scale: 1 }}
+                      animate={readingCard.revealed ? {
+                        rotateY: 180,
+                        translateY: [0, -12, 0],
+                        scale: [1, 1.03, 1]
+                      } : {
+                        rotateY: 0,
+                        translateY: 0,
+                        scale: 1
+                      }}
+                      transition={{
+                        rotateY: { duration: 0.8, ease: [0.4, 0, 0.2, 1] },
+                        translateY: { duration: 0.8, ease: "easeInOut" },
+                        scale: { duration: 0.8, ease: "easeInOut" }
+                      }}
+                    >
+                      <div className="rr-card-back">
+                        <img src={CARD_BACK_URL} alt="Card Back" className="rr-card-back-image" draggable={false} />
+                      </div>
+                      <div className="rr-card-front">
+                        <div className="rr-card-front-content">
+                          {readingCard.card.image_url ? (
+                            <img 
+                              src={readingCard.card.image_url} 
+                              alt={readingCard.card.name} 
+                              className="rr-card-image" 
+                              style={{ transform: readingCard.isReversed ? 'rotate(180deg)' : 'none' }} 
+                            />
+                          ) : (
+                            <div className="rr-card-placeholder">
+                              <span className="rr-placeholder-num">{readingCard.card.number}</span>
+                              <span className="rr-placeholder-name">{readingCard.card.name}</span>
+                            </div>
+                          )}
+                          {readingCard.isReversed && <div className="rr-reversed-badge">R</div>}
+                        </div>
+                      </div>
+                    </motion.div>
+
+                    {/* ნუმერაცია ქვემოთ */}
+                    <div className="rr-position-label">{RELATIONSHIP_POSITIONS[realIndex].short}</div>
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
 
           <AnimatePresence>
@@ -361,7 +427,6 @@ export default function RelationshipReadingScreen({ onNavigate }: Props) {
                   </div>
                 )}
 
-                {/* ✅ Credits Remaining Banner - Smart Paywall */}
                 {creditsRemaining !== null && creditsRemaining > 0 && (
                   <motion.div 
                     className="rr-credits-banner"
