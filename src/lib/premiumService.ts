@@ -9,6 +9,7 @@ export const PREMIUM_FEATURES = {
     name: 'Premium Monthly',
     description: 'Unlimited readings + AI Insights',
     price: 999,
+    stars: 499,
     type: 'subscription',
     duration: 'monthly',
     icon: '💎'
@@ -18,6 +19,7 @@ export const PREMIUM_FEATURES = {
     name: 'Premium Yearly',
     description: 'Save 33% - Full year access',
     price: 7999,
+    stars: 3999,
     type: 'subscription',
     duration: 'yearly',
     icon: '💎'
@@ -27,6 +29,7 @@ export const PREMIUM_FEATURES = {
     name: 'Celtic Cross Reading',
     description: '10-card deep analysis',
     price: 299,
+    stars: 1,
     type: 'single',
     icon: '✝️'
   },
@@ -35,6 +38,7 @@ export const PREMIUM_FEATURES = {
     name: 'Horseshoe Reading',
     description: '7-card life path analysis',
     price: 199,
+    stars: 100,
     type: 'single',
     icon: '🐎'
   },
@@ -43,6 +47,7 @@ export const PREMIUM_FEATURES = {
     name: 'Relationship Spread',
     description: '6-card love analysis',
     price: 399,
+    stars: 200,
     type: 'single',
     icon: '❤️'
   },
@@ -51,6 +56,7 @@ export const PREMIUM_FEATURES = {
     name: 'AI Weekly Insight',
     description: 'Personalized weekly analysis',
     price: 499,
+    stars: 250,
     type: 'single',
     icon: '🧠'
   }
@@ -59,36 +65,32 @@ export const PREMIUM_FEATURES = {
 export type PremiumFeatureId = keyof typeof PREMIUM_FEATURES;
 
 // ============================================
-// CHECK PREMIUM STATUS
+// CHECK PREMIUM STATUS - ახალი სქემით
 // ============================================
 export async function isPremium(userId: string): Promise<boolean> {
   if (!supabase) return false;
+  if (!userId) return false;
   
   try {
     const { data, error } = await supabase
       .from('subscriptions')
-      .select('*')
+      .select('status, expires_at')
       .eq('user_id', userId)
-      .eq('is_active', true)
+      .eq('status', 'active')
+      .gt('expires_at', new Date().toISOString())
       .order('created_at', { ascending: false })
       .limit(1);
 
-    if (error || !data || data.length === 0) {
+    if (error) {
+      console.error('❌ Error checking premium status:', error);
       return false;
     }
 
-    const subscription = data[0];
-    
-    if (subscription.tier === 'lifetime') {
-      return true;
+    if (!data || data.length === 0) {
+      return false;
     }
-    
-    if (subscription.expires_at) {
-      const expiresAt = new Date(subscription.expires_at);
-      const now = new Date();
-      return expiresAt > now;
-    }
-    
+
+    console.log('✅ User has active subscription');
     return true;
   } catch (error) {
     console.error('❌ Error checking premium status:', error);
@@ -97,7 +99,7 @@ export async function isPremium(userId: string): Promise<boolean> {
 }
 
 // ============================================
-// GET ACTIVE SUBSCRIPTION
+// GET ACTIVE SUBSCRIPTION - ახალი სქემით
 // ============================================
 export async function getActiveSubscription(userId: string) {
   if (!supabase) return null;
@@ -107,24 +109,22 @@ export async function getActiveSubscription(userId: string) {
       .from('subscriptions')
       .select('*')
       .eq('user_id', userId)
-      .eq('is_active', true)
+      .eq('status', 'active')
+      .gt('expires_at', new Date().toISOString())
       .order('created_at', { ascending: false })
-      .limit(1);
+      .limit(1)
+      .single();
 
-    if (error || !data || data.length === 0) {
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No rows returned - ეს ნორმალურია
+        return null;
+      }
+      console.error('❌ Error fetching subscription:', error);
       return null;
     }
 
-    const subscription = data[0];
-    
-    if (subscription.tier !== 'lifetime' && subscription.expires_at) {
-      const expiresAt = new Date(subscription.expires_at);
-      if (expiresAt <= new Date()) {
-        return null;
-      }
-    }
-    
-    return subscription;
+    return data;
   } catch (error) {
     console.error('❌ Error fetching subscription:', error);
     return null;
@@ -196,7 +196,7 @@ export async function decrementCredit(userId: string, featureId: string): Promis
     console.log('✅ Credit decremented:', featureId, 'remaining:', current.credits - 1);
     return true;
   } catch (error) {
-    console.error(' Error decrementing credit:', error);
+    console.error('❌ Error decrementing credit:', error);
     return false;
   }
 }
