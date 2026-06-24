@@ -340,35 +340,79 @@
   transform: translateY(0);
 }
 
-/* ✅ Credits Badge - მრგვალი, Use ღილაკის მარჯვენა ზედა კუთხეში */
+/* ✅ Credits Badge - ოქროსფერი, ცენტრში ციფრით, glow ეფექტით */
 .credits-badge {
   position: absolute;
-  top: -6px;
-  right: -6px;
-  width: 20px;
-  height: 20px;
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  top: -8px;
+  right: -8px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%);
   border: 2px solid #0a0600;
   border-radius: 50%;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 700;
+  color: #0a0600;
+  font-size: 11px;
+  font-weight: 900;
+  font-family: 'Georgia', serif;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 6px rgba(34, 197, 94, 0.5);
-  animation: badgePulse 2s ease-in-out infinite;
-  z-index: 2;
+  box-shadow: 
+    0 0 0 2px rgba(255, 215, 0, 0.4),
+    0 0 12px rgba(255, 165, 0, 0.8),
+    0 2px 8px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  animation: badgePremium 2s ease-in-out infinite;
+  z-index: 3;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
+  overflow: hidden;
 }
 
-@keyframes badgePulse {
+/* ✅ Shimmer ეფექტი - ბრწყინვალება მოძრაობს */
+.credits-badge::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    transparent 100%
+  );
+  animation: shimmer 2.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  50%, 100% {
+    left: 100%;
+  }
+}
+
+/* ✅ Premium Pulse ანიმაცია - glow + scale */
+@keyframes badgePremium {
   0%, 100% {
     transform: scale(1);
-    box-shadow: 0 2px 6px rgba(34, 197, 94, 0.5);
+    box-shadow: 
+      0 0 0 2px rgba(255, 215, 0, 0.4),
+      0 0 12px rgba(255, 165, 0, 0.8),
+      0 2px 8px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6);
   }
   50% {
-    transform: scale(1.1);
-    box-shadow: 0 3px 10px rgba(34, 197, 94, 0.7);
+    transform: scale(1.08);
+    box-shadow: 
+      0 0 0 3px rgba(255, 215, 0, 0.6),
+      0 0 20px rgba(255, 165, 0, 1),
+      0 0 30px rgba(255, 140, 0, 0.6),
+      0 3px 12px rgba(0, 0, 0, 0.6),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8);
   }
 }
 

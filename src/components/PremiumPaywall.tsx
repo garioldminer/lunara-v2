@@ -230,7 +230,7 @@ export default function PremiumPaywall({
                             Use
                           </button>
                           <div className="credits-badge">
-                            {getCredits('celtic_cross')}
+                            <span>{getCredits('celtic_cross')}</span>
                           </div>
                         </div>
                       ) : (
@@ -267,7 +267,7 @@ export default function PremiumPaywall({
                             Use
                           </button>
                           <div className="credits-badge">
-                            {getCredits('horseshoe')}
+                            <span>{getCredits('horseshoe')}</span>
                           </div>
                         </div>
                       ) : (
@@ -304,7 +304,7 @@ export default function PremiumPaywall({
                             Use
                           </button>
                           <div className="credits-badge">
-                            {getCredits('relationship')}
+                            <span>{getCredits('relationship')}</span>
                           </div>
                         </div>
                       ) : (
