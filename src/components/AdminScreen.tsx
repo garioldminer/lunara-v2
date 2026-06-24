@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Users, Plus, Minus, Trash2, RefreshCw, Crown, ShieldAlert, Calendar, Clock } from 'lucide-react';
+import { ArrowLeft, Users, Plus, Trash2, RefreshCw, Crown, ShieldAlert, Calendar, Clock } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { 
   isAdmin, 
