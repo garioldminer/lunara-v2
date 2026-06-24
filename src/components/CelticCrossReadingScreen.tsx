@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, RotateCcw, Lock } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Lock, Star } from 'lucide-react';
 import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards';
 import QuestionInput from './QuestionInput';
 import PremiumPaywall from './PremiumPaywall';
@@ -42,43 +42,9 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
   const [activeCard, setActiveCard] = useState<number | null>(null);
   const [question, setQuestion] = useState<string>('');
   const [showPaywall, setShowPaywall] = useState(false);
-  const [activeFeature, setActiveFeature] = useState<PremiumFeatureId>('celtic_cross'); // ახალი state
+  const [creditsRemaining, setCreditsRemaining] = useState<number | null>(null);
 
-  const handleQuestionSubmit = async (q: string) => {
-    if (!user) return;
-
-    // მკაცრი შემოწმება: აქვს უფლება გამოიყენოს?
-    const hasPremium = await isPremium(user.id);
-    
-    if (!hasPremium) {
-      // არ არის subscription - შეამოწმე credits
-      const credits = await getAvailableCredits(user.id);
-      const featureCredits = credits[activeFeature] || 0;
-
-      if (featureCredits <= 0) {
-        // არ აქვს credits - აჩვენე Paywall
-        setShowPaywall(true);
-        return;
-      }
-
-      // აქვს credits - დააკელი 1 სწორი ფიჩერისთვის!
-      const success = await decrementCredit(user.id, activeFeature);
-      
-      if (!success) {
-        alert('Failed to use credit. Please try again.');
-        return;
-      }
-
-      console.log(`✅ Credit decremented for ${activeFeature}. Remaining:`, featureCredits - 1);
-    }
-
-    // ყველაფერი OK - დაიწყე reading
-    setQuestion(q);
-    setPhase('revealing');
-    startReading();
-  };
-
-  const handleBeginReading = async () => {
+  const checkAndStartReading = async () => {
     if (!user) {
       alert('Please log in first');
       return;
@@ -93,10 +59,58 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
       return;
     }
 
-    // ყველა სხვა შემთხვევაში → ყოველთვის Paywall
-    // default feature არის celtic_cross
-    setActiveFeature('celtic_cross');
+    // შეამოწმე credits
+    const credits = await getAvailableCredits(user.id);
+    const celticCrossCredits = credits['celtic_cross'] || 0;
+
+    if (celticCrossCredits > 0) {
+      // აქვს credits - პირდაპირ კითხვაზე
+      setPhase('question');
+      return;
+    }
+
+    // არ აქვს credits - აჩვენე Paywall
     setShowPaywall(true);
+  };
+
+  const handleQuestionSubmit = async (q: string) => {
+    if (!user) return;
+
+    // მკაცრი შემოწმება: აქვს უფლება გამოიყენოს?
+    const hasPremium = await isPremium(user.id);
+    
+    if (!hasPremium) {
+      // არ არის subscription - შეამოწმე credits
+      const credits = await getAvailableCredits(user.id);
+      const celticCrossCredits = credits['celtic_cross'] || 0;
+
+      if (celticCrossCredits <= 0) {
+        // არ აქვს credits - აჩვენე Paywall
+        setShowPaywall(true);
+        return;
+      }
+
+      // აქვს credits - დააკელი 1
+      const success = await decrementCredit(user.id, 'celtic_cross');
+      
+      if (!success) {
+        alert('Failed to use credit. Please try again.');
+        return;
+      }
+
+      const newCredits = celticCrossCredits - 1;
+      setCreditsRemaining(newCredits);
+      console.log(`✅ Credit decremented for celtic_cross. Remaining:`, newCredits);
+    }
+
+    // ყველაფერი OK - დაიწყე reading
+    setQuestion(q);
+    setPhase('revealing');
+    startReading();
+  };
+
+  const handleBeginReading = async () => {
+    await checkAndStartReading();
   };
 
   const startReading = () => {
@@ -142,11 +156,29 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
     setReading(prev => prev.map((r, i) => i === index ? { ...r, revealed: true } : r));
   };
 
-  const resetReading = () => {
-    setPhase('intro');
-    setReading([]);
-    setActiveCard(null);
-    setQuestion('');
+  const handleNewReading = async () => {
+    // შეამოწმე credits
+    const hasPremium = await isPremium(user?.id || '');
+    
+    if (hasPremium) {
+      // Premium - პირდაპირ კითხვაზე
+      setPhase('question');
+      setQuestion('');
+      return;
+    }
+
+    const credits = await getAvailableCredits(user?.id || '');
+    const celticCrossCredits = credits['celtic_cross'] || 0;
+
+    if (celticCrossCredits > 0) {
+      // აქვს credits - პირდაპირ კითხვაზე
+      setPhase('question');
+      setQuestion('');
+      return;
+    }
+
+    // არ აქვს credits - აჩვენე Paywall
+    setShowPaywall(true);
   };
 
   const getCardMeta = (card: TarotCard) => {
@@ -369,7 +401,20 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
                   </div>
                 )}
 
-                <button className="cc-new-reading-btn" onClick={resetReading}>
+                {/* Credits Remaining Banner */}
+                {creditsRemaining !== null && creditsRemaining > 0 && (
+                  <motion.div 
+                    className="cc-credits-banner"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                  >
+                    <Star size={16} fill="#C5A059" />
+                    <span>{creditsRemaining} reading{creditsRemaining !== 1 ? 's' : ''} remaining</span>
+                  </motion.div>
+                )}
+
+                <button className="cc-new-reading-btn" onClick={handleNewReading}>
                   <RotateCcw size={16} />
                   <span>New Reading</span>
                 </button>
@@ -383,16 +428,14 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
       <PremiumPaywall
         isOpen={showPaywall}
         onClose={() => setShowPaywall(false)}
-        highlightedFeature={activeFeature}
+        highlightedFeature="celtic_cross"
         onPurchase={(featureId: PremiumFeatureId) => {
           console.log('✅ Purchased:', featureId);
-          setActiveFeature(featureId);
           setShowPaywall(false);
           setPhase('question');
         }}
         onUse={(featureId: PremiumFeatureId) => {
           console.log('🎯 Using feature:', featureId);
-          setActiveFeature(featureId); // ✅ აქ ვაყენებთ სწორ ფიჩერს!
           setShowPaywall(false);
           setPhase('question');
         }}

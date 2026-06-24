@@ -492,9 +492,30 @@
     letter-spacing: 0.5px;
   }
   
+  /* ✅ Credits Remaining Banner - Smart Paywall */
+  .rr-credits-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: rgba(197, 160, 89, 0.15);
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    border-radius: 12px;
+    padding: 12px;
+    margin-top: 20px;
+    color: #C5A059;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  
+  .rr-credits-banner svg {
+    flex-shrink: 0;
+  }
+  
   .rr-new-reading-btn {
     width: 100%;
-    margin-top: 24px;
+    margin-top: 12px;
     background: rgba(197, 160, 89, 0.1);
     border: 1px solid rgba(197, 160, 89, 0.3);
     border-radius: 30px;

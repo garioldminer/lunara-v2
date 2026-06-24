@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, RotateCcw, Lock } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Lock, Star } from 'lucide-react';
 import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards';
 import QuestionInput from './QuestionInput';
 import PremiumPaywall from './PremiumPaywall';
@@ -38,8 +38,33 @@ export default function RelationshipReadingScreen({ onNavigate }: Props) {
   const [activeCard, setActiveCard] = useState<number | null>(null);
   const [question, setQuestion] = useState<string>('');
   const [showPaywall, setShowPaywall] = useState(false);
+  const [creditsRemaining, setCreditsRemaining] = useState<number | null>(null);
   const [activeFeature] = useState<PremiumFeatureId>('relationship');
 
+  // ✅ Smart Paywall: შეამოწმე access (subscription ან credits)
+  const checkAccess = async (): Promise<boolean> => {
+    if (!user) return false;
+    const hasPremium = await isPremium(user.id);
+    if (hasPremium) return true;
+    const credits = await getAvailableCredits(user.id);
+    return (credits[activeFeature] || 0) > 0;
+  };
+
+  // ✅ BEGIN READING - თუ აქვს access, პირდაპირ კითხვაზე
+  const handleBeginReading = async () => {
+    if (!user) {
+      alert('Please log in first');
+      return;
+    }
+    const hasAccess = await checkAccess();
+    if (hasAccess) {
+      setPhase('question');
+    } else {
+      setShowPaywall(true);
+    }
+  };
+
+  // ✅ კითხვის გაგზავნა - დააკელი credit და დაიწყე reading
   const handleQuestionSubmit = async (q: string) => {
     if (!user) return;
 
@@ -47,9 +72,9 @@ export default function RelationshipReadingScreen({ onNavigate }: Props) {
     
     if (!hasPremium) {
       const credits = await getAvailableCredits(user.id);
-      const featureCredits = credits[activeFeature] || 0;
+      const remaining = credits[activeFeature] || 0;
 
-      if (featureCredits <= 0) {
+      if (remaining <= 0) {
         setShowPaywall(true);
         return;
       }
@@ -61,28 +86,13 @@ export default function RelationshipReadingScreen({ onNavigate }: Props) {
         return;
       }
 
-      console.log(`✅ Credit decremented for ${activeFeature}. Remaining:`, featureCredits - 1);
+      setCreditsRemaining(remaining - 1);
+      console.log(`✅ Credit decremented for ${activeFeature}. Remaining:`, remaining - 1);
     }
 
     setQuestion(q);
     setPhase('revealing');
     startReading();
-  };
-
-  const handleBeginReading = async () => {
-    if (!user) {
-      alert('Please log in first');
-      return;
-    }
-
-    const hasPremium = await isPremium(user.id);
-
-    if (hasPremium) {
-      setPhase('question');
-      return;
-    }
-
-    setShowPaywall(true);
   };
 
   const startReading = () => {
@@ -126,11 +136,19 @@ export default function RelationshipReadingScreen({ onNavigate }: Props) {
     setReading(prev => prev.map((r, i) => i === index ? { ...r, revealed: true } : r));
   };
 
-  const resetReading = () => {
-    setPhase('intro');
+  // ✅ NEW READING - Smart Paywall: თუ credits > 0 პირდაპირ კითხვაზე, თუ = 0 Paywall
+  const handleNewReading = async () => {
     setReading([]);
     setActiveCard(null);
     setQuestion('');
+    setCreditsRemaining(null);
+    
+    const hasAccess = await checkAccess();
+    if (hasAccess) {
+      setPhase('question');
+    } else {
+      setShowPaywall(true);
+    }
   };
 
   const getCardMeta = (card: TarotCard) => {
@@ -343,7 +361,20 @@ export default function RelationshipReadingScreen({ onNavigate }: Props) {
                   </div>
                 )}
 
-                <button className="rr-new-reading-btn" onClick={resetReading}>
+                {/* ✅ Credits Remaining Banner - Smart Paywall */}
+                {creditsRemaining !== null && creditsRemaining > 0 && (
+                  <motion.div 
+                    className="rr-credits-banner"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                  >
+                    <Star size={16} fill="#C5A059" />
+                    <span>{creditsRemaining} reading{creditsRemaining !== 1 ? 's' : ''} remaining</span>
+                  </motion.div>
+                )}
+
+                <button className="rr-new-reading-btn" onClick={handleNewReading}>
                   <RotateCcw size={16} />
                   <span>New Reading</span>
                 </button>
@@ -357,13 +388,11 @@ export default function RelationshipReadingScreen({ onNavigate }: Props) {
         isOpen={showPaywall}
         onClose={() => setShowPaywall(false)}
         highlightedFeature="relationship"
-        onPurchase={(featureId: PremiumFeatureId) => {
-          console.log('✅ Purchased:', featureId);
+        onPurchase={() => {
           setShowPaywall(false);
           setPhase('question');
         }}
-        onUse={(featureId: PremiumFeatureId) => {
-          console.log('🎯 Using feature:', featureId);
+        onUse={() => {
           setShowPaywall(false);
           setPhase('question');
         }}

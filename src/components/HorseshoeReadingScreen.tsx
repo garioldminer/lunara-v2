@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, RotateCcw, Lock } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Lock, Star } from 'lucide-react';
 import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards';
 import QuestionInput from './QuestionInput';
 import PremiumPaywall from './PremiumPaywall';
@@ -39,8 +39,33 @@ export default function HorseshoeReadingScreen({ onNavigate }: Props) {
   const [activeCard, setActiveCard] = useState<number | null>(null);
   const [question, setQuestion] = useState<string>('');
   const [showPaywall, setShowPaywall] = useState(false);
+  const [creditsRemaining, setCreditsRemaining] = useState<number | null>(null);
   const [activeFeature] = useState<PremiumFeatureId>('horseshoe');
 
+  // ✅ Smart Paywall: შეამოწმე access (subscription ან credits)
+  const checkAccess = async (): Promise<boolean> => {
+    if (!user) return false;
+    const hasPremium = await isPremium(user.id);
+    if (hasPremium) return true;
+    const credits = await getAvailableCredits(user.id);
+    return (credits[activeFeature] || 0) > 0;
+  };
+
+  // ✅ BEGIN READING - თუ აქვს access, პირდაპირ კითხვაზე
+  const handleBeginReading = async () => {
+    if (!user) {
+      alert('Please log in first');
+      return;
+    }
+    const hasAccess = await checkAccess();
+    if (hasAccess) {
+      setPhase('question');
+    } else {
+      setShowPaywall(true);
+    }
+  };
+
+  // ✅ კითხვის გაგზავნა - დააკელი credit და დაიწყე reading
   const handleQuestionSubmit = async (q: string) => {
     if (!user) return;
 
@@ -48,9 +73,9 @@ export default function HorseshoeReadingScreen({ onNavigate }: Props) {
     
     if (!hasPremium) {
       const credits = await getAvailableCredits(user.id);
-      const featureCredits = credits[activeFeature] || 0;
+      const remaining = credits[activeFeature] || 0;
 
-      if (featureCredits <= 0) {
+      if (remaining <= 0) {
         setShowPaywall(true);
         return;
       }
@@ -62,28 +87,13 @@ export default function HorseshoeReadingScreen({ onNavigate }: Props) {
         return;
       }
 
-      console.log(`✅ Credit decremented for ${activeFeature}. Remaining:`, featureCredits - 1);
+      setCreditsRemaining(remaining - 1);
+      console.log(`✅ Credit decremented for ${activeFeature}. Remaining:`, remaining - 1);
     }
 
     setQuestion(q);
     setPhase('revealing');
     startReading();
-  };
-
-  const handleBeginReading = async () => {
-    if (!user) {
-      alert('Please log in first');
-      return;
-    }
-
-    const hasPremium = await isPremium(user.id);
-
-    if (hasPremium) {
-      setPhase('question');
-      return;
-    }
-
-    setShowPaywall(true);
   };
 
   const startReading = () => {
@@ -127,11 +137,19 @@ export default function HorseshoeReadingScreen({ onNavigate }: Props) {
     setReading(prev => prev.map((r, i) => i === index ? { ...r, revealed: true } : r));
   };
 
-  const resetReading = () => {
-    setPhase('intro');
+  // ✅ NEW READING - Smart Paywall: თუ credits > 0 პირდაპირ კითხვაზე, თუ = 0 Paywall
+  const handleNewReading = async () => {
     setReading([]);
     setActiveCard(null);
     setQuestion('');
+    setCreditsRemaining(null);
+    
+    const hasAccess = await checkAccess();
+    if (hasAccess) {
+      setPhase('question');
+    } else {
+      setShowPaywall(true);
+    }
   };
 
   const getCardMeta = (card: TarotCard) => {
@@ -165,7 +183,7 @@ export default function HorseshoeReadingScreen({ onNavigate }: Props) {
           </button>
         )}
         <div className="hr-header-center">
-          <div className="hr-ornament"></div>
+          <div className="hr-ornament">🐎</div>
           <h1 className="hr-title">Horseshoe</h1>
           <div className="hr-ornament">✦</div>
         </div>
@@ -179,7 +197,7 @@ export default function HorseshoeReadingScreen({ onNavigate }: Props) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <div className="hr-intro-icon"></div>
+          <div className="hr-intro-icon">🐎</div>
           <h2 className="hr-intro-title">Life Path Analysis</h2>
           <p className="hr-intro-text">
             The Horseshoe spread reveals 7 key aspects of your life path: past influences, present situation, hidden factors, obstacles, environment, hopes & fears, and the final outcome.
@@ -292,7 +310,7 @@ export default function HorseshoeReadingScreen({ onNavigate }: Props) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3, duration: 0.6 }}
               >
-                <div className="hr-ornament-line">✦ ─── ✦</div>
+                <div className="hr-ornament-line"> ─── ✦</div>
                 
                 {activeCard !== null ? (
                   <motion.div 
@@ -345,7 +363,20 @@ export default function HorseshoeReadingScreen({ onNavigate }: Props) {
                   </div>
                 )}
 
-                <button className="hr-new-reading-btn" onClick={resetReading}>
+                {/* ✅ Credits Remaining Banner - Smart Paywall */}
+                {creditsRemaining !== null && creditsRemaining > 0 && (
+                  <motion.div 
+                    className="hr-credits-banner"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                  >
+                    <Star size={16} fill="#C5A059" />
+                    <span>{creditsRemaining} reading{creditsRemaining !== 1 ? 's' : ''} remaining</span>
+                  </motion.div>
+                )}
+
+                <button className="hr-new-reading-btn" onClick={handleNewReading}>
                   <RotateCcw size={16} />
                   <span>New Reading</span>
                 </button>
@@ -359,13 +390,11 @@ export default function HorseshoeReadingScreen({ onNavigate }: Props) {
         isOpen={showPaywall}
         onClose={() => setShowPaywall(false)}
         highlightedFeature="horseshoe"
-        onPurchase={(featureId: PremiumFeatureId) => {
-          console.log('✅ Purchased:', featureId);
+        onPurchase={() => {
           setShowPaywall(false);
           setPhase('question');
         }}
-        onUse={(featureId: PremiumFeatureId) => {
-          console.log('🎯 Using feature:', featureId);
+        onUse={() => {
           setShowPaywall(false);
           setPhase('question');
         }}
