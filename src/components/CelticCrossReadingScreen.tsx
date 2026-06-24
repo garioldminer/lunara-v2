@@ -42,6 +42,7 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
   const [activeCard, setActiveCard] = useState<number | null>(null);
   const [question, setQuestion] = useState<string>('');
   const [showPaywall, setShowPaywall] = useState(false);
+  const [activeFeature, setActiveFeature] = useState<PremiumFeatureId>('celtic_cross'); // ახალი state
 
   const handleQuestionSubmit = async (q: string) => {
     if (!user) return;
@@ -52,23 +53,23 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
     if (!hasPremium) {
       // არ არის subscription - შეამოწმე credits
       const credits = await getAvailableCredits(user.id);
-      const celticCrossCredits = credits['celtic_cross'] || 0;
+      const featureCredits = credits[activeFeature] || 0;
 
-      if (celticCrossCredits <= 0) {
+      if (featureCredits <= 0) {
         // არ აქვს credits - აჩვენე Paywall
         setShowPaywall(true);
         return;
       }
 
-      // აქვს credits - დააკელი 1
-      const success = await decrementCredit(user.id, 'celtic_cross');
+      // აქვს credits - დააკელი 1 სწორი ფიჩერისთვის!
+      const success = await decrementCredit(user.id, activeFeature);
       
       if (!success) {
         alert('Failed to use credit. Please try again.');
         return;
       }
 
-      console.log('✅ Credit decremented. Remaining:', celticCrossCredits - 1);
+      console.log(`✅ Credit decremented for ${activeFeature}. Remaining:`, featureCredits - 1);
     }
 
     // ყველაფერი OK - დაიწყე reading
@@ -93,6 +94,8 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
     }
 
     // ყველა სხვა შემთხვევაში → ყოველთვის Paywall
+    // default feature არის celtic_cross
+    setActiveFeature('celtic_cross');
     setShowPaywall(true);
   };
 
@@ -380,14 +383,16 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
       <PremiumPaywall
         isOpen={showPaywall}
         onClose={() => setShowPaywall(false)}
-        highlightedFeature="celtic_cross"
+        highlightedFeature={activeFeature}
         onPurchase={(featureId: PremiumFeatureId) => {
           console.log('✅ Purchased:', featureId);
+          setActiveFeature(featureId);
           setShowPaywall(false);
           setPhase('question');
         }}
         onUse={(featureId: PremiumFeatureId) => {
           console.log('🎯 Using feature:', featureId);
+          setActiveFeature(featureId); // ✅ აქ ვაყენებთ სწორ ფიჩერს!
           setShowPaywall(false);
           setPhase('question');
         }}
