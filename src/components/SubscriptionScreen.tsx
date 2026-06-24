@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Crown, Calendar, XCircle, CheckCircle, Infinity, AlertTriangle } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { getActiveSubscription, getUserSubscriptions, cancelSubscription, formatExpirationDate, Subscription } from '../lib/subscriptionService';
-import { formatPrice } from '../lib/premiumService';
 import './SubscriptionScreen.css';
 
 interface Props {
