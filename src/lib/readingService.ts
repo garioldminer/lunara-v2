@@ -9,7 +9,7 @@ export interface ReadingCard {
 
 export interface Reading {
   user_id: string;
-  reading_type: 'daily' | 'three-card' | 'celtic-cross';
+  reading_type: 'daily' | 'three-card' | 'celtic-cross' | 'horseshoe' | 'relationship';
   question?: string;
   cards: ReadingCard[];
 }
