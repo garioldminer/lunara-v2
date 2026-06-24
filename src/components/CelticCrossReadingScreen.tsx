@@ -263,70 +263,84 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
 
           {/* Celtic Cross Layout */}
           <div className="cc-cards-layout">
-            {reading.map((readingCard, idx) => (
-              <motion.div
-                key={idx}
-                className={`cc-card-slot ${readingCard.revealed ? 'revealed' : ''} ${activeCard === idx ? 'active' : ''} position-${idx + 1}`}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: idx * 0.1, duration: 0.4 }}
-                onClick={() => phase === 'complete' && setActiveCard(activeCard === idx ? null : idx)}
-              >
-                <div className="cc-position-label">{CELTIC_CROSS_POSITIONS[idx].short}</div>
-                
-                {/* ✅ ახალი 3D Flip + Glow + Lift ანიმაცია */}
+            {reading.map((readingCard, idx) => {
+              const isBottomRow = idx >= 5; // კარტები 6-10 (index 5-9)
+              
+              return (
                 <motion.div
-                  className="cc-card-wrapper"
-                  initial={{ 
-                    rotateY: 0,
-                    translateY: 0,
-                    scale: 1
-                  }}
-                  animate={readingCard.revealed ? {
-                    rotateY: 180,
-                    translateY: [0, -12, 0],
-                    scale: [1, 1.03, 1]
-                  } : {
-                    rotateY: 0,
-                    translateY: 0,
-                    scale: 1
-                  }}
-                  transition={{
-                    rotateY: { duration: 0.8, ease: [0.4, 0, 0.2, 1] },
-                    translateY: { duration: 0.8, ease: "easeInOut" },
-                    scale: { duration: 0.8, ease: "easeInOut" }
-                  }}
+                  key={idx}
+                  className={`cc-card-slot position-${idx + 1} ${readingCard.revealed ? 'revealed' : ''} ${activeCard === idx ? 'active' : ''}`}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: idx * 0.1, duration: 0.4 }}
+                  onClick={() => phase === 'complete' && setActiveCard(activeCard === idx ? null : idx)}
                 >
-                  {/* Back Face */}
-                  <div className="cc-card-back">
-                    <img 
-                      src={CARD_BACK_URL} 
-                      alt="Card Back" 
-                      className="cc-card-back-image" 
-                      draggable={false} 
-                    />
-                  </div>
+                  {/* ✅ ნუმერაცია: 1-5 ზემოთ, 6-10 ქვემოთ */}
+                  {!isBottomRow && (
+                    <div className="cc-position-label">{CELTIC_CROSS_POSITIONS[idx].short}</div>
+                  )}
                   
-                  {/* Front Face */}
-                  <div className="cc-card-front">
-                    {readingCard.card.image_url ? (
+                  {/* ✅ ახალი 3D Flip ანიმაცია */}
+                  <motion.div
+                    className="cc-card-wrapper"
+                    initial={{ 
+                      rotateY: 0,
+                      translateY: 0,
+                      scale: 1
+                    }}
+                    animate={readingCard.revealed ? {
+                      rotateY: 180,
+                      translateY: [0, -12, 0],
+                      scale: [1, 1.03, 1]
+                    } : {
+                      rotateY: 0,
+                      translateY: 0,
+                      scale: 1
+                    }}
+                    transition={{
+                      rotateY: { duration: 0.8, ease: [0.4, 0, 0.2, 1] },
+                      translateY: { duration: 0.8, ease: "easeInOut" },
+                      scale: { duration: 0.8, ease: "easeInOut" }
+                    }}
+                  >
+                    {/* Back Face */}
+                    <div className="cc-card-back">
                       <img 
-                        src={readingCard.card.image_url} 
-                        alt={readingCard.card.name} 
-                        className="cc-card-image" 
-                        style={{ transform: readingCard.isReversed ? 'rotate(180deg)' : 'none' }} 
+                        src={CARD_BACK_URL} 
+                        alt="Card Back" 
+                        className="cc-card-back-image" 
+                        draggable={false} 
                       />
-                    ) : (
-                      <div className="cc-card-placeholder">
-                        <span className="cc-placeholder-num">{readingCard.card.number}</span>
-                        <span className="cc-placeholder-name">{readingCard.card.name}</span>
+                    </div>
+                    
+                    {/* Front Face - შიგთავსი counter-rotated */}
+                    <div className="cc-card-front">
+                      <div className="cc-card-front-content">
+                        {readingCard.card.image_url ? (
+                          <img 
+                            src={readingCard.card.image_url} 
+                            alt={readingCard.card.name} 
+                            className="cc-card-image" 
+                            style={{ transform: readingCard.isReversed ? 'rotate(180deg)' : 'none' }} 
+                          />
+                        ) : (
+                          <div className="cc-card-placeholder">
+                            <span className="cc-placeholder-num">{readingCard.card.number}</span>
+                            <span className="cc-placeholder-name">{readingCard.card.name}</span>
+                          </div>
+                        )}
+                        {readingCard.isReversed && <div className="cc-reversed-badge">R</div>}
                       </div>
-                    )}
-                    {readingCard.isReversed && <div className="cc-reversed-badge">R</div>}
-                  </div>
+                    </div>
+                  </motion.div>
+
+                  {/* ✅ ნუმერაცია: 6-10 ქვემოთ */}
+                  {isBottomRow && (
+                    <div className="cc-position-label">{CELTIC_CROSS_POSITIONS[idx].short}</div>
+                  )}
                 </motion.div>
-              </motion.div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Interpretation */}
