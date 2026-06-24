@@ -176,7 +176,7 @@
   /* ============================================
      2. DAILY QUESTS + ACTION BUTTONS
      ✅ ორივე ბანერი ზუსტად ერთი სიმაღლის
-     ✅ stretch მუშაობს ორივეზე
+     ✅ Daily Quests (60%) + Action Buttons 2x2 (40%)
      ============================================ */
   .quests-and-actions-split {
     display: flex;
@@ -427,7 +427,8 @@
   }
   
   /* ============================================
-     3. CARD OF THE DAY
+     3. CARD OF THE DAY - Horizontal Split
+     ✅ კარტი მარცხნივ, ტექსტი მარჯვნივ
      ============================================ */
   .card-of-day-banner {
     background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
@@ -455,6 +456,7 @@
     transform: translateY(0);
   }
   
+  /* ✅ Horizontal Split Layout */
   .card-of-day-content {
     display: flex;
     align-items: center;
@@ -462,6 +464,7 @@
     position: relative;
   }
   
+  /* LEFT HALF - Card Image */
   .card-half-left {
     flex: 0 0 45%;
     position: relative;
@@ -544,6 +547,7 @@
     padding: 0 6px;
   }
   
+  /* ✅ Enhanced R badge */
   .card-reversed-indicator-large {
     position: absolute;
     top: 5px;
@@ -596,6 +600,7 @@
     opacity: 0.7;
   }
   
+  /* RIGHT HALF - Card Info */
   .card-half-right {
     flex: 0 0 55%;
     padding-left: 12px;
@@ -848,7 +853,7 @@
   }
   
   /* ============================================
-     RESPONSIVE - მცირე ეკრანები
+     RESPONSIVE - მცირე ეკრანები (<360px)
      ============================================ */
   @media (max-width: 360px) {
     .quests-and-actions-split {
@@ -882,7 +887,7 @@
   }
   
   /* ============================================
-     RESPONSIVE - დიდი ეკრანები
+     RESPONSIVE - დიდი ეკრანები (>480px)
      ============================================ */
   @media (min-width: 480px) {
     .home-screen {
