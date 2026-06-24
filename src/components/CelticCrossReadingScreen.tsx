@@ -42,7 +42,6 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
   const [activeCard, setActiveCard] = useState<number | null>(null);
   const [question, setQuestion] = useState<string>('');
   const [showPaywall, setShowPaywall] = useState(false);
-  const [hasPermission, setHasPermission] = useState(false); // ახალი state
 
   const handleQuestionSubmit = async (q: string) => {
     if (!user) return;
@@ -89,7 +88,6 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
 
     if (hasPremium) {
       // Premium მომხმარებელი - პირდაპირ კითხვაზე
-      setHasPermission(true);
       setPhase('question');
       return;
     }
@@ -100,13 +98,11 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
 
     if (celticCrossCredits > 0) {
       // აქვს credits - პირდაპირ კითხვაზე
-      setHasPermission(true);
       setPhase('question');
       return;
     }
 
     // არც subscription და არც credits - აჩვენე Paywall
-    setHasPermission(false);
     setShowPaywall(true);
   };
 
@@ -158,7 +154,6 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
     setReading([]);
     setActiveCard(null);
     setQuestion('');
-    setHasPermission(false);
   };
 
   const getCardMeta = (card: TarotCard) => {
@@ -399,13 +394,11 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
         onPurchase={(featureId: PremiumFeatureId) => {
           console.log('✅ Purchased:', featureId);
           setShowPaywall(false);
-          setHasPermission(true);
           setPhase('question');
         }}
         onUse={(featureId: PremiumFeatureId) => {
           console.log('🎯 Using feature:', featureId);
           setShowPaywall(false);
-          setHasPermission(true);
           setPhase('question');
         }}
       />
