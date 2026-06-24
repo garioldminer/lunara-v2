@@ -59,7 +59,7 @@ export async function createInvoiceUrl(
       }
     );
 
-    console.log(' Response status:', response.status);
+    console.log('📡 Response status:', response.status);
 
     if (!response.ok) {
       const error = await response.text();
@@ -141,7 +141,8 @@ export async function completePurchase(
         await incrementCredit(userId, featureId, 1);
         console.log('✅ Credit added to database');
         
-        showSuccess(' Payment successful! Premium activated.');
+        // ❌ არ გამოვიძახოთ showSuccess popup! (ის იწვევს reload-ს)
+        // ჩვენი custom success banner PremiumPaywall-ში გამოჩნდება
         return 'success';
       
       case 'cancelled':
