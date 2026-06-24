@@ -167,19 +167,6 @@ export async function completePurchase(
 // ============================================
 // HELPER: SHOW MESSAGES
 // ============================================
-function showSuccess(message: string) {
-  const tg = getTg();
-  if (tg?.showPopup) {
-    tg.showPopup({
-      title: '✨ Success',
-      message,
-      buttons: [{ type: 'ok' }],
-    });
-  } else {
-    alert(message);
-  }
-}
-
 function showError(message: string) {
   const tg = getTg();
   if (tg?.showAlert) {
