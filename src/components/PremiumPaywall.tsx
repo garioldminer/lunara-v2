@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Crown, Sparkles, CheckCircle, XCircle, Check, Infinity } from 'lucide-react';
+import { X, Crown, Sparkles, CheckCircle, XCircle, Infinity } from 'lucide-react';
 import { formatPrice, PremiumFeatureId, getAvailableCredits, isPremium } from '../lib/premiumService';
 import { completePurchase, formatStars, STARS_PRICING } from '../lib/telegramPaymentService';
 import { useUser } from '../context/UserContext';
@@ -146,7 +146,7 @@ export default function PremiumPaywall({
               </p>
             </div>
 
-            {/* Feature Tabs - გაუმჯობესებული Toggle */}
+            {/* Feature Tabs - ვაუ ეფექტით */}
             <div className="premium-tabs">
               <button
                 className={`premium-tab ${isSubscriptionTab ? 'active' : ''}`}
