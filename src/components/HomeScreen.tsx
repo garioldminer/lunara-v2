@@ -5,7 +5,7 @@ import { getUserStreak } from '../lib/readingService';
 import { isAdmin } from '../lib/adminService';
 import { getActiveSubscription, formatExpirationDate } from '../lib/subscriptionService';
 import { 
-  Gem, Zap, Trophy, Flame, Star, 
+  Gem, Zap, Trophy, Flame,
   Sparkles, LayoutGrid, Moon, Hash, 
   Crown,
   Scroll, Activity, ChevronRight, Gift, Shield, Infinity
@@ -185,18 +185,17 @@ export default function HomeScreen({ onNavigate }: Props) {
   const dailyCardElement = dailyCard ? getCardMeta(dailyCard) : '';
 
   // XP circular progress calculation
-  const circumference = 2 * Math.PI * 22; // radius = 22
+  const circumference = 2 * Math.PI * 22;
   const strokeDashoffset = circumference - (xpPercent / 100) * circumference;
 
   return (
     <div className="home-screen">
-      {/* 1. USER HEADER - განახლებული XP circular bar-ით */}
+      {/* 1. USER HEADER */}
       <div className="user-header">
         <div className="user-main-row">
           <div className="avatar-section">
-            {/* ✅ XP Circular Progress Bar */}
+            {/* XP Circular Progress Bar */}
             <svg className="xp-circular-progress" width="56" height="56" viewBox="0 0 56 56">
-              {/* Background circle */}
               <circle
                 className="xp-circle-bg"
                 cx="28"
@@ -206,7 +205,6 @@ export default function HomeScreen({ onNavigate }: Props) {
                 stroke="rgba(197, 160, 89, 0.2)"
                 strokeWidth="3"
               />
-              {/* Progress circle */}
               <circle
                 className="xp-circle-progress"
                 cx="28"
@@ -220,7 +218,6 @@ export default function HomeScreen({ onNavigate }: Props) {
                 strokeDashoffset={strokeDashoffset}
                 transform="rotate(-90 28 28)"
               />
-              {/* Gradient definition */}
               <defs>
                 <linearGradient id="xpGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#C5A059" />
@@ -260,7 +257,6 @@ export default function HomeScreen({ onNavigate }: Props) {
                 </span>
               )}
             </p>
-            {/* XP Text - ახლა avatar-ის ქვეშ */}
             <div className="xp-text-inline">
               <span className="xp-current">{xpCurrent.toLocaleString()}</span>
               <span className="xp-separator">/</span>
@@ -359,13 +355,13 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* 3. CARD OF THE DAY - Full Width, Horizontal, Tilted */}
+      {/* 3. CARD OF THE DAY - Full Width, Tilted */}
       <div 
         className="card-of-day-banner clickable-card"
         onClick={() => onNavigate && onNavigate('daily-card')}
       >
         <div className="card-of-day-content">
-          {/* Card Image - Tilted, Overlapping */}
+          {/* Card Image - Tilted */}
           <div className="card-image-wrapper">
             <div className="card-image-tilted">
               {dailyCard?.image_url ? (
