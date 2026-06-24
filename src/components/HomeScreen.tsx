@@ -177,7 +177,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     : (dailyCard?.keywords?.[0] || 'New Beginnings');
   const dailyCardElement = dailyCard ? getCardMeta(dailyCard) : '';
 
-  // XP circular progress (მხოლოდ visual ring-ისთვის)
   const xpPercent = 78;
   const circumference = 2 * Math.PI * 22;
   const strokeDashoffset = circumference - (xpPercent / 100) * circumference;
@@ -235,7 +234,6 @@ export default function HomeScreen({ onNavigate }: Props) {
           
           <div className="user-info-section">
             <h2 className="username">{user?.display_name || 'LunaraSeeker'}</h2>
-            {/* ✅ PREMIUM badge - მხოლოდ სახელი, არა expiry */}
             {activeSubscription && (
               <div 
                 className="premium-status-badge"
@@ -245,7 +243,6 @@ export default function HomeScreen({ onNavigate }: Props) {
                 <span>PREMIUM</span>
               </div>
             )}
-            {/* ✅ XP text ამოღებულია */}
           </div>
           
           <div className="user-resources">
@@ -337,7 +334,7 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* 3. CARD OF THE DAY - ✅ ნამდვილი კარტის პროპორციით */}
+      {/* 3. CARD OF THE DAY */}
       <div 
         className="card-of-day-banner clickable-card"
         onClick={() => onNavigate && onNavigate('daily-card')}

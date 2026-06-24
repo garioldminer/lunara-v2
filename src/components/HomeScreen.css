@@ -1,10 +1,11 @@
 /* ============================================
-   HOME SCREEN - GAMIFIED DASHBOARD
+   HOME SCREEN - RESPONSIVE GAMIFIED DASHBOARD
    ============================================ */
 
    .home-screen {
     width: 100%;
-    padding: 70px 4px 100px 4px;
+    /* ✅ ზედა 70px, გვერდები 3px */
+    padding: 70px 3px 100px 3px;
     max-width: 480px;
     margin: 0 auto;
     color: #fff;
@@ -14,6 +15,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
   }
   
   /* ============================================
@@ -24,7 +26,8 @@
     border: 1px solid #332a1a;
     border-radius: 16px;
     padding: 12px 14px;
-    margin-bottom: 8px;
+    /* ✅ ბანერებს შორის 2px */
+    margin-bottom: 2px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   }
   
@@ -34,7 +37,6 @@
     gap: 12px;
   }
   
-  /* ✅ Avatar section - clickable */
   .avatar-section {
     position: relative;
     width: 56px;
@@ -99,7 +101,6 @@
     letter-spacing: 0.3px;
   }
   
-  /* ✅ Premium badge - მხოლოდ სახელი */
   .premium-status-badge {
     display: inline-flex;
     align-items: center;
@@ -122,7 +123,6 @@
     box-shadow: 0 4px 12px rgba(255, 215, 0, 0.6);
   }
   
-  /* ✅ XP text დამალულია */
   .xp-text-inline {
     display: none;
   }
@@ -176,15 +176,20 @@
   .add-btn:hover { transform: scale(1.1); }
   
   /* ============================================
-     2. DAILY QUESTS (60%) + ACTION BUTTONS (40%)
+     2. DAILY QUESTS + ACTION BUTTONS
+     ✅ ორივე ბანერი ერთი სიმაღლის (stretch)
+     ✅ gap: 2px
      ============================================ */
   .quests-and-actions-split {
     display: flex;
-    gap: 8px;
-    margin-bottom: 8px;
+    gap: 2px;
+    margin-bottom: 2px;
     width: 100%;
+    /* ✅ ორივე ბანერი ერთ სიმაღლეზე */
+    align-items: stretch;
   }
   
+  /* LEFT - Daily Quests */
   .daily-quests-compact {
     flex: 1 1 60%;
     background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
@@ -192,6 +197,10 @@
     border-radius: 14px;
     padding: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    /* ✅ სიმაღლე ავტომატური - შიგთავსის მიხედვით */
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
   }
   
   .quests-header-compact {
@@ -204,7 +213,7 @@
   
   .quests-header-compact h3 {
     margin: 0;
-    font-size: 9px;
+    font-size: clamp(8px, 2.5vw, 10px);
     color: #C5A059;
     letter-spacing: 1px;
     font-weight: 700;
@@ -212,7 +221,7 @@
   }
   
   .quests-timer-compact {
-    font-size: 9px;
+    font-size: clamp(8px, 2.5vw, 10px);
     color: #b3a68c;
     font-family: monospace;
   }
@@ -221,6 +230,9 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
+    /* ✅ იკავებს მთელ დარჩენილ სივრცეს */
+    flex: 1;
+    justify-content: space-around;
   }
   
   .quest-item-compact {
@@ -238,11 +250,15 @@
     flex-shrink: 0;
     display: flex;
     align-items: center;
+    /* ✅ ერთნაირი ზომა */
+    width: 16px;
+    height: 16px;
+    justify-content: center;
   }
   
   .quest-icon-compact svg {
-    width: 12px !important;
-    height: 12px !important;
+    width: 14px !important;
+    height: 14px !important;
   }
   
   .quest-info-compact {
@@ -251,7 +267,7 @@
   }
   
   .quest-name-compact {
-    font-size: 9px;
+    font-size: clamp(8px, 2.5vw, 10px);
     color: #fff;
     font-weight: 500;
     display: block;
@@ -290,7 +306,7 @@
   }
   
   .quest-reward-compact {
-    font-size: 9px;
+    font-size: clamp(8px, 2.5vw, 10px);
     color: #C5A059;
     font-weight: 600;
     display: flex;
@@ -299,29 +315,34 @@
     flex-shrink: 0;
   }
   
+  /* RIGHT - Action Buttons Panel */
   .action-buttons-panel {
-    flex: 0 0 38%;
+    flex: 0 0 calc(40% - 2px);
     background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
     border: 1px solid #332a1a;
     border-radius: 14px;
-    padding: 8px;
+    padding: 6px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     display: flex;
-    align-items: center;
+    align-items: stretch;
+    /* ✅ სიმაღლე დეილი ქვესთს გაუტოლდება */
+    height: 100%;
   }
   
+  /* ✅ 2x2 grid - ყველა იკონკა ერთნაირი ზომის */
   .action-grid-vertical {
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
-    gap: 6px;
+    gap: 4px;
     width: 100%;
+    height: 100%;
   }
   
   .action-btn-vertical {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(197, 160, 89, 0.15);
-    border-radius: 10px;
+    border-radius: 8px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -330,8 +351,11 @@
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
-    padding: 8px;
+    padding: 4px;
+    /* ✅ კვადრატული - ერთნაირი სიგანე და სიმაღლე */
     aspect-ratio: 1;
+    width: 100%;
+    height: 100%;
   }
   
   .action-btn-vertical:hover {
@@ -346,18 +370,21 @@
   
   .action-icon-v {
     filter: drop-shadow(0 0 6px currentColor);
+    /* ✅ ფიქსირებული ზომა */
+    width: 20px;
+    height: 20px;
   }
   
   .action-badge-v {
     position: absolute;
-    bottom: 4px;
-    right: 4px;
+    bottom: 3px;
+    right: 3px;
     background: rgba(197, 160, 89, 0.9);
     color: #0a0600;
-    font-size: 8px;
+    font-size: 7px;
     font-weight: 700;
-    padding: 1px 4px;
-    border-radius: 4px;
+    padding: 1px 3px;
+    border-radius: 3px;
   }
   
   .action-btn-vertical:not(.streak-btn-v):not(.rank-btn-v):not(.upgrade-btn-v):not(.subscription-btn-v) {
@@ -407,19 +434,17 @@
   }
   
   /* ============================================
-     3. CARD OF THE DAY - ნამდვილი კარტის პროპორცია
-     ✅ Ratio 1:1.5 (ტაროს კარტის სტანდარტი)
+     3. CARD OF THE DAY
      ============================================ */
   .card-of-day-banner {
     background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
     border: 1px solid #332a1a;
     border-radius: 16px;
-    padding: 12px 16px;
-    margin-bottom: 8px;
+    padding: 12px;
+    margin-bottom: 2px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     position: relative;
     overflow: visible;
-    min-height: 140px;
   }
   
   .clickable-card {
@@ -446,18 +471,18 @@
   
   .card-half-left {
     flex: 0 0 45%;
-    height: 140px;
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 8px 0;
   }
   
-  /* ✅ ნამდვილი კარტის პროპორცია: 100x150px (1:1.5 ratio) */
+  /* ✅ ნამდვილი კარტის პროპორცია 1:1.5 */
   .card-image-3d-wrapper {
     position: relative;
-    width: 100px;
-    height: 150px;
+    width: clamp(80px, 22vw, 110px);
+    aspect-ratio: 2/3;
     perspective: 800px;
   }
   
@@ -508,36 +533,35 @@
   }
   
   .card-number-large {
-    font-size: 14px;
+    font-size: clamp(12px, 3vw, 14px);
     font-weight: 700;
     color: #C5A059;
   }
   
   .card-symbol-large {
-    font-size: 28px;
+    font-size: clamp(24px, 6vw, 28px);
     filter: drop-shadow(0 0 10px rgba(197, 160, 89, 0.6));
   }
   
   .card-name-large {
-    font-size: 9px;
+    font-size: clamp(8px, 2vw, 10px);
     font-weight: 700;
     color: #C5A059;
     text-align: center;
     padding: 0 6px;
   }
   
-  /* ✅ Enhanced R badge */
   .card-reversed-indicator-large {
     position: absolute;
     top: 5px;
     right: 5px;
-    width: 24px;
-    height: 24px;
+    width: clamp(20px, 5vw, 24px);
+    height: clamp(20px, 5vw, 24px);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px;
+    font-size: clamp(11px, 3vw, 13px);
     font-weight: 900;
     z-index: 3;
     background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
@@ -569,10 +593,10 @@
   
   .card-3d-shadow {
     position: absolute;
-    bottom: -8px;
+    bottom: -6px;
     left: 10%;
     width: 80%;
-    height: 16px;
+    height: 14px;
     background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.6) 0%, transparent 70%);
     filter: blur(6px);
     z-index: 1;
@@ -596,7 +620,7 @@
   }
   
   .card-day-label {
-    font-size: 9px;
+    font-size: clamp(8px, 2vw, 9px);
     color: #C5A059;
     letter-spacing: 2px;
     text-transform: uppercase;
@@ -606,7 +630,7 @@
   
   .card-title {
     margin: 0;
-    font-size: 16px;
+    font-size: clamp(14px, 4vw, 18px);
     color: #C5A059;
     letter-spacing: 0.5px;
     font-weight: 700;
@@ -615,7 +639,7 @@
   
   .card-meaning {
     margin: 0;
-    font-size: 11px;
+    font-size: clamp(10px, 2.8vw, 12px);
     color: rgba(255, 255, 255, 0.7);
     font-style: italic;
     line-height: 1.3;
@@ -623,7 +647,7 @@
   
   .card-element {
     margin: 0;
-    font-size: 10px;
+    font-size: clamp(9px, 2.5vw, 10px);
     color: #888;
   }
   
@@ -633,7 +657,7 @@
     color: #C5A059;
     padding: 5px 10px;
     border-radius: 6px;
-    font-size: 9px;
+    font-size: clamp(8px, 2.5vw, 10px);
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s;
@@ -655,19 +679,22 @@
   /* ============================================
      4. QUICK ACCESS GRID
      ============================================ */
-  .quick-access { margin-bottom: 8px; width: 100%; }
+  .quick-access { 
+    margin-bottom: 8px; 
+    width: 100%; 
+  }
   
   .quick-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
+    gap: 6px;
   }
   
   .quick-item {
     background: #1a1510;
     border: 1px solid #2a2215;
     border-radius: 12px;
-    padding: 12px 6px;
+    padding: clamp(8px, 2.5vw, 12px) 4px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -695,16 +722,18 @@
   }
   
   .q-label { 
-    font-size: 10px;
+    font-size: clamp(9px, 2.5vw, 10px);
     color: #fff;
     font-weight: 600;
     text-align: center;
+    line-height: 1.1;
   }
   
   .q-sublabel { 
-    font-size: 9px;
+    font-size: clamp(8px, 2vw, 9px);
     color: #b3a68c;
     text-align: center;
+    line-height: 1.1;
   }
   
   .quick-item.premium-item {
@@ -717,13 +746,13 @@
     top: -4px;
     right: -4px;
     background: linear-gradient(135deg, #C5A059 0%, #8B6914 100%);
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
+    font-size: 11px;
     box-shadow: 0 2px 8px rgba(197, 160, 89, 0.5);
     z-index: 10;
   }
@@ -782,13 +811,13 @@
     top: -4px;
     right: -4px;
     background: linear-gradient(135deg, #FFD700 0%, #FF8C00 100%);
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
+    font-size: 11px;
     box-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
     z-index: 10;
     animation: paywallPulse 2s ease-in-out infinite;
@@ -823,4 +852,54 @@
     color: #0a0600;
     box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
     z-index: 3;
+  }
+  
+  /* ============================================
+     5. RESPONSIVE - მცირე ეკრანებისთვის
+     ============================================ */
+  @media (max-width: 360px) {
+    .quests-and-actions-split {
+      flex-direction: column;
+    }
+    
+    .daily-quests-compact {
+      flex: 1 1 100%;
+    }
+    
+    .action-buttons-panel {
+      flex: 1 1 100%;
+    }
+    
+    .action-grid-vertical {
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: 1fr;
+    }
+    
+    .card-of-day-content {
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .card-half-left,
+    .card-half-right {
+      flex: 1 1 100%;
+      padding: 0;
+    }
+    
+    .card-half-right {
+      padding-left: 0;
+    }
+  }
+  
+  /* ============================================
+     6. RESPONSIVE - დიდი ეკრანებისთვის
+     ============================================ */
+  @media (min-width: 480px) {
+    .home-screen {
+      padding: 70px 8px 100px 8px;
+    }
+    
+    .quick-grid {
+      gap: 8px;
+    }
   }
