@@ -1,15 +1,14 @@
 import { supabase } from './supabase';
 
 // ============================================
-// PREMIUM FEATURES - რა არის ფასიანი
+// PREMIUM FEATURES
 // ============================================
 export const PREMIUM_FEATURES = {
-  // Subscriptions
   subscription_monthly: {
     id: 'subscription_monthly',
     name: 'Premium Monthly',
     description: 'Unlimited readings + AI Insights',
-    price: 999, // $9.99 (cents)
+    price: 999,
     type: 'subscription',
     duration: 'monthly',
     icon: '💎'
@@ -18,18 +17,16 @@ export const PREMIUM_FEATURES = {
     id: 'subscription_yearly',
     name: 'Premium Yearly',
     description: 'Save 33% - Full year access',
-    price: 7999, // $79.99
+    price: 7999,
     type: 'subscription',
     duration: 'yearly',
-    icon: '💎'
+    icon: ''
   },
-  
-  // Pay-per-reading
   celtic_cross: {
     id: 'celtic_cross',
     name: 'Celtic Cross Reading',
     description: '10-card deep analysis',
-    price: 299, // $2.99
+    price: 299,
     type: 'single',
     icon: '✝️'
   },
@@ -37,27 +34,25 @@ export const PREMIUM_FEATURES = {
     id: 'horseshoe',
     name: 'Horseshoe Reading',
     description: '7-card life path analysis',
-    price: 199, // $1.99
+    price: 199,
     type: 'single',
-    icon: '🐎'
+    icon: ''
   },
   relationship: {
     id: 'relationship',
     name: 'Relationship Spread',
     description: '6-card love analysis',
-    price: 399, // $3.99
+    price: 399,
     type: 'single',
     icon: '❤️'
   },
-  
-  // AI Insights
   ai_weekly: {
     id: 'ai_weekly',
     name: 'AI Weekly Insight',
     description: 'Personalized weekly analysis',
-    price: 499, // $4.99
+    price: 499,
     type: 'single',
-    icon: '🧠'
+    icon: ''
   }
 };
 
@@ -84,12 +79,10 @@ export async function isPremium(userId: string): Promise<boolean> {
 
     const subscription = data[0];
     
-    // Lifetime subscription
     if (subscription.tier === 'lifetime') {
       return true;
     }
     
-    // Check if subscription is still valid
     if (subscription.expires_at) {
       const expiresAt = new Date(subscription.expires_at);
       const now = new Date();
@@ -124,11 +117,10 @@ export async function getActiveSubscription(userId: string) {
 
     const subscription = data[0];
     
-    // Check expiration
     if (subscription.tier !== 'lifetime' && subscription.expires_at) {
       const expiresAt = new Date(subscription.expires_at);
       if (expiresAt <= new Date()) {
-        return null; // Expired
+        return null;
       }
     }
     
@@ -140,23 +132,128 @@ export async function getActiveSubscription(userId: string) {
 }
 
 // ============================================
-// CHECK IF USER CAN ACCESS FEATURE
+// GET AVAILABLE CREDITS
 // ============================================
-export async function canAccessFeature(userId: string, featureId: string): Promise<boolean> {
-  // Daily and 3-card readings are always free
-  if (featureId === 'daily' || featureId === 'three-card') {
+export async function getAvailableCredits(userId: string): Promise<Record<PremiumFeatureId, number>> {
+  if (!supabase) return {} as any;
+  
+  try {
+    const { data, error } = await supabase
+      .from('available_credits')
+      .select('*')
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error('❌ Error fetching credits:', error);
+      return {} as any;
+    }
+
+    const credits: Record<string, number> = {};
+    data?.forEach(row => {
+      credits[row.feature_id] = row.credits;
+    });
+
+    return credits as Record<PremiumFeatureId, number>;
+  } catch (error) {
+    console.error('❌ Error fetching credits:', error);
+    return {} as any;
+  }
+}
+
+// ============================================
+// DECREMENT CREDIT (გამოყენებისას)
+// ============================================
+export async function decrementCredit(userId: string, featureId: PremiumFeatureId): Promise<boolean> {
+  if (!supabase) return false;
+  
+  try {
+    // შეამოწმე რამდენი აქვს
+    const { data: current, error: fetchError } = await supabase
+      .from('available_credits')
+      .select('credits')
+      .eq('user_id', userId)
+      .eq('feature_id', featureId)
+      .single();
+
+    if (fetchError || !current || current.credits <= 0) {
+      return false; // არ აქვს credits
+    }
+
+    // შეამცირე 1-ით
+    const { error: updateError } = await supabase
+      .from('available_credits')
+      .update({ 
+        credits: current.credits - 1,
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', userId)
+      .eq('feature_id', featureId);
+
+    if (updateError) {
+      console.error('❌ Error decrementing credit:', updateError);
+      return false;
+    }
+
     return true;
+  } catch (error) {
+    console.error('❌ Error decrementing credit:', error);
+    return false;
   }
+}
+
+// ============================================
+// INCREMENT CREDIT (ყიდვისას ან rollback)
+// ============================================
+export async function incrementCredit(userId: string, featureId: PremiumFeatureId, amount: number = 1): Promise<void> {
+  if (!supabase) return;
   
-  // Check if user has premium subscription
-  const premium = await isPremium(userId);
-  if (premium) {
-    return true; // Premium users can access everything
+  try {
+    const { data: current, error: fetchError } = await supabase
+      .from('available_credits')
+      .select('credits')
+      .eq('user_id', userId)
+      .eq('feature_id', featureId)
+      .single();
+
+    if (fetchError || !current) {
+      // არ არსებობს - შექმენი ახალი
+      await supabase
+        .from('available_credits')
+        .insert({
+          user_id: userId,
+          feature_id: featureId,
+          credits: amount,
+          updated_at: new Date().toISOString()
+        });
+    } else {
+      // განაახლე არსებული
+      await supabase
+        .from('available_credits')
+        .update({
+          credits: current.credits + amount,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', userId)
+        .eq('feature_id', featureId);
+    }
+  } catch (error) {
+    console.error('❌ Error incrementing credit:', error);
   }
-  
-  // For single purchases, check if user has purchased this specific feature
-  // (This will be implemented when we add purchase history table)
-  return false;
+}
+
+// ============================================
+// ROLLBACK CREDIT (თუ reading ჩავარდა)
+// ============================================
+export async function rollbackCredit(userId: string, featureId: PremiumFeatureId): Promise<void> {
+  await incrementCredit(userId, featureId, 1);
+}
+
+// ============================================
+// CHECK IF FEATURE IS PURCHASED
+// ============================================
+export async function isFeaturePurchased(userId: string, featureId: PremiumFeatureId): Promise<boolean> {
+  const credits = await getAvailableCredits(userId);
+  return (credits[featureId] || 0) > 0;
 }
 
 // ============================================

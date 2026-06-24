@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Crown, Sparkles, CheckCircle, XCircle } from 'lucide-react';
-import { formatPrice, PremiumFeatureId } from '../lib/premiumService';
+import { X, Crown, Sparkles, CheckCircle, XCircle, Check, Infinity } from 'lucide-react';
+import { formatPrice, PremiumFeatureId, getAvailableCredits, isPremium } from '../lib/premiumService';
 import { completePurchase, formatStars, STARS_PRICING } from '../lib/telegramPaymentService';
 import { useUser } from '../context/UserContext';
 import './PremiumPaywall.css';
@@ -11,13 +11,15 @@ interface Props {
   onClose: () => void;
   highlightedFeature?: PremiumFeatureId;
   onPurchase?: (featureId: PremiumFeatureId) => void;
+  onUse?: (featureId: PremiumFeatureId) => void;
 }
 
 export default function PremiumPaywall({ 
   isOpen, 
   onClose, 
   highlightedFeature,
-  onPurchase 
+  onPurchase,
+  onUse
 }: Props) {
   const { user } = useUser();
   const [selectedFeature, setSelectedFeature] = useState<string>(
@@ -27,6 +29,23 @@ export default function PremiumPaywall({
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [credits, setCredits] = useState<Record<PremiumFeatureId, number>>({} as any);
+  const [hasSubscription, setHasSubscription] = useState(false);
+
+  // შეამოწმე credits და subscription როცა Paywall იხსნება
+  useEffect(() => {
+    if (isOpen && user) {
+      const fetchData = async () => {
+        const [creditsData, isSub] = await Promise.all([
+          getAvailableCredits(user.id),
+          isPremium(user.id)
+        ]);
+        setCredits(creditsData);
+        setHasSubscription(isSub);
+      };
+      fetchData();
+    }
+  }, [isOpen, user]);
 
   const handlePurchase = async () => {
     if (!user) {
@@ -43,24 +62,25 @@ export default function PremiumPaywall({
       );
 
       if (result === 'success') {
-        // წარმატება!
         setShowSuccess(true);
+        
+        // განაახლე credits
+        setCredits(prev => ({
+          ...prev,
+          [selectedFeature as PremiumFeatureId]: (prev[selectedFeature as PremiumFeatureId] || 0) + 1
+        }));
         
         if (onPurchase) {
           onPurchase(selectedFeature as PremiumFeatureId);
         }
         
-        // 3 წამის შემდეგ დავხუროთ და გადავიტვირთოთ
         setTimeout(() => {
           setShowSuccess(false);
           onClose();
-          window.location.reload();
-        }, 3000);
+        }, 2500);
       } else if (result === 'cancelled') {
-        // მომხმარებელმა გააუქმა
         setIsProcessing(false);
       } else {
-        // შეცდომა
         setErrorMessage('ტრანზაქცია ვერ განხორციელდა. გთხოვთ სცადოთ ხელახლა.');
         setShowError(true);
         setIsProcessing(false);
@@ -73,10 +93,18 @@ export default function PremiumPaywall({
     }
   };
 
+  const handleUse = (featureId: PremiumFeatureId) => {
+    if (onUse) {
+      onUse(featureId);
+    }
+  };
+
   const stars = STARS_PRICING[selectedFeature as PremiumFeatureId] || 0;
 
   const isSubscriptionTab = selectedFeature === 'subscription_monthly' || selectedFeature === 'subscription_yearly';
   const isSingleTab = selectedFeature === 'celtic_cross' || selectedFeature === 'horseshoe' || selectedFeature === 'relationship';
+
+  const getCredits = (featureId: PremiumFeatureId) => credits[featureId] || 0;
 
   return (
     <AnimatePresence>
@@ -145,7 +173,7 @@ export default function PremiumPaywall({
                     className={`premium-feature-item ${selectedFeature === 'subscription_monthly' ? 'selected' : ''}`}
                     onClick={() => !isProcessing && setSelectedFeature('subscription_monthly')}
                   >
-                    <div className="premium-feature-icon">💎</div>
+                    <div className="premium-feature-icon"></div>
                     <div className="premium-feature-info">
                       <h4>Premium Monthly</h4>
                       <p>Unlimited readings + AI Insights</p>
@@ -176,71 +204,142 @@ export default function PremiumPaywall({
 
               {isSingleTab && (
                 <>
-                  <div 
-                    className={`premium-feature-item ${selectedFeature === 'celtic_cross' ? 'selected' : ''}`}
-                    onClick={() => !isProcessing && setSelectedFeature('celtic_cross')}
-                  >
+                  {/* Celtic Cross */}
+                  <div className={`premium-feature-item ${selectedFeature === 'celtic_cross' ? 'selected' : ''} ${getCredits('celtic_cross') > 0 || hasSubscription ? 'purchased' : ''}`}>
                     <div className="premium-feature-icon">✝️</div>
                     <div className="premium-feature-info">
                       <h4>Celtic Cross Reading</h4>
                       <p>10-card deep analysis</p>
                     </div>
                     <div className="premium-feature-price">
-                      <span className="price-usd">{formatPrice(299)}</span>
-                      <span className="price-stars">{formatStars(1)}</span>
+                      {hasSubscription ? (
+                        <div className="unlimited-badge">
+                          <Infinity size={12} />
+                          <span>Unlimited</span>
+                        </div>
+                      ) : getCredits('celtic_cross') > 0 ? (
+                        <>
+                          <div className="credits-badge">
+                            <Check size={12} />
+                            <span>{getCredits('celtic_cross')}</span>
+                          </div>
+                          <button 
+                            className="use-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleUse('celtic_cross');
+                            }}
+                          >
+                            Use
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <span className="price-usd">{formatPrice(299)}</span>
+                          <span className="price-stars">{formatStars(1)}</span>
+                        </>
+                      )}
                     </div>
                   </div>
 
-                  <div 
-                    className={`premium-feature-item ${selectedFeature === 'horseshoe' ? 'selected' : ''}`}
-                    onClick={() => !isProcessing && setSelectedFeature('horseshoe')}
-                  >
+                  {/* Horseshoe */}
+                  <div className={`premium-feature-item ${selectedFeature === 'horseshoe' ? 'selected' : ''} ${getCredits('horseshoe') > 0 || hasSubscription ? 'purchased' : ''}`}>
                     <div className="premium-feature-icon">🐎</div>
                     <div className="premium-feature-info">
                       <h4>Horseshoe Reading</h4>
                       <p>7-card life path</p>
                     </div>
                     <div className="premium-feature-price">
-                      <span className="price-usd">{formatPrice(199)}</span>
-                      <span className="price-stars">{formatStars(100)}</span>
+                      {hasSubscription ? (
+                        <div className="unlimited-badge">
+                          <Infinity size={12} />
+                          <span>Unlimited</span>
+                        </div>
+                      ) : getCredits('horseshoe') > 0 ? (
+                        <>
+                          <div className="credits-badge">
+                            <Check size={12} />
+                            <span>{getCredits('horseshoe')}</span>
+                          </div>
+                          <button 
+                            className="use-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleUse('horseshoe');
+                            }}
+                          >
+                            Use
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <span className="price-usd">{formatPrice(199)}</span>
+                          <span className="price-stars">{formatStars(100)}</span>
+                        </>
+                      )}
                     </div>
                   </div>
 
-                  <div 
-                    className={`premium-feature-item ${selectedFeature === 'relationship' ? 'selected' : ''}`}
-                    onClick={() => !isProcessing && setSelectedFeature('relationship')}
-                  >
+                  {/* Relationship */}
+                  <div className={`premium-feature-item ${selectedFeature === 'relationship' ? 'selected' : ''} ${getCredits('relationship') > 0 || hasSubscription ? 'purchased' : ''}`}>
                     <div className="premium-feature-icon">❤️</div>
                     <div className="premium-feature-info">
                       <h4>Relationship Spread</h4>
                       <p>6-card love analysis</p>
                     </div>
                     <div className="premium-feature-price">
-                      <span className="price-usd">{formatPrice(399)}</span>
-                      <span className="price-stars">{formatStars(200)}</span>
+                      {hasSubscription ? (
+                        <div className="unlimited-badge">
+                          <Infinity size={12} />
+                          <span>Unlimited</span>
+                        </div>
+                      ) : getCredits('relationship') > 0 ? (
+                        <>
+                          <div className="credits-badge">
+                            <Check size={12} />
+                            <span>{getCredits('relationship')}</span>
+                          </div>
+                          <button 
+                            className="use-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleUse('relationship');
+                            }}
+                          >
+                            Use
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <span className="price-usd">{formatPrice(399)}</span>
+                          <span className="price-stars">{formatStars(200)}</span>
+                        </>
+                      )}
                     </div>
                   </div>
                 </>
               )}
             </div>
 
-            {/* Purchase Button */}
-            <button 
-              className="premium-purchase-btn"
-              onClick={handlePurchase}
-              disabled={isProcessing}
-            >
-              {isProcessing ? (
-                <>
-                  <div className="premium-spinner"></div>
-                  <span>Processing...</span>
-                </>
-              ) : (
-                <>
-                  <span>Unlock for {formatStars(stars)}</span>
-                </>
-              )}
-            </button>
+            {/* Purchase Button (მხოლოდ თუ არ არის ნაყიდი) */}
+            {!hasSubscription && getCredits(selectedFeature as PremiumFeatureId) === 0 && (
+              <button 
+                className="premium-purchase-btn"
+                onClick={handlePurchase}
+                disabled={isProcessing}
+              >
+                {isProcessing ? (
+                  <>
+                    <div className="premium-spinner"></div>
+                    <span>Processing...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Unlock for {formatStars(stars)}</span>
+                  </>
+                )}
+              </button>
+            )}
 
             {/* Footer */}
             <p className="premium-footer">
