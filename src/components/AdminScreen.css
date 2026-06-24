@@ -303,3 +303,393 @@
   @keyframes spin {
     to { transform: rotate(360deg); }
   }
+  
+  /* ============================================
+     ADMIN TABS - ახალი!
+     ============================================ */
+  .admin-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding: 4px;
+    background: rgba(197, 160, 89, 0.08);
+    border-radius: 12px;
+    border: 1px solid rgba(197, 160, 89, 0.2);
+  }
+  
+  .admin-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    color: rgba(255, 255, 255, 0.6);
+    font-family: 'Georgia', serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  
+  .admin-tab:hover {
+    color: rgba(255, 255, 255, 0.9);
+    background: rgba(197, 160, 89, 0.1);
+  }
+  
+  .admin-tab.active {
+    background: linear-gradient(135deg, #C5A059 0%, #8B6914 100%);
+    color: #0a0600;
+    box-shadow: 0 2px 10px rgba(197, 160, 89, 0.4);
+  }
+  
+  /* ============================================
+     SUBSCRIPTIONS LIST - ახალი!
+     ============================================ */
+  .add-subscription-btn {
+    width: 100%;
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(22, 163, 74, 0.1) 100%);
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    border-radius: 12px;
+    padding: 12px;
+    color: #22c55e;
+    font-family: 'Georgia', serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  
+  .add-subscription-btn:hover {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.3) 0%, rgba(22, 163, 74, 0.2) 100%);
+    border-color: rgba(34, 197, 94, 0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+  }
+  
+  .subscriptions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .subscription-card {
+    background: rgba(197, 160, 89, 0.05);
+    border: 1px solid rgba(197, 160, 89, 0.2);
+    border-radius: 16px;
+    padding: 16px;
+  }
+  
+  .subscription-card.active {
+    border-color: rgba(34, 197, 94, 0.4);
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(22, 163, 74, 0.02) 100%);
+  }
+  
+  .subscription-card.cancelled {
+    opacity: 0.6;
+  }
+  
+  .subscription-card.expired {
+    opacity: 0.5;
+    border-color: rgba(239, 68, 68, 0.3);
+  }
+  
+  .subscription-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(197, 160, 89, 0.15);
+  }
+  
+  .subscription-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .subscription-avatar {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #C5A059 0%, #8B6914 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+    color: #0a0600;
+  }
+  
+  .subscription-user-info h4 {
+    font-size: 14px;
+    margin: 0 0 2px;
+    color: #fff;
+  }
+  
+  .subscription-user-info p {
+    font-size: 11px;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.6);
+  }
+  
+  .subscription-status {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  
+  .subscription-status.active {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+  }
+  
+  .subscription-status.cancelled {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+  }
+  
+  .subscription-status.expired {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+  }
+  
+  .subscription-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  
+  .subscription-detail-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+  }
+  
+  .subscription-detail-row svg {
+    color: #C5A059;
+    flex-shrink: 0;
+  }
+  
+  .subscription-detail-row .detail-label {
+    color: rgba(255, 255, 255, 0.6);
+    min-width: 70px;
+  }
+  
+  .subscription-detail-row .detail-value {
+    color: #fff;
+    font-weight: 600;
+  }
+  
+  .subscription-detail-row.highlight .detail-value {
+    color: #22c55e;
+  }
+  
+  .subscription-detail-row.highlight .detail-value.warning {
+    color: #fbbf24;
+  }
+  
+  .subscription-actions {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .extend-btn {
+    flex: 1;
+    background: rgba(34, 197, 94, 0.2);
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    border-radius: 8px;
+    padding: 8px;
+    color: #22c55e;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+  
+  .extend-btn:hover {
+    background: rgba(34, 197, 94, 0.3);
+    border-color: rgba(34, 197, 94, 0.6);
+  }
+  
+  .cancel-sub-btn {
+    flex: 1;
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    border-radius: 8px;
+    padding: 8px;
+    color: #ef4444;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+  
+  .cancel-sub-btn:hover {
+    background: rgba(239, 68, 68, 0.3);
+    border-color: rgba(239, 68, 68, 0.6);
+  }
+  
+  /* ============================================
+     MODALS - ახალი!
+     ============================================ */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 20px;
+  }
+  
+  .modal {
+    background: linear-gradient(180deg, #1a0f05 0%, #0a0600 100%);
+    border: 1px solid rgba(197, 160, 89, 0.4);
+    border-radius: 20px;
+    padding: 24px;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 0 60px rgba(197, 160, 89, 0.3);
+  }
+  
+  .modal h3 {
+    font-size: 18px;
+    color: #C5A059;
+    margin: 0 0 20px;
+    text-align: center;
+    letter-spacing: 1px;
+  }
+  
+  .modal-field {
+    margin-bottom: 16px;
+  }
+  
+  .modal-field label {
+    display: block;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .modal-field select,
+  .modal-field input {
+    width: 100%;
+    background: rgba(197, 160, 89, 0.1);
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: #fff;
+    font-size: 14px;
+    font-family: 'Georgia', serif;
+  }
+  
+  .modal-field select:focus,
+  .modal-field input:focus {
+    outline: none;
+    border-color: #C5A059;
+    box-shadow: 0 0 10px rgba(197, 160, 89, 0.3);
+  }
+  
+  .modal-field select option {
+    background: #0a0600;
+    color: #fff;
+  }
+  
+  .plan-selector {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .plan-option {
+    flex: 1;
+    background: rgba(197, 160, 89, 0.1);
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    border-radius: 8px;
+    padding: 10px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .plan-option:hover {
+    background: rgba(197, 160, 89, 0.2);
+  }
+  
+  .plan-option.active {
+    background: linear-gradient(135deg, #C5A059 0%, #8B6914 100%);
+    color: #0a0600;
+    border-color: #C5A059;
+  }
+  
+  .modal-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  
+  .modal-btn {
+    flex: 1;
+    border-radius: 10px;
+    padding: 12px;
+    font-family: 'Georgia', serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+  }
+  
+  .modal-btn.cancel {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+  }
+  
+  .modal-btn.cancel:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+  
+  .modal-btn.confirm {
+    background: linear-gradient(135deg, #C5A059 0%, #8B6914 100%);
+    color: #0a0600;
+    box-shadow: 0 4px 15px rgba(197, 160, 89, 0.4);
+  }
+  
+  .modal-btn.confirm:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(197, 160, 89, 0.5);
+  }
+  
+  .modal-btn.confirm:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
