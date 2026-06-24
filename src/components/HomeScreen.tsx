@@ -8,7 +8,7 @@ import {
   Gem, Zap, Trophy, Flame,
   Sparkles, LayoutGrid, Moon, Hash, 
   Crown,
-  Scroll, Activity, ChevronRight, Gift, Shield, Infinity
+  Scroll, ChevronRight, Gift, Shield, Infinity
 } from 'lucide-react';
 import './HomeScreen.css';
 
@@ -169,7 +169,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     });
   }
 
-  // ✅ 2 quests instead of 3
   const quests = [
     { icon: <Scroll size={16} />, name: 'Draw 3 Cards', current: 2, total: 3, reward: 20 },
     { icon: <Sparkles size={16} />, name: 'Check Horoscope', current: 1, total: 1, reward: 15 },
@@ -190,7 +189,6 @@ export default function HomeScreen({ onNavigate }: Props) {
       {/* 1. USER HEADER */}
       <div className="user-header">
         <div className="user-main-row">
-          {/* ✅ Avatar with XP arc - clickable to profile */}
           <div 
             className="avatar-section clickable-avatar"
             onClick={() => onNavigate?.('profile')}
@@ -239,7 +237,6 @@ export default function HomeScreen({ onNavigate }: Props) {
           
           <div className="user-info-section">
             <h2 className="username">{user?.display_name || 'LunaraSeeker'}</h2>
-            {/* ✅ PREMIUM badge below username */}
             {activeSubscription && (
               <div 
                 className="premium-status-badge"
@@ -252,7 +249,6 @@ export default function HomeScreen({ onNavigate }: Props) {
                 </span>
               </div>
             )}
-            {/* ✅ XP text below */}
             <div className="xp-text-inline">
               <span className="xp-current">{xpCurrent.toLocaleString()}</span>
               <span className="xp-separator">/</span>
@@ -349,7 +345,7 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* 3. CARD OF THE DAY - Enhanced */}
+      {/* 3. CARD OF THE DAY */}
       <div 
         className="card-of-day-banner clickable-card"
         onClick={() => onNavigate && onNavigate('daily-card')}
@@ -372,7 +368,6 @@ export default function HomeScreen({ onNavigate }: Props) {
                     <span className="card-name-large">{dailyCardName}</span>
                   </div>
                 )}
-                {/* ✅ Enhanced R badge */}
                 {isDailyReversed && (
                   <div className="card-reversed-indicator-large">
                     <span>R</span>
