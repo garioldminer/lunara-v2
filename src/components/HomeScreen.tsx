@@ -24,10 +24,12 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [currentStreak, setCurrentStreak] = useState(0);
   const [isUserAdmin, setIsUserAdmin] = useState(false);
 
-  // ✅ Admin-ის შემოწმება
+  // ✅ Admin-ის შემოწმება - async/await სწორად
   useEffect(() => {
     if (user) {
-      setIsUserAdmin(isAdmin(user.id));
+      isAdmin(user.id).then(admin => {
+        setIsUserAdmin(admin);
+      });
     }
   }, [user]);
 
