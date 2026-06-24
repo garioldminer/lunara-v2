@@ -87,22 +87,12 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
     const hasPremium = await isPremium(user.id);
 
     if (hasPremium) {
-      // Premium მომხმარებელი - პირდაპირ კითხვაზე
+      // Premium მომხმარებელი (unlimited) - პირდაპირ კითხვაზე
       setPhase('question');
       return;
     }
 
-    // შეამოწმე credits (single reading)
-    const credits = await getAvailableCredits(user.id);
-    const celticCrossCredits = credits['celtic_cross'] || 0;
-
-    if (celticCrossCredits > 0) {
-      // აქვს credits - პირდაპირ კითხვაზე
-      setPhase('question');
-      return;
-    }
-
-    // არც subscription და არც credits - აჩვენე Paywall
+    // ყველა სხვა შემთხვევაში → ყოველთვის Paywall
     setShowPaywall(true);
   };
 
