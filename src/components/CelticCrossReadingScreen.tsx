@@ -50,47 +50,38 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
       return;
     }
 
-    // შეამოწმე Premium სტატუსი (subscription)
     const hasPremium = await isPremium(user.id);
 
     if (hasPremium) {
-      // Premium მომხმარებელი (unlimited) - პირდაპირ კითხვაზე
       setPhase('question');
       return;
     }
 
-    // შეამოწმე credits
     const credits = await getAvailableCredits(user.id);
     const celticCrossCredits = credits['celtic_cross'] || 0;
 
     if (celticCrossCredits > 0) {
-      // აქვს credits - პირდაპირ კითხვაზე
       setPhase('question');
       return;
     }
 
-    // არ აქვს credits - აჩვენე Paywall
     setShowPaywall(true);
   };
 
   const handleQuestionSubmit = async (q: string) => {
     if (!user) return;
 
-    // მკაცრი შემოწმება: აქვს უფლება გამოიყენოს?
     const hasPremium = await isPremium(user.id);
     
     if (!hasPremium) {
-      // არ არის subscription - შეამოწმე credits
       const credits = await getAvailableCredits(user.id);
       const celticCrossCredits = credits['celtic_cross'] || 0;
 
       if (celticCrossCredits <= 0) {
-        // არ აქვს credits - აჩვენე Paywall
         setShowPaywall(true);
         return;
       }
 
-      // აქვს credits - დააკელი 1
       const success = await decrementCredit(user.id, 'celtic_cross');
       
       if (!success) {
@@ -103,7 +94,6 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
       console.log(`✅ Credit decremented for celtic_cross. Remaining:`, newCredits);
     }
 
-    // ყველაფერი OK - დაიწყე reading
     setQuestion(q);
     setPhase('revealing');
     startReading();
@@ -127,7 +117,6 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
     setReading(newReading);
     setActiveCard(null);
 
-    // Reveal cards one by one
     newReading.forEach((_, idx) => {
       setTimeout(() => revealCard(idx), 600 + idx * 400);
     });
@@ -135,7 +124,6 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
     setTimeout(() => {
       setPhase('complete');
       
-      // Save reading to Supabase
       if (user) {
         saveReading({
           user_id: user.id,
@@ -157,11 +145,9 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
   };
 
   const handleNewReading = async () => {
-    // შეამოწმე credits
     const hasPremium = await isPremium(user?.id || '');
     
     if (hasPremium) {
-      // Premium - პირდაპირ კითხვაზე
       setPhase('question');
       setQuestion('');
       return;
@@ -171,13 +157,11 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
     const celticCrossCredits = credits['celtic_cross'] || 0;
 
     if (celticCrossCredits > 0) {
-      // აქვს credits - პირდაპირ კითხვაზე
       setPhase('question');
       setQuestion('');
       return;
     }
 
-    // არ აქვს credits - აჩვენე Paywall
     setShowPaywall(true);
   };
 
@@ -290,51 +274,57 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
               >
                 <div className="cc-position-label">{CELTIC_CROSS_POSITIONS[idx].short}</div>
                 
-                <div className="cc-card-wrapper">
-                  <AnimatePresence mode="wait">
-                    {!readingCard.revealed ? (
-                      <motion.div
-                        key="back"
-                        className="cc-card-back"
-                        initial={{ rotateY: 0 }}
-                        exit={{ rotateY: 180 }}
-                        transition={{ duration: 0.5 }}
-                      >
-                        <img 
-                          src={CARD_BACK_URL} 
-                          alt="Card Back"
-                          className="cc-card-back-image"
-                          draggable={false}
-                        />
-                      </motion.div>
+                {/* ✅ ახალი 3D Flip + Glow + Lift ანიმაცია */}
+                <motion.div
+                  className="cc-card-wrapper"
+                  initial={{ 
+                    rotateY: 0,
+                    translateY: 0,
+                    scale: 1
+                  }}
+                  animate={readingCard.revealed ? {
+                    rotateY: 180,
+                    translateY: [0, -12, 0],
+                    scale: [1, 1.03, 1]
+                  } : {
+                    rotateY: 0,
+                    translateY: 0,
+                    scale: 1
+                  }}
+                  transition={{
+                    rotateY: { duration: 0.8, ease: [0.4, 0, 0.2, 1] },
+                    translateY: { duration: 0.8, ease: "easeInOut" },
+                    scale: { duration: 0.8, ease: "easeInOut" }
+                  }}
+                >
+                  {/* Back Face */}
+                  <div className="cc-card-back">
+                    <img 
+                      src={CARD_BACK_URL} 
+                      alt="Card Back" 
+                      className="cc-card-back-image" 
+                      draggable={false} 
+                    />
+                  </div>
+                  
+                  {/* Front Face */}
+                  <div className="cc-card-front">
+                    {readingCard.card.image_url ? (
+                      <img 
+                        src={readingCard.card.image_url} 
+                        alt={readingCard.card.name} 
+                        className="cc-card-image" 
+                        style={{ transform: readingCard.isReversed ? 'rotate(180deg)' : 'none' }} 
+                      />
                     ) : (
-                      <motion.div
-                        key="front"
-                        className="cc-card-front"
-                        initial={{ rotateY: -180 }}
-                        animate={{ rotateY: 0 }}
-                        transition={{ duration: 0.5 }}
-                      >
-                        {readingCard.card.image_url ? (
-                          <img 
-                            src={readingCard.card.image_url} 
-                            alt={readingCard.card.name}
-                            className="cc-card-image"
-                            style={{ transform: readingCard.isReversed ? 'rotate(180deg)' : 'none' }}
-                          />
-                        ) : (
-                          <div className="cc-card-placeholder">
-                            <span className="cc-placeholder-num">{readingCard.card.number}</span>
-                            <span className="cc-placeholder-name">{readingCard.card.name}</span>
-                          </div>
-                        )}
-                        {readingCard.isReversed && (
-                          <div className="cc-reversed-badge">R</div>
-                        )}
-                      </motion.div>
+                      <div className="cc-card-placeholder">
+                        <span className="cc-placeholder-num">{readingCard.card.number}</span>
+                        <span className="cc-placeholder-name">{readingCard.card.name}</span>
+                      </div>
                     )}
-                  </AnimatePresence>
-                </div>
+                    {readingCard.isReversed && <div className="cc-reversed-badge">R</div>}
+                  </div>
+                </motion.div>
               </motion.div>
             ))}
           </div>
