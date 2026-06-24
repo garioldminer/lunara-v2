@@ -26,6 +26,11 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [isUserAdmin, setIsUserAdmin] = useState(false);
   const [activeSubscription, setActiveSubscription] = useState<any>(null);
 
+  // XP values
+  const xpPercent = 78;
+  const xpCurrent = 7850;
+  const xpTotal = 10000;
+
   // ✅ Admin-ის შემოწმება
   useEffect(() => {
     if (user) {
@@ -44,7 +49,7 @@ export default function HomeScreen({ onNavigate }: Props) {
     }
   }, [user]);
 
-  // Daily Card - მიიღე დღის კარტი
+  // Daily Card
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
     const stored = localStorage.getItem('dailyCard');
@@ -69,7 +74,7 @@ export default function HomeScreen({ onNavigate }: Props) {
     setIsDailyReversed(isReversed);
   }, []);
 
-  // Streak - მიიღე Supabase-დან
+  // Streak
   useEffect(() => {
     if (user) {
       getUserStreak(user.id).then(streakData => {
@@ -156,7 +161,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     { icon: <Gem size={28} />, label: 'Crystals', sublabel: '', color: '#f472b6', action: 'Crystals' },
   ];
 
-  // ✅ Admin ღილაკი - მხოლოდ admin-სთვის
   if (isUserAdmin) {
     quickActions.push({
       icon: <Shield size={28} />,
@@ -173,10 +177,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     { icon: <Activity size={18} />, name: 'Complete a Reading', current: 1, total: 2, reward: 25 },
   ];
 
-  const xpPercent = 78;
-  const xpCurrent = 7850;
-  const xpTotal = 10000;
-
   const dailyCardName = dailyCard?.name || 'THE FOOL';
   const dailyCardNumber = dailyCard?.number || '0';
   const dailyCardMeaning = isDailyReversed 
@@ -184,27 +184,66 @@ export default function HomeScreen({ onNavigate }: Props) {
     : (dailyCard?.keywords?.[0] || 'New Beginnings');
   const dailyCardElement = dailyCard ? getCardMeta(dailyCard) : '';
 
+  // XP circular progress calculation
+  const circumference = 2 * Math.PI * 22; // radius = 22
+  const strokeDashoffset = circumference - (xpPercent / 100) * circumference;
+
   return (
     <div className="home-screen">
-      {/* 1. USER HEADER */}
+      {/* 1. USER HEADER - განახლებული XP circular bar-ით */}
       <div className="user-header">
         <div className="user-main-row">
           <div className="avatar-section">
-            <div className="avatar-ring-glow"></div>
+            {/* ✅ XP Circular Progress Bar */}
+            <svg className="xp-circular-progress" width="56" height="56" viewBox="0 0 56 56">
+              {/* Background circle */}
+              <circle
+                className="xp-circle-bg"
+                cx="28"
+                cy="28"
+                r="22"
+                fill="none"
+                stroke="rgba(197, 160, 89, 0.2)"
+                strokeWidth="3"
+              />
+              {/* Progress circle */}
+              <circle
+                className="xp-circle-progress"
+                cx="28"
+                cy="28"
+                r="22"
+                fill="none"
+                stroke="url(#xpGradient)"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeDashoffset}
+                transform="rotate(-90 28 28)"
+              />
+              {/* Gradient definition */}
+              <defs>
+                <linearGradient id="xpGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#C5A059" />
+                  <stop offset="100%" stopColor="#ffe566" />
+                </linearGradient>
+              </defs>
+            </svg>
+            
             <div className="avatar-image">
               {user?.display_name?.charAt(0).toUpperCase() || 'U'}
             </div>
-            {/* ✅ Premium Badge ავატარზე */}
+            
+            {/* Premium Badge */}
             {activeSubscription && (
               <div className="premium-avatar-badge">
                 <Crown size={10} />
               </div>
             )}
           </div>
+          
           <div className="user-info-section">
             <div className="username-row">
               <h2 className="username">{user?.display_name || 'LunaraSeeker'}</h2>
-              {/* ✅ Premium Badge სახელთან */}
               {activeSubscription && (
                 <div className="premium-name-badge" onClick={() => onNavigate?.('subscription')}>
                   <Infinity size={10} />
@@ -221,7 +260,14 @@ export default function HomeScreen({ onNavigate }: Props) {
                 </span>
               )}
             </p>
+            {/* XP Text - ახლა avatar-ის ქვეშ */}
+            <div className="xp-text-inline">
+              <span className="xp-current">{xpCurrent.toLocaleString()}</span>
+              <span className="xp-separator">/</span>
+              <span className="xp-total">{xpTotal.toLocaleString()} XP</span>
+            </div>
           </div>
+          
           <div className="user-resources">
             <div className="resource gems">
               <Gem size={14} className="resource-icon gem-icon" />
@@ -235,98 +281,77 @@ export default function HomeScreen({ onNavigate }: Props) {
             </div>
           </div>
         </div>
-        <div className="xp-section">
-          <div className="xp-bar">
-            <div className="xp-fill" style={{ width: `${xpPercent}%` }}></div>
-          </div>
-          <div className="xp-info">
-            <span className="xp-text">XP {xpCurrent.toLocaleString()} / {xpTotal.toLocaleString()}</span>
-            <span className="xp-percent">{xpPercent}%</span>
-            <Star size={18} className="star-icon" fill="#C5A059" />
-          </div>
-        </div>
       </div>
 
-      {/* 2. CARD SECTION - 60/40 Split (Horizontal) */}
-      <div className="card-section-split">
-        {/* LEFT - Card of the Day (60%) - Clickable */}
-        <div 
-          className="card-left-horizontal clickable-card"
-          onClick={() => onNavigate && onNavigate('daily-card')}
-        >
-          <div className="card-art-horizontal">
-            {dailyCard?.image_url ? (
-              <img 
-                src={dailyCard.image_url} 
-                alt={dailyCardName}
-                className="card-art-image-h"
-                style={{ transform: isDailyReversed ? 'rotate(180deg)' : 'none' }}
-              />
-            ) : (
-              <>
-                <span className="card-number-h">{dailyCardNumber}</span>
-                <div className="card-symbol-h">✦</div>
-                <span className="card-name-h">{dailyCardName}</span>
-              </>
-            )}
-            {isDailyReversed && (
-              <div className="card-reversed-indicator">R</div>
-            )}
+      {/* 2. DAILY QUESTS (60%) + ACTION BUTTONS (40%) */}
+      <div className="quests-and-actions-split">
+        {/* LEFT - Daily Quests (60%) */}
+        <div className="daily-quests-compact">
+          <div className="quests-header-compact">
+            <h3>DAILY QUESTS</h3>
+            <span className="quests-timer-compact">{timeLeft}</span>
           </div>
-
-          <div className="card-info-horizontal">
-            <div className="card-day-label">CARD OF THE DAY</div>
-            <h3>{dailyCardName}</h3>
-            <p className="card-meaning-h">{dailyCardMeaning}</p>
-            {dailyCardElement && (
-              <p className="card-zodiac-h">{dailyCardElement}</p>
-            )}
-            <button className="read-guidance-btn-h">
-              READ GUIDANCE
-              <ChevronRight size={12} />
-            </button>
+          <div className="quest-list-compact">
+            {quests.map((quest, index) => (
+              <div key={index} className="quest-item-compact">
+                <div className="quest-icon-compact">
+                  {quest.icon}
+                </div>
+                <div className="quest-info-compact">
+                  <span className="quest-name-compact">{quest.name}</span>
+                  <div className="quest-progress-compact">
+                    <div className="progress-bar-compact">
+                      <div 
+                        className="progress-fill-compact" 
+                        style={{ width: `${(quest.current / quest.total) * 100}%` }}
+                      ></div>
+                    </div>
+                    <span className="progress-text-compact">{quest.current}/{quest.total}</span>
+                  </div>
+                </div>
+                <div className="quest-reward-compact">
+                  +{quest.reward} <Gem size={10} />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* RIGHT - Single Card with 4 Action Buttons (40%) */}
-        <div className="card-right-single">
-          <div className="action-grid">
-            {/* Daily Reward */}
+        {/* RIGHT - Action Buttons (40%) */}
+        <div className="action-buttons-panel">
+          <div className="action-grid-vertical">
             <button 
-              className={`action-btn ${rewardClaimed ? 'claimed' : ''}`}
+              className={`action-btn-vertical ${rewardClaimed ? 'claimed' : ''}`}
               onClick={handleClaimReward}
               disabled={rewardClaimed}
             >
-              <Gift size={24} className="action-icon" />
-              {!rewardClaimed && <div className="action-badge">50</div>}
+              <Gift size={22} className="action-icon-v" />
+              {!rewardClaimed && <div className="action-badge-v">50</div>}
             </button>
 
-            {/* Streak */}
-            <button className="action-btn streak-btn">
-              <Flame size={24} className="action-icon flame-icon" />
-              <div className="action-badge">{currentStreak}</div>
+            <button className="action-btn-vertical streak-btn-v">
+              <Flame size={22} className="action-icon-v flame-icon-v" />
+              <div className="action-badge-v">{currentStreak}</div>
             </button>
 
-            {/* Rank */}
-            <button className="action-btn rank-btn">
-              <Trophy size={24} className="action-icon trophy-icon" />
-              <div className="action-badge">TOP</div>
+            <button className="action-btn-vertical rank-btn-v">
+              <Trophy size={22} className="action-icon-v trophy-icon-v" />
+              <div className="action-badge-v">TOP</div>
             </button>
 
-            {/* ✅ Subscription / Upgrade Button */}
             <button 
-              className={`action-btn ${activeSubscription ? 'subscription-btn' : 'upgrade-btn'}`}
+              className={`action-btn-vertical ${activeSubscription ? 'subscription-btn-v' : 'upgrade-btn-v'}`}
               onClick={() => onNavigate && onNavigate(activeSubscription ? 'subscription' : 'pricing')}
             >
               {activeSubscription ? (
                 <>
-                  <Infinity size={24} className="action-icon subscription-icon" />
-                  <div className="action-badge">VIP</div>
+                  <Infinity size={22} className="action-icon-v subscription-icon-v" />
+                  <div className="action-badge-v">VIP</div>
                 </>
               ) : (
                 <>
-                  <Crown size={24} className="action-icon crown-icon" />
-                  <div className="action-badge">PRO</div>
+                  <Crown size={22} className="action-icon-v crown-icon-v" />
+                  <div className="action-badge-v">PRO</div>
                 </>
               )}
             </button>
@@ -334,28 +359,48 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* 3. DAILY QUESTS */}
-      <div className="daily-quests">
-        <div className="quests-header">
-          <h3>DAILY QUESTS</h3>
-          <span className="quests-timer">Resets in {timeLeft}</span>
-        </div>
-        <div className="quest-list">
-          {quests.map((quest, index) => (
-            <div key={index} className="quest-item">
-              <div className="quest-info">
-                <span className="quest-icon">{quest.icon}</span>
-                <span className="quest-name">{quest.name}</span>
-              </div>
-              <div className="quest-progress">
-                <div className="progress-bar">
-                  <div className="progress-fill" style={{ width: `${(quest.current / quest.total) * 100}%` }}></div>
+      {/* 3. CARD OF THE DAY - Full Width, Horizontal, Tilted */}
+      <div 
+        className="card-of-day-banner clickable-card"
+        onClick={() => onNavigate && onNavigate('daily-card')}
+      >
+        <div className="card-of-day-content">
+          {/* Card Image - Tilted, Overlapping */}
+          <div className="card-image-wrapper">
+            <div className="card-image-tilted">
+              {dailyCard?.image_url ? (
+                <img 
+                  src={dailyCard.image_url} 
+                  alt={dailyCardName}
+                  className="card-image-large"
+                  style={{ transform: isDailyReversed ? 'rotate(192deg)' : 'rotate(12deg)' }}
+                />
+              ) : (
+                <div className="card-placeholder-large" style={{ transform: 'rotate(12deg)' }}>
+                  <span className="card-number-large">{dailyCardNumber}</span>
+                  <div className="card-symbol-large">✦</div>
+                  <span className="card-name-large">{dailyCardName}</span>
                 </div>
-                <span className="progress-text">{quest.current}/{quest.total}</span>
-                <span className="quest-reward">+{quest.reward} <Gem size={10} /></span>
-              </div>
+              )}
+              {isDailyReversed && (
+                <div className="card-reversed-indicator-large">R</div>
+              )}
             </div>
-          ))}
+          </div>
+
+          {/* Card Info */}
+          <div className="card-info-section">
+            <div className="card-day-label">CARD OF THE DAY</div>
+            <h3 className="card-title">{dailyCardName}</h3>
+            <p className="card-meaning">"{dailyCardMeaning}"</p>
+            {dailyCardElement && (
+              <p className="card-element">{dailyCardElement}</p>
+            )}
+            <button className="read-guidance-btn">
+              READ GUIDANCE
+              <ChevronRight size={14} />
+            </button>
+          </div>
         </div>
       </div>
 

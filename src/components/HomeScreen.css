@@ -18,13 +18,13 @@
   }
   
   /* ============================================
-     1. USER HEADER - SMALLER HEIGHT
+     1. USER HEADER - XP Circular Bar
      ============================================ */
   .user-header {
     background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
     border: 1px solid #332a1a;
     border-radius: 16px;
-    padding: 10px 14px;
+    padding: 12px 14px;
     margin-bottom: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   }
@@ -32,32 +32,34 @@
   .user-main-row {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 8px;
+    gap: 12px;
   }
   
   .avatar-section {
     position: relative;
-    width: 48px;
-    height: 48px;
+    width: 56px;
+    height: 56px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
   }
   
-  .avatar-ring-glow {
+  /* ✅ XP Circular Progress */
+  .xp-circular-progress {
     position: absolute;
-    inset: -3px;
-    border-radius: 50%;
-    border: 2px solid #C5A059;
-    box-shadow: 0 0 12px rgba(197, 160, 89, 0.6);
-    animation: pulse-glow 2s ease-in-out infinite;
+    top: 0;
+    left: 0;
+    z-index: 1;
   }
   
-  @keyframes pulse-glow {
-    0%, 100% { box-shadow: 0 0 12px rgba(197, 160, 89, 0.6); }
-    50% { box-shadow: 0 0 20px rgba(197, 160, 89, 0.9); }
+  .xp-circle-bg {
+    opacity: 0.3;
+  }
+  
+  .xp-circle-progress {
+    transition: stroke-dashoffset 0.5s ease;
+    filter: drop-shadow(0 0 4px rgba(197, 160, 89, 0.6));
   }
   
   .avatar-image {
@@ -72,7 +74,7 @@
     font-weight: 700;
     color: #0a0600;
     position: relative;
-    z-index: 1;
+    z-index: 2;
   }
   
   .user-info-section {
@@ -80,7 +82,6 @@
     min-width: 0;
   }
   
-  /* ✅ Username row - სახელი + Premium badge ერთ ხაზზე */
   .username-row {
     display: flex;
     align-items: center;
@@ -106,14 +107,36 @@
     color: #C5A059;
     font-weight: 700;
     letter-spacing: 0.5px;
+    margin-left: 4px;
   }
-
-  /* ✅ Subscription Expiry text */
+  
   .subscription-expiry {
     color: #22c55e;
     font-size: 10px;
     font-weight: 600;
     margin-left: 4px;
+  }
+  
+  /* ✅ XP Text Inline */
+  .xp-text-inline {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 2px;
+    font-size: 10px;
+  }
+  
+  .xp-current {
+    color: #C5A059;
+    font-weight: 700;
+  }
+  
+  .xp-separator {
+    color: rgba(255, 255, 255, 0.4);
+  }
+  
+  .xp-total {
+    color: rgba(255, 255, 255, 0.6);
   }
   
   .user-resources {
@@ -164,79 +187,262 @@
   
   .add-btn:hover { transform: scale(1.1); }
   
-  .xp-section {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  
-  .xp-bar {
-    flex: 1;
-    height: 6px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    overflow: hidden;
-    position: relative;
-  }
-  
-  .xp-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #C5A059, #ffe566);
-    border-radius: 4px;
-    transition: width 0.5s ease;
-    box-shadow: 0 0 10px rgba(197, 160, 89, 0.5);
-  }
-  
-  .xp-info {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
-  }
-  
-  .xp-text {
-    font-size: 10px;
-    color: #b3a68c;
-  }
-  
-  .xp-percent {
-    font-size: 10px;
-    color: #C5A059;
-    font-weight: 600;
-  }
-  
-  .star-icon {
-    color: #C5A059;
-  }
-  
   /* ============================================
-     2. CARD SECTION - 60/40 SPLIT (HORIZONTAL)
+     2. DAILY QUESTS (60%) + ACTION BUTTONS (40%)
      ============================================ */
-  .card-section-split {
+  .quests-and-actions-split {
     display: flex;
-    gap: 12px;
+    gap: 8px;
     margin-bottom: 8px;
-    align-items: stretch;
     width: 100%;
   }
   
-  /* LEFT - Card of the Day (60%) - HORIZONTAL LAYOUT */
-  .card-left-horizontal {
-    flex: 1 1 calc(60% - 6px);
+  /* LEFT - Daily Quests (60%) */
+  .daily-quests-compact {
+    flex: 1 1 60%;
     background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
     border: 1px solid #332a1a;
     border-radius: 16px;
     padding: 10px;
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-    min-height: 90px;
-    position: relative;
+  }
+  
+  .quests-header-compact {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  
+  .quests-header-compact h3 {
+    margin: 0;
+    font-size: 11px;
+    color: #C5A059;
+    letter-spacing: 1px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  
+  .quests-timer-compact {
+    font-size: 10px;
+    color: #b3a68c;
+    font-family: monospace;
+  }
+  
+  .quest-list-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  
+  .quest-item-compact {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    background: rgba(197, 160, 89, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(197, 160, 89, 0.1);
+  }
+  
+  .quest-icon-compact {
+    color: #C5A059;
+    flex-shrink: 0;
+  }
+  
+  .quest-info-compact {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .quest-name-compact {
+    font-size: 11px;
+    color: #fff;
+    font-weight: 500;
+    display: block;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .quest-progress-compact {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .progress-bar-compact {
+    flex: 1;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
     overflow: hidden;
   }
   
-  /* Clickable Card of the Day */
+  .progress-fill-compact {
+    height: 100%;
+    background: linear-gradient(90deg, #C5A059, #ffe566);
+    border-radius: 2px;
+    box-shadow: 0 0 4px rgba(197, 160, 89, 0.5);
+    transition: width 0.3s ease;
+  }
+  
+  .progress-text-compact {
+    font-size: 9px;
+    color: #b3a68c;
+    min-width: 20px;
+  }
+  
+  .quest-reward-compact {
+    font-size: 10px;
+    color: #C5A059;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+  
+  /* RIGHT - Action Buttons (40%) */
+  .action-buttons-panel {
+    flex: 0 0 38%;
+    background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
+    border: 1px solid #332a1a;
+    border-radius: 16px;
+    padding: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+  }
+  
+  .action-grid-vertical {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 6px;
+    width: 100%;
+  }
+  
+  .action-btn-vertical {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(197, 160, 89, 0.15);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    padding: 8px;
+    aspect-ratio: 1;
+  }
+  
+  .action-btn-vertical:hover {
+    transform: scale(1.05);
+    border-color: var(--glow-color, #C5A059);
+    box-shadow: 0 2px 10px rgba(197, 160, 89, 0.3);
+  }
+  
+  .action-btn-vertical:active {
+    transform: scale(0.95);
+  }
+  
+  .action-icon-v {
+    filter: drop-shadow(0 0 6px currentColor);
+  }
+  
+  .action-badge-v {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    background: rgba(197, 160, 89, 0.9);
+    color: #0a0600;
+    font-size: 8px;
+    font-weight: 700;
+    padding: 1px 4px;
+    border-radius: 4px;
+  }
+  
+  /* Action Button Colors */
+  .action-btn-vertical:not(.streak-btn-v):not(.rank-btn-v):not(.upgrade-btn-v):not(.subscription-btn-v) {
+    --glow-color: #C5A059;
+  }
+  
+  .action-btn-vertical:not(.streak-btn-v):not(.rank-btn-v):not(.upgrade-btn-v):not(.subscription-btn-v) .action-icon-v {
+    color: #C5A059;
+  }
+  
+  .streak-btn-v {
+    --glow-color: #ff6b35;
+  }
+  
+  .streak-btn-v .action-icon-v {
+    color: #ff6b35;
+  }
+  
+  .rank-btn-v {
+    --glow-color: #ffd700;
+  }
+  
+  .rank-btn-v .action-icon-v {
+    color: #ffd700;
+  }
+  
+  .upgrade-btn-v {
+    --glow-color: #a78bfa;
+  }
+  
+  .upgrade-btn-v .action-icon-v {
+    color: #a78bfa;
+  }
+  
+  .subscription-btn-v {
+    --glow-color: #FFD700;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 165, 0, 0.05) 100%);
+    border-color: rgba(255, 215, 0, 0.4);
+  }
+  
+  .subscription-btn-v .subscription-icon-v {
+    color: #FFD700 !important;
+  }
+  
+  .subscription-btn-v .action-badge-v {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: #0a0600;
+  }
+  
+  .action-btn-vertical.claimed {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .action-btn-vertical.claimed .action-icon-v {
+    color: #888;
+    filter: none;
+  }
+  
+  .action-btn-vertical.claimed .action-badge-v {
+    display: none;
+  }
+  
+  /* ============================================
+     3. CARD OF THE DAY - Full Width, Tilted
+     ============================================ */
+  .card-of-day-banner {
+    background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
+    border: 1px solid #332a1a;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    position: relative;
+    overflow: visible;
+    min-height: 140px;
+  }
+  
   .clickable-card {
     cursor: pointer;
     transition: all 0.3s ease;
@@ -252,424 +458,170 @@
     transform: translateY(0);
   }
   
-  /* Card Art - Left Side */
-  .card-art-horizontal {
-    flex: 0 0 70px;
+  .card-of-day-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  /* Card Image Wrapper - Allows overflow */
+  .card-image-wrapper {
+    flex: 0 0 140px;
+    height: 160px;
+    position: relative;
+    overflow: visible;
+  }
+  
+  .card-image-tilted {
+    position: absolute;
+    top: -20px;
+    left: -10px;
+    width: 130px;
+    height: 190px;
+    transform: rotate(12deg);
+    transition: transform 0.4s ease;
+    z-index: 2;
+  }
+  
+  .card-of-day-banner:hover .card-image-tilted {
+    transform: rotate(8deg) translateY(-5px);
+  }
+  
+  .card-image-large {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 2px solid #C5A059;
+    box-shadow: 
+      0 10px 30px rgba(0, 0, 0, 0.6),
+      0 0 20px rgba(197, 160, 89, 0.3);
+  }
+  
+  .card-placeholder-large {
+    width: 100%;
+    height: 100%;
     background: linear-gradient(135deg, #2a2215, #1a1510);
     border-radius: 10px;
+    border: 2px solid #C5A059;
+    box-shadow: 
+      0 10px 30px rgba(0, 0, 0, 0.6),
+      0 0 20px rgba(197, 160, 89, 0.3);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    border: 2px solid #4a3a1a;
-    box-shadow: 0 4px 15px rgba(197, 160, 89, 0.2);
-    padding: 6px;
-    gap: 2px;
-    position: relative;
-    overflow: hidden;
+    gap: 4px;
   }
   
-  /* Card Art Image */
-  .card-art-image-h {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    border-radius: 6px;
-    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  .card-number-h { 
-    font-size: 10px; 
-    font-weight: 700; 
-    color: #C5A059;
-    letter-spacing: 1px;
-  }
-  
-  .card-symbol-h {
-    font-size: 24px;
-    filter: drop-shadow(0 0 8px rgba(197, 160, 89, 0.6));
-  }
-  
-  .card-name-h {
-    font-size: 9px;
+  .card-number-large {
+    font-size: 14px;
     font-weight: 700;
     color: #C5A059;
-    letter-spacing: 0.5px;
   }
   
-  /* Reversed Indicator */
-  .card-reversed-indicator {
+  .card-symbol-large {
+    font-size: 32px;
+    filter: drop-shadow(0 0 10px rgba(197, 160, 89, 0.6));
+  }
+  
+  .card-name-large {
+    font-size: 10px;
+    font-weight: 700;
+    color: #C5A059;
+    text-align: center;
+    padding: 0 8px;
+  }
+  
+  .card-reversed-indicator-large {
     position: absolute;
-    top: 4px;
-    right: 4px;
+    top: 8px;
+    right: 8px;
     background: rgba(167, 139, 250, 0.95);
     color: #fff;
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.5px;
-    box-shadow: 0 2px 6px rgba(167, 139, 250, 0.5);
-    z-index: 2;
+    box-shadow: 0 2px 8px rgba(167, 139, 250, 0.5);
+    z-index: 3;
   }
   
-  /* Card Info - Right Side */
-  .card-info-horizontal {
+  /* Card Info Section */
+  .card-info-section {
     flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 3px;
+    gap: 6px;
     min-width: 0;
-    overflow: hidden;
   }
   
-  /* Card Day Label */
   .card-day-label {
-    font-size: 8px;
+    font-size: 9px;
     color: #C5A059;
     letter-spacing: 2px;
     text-transform: uppercase;
-    margin-bottom: 2px;
     opacity: 0.7;
     font-weight: 600;
   }
   
-  .card-info-horizontal h3 {
+  .card-title {
     margin: 0;
-    font-size: 13px;
+    font-size: 18px;
     color: #C5A059;
     letter-spacing: 0.5px;
     font-weight: 700;
-    line-height: 1.1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    line-height: 1.2;
   }
   
-  .card-meaning-h {
+  .card-meaning {
+    margin: 0;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+    line-height: 1.4;
+  }
+  
+  .card-element {
     margin: 0;
     font-size: 10px;
-    color: #b3a68c;
-    font-style: italic;
-    line-height: 1.1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  
-  .card-zodiac-h {
-    margin: 0 0 4px;
-    font-size: 9px;
     color: #888;
-    line-height: 1.1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
   
-  .read-guidance-btn-h {
+  .read-guidance-btn {
     background: transparent;
     border: 1px solid #C5A059;
     color: #C5A059;
-    padding: 3px 6px;
-    border-radius: 5px;
-    font-size: 8px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 10px;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s;
-    letter-spacing: 0.3px;
+    letter-spacing: 0.5px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 3px;
-    width: 100%;
-    max-width: 100%;
-    align-self: stretch;
-    box-sizing: border-box;
-    white-space: nowrap;
+    gap: 4px;
+    margin-top: 4px;
+    align-self: flex-start;
   }
   
-  .read-guidance-btn-h:hover {
+  .read-guidance-btn:hover {
     background: #C5A059;
     color: #0a0600;
     box-shadow: 0 4px 10px rgba(197, 160, 89, 0.3);
   }
   
-  /* RIGHT - Single Card Container (40%) */
-  .card-right-single {
-    flex: 0 0 calc(40% - 6px);
-    background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
-    border: 1px solid #332a1a;
-    border-radius: 16px;
-    padding: 10px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-    min-height: 90px;
-    display: flex;
-    align-items: center;
-  }
-  
-  /* Action Grid - 2x2 inside single card */
-  .action-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
-    gap: 6px;
-    width: 100%;
-    height: 100%;
-  }
-  
-  .action-btn {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(197, 160, 89, 0.15);
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-    padding: 6px;
-    width: 100%;
-    height: 100%;
-  }
-  
-  .action-btn::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at center, var(--glow-color, #C5A059) 0%, transparent 70%);
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-  
-  .action-btn:hover {
-    transform: scale(1.05);
-    border-color: var(--glow-color, #C5A059);
-    box-shadow: 0 2px 10px rgba(197, 160, 89, 0.3);
-  }
-  
-  .action-btn:hover::before {
-    opacity: 0.15;
-  }
-  
-  .action-btn:active {
-    transform: scale(0.95);
-  }
-  
-  .action-icon {
-    position: relative;
-    z-index: 1;
-    filter: drop-shadow(0 0 6px currentColor);
-    width: 20px;
-    height: 20px;
-  }
-  
-  .action-badge {
-    position: absolute;
-    bottom: 3px;
-    right: 3px;
-    background: rgba(197, 160, 89, 0.9);
-    color: #0a0600;
-    font-size: 7px;
-    font-weight: 700;
-    padding: 1px 3px;
-    border-radius: 5px;
-    z-index: 1;
-  }
-  
-  /* Daily Reward Button */
-  .action-btn:not(.streak-btn):not(.rank-btn):not(.upgrade-btn):not(.subscription-btn) {
-    --glow-color: #C5A059;
-  }
-  
-  .action-btn:not(.streak-btn):not(.rank-btn):not(.upgrade-btn):not(.subscription-btn) .action-icon {
-    color: #C5A059;
-  }
-  
-  /* Streak Button */
-  .streak-btn {
-    --glow-color: #ff6b35;
-  }
-  
-  .streak-btn .action-icon {
-    color: #ff6b35;
-    filter: drop-shadow(0 0 6px rgba(255, 107, 53, 0.6));
-  }
-  
-  /* Rank Button */
-  .rank-btn {
-    --glow-color: #ffd700;
-  }
-  
-  .rank-btn .action-icon {
-    color: #ffd700;
-    filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.6));
-  }
-  
-  /* Upgrade Button */
-  .upgrade-btn {
-    --glow-color: #a78bfa;
-  }
-  
-  .upgrade-btn .action-icon {
-    color: #a78bfa;
-    filter: drop-shadow(0 0 6px rgba(167, 139, 250, 0.6));
-  }
-
-  /* ✅ Subscription Button (VIP) */
-  .action-btn.subscription-btn {
-    --glow-color: #FFD700;
-    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 165, 0, 0.05) 100%);
-    border-color: rgba(255, 215, 0, 0.4);
-  }
-
-  .action-btn.subscription-btn .subscription-icon {
-    color: #FFD700 !important;
-    filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.6));
-  }
-
-  .action-btn.subscription-btn .action-badge {
-    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-    color: #0a0600;
-  }
-
-  .action-btn.subscription-btn:hover {
-    background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 165, 0, 0.1) 100%);
-    border-color: rgba(255, 215, 0, 0.6);
-    box-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
-  }
-  
-  /* Claimed State */
-  .action-btn.claimed {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-  
-  .action-btn.claimed .action-icon {
-    color: #888;
-    filter: none;
-  }
-  
-  .action-btn.claimed .action-badge {
-    display: none;
-  }
-  
   /* ============================================
-     3. DAILY QUESTS - COMPACT
-     ============================================ */
-  .daily-quests {
-    background: #15120c;
-    border: 1px solid #2a2215;
-    border-radius: 12px;
-    padding: 10px;
-    margin-bottom: 8px;
-    width: 100%;
-  }
-  
-  .quests-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-  }
-  
-  .quests-header h3 { 
-    margin: 0; 
-    font-size: 14px;
-    color: #C5A059;
-    letter-spacing: 0.5px;
-    font-weight: 700;
-  }
-  
-  .quests-timer { 
-    font-size: 12px; 
-    color: #b3a68c;
-    font-family: monospace;
-  }
-  
-  .quest-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 7px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  }
-  
-  .quest-item:last-child { border-bottom: none; }
-  
-  .quest-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    flex: 1;
-    min-width: 0;
-  }
-  
-  .quest-icon {
-    color: #C5A059;
-    flex-shrink: 0;
-  }
-  
-  .quest-name {
-    color: #fff;
-    font-weight: 500;
-  }
-  
-  .quest-progress {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-  }
-  
-  .progress-bar {
-    width: 60px;
-    height: 5px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
-    overflow: hidden;
-  }
-  
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #C5A059, #ffe566);
-    border-radius: 3px;
-    box-shadow: 0 0 5px rgba(197, 160, 89, 0.5);
-    transition: width 0.3s ease;
-  }
-  
-  .progress-text { 
-    font-size: 12px; 
-    color: #b3a68c;
-    min-width: 28px;
-    text-align: center;
-  }
-  
-  .quest-reward { 
-    font-size: 12px; 
-    color: #C5A059; 
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 2px;
-  }
-  
-  /* ============================================
-     4. QUICK ACCESS GRID - NO TITLE
+     4. QUICK ACCESS GRID
      ============================================ */
   .quick-access { margin-bottom: 8px; width: 100%; }
-  .quick-access h3 { 
-    display: none;
-  }
   
   .quick-grid {
     display: grid;
@@ -693,23 +645,10 @@
     overflow: hidden;
   }
   
-  .quick-item::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at center, var(--glow-color, #C5A059) 0%, transparent 70%);
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-  
   .quick-item:hover { 
     transform: translateY(-2px);
     border-color: var(--glow-color, #C5A059);
     box-shadow: 0 4px 15px rgba(197, 160, 89, 0.3);
-  }
-  
-  .quick-item:hover::before {
-    opacity: 0.1;
   }
   
   .q-icon-wrapper {
@@ -725,34 +664,21 @@
     font-size: 10px;
     color: #fff;
     font-weight: 600;
-    position: relative;
-    z-index: 1;
     text-align: center;
   }
   
   .q-sublabel { 
     font-size: 9px;
     color: #b3a68c;
-    position: relative;
-    z-index: 1;
     text-align: center;
   }
-
-  /* ============================================
-     5. PREMIUM ITEM STYLES
-     ============================================ */
+  
+  /* Premium Items */
   .quick-item.premium-item {
-    position: relative;
     background: linear-gradient(135deg, rgba(197, 160, 89, 0.15) 0%, rgba(139, 105, 20, 0.1) 100%);
     border: 1px solid rgba(197, 160, 89, 0.4);
   }
-
-  .quick-item.premium-item:hover {
-    background: linear-gradient(135deg, rgba(197, 160, 89, 0.25) 0%, rgba(139, 105, 20, 0.15) 100%);
-    border-color: rgba(197, 160, 89, 0.6);
-    box-shadow: 0 0 20px rgba(197, 160, 89, 0.3);
-  }
-
+  
   .premium-badge {
     position: absolute;
     top: -4px;
@@ -767,54 +693,22 @@
     font-size: 12px;
     box-shadow: 0 2px 8px rgba(197, 160, 89, 0.5);
     z-index: 10;
-    animation: premiumPulse 2s ease-in-out infinite;
   }
-
-  @keyframes premiumPulse {
-    0%, 100% {
-      transform: scale(1);
-      box-shadow: 0 2px 8px rgba(197, 160, 89, 0.5);
-    }
-    50% {
-      transform: scale(1.1);
-      box-shadow: 0 4px 12px rgba(197, 160, 89, 0.7);
-    }
-  }
-
-  /* ============================================
-     6. ADMIN ITEM STYLES
-     ============================================ */
+  
+  /* Admin Items */
   .quick-item.admin-item {
-    position: relative;
     background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.1) 100%);
     border: 1px solid rgba(239, 68, 68, 0.4);
   }
-
-  .quick-item.admin-item:hover {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.25) 0%, rgba(220, 38, 38, 0.15) 100%);
-    border-color: rgba(239, 68, 68, 0.6);
-    box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
-    transform: translateY(-2px);
-  }
-
+  
   .quick-item.admin-item .q-icon-wrapper {
     color: #ef4444 !important;
     filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.6));
   }
-
-  .quick-item.admin-item::before {
-    background: radial-gradient(circle at center, #ef4444 0%, transparent 70%);
-  }
-
-  .quick-item.admin-item:hover::before {
-    opacity: 0.15;
-  }
-
+  
   /* ============================================
-     7. PREMIUM BADGES - ახალი!
+     PREMIUM BADGES
      ============================================ */
-
-  /* ✅ Premium Badge ავატარზე */
   .premium-avatar-badge {
     position: absolute;
     bottom: -2px;
@@ -829,22 +723,9 @@
     justify-content: center;
     color: #0a0600;
     box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
-    z-index: 2;
-    animation: premiumAvatarPulse 2s ease-in-out infinite;
+    z-index: 3;
   }
-
-  @keyframes premiumAvatarPulse {
-    0%, 100% {
-      transform: scale(1);
-      box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
-    }
-    50% {
-      transform: scale(1.1);
-      box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
-    }
-  }
-
-  /* ✅ Premium Badge სახელთან */
+  
   .premium-name-badge {
     display: inline-flex;
     align-items: center;
@@ -858,20 +739,8 @@
     letter-spacing: 0.5px;
     cursor: pointer;
     transition: all 0.2s;
-    box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
-    animation: premiumNamePulse 2.5s ease-in-out infinite;
   }
-
+  
   .premium-name-badge:hover {
     transform: scale(1.05);
-    box-shadow: 0 0 12px rgba(255, 215, 0, 0.7);
-  }
-
-  @keyframes premiumNamePulse {
-    0%, 100% {
-      box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
-    }
-    50% {
-      box-shadow: 0 0 12px rgba(255, 215, 0, 0.7);
-    }
   }
