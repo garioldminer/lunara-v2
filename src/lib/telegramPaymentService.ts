@@ -1,4 +1,4 @@
-import { PREMIUM_FEATURES, PremiumFeatureId } from './premiumService';
+import { PREMIUM_FEATURES, PremiumFeatureId, incrementCredit } from './premiumService';
 
 // ============================================
 // TELEGRAM PAYMENT SERVICE
@@ -59,7 +59,7 @@ export async function createInvoiceUrl(
       }
     );
 
-    console.log('📡 Response status:', response.status);
+    console.log(' Response status:', response.status);
 
     if (!response.ok) {
       const error = await response.text();
@@ -136,7 +136,12 @@ export async function completePurchase(
 
     switch (status) {
       case 'paid':
-        showSuccess('🎉 Payment successful! Premium activated.');
+        // ✅ წარმატება! დავამატოთ credit ბაზაში
+        console.log('💰 Payment successful! Adding credit...');
+        await incrementCredit(userId, featureId, 1);
+        console.log('✅ Credit added to database');
+        
+        showSuccess(' Payment successful! Premium activated.');
         return 'success';
       
       case 'cancelled':

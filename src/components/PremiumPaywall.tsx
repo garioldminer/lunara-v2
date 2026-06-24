@@ -29,17 +29,20 @@ export default function PremiumPaywall({
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [credits, setCredits] = useState<Record<PremiumFeatureId, number>>({} as any);
+  const [credits, setCredits] = useState<Record<string, number>>({});
   const [hasSubscription, setHasSubscription] = useState(false);
 
   // შეამოწმე credits და subscription როცა Paywall იხსნება
   useEffect(() => {
     if (isOpen && user) {
       const fetchData = async () => {
+        console.log('🔍 Fetching credits for user:', user.id);
         const [creditsData, isSub] = await Promise.all([
           getAvailableCredits(user.id),
           isPremium(user.id)
         ]);
+        console.log('📊 Credits loaded:', creditsData);
+        console.log(' Has subscription:', isSub);
         setCredits(creditsData);
         setHasSubscription(isSub);
       };
@@ -62,18 +65,25 @@ export default function PremiumPaywall({
       );
 
       if (result === 'success') {
+        // ✅ წარმატება!
         setShowSuccess(true);
         
-        // განაახლე credits
+        // განაახლე local state (credit უკვე ბაზაშია)
         setCredits(prev => ({
           ...prev,
-          [selectedFeature as PremiumFeatureId]: (prev[selectedFeature as PremiumFeatureId] || 0) + 1
+          [selectedFeature]: (prev[selectedFeature] || 0) + 1
         }));
+        
+        console.log('✅ Purchase successful! New credits:', {
+          ...credits,
+          [selectedFeature]: (credits[selectedFeature] || 0) + 1
+        });
         
         if (onPurchase) {
           onPurchase(selectedFeature as PremiumFeatureId);
         }
         
+        // 2.5 წამის შემდეგ დავხუროთ (არა reload!)
         setTimeout(() => {
           setShowSuccess(false);
           onClose();
@@ -104,7 +114,7 @@ export default function PremiumPaywall({
   const isSubscriptionTab = selectedFeature === 'subscription_monthly' || selectedFeature === 'subscription_yearly';
   const isSingleTab = selectedFeature === 'celtic_cross' || selectedFeature === 'horseshoe' || selectedFeature === 'relationship';
 
-  const getCredits = (featureId: PremiumFeatureId) => credits[featureId] || 0;
+  const getCredits = (featureId: string) => credits[featureId] || 0;
 
   return (
     <AnimatePresence>
@@ -173,7 +183,7 @@ export default function PremiumPaywall({
                     className={`premium-feature-item ${selectedFeature === 'subscription_monthly' ? 'selected' : ''}`}
                     onClick={() => !isProcessing && setSelectedFeature('subscription_monthly')}
                   >
-                    <div className="premium-feature-icon"></div>
+                    <div className="premium-feature-icon">💎</div>
                     <div className="premium-feature-info">
                       <h4>Premium Monthly</h4>
                       <p>Unlimited readings + AI Insights</p>
@@ -322,7 +332,7 @@ export default function PremiumPaywall({
             </div>
 
             {/* Purchase Button (მხოლოდ თუ არ არის ნაყიდი) */}
-            {!hasSubscription && getCredits(selectedFeature as PremiumFeatureId) === 0 && (
+            {!hasSubscription && getCredits(selectedFeature) === 0 && (
               <button 
                 className="premium-purchase-btn"
                 onClick={handlePurchase}

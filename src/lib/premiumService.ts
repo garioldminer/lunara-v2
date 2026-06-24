@@ -20,7 +20,7 @@ export const PREMIUM_FEATURES = {
     price: 7999,
     type: 'subscription',
     duration: 'yearly',
-    icon: ''
+    icon: '💎'
   },
   celtic_cross: {
     id: 'celtic_cross',
@@ -36,7 +36,7 @@ export const PREMIUM_FEATURES = {
     description: '7-card life path analysis',
     price: 199,
     type: 'single',
-    icon: ''
+    icon: '🐎'
   },
   relationship: {
     id: 'relationship',
@@ -52,7 +52,7 @@ export const PREMIUM_FEATURES = {
     description: 'Personalized weekly analysis',
     price: 499,
     type: 'single',
-    icon: ''
+    icon: '🧠'
   }
 };
 
@@ -134,8 +134,8 @@ export async function getActiveSubscription(userId: string) {
 // ============================================
 // GET AVAILABLE CREDITS
 // ============================================
-export async function getAvailableCredits(userId: string): Promise<Record<PremiumFeatureId, number>> {
-  if (!supabase) return {} as any;
+export async function getAvailableCredits(userId: string): Promise<Record<string, number>> {
+  if (!supabase) return {};
   
   try {
     const { data, error } = await supabase
@@ -145,7 +145,7 @@ export async function getAvailableCredits(userId: string): Promise<Record<Premiu
 
     if (error) {
       console.error('❌ Error fetching credits:', error);
-      return {} as any;
+      return {};
     }
 
     const credits: Record<string, number> = {};
@@ -153,21 +153,21 @@ export async function getAvailableCredits(userId: string): Promise<Record<Premiu
       credits[row.feature_id] = row.credits;
     });
 
-    return credits as Record<PremiumFeatureId, number>;
+    console.log('📊 Available credits:', credits);
+    return credits;
   } catch (error) {
     console.error('❌ Error fetching credits:', error);
-    return {} as any;
+    return {};
   }
 }
 
 // ============================================
 // DECREMENT CREDIT (გამოყენებისას)
 // ============================================
-export async function decrementCredit(userId: string, featureId: PremiumFeatureId): Promise<boolean> {
+export async function decrementCredit(userId: string, featureId: string): Promise<boolean> {
   if (!supabase) return false;
   
   try {
-    // შეამოწმე რამდენი აქვს
     const { data: current, error: fetchError } = await supabase
       .from('available_credits')
       .select('credits')
@@ -176,10 +176,9 @@ export async function decrementCredit(userId: string, featureId: PremiumFeatureI
       .single();
 
     if (fetchError || !current || current.credits <= 0) {
-      return false; // არ აქვს credits
+      return false;
     }
 
-    // შეამცირე 1-ით
     const { error: updateError } = await supabase
       .from('available_credits')
       .update({ 
@@ -194,17 +193,18 @@ export async function decrementCredit(userId: string, featureId: PremiumFeatureI
       return false;
     }
 
+    console.log('✅ Credit decremented:', featureId, 'remaining:', current.credits - 1);
     return true;
   } catch (error) {
-    console.error('❌ Error decrementing credit:', error);
+    console.error(' Error decrementing credit:', error);
     return false;
   }
 }
 
 // ============================================
-// INCREMENT CREDIT (ყიდვისას ან rollback)
+// INCREMENT CREDIT (ყიდვისას)
 // ============================================
-export async function incrementCredit(userId: string, featureId: PremiumFeatureId, amount: number = 1): Promise<void> {
+export async function incrementCredit(userId: string, featureId: string, amount: number = 1): Promise<void> {
   if (!supabase) return;
   
   try {
@@ -217,7 +217,7 @@ export async function incrementCredit(userId: string, featureId: PremiumFeatureI
 
     if (fetchError || !current) {
       // არ არსებობს - შექმენი ახალი
-      await supabase
+      const { error: insertError } = await supabase
         .from('available_credits')
         .insert({
           user_id: userId,
@@ -225,9 +225,15 @@ export async function incrementCredit(userId: string, featureId: PremiumFeatureI
           credits: amount,
           updated_at: new Date().toISOString()
         });
+      
+      if (insertError) {
+        console.error('❌ Error inserting credit:', insertError);
+      } else {
+        console.log('✅ Credit created:', featureId, 'amount:', amount);
+      }
     } else {
       // განაახლე არსებული
-      await supabase
+      const { error: updateError } = await supabase
         .from('available_credits')
         .update({
           credits: current.credits + amount,
@@ -235,6 +241,12 @@ export async function incrementCredit(userId: string, featureId: PremiumFeatureI
         })
         .eq('user_id', userId)
         .eq('feature_id', featureId);
+      
+      if (updateError) {
+        console.error('❌ Error updating credit:', updateError);
+      } else {
+        console.log('✅ Credit incremented:', featureId, 'new total:', current.credits + amount);
+      }
     }
   } catch (error) {
     console.error('❌ Error incrementing credit:', error);
@@ -244,16 +256,9 @@ export async function incrementCredit(userId: string, featureId: PremiumFeatureI
 // ============================================
 // ROLLBACK CREDIT (თუ reading ჩავარდა)
 // ============================================
-export async function rollbackCredit(userId: string, featureId: PremiumFeatureId): Promise<void> {
+export async function rollbackCredit(userId: string, featureId: string): Promise<void> {
   await incrementCredit(userId, featureId, 1);
-}
-
-// ============================================
-// CHECK IF FEATURE IS PURCHASED
-// ============================================
-export async function isFeaturePurchased(userId: string, featureId: PremiumFeatureId): Promise<boolean> {
-  const credits = await getAvailableCredits(userId);
-  return (credits[featureId] || 0) > 0;
+  console.log('🔄 Credit rolled back:', featureId);
 }
 
 // ============================================
