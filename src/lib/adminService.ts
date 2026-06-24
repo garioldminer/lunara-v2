@@ -1,26 +1,48 @@
 import { supabase } from './supabase';
 
-// Admin user ID - შეცვალე შენი ID-ით!
+// ✅ მხოლოდ შენი User ID - არავის სხვას!
 export const ADMIN_USER_ID = 'c9dbe3be-5c02-4034-8bfd-1d693eb02754';
 
 // ============================================
-// CHECK IF USER IS ADMIN
+// CHECK IF USER IS ADMIN - მკაცრი შემოწმება
 // ============================================
 export async function isAdmin(userId: string): Promise<boolean> {
-  return userId === ADMIN_USER_ID;
+  if (!userId) return false;
+  
+  // ✅ მკაცრი შემოწმება - მხოლოდ ზუსტი ID
+  const isAdminUser = userId === ADMIN_USER_ID;
+  
+  if (!isAdminUser) {
+    console.warn('⛔ Unauthorized admin access attempt:', userId);
+  }
+  
+  return isAdminUser;
+}
+
+// ============================================
+// ADMIN GUARD - ყველა ფუნქციის დაცვა
+// ============================================
+async function requireAdmin(userId: string): Promise<boolean> {
+  const adminCheck = await isAdmin(userId);
+  if (!adminCheck) {
+    throw new Error('⛔ Unauthorized: Admin access required');
+  }
+  return true;
 }
 
 // ============================================
 // GET ALL USERS WITH CREDITS
 // ============================================
-export async function getAllUsersWithCredits() {
+export async function getAllUsersWithCredits(requestingUserId: string) {
+  // ✅ დაცვა - მხოლოდ admin-ს შეუძლია
+  await requireAdmin(requestingUserId);
+
   if (!supabase) {
     console.error('❌ Supabase not initialized');
     return [];
   }
 
   try {
-    // მიიღე ყველა მომხმარებელი
     const { data: users, error: usersError } = await supabase
       .from('users')
       .select('*')
@@ -31,7 +53,6 @@ export async function getAllUsersWithCredits() {
       return [];
     }
 
-    // მიიღე ყველა credits
     const { data: credits, error: creditsError } = await supabase
       .from('available_credits')
       .select('*');
@@ -41,7 +62,6 @@ export async function getAllUsersWithCredits() {
       return [];
     }
 
-    // გააერთიანე მონაცემები
     const usersWithCredits = users.map(user => {
       const userCredits = credits.filter(c => c.user_id === user.id);
       return {
@@ -61,10 +81,14 @@ export async function getAllUsersWithCredits() {
 // UPDATE USER CREDITS
 // ============================================
 export async function updateUserCredits(
-  userId: string,
+  requestingUserId: string,
+  targetUserId: string,
   featureId: string,
   newAmount: number
 ) {
+  // ✅ დაცვა
+  await requireAdmin(requestingUserId);
+
   if (!supabase) {
     console.error('❌ Supabase not initialized');
     return false;
@@ -74,7 +98,7 @@ export async function updateUserCredits(
     const { error } = await supabase
       .from('available_credits')
       .upsert({
-        user_id: userId,
+        user_id: targetUserId,
         feature_id: featureId,
         credits: newAmount,
         updated_at: new Date()
@@ -85,7 +109,7 @@ export async function updateUserCredits(
       return false;
     }
 
-    console.log(`✅ Updated credits for ${userId}: ${featureId} = ${newAmount}`);
+    console.log(`✅ [ADMIN] Updated credits for ${targetUserId}: ${featureId} = ${newAmount}`);
     return true;
   } catch (error) {
     console.error('❌ Error in updateUserCredits:', error);
@@ -97,28 +121,31 @@ export async function updateUserCredits(
 // ADD CREDITS TO USER
 // ============================================
 export async function addCreditsToUser(
-  userId: string,
+  requestingUserId: string,
+  targetUserId: string,
   featureId: string,
   amount: number
 ) {
+  // ✅ დაცვა
+  await requireAdmin(requestingUserId);
+
   if (!supabase) {
     console.error('❌ Supabase not initialized');
     return false;
   }
 
   try {
-    // მიიღე მიმდინარე credits
     const { data: current } = await supabase
       .from('available_credits')
       .select('credits')
-      .eq('user_id', userId)
+      .eq('user_id', targetUserId)
       .eq('feature_id', featureId)
       .single();
 
     const currentCredits = current?.credits || 0;
     const newAmount = currentCredits + amount;
 
-    return await updateUserCredits(userId, featureId, newAmount);
+    return await updateUserCredits(requestingUserId, targetUserId, featureId, newAmount);
   } catch (error) {
     console.error('❌ Error in addCreditsToUser:', error);
     return false;
@@ -129,9 +156,13 @@ export async function addCreditsToUser(
 // DELETE USER CREDITS
 // ============================================
 export async function deleteUserCredits(
-  userId: string,
+  requestingUserId: string,
+  targetUserId: string,
   featureId: string
 ) {
+  // ✅ დაცვა
+  await requireAdmin(requestingUserId);
+
   if (!supabase) {
     console.error('❌ Supabase not initialized');
     return false;
@@ -141,7 +172,7 @@ export async function deleteUserCredits(
     const { error } = await supabase
       .from('available_credits')
       .delete()
-      .eq('user_id', userId)
+      .eq('user_id', targetUserId)
       .eq('feature_id', featureId);
 
     if (error) {
@@ -149,7 +180,7 @@ export async function deleteUserCredits(
       return false;
     }
 
-    console.log(`✅ Deleted credits for ${userId}: ${featureId}`);
+    console.log(`✅ [ADMIN] Deleted credits for ${targetUserId}: ${featureId}`);
     return true;
   } catch (error) {
     console.error('❌ Error in deleteUserCredits:', error);

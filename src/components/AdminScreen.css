@@ -236,6 +236,7 @@
     cursor: pointer;
   }
   
+  /* ✅ Access Denied Screen */
   .admin-error,
   .admin-loading {
     display: flex;
@@ -250,6 +251,31 @@
   .admin-error h2 {
     font-size: 24px;
     color: #ef4444;
+    margin: 0;
+  }
+  
+  .admin-error p {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+    max-width: 300px;
+  }
+  
+  .error-detail {
+    font-size: 12px !important;
+    color: rgba(255, 255, 255, 0.4) !important;
+    font-style: italic;
+  }
+  
+  .error-icon-large {
+    color: #ef4444;
+    filter: drop-shadow(0 0 20px rgba(239, 68, 68, 0.5));
+    animation: errorPulse 2s ease-in-out infinite;
+  }
+  
+  @keyframes errorPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
   }
   
   .admin-error button {
@@ -262,6 +288,12 @@
     font-weight: 600;
     cursor: pointer;
     margin-top: 16px;
+    transition: all 0.2s;
+  }
+  
+  .admin-error button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(197, 160, 89, 0.4);
   }
   
   .spin {
