@@ -3,11 +3,12 @@ import { useUser } from '../context/UserContext';
 import { tarotCards, SUITS } from '../data/tarotCards';
 import { getUserStreak } from '../lib/readingService';
 import { isAdmin } from '../lib/adminService';
+import { getActiveSubscription, formatExpirationDate } from '../lib/subscriptionService';
 import { 
   Gem, Zap, Trophy, Flame, Star, 
   Sparkles, LayoutGrid, Moon, Hash, 
   Crown,
-  Scroll, Activity, ChevronRight, Gift, Shield
+  Scroll, Activity, ChevronRight, Gift, Shield, Infinity
 } from 'lucide-react';
 import './HomeScreen.css';
 
@@ -23,12 +24,22 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [isDailyReversed, setIsDailyReversed] = useState(false);
   const [currentStreak, setCurrentStreak] = useState(0);
   const [isUserAdmin, setIsUserAdmin] = useState(false);
+  const [activeSubscription, setActiveSubscription] = useState<any>(null);
 
-  // ✅ Admin-ის შემოწმება - async/await სწორად
+  // ✅ Admin-ის შემოწმება
   useEffect(() => {
     if (user) {
       isAdmin(user.id).then(admin => {
         setIsUserAdmin(admin);
+      });
+    }
+  }, [user]);
+
+  // ✅ Subscription-ის შემოწმება
+  useEffect(() => {
+    if (user) {
+      getActiveSubscription(user.id).then(sub => {
+        setActiveSubscription(sub);
       });
     }
   }, [user]);
@@ -47,7 +58,6 @@ export default function HomeScreen({ onNavigate }: Props) {
       }
     }
 
-    // ახალი კარტი
     const dayOfYear = getDayOfYear(new Date());
     const cardIndex = dayOfYear % tarotCards.length;
     const card = tarotCards[cardIndex];
@@ -128,6 +138,8 @@ export default function HomeScreen({ onNavigate }: Props) {
         onNavigate('relationship');
       } else if (action === 'Admin') {
         onNavigate('admin');
+      } else if (action === 'Subscription') {
+        onNavigate('subscription');
       }
     }
   };
@@ -165,7 +177,6 @@ export default function HomeScreen({ onNavigate }: Props) {
   const xpCurrent = 7850;
   const xpTotal = 10000;
 
-  // Daily Card display info
   const dailyCardName = dailyCard?.name || 'THE FOOL';
   const dailyCardNumber = dailyCard?.number || '0';
   const dailyCardMeaning = isDailyReversed 
@@ -183,10 +194,33 @@ export default function HomeScreen({ onNavigate }: Props) {
             <div className="avatar-image">
               {user?.display_name?.charAt(0).toUpperCase() || 'U'}
             </div>
+            {/* ✅ Premium Badge ავატარზე */}
+            {activeSubscription && (
+              <div className="premium-avatar-badge">
+                <Crown size={10} />
+              </div>
+            )}
           </div>
           <div className="user-info-section">
-            <h2 className="username">{user?.display_name || 'LunaraSeeker'}</h2>
-            <p className="user-level">Lv.{user?.level || 24} <span className="user-title">{user?.current_plan?.toUpperCase() || 'MYSTIC'}</span></p>
+            <div className="username-row">
+              <h2 className="username">{user?.display_name || 'LunaraSeeker'}</h2>
+              {/* ✅ Premium Badge სახელთან */}
+              {activeSubscription && (
+                <div className="premium-name-badge" onClick={() => onNavigate?.('subscription')}>
+                  <Infinity size={10} />
+                  <span>PREMIUM</span>
+                </div>
+              )}
+            </div>
+            <p className="user-level">
+              Lv.{user?.level || 24} 
+              <span className="user-title">{user?.current_plan?.toUpperCase() || 'MYSTIC'}</span>
+              {activeSubscription && (
+                <span className="subscription-expiry">
+                  · {formatExpirationDate(activeSubscription.expires_at)}
+                </span>
+              )}
+            </p>
           </div>
           <div className="user-resources">
             <div className="resource gems">
@@ -220,7 +254,6 @@ export default function HomeScreen({ onNavigate }: Props) {
           className="card-left-horizontal clickable-card"
           onClick={() => onNavigate && onNavigate('daily-card')}
         >
-          {/* Card Image - Left Side */}
           <div className="card-art-horizontal">
             {dailyCard?.image_url ? (
               <img 
@@ -241,7 +274,6 @@ export default function HomeScreen({ onNavigate }: Props) {
             )}
           </div>
 
-          {/* Card Info - Right Side */}
           <div className="card-info-horizontal">
             <div className="card-day-label">CARD OF THE DAY</div>
             <h3>{dailyCardName}</h3>
@@ -281,13 +313,22 @@ export default function HomeScreen({ onNavigate }: Props) {
               <div className="action-badge">TOP</div>
             </button>
 
-            {/* Upgrade */}
+            {/* ✅ Subscription / Upgrade Button */}
             <button 
-              className="action-btn upgrade-btn"
-              onClick={() => onNavigate && onNavigate('pricing')}
+              className={`action-btn ${activeSubscription ? 'subscription-btn' : 'upgrade-btn'}`}
+              onClick={() => onNavigate && onNavigate(activeSubscription ? 'subscription' : 'pricing')}
             >
-              <Crown size={24} className="action-icon crown-icon" />
-              <div className="action-badge">PRO</div>
+              {activeSubscription ? (
+                <>
+                  <Infinity size={24} className="action-icon subscription-icon" />
+                  <div className="action-badge">VIP</div>
+                </>
+              ) : (
+                <>
+                  <Crown size={24} className="action-icon crown-icon" />
+                  <div className="action-badge">PRO</div>
+                </>
+              )}
             </button>
           </div>
         </div>

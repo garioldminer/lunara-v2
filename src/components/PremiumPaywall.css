@@ -544,6 +544,39 @@
 }
 
 /* ============================================
+   SUBSCRIPTION ACTIVE BANNER - ახალი!
+   ============================================ */
+.subscription-active-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(22, 163, 74, 0.1) 100%);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 12px;
+  color: #22c55e;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  animation: subscriptionPulse 2s ease-in-out infinite;
+}
+
+@keyframes subscriptionPulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
+  }
+}
+
+.subscription-active-banner svg {
+  flex-shrink: 0;
+}
+
+/* ============================================
    SUCCESS & ERROR BANNERS
    ============================================ */
 

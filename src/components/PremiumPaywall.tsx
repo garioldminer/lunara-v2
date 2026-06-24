@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Crown, Sparkles, CheckCircle, XCircle, Infinity } from 'lucide-react';
 import { formatPrice, PremiumFeatureId, getAvailableCredits, isPremium } from '../lib/premiumService';
 import { completePurchase, formatStars, STARS_PRICING } from '../lib/telegramPaymentService';
+import { createSubscription } from '../lib/subscriptionService';
+import { SUBSCRIPTION_PRICING } from '../lib/subscriptionPricing';
 import { useUser } from '../context/UserContext';
 import './PremiumPaywall.css';
 
@@ -41,7 +43,7 @@ export default function PremiumPaywall({
           isPremium(user.id)
         ]);
         console.log('📊 Credits loaded:', creditsData);
-        console.log(' Has subscription:', isSub);
+        console.log('✅ Has subscription:', isSub);
         setCredits(creditsData);
         setHasSubscription(isSub);
       };
@@ -58,33 +60,78 @@ export default function PremiumPaywall({
     setIsProcessing(true);
 
     try {
-      const result = await completePurchase(
-        selectedFeature as PremiumFeatureId,
-        user.id
-      );
+      // ✅ Subscription purchase (Monthly/Yearly)
+      if (selectedFeature === 'subscription_monthly' || selectedFeature === 'subscription_yearly') {
+        const plan = selectedFeature === 'subscription_monthly' ? 'monthly' : 'yearly';
+        const pricing = SUBSCRIPTION_PRICING[plan];
+        
+        console.log(`💎 Purchasing ${plan} subscription for ${pricing.stars} stars`);
+        
+        // Telegram Stars payment
+        const result = await completePurchase(
+          selectedFeature as PremiumFeatureId,
+          user.id
+        );
 
-      if (result === 'success') {
-        setShowSuccess(true);
-        
-        setCredits(prev => ({
-          ...prev,
-          [selectedFeature]: (prev[selectedFeature] || 0) + 1
-        }));
-        
-        if (onPurchase) {
-          onPurchase(selectedFeature as PremiumFeatureId);
+        if (result === 'success') {
+          // Create subscription in database
+          const subscription = await createSubscription(user.id, plan);
+          
+          if (subscription) {
+            setShowSuccess(true);
+            setHasSubscription(true);
+            
+            if (onPurchase) {
+              onPurchase(selectedFeature as PremiumFeatureId);
+            }
+            
+            setTimeout(() => {
+              setShowSuccess(false);
+              onClose();
+            }, 2500);
+          } else {
+            setErrorMessage('Subscription created but database error occurred. Contact support.');
+            setShowError(true);
+            setIsProcessing(false);
+          }
+        } else if (result === 'cancelled') {
+          setIsProcessing(false);
+        } else {
+          setErrorMessage('ტრანზაქცია ვერ განხორციელდა. გთხოვთ სცადოთ ხელახლა.');
+          setShowError(true);
+          setIsProcessing(false);
         }
-        
-        setTimeout(() => {
-          setShowSuccess(false);
-          onClose();
-        }, 2500);
-      } else if (result === 'cancelled') {
-        setIsProcessing(false);
-      } else {
-        setErrorMessage('ტრანზაქცია ვერ განხორციელდა. გთხოვთ სცადოთ ხელახლა.');
-        setShowError(true);
-        setIsProcessing(false);
+      } 
+      // ✅ Single reading purchase
+      else {
+        const result = await completePurchase(
+          selectedFeature as PremiumFeatureId,
+          user.id
+        );
+
+        if (result === 'success') {
+          setShowSuccess(true);
+          
+          setCredits(prev => ({
+            ...prev,
+            [selectedFeature]: (prev[selectedFeature] || 0) + 1
+          }));
+          
+          if (onPurchase) {
+            onPurchase(selectedFeature as PremiumFeatureId);
+          }
+          
+          setTimeout(() => {
+            setShowSuccess(false);
+            onClose();
+          }, 2500);
+        } else if (result === 'cancelled') {
+          setIsProcessing(false);
+        } else {
+          setErrorMessage('ტრანზაქცია ვერ განხორციელდა. გთხოვთ სცადოთ ხელახლა.');
+          setShowError(true);
+          setIsProcessing(false);
+        }
       }
     } catch (error) {
       console.error('❌ Purchase error:', error);
@@ -106,6 +153,19 @@ export default function PremiumPaywall({
   const isSingleTab = selectedFeature === 'celtic_cross' || selectedFeature === 'horseshoe' || selectedFeature === 'relationship';
 
   const getCredits = (featureId: string) => credits[featureId] || 0;
+
+  // ✅ Purchase button-ის ჩვენების ლოგიკა
+  const showPurchaseBtn = () => {
+    // Subscription tab-ზე ყოველთვის ჩანს (თუ არ აქვს subscription)
+    if (isSubscriptionTab && !hasSubscription) {
+      return true;
+    }
+    // Single tab-ზე ჩანს მხოლოდ თუ არ აქვს subscription და credits = 0
+    if (isSingleTab && !hasSubscription && getCredits(selectedFeature) === 0) {
+      return true;
+    }
+    return false;
+  };
 
   return (
     <AnimatePresence>
@@ -146,7 +206,7 @@ export default function PremiumPaywall({
               </p>
             </div>
 
-            {/* Feature Tabs - ვაუ ეფექტით */}
+            {/* Feature Tabs */}
             <div className="premium-tabs">
               <button
                 className={`premium-tab ${isSubscriptionTab ? 'active' : ''}`}
@@ -171,7 +231,7 @@ export default function PremiumPaywall({
               {isSubscriptionTab && (
                 <>
                   <div 
-                    className={`premium-feature-item ${selectedFeature === 'subscription_monthly' ? 'selected' : ''}`}
+                    className={`premium-feature-item ${selectedFeature === 'subscription_monthly' ? 'selected' : ''} ${hasSubscription ? 'purchased' : ''}`}
                     onClick={() => !isProcessing && setSelectedFeature('subscription_monthly')}
                   >
                     <div className="premium-feature-icon">💎</div>
@@ -180,13 +240,22 @@ export default function PremiumPaywall({
                       <p>Unlimited readings + AI Insights</p>
                     </div>
                     <div className="premium-feature-price">
-                      <span className="price-usd">{formatPrice(999)}</span>
-                      <span className="price-stars">{formatStars(499)}</span>
+                      {hasSubscription ? (
+                        <div className="unlimited-badge">
+                          <Infinity size={12} />
+                          <span>Active</span>
+                        </div>
+                      ) : (
+                        <>
+                          <span className="price-usd">{formatPrice(999)}</span>
+                          <span className="price-stars">{formatStars(499)}</span>
+                        </>
+                      )}
                     </div>
                   </div>
 
                   <div 
-                    className={`premium-feature-item ${selectedFeature === 'subscription_yearly' ? 'selected' : ''}`}
+                    className={`premium-feature-item ${selectedFeature === 'subscription_yearly' ? 'selected' : ''} ${hasSubscription ? 'purchased' : ''}`}
                     onClick={() => !isProcessing && setSelectedFeature('subscription_yearly')}
                   >
                     <div className="premium-feature-badge">SAVE 33%</div>
@@ -196,8 +265,17 @@ export default function PremiumPaywall({
                       <p>Full year access - Best value!</p>
                     </div>
                     <div className="premium-feature-price">
-                      <span className="price-usd">{formatPrice(7999)}</span>
-                      <span className="price-stars">{formatStars(3999)}</span>
+                      {hasSubscription ? (
+                        <div className="unlimited-badge">
+                          <Infinity size={12} />
+                          <span>Active</span>
+                        </div>
+                      ) : (
+                        <>
+                          <span className="price-usd">{formatPrice(7999)}</span>
+                          <span className="price-stars">{formatStars(3999)}</span>
+                        </>
+                      )}
                     </div>
                   </div>
                 </>
@@ -319,8 +397,8 @@ export default function PremiumPaywall({
               )}
             </div>
 
-            {/* Purchase Button */}
-            {!hasSubscription && getCredits(selectedFeature) === 0 && (
+            {/* ✅ Purchase Button - სწორი ლოგიკით */}
+            {showPurchaseBtn() && (
               <button 
                 className="premium-purchase-btn"
                 onClick={handlePurchase}
@@ -333,10 +411,23 @@ export default function PremiumPaywall({
                   </>
                 ) : (
                   <>
-                    <span>Unlock for {formatStars(stars)}</span>
+                    <span>
+                      {isSubscriptionTab 
+                        ? `Subscribe for ${formatStars(stars)}` 
+                        : `Unlock for ${formatStars(stars)}`
+                      }
+                    </span>
                   </>
                 )}
               </button>
+            )}
+
+            {/* Active Subscription Banner */}
+            {hasSubscription && (
+              <div className="subscription-active-banner">
+                <Infinity size={16} />
+                <span>Premium Active - Unlimited Access</span>
+              </div>
             )}
 
             {/* Footer */}
@@ -371,8 +462,10 @@ export default function PremiumPaywall({
                   </motion.div>
                   <h3 className="success-title">წარმატებით!</h3>
                   <p className="success-message">
-                    ტრანზაქცია წარმატებით განხორციელდა.<br />
-                    Premium ფუნქციები აქტიურებულია!
+                    {isSubscriptionTab 
+                      ? 'Subscription activated!<br />Unlimited readings enabled.' 
+                      : 'ტრანზაქცია წარმატებით განხორციელდა.<br />Premium ფუნქციები აქტიურებულია!'
+                    }
                   </p>
                   <div className="success-stars">
                     ⭐ {stars} Stars დახარჯული

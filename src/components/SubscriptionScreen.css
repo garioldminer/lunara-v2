@@ -1,0 +1,473 @@
+.subscription-screen {
+    width: 100%;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #0a0600 0%, #1a0f05 50%, #0a0600 100%);
+    color: #fff;
+    font-family: 'Georgia', serif;
+    padding: 70px 16px 100px;
+  }
+  
+  /* Header */
+  .subscription-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  
+  .subscription-back-btn {
+    background: rgba(197, 160, 89, 0.1);
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    color: #C5A059;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  
+  .subscription-back-btn:hover {
+    background: rgba(197, 160, 89, 0.2);
+    transform: scale(1.05);
+  }
+  
+  .subscription-header-center {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #C5A059;
+  }
+  
+  .subscription-header-center h1 {
+    font-size: 20px;
+    margin: 0;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  
+  .subscription-header-spacer {
+    width: 40px;
+  }
+  
+  /* Loading */
+  .subscription-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    gap: 16px;
+  }
+  
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(197, 160, 89, 0.2);
+    border-top-color: #C5A059;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  /* Cancel Success Banner */
+  .cancel-success-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(22, 163, 74, 0.1) 100%);
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 16px;
+    color: #22c55e;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  
+  /* Active Subscription Card */
+  .active-subscription-card {
+    background: linear-gradient(135deg, rgba(197, 160, 89, 0.1) 0%, rgba(139, 105, 20, 0.05) 100%);
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    border-radius: 20px;
+    padding: 24px;
+    position: relative;
+    box-shadow: 0 0 40px rgba(197, 160, 89, 0.2);
+  }
+  
+  .active-badge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    box-shadow: 0 2px 10px rgba(34, 197, 94, 0.4);
+    animation: badgePulse 2s ease-in-out infinite;
+  }
+  
+  @keyframes badgePulse {
+    0%, 100% {
+      box-shadow: 0 2px 10px rgba(34, 197, 94, 0.4);
+    }
+    50% {
+      box-shadow: 0 4px 15px rgba(34, 197, 94, 0.6);
+    }
+  }
+  
+  .subscription-plan-icon {
+    font-size: 64px;
+    text-align: center;
+    margin-bottom: 16px;
+    filter: drop-shadow(0 0 20px rgba(197, 160, 89, 0.6));
+  }
+  
+  .subscription-plan-name {
+    font-size: 24px;
+    color: #C5A059;
+    margin: 0 0 8px;
+    text-align: center;
+    letter-spacing: 1px;
+    font-weight: 700;
+  }
+  
+  .subscription-plan-description {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0 0 24px;
+    text-align: center;
+    font-style: italic;
+  }
+  
+  /* Subscription Details */
+  .subscription-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  
+  .detail-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: rgba(197, 160, 89, 0.05);
+    border-radius: 10px;
+    border: 1px solid rgba(197, 160, 89, 0.1);
+  }
+  
+  .detail-row.highlight {
+    background: rgba(197, 160, 89, 0.1);
+    border-color: rgba(197, 160, 89, 0.3);
+  }
+  
+  .detail-icon {
+    color: #C5A059;
+    flex-shrink: 0;
+  }
+  
+  .detail-info {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .detail-label {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .detail-value {
+    font-size: 13px;
+    color: #fff;
+    font-weight: 600;
+  }
+  
+  .detail-value.time-remaining {
+    color: #C5A059;
+    font-size: 14px;
+  }
+  
+  /* Subscription Features */
+  .subscription-features {
+    margin-bottom: 24px;
+  }
+  
+  .subscription-features h3 {
+    font-size: 14px;
+    color: #C5A059;
+    margin: 0 0 12px;
+    letter-spacing: 0.5px;
+  }
+  
+  .subscription-features ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .subscription-features li {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+    padding-left: 8px;
+  }
+  
+  /* Cancel Button */
+  .cancel-subscription-btn {
+    width: 100%;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 12px;
+    padding: 14px;
+    color: #ef4444;
+    font-family: 'Georgia', serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  
+  .cancel-subscription-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.5);
+    transform: translateY(-2px);
+  }
+  
+  /* No Subscription Card */
+  .no-subscription-card {
+    background: rgba(197, 160, 89, 0.05);
+    border: 1px solid rgba(197, 160, 89, 0.2);
+    border-radius: 20px;
+    padding: 40px 24px;
+    text-align: center;
+  }
+  
+  .no-subscription-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+    filter: drop-shadow(0 0 20px rgba(197, 160, 89, 0.4));
+  }
+  
+  .no-subscription-card h2 {
+    font-size: 20px;
+    color: #C5A059;
+    margin: 0 0 8px;
+    letter-spacing: 1px;
+  }
+  
+  .no-subscription-card p {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0 0 24px;
+    font-style: italic;
+  }
+  
+  .subscribe-btn {
+    background: linear-gradient(135deg, #C5A059 0%, #8B6914 100%);
+    border: 1px solid #C5A059;
+    border-radius: 16px;
+    padding: 14px 32px;
+    color: #0a0600;
+    font-family: 'Georgia', serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 8px 25px rgba(197, 160, 89, 0.4);
+  }
+  
+  .subscribe-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(197, 160, 89, 0.5);
+  }
+  
+  /* Subscription History */
+  .subscription-history {
+    margin-top: 32px;
+  }
+  
+  .subscription-history h3 {
+    font-size: 16px;
+    color: #C5A059;
+    margin: 0 0 16px;
+    letter-spacing: 1px;
+  }
+  
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .history-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: rgba(197, 160, 89, 0.05);
+    border: 1px solid rgba(197, 160, 89, 0.15);
+    border-radius: 10px;
+  }
+  
+  .history-icon {
+    flex-shrink: 0;
+    color: #C5A059;
+  }
+  
+  .history-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .history-plan {
+    font-size: 13px;
+    color: #fff;
+    font-weight: 600;
+  }
+  
+  .history-dates {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+  }
+  
+  .history-status {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .history-status.active {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+  }
+  
+  .history-status.cancelled {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+  }
+  
+  .history-status.expired {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+  }
+  
+  /* Cancel Modal */
+  .cancel-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 20px;
+  }
+  
+  .cancel-modal {
+    background: linear-gradient(180deg, #1a0f05 0%, #0a0600 100%);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    border-radius: 20px;
+    padding: 32px 24px;
+    max-width: 360px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 0 60px rgba(239, 68, 68, 0.3);
+  }
+  
+  .cancel-modal-icon {
+    color: #ef4444;
+    margin-bottom: 16px;
+    filter: drop-shadow(0 0 20px rgba(239, 68, 68, 0.5));
+  }
+  
+  .cancel-modal h3 {
+    font-size: 20px;
+    color: #ef4444;
+    margin: 0 0 12px;
+    letter-spacing: 1px;
+  }
+  
+  .cancel-modal p {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0 0 24px;
+    line-height: 1.6;
+  }
+  
+  .cancel-modal-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .cancel-modal-btn {
+    border-radius: 12px;
+    padding: 14px;
+    font-family: 'Georgia', serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: none;
+  }
+  
+  .cancel-modal-btn.keep {
+    background: rgba(197, 160, 89, 0.2);
+    border: 1px solid rgba(197, 160, 89, 0.4);
+    color: #C5A059;
+  }
+  
+  .cancel-modal-btn.keep:hover {
+    background: rgba(197, 160, 89, 0.3);
+  }
+  
+  .cancel-modal-btn.confirm {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+  }
+  
+  .cancel-modal-btn.confirm:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+  }
+  
+  .cancel-modal-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
