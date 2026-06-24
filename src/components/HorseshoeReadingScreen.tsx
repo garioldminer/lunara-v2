@@ -42,7 +42,6 @@ export default function HorseshoeReadingScreen({ onNavigate }: Props) {
   const [creditsRemaining, setCreditsRemaining] = useState<number | null>(null);
   const [activeFeature] = useState<PremiumFeatureId>('horseshoe');
 
-  // ✅ Smart Paywall: შეამოწმე access (subscription ან credits)
   const checkAccess = async (): Promise<boolean> => {
     if (!user) return false;
     const hasPremium = await isPremium(user.id);
@@ -51,7 +50,6 @@ export default function HorseshoeReadingScreen({ onNavigate }: Props) {
     return (credits[activeFeature] || 0) > 0;
   };
 
-  // ✅ BEGIN READING - თუ აქვს access, პირდაპირ კითხვაზე
   const handleBeginReading = async () => {
     if (!user) {
       alert('Please log in first');
@@ -65,7 +63,6 @@ export default function HorseshoeReadingScreen({ onNavigate }: Props) {
     }
   };
 
-  // ✅ კითხვის გაგზავნა - დააკელი credit და დაიწყე reading
   const handleQuestionSubmit = async (q: string) => {
     if (!user) return;
 
@@ -137,7 +134,6 @@ export default function HorseshoeReadingScreen({ onNavigate }: Props) {
     setReading(prev => prev.map((r, i) => i === index ? { ...r, revealed: true } : r));
   };
 
-  // ✅ NEW READING - Smart Paywall: თუ credits > 0 პირდაპირ კითხვაზე, თუ = 0 Paywall
   const handleNewReading = async () => {
     setReading([]);
     setActiveCard(null);
@@ -173,6 +169,10 @@ export default function HorseshoeReadingScreen({ onNavigate }: Props) {
     };
     return interpretations[position] || meaning;
   };
+
+  // ✅ ორი რიგი: პირველი 4 კარტი, მეორე 3 კარტი (ცენტრში)
+  const topRow = reading.slice(0, 4);   // კარტები 1-4
+  const bottomRow = reading.slice(4, 7); // კარტები 5-7
 
   return (
     <div className="horseshoe-reading-screen">
@@ -241,65 +241,131 @@ export default function HorseshoeReadingScreen({ onNavigate }: Props) {
             </div>
           )}
 
-          <div className="hr-cards-layout">
-            {reading.map((readingCard, idx) => (
-              <motion.div
-                key={idx}
-                className={`hr-card-slot ${readingCard.revealed ? 'revealed' : ''} ${activeCard === idx ? 'active' : ''} position-${idx + 1}`}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: idx * 0.1, duration: 0.4 }}
-                onClick={() => phase === 'complete' && setActiveCard(activeCard === idx ? null : idx)}
-              >
-                <div className="hr-position-label">{HORSESHOE_POSITIONS[idx].short}</div>
-                
-                <div className="hr-card-wrapper">
-                  <AnimatePresence mode="wait">
-                    {!readingCard.revealed ? (
-                      <motion.div
-                        key="back"
-                        className="hr-card-back"
-                        initial={{ rotateY: 0 }}
-                        exit={{ rotateY: 180 }}
-                        transition={{ duration: 0.5 }}
-                      >
-                        <img 
-                          src={CARD_BACK_URL} 
-                          alt="Card Back"
-                          className="hr-card-back-image"
-                          draggable={false}
-                        />
-                      </motion.div>
-                    ) : (
-                      <motion.div
-                        key="front"
-                        className="hr-card-front"
-                        initial={{ rotateY: -180 }}
-                        animate={{ rotateY: 0 }}
-                        transition={{ duration: 0.5 }}
-                      >
-                        {readingCard.card.image_url ? (
-                          <img 
-                            src={readingCard.card.image_url} 
-                            alt={readingCard.card.name}
-                            className="hr-card-image"
-                            style={{ transform: readingCard.isReversed ? 'rotate(180deg)' : 'none' }}
-                          />
-                        ) : (
-                          <div className="hr-card-placeholder">
-                            <span className="hr-placeholder-num">{readingCard.card.number}</span>
-                            <span className="hr-placeholder-name">{readingCard.card.name}</span>
-                          </div>
-                        )}
-                        {readingCard.isReversed && (
-                          <div className="hr-reversed-badge">R</div>
-                        )}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </motion.div>
-            ))}
+          {/* ✅ Horseshoe Layout - 2 რიგი: 4 + 3 (ცენტრში) */}
+          <div className="hr-cards-container">
+            {/* პირველი რიგი: კარტები 1-4, ნუმერაცია ზემოთ */}
+            <div className="hr-cards-row">
+              {topRow.map((readingCard, idx) => {
+                const realIndex = idx; // 0-3
+                return (
+                  <motion.div
+                    key={realIndex}
+                    className={`hr-card-slot ${readingCard.revealed ? 'revealed' : ''} ${activeCard === realIndex ? 'active' : ''}`}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: realIndex * 0.1, duration: 0.4 }}
+                    onClick={() => phase === 'complete' && setActiveCard(activeCard === realIndex ? null : realIndex)}
+                  >
+                    {/* ნუმერაცია ზემოთ */}
+                    <div className="hr-position-label">{HORSESHOE_POSITIONS[realIndex].short}</div>
+                    
+                    {/* 3D Flip ანიმაცია */}
+                    <motion.div
+                      className="hr-card-wrapper"
+                      initial={{ rotateY: 0, translateY: 0, scale: 1 }}
+                      animate={readingCard.revealed ? {
+                        rotateY: 180,
+                        translateY: [0, -12, 0],
+                        scale: [1, 1.03, 1]
+                      } : {
+                        rotateY: 0,
+                        translateY: 0,
+                        scale: 1
+                      }}
+                      transition={{
+                        rotateY: { duration: 0.8, ease: [0.4, 0, 0.2, 1] },
+                        translateY: { duration: 0.8, ease: "easeInOut" },
+                        scale: { duration: 0.8, ease: "easeInOut" }
+                      }}
+                    >
+                      <div className="hr-card-back">
+                        <img src={CARD_BACK_URL} alt="Card Back" className="hr-card-back-image" draggable={false} />
+                      </div>
+                      <div className="hr-card-front">
+                        <div className="hr-card-front-content">
+                          {readingCard.card.image_url ? (
+                            <img 
+                              src={readingCard.card.image_url} 
+                              alt={readingCard.card.name} 
+                              className="hr-card-image" 
+                              style={{ transform: readingCard.isReversed ? 'rotate(180deg)' : 'none' }} 
+                            />
+                          ) : (
+                            <div className="hr-card-placeholder">
+                              <span className="hr-placeholder-num">{readingCard.card.number}</span>
+                              <span className="hr-placeholder-name">{readingCard.card.name}</span>
+                            </div>
+                          )}
+                          {readingCard.isReversed && <div className="hr-reversed-badge">R</div>}
+                        </div>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {/* მეორე რიგი: კარტები 5-7, ნუმერაცია ქვემოთ, ცენტრში */}
+            <div className="hr-cards-row hr-cards-row-bottom">
+              {bottomRow.map((readingCard, idx) => {
+                const realIndex = idx + 4; // 4-6
+                return (
+                  <motion.div
+                    key={realIndex}
+                    className={`hr-card-slot ${readingCard.revealed ? 'revealed' : ''} ${activeCard === realIndex ? 'active' : ''}`}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: realIndex * 0.1, duration: 0.4 }}
+                    onClick={() => phase === 'complete' && setActiveCard(activeCard === realIndex ? null : realIndex)}
+                  >
+                    {/* 3D Flip ანიმაცია */}
+                    <motion.div
+                      className="hr-card-wrapper"
+                      initial={{ rotateY: 0, translateY: 0, scale: 1 }}
+                      animate={readingCard.revealed ? {
+                        rotateY: 180,
+                        translateY: [0, -12, 0],
+                        scale: [1, 1.03, 1]
+                      } : {
+                        rotateY: 0,
+                        translateY: 0,
+                        scale: 1
+                      }}
+                      transition={{
+                        rotateY: { duration: 0.8, ease: [0.4, 0, 0.2, 1] },
+                        translateY: { duration: 0.8, ease: "easeInOut" },
+                        scale: { duration: 0.8, ease: "easeInOut" }
+                      }}
+                    >
+                      <div className="hr-card-back">
+                        <img src={CARD_BACK_URL} alt="Card Back" className="hr-card-back-image" draggable={false} />
+                      </div>
+                      <div className="hr-card-front">
+                        <div className="hr-card-front-content">
+                          {readingCard.card.image_url ? (
+                            <img 
+                              src={readingCard.card.image_url} 
+                              alt={readingCard.card.name} 
+                              className="hr-card-image" 
+                              style={{ transform: readingCard.isReversed ? 'rotate(180deg)' : 'none' }} 
+                            />
+                          ) : (
+                            <div className="hr-card-placeholder">
+                              <span className="hr-placeholder-num">{readingCard.card.number}</span>
+                              <span className="hr-placeholder-name">{readingCard.card.name}</span>
+                            </div>
+                          )}
+                          {readingCard.isReversed && <div className="hr-reversed-badge">R</div>}
+                        </div>
+                      </div>
+                    </motion.div>
+
+                    {/* ნუმერაცია ქვემოთ */}
+                    <div className="hr-position-label">{HORSESHOE_POSITIONS[realIndex].short}</div>
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
 
           <AnimatePresence>
@@ -310,7 +376,7 @@ export default function HorseshoeReadingScreen({ onNavigate }: Props) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3, duration: 0.6 }}
               >
-                <div className="hr-ornament-line"> ─── ✦</div>
+                <div className="hr-ornament-line">✦ ─── ✦</div>
                 
                 {activeCard !== null ? (
                   <motion.div 
@@ -363,7 +429,6 @@ export default function HorseshoeReadingScreen({ onNavigate }: Props) {
                   </div>
                 )}
 
-                {/* ✅ Credits Remaining Banner - Smart Paywall */}
                 {creditsRemaining !== null && creditsRemaining > 0 && (
                   <motion.div 
                     className="hr-credits-banner"
