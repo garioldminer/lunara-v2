@@ -17,7 +17,7 @@
   }
   
   /* ============================================
-     1. USER HEADER
+     1. USER HEADER - Enhanced
      ============================================ */
   .user-header {
     background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
@@ -34,6 +34,7 @@
     gap: 12px;
   }
   
+  /* ✅ Avatar section - clickable */
   .avatar-section {
     position: relative;
     width: 56px;
@@ -42,6 +43,16 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  
+  .avatar-section.clickable-avatar:hover {
+    transform: scale(1.05);
+  }
+  
+  .avatar-section.clickable-avatar:active {
+    transform: scale(0.95);
   }
   
   .xp-circular-progress {
@@ -80,46 +91,48 @@
     min-width: 0;
   }
   
-  .username-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  
+  /* ✅ Username - no Lv.1 FREE */
   .username {
     font-size: 16px;
     font-weight: 700;
-    margin: 0;
+    margin: 0 0 2px 0;
     color: #fff;
     letter-spacing: 0.3px;
   }
   
-  .user-level {
-    font-size: 12px;
-    color: #b3a68c;
-    margin: 2px 0 0;
-    font-weight: 500;
-  }
-  
-  .user-title {
-    color: #C5A059;
-    font-weight: 700;
+  /* ✅ PREMIUM badge below username */
+  .premium-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: #0a0600;
+    padding: 3px 8px;
+    border-radius: 8px;
+    font-size: 9px;
+    font-weight: 900;
     letter-spacing: 0.5px;
-    margin-left: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+    margin-bottom: 4px;
   }
   
-  .subscription-expiry {
-    color: #22c55e;
-    font-size: 10px;
-    font-weight: 600;
-    margin-left: 4px;
+  .premium-status-badge:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.6);
+  }
+  
+  .subscription-expiry-inline {
+    color: #0a0600;
+    font-weight: 700;
+    opacity: 0.8;
   }
   
   .xp-text-inline {
     display: flex;
     align-items: center;
     gap: 4px;
-    margin-top: 2px;
     font-size: 10px;
   }
   
@@ -186,7 +199,6 @@
   
   /* ============================================
      2. DAILY QUESTS (60%) + ACTION BUTTONS (40%)
-     ✅ დამცირებული სიმაღლე
      ============================================ */
   .quests-and-actions-split {
     display: flex;
@@ -195,7 +207,6 @@
     width: 100%;
   }
   
-  /* LEFT - Daily Quests (60%) */
   .daily-quests-compact {
     flex: 1 1 60%;
     background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
@@ -310,7 +321,6 @@
     flex-shrink: 0;
   }
   
-  /* RIGHT - Action Buttons (40%) */
   .action-buttons-panel {
     flex: 0 0 38%;
     background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
@@ -419,8 +429,8 @@
   }
   
   /* ============================================
-     3. CARD OF THE DAY - Split Layout, 3D Effect
-     ✅ გასწორებული tilt, split layout, 3D space effect
+     3. CARD OF THE DAY - Enhanced
+     ✅ Larger card, better tilt, enhanced R badge
      ============================================ */
   .card-of-day-banner {
     background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
@@ -431,7 +441,7 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     position: relative;
     overflow: visible;
-    min-height: 160px;
+    min-height: 170px;
   }
   
   .clickable-card {
@@ -449,7 +459,6 @@
     transform: translateY(0);
   }
   
-  /* ✅ Split Layout - 50/50 */
   .card-of-day-content {
     display: flex;
     align-items: center;
@@ -457,39 +466,39 @@
     position: relative;
   }
   
-  /* LEFT HALF - Card */
   .card-half-left {
     flex: 0 0 50%;
-    height: 160px;
+    height: 170px;
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
   }
   
-  /* 3D Wrapper - perspective */
+  /* ✅ Larger card wrapper */
   .card-image-3d-wrapper {
     position: relative;
-    width: 120px;
-    height: 170px;
+    width: 135px;
+    height: 185px;
     perspective: 800px;
   }
   
-  /* ✅ Card tilted - ნაკლებად (5°) */
+  /* ✅ Better tilt - less extreme */
   .card-image-tilted {
     position: relative;
     width: 100%;
     height: 100%;
-    transform: rotateY(-8deg) rotateX(3deg) rotate(5deg);
+    transform: rotateY(-5deg) rotateX(2deg) rotate(3deg);
     transition: transform 0.4s ease;
     z-index: 2;
     transform-style: preserve-3d;
   }
   
   .card-of-day-banner:hover .card-image-tilted {
-    transform: rotateY(-5deg) rotateX(2deg) rotate(3deg) translateY(-4px);
+    transform: rotateY(-3deg) rotateX(1deg) rotate(2deg) translateY(-4px);
   }
   
+  /* ✅ Larger card image */
   .card-image-large {
     width: 100%;
     height: 100%;
@@ -497,7 +506,6 @@
     border-radius: 10px;
     border: 2px solid #C5A059;
     box-shadow: 
-      /* ✅ 3D Space Effect - multiple shadows for depth */
       0 2px 4px rgba(0, 0, 0, 0.4),
       0 8px 16px rgba(0, 0, 0, 0.5),
       0 16px 32px rgba(0, 0, 0, 0.6),
@@ -542,25 +550,47 @@
     padding: 0 8px;
   }
   
+  /* ✅ Enhanced R badge - more visible */
   .card-reversed-indicator-large {
     position: absolute;
-    top: 8px;
-    right: 8px;
-    background: rgba(167, 139, 250, 0.95);
-    color: #fff;
-    width: 20px;
-    height: 20px;
+    top: 6px;
+    right: 6px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 11px;
-    font-weight: 700;
-    box-shadow: 0 2px 8px rgba(167, 139, 250, 0.5);
+    font-size: 14px;
+    font-weight: 900;
     z-index: 3;
+    background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
+    color: #fff;
+    border: 2px solid #fff;
+    box-shadow: 
+      0 0 0 2px rgba(167, 139, 250, 0.5),
+      0 4px 12px rgba(167, 139, 250, 0.8),
+      0 0 20px rgba(167, 139, 250, 0.6);
+    animation: reversedPulse 2s ease-in-out infinite;
   }
   
-  /* ✅ 3D Shadow underneath the card */
+  @keyframes reversedPulse {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 
+        0 0 0 2px rgba(167, 139, 250, 0.5),
+        0 4px 12px rgba(167, 139, 250, 0.8),
+        0 0 20px rgba(167, 139, 250, 0.6);
+    }
+    50% {
+      transform: scale(1.1);
+      box-shadow: 
+        0 0 0 3px rgba(167, 139, 250, 0.7),
+        0 6px 16px rgba(167, 139, 250, 1),
+        0 0 30px rgba(167, 139, 250, 0.8);
+    }
+  }
+  
   .card-3d-shadow {
     position: absolute;
     bottom: -10px;
@@ -573,7 +603,6 @@
     opacity: 0.7;
   }
   
-  /* RIGHT HALF - Card Info */
   .card-half-right {
     flex: 0 0 50%;
     padding-left: 16px;
@@ -702,7 +731,6 @@
     text-align: center;
   }
   
-  /* Premium Items */
   .quick-item.premium-item {
     background: linear-gradient(135deg, rgba(197, 160, 89, 0.15) 0%, rgba(139, 105, 20, 0.1) 100%);
     border: 1px solid rgba(197, 160, 89, 0.4);
@@ -724,7 +752,6 @@
     z-index: 10;
   }
   
-  /* Admin Items */
   .quick-item.admin-item {
     background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.1) 100%);
     border: 1px solid rgba(239, 68, 68, 0.4);
@@ -735,7 +762,6 @@
     filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.6));
   }
   
-  /* ✅ Paywall Item - ახალი! */
   .quick-item.paywall-item {
     background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 165, 0, 0.08) 100%);
     border: 1px solid rgba(255, 215, 0, 0.4);
@@ -821,23 +847,4 @@
     color: #0a0600;
     box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
     z-index: 3;
-  }
-  
-  .premium-name-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-    color: #0a0600;
-    padding: 2px 6px;
-    border-radius: 6px;
-    font-size: 8px;
-    font-weight: 900;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  
-  .premium-name-badge:hover {
-    transform: scale(1.05);
   }

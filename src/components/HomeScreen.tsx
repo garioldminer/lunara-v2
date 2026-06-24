@@ -26,7 +26,6 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [isUserAdmin, setIsUserAdmin] = useState(false);
   const [activeSubscription, setActiveSubscription] = useState<any>(null);
 
-  // XP values
   const xpPercent = 78;
   const xpCurrent = 7850;
   const xpTotal = 10000;
@@ -142,7 +141,6 @@ export default function HomeScreen({ onNavigate }: Props) {
       } else if (action === 'Subscription') {
         onNavigate('subscription');
       } else if (action === 'Paywall') {
-        // ✅ დროებით - მოგვიანებით გადაწყვეტს სტრუქტურას
         onNavigate('pricing');
       }
     }
@@ -158,7 +156,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     { icon: <span style={{ fontSize: '28px' }}>🐎</span>, label: 'Horseshoe', sublabel: '7 Cards', color: '#fb923c', action: 'Horseshoe', isPremium: true },
     { icon: <span style={{ fontSize: '28px' }}>❤️</span>, label: 'Love', sublabel: 'Spread', color: '#f472b6', action: 'Relationship', isPremium: true },
     { icon: <Gem size={28} />, label: 'Crystals', sublabel: '', color: '#f472b6', action: 'Crystals' },
-    // ✅ ახალი Paywall ღილაკი - დროებით
     { icon: <Crown size={28} />, label: 'Premium', sublabel: 'Upgrade', color: '#FFD700', action: 'Paywall', isPaywall: true },
   ];
 
@@ -172,10 +169,10 @@ export default function HomeScreen({ onNavigate }: Props) {
     });
   }
 
+  // ✅ 2 quests instead of 3
   const quests = [
     { icon: <Scroll size={16} />, name: 'Draw 3 Cards', current: 2, total: 3, reward: 20 },
     { icon: <Sparkles size={16} />, name: 'Check Horoscope', current: 1, total: 1, reward: 15 },
-    { icon: <Activity size={16} />, name: 'Complete Reading', current: 1, total: 2, reward: 25 },
   ];
 
   const dailyCardName = dailyCard?.name || 'THE FOOL';
@@ -193,7 +190,11 @@ export default function HomeScreen({ onNavigate }: Props) {
       {/* 1. USER HEADER */}
       <div className="user-header">
         <div className="user-main-row">
-          <div className="avatar-section">
+          {/* ✅ Avatar with XP arc - clickable to profile */}
+          <div 
+            className="avatar-section clickable-avatar"
+            onClick={() => onNavigate?.('profile')}
+          >
             <svg className="xp-circular-progress" width="56" height="56" viewBox="0 0 56 56">
               <circle
                 className="xp-circle-bg"
@@ -237,24 +238,21 @@ export default function HomeScreen({ onNavigate }: Props) {
           </div>
           
           <div className="user-info-section">
-            <div className="username-row">
-              <h2 className="username">{user?.display_name || 'LunaraSeeker'}</h2>
-              {activeSubscription && (
-                <div className="premium-name-badge" onClick={() => onNavigate?.('subscription')}>
-                  <Infinity size={10} />
-                  <span>PREMIUM</span>
-                </div>
-              )}
-            </div>
-            <p className="user-level">
-              Lv.{user?.level || 24} 
-              <span className="user-title">{user?.current_plan?.toUpperCase() || 'MYSTIC'}</span>
-              {activeSubscription && (
-                <span className="subscription-expiry">
+            <h2 className="username">{user?.display_name || 'LunaraSeeker'}</h2>
+            {/* ✅ PREMIUM badge below username */}
+            {activeSubscription && (
+              <div 
+                className="premium-status-badge"
+                onClick={() => onNavigate?.('subscription')}
+              >
+                <Infinity size={10} />
+                <span>PREMIUM</span>
+                <span className="subscription-expiry-inline">
                   · {formatExpirationDate(activeSubscription.expires_at)}
                 </span>
-              )}
-            </p>
+              </div>
+            )}
+            {/* ✅ XP text below */}
             <div className="xp-text-inline">
               <span className="xp-current">{xpCurrent.toLocaleString()}</span>
               <span className="xp-separator">/</span>
@@ -351,13 +349,12 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* 3. CARD OF THE DAY - Full Width, Split Layout */}
+      {/* 3. CARD OF THE DAY - Enhanced */}
       <div 
         className="card-of-day-banner clickable-card"
         onClick={() => onNavigate && onNavigate('daily-card')}
       >
         <div className="card-of-day-content">
-          {/* LEFT HALF - Card Image (3D floating effect) */}
           <div className="card-half-left">
             <div className="card-image-3d-wrapper">
               <div className="card-image-tilted">
@@ -366,25 +363,26 @@ export default function HomeScreen({ onNavigate }: Props) {
                     src={dailyCard.image_url} 
                     alt={dailyCardName}
                     className="card-image-large"
-                    style={{ transform: isDailyReversed ? 'rotate(185deg)' : 'rotate(5deg)' }}
+                    style={{ transform: isDailyReversed ? 'rotate(183deg)' : 'rotate(3deg)' }}
                   />
                 ) : (
-                  <div className="card-placeholder-large" style={{ transform: 'rotate(5deg)' }}>
+                  <div className="card-placeholder-large" style={{ transform: 'rotate(3deg)' }}>
                     <span className="card-number-large">{dailyCardNumber}</span>
                     <div className="card-symbol-large">✦</div>
                     <span className="card-name-large">{dailyCardName}</span>
                   </div>
                 )}
+                {/* ✅ Enhanced R badge */}
                 {isDailyReversed && (
-                  <div className="card-reversed-indicator-large">R</div>
+                  <div className="card-reversed-indicator-large">
+                    <span>R</span>
+                  </div>
                 )}
               </div>
-              {/* 3D Shadow underneath */}
               <div className="card-3d-shadow"></div>
             </div>
           </div>
 
-          {/* RIGHT HALF - Card Info + Read Guidance */}
           <div className="card-half-right">
             <div className="card-info-section">
               <div className="card-day-label">CARD OF THE DAY</div>
