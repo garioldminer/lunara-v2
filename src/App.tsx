@@ -15,6 +15,8 @@ import DailyCardScreen from './components/DailyCardScreen';
 import ThreeCardReadingScreen from './components/ThreeCardReadingScreen';
 import ReadingHistoryScreen from './components/ReadingHistoryScreen';
 import CelticCrossReadingScreen from './components/CelticCrossReadingScreen';
+import HorseshoeReadingScreen from './components/HorseshoeReadingScreen';
+import RelationshipReadingScreen from './components/RelationshipReadingScreen';
 import BottomNav from './components/BottomNav';
 import { UserProvider, useUser } from './context/UserContext';
 import { getTelegramUser } from './lib/telegramAuth';
@@ -37,7 +39,9 @@ type Screen =
   | 'daily-card'
   | 'three-card-reading'
   | 'reading-history'
-  | 'celtic-cross';
+  | 'celtic-cross'
+  | 'horseshoe'
+  | 'relationship';
 
 // ===== USER LOADER COMPONENT =====
 function UserLoader({ onReady }: { onReady: () => void }) {
@@ -147,6 +151,16 @@ function AppContent() {
     else if (screen === 'celtic-cross') {
       console.log('✝️ Opening Celtic Cross Reading');
       goTo('celtic-cross');
+    }
+    // Horseshoe Reading
+    else if (screen === 'horseshoe') {
+      console.log('🐎 Opening Horseshoe Reading');
+      goTo('horseshoe');
+    }
+    // Relationship Reading
+    else if (screen === 'relationship') {
+      console.log('❤️ Opening Relationship Reading');
+      goTo('relationship');
     }
     // Card Fan / Draw
     else if (screen === 'draw' || screen === 'card-fan') {
@@ -283,6 +297,12 @@ function AppContent() {
       )}
       {currentScreen === 'celtic-cross' && (
         <CelticCrossReadingScreen onNavigate={handleNavigate} />
+      )}
+      {currentScreen === 'horseshoe' && (
+        <HorseshoeReadingScreen onNavigate={handleNavigate} />
+      )}
+      {currentScreen === 'relationship' && (
+        <RelationshipReadingScreen onNavigate={handleNavigate} />
       )}
     </div>
   );
