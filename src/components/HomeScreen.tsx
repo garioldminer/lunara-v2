@@ -31,7 +31,6 @@ export default function HomeScreen({ onNavigate }: Props) {
   const xpCurrent = 7850;
   const xpTotal = 10000;
 
-  // ✅ Admin-ის შემოწმება
   useEffect(() => {
     if (user) {
       isAdmin(user.id).then(admin => {
@@ -40,7 +39,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     }
   }, [user]);
 
-  // ✅ Subscription-ის შემოწმება
   useEffect(() => {
     if (user) {
       getActiveSubscription(user.id).then(sub => {
@@ -49,7 +47,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     }
   }, [user]);
 
-  // Daily Card
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
     const stored = localStorage.getItem('dailyCard');
@@ -74,7 +71,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     setIsDailyReversed(isReversed);
   }, []);
 
-  // Streak
   useEffect(() => {
     if (user) {
       getUserStreak(user.id).then(streakData => {
@@ -145,6 +141,9 @@ export default function HomeScreen({ onNavigate }: Props) {
         onNavigate('admin');
       } else if (action === 'Subscription') {
         onNavigate('subscription');
+      } else if (action === 'Paywall') {
+        // ✅ დროებით - მოგვიანებით გადაწყვეტს სტრუქტურას
+        onNavigate('pricing');
       }
     }
   };
@@ -159,6 +158,8 @@ export default function HomeScreen({ onNavigate }: Props) {
     { icon: <span style={{ fontSize: '28px' }}>🐎</span>, label: 'Horseshoe', sublabel: '7 Cards', color: '#fb923c', action: 'Horseshoe', isPremium: true },
     { icon: <span style={{ fontSize: '28px' }}>❤️</span>, label: 'Love', sublabel: 'Spread', color: '#f472b6', action: 'Relationship', isPremium: true },
     { icon: <Gem size={28} />, label: 'Crystals', sublabel: '', color: '#f472b6', action: 'Crystals' },
+    // ✅ ახალი Paywall ღილაკი - დროებით
+    { icon: <Crown size={28} />, label: 'Premium', sublabel: 'Upgrade', color: '#FFD700', action: 'Paywall', isPaywall: true },
   ];
 
   if (isUserAdmin) {
@@ -172,9 +173,9 @@ export default function HomeScreen({ onNavigate }: Props) {
   }
 
   const quests = [
-    { icon: <Scroll size={18} />, name: 'Draw 3 Cards', current: 2, total: 3, reward: 20 },
-    { icon: <Sparkles size={18} />, name: 'Check Your Horoscope', current: 1, total: 1, reward: 15 },
-    { icon: <Activity size={18} />, name: 'Complete a Reading', current: 1, total: 2, reward: 25 },
+    { icon: <Scroll size={16} />, name: 'Draw 3 Cards', current: 2, total: 3, reward: 20 },
+    { icon: <Sparkles size={16} />, name: 'Check Horoscope', current: 1, total: 1, reward: 15 },
+    { icon: <Activity size={16} />, name: 'Complete Reading', current: 1, total: 2, reward: 25 },
   ];
 
   const dailyCardName = dailyCard?.name || 'THE FOOL';
@@ -184,7 +185,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     : (dailyCard?.keywords?.[0] || 'New Beginnings');
   const dailyCardElement = dailyCard ? getCardMeta(dailyCard) : '';
 
-  // XP circular progress calculation
   const circumference = 2 * Math.PI * 22;
   const strokeDashoffset = circumference - (xpPercent / 100) * circumference;
 
@@ -194,7 +194,6 @@ export default function HomeScreen({ onNavigate }: Props) {
       <div className="user-header">
         <div className="user-main-row">
           <div className="avatar-section">
-            {/* XP Circular Progress Bar */}
             <svg className="xp-circular-progress" width="56" height="56" viewBox="0 0 56 56">
               <circle
                 className="xp-circle-bg"
@@ -230,7 +229,6 @@ export default function HomeScreen({ onNavigate }: Props) {
               {user?.display_name?.charAt(0).toUpperCase() || 'U'}
             </div>
             
-            {/* Premium Badge */}
             {activeSubscription && (
               <div className="premium-avatar-badge">
                 <Crown size={10} />
@@ -281,7 +279,6 @@ export default function HomeScreen({ onNavigate }: Props) {
 
       {/* 2. DAILY QUESTS (60%) + ACTION BUTTONS (40%) */}
       <div className="quests-and-actions-split">
-        {/* LEFT - Daily Quests (60%) */}
         <div className="daily-quests-compact">
           <div className="quests-header-compact">
             <h3>DAILY QUESTS</h3>
@@ -306,14 +303,13 @@ export default function HomeScreen({ onNavigate }: Props) {
                   </div>
                 </div>
                 <div className="quest-reward-compact">
-                  +{quest.reward} <Gem size={10} />
+                  +{quest.reward} <Gem size={9} />
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* RIGHT - Action Buttons (40%) */}
         <div className="action-buttons-panel">
           <div className="action-grid-vertical">
             <button 
@@ -355,47 +351,53 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* 3. CARD OF THE DAY - Full Width, Tilted */}
+      {/* 3. CARD OF THE DAY - Full Width, Split Layout */}
       <div 
         className="card-of-day-banner clickable-card"
         onClick={() => onNavigate && onNavigate('daily-card')}
       >
         <div className="card-of-day-content">
-          {/* Card Image - Tilted */}
-          <div className="card-image-wrapper">
-            <div className="card-image-tilted">
-              {dailyCard?.image_url ? (
-                <img 
-                  src={dailyCard.image_url} 
-                  alt={dailyCardName}
-                  className="card-image-large"
-                  style={{ transform: isDailyReversed ? 'rotate(192deg)' : 'rotate(12deg)' }}
-                />
-              ) : (
-                <div className="card-placeholder-large" style={{ transform: 'rotate(12deg)' }}>
-                  <span className="card-number-large">{dailyCardNumber}</span>
-                  <div className="card-symbol-large">✦</div>
-                  <span className="card-name-large">{dailyCardName}</span>
-                </div>
-              )}
-              {isDailyReversed && (
-                <div className="card-reversed-indicator-large">R</div>
-              )}
+          {/* LEFT HALF - Card Image (3D floating effect) */}
+          <div className="card-half-left">
+            <div className="card-image-3d-wrapper">
+              <div className="card-image-tilted">
+                {dailyCard?.image_url ? (
+                  <img 
+                    src={dailyCard.image_url} 
+                    alt={dailyCardName}
+                    className="card-image-large"
+                    style={{ transform: isDailyReversed ? 'rotate(185deg)' : 'rotate(5deg)' }}
+                  />
+                ) : (
+                  <div className="card-placeholder-large" style={{ transform: 'rotate(5deg)' }}>
+                    <span className="card-number-large">{dailyCardNumber}</span>
+                    <div className="card-symbol-large">✦</div>
+                    <span className="card-name-large">{dailyCardName}</span>
+                  </div>
+                )}
+                {isDailyReversed && (
+                  <div className="card-reversed-indicator-large">R</div>
+                )}
+              </div>
+              {/* 3D Shadow underneath */}
+              <div className="card-3d-shadow"></div>
             </div>
           </div>
 
-          {/* Card Info */}
-          <div className="card-info-section">
-            <div className="card-day-label">CARD OF THE DAY</div>
-            <h3 className="card-title">{dailyCardName}</h3>
-            <p className="card-meaning">"{dailyCardMeaning}"</p>
-            {dailyCardElement && (
-              <p className="card-element">{dailyCardElement}</p>
-            )}
-            <button className="read-guidance-btn">
-              READ GUIDANCE
-              <ChevronRight size={14} />
-            </button>
+          {/* RIGHT HALF - Card Info + Read Guidance */}
+          <div className="card-half-right">
+            <div className="card-info-section">
+              <div className="card-day-label">CARD OF THE DAY</div>
+              <h3 className="card-title">{dailyCardName}</h3>
+              <p className="card-meaning">"{dailyCardMeaning}"</p>
+              {dailyCardElement && (
+                <p className="card-element">{dailyCardElement}</p>
+              )}
+              <button className="read-guidance-btn">
+                READ GUIDANCE
+                <ChevronRight size={14} />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -406,12 +408,15 @@ export default function HomeScreen({ onNavigate }: Props) {
           {quickActions.map((action, index) => (
             <button 
               key={index} 
-              className={`quick-item ${action.isPremium ? 'premium-item' : ''} ${action.action === 'Admin' ? 'admin-item' : ''}`}
+              className={`quick-item ${action.isPremium ? 'premium-item' : ''} ${action.action === 'Admin' ? 'admin-item' : ''} ${(action as any).isPaywall ? 'paywall-item' : ''}`}
               style={{ '--glow-color': action.color } as React.CSSProperties}
               onClick={() => handleQuickAction(action.action)}
             >
               {action.isPremium && (
                 <div className="premium-badge">💎</div>
+              )}
+              {(action as any).isPaywall && (
+                <div className="paywall-badge">👑</div>
               )}
               <div className="q-icon-wrapper" style={{ color: action.color }}>
                 {action.icon}

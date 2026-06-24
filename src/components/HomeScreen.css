@@ -1,6 +1,5 @@
 /* ============================================
    HOME SCREEN - GAMIFIED DASHBOARD
-   Dark Mystic Theme with Gold Accents
    ============================================ */
 
    .home-screen {
@@ -18,7 +17,7 @@
   }
   
   /* ============================================
-     1. USER HEADER - XP Circular Bar
+     1. USER HEADER
      ============================================ */
   .user-header {
     background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
@@ -45,7 +44,6 @@
     flex-shrink: 0;
   }
   
-  /* ✅ XP Circular Progress */
   .xp-circular-progress {
     position: absolute;
     top: 0;
@@ -117,7 +115,6 @@
     margin-left: 4px;
   }
   
-  /* ✅ XP Text Inline */
   .xp-text-inline {
     display: flex;
     align-items: center;
@@ -189,6 +186,7 @@
   
   /* ============================================
      2. DAILY QUESTS (60%) + ACTION BUTTONS (40%)
+     ✅ დამცირებული სიმაღლე
      ============================================ */
   .quests-and-actions-split {
     display: flex;
@@ -202,8 +200,8 @@
     flex: 1 1 60%;
     background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
     border: 1px solid #332a1a;
-    border-radius: 16px;
-    padding: 10px;
+    border-radius: 14px;
+    padding: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   }
   
@@ -211,12 +209,13 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
+    padding: 0 2px;
   }
   
   .quests-header-compact h3 {
     margin: 0;
-    font-size: 11px;
+    font-size: 9px;
     color: #C5A059;
     letter-spacing: 1px;
     font-weight: 700;
@@ -224,7 +223,7 @@
   }
   
   .quests-timer-compact {
-    font-size: 10px;
+    font-size: 9px;
     color: #b3a68c;
     font-family: monospace;
   }
@@ -232,22 +231,29 @@
   .quest-list-compact {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
   }
   
   .quest-item-compact {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 6px 8px;
+    gap: 6px;
+    padding: 4px 6px;
     background: rgba(197, 160, 89, 0.05);
-    border-radius: 8px;
-    border: 1px solid rgba(197, 160, 89, 0.1);
+    border-radius: 6px;
+    border: 1px solid rgba(197, 160, 89, 0.08);
   }
   
   .quest-icon-compact {
     color: #C5A059;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+  }
+  
+  .quest-icon-compact svg {
+    width: 12px !important;
+    height: 12px !important;
   }
   
   .quest-info-compact {
@@ -256,11 +262,11 @@
   }
   
   .quest-name-compact {
-    font-size: 11px;
+    font-size: 9px;
     color: #fff;
     font-weight: 500;
     display: block;
-    margin-bottom: 3px;
+    margin-bottom: 2px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -269,12 +275,12 @@
   .quest-progress-compact {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
   }
   
   .progress-bar-compact {
     flex: 1;
-    height: 4px;
+    height: 3px;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 2px;
     overflow: hidden;
@@ -289,18 +295,18 @@
   }
   
   .progress-text-compact {
-    font-size: 9px;
+    font-size: 8px;
     color: #b3a68c;
-    min-width: 20px;
+    min-width: 18px;
   }
   
   .quest-reward-compact {
-    font-size: 10px;
+    font-size: 9px;
     color: #C5A059;
     font-weight: 600;
     display: flex;
     align-items: center;
-    gap: 2px;
+    gap: 1px;
     flex-shrink: 0;
   }
   
@@ -309,7 +315,7 @@
     flex: 0 0 38%;
     background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
     border: 1px solid #332a1a;
-    border-radius: 16px;
+    border-radius: 14px;
     padding: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     display: flex;
@@ -366,7 +372,6 @@
     border-radius: 4px;
   }
   
-  /* Action Button Colors */
   .action-btn-vertical:not(.streak-btn-v):not(.rank-btn-v):not(.upgrade-btn-v):not(.subscription-btn-v) {
     --glow-color: #C5A059;
   }
@@ -375,29 +380,14 @@
     color: #C5A059;
   }
   
-  .streak-btn-v {
-    --glow-color: #ff6b35;
-  }
+  .streak-btn-v { --glow-color: #ff6b35; }
+  .streak-btn-v .action-icon-v { color: #ff6b35; }
   
-  .streak-btn-v .action-icon-v {
-    color: #ff6b35;
-  }
+  .rank-btn-v { --glow-color: #ffd700; }
+  .rank-btn-v .action-icon-v { color: #ffd700; }
   
-  .rank-btn-v {
-    --glow-color: #ffd700;
-  }
-  
-  .rank-btn-v .action-icon-v {
-    color: #ffd700;
-  }
-  
-  .upgrade-btn-v {
-    --glow-color: #a78bfa;
-  }
-  
-  .upgrade-btn-v .action-icon-v {
-    color: #a78bfa;
-  }
+  .upgrade-btn-v { --glow-color: #a78bfa; }
+  .upgrade-btn-v .action-icon-v { color: #a78bfa; }
   
   .subscription-btn-v {
     --glow-color: #FFD700;
@@ -429,7 +419,8 @@
   }
   
   /* ============================================
-     3. CARD OF THE DAY - Full Width, Tilted
+     3. CARD OF THE DAY - Split Layout, 3D Effect
+     ✅ გასწორებული tilt, split layout, 3D space effect
      ============================================ */
   .card-of-day-banner {
     background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
@@ -440,7 +431,7 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     position: relative;
     overflow: visible;
-    min-height: 140px;
+    min-height: 160px;
   }
   
   .clickable-card {
@@ -458,33 +449,45 @@
     transform: translateY(0);
   }
   
+  /* ✅ Split Layout - 50/50 */
   .card-of-day-content {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 0;
+    position: relative;
   }
   
-  /* Card Image Wrapper - Allows overflow */
-  .card-image-wrapper {
-    flex: 0 0 140px;
+  /* LEFT HALF - Card */
+  .card-half-left {
+    flex: 0 0 50%;
     height: 160px;
     position: relative;
-    overflow: visible;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
+  /* 3D Wrapper - perspective */
+  .card-image-3d-wrapper {
+    position: relative;
+    width: 120px;
+    height: 170px;
+    perspective: 800px;
+  }
+  
+  /* ✅ Card tilted - ნაკლებად (5°) */
   .card-image-tilted {
-    position: absolute;
-    top: -20px;
-    left: -10px;
-    width: 130px;
-    height: 190px;
-    transform: rotate(12deg);
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform: rotateY(-8deg) rotateX(3deg) rotate(5deg);
     transition: transform 0.4s ease;
     z-index: 2;
+    transform-style: preserve-3d;
   }
   
   .card-of-day-banner:hover .card-image-tilted {
-    transform: rotate(8deg) translateY(-5px);
+    transform: rotateY(-5deg) rotateX(2deg) rotate(3deg) translateY(-4px);
   }
   
   .card-image-large {
@@ -494,8 +497,12 @@
     border-radius: 10px;
     border: 2px solid #C5A059;
     box-shadow: 
-      0 10px 30px rgba(0, 0, 0, 0.6),
-      0 0 20px rgba(197, 160, 89, 0.3);
+      /* ✅ 3D Space Effect - multiple shadows for depth */
+      0 2px 4px rgba(0, 0, 0, 0.4),
+      0 8px 16px rgba(0, 0, 0, 0.5),
+      0 16px 32px rgba(0, 0, 0, 0.6),
+      0 0 20px rgba(197, 160, 89, 0.3),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.1);
   }
   
   .card-placeholder-large {
@@ -505,7 +512,9 @@
     border-radius: 10px;
     border: 2px solid #C5A059;
     box-shadow: 
-      0 10px 30px rgba(0, 0, 0, 0.6),
+      0 2px 4px rgba(0, 0, 0, 0.4),
+      0 8px 16px rgba(0, 0, 0, 0.5),
+      0 16px 32px rgba(0, 0, 0, 0.6),
       0 0 20px rgba(197, 160, 89, 0.3);
     display: flex;
     flex-direction: column;
@@ -551,13 +560,33 @@
     z-index: 3;
   }
   
-  /* Card Info Section */
+  /* ✅ 3D Shadow underneath the card */
+  .card-3d-shadow {
+    position: absolute;
+    bottom: -10px;
+    left: 10%;
+    width: 80%;
+    height: 20px;
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.6) 0%, transparent 70%);
+    filter: blur(8px);
+    z-index: 1;
+    opacity: 0.7;
+  }
+  
+  /* RIGHT HALF - Card Info */
+  .card-half-right {
+    flex: 0 0 50%;
+    padding-left: 16px;
+    display: flex;
+    align-items: center;
+  }
+  
   .card-info-section {
-    flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
     gap: 6px;
+    width: 100%;
     min-width: 0;
   }
   
@@ -704,6 +733,74 @@
   .quick-item.admin-item .q-icon-wrapper {
     color: #ef4444 !important;
     filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.6));
+  }
+  
+  /* ✅ Paywall Item - ახალი! */
+  .quick-item.paywall-item {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 165, 0, 0.08) 100%);
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .quick-item.paywall-item::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      45deg,
+      transparent 30%,
+      rgba(255, 215, 0, 0.1) 50%,
+      transparent 70%
+    );
+    animation: paywallShine 3s ease-in-out infinite;
+  }
+  
+  @keyframes paywallShine {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+  }
+  
+  .quick-item.paywall-item:hover {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.25) 0%, rgba(255, 165, 0, 0.15) 100%);
+    border-color: rgba(255, 215, 0, 0.6);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+  }
+  
+  .quick-item.paywall-item .q-icon-wrapper {
+    color: #FFD700 !important;
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6));
+  }
+  
+  .paywall-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: linear-gradient(135deg, #FFD700 0%, #FF8C00 100%);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
+    z-index: 10;
+    animation: paywallPulse 2s ease-in-out infinite;
+  }
+  
+  @keyframes paywallPulse {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
+    }
+    50% {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(255, 215, 0, 0.7);
+    }
   }
   
   /* ============================================
