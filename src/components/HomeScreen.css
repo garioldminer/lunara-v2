@@ -4,7 +4,6 @@
 
    .home-screen {
     width: 100%;
-    /* ✅ ზედა 70px, გვერდები 3px */
     padding: 70px 3px 100px 3px;
     max-width: 480px;
     margin: 0 auto;
@@ -26,7 +25,6 @@
     border: 1px solid #332a1a;
     border-radius: 16px;
     padding: 12px 14px;
-    /* ✅ ბანერებს შორის 2px */
     margin-bottom: 2px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   }
@@ -177,27 +175,26 @@
   
   /* ============================================
      2. DAILY QUESTS + ACTION BUTTONS
-     ✅ ორივე ბანერი ერთი სიმაღლის (stretch)
-     ✅ gap: 2px
+     ✅ ორივე ბანერი ზუსტად ერთი სიმაღლის
+     ✅ stretch მუშაობს ორივეზე
      ============================================ */
   .quests-and-actions-split {
     display: flex;
     gap: 2px;
     margin-bottom: 2px;
     width: 100%;
-    /* ✅ ორივე ბანერი ერთ სიმაღლეზე */
+    /* ✅ ორივე ბანერი ერთ სიმაღლეზე გაიწელება */
     align-items: stretch;
   }
   
-  /* LEFT - Daily Quests */
+  /* LEFT - Daily Quests (60%) */
   .daily-quests-compact {
-    flex: 1 1 60%;
+    flex: 3;
     background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
     border: 1px solid #332a1a;
     border-radius: 14px;
     padding: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-    /* ✅ სიმაღლე ავტომატური - შიგთავსის მიხედვით */
     display: flex;
     flex-direction: column;
     min-width: 0;
@@ -209,11 +206,12 @@
     align-items: center;
     margin-bottom: 6px;
     padding: 0 2px;
+    flex-shrink: 0;
   }
   
   .quests-header-compact h3 {
     margin: 0;
-    font-size: clamp(8px, 2.5vw, 10px);
+    font-size: 9px;
     color: #C5A059;
     letter-spacing: 1px;
     font-weight: 700;
@@ -221,7 +219,7 @@
   }
   
   .quests-timer-compact {
-    font-size: clamp(8px, 2.5vw, 10px);
+    font-size: 9px;
     color: #b3a68c;
     font-family: monospace;
   }
@@ -230,9 +228,8 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
-    /* ✅ იკავებს მთელ დარჩენილ სივრცეს */
     flex: 1;
-    justify-content: space-around;
+    justify-content: center;
   }
   
   .quest-item-compact {
@@ -250,10 +247,9 @@
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    /* ✅ ერთნაირი ზომა */
+    justify-content: center;
     width: 16px;
     height: 16px;
-    justify-content: center;
   }
   
   .quest-icon-compact svg {
@@ -267,7 +263,7 @@
   }
   
   .quest-name-compact {
-    font-size: clamp(8px, 2.5vw, 10px);
+    font-size: 9px;
     color: #fff;
     font-weight: 500;
     display: block;
@@ -306,7 +302,7 @@
   }
   
   .quest-reward-compact {
-    font-size: clamp(8px, 2.5vw, 10px);
+    font-size: 9px;
     color: #C5A059;
     font-weight: 600;
     display: flex;
@@ -315,21 +311,20 @@
     flex-shrink: 0;
   }
   
-  /* RIGHT - Action Buttons Panel */
+  /* ✅ RIGHT - Action Buttons Panel (40%)
+     stretch-ით გაიწელება Daily Quests-ის სიმაღლეზე */
   .action-buttons-panel {
-    flex: 0 0 calc(40% - 2px);
+    flex: 2;
     background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
     border: 1px solid #332a1a;
     border-radius: 14px;
     padding: 6px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     display: flex;
-    align-items: stretch;
-    /* ✅ სიმაღლე დეილი ქვესთს გაუტოლდება */
-    height: 100%;
+    min-width: 0;
   }
   
-  /* ✅ 2x2 grid - ყველა იკონკა ერთნაირი ზომის */
+  /* ✅ 2x2 Grid - იკავებს მთელ სივრცეს */
   .action-grid-vertical {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -339,6 +334,7 @@
     height: 100%;
   }
   
+  /* ✅ თითოეული ღილაკი შეავსებს grid cell-ს */
   .action-btn-vertical {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(197, 160, 89, 0.15);
@@ -352,8 +348,6 @@
     position: relative;
     overflow: hidden;
     padding: 4px;
-    /* ✅ კვადრატული - ერთნაირი სიგანე და სიმაღლე */
-    aspect-ratio: 1;
     width: 100%;
     height: 100%;
   }
@@ -370,7 +364,6 @@
   
   .action-icon-v {
     filter: drop-shadow(0 0 6px currentColor);
-    /* ✅ ფიქსირებული ზომა */
     width: 20px;
     height: 20px;
   }
@@ -478,7 +471,7 @@
     padding: 8px 0;
   }
   
-  /* ✅ ნამდვილი კარტის პროპორცია 1:1.5 */
+  /* ✅ ნამდვილი კარტის პროპორცია 2:3 */
   .card-image-3d-wrapper {
     position: relative;
     width: clamp(80px, 22vw, 110px);
@@ -855,17 +848,14 @@
   }
   
   /* ============================================
-     5. RESPONSIVE - მცირე ეკრანებისთვის
+     RESPONSIVE - მცირე ეკრანები
      ============================================ */
   @media (max-width: 360px) {
     .quests-and-actions-split {
       flex-direction: column;
     }
     
-    .daily-quests-compact {
-      flex: 1 1 100%;
-    }
-    
+    .daily-quests-compact,
     .action-buttons-panel {
       flex: 1 1 100%;
     }
@@ -892,7 +882,7 @@
   }
   
   /* ============================================
-     6. RESPONSIVE - დიდი ეკრანებისთვის
+     RESPONSIVE - დიდი ეკრანები
      ============================================ */
   @media (min-width: 480px) {
     .home-screen {
