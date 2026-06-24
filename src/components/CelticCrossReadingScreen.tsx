@@ -4,7 +4,7 @@ import { ArrowLeft, RotateCcw, Lock } from 'lucide-react';
 import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards';
 import QuestionInput from './QuestionInput';
 import PremiumPaywall from './PremiumPaywall';
-import { isPremium, PremiumFeatureId, getAvailableCredits } from '../lib/premiumService';
+import { isPremium, PremiumFeatureId, getAvailableCredits, decrementCredit } from '../lib/premiumService';
 import { saveReading } from '../lib/readingService';
 import { useUser } from '../context/UserContext';
 import './CelticCrossReadingScreen.css';
@@ -42,8 +42,37 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
   const [activeCard, setActiveCard] = useState<number | null>(null);
   const [question, setQuestion] = useState<string>('');
   const [showPaywall, setShowPaywall] = useState(false);
+  const [hasPermission, setHasPermission] = useState(false); // ახალი state
 
-  const handleQuestionSubmit = (q: string) => {
+  const handleQuestionSubmit = async (q: string) => {
+    if (!user) return;
+
+    // მკაცრი შემოწმება: აქვს უფლება გამოიყენოს?
+    const hasPremium = await isPremium(user.id);
+    
+    if (!hasPremium) {
+      // არ არის subscription - შეამოწმე credits
+      const credits = await getAvailableCredits(user.id);
+      const celticCrossCredits = credits['celtic_cross'] || 0;
+
+      if (celticCrossCredits <= 0) {
+        // არ აქვს credits - აჩვენე Paywall
+        setShowPaywall(true);
+        return;
+      }
+
+      // აქვს credits - დააკელი 1
+      const success = await decrementCredit(user.id, 'celtic_cross');
+      
+      if (!success) {
+        alert('Failed to use credit. Please try again.');
+        return;
+      }
+
+      console.log('✅ Credit decremented. Remaining:', celticCrossCredits - 1);
+    }
+
+    // ყველაფერი OK - დაიწყე reading
     setQuestion(q);
     setPhase('revealing');
     startReading();
@@ -60,6 +89,7 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
 
     if (hasPremium) {
       // Premium მომხმარებელი - პირდაპირ კითხვაზე
+      setHasPermission(true);
       setPhase('question');
       return;
     }
@@ -70,11 +100,13 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
 
     if (celticCrossCredits > 0) {
       // აქვს credits - პირდაპირ კითხვაზე
+      setHasPermission(true);
       setPhase('question');
       return;
     }
 
     // არც subscription და არც credits - აჩვენე Paywall
+    setHasPermission(false);
     setShowPaywall(true);
   };
 
@@ -126,6 +158,7 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
     setReading([]);
     setActiveCard(null);
     setQuestion('');
+    setHasPermission(false);
   };
 
   const getCardMeta = (card: TarotCard) => {
@@ -366,11 +399,13 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
         onPurchase={(featureId: PremiumFeatureId) => {
           console.log('✅ Purchased:', featureId);
           setShowPaywall(false);
+          setHasPermission(true);
           setPhase('question');
         }}
         onUse={(featureId: PremiumFeatureId) => {
           console.log('🎯 Using feature:', featureId);
           setShowPaywall(false);
+          setHasPermission(true);
           setPhase('question');
         }}
       />
