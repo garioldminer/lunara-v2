@@ -32,7 +32,6 @@ export default function PremiumPaywall({
   const [credits, setCredits] = useState<Record<string, number>>({});
   const [hasSubscription, setHasSubscription] = useState(false);
 
-  // შეამოწმე credits და subscription როცა Paywall იხსნება
   useEffect(() => {
     if (isOpen && user) {
       const fetchData = async () => {
@@ -65,25 +64,17 @@ export default function PremiumPaywall({
       );
 
       if (result === 'success') {
-        // ✅ წარმატება!
         setShowSuccess(true);
         
-        // განაახლე local state (credit უკვე ბაზაშია)
         setCredits(prev => ({
           ...prev,
           [selectedFeature]: (prev[selectedFeature] || 0) + 1
         }));
         
-        console.log('✅ Purchase successful! New credits:', {
-          ...credits,
-          [selectedFeature]: (credits[selectedFeature] || 0) + 1
-        });
-        
         if (onPurchase) {
           onPurchase(selectedFeature as PremiumFeatureId);
         }
         
-        // 2.5 წამის შემდეგ დავხუროთ (არა reload!)
         setTimeout(() => {
           setShowSuccess(false);
           onClose();
@@ -155,7 +146,7 @@ export default function PremiumPaywall({
               </p>
             </div>
 
-            {/* Feature Tabs */}
+            {/* Feature Tabs - გაუმჯობესებული Toggle */}
             <div className="premium-tabs">
               <button
                 className={`premium-tab ${isSubscriptionTab ? 'active' : ''}`}
@@ -228,11 +219,7 @@ export default function PremiumPaywall({
                           <span>Unlimited</span>
                         </div>
                       ) : getCredits('celtic_cross') > 0 ? (
-                        <>
-                          <div className="credits-badge">
-                            <Check size={12} />
-                            <span>{getCredits('celtic_cross')}</span>
-                          </div>
+                        <div className="use-section">
                           <button 
                             className="use-btn"
                             onClick={(e) => {
@@ -242,7 +229,10 @@ export default function PremiumPaywall({
                           >
                             Use
                           </button>
-                        </>
+                          <div className="credits-badge">
+                            {getCredits('celtic_cross')}
+                          </div>
+                        </div>
                       ) : (
                         <>
                           <span className="price-usd">{formatPrice(299)}</span>
@@ -266,11 +256,7 @@ export default function PremiumPaywall({
                           <span>Unlimited</span>
                         </div>
                       ) : getCredits('horseshoe') > 0 ? (
-                        <>
-                          <div className="credits-badge">
-                            <Check size={12} />
-                            <span>{getCredits('horseshoe')}</span>
-                          </div>
+                        <div className="use-section">
                           <button 
                             className="use-btn"
                             onClick={(e) => {
@@ -280,7 +266,10 @@ export default function PremiumPaywall({
                           >
                             Use
                           </button>
-                        </>
+                          <div className="credits-badge">
+                            {getCredits('horseshoe')}
+                          </div>
+                        </div>
                       ) : (
                         <>
                           <span className="price-usd">{formatPrice(199)}</span>
@@ -304,11 +293,7 @@ export default function PremiumPaywall({
                           <span>Unlimited</span>
                         </div>
                       ) : getCredits('relationship') > 0 ? (
-                        <>
-                          <div className="credits-badge">
-                            <Check size={12} />
-                            <span>{getCredits('relationship')}</span>
-                          </div>
+                        <div className="use-section">
                           <button 
                             className="use-btn"
                             onClick={(e) => {
@@ -318,7 +303,10 @@ export default function PremiumPaywall({
                           >
                             Use
                           </button>
-                        </>
+                          <div className="credits-badge">
+                            {getCredits('relationship')}
+                          </div>
+                        </div>
                       ) : (
                         <>
                           <span className="price-usd">{formatPrice(399)}</span>
@@ -331,7 +319,7 @@ export default function PremiumPaywall({
               )}
             </div>
 
-            {/* Purchase Button (მხოლოდ თუ არ არის ნაყიდი) */}
+            {/* Purchase Button */}
             {!hasSubscription && getCredits(selectedFeature) === 0 && (
               <button 
                 className="premium-purchase-btn"
