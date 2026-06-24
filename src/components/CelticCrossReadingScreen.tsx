@@ -4,7 +4,7 @@ import { ArrowLeft, RotateCcw, Lock } from 'lucide-react';
 import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards';
 import QuestionInput from './QuestionInput';
 import PremiumPaywall from './PremiumPaywall';
-import { isPremium, PremiumFeatureId, getAvailableCredits, decrementCredit } from '../lib/premiumService';
+import { isPremium, PremiumFeatureId, getAvailableCredits } from '../lib/premiumService';
 import { saveReading } from '../lib/readingService';
 import { useUser } from '../context/UserContext';
 import './CelticCrossReadingScreen.css';
@@ -366,13 +366,11 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
         onPurchase={(featureId: PremiumFeatureId) => {
           console.log('✅ Purchased:', featureId);
           setShowPaywall(false);
-          // ავტომატურად გადადის კითხვის ფაზაზე (არა reload!)
           setPhase('question');
         }}
         onUse={(featureId: PremiumFeatureId) => {
           console.log('🎯 Using feature:', featureId);
           setShowPaywall(false);
-          // გადადის კითხვის ფაზაზე
           setPhase('question');
         }}
       />
