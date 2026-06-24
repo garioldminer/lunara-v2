@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import { useUser } from '../context/UserContext';
 import { tarotCards, SUITS } from '../data/tarotCards';
 import { getUserStreak } from '../lib/readingService';
+import { isAdmin } from '../lib/adminService';
 import { 
   Gem, Zap, Trophy, Flame, Star, 
   Sparkles, LayoutGrid, Moon, Hash, 
   Crown,
-  Scroll, Activity, ChevronRight, Gift
+  Scroll, Activity, ChevronRight, Gift, Shield
 } from 'lucide-react';
 import './HomeScreen.css';
 
@@ -21,6 +22,14 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [dailyCard, setDailyCard] = useState<typeof tarotCards[0] | null>(null);
   const [isDailyReversed, setIsDailyReversed] = useState(false);
   const [currentStreak, setCurrentStreak] = useState(0);
+  const [isUserAdmin, setIsUserAdmin] = useState(false);
+
+  // ✅ Admin-ის შემოწმება
+  useEffect(() => {
+    if (user) {
+      setIsUserAdmin(isAdmin(user.id));
+    }
+  }, [user]);
 
   // Daily Card - მიიღე დღის კარტი
   useEffect(() => {
@@ -115,6 +124,8 @@ export default function HomeScreen({ onNavigate }: Props) {
         onNavigate('horseshoe');
       } else if (action === 'Relationship') {
         onNavigate('relationship');
+      } else if (action === 'Admin') {
+        onNavigate('admin');
       }
     }
   };
@@ -130,6 +141,17 @@ export default function HomeScreen({ onNavigate }: Props) {
     { icon: <span style={{ fontSize: '28px' }}>❤️</span>, label: 'Love', sublabel: 'Spread', color: '#f472b6', action: 'Relationship', isPremium: true },
     { icon: <Gem size={28} />, label: 'Crystals', sublabel: '', color: '#f472b6', action: 'Crystals' },
   ];
+
+  // ✅ Admin ღილაკი - მხოლოდ admin-სთვის
+  if (isUserAdmin) {
+    quickActions.push({
+      icon: <Shield size={28} />,
+      label: 'Admin',
+      sublabel: 'Panel',
+      color: '#ef4444',
+      action: 'Admin'
+    });
+  }
 
   const quests = [
     { icon: <Scroll size={18} />, name: 'Draw 3 Cards', current: 2, total: 3, reward: 20 },
@@ -300,7 +322,7 @@ export default function HomeScreen({ onNavigate }: Props) {
           {quickActions.map((action, index) => (
             <button 
               key={index} 
-              className={`quick-item ${action.isPremium ? 'premium-item' : ''}`}
+              className={`quick-item ${action.isPremium ? 'premium-item' : ''} ${action.action === 'Admin' ? 'admin-item' : ''}`}
               style={{ '--glow-color': action.color } as React.CSSProperties}
               onClick={() => handleQuickAction(action.action)}
             >

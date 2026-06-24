@@ -17,6 +17,7 @@ import ReadingHistoryScreen from './components/ReadingHistoryScreen';
 import CelticCrossReadingScreen from './components/CelticCrossReadingScreen';
 import HorseshoeReadingScreen from './components/HorseshoeReadingScreen';
 import RelationshipReadingScreen from './components/RelationshipReadingScreen';
+import AdminScreen from './components/AdminScreen';
 import BottomNav from './components/BottomNav';
 import { UserProvider, useUser } from './context/UserContext';
 import { getTelegramUser } from './lib/telegramAuth';
@@ -41,7 +42,8 @@ type Screen =
   | 'reading-history'
   | 'celtic-cross'
   | 'horseshoe'
-  | 'relationship';
+  | 'relationship'
+  | 'admin';
 
 // ===== USER LOADER COMPONENT =====
 function UserLoader({ onReady }: { onReady: () => void }) {
@@ -161,6 +163,11 @@ function AppContent() {
     else if (screen === 'relationship') {
       console.log('❤️ Opening Relationship Reading');
       goTo('relationship');
+    }
+    // ✅ Admin Panel
+    else if (screen === 'admin') {
+      console.log('🔐 Opening Admin Panel');
+      goTo('admin');
     }
     // Card Fan / Draw
     else if (screen === 'draw' || screen === 'card-fan') {
@@ -303,6 +310,10 @@ function AppContent() {
       )}
       {currentScreen === 'relationship' && (
         <RelationshipReadingScreen onNavigate={handleNavigate} />
+      )}
+      {/* ✅ Admin Panel */}
+      {currentScreen === 'admin' && (
+        <AdminScreen onNavigate={handleNavigate} />
       )}
     </div>
   );
