@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Crown, Sparkles, Infinity, CheckCircle, Lock, Star } from 'lucide-react';
+import { ArrowLeft, Crown, Sparkles, CheckCircle, Lock, Star } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { getActiveSubscription } from '../lib/subscriptionService';
 import { formatStars } from '../lib/telegramPaymentService';
@@ -217,9 +217,9 @@ export default function ServicesScreen({ onNavigate }: Props) {
         onNavigate?.('three-card-reading');
       }
     } else if (service.type === 'subscription') {
-      onNavigate?.('pricing');
+      onNavigate?.('services');
     } else if (service.type === 'single') {
-      onNavigate?.('pricing');
+      onNavigate?.('services');
     }
   };
 
