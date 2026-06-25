@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Users, Plus, Trash2, RefreshCw, Crown, ShieldAlert, Calendar, Clock, Zap, Key, Database, MessageSquare, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Users, Plus, Trash2, RefreshCw, Crown, ShieldAlert, Calendar, Clock, Zap, Key } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { 
   isAdmin, 
@@ -439,7 +439,7 @@ export default function AdminScreen({ onNavigate }: Props) {
         )}
       </div>
 
-      {/* ✅ ქვედა ნავიგაციის პანელი */}
+      {/* ✅ ქვედა ნავიგაციის პანელი - ცისფერი */}
       <div className="admin-bottom-nav">
         <button
           className={`admin-nav-btn ${activeTab === 'credits' ? 'active' : ''}`}
