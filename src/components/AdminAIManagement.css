@@ -1,5 +1,5 @@
 /* ============================================
-   AI ADMIN MANAGEMENT - FINAL VERSION
+   AI ADMIN MANAGEMENT - BLUE THEME
    ============================================ */
 
    .ai-admin-screen {
@@ -8,7 +8,7 @@
     min-height: 100vh;
     height: 100%;
     background: #0a0600;
-    color: #ffe566;
+    color: #93c5fd;
     padding: 16px 12px;
     padding-bottom: 40px;
     overflow-y: auto;
@@ -24,7 +24,7 @@
     justify-content: center;
     height: 100vh;
     gap: 16px;
-    color: #ffe566;
+    color: #60a5fa;
   }
   
   .spin {
@@ -37,7 +37,7 @@
   }
   
   /* ============================================
-     HEADER
+     HEADER - ცისფერი
      ============================================ */
   .ai-admin-header {
     display: flex;
@@ -45,38 +45,38 @@
     justify-content: space-between;
     margin-bottom: 16px;
     padding: 12px 14px;
-    background: linear-gradient(135deg, #1a0f05, #0a0600);
-    border: 1px solid rgba(200, 120, 0, 0.4);
+    background: linear-gradient(135deg, #0f172a, #0a0600);
+    border: 1px solid rgba(96, 165, 250, 0.4);
     border-radius: 14px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 12px rgba(200, 120, 0, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 12px rgba(96, 165, 250, 0.15);
   }
   
   .ai-admin-header-center {
     display: flex;
     align-items: center;
     gap: 10px;
-    color: #ffe566;
+    color: #93c5fd;
   }
   
   .ai-admin-header-center h1 {
     font-family: 'Georgia', serif;
     font-size: 16px;
-    color: #ffe566;
+    color: #93c5fd;
     margin: 0;
     font-weight: bold;
     letter-spacing: 0.5px;
-    text-shadow: 0 0 8px rgba(255, 229, 102, 0.3);
+    text-shadow: 0 0 8px rgba(96, 165, 250, 0.4);
   }
   
   .ai-admin-back-btn,
   .ai-admin-refresh-btn {
-    background: rgba(200, 120, 0, 0.15);
-    border: 1px solid rgba(200, 120, 0, 0.3);
+    background: rgba(96, 165, 250, 0.15);
+    border: 1px solid rgba(96, 165, 250, 0.3);
     border-radius: 10px;
     width: 36px;
     height: 36px;
     padding: 0;
-    color: #ffe566;
+    color: #60a5fa;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
@@ -88,12 +88,12 @@
   .ai-admin-back-btn:active,
   .ai-admin-refresh-btn:active {
     transform: scale(0.92);
-    background: rgba(200, 120, 0, 0.3);
-    border-color: #ffe566;
+    background: rgba(96, 165, 250, 0.3);
+    border-color: #93c5fd;
   }
   
   /* ============================================
-     TABS
+     TABS - ცისფერი
      ============================================ */
   .ai-admin-tabs {
     display: flex;
@@ -113,13 +113,13 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 10px 12px;
-    background: rgba(20, 12, 5, 0.8);
-    border: 1px solid rgba(200, 120, 0, 0.25);
+    padding: 10px 14px;
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(96, 165, 250, 0.25);
     border-radius: 20px;
-    color: #c87800;
+    color: #60a5fa;
     font-family: 'Georgia', serif;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -129,10 +129,10 @@
   }
   
   .ai-admin-tab.active {
-    background: linear-gradient(135deg, rgba(200, 120, 0, 0.35), rgba(255, 229, 102, 0.2));
-    border-color: #ffe566;
-    color: #ffe566;
-    box-shadow: 0 0 12px rgba(255, 229, 102, 0.3);
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.35), rgba(59, 130, 246, 0.25));
+    border-color: #60a5fa;
+    color: #dbeafe;
+    box-shadow: 0 0 12px rgba(96, 165, 250, 0.4);
   }
   
   .ai-admin-tab:active {
@@ -140,7 +140,7 @@
   }
   
   /* ============================================
-     CONTENT
+     CONTENT - ცისფერი ტექსტი
      ============================================ */
   .ai-admin-content {
     display: flex;
@@ -151,16 +151,16 @@
   .ai-admin-content h2 {
     font-family: 'Georgia', serif;
     font-size: 14px;
-    color: #ffe566;
+    color: #93c5fd;
     margin: 0 0 12px;
     letter-spacing: 1px;
-    text-shadow: 0 0 6px rgba(255, 229, 102, 0.2);
+    text-shadow: 0 0 6px rgba(96, 165, 250, 0.3);
   }
   
   .ai-admin-content h3 {
     font-family: 'Georgia', serif;
     font-size: 12px;
-    color: #c87800;
+    color: #60a5fa;
     margin: 0 0 10px;
     letter-spacing: 0.5px;
   }
@@ -185,8 +185,8 @@
     align-items: center;
     gap: 10px;
     padding: 12px;
-    background: linear-gradient(135deg, #1a0f05, #0a0600);
-    border: 1px solid rgba(200, 120, 0, 0.3);
+    background: linear-gradient(135deg, #0f172a, #0a0600);
+    border: 1px solid rgba(96, 165, 250, 0.3);
     border-radius: 12px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   }
@@ -204,7 +204,7 @@
   .stat-icon.blue { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
   .stat-icon.green { background: rgba(16, 185, 129, 0.2); color: #10b981; }
   .stat-icon.red { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
-  .stat-icon.gold { background: rgba(255, 229, 102, 0.2); color: #ffe566; }
+  .stat-icon.gold { background: rgba(96, 165, 250, 0.2); color: #60a5fa; }
   
   .stat-info {
     display: flex;
@@ -217,21 +217,21 @@
     font-family: 'Georgia', serif;
     font-size: 18px;
     font-weight: bold;
-    color: #ffe566;
+    color: #93c5fd;
     line-height: 1;
   }
   
   .stat-label {
     font-family: 'Georgia', serif;
     font-size: 9px;
-    color: #c87800;
+    color: #60a5fa;
     letter-spacing: 0.3px;
   }
   
   .dashboard-section {
     padding: 14px;
-    background: linear-gradient(135deg, #1a0f05, #0a0600);
-    border: 1px solid rgba(200, 120, 0, 0.3);
+    background: linear-gradient(135deg, #0f172a, #0a0600);
+    border: 1px solid rgba(96, 165, 250, 0.3);
     border-radius: 12px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   }
@@ -240,13 +240,13 @@
     font-family: 'Georgia', serif;
     font-size: 28px;
     font-weight: bold;
-    color: #ffe566;
+    color: #60a5fa;
     text-align: center;
     padding: 10px;
-    background: rgba(200, 120, 0, 0.1);
-    border: 1px solid rgba(200, 120, 0, 0.2);
+    background: rgba(96, 165, 250, 0.1);
+    border: 1px solid rgba(96, 165, 250, 0.2);
     border-radius: 10px;
-    text-shadow: 0 0 10px rgba(255, 229, 102, 0.3);
+    text-shadow: 0 0 10px rgba(96, 165, 250, 0.4);
   }
   
   .provider-status-list {
@@ -260,8 +260,8 @@
     align-items: center;
     justify-content: space-between;
     padding: 10px 12px;
-    background: rgba(20, 12, 5, 0.6);
-    border: 1px solid rgba(200, 120, 0, 0.2);
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(96, 165, 250, 0.2);
     border-radius: 10px;
   }
   
@@ -276,7 +276,7 @@
   .provider-name {
     font-family: 'Georgia', serif;
     font-size: 11px;
-    color: #ffe566;
+    color: #93c5fd;
     font-weight: 600;
   }
   
@@ -290,7 +290,7 @@
   }
   
   .provider-tier.free { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-  .provider-tier.paid { background: rgba(255, 229, 102, 0.2); color: #ffe566; }
+  .provider-tier.paid { background: rgba(96, 165, 250, 0.2); color: #60a5fa; }
   .provider-tier.specialized { background: rgba(167, 139, 250, 0.2); color: #a78bfa; }
   
   .provider-status-indicators {
@@ -332,7 +332,7 @@
   .circuit-state.half-open { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
   
   /* ============================================
-     HEADERS & ADD BUTTONS
+     ✅ HEADERS & ADD BUTTONS - ცისფერი
      ============================================ */
   .keys-header,
   .prompts-header {
@@ -347,31 +347,44 @@
   .prompts-header h2 {
     margin: 0;
     font-size: 14px;
+    flex: 1;
+    min-width: 0;
   }
   
+  /* ✅ ცისფერი Add ღილაკი - ტექსტი კარგად ეტევა */
   .add-btn {
-    display: flex;
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
     padding: 10px 16px;
-    background: linear-gradient(135deg, #c87800, #ffe566);
-    border: 1px solid #ffe566;
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.25), rgba(59, 130, 246, 0.2));
+    border: 1px solid rgba(96, 165, 250, 0.5);
     border-radius: 10px;
-    color: #0a0600;
+    color: #60a5fa;
     font-family: 'Georgia', serif;
     font-size: 12px;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(200, 120, 0, 0.3);
+    box-shadow: 0 2px 8px rgba(96, 165, 250, 0.3);
     white-space: nowrap;
     flex-shrink: 0;
     min-height: 40px;
+    max-width: 180px;
+    letter-spacing: 0.3px;
+  }
+  
+  .add-btn span {
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
   .add-btn:active {
     transform: scale(0.95);
-    box-shadow: 0 1px 4px rgba(200, 120, 0, 0.4);
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.4), rgba(59, 130, 246, 0.3));
+    border-color: #93c5fd;
+    box-shadow: 0 1px 4px rgba(96, 165, 250, 0.4);
   }
   
   /* ============================================
@@ -389,8 +402,8 @@
   .provider-card,
   .prompt-card {
     padding: 14px;
-    background: linear-gradient(135deg, #1a0f05, #0a0600);
-    border: 1px solid rgba(200, 120, 0, 0.3);
+    background: linear-gradient(135deg, #0f172a, #0a0600);
+    border: 1px solid rgba(96, 165, 250, 0.3);
     border-radius: 12px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     transition: all 0.3s ease;
@@ -400,7 +413,7 @@
   .provider-card.inactive,
   .prompt-card.inactive {
     opacity: 0.55;
-    border-color: rgba(200, 120, 0, 0.15);
+    border-color: rgba(96, 165, 250, 0.15);
   }
   
   /* ============================================
@@ -427,22 +440,16 @@
     min-width: 0;
   }
   
-  .provider-info h3 {
-    margin: 0;
-    font-size: 13px;
-    color: #ffe566;
-    font-weight: bold;
-  }
-  
+  .provider-info h3,
   .prompt-info h3 {
     margin: 0;
     font-size: 13px;
-    color: #ffe566;
+    color: #93c5fd;
     font-weight: bold;
   }
   
   /* ============================================
-     BADGES
+     BADGES - ცისფერი
      ============================================ */
   .provider-badge,
   .tier-badge,
@@ -458,13 +465,13 @@
   }
   
   .provider-badge {
-    background: rgba(255, 229, 102, 0.2);
-    color: #ffe566;
-    border: 1px solid rgba(255, 229, 102, 0.3);
+    background: rgba(96, 165, 250, 0.2);
+    color: #60a5fa;
+    border: 1px solid rgba(96, 165, 250, 0.3);
   }
   
   .tier-badge.free { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
-  .tier-badge.paid { background: rgba(255, 229, 102, 0.2); color: #ffe566; border: 1px solid rgba(255, 229, 102, 0.3); }
+  .tier-badge.paid { background: rgba(96, 165, 250, 0.2); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.3); }
   .tier-badge.specialized { background: rgba(167, 139, 250, 0.2); color: #a78bfa; border: 1px solid rgba(167, 139, 250, 0.3); }
   .tier-badge.unknown { background: rgba(107, 114, 128, 0.2); color: #6b7280; }
   
@@ -475,13 +482,13 @@
   }
   
   .type-badge {
-    background: rgba(200, 120, 0, 0.2);
-    color: #c87800;
-    border: 1px solid rgba(200, 120, 0, 0.3);
+    background: rgba(96, 165, 250, 0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(96, 165, 250, 0.3);
   }
   
   /* ============================================
-     ICON BUTTONS
+     ICON BUTTONS - ცისფერი
      ============================================ */
   .key-actions,
   .provider-actions,
@@ -495,9 +502,9 @@
     width: 32px;
     height: 32px;
     border-radius: 8px;
-    border: 1px solid rgba(200, 120, 0, 0.3);
-    background: rgba(20, 12, 5, 0.8);
-    color: #ffe566;
+    border: 1px solid rgba(96, 165, 250, 0.3);
+    background: rgba(15, 23, 42, 0.8);
+    color: #60a5fa;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -509,6 +516,7 @@
   
   .icon-btn:active {
     transform: scale(0.9);
+    background: rgba(96, 165, 250, 0.2);
   }
   
   .icon-btn.test { 
@@ -535,7 +543,6 @@
     background: rgba(251, 191, 36, 0.1);
   }
   
-  /* ✅ ახალი Edit ღილაკის სტილი */
   .icon-btn.edit { 
     border-color: rgba(96, 165, 250, 0.5); 
     color: #60a5fa;
@@ -548,7 +555,7 @@
   }
   
   /* ============================================
-     KEY DETAILS
+     KEY DETAILS - ცისფერი
      ============================================ */
   .key-details,
   .provider-details {
@@ -557,9 +564,9 @@
     gap: 8px;
     margin-bottom: 10px;
     padding: 10px;
-    background: rgba(20, 12, 5, 0.5);
+    background: rgba(15, 23, 42, 0.5);
     border-radius: 8px;
-    border: 1px solid rgba(200, 120, 0, 0.15);
+    border: 1px solid rgba(96, 165, 250, 0.15);
   }
   
   .key-value,
@@ -575,7 +582,7 @@
   
   .key-label,
   .label {
-    color: #c87800;
+    color: #60a5fa;
     font-weight: 600;
     min-width: 90px;
     font-size: 10px;
@@ -584,7 +591,7 @@
   
   .key-text,
   .value {
-    color: #ffe566;
+    color: #93c5fd;
     font-family: 'Courier New', monospace;
     font-size: 10px;
     word-break: break-all;
@@ -595,7 +602,7 @@
     display: flex;
     gap: 12px;
     font-size: 10px;
-    color: #c87800;
+    color: #60a5fa;
   }
   
   .key-meta span {
@@ -605,13 +612,13 @@
   }
   
   /* ============================================
-     USAGE BAR
+     USAGE BAR - ცისფერი
      ============================================ */
   .usage-bar,
   .mini-progress-bar {
     flex: 1;
     height: 6px;
-    background: rgba(200, 120, 0, 0.15);
+    background: rgba(96, 165, 250, 0.15);
     border-radius: 3px;
     overflow: hidden;
     min-width: 60px;
@@ -622,12 +629,13 @@
     height: 100%;
     transition: width 0.5s ease;
     border-radius: 3px;
-    box-shadow: 0 0 4px currentColor;
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    box-shadow: 0 0 4px #60a5fa;
   }
   
   .percentage {
     font-size: 9px;
-    color: #c87800;
+    color: #60a5fa;
     margin-left: 4px;
     font-weight: 600;
   }
@@ -672,7 +680,7 @@
     gap: 8px;
     margin-top: 10px;
     padding-top: 10px;
-    border-top: 1px solid rgba(200, 120, 0, 0.2);
+    border-top: 1px solid rgba(96, 165, 250, 0.2);
     flex-wrap: wrap;
   }
   
@@ -712,7 +720,7 @@
   }
   
   /* ============================================
-     PROMPTS
+     PROMPTS - ცისფერი
      ============================================ */
   .prompt-content {
     display: flex;
@@ -728,19 +736,19 @@
   
   .section-label {
     font-size: 10px;
-    color: #c87800;
+    color: #60a5fa;
     font-weight: 600;
     letter-spacing: 0.3px;
   }
   
   .section-text {
     font-size: 11px;
-    color: #ffe566;
+    color: #93c5fd;
     line-height: 1.5;
     padding: 10px;
-    background: rgba(20, 12, 5, 0.6);
+    background: rgba(15, 23, 42, 0.6);
     border-radius: 8px;
-    border: 1px solid rgba(200, 120, 0, 0.15);
+    border: 1px solid rgba(96, 165, 250, 0.15);
     margin: 0;
     word-break: break-word;
   }
@@ -769,7 +777,7 @@
   }
   
   /* ============================================
-     STATS - გასწორებული სქროლის გარეშე
+     STATS - ცისფერი
      ============================================ */
   .ai-stats {
     display: flex;
@@ -779,8 +787,8 @@
   
   .stats-section {
     padding: 14px;
-    background: linear-gradient(135deg, #1a0f05, #0a0600);
-    border: 1px solid rgba(200, 120, 0, 0.3);
+    background: linear-gradient(135deg, #0f172a, #0a0600);
+    border: 1px solid rgba(96, 165, 250, 0.3);
     border-radius: 12px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   }
@@ -802,9 +810,9 @@
   }
   
   .stats-table-header {
-    background: rgba(200, 120, 0, 0.15);
+    background: rgba(96, 165, 250, 0.15);
     border-radius: 8px;
-    color: #c87800;
+    color: #60a5fa;
     font-weight: 600;
     letter-spacing: 0.3px;
     text-transform: uppercase;
@@ -812,10 +820,10 @@
   }
   
   .stats-table-row {
-    background: rgba(20, 12, 5, 0.6);
+    background: rgba(15, 23, 42, 0.6);
     border-radius: 8px;
-    color: #ffe566;
-    border: 1px solid rgba(200, 120, 0, 0.15);
+    color: #93c5fd;
+    border: 1px solid rgba(96, 165, 250, 0.15);
   }
   
   .stats-table-row .success { color: #10b981; font-weight: 600; }
@@ -829,7 +837,7 @@
   }
   
   /* ============================================
-     MODALS - გასწორებული Dropdown-ით
+     MODALS - ცისფერი
      ============================================ */
   .modal-overlay {
     position: fixed;
@@ -848,8 +856,8 @@
   }
   
   .modal {
-    background: linear-gradient(135deg, #1a0f05, #0a0600);
-    border: 2px solid rgba(200, 120, 0, 0.5);
+    background: linear-gradient(135deg, #0f172a, #0a0600);
+    border: 2px solid rgba(96, 165, 250, 0.5);
     border-radius: 18px;
     padding: 22px 18px;
     max-width: 400px;
@@ -857,7 +865,7 @@
     max-height: 85vh;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    box-shadow: 0 0 40px rgba(200, 120, 0, 0.3), 0 10px 40px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 40px rgba(96, 165, 250, 0.3), 0 10px 40px rgba(0, 0, 0, 0.5);
   }
   
   .modal.large {
@@ -867,11 +875,11 @@
   .modal h3 {
     font-family: 'Georgia', serif;
     font-size: 16px;
-    color: #ffe566;
+    color: #93c5fd;
     margin: 0 0 18px;
     text-align: center;
     letter-spacing: 1px;
-    text-shadow: 0 0 8px rgba(255, 229, 102, 0.3);
+    text-shadow: 0 0 8px rgba(96, 165, 250, 0.4);
   }
   
   .modal-field {
@@ -883,20 +891,19 @@
   
   .modal-field label {
     font-size: 11px;
-    color: #c87800;
+    color: #60a5fa;
     font-weight: 600;
     letter-spacing: 0.3px;
   }
   
-  /* ✅ გასწორებული Input/Select/Textarea სტილები */
   .modal-field input,
   .modal-field select,
   .modal-field textarea {
-    background: rgba(20, 12, 5, 0.8);
-    border: 1px solid rgba(200, 120, 0, 0.3);
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(96, 165, 250, 0.3);
     border-radius: 10px;
     padding: 11px 12px;
-    color: #ffe566;
+    color: #93c5fd;
     font-family: 'Georgia', serif;
     font-size: 12px;
     outline: none;
@@ -909,10 +916,9 @@
     appearance: none;
   }
   
-  /* ✅ Dropdown-ის სწორი სტილი */
   .modal-field select {
-    background-color: rgba(20, 12, 5, 0.8);
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c87800' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-color: rgba(15, 23, 42, 0.8);
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2360a5fa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
     background-repeat: no-repeat;
     background-position: right 12px center;
     background-size: 16px;
@@ -921,8 +927,8 @@
   }
   
   .modal-field select option {
-    background: #1a0f05;
-    color: #ffe566;
+    background: #0f172a;
+    color: #93c5fd;
     padding: 12px;
     font-size: 13px;
   }
@@ -930,15 +936,15 @@
   .modal-field input:focus,
   .modal-field select:focus,
   .modal-field textarea:focus {
-    border-color: #ffe566;
-    box-shadow: 0 0 8px rgba(255, 229, 102, 0.3);
-    background: rgba(20, 12, 5, 0.95);
+    border-color: #60a5fa;
+    box-shadow: 0 0 8px rgba(96, 165, 250, 0.4);
+    background: rgba(15, 23, 42, 0.95);
   }
   
   .modal-field input::placeholder,
   .modal-field textarea::placeholder {
-    color: #886600;
-    opacity: 0.7;
+    color: #3b82f6;
+    opacity: 0.6;
   }
   
   .modal-field textarea {
@@ -953,6 +959,7 @@
     margin-top: 18px;
   }
   
+  /* ✅ Cancel ღილაკი - მუქი ცისფერი */
   .cancel-btn,
   .confirm-btn {
     flex: 1;
@@ -966,28 +973,32 @@
     border: none;
     min-height: 44px;
     letter-spacing: 0.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
   .cancel-btn {
-    background: rgba(200, 120, 0, 0.15);
-    border: 1px solid rgba(200, 120, 0, 0.3);
-    color: #c87800;
+    background: rgba(96, 165, 250, 0.1);
+    border: 1px solid rgba(96, 165, 250, 0.3);
+    color: #60a5fa;
   }
   
   .cancel-btn:active {
     transform: scale(0.96);
-    background: rgba(200, 120, 0, 0.25);
+    background: rgba(96, 165, 250, 0.2);
   }
   
+  /* ✅ Confirm ღილაკი - ცისფერი gradient */
   .confirm-btn {
-    background: linear-gradient(135deg, #c87800, #ffe566);
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
     color: #0a0600;
-    box-shadow: 0 2px 10px rgba(200, 120, 0, 0.4);
+    box-shadow: 0 2px 10px rgba(96, 165, 250, 0.4);
   }
   
   .confirm-btn:active {
     transform: scale(0.96);
-    box-shadow: 0 1px 5px rgba(200, 120, 0, 0.5);
+    box-shadow: 0 1px 5px rgba(96, 165, 250, 0.5);
   }
   
   .confirm-btn:disabled {
@@ -1025,6 +1036,11 @@
     .key-details,
     .provider-details {
       padding: 8px;
+    }
+    
+    .add-btn {
+      padding: 8px 12px;
+      font-size: 11px;
     }
   }
   

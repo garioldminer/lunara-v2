@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Users, Plus, Trash2, RefreshCw, Crown, ShieldAlert, Calendar, Clock, Zap } from 'lucide-react';
+import { ArrowLeft, Users, Plus, Trash2, RefreshCw, Crown, ShieldAlert, Calendar, Clock, Zap, Key, Database, MessageSquare, BarChart3 } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { 
   isAdmin, 
@@ -55,7 +55,7 @@ export default function AdminScreen({ onNavigate }: Props) {
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [editingFeature, setEditingFeature] = useState<string>('');
   const [newAmount, setNewAmount] = useState(0);
-  const [activeTab, setActiveTab] = useState<'credits' | 'subscriptions' | 'ai'>('credits');
+  const [activeTab, setActiveTab] = useState<'credits' | 'subscriptions'>('credits');
   
   // Subscription management states
   const [showAddSubscription, setShowAddSubscription] = useState(false);
@@ -173,15 +173,6 @@ export default function AdminScreen({ onNavigate }: Props) {
     return days;
   };
 
-  // ✅ AI ტაბზე დაჭერისას - გადავდივართ ცალკე ეკრანზე
-  const handleTabClick = (tab: 'credits' | 'subscriptions' | 'ai') => {
-    if (tab === 'ai') {
-      onNavigate?.('ai-management');
-      return;
-    }
-    setActiveTab(tab);
-  };
-
   // ჯერ არ ვიცით admin თუ არა
   if (isUserAdmin === null || loading) {
     return (
@@ -211,6 +202,7 @@ export default function AdminScreen({ onNavigate }: Props) {
 
   return (
     <div className="admin-screen">
+      {/* Header */}
       <div className="admin-header">
         <button className="admin-back-btn" onClick={() => onNavigate?.('home')}>
           <ArrowLeft size={20} />
@@ -224,250 +216,253 @@ export default function AdminScreen({ onNavigate }: Props) {
         </button>
       </div>
 
-      {/* ✅ განახლებული Tabs - AI ტაბით */}
-      <div className="admin-tabs">
-        <button
-          className={`admin-tab ${activeTab === 'credits' ? 'active' : ''}`}
-          onClick={() => handleTabClick('credits')}
-        >
-          <span>💎</span>
-          <span>Credits</span>
-        </button>
-        <button
-          className={`admin-tab ${activeTab === 'subscriptions' ? 'active' : ''}`}
-          onClick={() => handleTabClick('subscriptions')}
-        >
-          <span>👑</span>
-          <span>Subscriptions</span>
-        </button>
-        <button
-          className="admin-tab ai-tab"
-          onClick={() => handleTabClick('ai')}
-        >
-          <Zap size={16} />
-          <span>🤖 AI</span>
-        </button>
-      </div>
-
-      {/* Credits Tab */}
-      {activeTab === 'credits' && (
-        <>
-          <div className="admin-stats">
-            <div className="stat-card">
-              <span className="stat-number">{users.length}</span>
-              <span className="stat-label">Total Users</span>
+      {/* Content Area */}
+      <div className="admin-content-area">
+        {/* Credits Tab */}
+        {activeTab === 'credits' && (
+          <>
+            <div className="admin-stats">
+              <div className="stat-card">
+                <span className="stat-number">{users.length}</span>
+                <span className="stat-label">Total Users</span>
+              </div>
             </div>
-          </div>
 
-          <div className="admin-users-list">
-            {users.map((targetUser) => (
-              <motion.div
-                key={targetUser.id}
-                className="admin-user-card"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
-                <div className="user-info">
-                  <div className="user-avatar">
-                    {targetUser.display_name?.charAt(0).toUpperCase() || 'U'}
-                  </div>
-                  <div className="user-details">
-                    <h3>{targetUser.display_name || 'Unknown'}</h3>
-                    <p>@{targetUser.username || targetUser.telegram_id}</p>
-                  </div>
-                </div>
-
-                <div className="user-credits">
-                  {['celtic_cross', 'horseshoe', 'relationship'].map((featureId) => {
-                    const credit = targetUser.credits.find(c => c.feature_id === featureId);
-                    const amount = credit?.credits || 0;
-
-                    return (
-                      <div key={featureId} className="credit-item">
-                        <span className="credit-label">
-                          {featureId === 'celtic_cross' && '✝️ Celtic'}
-                          {featureId === 'horseshoe' && '🐎 Horseshoe'}
-                          {featureId === 'relationship' && '❤️ Relationship'}
-                        </span>
-
-                        {editingUser === targetUser.id && editingFeature === featureId ? (
-                          <div className="credit-edit">
-                            <input
-                              type="number"
-                              value={newAmount}
-                              onChange={(e) => setNewAmount(parseInt(e.target.value) || 0)}
-                              min="0"
-                            />
-                            <button
-                              className="save-btn"
-                              onClick={() => handleUpdateCredits(targetUser.id, featureId)}
-                            >
-                              Save
-                            </button>
-                            <button
-                              className="cancel-btn"
-                              onClick={() => setEditingUser(null)}
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="credit-actions">
-                            <span className="credit-amount">{amount}</span>
-                            <div className="credit-buttons">
-                              <button
-                                className="add-btn"
-                                onClick={() => handleAddCredits(targetUser.id, featureId, 1)}
-                                title="Add 1"
-                              >
-                                <Plus size={14} />
-                              </button>
-                              <button
-                                className="add-btn"
-                                onClick={() => handleAddCredits(targetUser.id, featureId, 5)}
-                                title="Add 5"
-                              >
-                                +5
-                              </button>
-                              <button
-                                className="edit-btn"
-                                onClick={() => {
-                                  setEditingUser(targetUser.id);
-                                  setEditingFeature(featureId);
-                                  setNewAmount(amount);
-                                }}
-                                title="Edit"
-                              >
-                                Edit
-                              </button>
-                              {amount > 0 && (
-                                <button
-                                  className="delete-btn"
-                                  onClick={() => handleDeleteCredits(targetUser.id, featureId)}
-                                  title="Delete"
-                                >
-                                  <Trash2 size={14} />
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </>
-      )}
-
-      {/* Subscriptions Tab */}
-      {activeTab === 'subscriptions' && (
-        <>
-          <div className="admin-stats">
-            <div className="stat-card">
-              <span className="stat-number">{subscriptions.filter(s => s.status === 'active').length}</span>
-              <span className="stat-label">Active</span>
-            </div>
-            <div className="stat-card">
-              <span className="stat-number">{subscriptions.filter(s => s.status === 'cancelled').length}</span>
-              <span className="stat-label">Cancelled</span>
-            </div>
-            <div className="stat-card">
-              <span className="stat-number">{subscriptions.filter(s => s.status === 'expired').length}</span>
-              <span className="stat-label">Expired</span>
-            </div>
-          </div>
-
-          <button 
-            className="add-subscription-btn"
-            onClick={() => setShowAddSubscription(true)}
-          >
-            <Plus size={16} />
-            <span>Add Subscription</span>
-          </button>
-
-          <div className="subscriptions-list">
-            {subscriptions.map((sub) => {
-              const daysRemaining = getDaysRemaining(sub.expires_at);
-              
-              return (
+            <div className="admin-users-list">
+              {users.map((targetUser) => (
                 <motion.div
-                  key={sub.id}
-                  className={`subscription-card ${sub.status}`}
+                  key={targetUser.id}
+                  className="admin-user-card"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
-                  <div className="subscription-header">
-                    <div className="subscription-user">
-                      <div className="subscription-avatar">
-                        {sub.user.display_name?.charAt(0).toUpperCase() || 'U'}
-                      </div>
-                      <div className="subscription-user-info">
-                        <h4>{sub.user.display_name || 'Unknown'}</h4>
-                        <p>@{sub.user.username || sub.user.telegram_id}</p>
-                      </div>
+                  <div className="user-info">
+                    <div className="user-avatar">
+                      {targetUser.display_name?.charAt(0).toUpperCase() || 'U'}
                     </div>
-                    <div className={`subscription-status ${sub.status}`}>
-                      {sub.status.toUpperCase()}
+                    <div className="user-details">
+                      <h3>{targetUser.display_name || 'Unknown'}</h3>
+                      <p>@{targetUser.username || targetUser.telegram_id}</p>
                     </div>
                   </div>
 
-                  <div className="subscription-details">
-                    <div className="subscription-detail-row">
-                      <Crown size={14} />
-                      <span className="detail-label">Plan:</span>
-                      <span className="detail-value">
-                        {sub.plan_type === 'monthly' ? 'Monthly' : 'Yearly'}
-                      </span>
-                    </div>
-                    <div className="subscription-detail-row">
-                      <Calendar size={14} />
-                      <span className="detail-label">Started:</span>
-                      <span className="detail-value">{formatDate(sub.started_at)}</span>
-                    </div>
-                    <div className="subscription-detail-row">
-                      <Calendar size={14} />
-                      <span className="detail-label">Expires:</span>
-                      <span className="detail-value">{formatDate(sub.expires_at)}</span>
-                    </div>
-                    <div className="subscription-detail-row highlight">
-                      <Clock size={14} />
-                      <span className="detail-label">Remaining:</span>
-                      <span className={`detail-value ${daysRemaining <= 7 ? 'warning' : ''}`}>
-                        {daysRemaining > 0 ? `${daysRemaining} days` : 'Expired'}
-                      </span>
-                    </div>
-                  </div>
+                  <div className="user-credits">
+                    {['celtic_cross', 'horseshoe', 'relationship'].map((featureId) => {
+                      const credit = targetUser.credits.find(c => c.feature_id === featureId);
+                      const amount = credit?.credits || 0;
 
-                  {sub.status === 'active' && (
-                    <div className="subscription-actions">
-                      <button
-                        className="extend-btn"
-                        onClick={() => {
-                          setExtendingSubId(sub.id);
-                          setShowExtendModal(true);
-                        }}
-                      >
-                        <Plus size={14} />
-                        <span>Extend</span>
-                      </button>
-                      <button
-                        className="cancel-sub-btn"
-                        onClick={() => handleCancelSubscription(sub.id)}
-                      >
-                        <Trash2 size={14} />
-                        <span>Cancel</span>
-                      </button>
-                    </div>
-                  )}
+                      return (
+                        <div key={featureId} className="credit-item">
+                          <span className="credit-label">
+                            {featureId === 'celtic_cross' && '✝️ Celtic'}
+                            {featureId === 'horseshoe' && '🐎 Horseshoe'}
+                            {featureId === 'relationship' && '❤️ Relationship'}
+                          </span>
+
+                          {editingUser === targetUser.id && editingFeature === featureId ? (
+                            <div className="credit-edit">
+                              <input
+                                type="number"
+                                value={newAmount}
+                                onChange={(e) => setNewAmount(parseInt(e.target.value) || 0)}
+                                min="0"
+                              />
+                              <button
+                                className="save-btn"
+                                onClick={() => handleUpdateCredits(targetUser.id, featureId)}
+                              >
+                                Save
+                              </button>
+                              <button
+                                className="cancel-btn"
+                                onClick={() => setEditingUser(null)}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="credit-actions">
+                              <span className="credit-amount">{amount}</span>
+                              <div className="credit-buttons">
+                                <button
+                                  className="add-btn"
+                                  onClick={() => handleAddCredits(targetUser.id, featureId, 1)}
+                                  title="Add 1"
+                                >
+                                  <Plus size={14} />
+                                </button>
+                                <button
+                                  className="add-btn"
+                                  onClick={() => handleAddCredits(targetUser.id, featureId, 5)}
+                                  title="Add 5"
+                                >
+                                  +5
+                                </button>
+                                <button
+                                  className="edit-btn"
+                                  onClick={() => {
+                                    setEditingUser(targetUser.id);
+                                    setEditingFeature(featureId);
+                                    setNewAmount(amount);
+                                  }}
+                                  title="Edit"
+                                >
+                                  Edit
+                                </button>
+                                {amount > 0 && (
+                                  <button
+                                    className="delete-btn"
+                                    onClick={() => handleDeleteCredits(targetUser.id, featureId)}
+                                    title="Delete"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </motion.div>
-              );
-            })}
-          </div>
-        </>
-      )}
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* Subscriptions Tab */}
+        {activeTab === 'subscriptions' && (
+          <>
+            <div className="admin-stats">
+              <div className="stat-card">
+                <span className="stat-number">{subscriptions.filter(s => s.status === 'active').length}</span>
+                <span className="stat-label">Active</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-number">{subscriptions.filter(s => s.status === 'cancelled').length}</span>
+                <span className="stat-label">Cancelled</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-number">{subscriptions.filter(s => s.status === 'expired').length}</span>
+                <span className="stat-label">Expired</span>
+              </div>
+            </div>
+
+            <button 
+              className="add-subscription-btn"
+              onClick={() => setShowAddSubscription(true)}
+            >
+              <Plus size={16} />
+              <span>Add Subscription</span>
+            </button>
+
+            <div className="subscriptions-list">
+              {subscriptions.map((sub) => {
+                const daysRemaining = getDaysRemaining(sub.expires_at);
+                
+                return (
+                  <motion.div
+                    key={sub.id}
+                    className={`subscription-card ${sub.status}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    <div className="subscription-header">
+                      <div className="subscription-user">
+                        <div className="subscription-avatar">
+                          {sub.user.display_name?.charAt(0).toUpperCase() || 'U'}
+                        </div>
+                        <div className="subscription-user-info">
+                          <h4>{sub.user.display_name || 'Unknown'}</h4>
+                          <p>@{sub.user.username || sub.user.telegram_id}</p>
+                        </div>
+                      </div>
+                      <div className={`subscription-status ${sub.status}`}>
+                        {sub.status.toUpperCase()}
+                      </div>
+                    </div>
+
+                    <div className="subscription-details">
+                      <div className="subscription-detail-row">
+                        <Crown size={14} />
+                        <span className="detail-label">Plan:</span>
+                        <span className="detail-value">
+                          {sub.plan_type === 'monthly' ? 'Monthly' : 'Yearly'}
+                        </span>
+                      </div>
+                      <div className="subscription-detail-row">
+                        <Calendar size={14} />
+                        <span className="detail-label">Started:</span>
+                        <span className="detail-value">{formatDate(sub.started_at)}</span>
+                      </div>
+                      <div className="subscription-detail-row">
+                        <Calendar size={14} />
+                        <span className="detail-label">Expires:</span>
+                        <span className="detail-value">{formatDate(sub.expires_at)}</span>
+                      </div>
+                      <div className="subscription-detail-row highlight">
+                        <Clock size={14} />
+                        <span className="detail-label">Remaining:</span>
+                        <span className={`detail-value ${daysRemaining <= 7 ? 'warning' : ''}`}>
+                          {daysRemaining > 0 ? `${daysRemaining} days` : 'Expired'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {sub.status === 'active' && (
+                      <div className="subscription-actions">
+                        <button
+                          className="extend-btn"
+                          onClick={() => {
+                            setExtendingSubId(sub.id);
+                            setShowExtendModal(true);
+                          }}
+                        >
+                          <Plus size={14} />
+                          <span>Extend</span>
+                        </button>
+                        <button
+                          className="cancel-sub-btn"
+                          onClick={() => handleCancelSubscription(sub.id)}
+                        >
+                          <Trash2 size={14} />
+                          <span>Cancel</span>
+                        </button>
+                      </div>
+                    )}
+                  </motion.div>
+                );
+              })}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* ✅ ქვედა ნავიგაციის პანელი */}
+      <div className="admin-bottom-nav">
+        <button
+          className={`admin-nav-btn ${activeTab === 'credits' ? 'active' : ''}`}
+          onClick={() => setActiveTab('credits')}
+        >
+          <Key size={20} />
+          <span>Credits</span>
+        </button>
+        <button
+          className={`admin-nav-btn ${activeTab === 'subscriptions' ? 'active' : ''}`}
+          onClick={() => setActiveTab('subscriptions')}
+        >
+          <Crown size={20} />
+          <span>Subs</span>
+        </button>
+        <button
+          className="admin-nav-btn ai-nav-btn"
+          onClick={() => onNavigate?.('ai-management')}
+        >
+          <Zap size={20} />
+          <span>AI</span>
+        </button>
+      </div>
 
       {/* Add Subscription Modal */}
       {showAddSubscription && (

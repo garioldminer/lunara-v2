@@ -1,299 +1,30 @@
-.admin-screen {
+/* ============================================
+   ADMIN SCREEN - FULL REDESIGN
+   ============================================ */
+
+   .admin-screen {
+    position: relative;
     width: 100%;
     min-height: 100vh;
-    background: linear-gradient(180deg, #0a0600 0%, #1a0f05 50%, #0a0600 100%);
-    color: #fff;
+    background: #0a0600;
+    color: #ffe566;
+    padding: 16px 12px;
+    padding-bottom: 90px; /* ✅ ადგილი ქვედა ნავიგაციისთვის */
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
     font-family: 'Georgia', serif;
-    padding: 70px 16px 100px;
+    box-sizing: border-box;
   }
   
-  .admin-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 24px;
-  }
-  
-  .admin-back-btn,
-  .admin-refresh-btn {
-    background: rgba(197, 160, 89, 0.1);
-    border: 1px solid rgba(197, 160, 89, 0.3);
-    color: #C5A059;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-  }
-  
-  .admin-back-btn:hover,
-  .admin-refresh-btn:hover {
-    background: rgba(197, 160, 89, 0.2);
-    transform: scale(1.05);
-  }
-  
-  .admin-header-center {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: #C5A059;
-  }
-  
-  .admin-header-center h1 {
-    font-size: 20px;
-    margin: 0;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-  
-  .admin-stats {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 24px;
-  }
-  
-  .stat-card {
-    flex: 1;
-    background: rgba(197, 160, 89, 0.1);
-    border: 1px solid rgba(197, 160, 89, 0.3);
-    border-radius: 12px;
-    padding: 16px;
-    text-align: center;
-  }
-  
-  .stat-number {
-    display: block;
-    font-size: 32px;
-    font-weight: 700;
-    color: #C5A059;
-    margin-bottom: 4px;
-  }
-  
-  .stat-label {
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.6);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-  
-  .admin-users-list {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  
-  .admin-user-card {
-    background: rgba(197, 160, 89, 0.05);
-    border: 1px solid rgba(197, 160, 89, 0.2);
-    border-radius: 16px;
-    padding: 16px;
-  }
-  
-  .user-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid rgba(197, 160, 89, 0.2);
-  }
-  
-  .user-avatar {
-    width: 48px;
-    height: 48px;
-    background: linear-gradient(135deg, #C5A059 0%, #8B6914 100%);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    font-weight: 700;
-    color: #0a0600;
-  }
-  
-  .user-details h3 {
-    font-size: 16px;
-    margin: 0 0 4px;
-    color: #fff;
-  }
-  
-  .user-details p {
-    font-size: 12px;
-    margin: 0;
-    color: rgba(255, 255, 255, 0.6);
-  }
-  
-  .user-credits {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  
-  .credit-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px;
-    background: rgba(197, 160, 89, 0.05);
-    border-radius: 8px;
-  }
-  
-  .credit-label {
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.8);
-  }
-  
-  .credit-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  
-  .credit-amount {
-    font-size: 16px;
-    font-weight: 700;
-    color: #C5A059;
-    min-width: 30px;
-    text-align: center;
-  }
-  
-  .credit-buttons {
-    display: flex;
-    gap: 4px;
-  }
-  
-  .add-btn,
-  .edit-btn,
-  .delete-btn {
-    background: rgba(197, 160, 89, 0.2);
-    border: 1px solid rgba(197, 160, 89, 0.4);
-    border-radius: 6px;
-    padding: 4px 8px;
-    color: #C5A059;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 2px;
-  }
-  
-  .add-btn:hover {
-    background: rgba(34, 197, 94, 0.3);
-    border-color: #22c55e;
-    color: #22c55e;
-  }
-  
-  .edit-btn:hover {
-    background: rgba(197, 160, 89, 0.3);
-  }
-  
-  .delete-btn:hover {
-    background: rgba(239, 68, 68, 0.3);
-    border-color: #ef4444;
-    color: #ef4444;
-  }
-  
-  .credit-edit {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  
-  .credit-edit input {
-    width: 60px;
-    background: rgba(197, 160, 89, 0.1);
-    border: 1px solid rgba(197, 160, 89, 0.3);
-    border-radius: 6px;
-    padding: 4px 8px;
-    color: #fff;
-    font-size: 13px;
-    text-align: center;
-  }
-  
-  .save-btn {
-    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-    border: none;
-    border-radius: 6px;
-    padding: 4px 12px;
-    color: #fff;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  
-  .cancel-btn {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 6px;
-    padding: 4px 12px;
-    color: #fff;
-    font-size: 11px;
-    cursor: pointer;
-  }
-  
-  /* ✅ Access Denied Screen */
-  .admin-error,
   .admin-loading {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 60vh;
-    text-align: center;
+    height: 100vh;
     gap: 16px;
-  }
-  
-  .admin-error h2 {
-    font-size: 24px;
-    color: #ef4444;
-    margin: 0;
-  }
-  
-  .admin-error p {
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.7);
-    margin: 0;
-    max-width: 300px;
-  }
-  
-  .error-detail {
-    font-size: 12px !important;
-    color: rgba(255, 255, 255, 0.4) !important;
-    font-style: italic;
-  }
-  
-  .error-icon-large {
-    color: #ef4444;
-    filter: drop-shadow(0 0 20px rgba(239, 68, 68, 0.5));
-    animation: errorPulse 2s ease-in-out infinite;
-  }
-  
-  @keyframes errorPulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-  }
-  
-  .admin-error button {
-    background: linear-gradient(135deg, #C5A059 0%, #8B6914 100%);
-    border: none;
-    border-radius: 12px;
-    padding: 12px 24px;
-    color: #0a0600;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 16px;
-    transition: all 0.2s;
-  }
-  
-  .admin-error button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(197, 160, 89, 0.4);
+    color: #ffe566;
   }
   
   .spin {
@@ -301,205 +32,546 @@
   }
   
   @keyframes spin {
+    from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
   }
   
   /* ============================================
-     ADMIN TABS - ახალი!
+     HEADER
      ============================================ */
-  .admin-tabs {
+  .admin-header {
     display: flex;
-    gap: 8px;
-    margin-bottom: 20px;
-    padding: 4px;
-    background: rgba(197, 160, 89, 0.08);
-    border-radius: 12px;
-    border: 1px solid rgba(197, 160, 89, 0.2);
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    background: linear-gradient(135deg, #1a0f05, #0a0600);
+    border: 1px solid rgba(200, 120, 0, 0.4);
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   }
   
-  .admin-tab {
-    flex: 1;
-    background: transparent;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 16px;
-    color: rgba(255, 255, 255, 0.6);
+  .admin-header-center {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #ffe566;
+  }
+  
+  .admin-header-center h1 {
     font-family: 'Georgia', serif;
-    font-size: 13px;
-    font-weight: 600;
+    font-size: 16px;
+    color: #ffe566;
+    margin: 0;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+  }
+  
+  .admin-back-btn,
+  .admin-refresh-btn {
+    background: rgba(200, 120, 0, 0.15);
+    border: 1px solid rgba(200, 120, 0, 0.3);
+    border-radius: 10px;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    color: #ffe566;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    flex-shrink: 0;
   }
   
-  .admin-tab:hover {
-    color: rgba(255, 255, 255, 0.9);
-    background: rgba(197, 160, 89, 0.1);
-  }
-  
-  .admin-tab.active {
-    background: linear-gradient(135deg, #C5A059 0%, #8B6914 100%);
-    color: #0a0600;
-    box-shadow: 0 2px 10px rgba(197, 160, 89, 0.4);
+  .admin-back-btn:active,
+  .admin-refresh-btn:active {
+    transform: scale(0.92);
+    background: rgba(200, 120, 0, 0.3);
   }
   
   /* ============================================
-     SUBSCRIPTIONS LIST - ახალი!
+     CONTENT AREA
      ============================================ */
-  .add-subscription-btn {
-    width: 100%;
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(22, 163, 74, 0.1) 100%);
-    border: 1px solid rgba(34, 197, 94, 0.4);
+  .admin-content-area {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  
+  /* ============================================
+     ✅ ქვედა ნავიგაციის პანელი - ცისფერი
+     ============================================ */
+  .admin-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 8px 10px;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(to top, #0a0600 70%, rgba(10, 6, 0, 0.95));
+    border-top: 1px solid rgba(96, 165, 250, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 100;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+  }
+  
+  .admin-nav-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 12px;
+    min-width: 70px;
+    max-width: 100px;
+    background: rgba(96, 165, 250, 0.08);
+    border: 1px solid rgba(96, 165, 250, 0.25);
     border-radius: 12px;
-    padding: 12px;
-    color: #22c55e;
-    font-family: 'Georgia', serif;
-    font-size: 14px;
-    font-weight: 600;
+    color: #60a5fa;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
+    font-family: 'Georgia', serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .admin-nav-btn span {
+    font-size: 10px;
+    text-align: center;
+    line-height: 1.2;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .admin-nav-btn.active {
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.3), rgba(59, 130, 246, 0.2));
+    border-color: #60a5fa;
+    color: #60a5fa;
+    box-shadow: 0 0 12px rgba(96, 165, 250, 0.4);
+  }
+  
+  .admin-nav-btn.ai-nav-btn {
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.15), rgba(147, 197, 253, 0.1));
+    border-color: rgba(96, 165, 250, 0.4);
+    color: #93c5fd;
+  }
+  
+  .admin-nav-btn.ai-nav-btn:active {
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.4), rgba(59, 130, 246, 0.3));
+    border-color: #93c5fd;
+    transform: scale(0.95);
+  }
+  
+  .admin-nav-btn:active {
+    transform: scale(0.92);
+    background: rgba(96, 165, 250, 0.2);
+  }
+  
+  /* ============================================
+     STATS
+     ============================================ */
+  .admin-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  
+  .stat-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 8px;
+    background: linear-gradient(135deg, #1a0f05, #0a0600);
+    border: 1px solid rgba(200, 120, 0, 0.3);
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  }
+  
+  .stat-number {
+    font-family: 'Georgia', serif;
+    font-size: 20px;
+    font-weight: bold;
+    color: #ffe566;
+    line-height: 1;
+  }
+  
+  .stat-label {
+    font-family: 'Georgia', serif;
+    font-size: 9px;
+    color: #c87800;
+    margin-top: 4px;
+    text-align: center;
+  }
+  
+  /* ============================================
+     USERS LIST
+     ============================================ */
+  .admin-users-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .admin-user-card {
+    padding: 14px;
+    background: linear-gradient(135deg, #1a0f05, #0a0600);
+    border: 1px solid rgba(200, 120, 0, 0.3);
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  }
+  
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #c87800, #ffe566);
     display: flex;
     align-items: center;
     justify-content: center;
+    font-family: 'Georgia', serif;
+    font-size: 18px;
+    font-weight: bold;
+    color: #0a0600;
+    flex-shrink: 0;
+  }
+  
+  .user-details h3 {
+    margin: 0;
+    font-size: 14px;
+    color: #ffe566;
+    font-weight: bold;
+  }
+  
+  .user-details p {
+    margin: 2px 0 0;
+    font-size: 11px;
+    color: #c87800;
+  }
+  
+  .user-credits {
+    display: flex;
+    flex-direction: column;
     gap: 8px;
-    margin-bottom: 16px;
   }
   
-  .add-subscription-btn:hover {
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.3) 0%, rgba(22, 163, 74, 0.2) 100%);
-    border-color: rgba(34, 197, 94, 0.6);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+  .credit-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    background: rgba(20, 12, 5, 0.6);
+    border: 1px solid rgba(200, 120, 0, 0.2);
+    border-radius: 8px;
+    gap: 8px;
+    flex-wrap: wrap;
   }
   
+  .credit-label {
+    font-size: 11px;
+    color: #ffe566;
+    font-weight: 600;
+    flex: 1;
+    min-width: 100px;
+  }
+  
+  .credit-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  
+  .credit-amount {
+    font-size: 14px;
+    color: #ffe566;
+    font-weight: bold;
+    min-width: 30px;
+    text-align: center;
+  }
+  
+  .credit-buttons {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  
+  /* ============================================
+     ✅ ყველა ღილაკი ცისფერი
+     ============================================ */
+  .add-btn,
+  .edit-btn,
+  .save-btn,
+  .extend-btn,
+  .add-subscription-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px 10px;
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.2), rgba(59, 130, 246, 0.15));
+    border: 1px solid rgba(96, 165, 250, 0.5);
+    border-radius: 8px;
+    color: #60a5fa;
+    font-family: 'Georgia', serif;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    min-height: 28px;
+    letter-spacing: 0.3px;
+  }
+  
+  .add-btn:active,
+  .edit-btn:active,
+  .save-btn:active,
+  .extend-btn:active,
+  .add-subscription-btn:active {
+    transform: scale(0.95);
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.35), rgba(59, 130, 246, 0.3));
+    border-color: #93c5fd;
+  }
+  
+  .add-subscription-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 13px;
+    min-height: 44px;
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.25), rgba(59, 130, 246, 0.2));
+    box-shadow: 0 2px 8px rgba(96, 165, 250, 0.3);
+  }
+  
+  .cancel-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    background: rgba(200, 120, 0, 0.1);
+    border: 1px solid rgba(200, 120, 0, 0.3);
+    border-radius: 8px;
+    color: #c87800;
+    font-family: 'Georgia', serif;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 28px;
+  }
+  
+  .cancel-btn:active {
+    transform: scale(0.95);
+    background: rgba(200, 120, 0, 0.2);
+  }
+  
+  .delete-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    border-radius: 8px;
+    color: #ef4444;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 28px;
+    min-width: 28px;
+  }
+  
+  .delete-btn:active {
+    transform: scale(0.9);
+    background: rgba(239, 68, 68, 0.2);
+  }
+  
+  .cancel-sub-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px 10px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    border-radius: 8px;
+    color: #ef4444;
+    font-family: 'Georgia', serif;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 28px;
+  }
+  
+  .cancel-sub-btn:active {
+    transform: scale(0.95);
+    background: rgba(239, 68, 68, 0.2);
+  }
+  
+  .credit-edit {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  
+  .credit-edit input {
+    width: 60px;
+    padding: 6px 8px;
+    background: rgba(20, 12, 5, 0.8);
+    border: 1px solid rgba(96, 165, 250, 0.4);
+    border-radius: 6px;
+    color: #60a5fa;
+    font-family: 'Georgia', serif;
+    font-size: 12px;
+    outline: none;
+    text-align: center;
+  }
+  
+  /* ============================================
+     SUBSCRIPTIONS
+     ============================================ */
   .subscriptions-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
   }
   
   .subscription-card {
-    background: rgba(197, 160, 89, 0.05);
-    border: 1px solid rgba(197, 160, 89, 0.2);
-    border-radius: 16px;
-    padding: 16px;
+    padding: 14px;
+    background: linear-gradient(135deg, #1a0f05, #0a0600);
+    border: 1px solid rgba(200, 120, 0, 0.3);
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   }
   
-  .subscription-card.active {
-    border-color: rgba(34, 197, 94, 0.4);
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(22, 163, 74, 0.02) 100%);
-  }
-  
-  .subscription-card.cancelled {
-    opacity: 0.6;
-  }
-  
-  .subscription-card.expired {
-    opacity: 0.5;
-    border-color: rgba(239, 68, 68, 0.3);
-  }
+  .subscription-card.cancelled { opacity: 0.6; }
+  .subscription-card.expired { opacity: 0.4; }
   
   .subscription-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     margin-bottom: 12px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid rgba(197, 160, 89, 0.15);
+    gap: 10px;
   }
   
   .subscription-user {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
   }
   
   .subscription-avatar {
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(135deg, #C5A059 0%, #8B6914 100%);
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
+    background: linear-gradient(135deg, #c87800, #ffe566);
     display: flex;
     align-items: center;
     justify-content: center;
+    font-family: 'Georgia', serif;
     font-size: 16px;
-    font-weight: 700;
+    font-weight: bold;
     color: #0a0600;
+    flex-shrink: 0;
   }
   
   .subscription-user-info h4 {
-    font-size: 14px;
-    margin: 0 0 2px;
-    color: #fff;
+    margin: 0;
+    font-size: 13px;
+    color: #ffe566;
+    font-weight: bold;
   }
   
   .subscription-user-info p {
-    font-size: 11px;
-    margin: 0;
-    color: rgba(255, 255, 255, 0.6);
+    margin: 2px 0 0;
+    font-size: 10px;
+    color: #c87800;
   }
   
   .subscription-status {
     padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 10px;
-    font-weight: 700;
+    border-radius: 6px;
+    font-size: 9px;
+    font-weight: bold;
     letter-spacing: 0.5px;
+    flex-shrink: 0;
   }
   
   .subscription-status.active {
-    background: rgba(34, 197, 94, 0.2);
-    color: #22c55e;
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.4);
   }
   
   .subscription-status.cancelled {
-    background: rgba(239, 68, 68, 0.2);
-    color: #ef4444;
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+    border: 1px solid rgba(251, 191, 36, 0.4);
   }
   
   .subscription-status.expired {
-    background: rgba(251, 191, 36, 0.2);
-    color: #fbbf24;
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.4);
   }
   
   .subscription-details {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    margin-bottom: 12px;
+    gap: 6px;
+    padding: 10px;
+    background: rgba(20, 12, 5, 0.5);
+    border-radius: 8px;
+    margin-bottom: 10px;
   }
   
   .subscription-detail-row {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 12px;
+    font-size: 11px;
+    color: #ffe566;
   }
   
-  .subscription-detail-row svg {
-    color: #C5A059;
-    flex-shrink: 0;
+  .subscription-detail-row.highlight {
+    padding-top: 6px;
+    border-top: 1px solid rgba(200, 120, 0, 0.2);
+    margin-top: 2px;
   }
   
-  .subscription-detail-row .detail-label {
-    color: rgba(255, 255, 255, 0.6);
+  .detail-label {
+    color: #c87800;
+    font-weight: 600;
     min-width: 70px;
   }
   
-  .subscription-detail-row .detail-value {
-    color: #fff;
-    font-weight: 600;
+  .detail-value {
+    color: #ffe566;
   }
   
-  .subscription-detail-row.highlight .detail-value {
-    color: #22c55e;
-  }
-  
-  .subscription-detail-row.highlight .detail-value.warning {
-    color: #fbbf24;
+  .detail-value.warning {
+    color: #ef4444;
+    font-weight: bold;
   }
   
   .subscription-actions {
@@ -507,118 +579,87 @@
     gap: 8px;
   }
   
-  .extend-btn {
-    flex: 1;
-    background: rgba(34, 197, 94, 0.2);
-    border: 1px solid rgba(34, 197, 94, 0.4);
-    border-radius: 8px;
-    padding: 8px;
-    color: #22c55e;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-  }
-  
-  .extend-btn:hover {
-    background: rgba(34, 197, 94, 0.3);
-    border-color: rgba(34, 197, 94, 0.6);
-  }
-  
-  .cancel-sub-btn {
-    flex: 1;
-    background: rgba(239, 68, 68, 0.2);
-    border: 1px solid rgba(239, 68, 68, 0.4);
-    border-radius: 8px;
-    padding: 8px;
-    color: #ef4444;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-  }
-  
-  .cancel-sub-btn:hover {
-    background: rgba(239, 68, 68, 0.3);
-    border-color: rgba(239, 68, 68, 0.6);
-  }
-  
   /* ============================================
-     MODALS - ახალი!
+     MODALS
      ============================================ */
   .modal-overlay {
     position: fixed;
-    inset: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10000;
+    z-index: 1000;
     padding: 20px;
   }
   
   .modal {
-    background: linear-gradient(180deg, #1a0f05 0%, #0a0600 100%);
-    border: 1px solid rgba(197, 160, 89, 0.4);
-    border-radius: 20px;
-    padding: 24px;
+    background: linear-gradient(135deg, #1a0f05, #0a0600);
+    border: 2px solid rgba(200, 120, 0, 0.5);
+    border-radius: 18px;
+    padding: 22px 18px;
     max-width: 400px;
     width: 100%;
-    box-shadow: 0 0 60px rgba(197, 160, 89, 0.3);
+    max-height: 85vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: 0 0 40px rgba(200, 120, 0, 0.3);
   }
   
   .modal h3 {
-    font-size: 18px;
-    color: #C5A059;
-    margin: 0 0 20px;
+    font-family: 'Georgia', serif;
+    font-size: 16px;
+    color: #ffe566;
+    margin: 0 0 18px;
     text-align: center;
     letter-spacing: 1px;
   }
   
   .modal-field {
-    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
   }
   
   .modal-field label {
-    display: block;
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-size: 11px;
+    color: #c87800;
+    font-weight: 600;
   }
   
-  .modal-field select,
-  .modal-field input {
-    width: 100%;
-    background: rgba(197, 160, 89, 0.1);
-    border: 1px solid rgba(197, 160, 89, 0.3);
-    border-radius: 8px;
-    padding: 10px 12px;
-    color: #fff;
-    font-size: 14px;
+  .modal-field input,
+  .modal-field select {
+    background: rgba(20, 12, 5, 0.8);
+    border: 1px solid rgba(200, 120, 0, 0.3);
+    border-radius: 10px;
+    padding: 11px 12px;
+    color: #ffe566;
     font-family: 'Georgia', serif;
+    font-size: 12px;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 44px;
   }
   
-  .modal-field select:focus,
-  .modal-field input:focus {
-    outline: none;
-    border-color: #C5A059;
-    box-shadow: 0 0 10px rgba(197, 160, 89, 0.3);
+  .modal-field select {
+    background-color: rgba(20, 12, 5, 0.8);
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c87800' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 40px;
   }
   
   .modal-field select option {
-    background: #0a0600;
-    color: #fff;
+    background: #1a0f05;
+    color: #ffe566;
   }
   
   .plan-selector {
@@ -628,68 +669,128 @@
   
   .plan-option {
     flex: 1;
-    background: rgba(197, 160, 89, 0.1);
-    border: 1px solid rgba(197, 160, 89, 0.3);
-    border-radius: 8px;
     padding: 10px;
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 13px;
+    background: rgba(20, 12, 5, 0.8);
+    border: 1px solid rgba(200, 120, 0, 0.3);
+    border-radius: 10px;
+    color: #c87800;
+    font-family: 'Georgia', serif;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
-  }
-  
-  .plan-option:hover {
-    background: rgba(197, 160, 89, 0.2);
+    transition: all 0.3s ease;
+    min-height: 44px;
   }
   
   .plan-option.active {
-    background: linear-gradient(135deg, #C5A059 0%, #8B6914 100%);
-    color: #0a0600;
-    border-color: #C5A059;
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.25), rgba(59, 130, 246, 0.2));
+    border-color: #60a5fa;
+    color: #60a5fa;
+    box-shadow: 0 0 8px rgba(96, 165, 250, 0.3);
   }
   
   .modal-buttons {
     display: flex;
-    gap: 12px;
-    margin-top: 20px;
+    gap: 10px;
+    margin-top: 18px;
   }
   
   .modal-btn {
     flex: 1;
-    border-radius: 10px;
     padding: 12px;
+    border-radius: 10px;
     font-family: 'Georgia', serif;
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: bold;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
     border: none;
+    min-height: 44px;
   }
   
   .modal-btn.cancel {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #fff;
-  }
-  
-  .modal-btn.cancel:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(200, 120, 0, 0.15);
+    border: 1px solid rgba(200, 120, 0, 0.3);
+    color: #c87800;
   }
   
   .modal-btn.confirm {
-    background: linear-gradient(135deg, #C5A059 0%, #8B6914 100%);
+    background: linear-gradient(135deg, #60a5fa, #93c5fd);
     color: #0a0600;
-    box-shadow: 0 4px 15px rgba(197, 160, 89, 0.4);
-  }
-  
-  .modal-btn.confirm:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(197, 160, 89, 0.5);
+    box-shadow: 0 2px 10px rgba(96, 165, 250, 0.4);
   }
   
   .modal-btn.confirm:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-    transform: none;
+  }
+  
+  .modal-btn:active {
+    transform: scale(0.96);
+  }
+  
+  /* ============================================
+     ERROR SCREEN
+     ============================================ */
+  .admin-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    text-align: center;
+    gap: 12px;
+    padding: 20px;
+  }
+  
+  .error-icon-large {
+    color: #ef4444;
+  }
+  
+  .admin-error h2 {
+    color: #ef4444;
+    margin: 0;
+    font-size: 20px;
+  }
+  
+  .admin-error p {
+    color: #c87800;
+    margin: 0;
+    font-size: 13px;
+  }
+  
+  .error-detail {
+    font-size: 11px;
+    color: #886600;
+  }
+  
+  .admin-error button {
+    margin-top: 16px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #60a5fa, #93c5fd);
+    border: none;
+    border-radius: 10px;
+    color: #0a0600;
+    font-family: 'Georgia', serif;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  /* ============================================
+     RESPONSIVE
+     ============================================ */
+  @media (max-width: 380px) {
+    .admin-stats {
+      grid-template-columns: 1fr 1fr;
+    }
+    
+    .admin-nav-btn {
+      min-width: 60px;
+      padding: 6px 8px;
+    }
+    
+    .admin-nav-btn span {
+      font-size: 9px;
+    }
   }
