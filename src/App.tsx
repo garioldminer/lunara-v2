@@ -17,6 +17,7 @@ import CelticCrossReadingScreen from './components/CelticCrossReadingScreen';
 import HorseshoeReadingScreen from './components/HorseshoeReadingScreen';
 import RelationshipReadingScreen from './components/RelationshipReadingScreen';
 import AdminScreen from './components/AdminScreen';
+import AdminAIManagement from './components/AdminAIManagement';
 import SubscriptionScreen from './components/SubscriptionScreen';
 import ServicesScreen from './components/ServicesScreen';
 import BottomNav from './components/BottomNav';
@@ -45,6 +46,7 @@ type Screen =
   | 'horseshoe'
   | 'relationship'
   | 'admin'
+  | 'ai-management'
   | 'subscription'
   | 'services';
 
@@ -171,6 +173,11 @@ function AppContent() {
     else if (screen === 'admin') {
       console.log('🔐 Opening Admin Panel');
       goTo('admin');
+    }
+    // ✅ AI Management
+    else if (screen === 'ai-management') {
+      console.log('🤖 Opening AI Management');
+      goTo('ai-management');
     }
     // ✅ Subscription Screen
     else if (screen === 'subscription') {
@@ -320,6 +327,10 @@ function AppContent() {
       {/* ✅ Admin Panel */}
       {currentScreen === 'admin' && (
         <AdminScreen onNavigate={handleNavigate} />
+      )}
+      {/* ✅ AI Management */}
+      {currentScreen === 'ai-management' && (
+        <AdminAIManagement onNavigate={handleNavigate} />
       )}
       {/* ✅ Subscription Screen */}
       {currentScreen === 'subscription' && (

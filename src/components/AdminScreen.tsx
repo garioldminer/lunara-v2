@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Users, Plus, Trash2, RefreshCw, Crown, ShieldAlert, Calendar, Clock } from 'lucide-react';
+import { ArrowLeft, Users, Plus, Trash2, RefreshCw, Crown, ShieldAlert, Calendar, Clock, Zap } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { 
   isAdmin, 
@@ -55,7 +55,7 @@ export default function AdminScreen({ onNavigate }: Props) {
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [editingFeature, setEditingFeature] = useState<string>('');
   const [newAmount, setNewAmount] = useState(0);
-  const [activeTab, setActiveTab] = useState<'credits' | 'subscriptions'>('credits');
+  const [activeTab, setActiveTab] = useState<'credits' | 'subscriptions' | 'ai'>('credits');
   
   // Subscription management states
   const [showAddSubscription, setShowAddSubscription] = useState(false);
@@ -173,6 +173,15 @@ export default function AdminScreen({ onNavigate }: Props) {
     return days;
   };
 
+  // ✅ AI Tab-ზე დაჭერისას - გადავდივართ ცალკე ეკრანზე
+  const handleTabClick = (tab: 'credits' | 'subscriptions' | 'ai') => {
+    if (tab === 'ai') {
+      onNavigate?.('ai-management');
+      return;
+    }
+    setActiveTab(tab);
+  };
+
   // ჯერ არ ვიცით admin თუ არა
   if (isUserAdmin === null || loading) {
     return (
@@ -219,17 +228,25 @@ export default function AdminScreen({ onNavigate }: Props) {
       <div className="admin-tabs">
         <button
           className={`admin-tab ${activeTab === 'credits' ? 'active' : ''}`}
-          onClick={() => setActiveTab('credits')}
+          onClick={() => handleTabClick('credits')}
         >
           <span>💎</span>
           <span>Credits</span>
         </button>
         <button
           className={`admin-tab ${activeTab === 'subscriptions' ? 'active' : ''}`}
-          onClick={() => setActiveTab('subscriptions')}
+          onClick={() => handleTabClick('subscriptions')}
         >
           <span>👑</span>
           <span>Subscriptions</span>
+        </button>
+        {/* ✅ ახალი AI Management ტაბი */}
+        <button
+          className="admin-tab ai-tab"
+          onClick={() => handleTabClick('ai')}
+        >
+          <Zap size={16} />
+          <span>🤖 AI</span>
         </button>
       </div>
 
