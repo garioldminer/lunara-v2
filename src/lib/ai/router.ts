@@ -408,9 +408,13 @@ export class AIRouter {
           );
           
           if (result && result.content) {
+            // ✅ FIX: დავამატეთ model property
             return {
-              ...result,
+              content: result.content,
               provider: key.provider_name,
+              model: request.model || 'default',
+              inputTokens: result.inputTokens,
+              outputTokens: result.outputTokens,
               cost: 0,
               success: true
             };
@@ -423,7 +427,7 @@ export class AIRouter {
           await supabase
             .from('ai_api_keys')
             .update({
-              error_count: (key.error_count || 0) + 1,
+              error_count: ((key as any).error_count || 0) + 1,
               last_used_at: new Date().toISOString()
             })
             .eq('id', key.id);
@@ -506,9 +510,12 @@ export class AIRouter {
           );
           
           if (result && result.content) {
+            // ✅ FIX: გამოვიყენოთ (key as any) რადგან TypeScript ვერ ხვდება join-ს
+            const costPer1M = (key as any).ai_providers?.cost_per_1m_tokens || 0;
+            
             // ვითვლით ხარჯს
             const cost = this.calculateCost(
-              key.ai_providers.cost_per_1m_tokens,
+              costPer1M,
               result.inputTokens,
               result.outputTokens
             );
@@ -516,9 +523,13 @@ export class AIRouter {
             // განვაახლებთ ბიუჯეტს
             await this.updateBudgetSpend(cost);
             
+            // ✅ FIX: დავამატეთ model property
             return {
-              ...result,
+              content: result.content,
               provider: key.provider_name,
+              model: request.model || 'default',
+              inputTokens: result.inputTokens,
+              outputTokens: result.outputTokens,
               cost,
               success: true
             };
@@ -531,7 +542,7 @@ export class AIRouter {
           await supabase
             .from('ai_api_keys')
             .update({
-              error_count: (key.error_count || 0) + 1,
+              error_count: ((key as any).error_count || 0) + 1,
               last_used_at: new Date().toISOString()
             })
             .eq('id', key.id);

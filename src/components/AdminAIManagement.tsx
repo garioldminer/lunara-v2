@@ -5,7 +5,6 @@ import {
   Plus, 
   Trash2, 
   RefreshCw, 
-  Edit2, 
   Check, 
   X,
   Zap,
@@ -23,13 +22,11 @@ import {
   getAllProviders,
   getAllApiKeys,
   addApiKey,
-  updateApiKey,
   deleteApiKey,
   toggleApiKey,
   testApiKey,
   getAllPrompts,
   addPrompt,
-  updatePrompt,
   deletePrompt,
   getTodayStats,
   getApiKeyUsage,
@@ -59,11 +56,9 @@ export default function AdminAIManagement({ onNavigate }: Props) {
   const [todayStats, setTodayStats] = useState<AIUsageStats[]>([]);
   const [apiKeyUsage, setApiKeyUsage] = useState<any[]>([]);
   
-  // Add/Edit states
+  // Add states
   const [showAddKey, setShowAddKey] = useState(false);
   const [showAddPrompt, setShowAddPrompt] = useState(false);
-  const [editingKey, setEditingKey] = useState<string | null>(null);
-  const [editingPrompt, setEditingPrompt] = useState<string | null>(null);
   
   // Form states
   const [newKey, setNewKey] = useState({

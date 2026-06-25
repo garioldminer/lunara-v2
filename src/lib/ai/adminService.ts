@@ -402,16 +402,13 @@ export async function getCacheStats(): Promise<any[]> {
 
 export async function getKnowledgeBaseStats(): Promise<{ total: number; categories: any[] }> {
   try {
-    const { count, error: countError } = await supabase
+    const { count } = await supabase
       .from('knowledge_base')
       .select('*', { count: 'exact', head: true });
 
-    if (countError) throw countError;
-
-    const { data: categories, error: catError } = await supabase
+    const { data: categories } = await supabase
       .from('knowledge_base')
-      .select('category')
-      .select('count');
+      .select('category');
 
     return {
       total: count || 0,
