@@ -260,32 +260,137 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* 2. DAILY QUESTS (60%) + ACTION BUTTONS (40%) */}
-      <div className="quests-and-actions-split">
-        <div className="daily-quests-compact">
-          <div className="quests-header-compact">
-            <h3>DAILY QUESTS</h3>
-            <span className="quests-timer-compact">{timeLeft}</span>
+      {/* 2. DAILY QUESTS (60%) + ACTION BUTTONS (40%) - INLINE STYLES */}
+      <div 
+        className="quests-and-actions-split"
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          gap: '2px',
+          marginBottom: '2px',
+          width: '100%',
+          alignItems: 'stretch'
+        }}
+      >
+        {/* LEFT - Daily Quests (60%) */}
+        <div 
+          className="daily-quests-compact"
+          style={{
+            flex: '0 0 60%',
+            minWidth: 0,
+            background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)',
+            border: '1px solid #332a1a',
+            borderRadius: '14px',
+            padding: '8px',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)',
+            display: 'flex',
+            flexDirection: 'column'
+          }}
+        >
+          <div 
+            className="quests-header-compact"
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '6px',
+              padding: '0 2px'
+            }}
+          >
+            <h3 style={{ margin: 0, fontSize: '9px', color: '#C5A059', letterSpacing: '1px', fontWeight: 700, textTransform: 'uppercase' }}>DAILY QUESTS</h3>
+            <span style={{ fontSize: '9px', color: '#b3a68c', fontFamily: 'monospace' }}>{timeLeft}</span>
           </div>
-          <div className="quest-list-compact">
+          <div 
+            className="quest-list-compact"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '4px',
+              flex: 1,
+              justifyContent: 'center'
+            }}
+          >
             {quests.map((quest, index) => (
-              <div key={index} className="quest-item-compact">
-                <div className="quest-icon-compact">
+              <div 
+                key={index} 
+                className="quest-item-compact"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '4px 6px',
+                  background: 'rgba(197, 160, 89, 0.05)',
+                  borderRadius: '6px',
+                  border: '1px solid rgba(197, 160, 89, 0.08)'
+                }}
+              >
+                <div 
+                  className="quest-icon-compact"
+                  style={{
+                    color: '#C5A059',
+                    flexShrink: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '16px',
+                    height: '16px'
+                  }}
+                >
                   {quest.icon}
                 </div>
-                <div className="quest-info-compact">
-                  <span className="quest-name-compact">{quest.name}</span>
-                  <div className="quest-progress-compact">
-                    <div className="progress-bar-compact">
+                <div className="quest-info-compact" style={{ flex: 1, minWidth: 0 }}>
+                  <span 
+                    className="quest-name-compact"
+                    style={{
+                      fontSize: '9px',
+                      color: '#fff',
+                      fontWeight: 500,
+                      display: 'block',
+                      marginBottom: '2px',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
+                    }}
+                  >
+                    {quest.name}
+                  </span>
+                  <div className="quest-progress-compact" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <div 
+                      className="progress-bar-compact"
+                      style={{
+                        flex: 1,
+                        height: '3px',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        borderRadius: '2px',
+                        overflow: 'hidden'
+                      }}
+                    >
                       <div 
                         className="progress-fill-compact" 
-                        style={{ width: `${(quest.current / quest.total) * 100}%` }}
+                        style={{ 
+                          width: `${(quest.current / quest.total) * 100}%`,
+                          height: '100%',
+                          background: 'linear-gradient(90deg, #C5A059, #ffe566)',
+                          borderRadius: '2px',
+                          boxShadow: '0 0 4px rgba(197, 160, 89, 0.5)'
+                        }}
                       ></div>
                     </div>
-                    <span className="progress-text-compact">{quest.current}/{quest.total}</span>
+                    <span style={{ fontSize: '8px', color: '#b3a68c', minWidth: '18px' }}>{quest.current}/{quest.total}</span>
                   </div>
                 </div>
-                <div className="quest-reward-compact">
+                <div 
+                  className="quest-reward-compact"
+                  style={{
+                    fontSize: '9px',
+                    color: '#C5A059',
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1px',
+                    flexShrink: 0
+                  }}
+                >
                   +{quest.reward} <Gem size={9} />
                 </div>
               </div>
@@ -293,40 +398,127 @@ export default function HomeScreen({ onNavigate }: Props) {
           </div>
         </div>
 
-        <div className="action-buttons-panel">
-          <div className="action-grid-vertical">
+        {/* RIGHT - Action Buttons (40%) */}
+        <div 
+          className="action-buttons-panel"
+          style={{
+            flex: '0 0 calc(40% - 2px)',
+            minWidth: 0,
+            background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)',
+            border: '1px solid #332a1a',
+            borderRadius: '14px',
+            padding: '6px',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)',
+            display: 'flex'
+          }}
+        >
+          <div 
+            className="action-grid-vertical"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gridTemplateRows: '1fr 1fr',
+              gap: '4px',
+              width: '100%',
+              height: '100%'
+            }}
+          >
             <button 
               className={`action-btn-vertical ${rewardClaimed ? 'claimed' : ''}`}
               onClick={handleClaimReward}
               disabled={rewardClaimed}
+              style={{
+                background: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid rgba(197, 160, 89, 0.15)',
+                borderRadius: '8px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                position: 'relative',
+                overflow: 'hidden',
+                padding: '4px',
+                width: '100%',
+                height: '100%'
+              }}
             >
-              <Gift size={22} className="action-icon-v" />
-              {!rewardClaimed && <div className="action-badge-v">50</div>}
+              <Gift size={22} style={{ filter: 'drop-shadow(0 0 6px #C5A059)', color: '#C5A059', width: '20px', height: '20px' }} />
+              {!rewardClaimed && <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>50</div>}
             </button>
 
-            <button className="action-btn-vertical streak-btn-v">
-              <Flame size={22} className="action-icon-v flame-icon-v" />
-              <div className="action-badge-v">{currentStreak}</div>
+            <button 
+              className="action-btn-vertical streak-btn-v"
+              style={{
+                background: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid rgba(197, 160, 89, 0.15)',
+                borderRadius: '8px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                position: 'relative',
+                overflow: 'hidden',
+                padding: '4px',
+                width: '100%',
+                height: '100%'
+              }}
+            >
+              <Flame size={22} style={{ filter: 'drop-shadow(0 0 6px #ff6b35)', color: '#ff6b35', width: '20px', height: '20px' }} />
+              <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>{currentStreak}</div>
             </button>
 
-            <button className="action-btn-vertical rank-btn-v">
-              <Trophy size={22} className="action-icon-v trophy-icon-v" />
-              <div className="action-badge-v">TOP</div>
+            <button 
+              className="action-btn-vertical rank-btn-v"
+              style={{
+                background: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid rgba(197, 160, 89, 0.15)',
+                borderRadius: '8px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                position: 'relative',
+                overflow: 'hidden',
+                padding: '4px',
+                width: '100%',
+                height: '100%'
+              }}
+            >
+              <Trophy size={22} style={{ filter: 'drop-shadow(0 0 6px #ffd700)', color: '#ffd700', width: '20px', height: '20px' }} />
+              <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>TOP</div>
             </button>
 
             <button 
               className={`action-btn-vertical ${activeSubscription ? 'subscription-btn-v' : 'upgrade-btn-v'}`}
               onClick={() => onNavigate && onNavigate(activeSubscription ? 'subscription' : 'pricing')}
+              style={{
+                background: activeSubscription ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 165, 0, 0.05) 100%)' : 'rgba(255, 255, 255, 0.03)',
+                border: activeSubscription ? '1px solid rgba(255, 215, 0, 0.4)' : '1px solid rgba(197, 160, 89, 0.15)',
+                borderRadius: '8px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                position: 'relative',
+                overflow: 'hidden',
+                padding: '4px',
+                width: '100%',
+                height: '100%'
+              }}
             >
               {activeSubscription ? (
                 <>
-                  <Infinity size={22} className="action-icon-v subscription-icon-v" />
-                  <div className="action-badge-v">VIP</div>
+                  <Infinity size={22} style={{ filter: 'drop-shadow(0 0 6px #FFD700)', color: '#FFD700', width: '20px', height: '20px' }} />
+                  <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>VIP</div>
                 </>
               ) : (
                 <>
-                  <Crown size={22} className="action-icon-v crown-icon-v" />
-                  <div className="action-badge-v">PRO</div>
+                  <Crown size={22} style={{ filter: 'drop-shadow(0 0 6px #a78bfa)', color: '#a78bfa', width: '20px', height: '20px' }} />
+                  <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>PRO</div>
                 </>
               )}
             </button>
@@ -334,48 +526,192 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* 3. CARD OF THE DAY */}
+      {/* 3. CARD OF THE DAY - HORIZONTAL SPLIT WITH INLINE STYLES */}
       <div 
         className="card-of-day-banner clickable-card"
         onClick={() => onNavigate && onNavigate('daily-card')}
+        style={{
+          background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)',
+          border: '1px solid #332a1a',
+          borderRadius: '16px',
+          padding: '12px',
+          marginBottom: '2px',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)',
+          position: 'relative',
+          overflow: 'visible',
+          cursor: 'pointer'
+        }}
       >
-        <div className="card-of-day-content">
-          <div className="card-half-left">
-            <div className="card-image-3d-wrapper">
-              <div className="card-image-tilted">
+        <div 
+          className="card-of-day-content"
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: '0'
+          }}
+        >
+          {/* LEFT - Card Image (45%) */}
+          <div 
+            className="card-half-left"
+            style={{
+              flex: '0 0 45%',
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '8px 0'
+            }}
+          >
+            <div 
+              className="card-image-3d-wrapper"
+              style={{
+                position: 'relative',
+                width: 'clamp(80px, 22vw, 110px)',
+                aspectRatio: '2/3',
+                perspective: '800px'
+              }}
+            >
+              <div 
+                className="card-image-tilted"
+                style={{
+                  position: 'relative',
+                  width: '100%',
+                  height: '100%',
+                  transform: 'rotateY(-5deg) rotateX(2deg) rotate(3deg)',
+                  transition: 'transform 0.4s ease',
+                  zIndex: 2,
+                  transformStyle: 'preserve-3d'
+                }}
+              >
                 {dailyCard?.image_url ? (
                   <img 
                     src={dailyCard.image_url} 
                     alt={dailyCardName}
                     className="card-image-large"
-                    style={{ transform: isDailyReversed ? 'rotate(183deg)' : 'rotate(3deg)' }}
+                    style={{ 
+                      transform: isDailyReversed ? 'rotate(183deg)' : 'rotate(3deg)',
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      borderRadius: '8px',
+                      border: '2px solid #C5A059',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.4), 0 8px 16px rgba(0,0,0,0.5), 0 16px 32px rgba(0,0,0,0.6), 0 0 20px rgba(197,160,89,0.3)'
+                    }}
                   />
                 ) : (
-                  <div className="card-placeholder-large" style={{ transform: 'rotate(3deg)' }}>
-                    <span className="card-number-large">{dailyCardNumber}</span>
-                    <div className="card-symbol-large">✦</div>
-                    <span className="card-name-large">{dailyCardName}</span>
+                  <div 
+                    className="card-placeholder-large" 
+                    style={{ 
+                      transform: 'rotate(3deg)',
+                      width: '100%',
+                      height: '100%',
+                      background: 'linear-gradient(135deg, #2a2215, #1a1510)',
+                      borderRadius: '8px',
+                      border: '2px solid #C5A059',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.4), 0 8px 16px rgba(0,0,0,0.5), 0 16px 32px rgba(0,0,0,0.6), 0 0 20px rgba(197,160,89,0.3)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    <span style={{ fontSize: '14px', fontWeight: 700, color: '#C5A059' }}>{dailyCardNumber}</span>
+                    <div style={{ fontSize: '28px', filter: 'drop-shadow(0 0 10px rgba(197, 160, 89, 0.6))' }}>✦</div>
+                    <span style={{ fontSize: '10px', fontWeight: 700, color: '#C5A059', textAlign: 'center', padding: '0 6px' }}>{dailyCardName}</span>
                   </div>
                 )}
                 {isDailyReversed && (
-                  <div className="card-reversed-indicator-large">
+                  <div 
+                    className="card-reversed-indicator-large"
+                    style={{
+                      position: 'absolute',
+                      top: '5px',
+                      right: '5px',
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '13px',
+                      fontWeight: 900,
+                      zIndex: 3,
+                      background: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)',
+                      color: '#fff',
+                      border: '2px solid #fff',
+                      boxShadow: '0 0 0 2px rgba(167,139,250,0.5), 0 4px 12px rgba(167,139,250,0.8), 0 0 20px rgba(167,139,250,0.6)'
+                    }}
+                  >
                     <span>R</span>
                   </div>
                 )}
               </div>
-              <div className="card-3d-shadow"></div>
+              <div 
+                className="card-3d-shadow"
+                style={{
+                  position: 'absolute',
+                  bottom: '-6px',
+                  left: '10%',
+                  width: '80%',
+                  height: '14px',
+                  background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.6) 0%, transparent 70%)',
+                  filter: 'blur(6px)',
+                  zIndex: 1,
+                  opacity: 0.7
+                }}
+              ></div>
             </div>
           </div>
 
-          <div className="card-half-right">
-            <div className="card-info-section">
-              <div className="card-day-label">CARD OF THE DAY</div>
-              <h3 className="card-title">{dailyCardName}</h3>
-              <p className="card-meaning">"{dailyCardMeaning}"</p>
+          {/* RIGHT - Card Info (55%) */}
+          <div 
+            className="card-half-right"
+            style={{
+              flex: '0 0 55%',
+              paddingLeft: '12px',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+          >
+            <div 
+              className="card-info-section"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                gap: '4px',
+                width: '100%',
+                minWidth: 0
+              }}
+            >
+              <div style={{ fontSize: '9px', color: '#C5A059', letterSpacing: '2px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 600 }}>CARD OF THE DAY</div>
+              <h3 style={{ margin: 0, fontSize: '16px', color: '#C5A059', letterSpacing: '0.5px', fontWeight: 700, lineHeight: 1.2 }}>{dailyCardName}</h3>
+              <p style={{ margin: 0, fontSize: '11px', color: 'rgba(255,255,255,0.7)', fontStyle: 'italic', lineHeight: 1.3 }}>"{dailyCardMeaning}"</p>
               {dailyCardElement && (
-                <p className="card-element">{dailyCardElement}</p>
+                <p style={{ margin: 0, fontSize: '10px', color: '#888' }}>{dailyCardElement}</p>
               )}
-              <button className="read-guidance-btn">
+              <button 
+                className="read-guidance-btn"
+                style={{
+                  background: 'transparent',
+                  border: '1px solid #C5A059',
+                  color: '#C5A059',
+                  padding: '5px 10px',
+                  borderRadius: '6px',
+                  fontSize: '9px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  letterSpacing: '0.5px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '4px',
+                  marginTop: '4px',
+                  alignSelf: 'flex-start'
+                }}
+              >
                 READ GUIDANCE
                 <ChevronRight size={14} />
               </button>
@@ -385,26 +721,40 @@ export default function HomeScreen({ onNavigate }: Props) {
       </div>
 
       {/* 4. QUICK ACCESS GRID */}
-      <div className="quick-access">
-        <div className="quick-grid">
+      <div className="quick-access" style={{ marginBottom: '8px', width: '100%' }}>
+        <div className="quick-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
           {quickActions.map((action, index) => (
             <button 
               key={index} 
               className={`quick-item ${action.isPremium ? 'premium-item' : ''} ${action.action === 'Admin' ? 'admin-item' : ''} ${(action as any).isPaywall ? 'paywall-item' : ''}`}
-              style={{ '--glow-color': action.color } as React.CSSProperties}
+              style={{ 
+                '--glow-color': action.color,
+                background: action.isPremium ? 'linear-gradient(135deg, rgba(197, 160, 89, 0.15) 0%, rgba(139, 105, 20, 0.1) 100%)' : '#1a1510',
+                border: action.isPremium ? '1px solid rgba(197, 160, 89, 0.4)' : '1px solid #2a2215',
+                borderRadius: '12px',
+                padding: 'clamp(8px, 2.5vw, 12px) 4px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '4px',
+                color: '#fff',
+                cursor: 'pointer',
+                position: 'relative',
+                overflow: 'hidden'
+              } as React.CSSProperties}
               onClick={() => handleQuickAction(action.action)}
             >
               {action.isPremium && (
-                <div className="premium-badge">💎</div>
+                <div style={{ position: 'absolute', top: '-4px', right: '-4px', background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', boxShadow: '0 2px 8px rgba(197, 160, 89, 0.5)', zIndex: 10 }}>💎</div>
               )}
               {(action as any).isPaywall && (
-                <div className="paywall-badge">👑</div>
+                <div style={{ position: 'absolute', top: '-4px', right: '-4px', background: 'linear-gradient(135deg, #FFD700 0%, #FF8C00 100%)', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', boxShadow: '0 2px 8px rgba(255, 215, 0, 0.5)', zIndex: 10 }}>👑</div>
               )}
-              <div className="q-icon-wrapper" style={{ color: action.color }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1, filter: `drop-shadow(0 0 6px ${action.color})`, color: action.color }}>
                 {action.icon}
               </div>
-              <span className="q-label">{action.label}</span>
-              {action.sublabel && <span className="q-sublabel">{action.sublabel}</span>}
+              <span style={{ fontSize: '10px', color: '#fff', fontWeight: 600, textAlign: 'center', lineHeight: 1.1 }}>{action.label}</span>
+              {action.sublabel && <span style={{ fontSize: '9px', color: '#b3a68c', textAlign: 'center', lineHeight: 1.1 }}>{action.sublabel}</span>}
             </button>
           ))}
         </div>
