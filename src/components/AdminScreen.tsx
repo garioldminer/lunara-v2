@@ -173,7 +173,7 @@ export default function AdminScreen({ onNavigate }: Props) {
     return days;
   };
 
-  // ✅ AI Tab-ზე დაჭერისას - გადავდივართ ცალკე ეკრანზე
+  // ✅ AI ტაბზე დაჭერისას - გადავდივართ ცალკე ეკრანზე
   const handleTabClick = (tab: 'credits' | 'subscriptions' | 'ai') => {
     if (tab === 'ai') {
       onNavigate?.('ai-management');
@@ -224,7 +224,7 @@ export default function AdminScreen({ onNavigate }: Props) {
         </button>
       </div>
 
-      {/* Tabs */}
+      {/* ✅ განახლებული Tabs - AI ტაბით */}
       <div className="admin-tabs">
         <button
           className={`admin-tab ${activeTab === 'credits' ? 'active' : ''}`}
@@ -240,7 +240,6 @@ export default function AdminScreen({ onNavigate }: Props) {
           <span>👑</span>
           <span>Subscriptions</span>
         </button>
-        {/* ✅ ახალი AI Management ტაბი */}
         <button
           className="admin-tab ai-tab"
           onClick={() => handleTabClick('ai')}
@@ -381,7 +380,6 @@ export default function AdminScreen({ onNavigate }: Props) {
             </div>
           </div>
 
-          {/* Add Subscription Button */}
           <button 
             className="add-subscription-btn"
             onClick={() => setShowAddSubscription(true)}
@@ -390,7 +388,6 @@ export default function AdminScreen({ onNavigate }: Props) {
             <span>Add Subscription</span>
           </button>
 
-          {/* Subscriptions List */}
           <div className="subscriptions-list">
             {subscriptions.map((sub) => {
               const daysRemaining = getDaysRemaining(sub.expires_at);

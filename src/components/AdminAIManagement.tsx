@@ -16,17 +16,20 @@ import {
   Shield,
   AlertCircle,
   CheckCircle2,
-  XCircle
+  XCircle,
+  Edit2
 } from 'lucide-react';
 import {
   getAllProviders,
   getAllApiKeys,
   addApiKey,
+  updateApiKey,
   deleteApiKey,
   toggleApiKey,
   testApiKey,
   getAllPrompts,
   addPrompt,
+  updatePrompt,
   deletePrompt,
   getTodayStats,
   getApiKeyUsage,
@@ -56,9 +59,10 @@ export default function AdminAIManagement({ onNavigate }: Props) {
   const [todayStats, setTodayStats] = useState<AIUsageStats[]>([]);
   const [apiKeyUsage, setApiKeyUsage] = useState<any[]>([]);
   
-  // Add states
+  // Add/Edit states
   const [showAddKey, setShowAddKey] = useState(false);
   const [showAddPrompt, setShowAddPrompt] = useState(false);
+  const [editingPrompt, setEditingPrompt] = useState<string | null>(null);
   
   // Form states
   const [newKey, setNewKey] = useState({
@@ -163,6 +167,46 @@ export default function AdminAIManagement({ onNavigate }: Props) {
     
     if (success) {
       setShowAddPrompt(false);
+      setNewPrompt({
+        name: '',
+        category: 'horoscope',
+        system_prompt: '',
+        user_prompt_template: '',
+        variables: ''
+      });
+      await loadData();
+    }
+  };
+
+  const handleUpdatePrompt = async (promptId: string) => {
+    const prompt = prompts.find(p => p.id === promptId);
+    if (!prompt) return;
+    
+    setNewPrompt({
+      name: prompt.name,
+      category: prompt.category,
+      system_prompt: prompt.system_prompt,
+      user_prompt_template: prompt.user_prompt_template,
+      variables: prompt.variables?.join(', ') || ''
+    });
+    setEditingPrompt(promptId);
+    setShowAddPrompt(true);
+  };
+
+  const handleSaveEditPrompt = async () => {
+    if (!editingPrompt || !newPrompt.name || !newPrompt.system_prompt) return;
+    
+    const success = await updatePrompt(editingPrompt, {
+      name: newPrompt.name,
+      category: newPrompt.category,
+      system_prompt: newPrompt.system_prompt,
+      user_prompt_template: newPrompt.user_prompt_template,
+      variables: newPrompt.variables.split(',').map(v => v.trim()).filter(v => v)
+    });
+    
+    if (success) {
+      setShowAddPrompt(false);
+      setEditingPrompt(null);
       setNewPrompt({
         name: '',
         category: 'horoscope',
@@ -619,7 +663,17 @@ export default function AdminAIManagement({ onNavigate }: Props) {
           <div className="ai-prompts">
             <div className="prompts-header">
               <h2>💬 Prompts Library</h2>
-              <button className="add-btn" onClick={() => setShowAddPrompt(true)}>
+              <button className="add-btn" onClick={() => {
+                setEditingPrompt(null);
+                setNewPrompt({
+                  name: '',
+                  category: 'horoscope',
+                  system_prompt: '',
+                  user_prompt_template: '',
+                  variables: ''
+                });
+                setShowAddPrompt(true);
+              }}>
                 <Plus size={16} />
                 <span>Add Prompt</span>
               </button>
@@ -639,6 +693,13 @@ export default function AdminAIManagement({ onNavigate }: Props) {
                       <span className="category-badge">{prompt.category}</span>
                     </div>
                     <div className="prompt-actions">
+                      <button
+                        className="icon-btn edit"
+                        onClick={() => handleUpdatePrompt(prompt.id)}
+                        title="Edit"
+                      >
+                        <Edit2 size={14} />
+                      </button>
                       <button
                         className="icon-btn delete"
                         onClick={() => handleDeletePrompt(prompt.id)}
@@ -673,7 +734,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
               ))}
             </div>
 
-            {/* Add Prompt Modal */}
+            {/* Add/Edit Prompt Modal */}
             <AnimatePresence>
               {showAddPrompt && (
                 <motion.div
@@ -681,7 +742,10 @@ export default function AdminAIManagement({ onNavigate }: Props) {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  onClick={() => setShowAddPrompt(false)}
+                  onClick={() => {
+                    setShowAddPrompt(false);
+                    setEditingPrompt(null);
+                  }}
                 >
                   <motion.div
                     className="modal large"
@@ -690,7 +754,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
                     exit={{ scale: 0.9, opacity: 0 }}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <h3>Add New Prompt</h3>
+                    <h3>{editingPrompt ? 'Edit Prompt' : 'Add New Prompt'}</h3>
                     
                     <div className="modal-field">
                       <label>Name:</label>
@@ -748,11 +812,14 @@ export default function AdminAIManagement({ onNavigate }: Props) {
                     </div>
 
                     <div className="modal-buttons">
-                      <button className="cancel-btn" onClick={() => setShowAddPrompt(false)}>
+                      <button className="cancel-btn" onClick={() => {
+                        setShowAddPrompt(false);
+                        setEditingPrompt(null);
+                      }}>
                         Cancel
                       </button>
-                      <button className="confirm-btn" onClick={handleAddPrompt}>
-                        Add Prompt
+                      <button className="confirm-btn" onClick={editingPrompt ? handleSaveEditPrompt : handleAddPrompt}>
+                        {editingPrompt ? 'Save Changes' : 'Add Prompt'}
                       </button>
                     </div>
                   </motion.div>
