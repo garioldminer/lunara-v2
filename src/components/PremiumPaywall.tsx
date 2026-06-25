@@ -16,6 +16,19 @@ interface Props {
   onUse?: (featureId: PremiumFeatureId) => void;
 }
 
+// ✅ Premium Features List - რა შედის subscription-ში
+const PREMIUM_FEATURES_LIST = [
+  { icon: '🔮', text: 'Unlimited readings' },
+  { icon: '🃏', text: 'Full 78-card collection' },
+  { icon: '🌙', text: 'Daily + weekly horoscope' },
+  { icon: '🔢', text: 'Complete numerology' },
+  { icon: '💎', text: '50+ crystals' },
+  { icon: '🌕', text: 'Moon rituals' },
+  { icon: '📊', text: 'Birth chart analysis' },
+  { icon: '🤖', text: 'AI-powered insights' },
+  { icon: '🚫', text: 'No ads' },
+];
+
 export default function PremiumPaywall({ 
   isOpen, 
   onClose, 
@@ -230,6 +243,21 @@ export default function PremiumPaywall({
             <div className="premium-features-list">
               {isSubscriptionTab && (
                 <>
+                  {/* ✅ Features List - რა შედის Premium-ში */}
+                  <div className="features-list-section">
+                    <h3 className="features-section-title">✦ What's Included ✦</h3>
+                    <div className="features-grid">
+                      {PREMIUM_FEATURES_LIST.map((feature, idx) => (
+                        <div key={idx} className="feature-item-mini">
+                          <span className="feature-icon-mini">{feature.icon}</span>
+                          <span className="feature-text-mini">{feature.text}</span>
+                          <CheckCircle size={12} className="feature-check-mini" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Plan Selector */}
                   <div 
                     className={`premium-feature-item ${selectedFeature === 'subscription_monthly' ? 'selected' : ''} ${hasSubscription ? 'purchased' : ''}`}
                     onClick={() => !isProcessing && setSelectedFeature('subscription_monthly')}
@@ -237,7 +265,7 @@ export default function PremiumPaywall({
                     <div className="premium-feature-icon">💎</div>
                     <div className="premium-feature-info">
                       <h4>Premium Monthly</h4>
-                      <p>Unlimited readings + AI Insights</p>
+                      <p>30 days access</p>
                     </div>
                     <div className="premium-feature-price">
                       {hasSubscription ? (
@@ -262,7 +290,7 @@ export default function PremiumPaywall({
                     <div className="premium-feature-icon">💎</div>
                     <div className="premium-feature-info">
                       <h4>Premium Yearly</h4>
-                      <p>Full year access - Best value!</p>
+                      <p>365 days - Best value!</p>
                     </div>
                     <div className="premium-feature-price">
                       {hasSubscription ? (

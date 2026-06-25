@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import './ProfileScreen.css';
 import { useUser } from '../context/UserContext';
 import { updateUser } from '../lib/userService';
+import { getActiveSubscription } from '../lib/subscriptionService';
 
 interface Props {
   onNavigate?: (screen: string) => void;
@@ -76,6 +77,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
   const [showBirthInfo, setShowBirthInfo] = useState(false);
   const [editSection, setEditSection] = useState<'personal' | 'astrology' | 'preferences'>('personal');
   const [mounted, setMounted] = useState(false);
+  const [activeSubscription, setActiveSubscription] = useState<any>(null);
   
   // ✅ User-ს ვიღებთ Context-დან (App.tsx-ში უკვე ჩატვირთულია)
   const { user, setUser, loading } = useUser();
@@ -84,6 +86,15 @@ export default function ProfileScreen({ onNavigate }: Props) {
     console.log('👤 ProfileScreen mounted');
     console.log('👤 User from context:', user);
     setMounted(true);
+  }, [user]);
+
+  // ✅ Subscription-ის შემოწმება
+  useEffect(() => {
+    if (user) {
+      getActiveSubscription(user.id).then(sub => {
+        setActiveSubscription(sub);
+      });
+    }
   }, [user]);
 
   // ✅ userData-ს ვქმნით context-ის user-ისგან
@@ -170,10 +181,15 @@ export default function ProfileScreen({ onNavigate }: Props) {
     { id: '8', icon: '💰', title: 'High Roller', description: 'Spin the wheel 100 times', unlocked: false, progress: 23, total: 100 },
   ];
 
+  // ✅ განახლებული - Subscription navigation
   const handleSettingClick = (setting: string) => {
     console.log(`Setting clicked: ${setting}`);
     if (setting === 'subscription' && onNavigate) {
-      onNavigate('pricing');
+      if (activeSubscription) {
+        onNavigate('subscription');  // SubscriptionScreen
+      } else {
+        onNavigate('pricing');  // PremiumPaywall
+      }
     }
   };
 
@@ -525,10 +541,11 @@ export default function ProfileScreen({ onNavigate }: Props) {
                 <span className="setting-label">Privacy</span>
                 <span className="setting-arrow">→</span>
               </div>
+              {/* ✅ განახლებული Subscription item */}
               <div className="setting-item premium animate-fade-in stagger-5" onClick={() => handleSettingClick('subscription')}>
                 <span className="setting-icon">💎</span>
                 <span className="setting-label">Subscription</span>
-                <span className="setting-badge">PRO</span>
+                <span className="setting-badge">{activeSubscription ? 'ACTIVE' : 'PRO'}</span>
                 <span className="setting-arrow">→</span>
               </div>
               <div className="setting-item animate-fade-in stagger-6" onClick={() => handleSettingClick('support')}>
