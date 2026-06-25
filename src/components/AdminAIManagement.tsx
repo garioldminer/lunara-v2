@@ -23,7 +23,6 @@ import {
   getAllProviders,
   getAllApiKeys,
   addApiKey,
-  updateApiKey,
   deleteApiKey,
   toggleApiKey,
   testApiKey,
@@ -174,6 +173,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
         user_prompt_template: '',
         variables: ''
       });
+      setEditingPrompt(null);
       await loadData();
     }
   };
