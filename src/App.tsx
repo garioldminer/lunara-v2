@@ -21,6 +21,7 @@ import SubscriptionScreen from './components/SubscriptionScreen';
 import ServicesScreen from './components/ServicesScreen';
 import BottomNav from './components/BottomNav';
 import { UserProvider, useUser } from './context/UserContext';
+import { SettingsProvider } from './context/SettingsContext';
 import { getTelegramUser } from './lib/telegramAuth';
 import { getOrCreateUser, completeOnboarding } from './lib/userService';
 import './App.css';
@@ -332,11 +333,13 @@ function AppContent() {
   );
 }
 
-// ===== MAIN APP WITH PROVIDER =====
+// ===== MAIN APP WITH PROVIDERS =====
 function App() {
   return (
     <UserProvider>
-      <AppContent />
+      <SettingsProvider>
+        <AppContent />
+      </SettingsProvider>
     </UserProvider>
   );
 }

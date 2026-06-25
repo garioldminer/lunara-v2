@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import './ProfileScreen.css';
 import { useUser } from '../context/UserContext';
+import { useSettings } from '../context/SettingsContext';
 import { updateUser } from '../lib/userService';
 import { getActiveSubscription } from '../lib/subscriptionService';
 
@@ -79,8 +80,11 @@ export default function ProfileScreen({ onNavigate }: Props) {
   const [mounted, setMounted] = useState(false);
   const [activeSubscription, setActiveSubscription] = useState<any>(null);
   
-  // ✅ User-ს ვიღებთ Context-დან (App.tsx-ში უკვე ჩატვირთულია)
+  // ✅ User-ს ვიღებთ Context-დან
   const { user, setUser, loading } = useUser();
+  
+  // ✅ Settings-ს ვიღებთ SettingsContext-დან
+  const { settings, updateSetting } = useSettings();
 
   useEffect(() => {
     console.log('👤 ProfileScreen mounted');
@@ -106,14 +110,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
     moonSign: user.moon_sign || '',
     risingSign: user.rising_sign || '',
     partnerSign: user.partner_sign || '',
-    dailyReminder: true,
-    reminderTime: '09:00',
-    horoscopeNotifs: true,
-    moonPhaseAlerts: true,
-    soundEffects: true,
-    hapticFeedback: true,
-    theme: 'dark',
-    language: 'en',
     birthDate: user.birth_date || '',
     birthTime: user.birth_time || '',
     birthPlace: user.birth_place || '',
@@ -186,9 +182,9 @@ export default function ProfileScreen({ onNavigate }: Props) {
     console.log(`Setting clicked: ${setting}`);
     if (setting === 'subscription' && onNavigate) {
       if (activeSubscription) {
-        onNavigate('subscription');  // SubscriptionScreen
+        onNavigate('subscription');
       } else {
-        onNavigate('pricing');  // PremiumPaywall
+        onNavigate('services');
       }
     }
   };
@@ -259,7 +255,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
 
   const planConfig = userData ? getPlanConfig(userData.currentPlan) : getPlanConfig('FREE');
 
-  // ✅ Loading state - თუ user ჯერ არ არის ჩატვირთული
+  // ✅ Loading state
   if (loading || !userData) {
     return (
       <div className="screen-container profile">
@@ -516,49 +512,199 @@ export default function ProfileScreen({ onNavigate }: Props) {
           </div>
         )}
 
+        {/* ✅ SETTINGS TAB - რეალური ფუნქციონალი */}
         {activeTab === 'settings' && (
           <div className="settings-tab">
             <PillTabs activeTab={activeTab} setActiveTab={setActiveTab} />
             <h3 className="section-title">✦ SETTINGS ✦</h3>
-            <div className="settings-list">
-              <div className="setting-item animate-fade-in stagger-1" onClick={() => handleSettingClick('notifications')}>
-                <span className="setting-icon">🔔</span>
-                <span className="setting-label">Notifications</span>
-                <span className="setting-arrow">→</span>
-              </div>
-              <div className="setting-item animate-fade-in stagger-2" onClick={() => handleSettingClick('theme')}>
+            
+            {/* APPEARANCE SECTION */}
+            <div className="settings-section">
+              <h4 className="settings-section-title">🎨 Appearance</h4>
+              
+              {/* Theme Selector */}
+              <div className="setting-item animate-fade-in stagger-1">
                 <span className="setting-icon">🌗</span>
-                <span className="setting-label">Theme</span>
-                <span className="setting-arrow">→</span>
+                <div className="setting-content">
+                  <span className="setting-label">Theme</span>
+                  <div className="theme-options">
+                    <button 
+                      className={`theme-option-mini ${settings.theme === 'dark' ? 'active' : ''}`}
+                      onClick={() => updateSetting('theme', 'dark')}
+                    >
+                      🌙 Dark
+                    </button>
+                    <button 
+                      className={`theme-option-mini ${settings.theme === 'light' ? 'active' : ''}`}
+                      onClick={() => updateSetting('theme', 'light')}
+                    >
+                      ☀️ Light
+                    </button>
+                    <button 
+                      className={`theme-option-mini ${settings.theme === 'auto' ? 'active' : ''}`}
+                      onClick={() => updateSetting('theme', 'auto')}
+                    >
+                      ⚙️ Auto
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div className="setting-item animate-fade-in stagger-3" onClick={() => handleSettingClick('language')}>
+
+              {/* Language Selector */}
+              <div className="setting-item animate-fade-in stagger-2">
                 <span className="setting-icon">🌐</span>
-                <span className="setting-label">Language</span>
-                <span className="setting-arrow">→</span>
+                <div className="setting-content">
+                  <span className="setting-label">Language</span>
+                  <select 
+                    className="form-input form-select settings-select"
+                    value={settings.language}
+                    onChange={(e) => updateSetting('language', e.target.value as any)}
+                  >
+                    <option value="en">🇬🇧 English</option>
+                    <option value="ka">🇬🇪 ქართული</option>
+                    <option value="ru">🇷🇺 Русский</option>
+                    <option value="es">🇪🇸 Español</option>
+                  </select>
+                </div>
               </div>
-              <div className="setting-item animate-fade-in stagger-4" onClick={() => handleSettingClick('privacy')}>
-                <span className="setting-icon">🔐</span>
-                <span className="setting-label">Privacy</span>
-                <span className="setting-arrow">→</span>
+            </div>
+
+            {/* NOTIFICATIONS SECTION */}
+            <div className="settings-section">
+              <h4 className="settings-section-title">🔔 Notifications</h4>
+              
+              {/* Daily Reminder */}
+              <div className="setting-item animate-fade-in stagger-3">
+                <span className="setting-icon">📅</span>
+                <div className="setting-content">
+                  <span className="setting-label">Daily Card Reminder</span>
+                  <label className="toggle-switch">
+                    <input 
+                      type="checkbox" 
+                      checked={settings.dailyReminder}
+                      onChange={(e) => updateSetting('dailyReminder', e.target.checked)}
+                    />
+                    <span className="toggle-slider"></span>
+                  </label>
+                </div>
               </div>
-              {/* ✅ განახლებული Subscription item */}
-              <div className="setting-item premium animate-fade-in stagger-5" onClick={() => handleSettingClick('subscription')}>
+
+              {settings.dailyReminder && (
+                <div className="setting-item sub-setting animate-fade-in stagger-4">
+                  <span className="setting-icon">⏰</span>
+                  <div className="setting-content">
+                    <span className="setting-label">Reminder Time</span>
+                    <input 
+                      type="time" 
+                      className="form-input settings-time-input"
+                      value={settings.reminderTime}
+                      onChange={(e) => updateSetting('reminderTime', e.target.value)}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Horoscope Notifications */}
+              <div className="setting-item animate-fade-in stagger-5">
+                <span className="setting-icon">🌙</span>
+                <div className="setting-content">
+                  <span className="setting-label">Horoscope Notifications</span>
+                  <label className="toggle-switch">
+                    <input 
+                      type="checkbox" 
+                      checked={settings.horoscopeNotifs}
+                      onChange={(e) => updateSetting('horoscopeNotifs', e.target.checked)}
+                    />
+                    <span className="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Moon Phase Alerts */}
+              <div className="setting-item animate-fade-in stagger-6">
+                <span className="setting-icon">🌕</span>
+                <div className="setting-content">
+                  <span className="setting-label">Moon Phase Alerts</span>
+                  <label className="toggle-switch">
+                    <input 
+                      type="checkbox" 
+                      checked={settings.moonPhaseAlerts}
+                      onChange={(e) => updateSetting('moonPhaseAlerts', e.target.checked)}
+                    />
+                    <span className="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* SOUNDS & FEEDBACK SECTION */}
+            <div className="settings-section">
+              <h4 className="settings-section-title">🔊 Sounds & Feedback</h4>
+              
+              {/* Sound Effects */}
+              <div className="setting-item animate-fade-in stagger-7">
+                <span className="setting-icon">🔊</span>
+                <div className="setting-content">
+                  <span className="setting-label">Sound Effects</span>
+                  <label className="toggle-switch">
+                    <input 
+                      type="checkbox" 
+                      checked={settings.soundEffects}
+                      onChange={(e) => updateSetting('soundEffects', e.target.checked)}
+                    />
+                    <span className="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Haptic Feedback */}
+              <div className="setting-item animate-fade-in stagger-8">
+                <span className="setting-icon">📳</span>
+                <div className="setting-content">
+                  <span className="setting-label">Haptic Feedback</span>
+                  <label className="toggle-switch">
+                    <input 
+                      type="checkbox" 
+                      checked={settings.hapticFeedback}
+                      onChange={(e) => updateSetting('hapticFeedback', e.target.checked)}
+                    />
+                    <span className="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* ACCOUNT SECTION */}
+            <div className="settings-section">
+              <h4 className="settings-section-title">💎 Account</h4>
+              
+              {/* Subscription */}
+              <div 
+                className="setting-item premium animate-fade-in stagger-9" 
+                onClick={() => handleSettingClick('subscription')}
+              >
                 <span className="setting-icon">💎</span>
                 <span className="setting-label">Subscription</span>
-                <span className="setting-badge">{activeSubscription ? 'ACTIVE' : 'PRO'}</span>
+                <span className="setting-badge">{activeSubscription ? 'ACTIVE' : 'FREE'}</span>
                 <span className="setting-arrow">→</span>
               </div>
-              <div className="setting-item animate-fade-in stagger-6" onClick={() => handleSettingClick('support')}>
+
+              {/* Support */}
+              <div className="setting-item animate-fade-in stagger-10" onClick={() => handleSettingClick('support')}>
                 <span className="setting-icon">📧</span>
                 <span className="setting-label">Support</span>
                 <span className="setting-arrow">→</span>
               </div>
-              <div className="setting-item animate-fade-in stagger-6" onClick={() => handleSettingClick('about')}>
+
+              {/* About */}
+              <div className="setting-item animate-fade-in stagger-11" onClick={() => handleSettingClick('about')}>
                 <span className="setting-icon">ℹ️</span>
                 <span className="setting-label">About</span>
                 <span className="setting-arrow">→</span>
               </div>
-              <div className="setting-item danger animate-fade-in stagger-6" onClick={() => handleSettingClick('logout')}>
+
+              {/* Logout */}
+              <div className="setting-item danger animate-fade-in stagger-12" onClick={() => handleSettingClick('logout')}>
                 <span className="setting-icon">🚪</span>
                 <span className="setting-label">Logout</span>
                 <span className="setting-arrow">→</span>
@@ -704,80 +850,7 @@ function EditProfileModal({
 
           {editSection === 'preferences' && (
             <div className="edit-section">
-              <div className="toggle-group">
-                <div className="toggle-info">
-                  <span className="toggle-icon">🔔</span>
-                  <span className="toggle-label">Daily Card Reminder</span>
-                </div>
-                <label className="toggle-switch">
-                  <input type="checkbox" checked={formData.dailyReminder} onChange={(e) => setFormData({ ...formData, dailyReminder: e.target.checked })} />
-                  <span className="toggle-slider"></span>
-                </label>
-              </div>
-              {formData.dailyReminder && (
-                <div className="form-group time-input">
-                  <input type="time" className="form-input" value={formData.reminderTime} onChange={(e) => setFormData({ ...formData, reminderTime: e.target.value })} />
-                </div>
-              )}
-              <div className="toggle-group">
-                <div className="toggle-info">
-                  <span className="toggle-icon">🌙</span>
-                  <span className="toggle-label">Horoscope Notifications</span>
-                </div>
-                <label className="toggle-switch">
-                  <input type="checkbox" checked={formData.horoscopeNotifs} onChange={(e) => setFormData({ ...formData, horoscopeNotifs: e.target.checked })} />
-                  <span className="toggle-slider"></span>
-                </label>
-              </div>
-              <div className="toggle-group">
-                <div className="toggle-info">
-                  <span className="toggle-icon">🌕</span>
-                  <span className="toggle-label">Moon Phase Alerts</span>
-                </div>
-                <label className="toggle-switch">
-                  <input type="checkbox" checked={formData.moonPhaseAlerts} onChange={(e) => setFormData({ ...formData, moonPhaseAlerts: e.target.checked })} />
-                  <span className="toggle-slider"></span>
-                </label>
-              </div>
-              <div className="toggle-group">
-                <div className="toggle-info">
-                  <span className="toggle-icon">🔊</span>
-                  <span className="toggle-label">Sound Effects</span>
-                </div>
-                <label className="toggle-switch">
-                  <input type="checkbox" checked={formData.soundEffects} onChange={(e) => setFormData({ ...formData, soundEffects: e.target.checked })} />
-                  <span className="toggle-slider"></span>
-                </label>
-              </div>
-              <div className="toggle-group">
-                <div className="toggle-info">
-                  <span className="toggle-icon">📳</span>
-                  <span className="toggle-label">Haptic Feedback</span>
-                </div>
-                <label className="toggle-switch">
-                  <input type="checkbox" checked={formData.hapticFeedback} onChange={(e) => setFormData({ ...formData, hapticFeedback: e.target.checked })} />
-                  <span className="toggle-slider"></span>
-                </label>
-              </div>
-              <div className="form-group">
-                <label className="form-label">🎨 Theme</label>
-                <div className="theme-selector">
-                  {['dark', 'light', 'auto'].map(theme => (
-                    <button key={theme} type="button" className={`theme-option ${formData.theme === theme ? 'active' : ''}`} onClick={() => setFormData({ ...formData, theme })}>
-                      {theme === 'dark' ? '🌙' : theme === 'light' ? '☀️' : '⚙️'} {theme.charAt(0).toUpperCase() + theme.slice(1)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="form-group">
-                <label className="form-label">🌐 Language</label>
-                <select className="form-input form-select" value={formData.language} onChange={(e) => setFormData({ ...formData, language: e.target.value })}>
-                  <option value="en">English</option>
-                  <option value="ka">ქართული</option>
-                  <option value="ru">Русский</option>
-                  <option value="es">Español</option>
-                </select>
-              </div>
+              <p>Edit preferences in Settings tab</p>
             </div>
           )}
 
