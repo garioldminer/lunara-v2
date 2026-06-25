@@ -1,5 +1,5 @@
 /* ============================================
-   AI ADMIN MANAGEMENT - FULL REDESIGN
+   AI ADMIN MANAGEMENT - FINAL VERSION
    ============================================ */
 
    .ai-admin-screen {
@@ -353,19 +353,20 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 9px 14px;
+    padding: 10px 16px;
     background: linear-gradient(135deg, #c87800, #ffe566);
     border: 1px solid #ffe566;
     border-radius: 10px;
     color: #0a0600;
     font-family: 'Georgia', serif;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 2px 8px rgba(200, 120, 0, 0.3);
     white-space: nowrap;
     flex-shrink: 0;
+    min-height: 40px;
   }
   
   .add-btn:active {
@@ -515,20 +516,30 @@
     color: #3b82f6;
     background: rgba(59, 130, 246, 0.1);
   }
+  
   .icon-btn.toggle { 
     border-color: rgba(16, 185, 129, 0.5); 
     color: #10b981;
     background: rgba(16, 185, 129, 0.1);
   }
+  
   .icon-btn.delete { 
     border-color: rgba(239, 68, 68, 0.5); 
     color: #ef4444;
     background: rgba(239, 68, 68, 0.1);
   }
+  
   .icon-btn.reset { 
     border-color: rgba(251, 191, 36, 0.5); 
     color: #fbbf24;
     background: rgba(251, 191, 36, 0.1);
+  }
+  
+  /* ✅ ახალი Edit ღილაკის სტილი */
+  .icon-btn.edit { 
+    border-color: rgba(96, 165, 250, 0.5); 
+    color: #60a5fa;
+    background: rgba(96, 165, 250, 0.1);
   }
   
   .icon-btn:disabled {
@@ -758,7 +769,7 @@
   }
   
   /* ============================================
-     STATS
+     STATS - გასწორებული სქროლის გარეშე
      ============================================ */
   .ai-stats {
     display: flex;
@@ -778,7 +789,6 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
-    overflow-x: auto;
   }
   
   .stats-table-header,
@@ -789,7 +799,6 @@
     padding: 8px 10px;
     font-size: 10px;
     align-items: center;
-    min-width: 500px;
   }
   
   .stats-table-header {
@@ -820,7 +829,7 @@
   }
   
   /* ============================================
-     MODALS
+     MODALS - გასწორებული Dropdown-ით
      ============================================ */
   .modal-overlay {
     position: fixed;
@@ -879,6 +888,7 @@
     letter-spacing: 0.3px;
   }
   
+  /* ✅ გასწორებული Input/Select/Textarea სტილები */
   .modal-field input,
   .modal-field select,
   .modal-field textarea {
@@ -895,14 +905,26 @@
     box-sizing: border-box;
     min-height: 44px;
     -webkit-appearance: none;
+    -moz-appearance: none;
     appearance: none;
   }
   
+  /* ✅ Dropdown-ის სწორი სტილი */
   .modal-field select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23c87800' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-color: rgba(20, 12, 5, 0.8);
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c87800' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
     background-repeat: no-repeat;
     background-position: right 12px center;
-    padding-right: 32px;
+    background-size: 16px;
+    padding-right: 40px;
+    cursor: pointer;
+  }
+  
+  .modal-field select option {
+    background: #1a0f05;
+    color: #ffe566;
+    padding: 12px;
+    font-size: 13px;
   }
   
   .modal-field input:focus,
@@ -923,12 +945,6 @@
     resize: vertical;
     min-height: 80px;
     line-height: 1.5;
-  }
-  
-  .modal-field select option {
-    background: #1a0f05;
-    color: #ffe566;
-    padding: 8px;
   }
   
   .modal-buttons {
@@ -996,7 +1012,6 @@
     .stats-table-row {
       grid-template-columns: 1fr 1fr 1fr;
       font-size: 9px;
-      min-width: 0;
     }
     
     .stat-number {
