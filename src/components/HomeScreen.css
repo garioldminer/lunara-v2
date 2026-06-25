@@ -175,19 +175,15 @@
   
   /* ============================================
      2. DAILY QUESTS + ACTION BUTTONS
-     ✅ ორივე ბანერი ზუსტად ერთი სიმაღლის
-     ✅ Daily Quests (60%) + Action Buttons 2x2 (40%)
      ============================================ */
   .quests-and-actions-split {
     display: flex;
     gap: 2px;
     margin-bottom: 2px;
     width: 100%;
-    /* ✅ ორივე ბანერი ერთ სიმაღლეზე გაიწელება */
     align-items: stretch;
   }
   
-  /* LEFT - Daily Quests (60%) */
   .daily-quests-compact {
     flex: 3;
     background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
@@ -311,8 +307,6 @@
     flex-shrink: 0;
   }
   
-  /* ✅ RIGHT - Action Buttons Panel (40%)
-     stretch-ით გაიწელება Daily Quests-ის სიმაღლეზე */
   .action-buttons-panel {
     flex: 2;
     background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
@@ -324,7 +318,6 @@
     min-width: 0;
   }
   
-  /* ✅ 2x2 Grid - იკავებს მთელ სივრცეს */
   .action-grid-vertical {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -334,7 +327,6 @@
     height: 100%;
   }
   
-  /* ✅ თითოეული ღილაკი შეავსებს grid cell-ს */
   .action-btn-vertical {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(197, 160, 89, 0.15);
@@ -428,7 +420,6 @@
   
   /* ============================================
      3. CARD OF THE DAY - Horizontal Split
-     ✅ კარტი მარცხნივ, ტექსტი მარჯვნივ
      ============================================ */
   .card-of-day-banner {
     background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
@@ -456,7 +447,6 @@
     transform: translateY(0);
   }
   
-  /* ✅ Horizontal Split Layout */
   .card-of-day-content {
     display: flex;
     align-items: center;
@@ -464,7 +454,6 @@
     position: relative;
   }
   
-  /* LEFT HALF - Card Image */
   .card-half-left {
     flex: 0 0 45%;
     position: relative;
@@ -474,7 +463,6 @@
     padding: 8px 0;
   }
   
-  /* ✅ ნამდვილი კარტის პროპორცია 2:3 */
   .card-image-3d-wrapper {
     position: relative;
     width: clamp(80px, 22vw, 110px);
@@ -547,7 +535,6 @@
     padding: 0 6px;
   }
   
-  /* ✅ Enhanced R badge */
   .card-reversed-indicator-large {
     position: absolute;
     top: 5px;
@@ -600,7 +587,6 @@
     opacity: 0.7;
   }
   
-  /* RIGHT HALF - Card Info */
   .card-half-right {
     flex: 0 0 55%;
     padding-left: 12px;
@@ -830,6 +816,48 @@
       transform: scale(1.1);
       box-shadow: 0 4px 12px rgba(255, 215, 0, 0.7);
     }
+  }
+  
+  /* ============================================
+     SERVICES ITEM - ახალი!
+     ============================================ */
+  .quick-item.services-item {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 165, 0, 0.08) 100%);
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .quick-item.services-item::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      45deg,
+      transparent 30%,
+      rgba(255, 215, 0, 0.1) 50%,
+      transparent 70%
+    );
+    animation: servicesShine 3s ease-in-out infinite;
+  }
+  
+  @keyframes servicesShine {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+  }
+  
+  .quick-item.services-item:hover {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.25) 0%, rgba(255, 165, 0, 0.15) 100%);
+    border-color: rgba(255, 215, 0, 0.6);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+  }
+  
+  .quick-item.services-item .q-icon-wrapper {
+    color: #FFD700 !important;
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6));
   }
   
   /* ============================================

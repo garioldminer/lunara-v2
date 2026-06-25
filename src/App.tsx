@@ -8,7 +8,6 @@ import CardsScreen from './components/CardsScreen';
 import ReadingScreen from './components/ReadingScreen';
 import AstroScreen from './components/AstroScreen';
 import ProfileScreen from './components/ProfileScreen';
-import PricingScreen from './components/PricingScreen';
 import CardFanScreen from './components/CardFanScreen';
 import CardDetailScreen from './components/CardDetailScreen';
 import DailyCardScreen from './components/DailyCardScreen';
@@ -19,6 +18,7 @@ import HorseshoeReadingScreen from './components/HorseshoeReadingScreen';
 import RelationshipReadingScreen from './components/RelationshipReadingScreen';
 import AdminScreen from './components/AdminScreen';
 import SubscriptionScreen from './components/SubscriptionScreen';
+import ServicesScreen from './components/ServicesScreen';
 import BottomNav from './components/BottomNav';
 import { UserProvider, useUser } from './context/UserContext';
 import { getTelegramUser } from './lib/telegramAuth';
@@ -35,7 +35,6 @@ type Screen =
   | 'reading'
   | 'astro'
   | 'profile'
-  | 'pricing'
   | 'card-fan'
   | 'card-detail'
   | 'daily-card'
@@ -45,7 +44,8 @@ type Screen =
   | 'horseshoe'
   | 'relationship'
   | 'admin'
-  | 'subscription';
+  | 'subscription'
+  | 'services';
 
 // ===== USER LOADER COMPONENT =====
 function UserLoader({ onReady }: { onReady: () => void }) {
@@ -176,13 +176,14 @@ function AppContent() {
       console.log('💎 Opening Subscription Screen');
       goTo('subscription');
     }
+    // ✅ Services Screen
+    else if (screen === 'services') {
+      console.log('🛍️ Opening Services Screen');
+      goTo('services');
+    }
     // Card Fan / Draw
     else if (screen === 'draw' || screen === 'card-fan') {
       goTo('card-fan');
-    }
-    // Pricing
-    else if (screen === 'pricing') {
-      goTo('pricing');
     }
     // Main tabs
     else if (['home', 'cards', 'reading', 'astro', 'profile'].includes(screen)) {
@@ -288,9 +289,6 @@ function AppContent() {
           <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
         </>
       )}
-      {currentScreen === 'pricing' && (
-        <PricingScreen onBack={() => goTo('home')} />
-      )}
       {currentScreen === 'card-fan' && (
         <CardFanScreen onNavigate={handleNavigate} />
       )}
@@ -325,6 +323,10 @@ function AppContent() {
       {/* ✅ Subscription Screen */}
       {currentScreen === 'subscription' && (
         <SubscriptionScreen onNavigate={handleNavigate} />
+      )}
+      {/* ✅ Services Screen */}
+      {currentScreen === 'services' && (
+        <ServicesScreen onNavigate={handleNavigate} />
       )}
     </div>
   );

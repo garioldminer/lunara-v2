@@ -1,0 +1,322 @@
+.services-screen {
+    width: 100%;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #0a0600 0%, #1a0f05 50%, #0a0600 100%);
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    padding: 70px 16px 100px;
+    overflow-y: auto;
+  }
+  
+  /* Header */
+  .services-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  
+  .services-back-btn {
+    background: rgba(197, 160, 89, 0.1);
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    color: #C5A059;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  
+  .services-back-btn:hover {
+    background: rgba(197, 160, 89, 0.2);
+    transform: scale(1.05);
+  }
+  
+  .services-header-center {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #C5A059;
+  }
+  
+  .services-header-center h1 {
+    font-size: 20px;
+    margin: 0;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  
+  .services-header-spacer {
+    width: 40px;
+  }
+  
+  /* Content */
+  .services-content {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+  
+  /* Section */
+  .services-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .section-header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    color: #C5A059;
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+  
+  .section-subtitle {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0;
+  }
+  
+  /* Subscription Cards */
+  .subscription-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  /* Service Card Base */
+  .service-card {
+    background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
+    border: 1px solid rgba(197, 160, 89, 0.2);
+    border-radius: 16px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .service-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(197, 160, 89, 0.4);
+    box-shadow: 0 8px 24px rgba(197, 160, 89, 0.2);
+  }
+  
+  .service-card:active {
+    transform: translateY(-2px);
+  }
+  
+  /* Popular Badge */
+  .popular-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: #0a0600;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+  }
+  
+  /* Service Icon */
+  .service-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(var(--service-color-rgb, 197, 160, 89), 0.15);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-bottom: 12px;
+    border: 1px solid rgba(var(--service-color-rgb, 197, 160, 89), 0.3);
+  }
+  
+  /* Service Info */
+  .service-info {
+    margin-bottom: 12px;
+  }
+  
+  .service-name {
+    font-size: 16px;
+    color: #fff;
+    margin: 0 0 4px;
+    font-weight: 600;
+  }
+  
+  .service-description {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+  }
+  
+  /* Service Price */
+  .service-price {
+    margin-bottom: 12px;
+  }
+  
+  .price-main {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  
+  .price-usd {
+    font-size: 20px;
+    color: #C5A059;
+    font-weight: 700;
+  }
+  
+  .price-stars {
+    font-size: 14px;
+    color: #fbbf24;
+    font-weight: 600;
+  }
+  
+  .price-free {
+    font-size: 20px;
+    color: #22c55e;
+    font-weight: 700;
+  }
+  
+  .price-soon {
+    font-size: 14px;
+    color: #888;
+    font-weight: 600;
+  }
+  
+  .price-period {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+  }
+  
+  /* Service Features */
+  .service-features {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  
+  .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.7);
+  }
+  
+  .feature-item svg {
+    color: #22c55e;
+    flex-shrink: 0;
+  }
+  
+  /* Service CTA Button */
+  .service-cta {
+    width: 100%;
+    background: linear-gradient(135deg, #C5A059 0%, #8B6914 100%);
+    border: none;
+    border-radius: 12px;
+    padding: 12px;
+    color: #0a0600;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 0.5px;
+  }
+  
+  .service-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(197, 160, 89, 0.4);
+  }
+  
+  .service-cta:active {
+    transform: translateY(0);
+  }
+  
+  .free-cta {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  }
+  
+  /* Readings Grid */
+  .readings-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  /* Reading Card */
+  .reading-card {
+    padding: 16px;
+  }
+  
+  /* Free Card */
+  .free-card {
+    border-color: rgba(34, 197, 94, 0.3);
+  }
+  
+  .free-card:hover {
+    border-color: rgba(34, 197, 94, 0.5);
+    box-shadow: 0 8px 24px rgba(34, 197, 94, 0.2);
+  }
+  
+  /* Coming Soon Card */
+  .coming-soon-card {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  .coming-soon-card:hover {
+    transform: none;
+  }
+  
+  .coming-soon-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #888;
+    font-size: 12px;
+    font-weight: 600;
+    z-index: 10;
+    backdrop-filter: blur(2px);
+  }
+  
+  /* Responsive */
+  @media (max-width: 360px) {
+    .readings-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .services-screen {
+      padding: 70px 12px 100px;
+    }
+  }

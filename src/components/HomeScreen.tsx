@@ -136,12 +136,13 @@ export default function HomeScreen({ onNavigate }: Props) {
         onNavigate('admin');
       } else if (action === 'Subscription') {
         onNavigate('subscription');
-      } else if (action === 'Paywall') {
-        onNavigate('pricing');
+      } else if (action === 'Services') {
+        onNavigate('services');
       }
     }
   };
 
+  // ✅ განახლებული - Premium/Paywall-ის ნაცვლად Services
   const quickActions = [
     { icon: <Sparkles size={28} />, label: 'Daily', sublabel: 'Card', color: '#C5A059', action: 'Daily' },
     { icon: <LayoutGrid size={28} />, label: '3 Cards', sublabel: 'Reading', color: '#a78bfa', action: '3Cards' },
@@ -152,7 +153,8 @@ export default function HomeScreen({ onNavigate }: Props) {
     { icon: <span style={{ fontSize: '28px' }}>🐎</span>, label: 'Horseshoe', sublabel: '7 Cards', color: '#fb923c', action: 'Horseshoe', isPremium: true },
     { icon: <span style={{ fontSize: '28px' }}>❤️</span>, label: 'Love', sublabel: 'Spread', color: '#f472b6', action: 'Relationship', isPremium: true },
     { icon: <Gem size={28} />, label: 'Crystals', sublabel: '', color: '#f472b6', action: 'Crystals' },
-    { icon: <Crown size={28} />, label: 'Premium', sublabel: 'Upgrade', color: '#FFD700', action: 'Paywall', isPaywall: true },
+    // ✅ ახალი Services ღილაკი - Premium-ის ნაცვლად
+    { icon: <Sparkles size={28} />, label: 'Services', sublabel: 'Shop', color: '#FFD700', action: 'Services', isServices: true },
   ];
 
   if (isUserAdmin) {
@@ -260,7 +262,7 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* 2. DAILY QUESTS (60%) + ACTION BUTTONS (40%) - INLINE STYLES */}
+      {/* 2. DAILY QUESTS (60%) + ACTION BUTTONS (40%) */}
       <div 
         className="quests-and-actions-split"
         style={{
@@ -526,7 +528,7 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* 3. CARD OF THE DAY - HORIZONTAL SPLIT WITH INLINE STYLES */}
+      {/* 3. CARD OF THE DAY */}
       <div 
         className="card-of-day-banner clickable-card"
         onClick={() => onNavigate && onNavigate('daily-card')}
@@ -726,11 +728,11 @@ export default function HomeScreen({ onNavigate }: Props) {
           {quickActions.map((action, index) => (
             <button 
               key={index} 
-              className={`quick-item ${action.isPremium ? 'premium-item' : ''} ${action.action === 'Admin' ? 'admin-item' : ''} ${(action as any).isPaywall ? 'paywall-item' : ''}`}
+              className={`quick-item ${action.isPremium ? 'premium-item' : ''} ${action.action === 'Admin' ? 'admin-item' : ''} ${(action as any).isServices ? 'services-item' : ''}`}
               style={{ 
                 '--glow-color': action.color,
-                background: action.isPremium ? 'linear-gradient(135deg, rgba(197, 160, 89, 0.15) 0%, rgba(139, 105, 20, 0.1) 100%)' : '#1a1510',
-                border: action.isPremium ? '1px solid rgba(197, 160, 89, 0.4)' : '1px solid #2a2215',
+                background: action.isPremium ? 'linear-gradient(135deg, rgba(197, 160, 89, 0.15) 0%, rgba(139, 105, 20, 0.1) 100%)' : (action as any).isServices ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 165, 0, 0.08) 100%)' : '#1a1510',
+                border: action.isPremium ? '1px solid rgba(197, 160, 89, 0.4)' : (action as any).isServices ? '1px solid rgba(255, 215, 0, 0.4)' : '1px solid #2a2215',
                 borderRadius: '12px',
                 padding: 'clamp(8px, 2.5vw, 12px) 4px',
                 display: 'flex',
@@ -747,8 +749,8 @@ export default function HomeScreen({ onNavigate }: Props) {
               {action.isPremium && (
                 <div style={{ position: 'absolute', top: '-4px', right: '-4px', background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', boxShadow: '0 2px 8px rgba(197, 160, 89, 0.5)', zIndex: 10 }}>💎</div>
               )}
-              {(action as any).isPaywall && (
-                <div style={{ position: 'absolute', top: '-4px', right: '-4px', background: 'linear-gradient(135deg, #FFD700 0%, #FF8C00 100%)', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', boxShadow: '0 2px 8px rgba(255, 215, 0, 0.5)', zIndex: 10 }}>👑</div>
+              {(action as any).isServices && (
+                <div style={{ position: 'absolute', top: '-4px', right: '-4px', background: 'linear-gradient(135deg, #FFD700 0%, #FF8C00 100%)', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', boxShadow: '0 2px 8px rgba(255, 215, 0, 0.5)', zIndex: 10, animation: 'paywallPulse 2s ease-in-out infinite' }}>🛍️</div>
               )}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1, filter: `drop-shadow(0 0 6px ${action.color})`, color: action.color }}>
                 {action.icon}
