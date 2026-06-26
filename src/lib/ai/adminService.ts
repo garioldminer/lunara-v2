@@ -168,7 +168,6 @@ export async function getAllApiKeys(): Promise<AIApiKey[]> {
   }
 }
 
-// ✅ განახლებული addApiKey - უკეთესი error logging-ით
 export async function addApiKey(
   providerName: string,
   apiKey: string,
@@ -194,7 +193,7 @@ export async function addApiKey(
         current_usage: 0,
         error_count: 0
       })
-      .select(); // ✅ ვთხოვთ რომ დაგვიბრუნოს ჩაწერილი მონაცემი
+      .select();
 
     if (error) {
       console.error('❌ [addApiKey] Supabase error:', {
@@ -269,76 +268,279 @@ export async function toggleApiKey(keyId: string, isActive: boolean): Promise<Op
   return updateApiKey(keyId, { is_active: isActive });
 }
 
-export async function testApiKey(keyId: string): Promise<{ success: boolean; message: string }> {
+// ============================================
+// ✅ TEST API KEY - დეტალური DEBUGGING
+// ============================================
+export async function testApiKey(keyId: string): Promise<{ 
+  success: boolean; 
+  message: string;
+  details?: any;
+}> {
   try {
-    console.log('🧪 [testApiKey] Testing key:', keyId);
+    console.log('🧪 [testApiKey] ===== STARTING TEST =====');
+    console.log('🧪 [testApiKey] Key ID:', keyId);
+    
+    // 1. წაიკითხე გასაღები ბაზიდან
     const { data: key, error } = await supabase
       .from('ai_api_keys')
-      .select('*, ai_providers(name)')
+      .select('*, ai_providers(name, type)')
       .eq('id', keyId)
       .single();
 
     if (error || !key) {
       console.error('❌ [testApiKey] Key not found:', error);
-      return { success: false, message: 'Key not found' };
+      return { 
+        success: false, 
+        message: 'Key not found',
+        details: { error }
+      };
     }
+
+    console.log('✅ [testApiKey] Key loaded:', {
+      provider: key.provider_name,
+      keyPreview: key.api_key.substring(0, 15) + '...',
+      isActive: key.is_active
+    });
 
     const providerName = (key as any).ai_providers?.name || key.provider_name;
-    console.log('🧪 [testApiKey] Testing with provider:', providerName);
+    console.log('🧪 [testApiKey] Testing provider:', providerName);
     
-    // Test based on provider
+    // ============================================
+    // GEMINI TEST - დეტალური
+    // ============================================
     if (providerName.includes('gemini')) {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key.api_key}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: 'Say "OK"' }] }],
-            generationConfig: { maxOutputTokens: 10 }
-          })
+      console.log('🧪 [testApiKey] === GEMINI TEST START ===');
+      
+      // ვცადოთ რამდენიმე მოდელი
+      const models = [
+        'gemini-2.0-flash',
+        'gemini-1.5-flash',
+        'gemini-1.5-flash-8b',
+        'gemini-pro'
+      ];
+      
+      for (const model of models) {
+        console.log(`\n🧪 [testApiKey] Testing model: ${model}`);
+        
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key.api_key}`;
+        
+        console.log('🧪 [testApiKey] URL:', url);
+        console.log('🧪 [testApiKey] Request body:', {
+          contents: [{ parts: [{ text: 'Say "OK"' }] }],
+          generationConfig: { maxOutputTokens: 10 }
+        });
+        
+        try {
+          const startTime = Date.now();
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'User-Agent': 'LunaraAI/1.0'
+            },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: 'Say "OK"' }] }],
+              generationConfig: { 
+                maxOutputTokens: 10,
+                temperature: 0.7
+              }
+            })
+          });
+
+          const responseTime = Date.now() - startTime;
+          console.log(`🧪 [testApiKey] Response time: ${responseTime}ms`);
+          console.log(`🧪 [testApiKey] Status: ${response.status} ${response.statusText}`);
+          
+          const responseText = await response.text();
+          console.log(`🧪 [testApiKey] Response body:`, responseText);
+          
+          let responseData;
+          try {
+            responseData = JSON.parse(responseText);
+          } catch (e) {
+            console.error('❌ [testApiKey] Failed to parse response as JSON');
+          }
+
+          if (response.ok) {
+            console.log(`✅ [testApiKey] Model ${model} works!`);
+            return { 
+              success: true, 
+              message: `✅ Gemini API is working! (Model: ${model})`,
+              details: {
+                model,
+                responseTime,
+                response: responseData
+              }
+            };
+          } else {
+            console.error(`❌ [testApiKey] Model ${model} failed:`, {
+              status: response.status,
+              statusText: response.statusText,
+              error: responseData?.error
+            });
+            
+            // თუ ეს არის quota error, ვცადოთ შემდეგი მოდელი
+            if (responseData?.error?.code === 429 || 
+                responseData?.error?.message?.includes('quota') ||
+                responseData?.error?.message?.includes('limit')) {
+              console.log(`⚠️ [testApiKey] Quota error for ${model}, trying next model...`);
+              continue;
+            }
+          }
+        } catch (fetchError) {
+          console.error(`❌ [testApiKey] Fetch error for ${model}:`, fetchError);
+          continue;
         }
-      );
-
-      if (response.ok) {
-        console.log('✅ [testApiKey] Gemini API working!');
-        return { success: true, message: '✅ Gemini API is working!' };
-      } else {
-        const errorData = await response.json();
-        console.error('❌ [testApiKey] Gemini error:', errorData);
-        return { success: false, message: `❌ ${errorData.error?.message || 'API error'}` };
       }
+      
+      // თუ ყველა მოდელი ვერ მუშაობს
+      console.error('❌ [testApiKey] All Gemini models failed');
+      return { 
+        success: false, 
+        message: '❌ All Gemini models failed. Check quota or try different provider.',
+        details: {
+          triedModels: models,
+          suggestion: 'Try Groq provider instead - it has better free tier'
+        }
+      };
     }
-
+    
+    // ============================================
+    // GROQ TEST - დეტალური
+    // ============================================
     if (providerName.includes('groq')) {
-      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      console.log('🧪 [testApiKey] === GROQ TEST START ===');
+      
+      const url = 'https://api.groq.com/openai/v1/chat/completions';
+      const requestBody = {
+        model: 'llama-3.3-70b-versatile',
+        messages: [{ role: 'user', content: 'Say "OK"' }],
+        max_tokens: 10
+      };
+      
+      console.log('🧪 [testApiKey] URL:', url);
+      console.log('🧪 [testApiKey] Request body:', requestBody);
+      console.log('🧪 [testApiKey] API Key preview:', key.api_key.substring(0, 10) + '...');
+      
+      const startTime = Date.now();
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${key.api_key}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          messages: [{ role: 'user', content: 'Say "OK"' }],
-          max_tokens: 10
-        })
+        body: JSON.stringify(requestBody)
       });
 
+      const responseTime = Date.now() - startTime;
+      console.log(`🧪 [testApiKey] Response time: ${responseTime}ms`);
+      console.log(`🧪 [testApiKey] Status: ${response.status} ${response.statusText}`);
+      
+      const responseText = await response.text();
+      console.log(`🧪 [testApiKey] Response body:`, responseText);
+      
+      let responseData;
+      try {
+        responseData = JSON.parse(responseText);
+      } catch (e) {
+        console.error('❌ [testApiKey] Failed to parse response as JSON');
+      }
+
       if (response.ok) {
-        console.log('✅ [testApiKey] Groq API working!');
-        return { success: true, message: '✅ Groq API is working!' };
+        console.log('✅ [testApiKey] Groq API works!');
+        return { 
+          success: true, 
+          message: '✅ Groq API is working!',
+          details: {
+            responseTime,
+            response: responseData
+          }
+        };
       } else {
-        const errorData = await response.json();
-        console.error('❌ [testApiKey] Groq error:', errorData);
-        return { success: false, message: `❌ ${errorData.error?.message || 'API error'}` };
+        console.error('❌ [testApiKey] Groq failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: responseData?.error
+        });
+        return { 
+          success: false, 
+          message: `❌ ${responseData?.error?.message || 'Groq API error'}`,
+          details: {
+            status: response.status,
+            error: responseData?.error
+          }
+        };
+      }
+    }
+    
+    // ============================================
+    // OPENAI TEST
+    // ============================================
+    if (providerName.includes('openai')) {
+      console.log('🧪 [testApiKey] === OPENAI TEST START ===');
+      
+      const url = 'https://api.openai.com/v1/chat/completions';
+      const requestBody = {
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'user', content: 'Say "OK"' }],
+        max_tokens: 10
+      };
+      
+      console.log('🧪 [testApiKey] URL:', url);
+      console.log('🧪 [testApiKey] Request body:', requestBody);
+      
+      const startTime = Date.now();
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${key.api_key}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      const responseTime = Date.now() - startTime;
+      console.log(`🧪 [testApiKey] Response time: ${responseTime}ms`);
+      console.log(`🧪 [testApiKey] Status: ${response.status} ${response.statusText}`);
+      
+      const responseText = await response.text();
+      console.log(`🧪 [testApiKey] Response body:`, responseText);
+      
+      let responseData;
+      try {
+        responseData = JSON.parse(responseText);
+      } catch (e) {
+        console.error('❌ [testApiKey] Failed to parse response as JSON');
+      }
+
+      if (response.ok) {
+        return { 
+          success: true, 
+          message: '✅ OpenAI API is working!',
+          details: { responseTime, response: responseData }
+        };
+      } else {
+        return { 
+          success: false, 
+          message: `❌ ${responseData?.error?.message || 'OpenAI API error'}`,
+          details: { status: response.status, error: responseData?.error }
+        };
       }
     }
 
-    return { success: false, message: '⚠️ Test not implemented for this provider' };
+    return { 
+      success: false, 
+      message: `⚠️ Test not implemented for provider: ${providerName}`,
+      details: { provider: providerName }
+    };
 
   } catch (error) {
     console.error('❌ [testApiKey] Exception:', error);
-    return { success: false, message: `❌ ${(error as Error).message}` };
+    return { 
+      success: false, 
+      message: `❌ ${(error as Error).message}`,
+      details: { error: (error as Error).stack }
+    };
   }
 }
 
