@@ -36,7 +36,7 @@ const Planet3D = ({ color, emissive, size, position, speed = 0.005 }: any) => {
 const SolarSystem3D = () => {
   const groupRef = useRef<THREE.Group>(null);
   
-  useFrame((state) => {
+  useFrame(() => {
     if (groupRef.current) {
       groupRef.current.rotation.y += 0.002;
     }
@@ -231,7 +231,7 @@ const PlanetSVG = ({ color1, color2, glowColor, size, label, sign }: any) => (
 // ============================================
 // MAIN COMPONENT
 // ============================================
-export default function AstroScreen({ onNavigate }: any) {
+export default function AstroScreen() {
   const [energyPercentage] = useState(78);
 
   const insights = [

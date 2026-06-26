@@ -287,7 +287,7 @@ function AppContent() {
       )}
       {currentScreen === 'astro' && (
         <>
-          <AstroScreen onNavigate={handleNavigate} />
+          <AstroScreen />
           <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
         </>
       )}
