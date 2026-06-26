@@ -1,374 +1,740 @@
-import { supabase } from './supabase';
+// ============================================
+// AI ADMIN SERVICE - მართვის ფუნქციები
+// ============================================
 
-// Admin user ID - მხოლოდ შენი ID
-export const ADMIN_USER_ID = 'c9dbe3be-5c02-4034-8bfd-1d693eb02754';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL!,
+  import.meta.env.VITE_SUPABASE_ANON_KEY!
+);
 
 // ============================================
-// CHECK IF USER IS ADMIN
+// TYPES
 // ============================================
-export async function isAdmin(userId: string): Promise<boolean> {
-  if (!userId) return false;
-  return userId === ADMIN_USER_ID;
+
+export interface AIProvider {
+  id: string;
+  name: string;
+  type: string;
+  tier: string;
+  preferred_model: string | null;
+  rpm_limit: number;
+  daily_token_limit: number;
+  cost_per_1m_tokens: number;
+  is_active: boolean;
+  priority: number;
+  circuit_breaker_state: string;
+  consecutive_failures: number;
+  created_at: string;
+}
+
+export interface AIApiKey {
+  id: string;
+  provider_name: string;
+  api_key: string;
+  is_active: boolean;
+  current_usage: number;
+  daily_limit: number;
+  last_used_at: string | null;
+  error_count: number;
+  priority: number;
+  created_at: string;
+  ai_providers?: {
+    tier: string;
+    is_active: boolean;
+  };
+}
+
+export interface AIPrompt {
+  id: string;
+  name: string;
+  category: string;
+  system_prompt: string;
+  user_prompt_template: string;
+  variables: string[];
+  version: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface AIUsageStats {
+  provider: string;
+  total_requests: number;
+  successful_requests: number;
+  failed_requests: number;
+  total_tokens: number;
+  total_cost: number;
+  avg_response_time_ms: number;
+}
+
+// ✅ RESULT TYPE - უკეთესი error handling-ისთვის
+export interface OperationResult {
+  success: boolean;
+  error?: string;
+  data?: any;
 }
 
 // ============================================
-// ADMIN GUARD
+// PROVIDERS MANAGEMENT
 // ============================================
-async function requireAdmin(userId: string): Promise<boolean> {
-  const adminCheck = await isAdmin(userId);
-  if (!adminCheck) {
-    throw new Error('⛔ Unauthorized: Admin access required');
-  }
-  return true;
-}
 
-// ============================================
-// GET ALL USERS WITH CREDITS
-// ============================================
-export async function getAllUsersWithCredits(requestingUserId: string) {
-  await requireAdmin(requestingUserId);
+export async function getAllProviders(): Promise<AIProvider[]> {
+  try {
+    console.log('🔍 [getAllProviders] Fetching providers...');
+    const { data, error } = await supabase
+      .from('ai_providers')
+      .select('*')
+      .order('priority', { ascending: true });
 
-  if (!supabase) {
-    console.error('❌ Supabase not initialized');
+    if (error) {
+      console.error('❌ [getAllProviders] Error:', error);
+      throw error;
+    }
+    
+    console.log(`✅ [getAllProviders] Found ${data?.length || 0} providers`);
+    return data || [];
+  } catch (error) {
+    console.error('❌ [getAllProviders] Exception:', error);
     return [];
   }
+}
 
+export async function updateProvider(
+  providerId: string,
+  updates: Partial<AIProvider>
+): Promise<OperationResult> {
   try {
-    const { data: users, error: usersError } = await supabase
-      .from('users')
-      .select('*')
-      .order('created_at', { ascending: false });
+    console.log('🔄 [updateProvider] Updating provider:', providerId, updates);
+    const { data, error } = await supabase
+      .from('ai_providers')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', providerId)
+      .select();
 
-    if (usersError) {
-      console.error('❌ Error fetching users:', usersError);
-      return [];
+    if (error) {
+      console.error('❌ [updateProvider] Error:', error);
+      return { success: false, error: error.message };
     }
+    
+    console.log('✅ [updateProvider] Success');
+    return { success: true, data };
+  } catch (error) {
+    console.error('❌ [updateProvider] Exception:', error);
+    return { success: false, error: (error as Error).message };
+  }
+}
 
-    const { data: credits, error: creditsError } = await supabase
-      .from('available_credits')
-      .select('*');
+export async function toggleProvider(providerId: string, isActive: boolean): Promise<OperationResult> {
+  return updateProvider(providerId, { is_active: isActive });
+}
 
-    if (creditsError) {
-      console.error('❌ Error fetching credits:', creditsError);
-      return [];
+export async function resetCircuitBreaker(providerId: string): Promise<OperationResult> {
+  return updateProvider(providerId, {
+    circuit_breaker_state: 'closed',
+    consecutive_failures: 0
+  });
+}
+
+// ============================================
+// API KEYS MANAGEMENT
+// ============================================
+
+export async function getAllApiKeys(): Promise<AIApiKey[]> {
+  try {
+    console.log('🔍 [getAllApiKeys] Fetching API keys...');
+    const { data, error } = await supabase
+      .from('ai_api_keys')
+      .select(`
+        *,
+        ai_providers (
+          tier,
+          is_active
+        )
+      `)
+      .order('provider_name', { ascending: true })
+      .order('priority', { ascending: true });
+
+    if (error) {
+      console.error('❌ [getAllApiKeys] Error:', error);
+      throw error;
     }
+    
+    console.log(`✅ [getAllApiKeys] Found ${data?.length || 0} API keys`);
+    return data || [];
+  } catch (error) {
+    console.error('❌ [getAllApiKeys] Exception:', error);
+    return [];
+  }
+}
 
-    const usersWithCredits = users.map(user => {
-      const userCredits = credits.filter(c => c.user_id === user.id);
-      return {
-        ...user,
-        credits: userCredits
+export async function addApiKey(
+  providerName: string,
+  apiKey: string,
+  dailyLimit: number = 1000,
+  priority: number = 1
+): Promise<OperationResult> {
+  try {
+    console.log('🔑 [addApiKey] Attempting to insert API key:', {
+      providerName,
+      dailyLimit,
+      priority,
+      keyPreview: apiKey.substring(0, 10) + '...'
+    });
+    
+    const { data, error } = await supabase
+      .from('ai_api_keys')
+      .insert({
+        provider_name: providerName,
+        api_key: apiKey,
+        daily_limit: dailyLimit,
+        priority: priority,
+        is_active: true,
+        current_usage: 0,
+        error_count: 0
+      })
+      .select();
+
+    if (error) {
+      console.error('❌ [addApiKey] Supabase error:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      });
+      return { 
+        success: false, 
+        error: error.message,
+        data: { details: error.details, hint: error.hint, code: error.code }
       };
+    }
+
+    console.log('✅ [addApiKey] Success! Inserted:', data);
+    return { success: true, data };
+  } catch (error) {
+    console.error('❌ [addApiKey] Exception:', error);
+    return { success: false, error: (error as Error).message };
+  }
+}
+
+export async function updateApiKey(
+  keyId: string,
+  updates: Partial<AIApiKey>
+): Promise<OperationResult> {
+  try {
+    console.log('🔄 [updateApiKey] Updating key:', keyId, updates);
+    const { data, error } = await supabase
+      .from('ai_api_keys')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', keyId)
+      .select();
+
+    if (error) {
+      console.error('❌ [updateApiKey] Error:', error);
+      return { success: false, error: error.message };
+    }
+    
+    console.log('✅ [updateApiKey] Success');
+    return { success: true, data };
+  } catch (error) {
+    console.error('❌ [updateApiKey] Exception:', error);
+    return { success: false, error: (error as Error).message };
+  }
+}
+
+export async function deleteApiKey(keyId: string): Promise<OperationResult> {
+  try {
+    console.log('🗑️ [deleteApiKey] Deleting key:', keyId);
+    const { data, error } = await supabase
+      .from('ai_api_keys')
+      .delete()
+      .eq('id', keyId)
+      .select();
+
+    if (error) {
+      console.error('❌ [deleteApiKey] Error:', error);
+      return { success: false, error: error.message };
+    }
+    
+    console.log('✅ [deleteApiKey] Success');
+    return { success: true, data };
+  } catch (error) {
+    console.error('❌ [deleteApiKey] Exception:', error);
+    return { success: false, error: (error as Error).message };
+  }
+}
+
+export async function toggleApiKey(keyId: string, isActive: boolean): Promise<OperationResult> {
+  return updateApiKey(keyId, { is_active: isActive });
+}
+
+// ============================================
+// ✅ TEST API KEY - დეტალური DEBUGGING
+// ============================================
+export async function testApiKey(keyId: string): Promise<{ 
+  success: boolean; 
+  message: string;
+  details?: any;
+}> {
+  try {
+    console.log('🧪 [testApiKey] ===== STARTING TEST =====');
+    console.log('🧪 [testApiKey] Key ID:', keyId);
+    
+    // 1. წაიკითხე გასაღები ბაზიდან
+    const { data: key, error } = await supabase
+      .from('ai_api_keys')
+      .select('*, ai_providers(name, type)')
+      .eq('id', keyId)
+      .single();
+
+    if (error || !key) {
+      console.error('❌ [testApiKey] Key not found:', error);
+      return { 
+        success: false, 
+        message: 'Key not found',
+        details: { error }
+      };
+    }
+
+    console.log('✅ [testApiKey] Key loaded:', {
+      provider: key.provider_name,
+      keyPreview: key.api_key.substring(0, 15) + '...',
+      isActive: key.is_active
     });
 
-    return usersWithCredits;
-  } catch (error) {
-    console.error('❌ Error in getAllUsersWithCredits:', error);
-    return [];
-  }
-}
+    const providerName = (key as any).ai_providers?.name || key.provider_name;
+    console.log('🧪 [testApiKey] Testing provider:', providerName);
+    
+    // ============================================
+    // GEMINI TEST - დეტალური
+    // ============================================
+    if (providerName.includes('gemini')) {
+      console.log('🧪 [testApiKey] === GEMINI TEST START ===');
+      
+      // ვცადოთ რამდენიმე მოდელი
+      const models = [
+        'gemini-2.0-flash',
+        'gemini-1.5-flash',
+        'gemini-1.5-flash-8b',
+        'gemini-pro'
+      ];
+      
+      for (const model of models) {
+        console.log(`\n🧪 [testApiKey] Testing model: ${model}`);
+        
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key.api_key}`;
+        
+        console.log('🧪 [testApiKey] URL:', url);
+        console.log('🧪 [testApiKey] Request body:', {
+          contents: [{ parts: [{ text: 'Say "OK"' }] }],
+          generationConfig: { maxOutputTokens: 10 }
+        });
+        
+        try {
+          const startTime = Date.now();
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'User-Agent': 'LunaraAI/1.0'
+            },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: 'Say "OK"' }] }],
+              generationConfig: { 
+                maxOutputTokens: 10,
+                temperature: 0.7
+              }
+            })
+          });
 
-// ============================================
-// UPDATE USER CREDITS
-// ============================================
-export async function updateUserCredits(
-  requestingUserId: string,
-  targetUserId: string,
-  featureId: string,
-  newAmount: number
-) {
-  await requireAdmin(requestingUserId);
+          const responseTime = Date.now() - startTime;
+          console.log(`🧪 [testApiKey] Response time: ${responseTime}ms`);
+          console.log(`🧪 [testApiKey] Status: ${response.status} ${response.statusText}`);
+          
+          const responseText = await response.text();
+          console.log(`🧪 [testApiKey] Response body:`, responseText);
+          
+          let responseData;
+          try {
+            responseData = JSON.parse(responseText);
+          } catch (e) {
+            console.error('❌ [testApiKey] Failed to parse response as JSON');
+          }
 
-  if (!supabase) {
-    console.error('❌ Supabase not initialized');
-    return false;
-  }
-
-  try {
-    const { error } = await supabase
-      .from('available_credits')
-      .upsert({
-        user_id: targetUserId,
-        feature_id: featureId,
-        credits: newAmount,
-        updated_at: new Date()
+          if (response.ok) {
+            console.log(`✅ [testApiKey] Model ${model} works!`);
+            return { 
+              success: true, 
+              message: `✅ Gemini API is working! (Model: ${model})`,
+              details: {
+                model,
+                responseTime,
+                response: responseData
+              }
+            };
+          } else {
+            console.error(`❌ [testApiKey] Model ${model} failed:`, {
+              status: response.status,
+              statusText: response.statusText,
+              error: responseData?.error
+            });
+            
+            // თუ ეს არის quota error, ვცადოთ შემდეგი მოდელი
+            if (responseData?.error?.code === 429 || 
+                responseData?.error?.message?.includes('quota') ||
+                responseData?.error?.message?.includes('limit')) {
+              console.log(`⚠️ [testApiKey] Quota error for ${model}, trying next model...`);
+              continue;
+            }
+          }
+        } catch (fetchError) {
+          console.error(`❌ [testApiKey] Fetch error for ${model}:`, fetchError);
+          continue;
+        }
+      }
+      
+      // თუ ყველა მოდელი ვერ მუშაობს
+      console.error('❌ [testApiKey] All Gemini models failed');
+      return { 
+        success: false, 
+        message: '❌ All Gemini models failed. Check quota or try different provider.',
+        details: {
+          triedModels: models,
+          suggestion: 'Try Groq provider instead - it has better free tier'
+        }
+      };
+    }
+    
+    // ============================================
+    // GROQ TEST - დეტალური
+    // ============================================
+    if (providerName.includes('groq')) {
+      console.log('🧪 [testApiKey] === GROQ TEST START ===');
+      
+      const url = 'https://api.groq.com/openai/v1/chat/completions';
+      const requestBody = {
+        model: 'llama-3.3-70b-versatile',
+        messages: [{ role: 'user', content: 'Say "OK"' }],
+        max_tokens: 10
+      };
+      
+      console.log('🧪 [testApiKey] URL:', url);
+      console.log('🧪 [testApiKey] Request body:', requestBody);
+      console.log('🧪 [testApiKey] API Key preview:', key.api_key.substring(0, 10) + '...');
+      
+      const startTime = Date.now();
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${key.api_key}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
       });
 
-    if (error) {
-      console.error('❌ Error updating credits:', error);
-      return false;
+      const responseTime = Date.now() - startTime;
+      console.log(`🧪 [testApiKey] Response time: ${responseTime}ms`);
+      console.log(`🧪 [testApiKey] Status: ${response.status} ${response.statusText}`);
+      
+      const responseText = await response.text();
+      console.log(`🧪 [testApiKey] Response body:`, responseText);
+      
+      let responseData;
+      try {
+        responseData = JSON.parse(responseText);
+      } catch (e) {
+        console.error('❌ [testApiKey] Failed to parse response as JSON');
+      }
+
+      if (response.ok) {
+        console.log('✅ [testApiKey] Groq API works!');
+        return { 
+          success: true, 
+          message: '✅ Groq API is working!',
+          details: {
+            responseTime,
+            response: responseData
+          }
+        };
+      } else {
+        console.error('❌ [testApiKey] Groq failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: responseData?.error
+        });
+        return { 
+          success: false, 
+          message: `❌ ${responseData?.error?.message || 'Groq API error'}`,
+          details: {
+            status: response.status,
+            error: responseData?.error
+          }
+        };
+      }
     }
-
-    console.log(`✅ [ADMIN] Updated credits for ${targetUserId}: ${featureId} = ${newAmount}`);
-    return true;
-  } catch (error) {
-    console.error('❌ Error in updateUserCredits:', error);
-    return false;
-  }
-}
-
-// ============================================
-// ADD CREDITS TO USER
-// ============================================
-export async function addCreditsToUser(
-  requestingUserId: string,
-  targetUserId: string,
-  featureId: string,
-  amount: number
-) {
-  await requireAdmin(requestingUserId);
-
-  if (!supabase) {
-    console.error('❌ Supabase not initialized');
-    return false;
-  }
-
-  try {
-    const { data: current } = await supabase
-      .from('available_credits')
-      .select('credits')
-      .eq('user_id', targetUserId)
-      .eq('feature_id', featureId)
-      .single();
-
-    const currentCredits = current?.credits || 0;
-    const newAmount = currentCredits + amount;
-
-    return await updateUserCredits(requestingUserId, targetUserId, featureId, newAmount);
-  } catch (error) {
-    console.error('❌ Error in addCreditsToUser:', error);
-    return false;
-  }
-}
-
-// ============================================
-// DELETE USER CREDITS
-// ============================================
-export async function deleteUserCredits(
-  requestingUserId: string,
-  targetUserId: string,
-  featureId: string
-) {
-  await requireAdmin(requestingUserId);
-
-  if (!supabase) {
-    console.error('❌ Supabase not initialized');
-    return false;
-  }
-
-  try {
-    const { error } = await supabase
-      .from('available_credits')
-      .delete()
-      .eq('user_id', targetUserId)
-      .eq('feature_id', featureId);
-
-    if (error) {
-      console.error('❌ Error deleting credits:', error);
-      return false;
-    }
-
-    console.log(`✅ [ADMIN] Deleted credits for ${targetUserId}: ${featureId}`);
-    return true;
-  } catch (error) {
-    console.error('❌ Error in deleteUserCredits:', error);
-    return false;
-  }
-}
-
-// ============================================
-// SUBSCRIPTION MANAGEMENT - ახალი!
-// ============================================
-
-// ============================================
-// GET ALL SUBSCRIPTIONS
-// ============================================
-export async function getAllSubscriptions(requestingUserId: string) {
-  await requireAdmin(requestingUserId);
-
-  if (!supabase) {
-    console.error('❌ Supabase not initialized');
-    return [];
-  }
-
-  try {
-    // მიიღე ყველა subscription
-    const { data: subscriptions, error: subsError } = await supabase
-      .from('subscriptions')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (subsError) {
-      console.error('❌ Error fetching subscriptions:', subsError);
-      return [];
-    }
-
-    // მიიღე ყველა მომხმარებელი
-    const { data: users, error: usersError } = await supabase
-      .from('users')
-      .select('id, display_name, telegram_id, username');
-
-    if (usersError) {
-      console.error('❌ Error fetching users:', usersError);
-      return [];
-    }
-
-    // გააერთიანე მონაცემები
-    const subscriptionsWithUsers = subscriptions.map(sub => {
-      const user = users.find(u => u.id === sub.user_id);
-      return {
-        ...sub,
-        user: user || { display_name: 'Unknown', telegram_id: 0, username: null }
+    
+    // ============================================
+    // OPENAI TEST
+    // ============================================
+    if (providerName.includes('openai')) {
+      console.log('🧪 [testApiKey] === OPENAI TEST START ===');
+      
+      const url = 'https://api.openai.com/v1/chat/completions';
+      const requestBody = {
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'user', content: 'Say "OK"' }],
+        max_tokens: 10
       };
-    });
+      
+      console.log('🧪 [testApiKey] URL:', url);
+      console.log('🧪 [testApiKey] Request body:', requestBody);
+      
+      const startTime = Date.now();
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${key.api_key}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
 
-    return subscriptionsWithUsers;
+      const responseTime = Date.now() - startTime;
+      console.log(`🧪 [testApiKey] Response time: ${responseTime}ms`);
+      console.log(`🧪 [testApiKey] Status: ${response.status} ${response.statusText}`);
+      
+      const responseText = await response.text();
+      console.log(`🧪 [testApiKey] Response body:`, responseText);
+      
+      let responseData;
+      try {
+        responseData = JSON.parse(responseText);
+      } catch (e) {
+        console.error('❌ [testApiKey] Failed to parse response as JSON');
+      }
+
+      if (response.ok) {
+        return { 
+          success: true, 
+          message: '✅ OpenAI API is working!',
+          details: { responseTime, response: responseData }
+        };
+      } else {
+        return { 
+          success: false, 
+          message: `❌ ${responseData?.error?.message || 'OpenAI API error'}`,
+          details: { status: response.status, error: responseData?.error }
+        };
+      }
+    }
+
+    return { 
+      success: false, 
+      message: `⚠️ Test not implemented for provider: ${providerName}`,
+      details: { provider: providerName }
+    };
+
   } catch (error) {
-    console.error('❌ Error in getAllSubscriptions:', error);
+    console.error('❌ [testApiKey] Exception:', error);
+    return { 
+      success: false, 
+      message: `❌ ${(error as Error).message}`,
+      details: { error: (error as Error).stack }
+    };
+  }
+}
+
+// ============================================
+// PROMPTS MANAGEMENT
+// ============================================
+
+export async function getAllPrompts(): Promise<AIPrompt[]> {
+  try {
+    console.log('🔍 [getAllPrompts] Fetching prompts...');
+    const { data, error } = await supabase
+      .from('ai_prompts')
+      .select('*')
+      .order('category', { ascending: true })
+      .order('name', { ascending: true });
+
+    if (error) {
+      console.error('❌ [getAllPrompts] Error:', error);
+      throw error;
+    }
+    
+    console.log(`✅ [getAllPrompts] Found ${data?.length || 0} prompts`);
+    return data || [];
+  } catch (error) {
+    console.error('❌ [getAllPrompts] Exception:', error);
+    return [];
+  }
+}
+
+export async function addPrompt(prompt: {
+  name: string;
+  category: string;
+  system_prompt: string;
+  user_prompt_template: string;
+  variables?: string[];
+}): Promise<OperationResult> {
+  try {
+    console.log('📝 [addPrompt] Adding prompt:', prompt.name);
+    const { data, error } = await supabase
+      .from('ai_prompts')
+      .insert({
+        ...prompt,
+        variables: prompt.variables || [],
+        is_active: true,
+        version: 'v1'
+      })
+      .select();
+
+    if (error) {
+      console.error('❌ [addPrompt] Error:', error);
+      return { success: false, error: error.message };
+    }
+    
+    console.log('✅ [addPrompt] Success');
+    return { success: true, data };
+  } catch (error) {
+    console.error('❌ [addPrompt] Exception:', error);
+    return { success: false, error: (error as Error).message };
+  }
+}
+
+export async function updatePrompt(
+  promptId: string,
+  updates: Partial<AIPrompt>
+): Promise<OperationResult> {
+  try {
+    console.log('🔄 [updatePrompt] Updating prompt:', promptId);
+    const { data, error } = await supabase
+      .from('ai_prompts')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', promptId)
+      .select();
+
+    if (error) {
+      console.error('❌ [updatePrompt] Error:', error);
+      return { success: false, error: error.message };
+    }
+    
+    console.log('✅ [updatePrompt] Success');
+    return { success: true, data };
+  } catch (error) {
+    console.error('❌ [updatePrompt] Exception:', error);
+    return { success: false, error: (error as Error).message };
+  }
+}
+
+export async function deletePrompt(promptId: string): Promise<OperationResult> {
+  try {
+    console.log('🗑️ [deletePrompt] Deleting prompt:', promptId);
+    const { data, error } = await supabase
+      .from('ai_prompts')
+      .delete()
+      .eq('id', promptId)
+      .select();
+
+    if (error) {
+      console.error('❌ [deletePrompt] Error:', error);
+      return { success: false, error: error.message };
+    }
+    
+    console.log('✅ [deletePrompt] Success');
+    return { success: true, data };
+  } catch (error) {
+    console.error('❌ [deletePrompt] Exception:', error);
+    return { success: false, error: (error as Error).message };
+  }
+}
+
+// ============================================
+// USAGE STATISTICS
+// ============================================
+
+export async function getTodayStats(): Promise<AIUsageStats[]> {
+  try {
+    console.log('🔍 [getTodayStats] Fetching today stats...');
+    const { data, error } = await supabase
+      .from('v_ai_today_stats')
+      .select('*');
+
+    if (error) {
+      console.error('❌ [getTodayStats] Error:', error);
+      throw error;
+    }
+    
+    console.log(`✅ [getTodayStats] Found ${data?.length || 0} stats entries`);
+    return data || [];
+  } catch (error) {
+    console.error('❌ [getTodayStats] Exception:', error);
+    return [];
+  }
+}
+
+export async function getApiKeyUsage(): Promise<any[]> {
+  try {
+    console.log('🔍 [getApiKeyUsage] Fetching API key usage...');
+    const { data, error } = await supabase
+      .from('v_api_key_usage')
+      .select('*');
+
+    if (error) {
+      console.error('❌ [getApiKeyUsage] Error:', error);
+      throw error;
+    }
+    
+    console.log(`✅ [getApiKeyUsage] Found ${data?.length || 0} usage entries`);
+    return data || [];
+  } catch (error) {
+    console.error('❌ [getApiKeyUsage] Exception:', error);
+    return [];
+  }
+}
+
+export async function getCacheStats(): Promise<any[]> {
+  try {
+    console.log('🔍 [getCacheStats] Fetching cache stats...');
+    const { data, error } = await supabase
+      .from('v_cache_performance')
+      .select('*');
+
+    if (error) {
+      console.error('❌ [getCacheStats] Error:', error);
+      throw error;
+    }
+    
+    console.log(`✅ [getCacheStats] Found ${data?.length || 0} cache entries`);
+    return data || [];
+  } catch (error) {
+    console.error('❌ [getCacheStats] Exception:', error);
     return [];
   }
 }
 
 // ============================================
-// CREATE SUBSCRIPTION FOR USER
+// KNOWLEDGE BASE
 // ============================================
-export async function createSubscriptionForUser(
-  requestingUserId: string,
-  targetUserId: string,
-  planType: 'monthly' | 'yearly',
-  days: number = 30
-) {
-  await requireAdmin(requestingUserId);
 
-  if (!supabase) {
-    console.error('❌ Supabase not initialized');
-    return false;
-  }
-
+export async function getKnowledgeBaseStats(): Promise<{ total: number; categories: any[] }> {
   try {
-    // ჯერ გავაუქმოთ ნებისმიერი აქტიური subscription
-    await supabase
-      .from('subscriptions')
-      .update({ status: 'cancelled', updated_at: new Date().toISOString() })
-      .eq('user_id', targetUserId)
-      .eq('status', 'active');
+    console.log('🔍 [getKnowledgeBaseStats] Fetching KB stats...');
+    const { count } = await supabase
+      .from('knowledge_base')
+      .select('*', { count: 'exact', head: true });
 
-    // გამოთვალე expires_at
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + days);
+    const { data: categories } = await supabase
+      .from('knowledge_base')
+      .select('category');
 
-    const { error } = await supabase
-      .from('subscriptions')
-      .insert([{
-        user_id: targetUserId,
-        plan_type: planType,
-        status: 'active',
-        started_at: new Date().toISOString(),
-        expires_at: expiresAt.toISOString(),
-        auto_renew: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }]);
-
-    if (error) {
-      console.error('❌ Error creating subscription:', error);
-      return false;
-    }
-
-    console.log(`✅ [ADMIN] Created ${planType} subscription for ${targetUserId} (${days} days)`);
-    return true;
+    console.log(`✅ [getKnowledgeBaseStats] Total: ${count}, Categories: ${categories?.length || 0}`);
+    return {
+      total: count || 0,
+      categories: categories || []
+    };
   } catch (error) {
-    console.error('❌ Error in createSubscriptionForUser:', error);
-    return false;
-  }
-}
-
-// ============================================
-// CANCEL SUBSCRIPTION FOR USER
-// ============================================
-export async function cancelSubscriptionForUser(
-  requestingUserId: string,
-  subscriptionId: string
-) {
-  await requireAdmin(requestingUserId);
-
-  if (!supabase) {
-    console.error('❌ Supabase not initialized');
-    return false;
-  }
-
-  try {
-    const { error } = await supabase
-      .from('subscriptions')
-      .update({ 
-        status: 'cancelled',
-        auto_renew: false,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', subscriptionId);
-
-    if (error) {
-      console.error('❌ Error cancelling subscription:', error);
-      return false;
-    }
-
-    console.log(`✅ [ADMIN] Cancelled subscription ${subscriptionId}`);
-    return true;
-  } catch (error) {
-    console.error('❌ Error in cancelSubscriptionForUser:', error);
-    return false;
-  }
-}
-
-// ============================================
-// EXTEND SUBSCRIPTION
-// ============================================
-export async function extendSubscription(
-  requestingUserId: string,
-  subscriptionId: string,
-  additionalDays: number
-) {
-  await requireAdmin(requestingUserId);
-
-  if (!supabase) {
-    console.error('❌ Supabase not initialized');
-    return false;
-  }
-
-  try {
-    // მიიღე მიმდინარე subscription
-    const { data: current, error: fetchError } = await supabase
-      .from('subscriptions')
-      .select('expires_at')
-      .eq('id', subscriptionId)
-      .single();
-
-    if (fetchError || !current) {
-      console.error('❌ Subscription not found');
-      return false;
-    }
-
-    // გამოთვალე ახალი expires_at
-    const currentExpires = new Date(current.expires_at);
-    currentExpires.setDate(currentExpires.getDate() + additionalDays);
-
-    const { error } = await supabase
-      .from('subscriptions')
-      .update({ 
-        expires_at: currentExpires.toISOString(),
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', subscriptionId);
-
-    if (error) {
-      console.error('❌ Error extending subscription:', error);
-      return false;
-    }
-
-    console.log(`✅ [ADMIN] Extended subscription ${subscriptionId} by ${additionalDays} days`);
-    return true;
-  } catch (error) {
-    console.error('❌ Error in extendSubscription:', error);
-    return false;
+    console.error('❌ [getKnowledgeBaseStats] Exception:', error);
+    return { total: 0, categories: [] };
   }
 }
