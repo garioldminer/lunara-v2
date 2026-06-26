@@ -1,8 +1,8 @@
 /* ============================================
-   AI ADMIN MANAGEMENT - BLUE THEME (FIXED)
+   AI ADMIN MANAGEMENT - FULLY RESPONSIVE
    ============================================ */
 
-/* ✅ FIX: წაშლილია height: 100% რომ არ ჰქონდეს ჰორიზონტალური სქროლი */
+/* ✅ ყველა ელემენტი მოქცეულია ეკრანში */
 .ai-admin-screen {
   position: relative;
   width: 100%;
@@ -18,7 +18,7 @@
   box-sizing: border-box;
 }
 
-/* ✅ ყველა შვილი ელემენტი არ უნდა გადიოდეს ეკრანს გარეთ */
+/* ✅ ყველა შვილი ელემენტი არ გადის ეკრანიდან */
 .ai-admin-screen * {
   box-sizing: border-box;
   max-width: 100%;
@@ -55,7 +55,8 @@
   background: linear-gradient(135deg, #0f172a, #0a0600);
   border: 1px solid rgba(96, 165, 250, 0.4);
   border-radius: 14px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 12px rgba(96, 165, 250, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  width: 100%;
 }
 
 .ai-admin-header-center {
@@ -63,6 +64,9 @@
   align-items: center;
   gap: 10px;
   color: #93c5fd;
+  flex: 1;
+  justify-content: center;
+  min-width: 0;
 }
 
 .ai-admin-header-center h1 {
@@ -72,7 +76,9 @@
   margin: 0;
   font-weight: bold;
   letter-spacing: 0.5px;
-  text-shadow: 0 0 8px rgba(96, 165, 250, 0.4);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .ai-admin-back-btn,
@@ -96,7 +102,6 @@
 .ai-admin-refresh-btn:active {
   transform: scale(0.92);
   background: rgba(96, 165, 250, 0.3);
-  border-color: #93c5fd;
 }
 
 /* ============================================
@@ -111,6 +116,7 @@
   padding-bottom: 4px;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
+  width: 100%;
 }
 
 .ai-admin-tabs::-webkit-scrollbar {
@@ -148,14 +154,13 @@
 }
 
 /* ============================================
-   CONTENT - ✅ FIX: overflow-x: hidden
+   CONTENT
    ============================================ */
 .ai-admin-content {
   display: flex;
   flex-direction: column;
   gap: 14px;
   width: 100%;
-  max-width: 100%;
   overflow-x: hidden;
 }
 
@@ -165,7 +170,6 @@
   color: #93c5fd;
   margin: 0 0 12px;
   letter-spacing: 1px;
-  text-shadow: 0 0 6px rgba(96, 165, 250, 0.3);
   word-wrap: break-word;
 }
 
@@ -184,12 +188,14 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+  width: 100%;
 }
 
 .dashboard-stats {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
+  width: 100%;
 }
 
 .dashboard-stat-card {
@@ -248,6 +254,7 @@
   border: 1px solid rgba(96, 165, 250, 0.3);
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  width: 100%;
 }
 
 .cost-display {
@@ -260,7 +267,6 @@
   background: rgba(96, 165, 250, 0.1);
   border: 1px solid rgba(96, 165, 250, 0.2);
   border-radius: 10px;
-  text-shadow: 0 0 10px rgba(96, 165, 250, 0.4);
 }
 
 .provider-status-list {
@@ -277,6 +283,8 @@
   background: rgba(15, 23, 42, 0.6);
   border: 1px solid rgba(96, 165, 250, 0.2);
   border-radius: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .provider-status-info {
@@ -285,6 +293,7 @@
   gap: 8px;
   flex: 1;
   min-width: 0;
+  flex-wrap: wrap;
 }
 
 .provider-name {
@@ -300,7 +309,6 @@
   border-radius: 4px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
 }
 
 .provider-tier.free { background: rgba(16, 185, 129, 0.2); color: #10b981; }
@@ -346,8 +354,7 @@
 .circuit-state.half-open { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
 
 /* ============================================
-   HEADERS & ADD BUTTONS
-   ✅ FIX: Add ღილაკის ტექსტი ჩანს
+   ✅ HEADERS & ADD BUTTONS - FULLY RESPONSIVE
    ============================================ */
 .keys-header,
 .prompts-header {
@@ -357,6 +364,7 @@
   margin-bottom: 14px;
   gap: 10px;
   width: 100%;
+  flex-wrap: wrap; /* ✅ გადადის მეორე ხაზზე თუ არ ეტევა */
 }
 
 .keys-header h2,
@@ -369,7 +377,7 @@
   text-overflow: ellipsis;
 }
 
-/* ✅ FIX: წაშლილია overflow: hidden რომ ტექსტი ჩანდეს */
+/* ✅ ღილაკი სრულად ეტევა ეკრანს */
 .add-btn {
   display: inline-flex;
   align-items: center;
@@ -389,21 +397,17 @@
   white-space: nowrap;
   flex-shrink: 0;
   min-height: 40px;
-  letter-spacing: 0.3px;
+  max-width: 100%; /* ✅ არ გადის ეკრანიდან */
 }
 
-/* ✅ FIX: span-ზე აღარ არის hidden */
 .add-btn span {
   display: inline-block;
   overflow: visible;
-  white-space: nowrap;
 }
 
 .add-btn:active {
   transform: scale(0.95);
   background: linear-gradient(135deg, rgba(96, 165, 250, 0.4), rgba(59, 130, 246, 0.3));
-  border-color: #93c5fd;
-  box-shadow: 0 1px 4px rgba(96, 165, 250, 0.4);
 }
 
 /* ============================================
@@ -416,7 +420,6 @@
   flex-direction: column;
   gap: 10px;
   width: 100%;
-  overflow-x: hidden;
 }
 
 .key-card,
@@ -427,20 +430,17 @@
   border: 1px solid rgba(96, 165, 250, 0.3);
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
   width: 100%;
-  box-sizing: border-box;
 }
 
 .key-card.inactive,
 .provider-card.inactive,
 .prompt-card.inactive {
   opacity: 0.55;
-  border-color: rgba(96, 165, 250, 0.15);
 }
 
 /* ============================================
-   CARD HEADERS
+   CARD HEADERS - ✅ RESPONSIVE
    ============================================ */
 .key-header,
 .provider-header,
@@ -451,6 +451,7 @@
   margin-bottom: 12px;
   gap: 10px;
   width: 100%;
+  flex-wrap: wrap; /* ✅ გადადის მეორე ხაზზე */
 }
 
 .key-provider,
@@ -487,7 +488,6 @@
   border-radius: 6px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -498,10 +498,9 @@
   border: 1px solid rgba(96, 165, 250, 0.3);
 }
 
-.tier-badge.free { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
-.tier-badge.paid { background: rgba(96, 165, 250, 0.2); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.3); }
-.tier-badge.specialized { background: rgba(167, 139, 250, 0.2); color: #a78bfa; border: 1px solid rgba(167, 139, 250, 0.3); }
-.tier-badge.unknown { background: rgba(107, 114, 128, 0.2); color: #6b7280; }
+.tier-badge.free { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+.tier-badge.paid { background: rgba(96, 165, 250, 0.2); color: #60a5fa; }
+.tier-badge.specialized { background: rgba(167, 139, 250, 0.2); color: #a78bfa; }
 
 .category-badge {
   background: rgba(96, 165, 250, 0.2);
@@ -512,11 +511,10 @@
 .type-badge {
   background: rgba(96, 165, 250, 0.15);
   color: #60a5fa;
-  border: 1px solid rgba(96, 165, 250, 0.3);
 }
 
 /* ============================================
-   ICON BUTTONS
+   ICON BUTTONS - ✅ RESPONSIVE
    ============================================ */
 .key-actions,
 .provider-actions,
@@ -524,6 +522,7 @@
   display: flex;
   gap: 6px;
   flex-shrink: 0;
+  flex-wrap: wrap; /* ✅ გადადის მეორე ხაზზე */
 }
 
 .icon-btn {
@@ -544,38 +543,13 @@
 
 .icon-btn:active {
   transform: scale(0.9);
-  background: rgba(96, 165, 250, 0.2);
 }
 
-.icon-btn.test { 
-  border-color: rgba(59, 130, 246, 0.5); 
-  color: #3b82f6;
-  background: rgba(59, 130, 246, 0.1);
-}
-
-.icon-btn.toggle { 
-  border-color: rgba(16, 185, 129, 0.5); 
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.1);
-}
-
-.icon-btn.delete { 
-  border-color: rgba(239, 68, 68, 0.5); 
-  color: #ef4444;
-  background: rgba(239, 68, 68, 0.1);
-}
-
-.icon-btn.reset { 
-  border-color: rgba(251, 191, 36, 0.5); 
-  color: #fbbf24;
-  background: rgba(251, 191, 36, 0.1);
-}
-
-.icon-btn.edit { 
-  border-color: rgba(96, 165, 250, 0.5); 
-  color: #60a5fa;
-  background: rgba(96, 165, 250, 0.1);
-}
+.icon-btn.test { border-color: rgba(59, 130, 246, 0.5); color: #3b82f6; }
+.icon-btn.toggle { border-color: rgba(16, 185, 129, 0.5); color: #10b981; }
+.icon-btn.delete { border-color: rgba(239, 68, 68, 0.5); color: #ef4444; }
+.icon-btn.reset { border-color: rgba(251, 191, 36, 0.5); color: #fbbf24; }
+.icon-btn.edit { border-color: rgba(96, 165, 250, 0.5); color: #60a5fa; }
 
 .icon-btn:disabled {
   opacity: 0.4;
@@ -596,7 +570,6 @@
   border-radius: 8px;
   border: 1px solid rgba(96, 165, 250, 0.15);
   width: 100%;
-  box-sizing: border-box;
 }
 
 .key-value,
@@ -617,7 +590,6 @@
   font-weight: 600;
   min-width: 90px;
   font-size: 10px;
-  letter-spacing: 0.3px;
   flex-shrink: 0;
 }
 
@@ -636,12 +608,7 @@
   gap: 12px;
   font-size: 10px;
   color: #60a5fa;
-}
-
-.key-meta span {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  flex-wrap: wrap;
 }
 
 /* ============================================
@@ -661,9 +628,7 @@
 .mini-progress-fill {
   height: 100%;
   transition: width 0.5s ease;
-  border-radius: 3px;
   background: linear-gradient(90deg, #3b82f6, #60a5fa);
-  box-shadow: 0 0 4px #60a5fa;
 }
 
 .percentage {
@@ -685,6 +650,7 @@
   font-size: 11px;
   margin-top: 10px;
   font-weight: 600;
+  flex-wrap: wrap;
 }
 
 .test-result.success {
@@ -728,29 +694,10 @@
   font-weight: 600;
 }
 
-.circuit-indicator.closed {
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
-  border: 1px solid rgba(16, 185, 129, 0.3);
-}
-
-.circuit-indicator.open {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-.circuit-indicator.half-open {
-  background: rgba(251, 191, 36, 0.15);
-  color: #fbbf24;
-  border: 1px solid rgba(251, 191, 36, 0.3);
-}
-
-.failures-indicator {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-}
+.circuit-indicator.closed { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+.circuit-indicator.open { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.circuit-indicator.half-open { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+.failures-indicator { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
 
 /* ============================================
    PROMPTS
@@ -760,7 +707,6 @@
   flex-direction: column;
   gap: 10px;
   width: 100%;
-  box-sizing: border-box;
 }
 
 .prompt-section {
@@ -774,7 +720,6 @@
   font-size: 10px;
   color: #60a5fa;
   font-weight: 600;
-  letter-spacing: 0.3px;
 }
 
 .section-text {
@@ -810,11 +755,10 @@
   border: 1px solid rgba(96, 165, 250, 0.3);
   border-radius: 6px;
   font-family: 'Courier New', monospace;
-  font-weight: 600;
 }
 
 /* ============================================
-   STATS - ✅ FIX: ვერტიკალური ლეიაუთი mobile-ზე
+   STATS - ✅ FULLY RESPONSIVE
    ============================================ */
 .ai-stats {
   display: flex;
@@ -828,9 +772,7 @@
   background: linear-gradient(135deg, #0f172a, #0a0600);
   border: 1px solid rgba(96, 165, 250, 0.3);
   border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   width: 100%;
-  box-sizing: border-box;
   overflow-x: hidden;
 }
 
@@ -841,9 +783,8 @@
   width: 100%;
 }
 
-/* ✅ FIX: ვერტიკალური cards-ად გარდაქმნა mobile-ზე (6 სვეტის ნაცვლად) */
 .stats-table-header {
-  display: none; /* ✅ ვმალავთ headers-ს, რადგან მობილურზე არ ეტევა */
+  display: none;
 }
 
 .stats-table-row {
@@ -857,7 +798,6 @@
   color: #93c5fd;
   border: 1px solid rgba(96, 165, 250, 0.15);
   width: 100%;
-  box-sizing: border-box;
 }
 
 .stats-table-row span {
@@ -872,11 +812,8 @@
   font-weight: 600;
   color: #60a5fa;
   font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
 }
 
-/* ✅ ვამატებთ labels-ს pseudo-elements-ით */
 .stats-table-row span:nth-child(1)::before { content: "Provider:"; }
 .stats-table-row span:nth-child(2)::before { content: "Requests:"; }
 .stats-table-row span:nth-child(3)::before { content: "Success:"; }
@@ -887,21 +824,14 @@
 .stats-table-row .success { color: #10b981; font-weight: 600; }
 .stats-table-row .failed { color: #ef4444; font-weight: 600; }
 
-.stats-table-row .provider-name {
-  font-weight: bold;
-  font-size: 12px;
-  color: #93c5fd;
-}
-
 .mini-progress-bar {
   width: 50px;
   height: 4px;
   display: inline-block;
-  vertical-align: middle;
 }
 
 /* ============================================
-   MODALS - ✅ FIX: dropdown მუშაობს
+   MODALS - ✅ DROPDOWN WORKS
    ============================================ */
 .modal-overlay {
   position: fixed;
@@ -911,7 +841,6 @@
   bottom: 0;
   background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -928,8 +857,7 @@
   width: 100%;
   max-height: 85vh;
   overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  box-shadow: 0 0 40px rgba(96, 165, 250, 0.3), 0 10px 40px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 40px rgba(96, 165, 250, 0.3);
 }
 
 .modal.large {
@@ -942,8 +870,6 @@
   color: #93c5fd;
   margin: 0 0 18px;
   text-align: center;
-  letter-spacing: 1px;
-  text-shadow: 0 0 8px rgba(96, 165, 250, 0.4);
 }
 
 .modal-field {
@@ -951,16 +877,15 @@
   flex-direction: column;
   gap: 6px;
   margin-bottom: 14px;
+  width: 100%;
 }
 
 .modal-field label {
   font-size: 11px;
   color: #60a5fa;
   font-weight: 600;
-  letter-spacing: 0.3px;
 }
 
-/* ✅ input და textarea-ზე appearance: none დავტოვოთ */
 .modal-field input,
 .modal-field textarea {
   background: rgba(15, 23, 42, 0.8);
@@ -971,16 +896,13 @@
   font-family: 'Georgia', serif;
   font-size: 12px;
   outline: none;
-  transition: all 0.3s ease;
   width: 100%;
-  box-sizing: border-box;
   min-height: 44px;
   -webkit-appearance: none;
-  -moz-appearance: none;
   appearance: none;
 }
 
-/* ✅ FIX: select-ს ვუბრუნებთ appearance: menulist რომ dropdown იმუშაოს */
+/* ✅ SELECT - DROPDOWN მუშაობს */
 .modal-field select {
   background-color: rgba(15, 23, 42, 0.95);
   border: 1px solid rgba(96, 165, 250, 0.4);
@@ -990,27 +912,22 @@
   font-family: 'Georgia', serif;
   font-size: 13px;
   outline: none;
-  transition: all 0.3s ease;
   width: 100%;
-  box-sizing: border-box;
   min-height: 44px;
-  -webkit-appearance: menulist;  /* ✅ დაბრუნებულია - dropdown მუშაობს */
-  -moz-appearance: menulist;
+  -webkit-appearance: menulist;
   appearance: menulist;
   cursor: pointer;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2360a5fa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2360a5fa' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
   background-repeat: no-repeat;
   background-position: right 12px center;
   background-size: 16px;
 }
 
-/* ✅ FIX: option-ები ჩანს ყველა ბრაუზერში */
 .modal-field select option {
   background: #0f172a;
   color: #93c5fd;
-  padding: 12px 16px;
+  padding: 12px;
   font-size: 13px;
-  font-family: 'Georgia', serif;
 }
 
 .modal-field input:focus,
@@ -1018,13 +935,6 @@
 .modal-field textarea:focus {
   border-color: #60a5fa;
   box-shadow: 0 0 8px rgba(96, 165, 250, 0.4);
-  background: rgba(15, 23, 42, 0.95);
-}
-
-.modal-field input::placeholder,
-.modal-field textarea::placeholder {
-  color: #3b82f6;
-  opacity: 0.6;
 }
 
 .modal-field textarea {
@@ -1048,13 +958,8 @@
   font-size: 12px;
   font-weight: bold;
   cursor: pointer;
-  transition: all 0.3s ease;
   border: none;
   min-height: 44px;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .cancel-btn {
@@ -1063,20 +968,9 @@
   color: #60a5fa;
 }
 
-.cancel-btn:active {
-  transform: scale(0.96);
-  background: rgba(96, 165, 250, 0.2);
-}
-
 .confirm-btn {
   background: linear-gradient(135deg, #3b82f6, #60a5fa);
   color: #0a0600;
-  box-shadow: 0 2px 10px rgba(96, 165, 250, 0.4);
-}
-
-.confirm-btn:active {
-  transform: scale(0.96);
-  box-shadow: 0 1px 5px rgba(96, 165, 250, 0.5);
 }
 
 .confirm-btn:disabled {
@@ -1103,39 +997,5 @@
   
   .cost-display {
     font-size: 22px;
-  }
-  
-  .key-details,
-  .provider-details {
-    padding: 8px;
-  }
-  
-  .add-btn {
-    padding: 8px 12px;
-    font-size: 11px;
-  }
-}
-
-@media (max-height: 700px) {
-  .ai-admin-screen {
-    padding: 12px 10px;
-  }
-  
-  .ai-admin-header {
-    padding: 10px 12px;
-  }
-}
-
-/* ============================================
-   REDUCED MOTION
-   ============================================ */
-@media (prefers-reduced-motion: reduce) {
-  .spin,
-  .status-dot.active {
-    animation: none;
-  }
-  
-  * {
-    transition-duration: 0.01ms !important;
   }
 }
