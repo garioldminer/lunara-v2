@@ -4,14 +4,13 @@
 // ლოგიკა:
 // 1. Knowledge Base (0 ხარჯი)
 // 2. Cache (0 ხარჯი)
-// 3. Free APIs (0 ხარჯი)
+// 3. Free APIs (0 ხარჯი) - Dynamic Model Discovery-ით
 // 4. Paid APIs (💰 ხარჯი - მხოლოდ premium)
 // 5. Fallback (მზა პასუხი)
 // ============================================
 
 import { createClient } from '@supabase/supabase-js';
 
-// ✅ VITE-სთვის განახლებული (StackBlitz-ში მუშაობს)
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL!,
   import.meta.env.VITE_SUPABASE_ANON_KEY!
@@ -61,6 +60,122 @@ interface APIResult {
   outputTokens: number;
   cost: number;
   success: boolean;
+}
+
+// ============================================
+// 🔥 🔥 🔥 DYNAMIC MODEL DISCOVERY 🔥 🔥 🔥
+// ვკითხულობთ Google-ს რა მოდელები აქვს
+// და ვინახავთ cache-ში 24 საათით
+// ============================================
+
+interface CachedModel {
+  name: string;
+  displayName: string;
+  discoveredAt: string;
+  expiresAt: string;
+}
+
+async function discoverGeminiModel(apiKey: string): Promise<string | null> {
+  try {
+    console.log('🔍 [discoverGeminiModel] Starting dynamic model discovery...');
+    
+    // 1. ვცადოთ cache-დან წაკითხვა
+    const { data: cached } = await supabase
+      .from('ai_cache')
+      .select('*')
+      .eq('cache_key', 'gemini_working_model')
+      .gt('expires_at', new Date().toISOString())
+      .single();
+    
+    if (cached) {
+      console.log('✅ [discoverGeminiModel] Found cached model:', cached.response_text);
+      return cached.response_text;
+    }
+    
+    console.log('📤 [discoverGeminiModel] Cache miss, asking Google...');
+    
+    // 2. ვკითხოთ Google-ს რა მოდელები აქვს
+    const modelsUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
+    const modelsResponse = await fetch(modelsUrl, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    
+    if (!modelsResponse.ok) {
+      console.error('❌ [discoverGeminiModel] Failed to get models list');
+      return null;
+    }
+    
+    const modelsData = await modelsResponse.json();
+    const models = modelsData.models || [];
+    
+    console.log(`📊 [discoverGeminiModel] Found ${models.length} models`);
+    
+    // 3. ვიპოვოთ რომელი მხარს უჭერს generateContent-ს
+    const generateModels = models.filter((model: any) => 
+      model.supportedGenerationMethods?.includes('generateContent')
+    );
+    
+    console.log(`📊 [discoverGeminiModel] ${generateModels.length} models support generateContent`);
+    
+    // 4. ვცადოთ თითოეული მოდელი
+    for (const model of generateModels) {
+      const modelName = model.name.replace('models/', '');
+      console.log(`🧪 [discoverGeminiModel] Testing: ${modelName}`);
+      
+      const testUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+      const testBody = {
+        contents: [{ parts: [{ text: 'Say "OK"' }] }],
+        generationConfig: { maxOutputTokens: 5 }
+      };
+      
+      try {
+        const testResponse = await fetch(testUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(testBody)
+        });
+        
+        if (testResponse.ok) {
+          const testData = await testResponse.json();
+          if (testData.candidates?.[0]?.content?.parts?.[0]?.text) {
+            console.log(`✅ [discoverGeminiModel] Found working model: ${modelName}`);
+            
+            // 5. შევინახოთ cache-ში 24 საათით
+            const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+            await supabase
+              .from('ai_cache')
+              .upsert({
+                cache_key: 'gemini_working_model',
+                request_type: 'model_discovery',
+                provider: 'gemini',
+                model: modelName,
+                response_text: modelName,
+                input_tokens: 0,
+                output_tokens: 0,
+                cost: 0,
+                ttl_seconds: 86400,
+                expires_at: expiresAt,
+                hit_count: 0,
+                last_hit_at: new Date().toISOString()
+              }, { onConflict: 'cache_key' });
+            
+            return modelName;
+          }
+        }
+      } catch (error) {
+        console.error(`❌ [discoverGeminiModel] Error testing ${modelName}:`, error);
+        continue;
+      }
+    }
+    
+    console.error('❌ [discoverGeminiModel] No working model found');
+    return null;
+    
+  } catch (error) {
+    console.error('❌ [discoverGeminiModel] Exception:', error);
+    return null;
+  }
 }
 
 // ============================================
@@ -157,10 +272,8 @@ export class AIRouter {
       if (freeResult) {
         console.log('✅ [Level 3] Success with Free API!');
         
-        // ვინახავთ cache-ში
         await this.saveToCache(cacheKey, request, freeResult);
         
-        // ვამოწმებთ უნდა შევინახოთ თუ არა KB-ში
         if (await this.shouldSaveToKB(freeResult, request)) {
           await this.saveToKnowledgeBase(request, freeResult);
         }
@@ -286,12 +399,10 @@ export class AIRouter {
   
   private async checkKnowledgeBase(prompt: string): Promise<KBResult | null> {
     try {
-      // ვიღებთ keywords prompt-იდან
       const keywords = this.extractKeywords(prompt);
       
       if (keywords.length === 0) return null;
       
-      // ვეძებთ knowledge_base-ში
       const { data, error } = await supabase
         .from('knowledge_base')
         .select('*')
@@ -306,7 +417,6 @@ export class AIRouter {
       
       const entry = data[0];
       
-      // განვაახლოთ usage_count
       await supabase
         .from('knowledge_base')
         .update({
@@ -343,7 +453,6 @@ export class AIRouter {
         return null;
       }
       
-      // განვაახლოთ hit count
       await supabase
         .from('ai_cache')
         .update({
@@ -364,12 +473,11 @@ export class AIRouter {
   }
   
   // ============================================
-  // LEVEL 3: FREE APIs
+  // LEVEL 3: FREE APIs - Dynamic Model Discovery-ით
   // ============================================
   
   private async tryFreeAPIs(request: AIRequest): Promise<APIResult | null> {
     try {
-      // ვიღებთ ყველა უფასო API key-ს
       const { data: freeKeys, error } = await supabase
         .from('ai_api_keys')
         .select(`
@@ -395,7 +503,6 @@ export class AIRouter {
         return null;
       }
       
-      // ვცდილობთ ყველა გასაღებს
       for (const key of freeKeys) {
         try {
           console.log(`🔄 Trying free API: ${key.provider_name}`);
@@ -408,11 +515,10 @@ export class AIRouter {
           );
           
           if (result && result.content) {
-            // ✅ FIX: დავამატეთ model property
             return {
               content: result.content,
               provider: key.provider_name,
-              model: request.model || 'default',
+              model: result.model,
               inputTokens: result.inputTokens,
               outputTokens: result.outputTokens,
               cost: 0,
@@ -423,7 +529,6 @@ export class AIRouter {
         } catch (error) {
           console.error(`❌ Free API ${key.provider_name} failed:`, error);
           
-          // ვაფიქსირებთ შეცდომას
           await supabase
             .from('ai_api_keys')
             .update({
@@ -451,7 +556,6 @@ export class AIRouter {
   
   private async tryPaidAPIs(request: AIRequest): Promise<APIResult | null> {
     try {
-      // მხოლოდ premium მომხმარებლებისთვის
       if (request.userId) {
         const isPremium = await this.checkUserPremium(request.userId);
         if (!isPremium) {
@@ -462,14 +566,12 @@ export class AIRouter {
         return null;
       }
       
-      // ვამოწმებთ ბიუჯეტს
       const budgetCheck = await this.checkBudget();
       if (!budgetCheck.ok) {
         console.log('⚠️ Budget exhausted, skipping paid APIs');
         return null;
       }
       
-      // ვიღებთ ყველა ფასიან API key-ს
       const { data: paidKeys, error } = await supabase
         .from('ai_api_keys')
         .select(`
@@ -497,7 +599,6 @@ export class AIRouter {
         return null;
       }
       
-      // ვცდილობთ ყველა გასაღებს
       for (const key of paidKeys) {
         try {
           console.log(`💰 Trying paid API: ${key.provider_name}`);
@@ -510,24 +611,20 @@ export class AIRouter {
           );
           
           if (result && result.content) {
-            // ✅ FIX: გამოვიყენოთ (key as any) რადგან TypeScript ვერ ხვდება join-ს
             const costPer1M = (key as any).ai_providers?.cost_per_1m_tokens || 0;
             
-            // ვითვლით ხარჯს
             const cost = this.calculateCost(
               costPer1M,
               result.inputTokens,
               result.outputTokens
             );
             
-            // განვაახლებთ ბიუჯეტს
             await this.updateBudgetSpend(cost);
             
-            // ✅ FIX: დავამატეთ model property
             return {
               content: result.content,
               provider: key.provider_name,
-              model: request.model || 'default',
+              model: result.model,
               inputTokens: result.inputTokens,
               outputTokens: result.outputTokens,
               cost,
@@ -538,7 +635,6 @@ export class AIRouter {
         } catch (error) {
           console.error(`❌ Paid API ${key.provider_name} failed:`, error);
           
-          // ვაფიქსირებთ შეცდომას
           await supabase
             .from('ai_api_keys')
             .update({
@@ -603,32 +699,55 @@ export class AIRouter {
     apiKey: string,
     prompt: string,
     model?: string
-  ): Promise<{ content: string; inputTokens: number; outputTokens: number } | null> {
+  ): Promise<{ content: string; model: string; inputTokens: number; outputTokens: number } | null> {
     
-    // Gemini
+    // ============================================
+    // 🔥 GEMINI - Dynamic Model Discovery-ით
+    // ============================================
     if (provider.includes('gemini')) {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model || 'gemini-2.0-flash'}:generateContent?key=${apiKey}`;
+      console.log('🧠 [Gemini] Using Dynamic Model Discovery...');
+      
+      // ვიპოვოთ მოდელი რომელიც მუშაობს
+      const workingModel = await discoverGeminiModel(apiKey);
+      
+      if (!workingModel) {
+        console.error('❌ [Gemini] No working model found');
+        throw new Error('No working Gemini model found');
+      }
+      
+      console.log(`✅ [Gemini] Using model: ${workingModel}`);
+      
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${workingModel}:generateContent?key=${apiKey}`;
       
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.7, maxOutputTokens: 2048 }
+          generationConfig: { 
+            temperature: 0.7, 
+            maxOutputTokens: 2048 
+          }
         })
       });
       
-      if (!response.ok) throw new Error(`Gemini API error: ${response.statusText}`);
+      if (!response.ok) {
+        throw new Error(`Gemini API error: ${response.statusText}`);
+      }
       
       const data = await response.json();
+      
       return {
         content: data.candidates?.[0]?.content?.parts?.[0]?.text || '',
+        model: workingModel,
         inputTokens: data.usageMetadata?.promptTokenCount || 0,
         outputTokens: data.usageMetadata?.candidatesTokenCount || 0
       };
     }
     
-    // Groq
+    // ============================================
+    // GROQ
+    // ============================================
     if (provider.includes('groq')) {
       const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
@@ -647,14 +766,18 @@ export class AIRouter {
       if (!response.ok) throw new Error(`Groq API error: ${response.statusText}`);
       
       const data = await response.json();
+      
       return {
         content: data.choices?.[0]?.message?.content || '',
+        model: model || 'llama-3.3-70b-versatile',
         inputTokens: data.usage?.prompt_tokens || 0,
         outputTokens: data.usage?.completion_tokens || 0
       };
     }
     
-    // OpenAI
+    // ============================================
+    // OPENAI
+    // ============================================
     if (provider.includes('openai')) {
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -673,8 +796,10 @@ export class AIRouter {
       if (!response.ok) throw new Error(`OpenAI API error: ${response.statusText}`);
       
       const data = await response.json();
+      
       return {
         content: data.choices?.[0]?.message?.content || '',
+        model: model || 'gpt-4o-mini',
         inputTokens: data.usage?.prompt_tokens || 0,
         outputTokens: data.usage?.completion_tokens || 0
       };
@@ -765,14 +890,11 @@ export class AIRouter {
   }
   
   private async shouldSaveToKB(result: APIResult, request: AIRequest): Promise<boolean> {
-    // მხოლოდ თუ ხარისხი მაღალია
     if (result.content.length < 100) return false;
     
-    // მხოლოდ თუ არ არის ძალიან სპეციფიკური
     const isGeneric = !this.containsDateSpecificContent(result.content);
     if (!isGeneric) return false;
     
-    // მხოლოდ თუ ეს ტიპი არის "evergreen"
     const evergreenTypes = ['daily_horoscope', 'tarot_reading', 'numerology'];
     if (!evergreenTypes.includes(request.requestType)) return false;
     
