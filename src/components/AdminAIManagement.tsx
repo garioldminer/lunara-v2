@@ -178,11 +178,15 @@ export default function AdminAIManagement({ onNavigate }: Props) {
   };
 
   // ============================================
-  // API KEYS HANDLERS
+  // ✅ API KEYS HANDLERS - OperationResult-თან თავსებადი
   // ============================================
   
   const handleAddApiKey = async () => {
-    addDebugLog('info', 'ADD_KEY', 'Attempting to add API key', { provider: newKey.provider_name, limit: newKey.daily_limit });
+    addDebugLog('info', 'ADD_KEY', 'Attempting to add API key', { 
+      provider: newKey.provider_name, 
+      limit: newKey.daily_limit,
+      keyPreview: newKey.api_key ? newKey.api_key.substring(0, 10) + '...' : 'EMPTY'
+    });
     
     if (!newKey.api_key) {
       addDebugLog('warn', 'ADD_KEY', '❌ API key is empty!');
@@ -190,20 +194,20 @@ export default function AdminAIManagement({ onNavigate }: Props) {
     }
     
     try {
-      const success = await addApiKey(
+      const result = await addApiKey(
         newKey.provider_name,
         newKey.api_key,
         newKey.daily_limit,
         newKey.priority
       );
       
-      if (success) {
-        addDebugLog('success', 'ADD_KEY', '✅ API key added successfully');
+      if (result.success) {
+        addDebugLog('success', 'ADD_KEY', '✅ API key added successfully!', result.data);
         setShowAddKey(false);
         setNewKey({ provider_name: 'gemini', api_key: '', daily_limit: 1000, priority: 1 });
         await loadData();
       } else {
-        addDebugLog('error', 'ADD_KEY', '❌ Failed to add API key - function returned false');
+        addDebugLog('error', 'ADD_KEY', `❌ Failed: ${result.error}`, result.data);
       }
     } catch (error) {
       addDebugLog('error', 'ADD_KEY', '❌ Exception while adding API key', (error as Error).message);
@@ -219,12 +223,12 @@ export default function AdminAIManagement({ onNavigate }: Props) {
     }
     
     try {
-      const success = await deleteApiKey(keyId);
-      if (success) {
-        addDebugLog('success', 'DELETE_KEY', '✅ Key deleted successfully');
+      const result = await deleteApiKey(keyId);
+      if (result.success) {
+        addDebugLog('success', 'DELETE_KEY', '✅ Key deleted successfully', result.data);
         await loadData();
       } else {
-        addDebugLog('error', 'DELETE_KEY', '❌ Failed to delete key');
+        addDebugLog('error', 'DELETE_KEY', `❌ Failed: ${result.error}`);
       }
     } catch (error) {
       addDebugLog('error', 'DELETE_KEY', '❌ Exception while deleting key', (error as Error).message);
@@ -235,12 +239,12 @@ export default function AdminAIManagement({ onNavigate }: Props) {
     addDebugLog('info', 'TOGGLE_KEY', `Toggling key ${keyId} to ${!isActive}`);
     
     try {
-      const success = await toggleApiKey(keyId, !isActive);
-      if (success) {
-        addDebugLog('success', 'TOGGLE_KEY', '✅ Key toggled successfully');
+      const result = await toggleApiKey(keyId, !isActive);
+      if (result.success) {
+        addDebugLog('success', 'TOGGLE_KEY', '✅ Key toggled successfully', result.data);
         await loadData();
       } else {
-        addDebugLog('error', 'TOGGLE_KEY', '❌ Failed to toggle key');
+        addDebugLog('error', 'TOGGLE_KEY', `❌ Failed: ${result.error}`);
       }
     } catch (error) {
       addDebugLog('error', 'TOGGLE_KEY', '❌ Exception while toggling key', (error as Error).message);
@@ -264,7 +268,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
   };
 
   // ============================================
-  // PROMPTS HANDLERS
+  // ✅ PROMPTS HANDLERS - OperationResult-თან თავსებადი
   // ============================================
   
   const handleAddPrompt = async () => {
@@ -276,7 +280,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
     }
     
     try {
-      const success = await addPrompt({
+      const result = await addPrompt({
         name: newPrompt.name,
         category: newPrompt.category,
         system_prompt: newPrompt.system_prompt,
@@ -284,8 +288,8 @@ export default function AdminAIManagement({ onNavigate }: Props) {
         variables: newPrompt.variables.split(',').map(v => v.trim()).filter(v => v)
       });
       
-      if (success) {
-        addDebugLog('success', 'ADD_PROMPT', '✅ Prompt added successfully');
+      if (result.success) {
+        addDebugLog('success', 'ADD_PROMPT', '✅ Prompt added successfully', result.data);
         setShowAddPrompt(false);
         setNewPrompt({
           name: '',
@@ -297,7 +301,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
         setEditingPrompt(null);
         await loadData();
       } else {
-        addDebugLog('error', 'ADD_PROMPT', '❌ Failed to add prompt');
+        addDebugLog('error', 'ADD_PROMPT', `❌ Failed: ${result.error}`);
       }
     } catch (error) {
       addDebugLog('error', 'ADD_PROMPT', '❌ Exception while adding prompt', (error as Error).message);
@@ -335,7 +339,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
     }
     
     try {
-      const success = await updatePrompt(editingPrompt, {
+      const result = await updatePrompt(editingPrompt, {
         name: newPrompt.name,
         category: newPrompt.category,
         system_prompt: newPrompt.system_prompt,
@@ -343,8 +347,8 @@ export default function AdminAIManagement({ onNavigate }: Props) {
         variables: newPrompt.variables.split(',').map(v => v.trim()).filter(v => v)
       });
       
-      if (success) {
-        addDebugLog('success', 'SAVE_EDIT', '✅ Prompt updated successfully');
+      if (result.success) {
+        addDebugLog('success', 'SAVE_EDIT', '✅ Prompt updated successfully', result.data);
         setShowAddPrompt(false);
         setEditingPrompt(null);
         setNewPrompt({
@@ -356,7 +360,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
         });
         await loadData();
       } else {
-        addDebugLog('error', 'SAVE_EDIT', '❌ Failed to update prompt');
+        addDebugLog('error', 'SAVE_EDIT', `❌ Failed: ${result.error}`);
       }
     } catch (error) {
       addDebugLog('error', 'SAVE_EDIT', '❌ Exception while updating prompt', (error as Error).message);
@@ -372,12 +376,12 @@ export default function AdminAIManagement({ onNavigate }: Props) {
     }
     
     try {
-      const success = await deletePrompt(promptId);
-      if (success) {
-        addDebugLog('success', 'DELETE_PROMPT', '✅ Prompt deleted successfully');
+      const result = await deletePrompt(promptId);
+      if (result.success) {
+        addDebugLog('success', 'DELETE_PROMPT', '✅ Prompt deleted successfully', result.data);
         await loadData();
       } else {
-        addDebugLog('error', 'DELETE_PROMPT', '❌ Failed to delete prompt');
+        addDebugLog('error', 'DELETE_PROMPT', `❌ Failed: ${result.error}`);
       }
     } catch (error) {
       addDebugLog('error', 'DELETE_PROMPT', '❌ Exception while deleting prompt', (error as Error).message);
@@ -385,19 +389,19 @@ export default function AdminAIManagement({ onNavigate }: Props) {
   };
 
   // ============================================
-  // PROVIDERS HANDLERS
+  // ✅ PROVIDERS HANDLERS - OperationResult-თან თავსებადი
   // ============================================
   
   const handleToggleProvider = async (providerId: string, isActive: boolean) => {
     addDebugLog('info', 'TOGGLE_PROVIDER', `Toggling provider ${providerId} to ${!isActive}`);
     
     try {
-      const success = await toggleProvider(providerId, !isActive);
-      if (success) {
-        addDebugLog('success', 'TOGGLE_PROVIDER', '✅ Provider toggled successfully');
+      const result = await toggleProvider(providerId, !isActive);
+      if (result.success) {
+        addDebugLog('success', 'TOGGLE_PROVIDER', '✅ Provider toggled successfully', result.data);
         await loadData();
       } else {
-        addDebugLog('error', 'TOGGLE_PROVIDER', '❌ Failed to toggle provider');
+        addDebugLog('error', 'TOGGLE_PROVIDER', `❌ Failed: ${result.error}`);
       }
     } catch (error) {
       addDebugLog('error', 'TOGGLE_PROVIDER', '❌ Exception while toggling provider', (error as Error).message);
@@ -408,12 +412,12 @@ export default function AdminAIManagement({ onNavigate }: Props) {
     addDebugLog('info', 'RESET_CB', `Resetting circuit breaker for: ${providerId}`);
     
     try {
-      const success = await resetCircuitBreaker(providerId);
-      if (success) {
-        addDebugLog('success', 'RESET_CB', '✅ Circuit breaker reset successfully');
+      const result = await resetCircuitBreaker(providerId);
+      if (result.success) {
+        addDebugLog('success', 'RESET_CB', '✅ Circuit breaker reset successfully', result.data);
         await loadData();
       } else {
-        addDebugLog('error', 'RESET_CB', '❌ Failed to reset circuit breaker');
+        addDebugLog('error', 'RESET_CB', `❌ Failed: ${result.error}`);
       }
     } catch (error) {
       addDebugLog('error', 'RESET_CB', '❌ Exception while resetting circuit breaker', (error as Error).message);
@@ -459,7 +463,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
           >
             <Bug size={18} />
           </button>
-          <button className="ai-admin-refresh-btn" onClick={loadData}>
+          <button className="ai-admin-refresh-btn" onClick={loadData} title="Refresh">
             <RefreshCw size={20} />
           </button>
         </div>
@@ -505,11 +509,18 @@ export default function AdminAIManagement({ onNavigate }: Props) {
 
           {/* ✅ LOGS */}
           <div className="debug-logs">
+            {debugLogs.length === 0 && (
+              <div style={{ color: '#94a3b8', fontSize: '11px', textAlign: 'center', padding: '10px' }}>
+                No logs yet. Perform an action to see logs here.
+              </div>
+            )}
             {debugLogs.map((log, i) => (
               <div key={i} className={`debug-log ${log.type}`}>
-                <span className="debug-time">{log.timestamp}</span>
-                <span className="debug-source">[{log.source}]</span>
-                <span className="debug-msg">{log.message}</span>
+                <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <span className="debug-time">{log.timestamp}</span>
+                  <span className="debug-source">[{log.source}]</span>
+                  <span className="debug-msg">{log.message}</span>
+                </div>
                 {log.data && (
                   <details className="debug-data">
                     <summary>Data</summary>
@@ -750,8 +761,8 @@ export default function AdminAIManagement({ onNavigate }: Props) {
                         <div
                           className="usage-fill"
                           style={{
-                            width: `${(key.current_usage / key.daily_limit) * 100}%`,
-                            backgroundColor: key.current_usage / key.daily_limit > 0.8 ? '#ef4444' : '#10b981'
+                            width: `${key.daily_limit > 0 ? (key.current_usage / key.daily_limit) * 100 : 0}%`,
+                            backgroundColor: key.daily_limit > 0 && key.current_usage / key.daily_limit > 0.8 ? '#ef4444' : '#10b981'
                           }}
                         />
                       </div>
@@ -1183,10 +1194,10 @@ export default function AdminAIManagement({ onNavigate }: Props) {
                       <div className="mini-progress-bar">
                         <div
                           className="mini-progress-fill"
-                          style={{ width: `${usage.usage_percentage}%` }}
+                          style={{ width: `${usage.usage_percentage || 0}%` }}
                         />
                       </div>
-                      <span className="percentage">{usage.usage_percentage}%</span>
+                      <span className="percentage">{usage.usage_percentage || 0}%</span>
                     </span>
                     <span>{usage.remaining_usage}</span>
                   </div>
