@@ -153,7 +153,8 @@
     min-width: 36px;
   }
   
-  .add-btn {
+  /* ✅ SCOPED: მხოლოდ HomeScreen-ში */
+  .home-screen .add-btn {
     background: #C5A059;
     color: #0a0600;
     border: none;
@@ -171,7 +172,7 @@
     line-height: 1;
   }
   
-  .add-btn:hover { transform: scale(1.1); }
+  .home-screen .add-btn:hover { transform: scale(1.1); }
   
   /* ============================================
      2. DAILY QUESTS + ACTION BUTTONS
@@ -419,7 +420,7 @@
   }
   
   /* ============================================
-     3. CARD OF THE DAY - Horizontal Split
+     3. CARD OF THE DAY
      ============================================ */
   .card-of-day-banner {
     background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
@@ -819,7 +820,7 @@
   }
   
   /* ============================================
-     SERVICES ITEM - ახალი!
+     SERVICES ITEM
      ============================================ */
   .quick-item.services-item {
     background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 165, 0, 0.08) 100%);
@@ -881,7 +882,7 @@
   }
   
   /* ============================================
-     RESPONSIVE - მცირე ეკრანები (<360px)
+     RESPONSIVE
      ============================================ */
   @media (max-width: 360px) {
     .quests-and-actions-split {
@@ -914,9 +915,6 @@
     }
   }
   
-  /* ============================================
-     RESPONSIVE - დიდი ეკრანები (>480px)
-     ============================================ */
   @media (min-width: 480px) {
     .home-screen {
       padding: 70px 8px 100px 8px;
