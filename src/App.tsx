@@ -20,6 +20,7 @@ import AdminScreen from './components/AdminScreen';
 import AdminAIManagement from './components/AdminAIManagement';
 import SubscriptionScreen from './components/SubscriptionScreen';
 import ServicesScreen from './components/ServicesScreen';
+import HoroscopeScreen from './components/HoroscopeScreen';
 import BottomNav from './components/BottomNav';
 import { UserProvider, useUser } from './context/UserContext';
 import { SettingsProvider } from './context/SettingsContext';
@@ -48,7 +49,8 @@ type Screen =
   | 'admin'
   | 'ai-management'
   | 'subscription'
-  | 'services';
+  | 'services'
+  | 'horoscope';
 
 // ===== USER LOADER COMPONENT =====
 function UserLoader({ onReady }: { onReady: () => void }) {
@@ -188,6 +190,11 @@ function AppContent() {
     else if (screen === 'services') {
       console.log('🛍️ Opening Services Screen');
       goTo('services');
+    }
+    // 🔮 Horoscope Screen
+    else if (screen === 'horoscope') {
+      console.log('🔮 Opening Horoscope Screen');
+      goTo('horoscope');
     }
     // Card Fan / Draw
     else if (screen === 'draw' || screen === 'card-fan') {
@@ -339,6 +346,10 @@ function AppContent() {
       {/* ✅ Services Screen */}
       {currentScreen === 'services' && (
         <ServicesScreen onNavigate={handleNavigate} />
+      )}
+      {/* 🔮 Horoscope Screen */}
+      {currentScreen === 'horoscope' && (
+        <HoroscopeScreen onNavigate={handleNavigate} />
       )}
     </div>
   );

@@ -1,0 +1,390 @@
+/* ============================================
+   HOROSCOPE SCREEN
+   ============================================ */
+
+   .horoscope-screen {
+    width: 100%;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #0a0600 0%, #1a0f05 100%);
+    color: #ffe566;
+    padding: 20px 16px;
+    padding-bottom: 100px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    font-family: 'Georgia', serif;
+  }
+  
+  /* Header */
+  .horoscope-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #1a0f05, #0a0600);
+    border: 1px solid rgba(200, 120, 0, 0.4);
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+  
+  .horoscope-back-btn {
+    background: rgba(200, 120, 0, 0.15);
+    border: 1px solid rgba(200, 120, 0, 0.3);
+    border-radius: 10px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffe566;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .horoscope-back-btn:active {
+    transform: scale(0.92);
+    background: rgba(200, 120, 0, 0.3);
+  }
+  
+  .horoscope-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #ffe566;
+  }
+  
+  .horoscope-title h1 {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0;
+    letter-spacing: 0.5px;
+    text-shadow: 0 0 8px rgba(255, 229, 102, 0.3);
+  }
+  
+  .horoscope-header-spacer {
+    width: 40px;
+  }
+  
+  /* Zodiac Selector */
+  .zodiac-selector {
+    margin-bottom: 24px;
+  }
+  
+  .zodiac-selector h2 {
+    font-size: 16px;
+    color: #ffe566;
+    margin: 0 0 16px 0;
+    text-align: center;
+    letter-spacing: 1px;
+  }
+  
+  .zodiac-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  
+  .zodiac-card {
+    background: linear-gradient(135deg, #1a0f05, #0a0600);
+    border: 2px solid rgba(200, 120, 0, 0.3);
+    border-radius: 12px;
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #ffe566;
+    font-family: 'Georgia', serif;
+  }
+  
+  .zodiac-card:hover {
+    border-color: rgba(200, 120, 0, 0.6);
+    box-shadow: 0 4px 15px rgba(200, 120, 0, 0.3);
+  }
+  
+  .zodiac-card.selected {
+    background: linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2));
+    border-color: #ffe566;
+    box-shadow: 0 0 20px rgba(255, 229, 102, 0.4);
+  }
+  
+  .zodiac-symbol {
+    font-size: 32px;
+    line-height: 1;
+    text-shadow: 0 0 10px rgba(255, 229, 102, 0.5);
+  }
+  
+  .zodiac-name {
+    font-size: 13px;
+    font-weight: bold;
+    text-align: center;
+  }
+  
+  .zodiac-dates {
+    font-size: 9px;
+    color: #c87800;
+    text-align: center;
+  }
+  
+  /* Type Selector */
+  .type-selector {
+    margin-bottom: 20px;
+  }
+  
+  .type-selector h3 {
+    font-size: 14px;
+    color: #ffe566;
+    margin: 0 0 12px 0;
+    text-align: center;
+  }
+  
+  .type-buttons {
+    display: flex;
+    gap: 12px;
+  }
+  
+  .type-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    background: linear-gradient(135deg, #1a0f05, #0a0600);
+    border: 2px solid rgba(200, 120, 0, 0.3);
+    border-radius: 10px;
+    color: #ffe566;
+    font-family: 'Georgia', serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .type-btn:hover {
+    border-color: rgba(200, 120, 0, 0.6);
+  }
+  
+  .type-btn.active {
+    background: linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2));
+    border-color: #ffe566;
+    box-shadow: 0 0 15px rgba(255, 229, 102, 0.3);
+  }
+  
+  /* Date Selector */
+  .date-selector {
+    margin-bottom: 20px;
+  }
+  
+  .date-selector h3 {
+    font-size: 14px;
+    color: #ffe566;
+    margin: 0 0 12px 0;
+    text-align: center;
+  }
+  
+  .date-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  
+  .date-nav-btn {
+    background: rgba(200, 120, 0, 0.15);
+    border: 1px solid rgba(200, 120, 0, 0.3);
+    border-radius: 10px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffe566;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .date-nav-btn:active {
+    transform: scale(0.92);
+    background: rgba(200, 120, 0, 0.3);
+  }
+  
+  .date-display {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    background: linear-gradient(135deg, #1a0f05, #0a0600);
+    border: 1px solid rgba(200, 120, 0, 0.3);
+    border-radius: 10px;
+    color: #ffe566;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  
+  /* Generate Button */
+  .generate-section {
+    margin-bottom: 24px;
+  }
+  
+  .generate-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 16px;
+    background: linear-gradient(135deg, #c87800, #ffe566);
+    border: none;
+    border-radius: 12px;
+    color: #0a0600;
+    font-family: 'Georgia', serif;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(200, 120, 0, 0.4);
+  }
+  
+  .generate-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(200, 120, 0, 0.5);
+  }
+  
+  .generate-btn:active:not(:disabled) {
+    transform: translateY(0);
+  }
+  
+  .generate-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  .spin {
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  
+  /* Error Message */
+  .error-message {
+    padding: 12px 16px;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    border-radius: 10px;
+    color: #ef4444;
+    font-size: 13px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  /* Result */
+  .horoscope-result {
+    background: linear-gradient(135deg, #1a0f05, #0a0600);
+    border: 2px solid rgba(200, 120, 0, 0.4);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  }
+  
+  .result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(200, 120, 0, 0.3);
+  }
+  
+  .result-sign {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .result-symbol {
+    font-size: 48px;
+    line-height: 1;
+    text-shadow: 0 0 15px rgba(255, 229, 102, 0.6);
+  }
+  
+  .result-info h3 {
+    font-size: 18px;
+    color: #ffe566;
+    margin: 0 0 4px 0;
+    font-weight: bold;
+  }
+  
+  .result-info p {
+    font-size: 12px;
+    color: #c87800;
+    margin: 0;
+  }
+  
+  .cached-badge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    background: rgba(16, 185, 129, 0.2);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    border-radius: 8px;
+    color: #10b981;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  
+  .result-content {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #ffe566;
+    margin-bottom: 20px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  
+  .result-meta {
+    display: flex;
+    gap: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(200, 120, 0, 0.3);
+    flex-wrap: wrap;
+  }
+  
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #c87800;
+  }
+  
+  /* Responsive */
+  @media (max-width: 380px) {
+    .zodiac-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .zodiac-symbol {
+      font-size: 28px;
+    }
+    
+    .zodiac-name {
+      font-size: 12px;
+    }
+    
+    .result-symbol {
+      font-size: 40px;
+    }
+    
+    .result-info h3 {
+      font-size: 16px;
+    }
+  }
