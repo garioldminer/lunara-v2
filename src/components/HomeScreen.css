@@ -4,7 +4,8 @@
 
    .home-screen {
     width: 100%;
-    padding: 70px 3px 100px 3px;
+    /* ✅ ერთნაირი padding ყველა გვერდზე */
+    padding: 70px 12px 100px 12px;
     max-width: 480px;
     margin: 0 auto;
     color: #fff;
@@ -917,7 +918,7 @@
   
   @media (min-width: 480px) {
     .home-screen {
-      padding: 70px 8px 100px 8px;
+      padding: 70px 16px 100px 16px;
     }
     
     .quick-grid {
