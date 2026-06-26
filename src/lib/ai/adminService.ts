@@ -225,6 +225,7 @@ export async function toggleApiKey(keyId: string, isActive: boolean): Promise<Op
 // 🔥 🔥 🔥 DYNAMIC MODEL DISCOVERY TEST 🔥 🔥 🔥
 // ჩვენ ვკითხულობთ Google-ს რა მოდელები აქვს
 // და ვცდილობთ ყველას თანმიმდევრობით
+// ✅ განახლებულია: გავთიშეთ "thinking" mode
 // ============================================
 export async function testApiKey(keyId: string): Promise<{ 
   success: boolean; 
@@ -267,11 +268,11 @@ export async function testApiKey(keyId: string): Promise<{
     
     // ============================================
     // 🔥 GEMINI - DYNAMIC MODEL DISCOVERY 🔥
-    // ვკითხულობთ Google-ს რა მოდელები აქვს
     // ============================================
     if (providerName.includes('gemini')) {
       log('🧪 ===== GEMINI DYNAMIC DISCOVERY START =====');
       log('🧪 Strategy: Ask Google "What models do you have?" then test each one');
+      log('🧪 ⚠️ Thinking mode DISABLED (thinkingBudget: 0)');
       
       // ============================================
       // STEP 1: ვკითხოთ Google-ს რა მოდელები აქვს
@@ -280,8 +281,6 @@ export async function testApiKey(keyId: string): Promise<{
       
       const modelsUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${key.api_key}`;
       log('📤 GET URL:', modelsUrl);
-      log('📤 METHOD: GET');
-      log('📤 HEADERS: { Content-Type: application/json }');
       
       const modelsStartTime = Date.now();
       const modelsResponse = await fetch(modelsUrl, {
@@ -293,40 +292,22 @@ export async function testApiKey(keyId: string): Promise<{
       log(`📥 Response received in ${modelsTime}ms`);
       log('📥 Status:', `${modelsResponse.status} ${modelsResponse.statusText}`);
       
-      // ვაჩვენოთ ყველა response header
-      log('📥 Response Headers:');
-      modelsResponse.headers.forEach((value, k) => {
-        log(`   📥 ${k}: ${value}`);
-      });
-      
       const modelsText = await modelsResponse.text();
       log('📥 Raw Response (first 3000 chars):', modelsText.substring(0, 3000));
       
-      if (modelsText.length > 3000) {
-        log(`... (${modelsText.length - 3000} more chars)`);
-      }
-      
       if (!modelsResponse.ok) {
         log('❌ ❌ ❌ FAILED TO GET MODELS LIST ❌ ❌ ❌');
-        log('❌ This means the API key itself is invalid or blocked');
         
         let errorData;
         try {
           errorData = JSON.parse(modelsText);
           log('❌ Error details:', errorData);
-        } catch (e) {
-          log('⚠️ Response not valid JSON');
-        }
+        } catch (e) {}
         
         return { 
           success: false, 
           message: `❌ Cannot get models list. Status: ${modelsResponse.status}`,
-          details: { 
-            status: modelsResponse.status,
-            statusText: modelsResponse.statusText,
-            response: errorData || modelsText,
-            debugLog 
-          }
+          details: { status: modelsResponse.status, response: errorData || modelsText, debugLog }
         };
       }
       
@@ -334,7 +315,6 @@ export async function testApiKey(keyId: string): Promise<{
       try {
         modelsData = JSON.parse(modelsText);
       } catch (e) {
-        log('❌ Failed to parse models response as JSON');
         return { success: false, message: '❌ Invalid JSON from Google', details: { response: modelsText, debugLog } };
       }
       
@@ -342,30 +322,9 @@ export async function testApiKey(keyId: string): Promise<{
       log(`📊 Total models returned: ${modelsData.models?.length || 0}`);
       
       // ============================================
-      // STEP 2: ვნახოთ ყველა მოდელი
+      // STEP 2: ვიპოვოთ რომელი მხარს უჭერს generateContent-ს
       // ============================================
-      log('\n📋 ===== STEP 2: LIST ALL MODELS =====');
-      
-      if (!modelsData.models || modelsData.models.length === 0) {
-        log('❌ No models found in response');
-        return { success: false, message: '❌ No models available', details: { debugLog } };
-      }
-      
-      modelsData.models.forEach((model: any, i: number) => {
-        log(`\n📋 Model ${i + 1}:`, {
-          name: model.name,
-          displayName: model.displayName,
-          description: model.description?.substring(0, 150),
-          supportedMethods: model.supportedGenerationMethods,
-          inputTokenLimit: model.inputTokenLimit,
-          outputTokenLimit: model.outputTokenLimit
-        });
-      });
-      
-      // ============================================
-      // STEP 3: ვიპოვოთ რომელი მხარს უჭერს generateContent-ს
-      // ============================================
-      log('\n🔍 ===== STEP 3: FILTER MODELS =====');
+      log('\n🔍 ===== STEP 2: FILTER MODELS =====');
       
       const generateModels = modelsData.models.filter((model: any) => 
         model.supportedGenerationMethods?.includes('generateContent')
@@ -375,7 +334,6 @@ export async function testApiKey(keyId: string): Promise<{
       log(`📊 Models supporting generateContent: ${generateModels.length}`);
       
       if (generateModels.length === 0) {
-        log('❌ No models support generateContent');
         return { success: false, message: '❌ No models support generateContent', details: { debugLog } };
       }
       
@@ -385,9 +343,10 @@ export async function testApiKey(keyId: string): Promise<{
       });
       
       // ============================================
-      // STEP 4: ვცადოთ თითოეული მოდელი
+      // STEP 3: ვცადოთ თითოეული მოდელი
+      // ✅ განახლებულია: გავთიშეთ "thinking" mode
       // ============================================
-      log('\n🧪 ===== STEP 4: TEST EACH MODEL =====');
+      log('\n🧪 ===== STEP 3: TEST EACH MODEL =====');
       
       for (let i = 0; i < generateModels.length; i++) {
         const model = generateModels[i];
@@ -395,15 +354,18 @@ export async function testApiKey(keyId: string): Promise<{
         
         log(`\n🧪 ----- Testing Model ${i + 1}/${generateModels.length}: ${modelName} -----`);
         log('📤 Model displayName:', model.displayName);
-        log('📤 Input limit:', model.inputTokenLimit);
-        log('📤 Output limit:', model.outputTokenLimit);
         
         const testUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key.api_key}`;
+        
+        // ✅ განახლებული request body - გავთიშეთ thinking
         const testBody = {
           contents: [{ parts: [{ text: 'Say "OK" in one word' }] }],
           generationConfig: { 
-            maxOutputTokens: 10, 
-            temperature: 0.7 
+            maxOutputTokens: 100,
+            temperature: 0.7,
+            thinkingConfig: {
+              thinkingBudget: 0  // ✅ გავთიშეთ "thinking" mode
+            }
           }
         };
         
@@ -432,57 +394,63 @@ export async function testApiKey(keyId: string): Promise<{
             log('⚠️ Response not valid JSON');
           }
           
-          // წარმატება!
-          if (testResponse.ok && testData?.candidates?.[0]?.content?.parts?.[0]?.text) {
-            const responseText = testData.candidates[0].content.parts[0].text;
-            log('\n✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅');
-            log(`✅ MODEL WORKS!`);
-            log(`✅ Model: ${modelName}`);
-            log(`✅ Display Name: ${model.displayName}`);
-            log(`✅ Response: "${responseText}"`);
-            log(`✅ Response time: ${responseTime}ms`);
-            log(`✅ Input tokens: ${testData.usageMetadata?.promptTokenCount}`);
-            log(`✅ Output tokens: ${testData.usageMetadata?.candidatesTokenCount}`);
-            log('✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅');
+          // ✅ განახლებული წარმატების შემოწმება
+          // ვპოულობთ პირველ ნაწილს რომელიც არ არის "thought"
+          if (testResponse.ok && testData?.candidates?.[0]?.content?.parts) {
+            const parts = testData.candidates[0].content.parts;
             
-            return { 
-              success: true, 
-              message: `✅ Gemini works! Model: ${model.displayName}`,
-              details: {
-                workingModel: modelName,
-                modelDisplayName: model.displayName,
-                response: responseText,
-                responseTime,
-                inputTokens: testData.usageMetadata?.promptTokenCount,
-                outputTokens: testData.usageMetadata?.candidatesTokenCount,
-                totalModelsFound: modelsData.models.length,
-                generateModelsFound: generateModels.length,
-                testedModels: i + 1,
-                debugLog
-              }
-            };
+            // ვიპოვოთ პირველი ნაწილი რომელიც არ არის thought
+            const realPart = parts.find((p: any) => !p.thought && p.text);
+            
+            if (realPart && realPart.text && realPart.text.trim().length > 0) {
+              const responseText = realPart.text;
+              log('\n✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅');
+              log(`✅ MODEL WORKS!`);
+              log(`✅ Model: ${modelName}`);
+              log(`✅ Display Name: ${model.displayName}`);
+              log(`✅ Response: "${responseText}"`);
+              log(`✅ Response time: ${responseTime}ms`);
+              log(`✅ Input tokens: ${testData.usageMetadata?.promptTokenCount}`);
+              log(`✅ Output tokens: ${testData.usageMetadata?.candidatesTokenCount || testData.usageMetadata?.totalTokenCount}`);
+              log('✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅');
+              
+              return { 
+                success: true, 
+                message: `✅ Gemini works! Model: ${model.displayName}`,
+                details: {
+                  workingModel: modelName,
+                  modelDisplayName: model.displayName,
+                  response: responseText,
+                  responseTime,
+                  inputTokens: testData.usageMetadata?.promptTokenCount,
+                  outputTokens: testData.usageMetadata?.candidatesTokenCount || testData.usageMetadata?.totalTokenCount,
+                  totalModelsFound: modelsData.models.length,
+                  generateModelsFound: generateModels.length,
+                  testedModels: i + 1,
+                  debugLog
+                }
+              };
+            } else {
+              log(`❌ Model ${modelName} - only thoughts, no real response`);
+            }
           } else {
             log(`❌ Model ${modelName} failed`);
             if (testData?.error) {
               log('❌ Error code:', testData.error.code);
               log('❌ Error message:', testData.error.message);
-              log('❌ Error status:', testData.error.status);
             }
           }
           
         } catch (fetchError) {
           log('❌ Fetch exception:', (fetchError as Error).message);
-          log('❌ Stack:', (fetchError as Error).stack);
         }
       }
       
-      // ყველა მოდელი ვერ მუშაობს
       log('\n❌ ❌ ❌ ALL MODELS FAILED ❌ ❌ ❌');
-      log(`❌ Tried ${generateModels.length} models, none worked`);
       
       return { 
         success: false, 
-        message: `❌ All ${generateModels.length} models failed. API key may be invalid or quota exceeded.`,
+        message: `❌ All ${generateModels.length} models failed.`,
         details: {
           totalModelsFound: modelsData.models.length,
           generateModelsFound: generateModels.length,
@@ -497,40 +465,6 @@ export async function testApiKey(keyId: string): Promise<{
     // ============================================
     if (providerName.includes('groq')) {
       log('🧪 ===== GROQ TEST START =====');
-      
-      // ჯერ ვკითხოთ Groq-ს რა მოდელები აქვს
-      log('📤 STEP 1: Asking Groq for models list...');
-      
-      const modelsUrl = 'https://api.groq.com/openai/v1/models';
-      const modelsResponse = await fetch(modelsUrl, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${key.api_key}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      log('📥 Models Status:', `${modelsResponse.status} ${modelsResponse.statusText}`);
-      
-      const modelsText = await modelsResponse.text();
-      log('📥 Models Response (first 2000 chars):', modelsText.substring(0, 2000));
-      
-      let modelsData;
-      try {
-        modelsData = JSON.parse(modelsText);
-        log(`📊 Total models: ${modelsData.data?.length || 0}`);
-        
-        if (modelsData.data) {
-          modelsData.data.forEach((model: any, i: number) => {
-            log(`   ${i + 1}. ${model.id}`);
-          });
-        }
-      } catch (e) {
-        log('⚠️ Not valid JSON');
-      }
-      
-      // ვცადოთ chat completion
-      log('\n🧪 STEP 2: Testing chat completion...');
       
       const url = 'https://api.groq.com/openai/v1/chat/completions';
       const requestBody = {
@@ -592,9 +526,6 @@ export async function testApiKey(keyId: string): Promise<{
         max_tokens: 10
       };
       
-      log('📤 URL:', url);
-      log('📤 BODY:', JSON.stringify(requestBody, null, 2));
-      
       const startTime = Date.now();
       const response = await fetch(url, {
         method: 'POST',
@@ -632,9 +563,6 @@ export async function testApiKey(keyId: string): Promise<{
 
   } catch (error) {
     log('❌ TOP-LEVEL EXCEPTION:', error);
-    log('❌ Error name:', (error as Error).name);
-    log('❌ Error message:', (error as Error).message);
-    log('❌ Error stack:', (error as Error).stack);
     return { 
       success: false, 
       message: `❌ ${(error as Error).message}`,

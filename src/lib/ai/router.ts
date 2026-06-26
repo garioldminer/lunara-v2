@@ -66,6 +66,7 @@ interface APIResult {
 // 🔥 🔥 🔥 DYNAMIC MODEL DISCOVERY 🔥 🔥 🔥
 // ვკითხულობთ Google-ს რა მოდელები აქვს
 // და ვინახავთ cache-ში 24 საათით
+// ✅ განახლებულია: გავთიშეთ "thinking" mode
 // ============================================
 
 async function discoverGeminiModel(apiKey: string): Promise<string | null> {
@@ -124,9 +125,16 @@ async function discoverGeminiModel(apiKey: string): Promise<string | null> {
       console.log(`🧪 [discoverGeminiModel] Testing: ${modelName} (${model.displayName})`);
       
       const testUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+      
+      // ✅ განახლებული test body - გავთიშეთ thinking
       const testBody = {
         contents: [{ parts: [{ text: 'Say "OK"' }] }],
-        generationConfig: { maxOutputTokens: 5 }
+        generationConfig: { 
+          maxOutputTokens: 50,
+          thinkingConfig: {
+            thinkingBudget: 0  // ✅ გავთიშეთ "thinking"
+          }
+        }
       };
       
       try {
@@ -138,33 +146,41 @@ async function discoverGeminiModel(apiKey: string): Promise<string | null> {
         
         if (testResponse.ok) {
           const testData = await testResponse.json();
-          if (testData.candidates?.[0]?.content?.parts?.[0]?.text) {
-            console.log(`✅ [discoverGeminiModel] Found working model: ${model.displayName} (${modelName})`);
+          
+          // ✅ განახლებული response check - ვიპოვოთ ნაწილი რომელიც არ არის thought
+          if (testData.candidates?.[0]?.content?.parts) {
+            const parts = testData.candidates[0].content.parts;
+            const realPart = parts.find((p: any) => !p.thought && p.text && p.text.trim().length > 0);
             
-            // 5. შევინახოთ cache-ში 24 საათით
-            try {
-              const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-              await supabase
-                .from('ai_cache')
-                .upsert({
-                  cache_key: 'gemini_working_model',
-                  request_type: 'model_discovery',
-                  provider: 'gemini',
-                  model: modelName,
-                  response_text: modelName,
-                  input_tokens: 0,
-                  output_tokens: 0,
-                  cost: 0,
-                  ttl_seconds: 86400,
-                  expires_at: expiresAt,
-                  hit_count: 0,
-                  last_hit_at: new Date().toISOString()
-                }, { onConflict: 'cache_key' });
-            } catch (cacheError) {
-              console.error('⚠️ [discoverGeminiModel] Failed to cache model:', cacheError);
+            if (realPart) {
+              console.log(`✅ [discoverGeminiModel] Found working model: ${model.displayName} (${modelName})`);
+              console.log(`✅ [discoverGeminiModel] Response: "${realPart.text}"`);
+              
+              // 5. შევინახოთ cache-ში 24 საათით
+              try {
+                const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+                await supabase
+                  .from('ai_cache')
+                  .upsert({
+                    cache_key: 'gemini_working_model',
+                    request_type: 'model_discovery',
+                    provider: 'gemini',
+                    model: modelName,
+                    response_text: modelName,
+                    input_tokens: 0,
+                    output_tokens: 0,
+                    cost: 0,
+                    ttl_seconds: 86400,
+                    expires_at: expiresAt,
+                    hit_count: 0,
+                    last_hit_at: new Date().toISOString()
+                  }, { onConflict: 'cache_key' });
+              } catch (cacheError) {
+                console.error('⚠️ [discoverGeminiModel] Failed to cache model:', cacheError);
+              }
+              
+              return modelName;
             }
-            
-            return modelName;
           }
         } else {
           console.log(`❌ [discoverGeminiModel] ${modelName} failed: ${testResponse.status}`);
@@ -700,7 +716,7 @@ export class AIRouter {
     return words.filter(w => w.length > 2 && !stopWords.includes(w)).slice(0, 5);
   }
   
-  // ✅ განახლებული makeApiCall - Dynamic Model Discovery-ით
+  // ✅ განახლებული makeApiCall - Dynamic Model Discovery-ით + thinking disabled
   private async makeApiCall(
     provider: string,
     apiKey: string,
@@ -710,6 +726,7 @@ export class AIRouter {
     
     // ============================================
     // 🔥 GEMINI - Dynamic Model Discovery-ით 🔥
+    // ✅ განახლებულია: გავთიშეთ "thinking" mode
     // ============================================
     if (provider.includes('gemini')) {
       console.log('🧠 [Gemini] Using Dynamic Model Discovery...');
@@ -726,6 +743,7 @@ export class AIRouter {
       
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${workingModel}:generateContent?key=${apiKey}`;
       
+      // ✅ განახლებული request - გავთიშეთ thinking
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -733,7 +751,10 @@ export class AIRouter {
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: { 
             temperature: 0.7, 
-            maxOutputTokens: 2048 
+            maxOutputTokens: 2048,
+            thinkingConfig: {
+              thinkingBudget: 0  // ✅ გავთიშეთ "thinking" mode
+            }
           }
         })
       });
@@ -753,11 +774,21 @@ export class AIRouter {
       
       const data = await response.json();
       
+      // ✅ განახლებული response extraction - ვიპოვოთ ნაწილი რომელიც არ არის thought
+      let content = '';
+      if (data.candidates?.[0]?.content?.parts) {
+        const parts = data.candidates[0].content.parts;
+        const realPart = parts.find((p: any) => !p.thought && p.text);
+        if (realPart) {
+          content = realPart.text;
+        }
+      }
+      
       return {
-        content: data.candidates?.[0]?.content?.parts?.[0]?.text || '',
+        content: content,
         model: workingModel,
         inputTokens: data.usageMetadata?.promptTokenCount || 0,
-        outputTokens: data.usageMetadata?.candidatesTokenCount || 0
+        outputTokens: data.usageMetadata?.candidatesTokenCount || data.usageMetadata?.totalTokenCount || 0
       };
     }
     
