@@ -68,7 +68,6 @@ export interface AIUsageStats {
   avg_response_time_ms: number;
 }
 
-// ✅ RESULT TYPE - უკეთესი error handling-ისთვის
 export interface OperationResult {
   success: boolean;
   error?: string;
@@ -87,11 +86,7 @@ export async function getAllProviders(): Promise<AIProvider[]> {
       .select('*')
       .order('priority', { ascending: true });
 
-    if (error) {
-      console.error('❌ [getAllProviders] Error:', error);
-      throw error;
-    }
-    
+    if (error) throw error;
     console.log(`✅ [getAllProviders] Found ${data?.length || 0} providers`);
     return data || [];
   } catch (error) {
@@ -105,22 +100,15 @@ export async function updateProvider(
   updates: Partial<AIProvider>
 ): Promise<OperationResult> {
   try {
-    console.log('🔄 [updateProvider] Updating provider:', providerId, updates);
     const { data, error } = await supabase
       .from('ai_providers')
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq('id', providerId)
       .select();
 
-    if (error) {
-      console.error('❌ [updateProvider] Error:', error);
-      return { success: false, error: error.message };
-    }
-    
-    console.log('✅ [updateProvider] Success');
+    if (error) return { success: false, error: error.message };
     return { success: true, data };
   } catch (error) {
-    console.error('❌ [updateProvider] Exception:', error);
     return { success: false, error: (error as Error).message };
   }
 }
@@ -155,11 +143,7 @@ export async function getAllApiKeys(): Promise<AIApiKey[]> {
       .order('provider_name', { ascending: true })
       .order('priority', { ascending: true });
 
-    if (error) {
-      console.error('❌ [getAllApiKeys] Error:', error);
-      throw error;
-    }
-    
+    if (error) throw error;
     console.log(`✅ [getAllApiKeys] Found ${data?.length || 0} API keys`);
     return data || [];
   } catch (error) {
@@ -175,12 +159,7 @@ export async function addApiKey(
   priority: number = 1
 ): Promise<OperationResult> {
   try {
-    console.log('🔑 [addApiKey] Attempting to insert API key:', {
-      providerName,
-      dailyLimit,
-      priority,
-      keyPreview: apiKey.substring(0, 10) + '...'
-    });
+    console.log('🔑 [addApiKey] Attempting to insert:', { providerName, dailyLimit, priority });
     
     const { data, error } = await supabase
       .from('ai_api_keys')
@@ -196,20 +175,11 @@ export async function addApiKey(
       .select();
 
     if (error) {
-      console.error('❌ [addApiKey] Supabase error:', {
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        code: error.code
-      });
-      return { 
-        success: false, 
-        error: error.message,
-        data: { details: error.details, hint: error.hint, code: error.code }
-      };
+      console.error('❌ [addApiKey] Error:', error);
+      return { success: false, error: error.message, data: { details: error.details, hint: error.hint, code: error.code } };
     }
 
-    console.log('✅ [addApiKey] Success! Inserted:', data);
+    console.log('✅ [addApiKey] Success!');
     return { success: true, data };
   } catch (error) {
     console.error('❌ [addApiKey] Exception:', error);
@@ -217,49 +187,32 @@ export async function addApiKey(
   }
 }
 
-export async function updateApiKey(
-  keyId: string,
-  updates: Partial<AIApiKey>
-): Promise<OperationResult> {
+export async function updateApiKey(keyId: string, updates: Partial<AIApiKey>): Promise<OperationResult> {
   try {
-    console.log('🔄 [updateApiKey] Updating key:', keyId, updates);
     const { data, error } = await supabase
       .from('ai_api_keys')
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq('id', keyId)
       .select();
 
-    if (error) {
-      console.error('❌ [updateApiKey] Error:', error);
-      return { success: false, error: error.message };
-    }
-    
-    console.log('✅ [updateApiKey] Success');
+    if (error) return { success: false, error: error.message };
     return { success: true, data };
   } catch (error) {
-    console.error('❌ [updateApiKey] Exception:', error);
     return { success: false, error: (error as Error).message };
   }
 }
 
 export async function deleteApiKey(keyId: string): Promise<OperationResult> {
   try {
-    console.log('🗑️ [deleteApiKey] Deleting key:', keyId);
     const { data, error } = await supabase
       .from('ai_api_keys')
       .delete()
       .eq('id', keyId)
       .select();
 
-    if (error) {
-      console.error('❌ [deleteApiKey] Error:', error);
-      return { success: false, error: error.message };
-    }
-    
-    console.log('✅ [deleteApiKey] Success');
+    if (error) return { success: false, error: error.message };
     return { success: true, data };
   } catch (error) {
-    console.error('❌ [deleteApiKey] Exception:', error);
     return { success: false, error: (error as Error).message };
   }
 }
@@ -269,16 +222,25 @@ export async function toggleApiKey(keyId: string, isActive: boolean): Promise<Op
 }
 
 // ============================================
-// ✅ TEST API KEY - დეტალური DEBUGGING
+// 🔥 🔥 🔥 DYNAMIC MODEL DISCOVERY TEST 🔥 🔥 🔥
+// ჩვენ ვკითხულობთ Google-ს რა მოდელები აქვს
+// და ვცდილობთ ყველას თანმიმდევრობით
 // ============================================
 export async function testApiKey(keyId: string): Promise<{ 
   success: boolean; 
   message: string;
   details?: any;
 }> {
+  const debugLog: any[] = [];
+  const log = (msg: string, data?: any) => {
+    const entry = `[${new Date().toISOString()}] ${msg}`;
+    console.log(entry, data || '');
+    debugLog.push({ msg, data, time: new Date().toISOString() });
+  };
+
   try {
-    console.log('🧪 [testApiKey] ===== STARTING TEST =====');
-    console.log('🧪 [testApiKey] Key ID:', keyId);
+    log('🧪 ===== DYNAMIC MODEL DISCOVERY TEST START =====');
+    log('🧪 Key ID:', keyId);
     
     // 1. წაიკითხე გასაღები ბაზიდან
     const { data: key, error } = await supabase
@@ -288,128 +250,287 @@ export async function testApiKey(keyId: string): Promise<{
       .single();
 
     if (error || !key) {
-      console.error('❌ [testApiKey] Key not found:', error);
-      return { 
-        success: false, 
-        message: 'Key not found',
-        details: { error }
-      };
+      log('❌ Key not found', error);
+      return { success: false, message: 'Key not found', details: { error, debugLog } };
     }
 
-    console.log('✅ [testApiKey] Key loaded:', {
-      provider: key.provider_name,
-      keyPreview: key.api_key.substring(0, 15) + '...',
-      isActive: key.is_active
+    log('✅ Key loaded from DB', {
+      id: key.id,
+      provider_name: key.provider_name,
+      is_active: key.is_active,
+      keyLength: key.api_key.length,
+      keyPreview: key.api_key.substring(0, 20) + '...'
     });
 
     const providerName = (key as any).ai_providers?.name || key.provider_name;
-    console.log('🧪 [testApiKey] Testing provider:', providerName);
+    log('🧪 Provider name:', providerName);
     
     // ============================================
-    // GEMINI TEST - დეტალური
+    // 🔥 GEMINI - DYNAMIC MODEL DISCOVERY 🔥
+    // ვკითხულობთ Google-ს რა მოდელები აქვს
     // ============================================
     if (providerName.includes('gemini')) {
-      console.log('🧪 [testApiKey] === GEMINI TEST START ===');
+      log('🧪 ===== GEMINI DYNAMIC DISCOVERY START =====');
+      log('🧪 Strategy: Ask Google "What models do you have?" then test each one');
       
-      // ვცადოთ რამდენიმე მოდელი
-      const models = [
-        'gemini-2.0-flash',
-        'gemini-1.5-flash',
-        'gemini-1.5-flash-8b',
-        'gemini-pro'
-      ];
+      // ============================================
+      // STEP 1: ვკითხოთ Google-ს რა მოდელები აქვს
+      // ============================================
+      log('\n📤 ===== STEP 1: ASK GOOGLE FOR MODELS =====');
       
-      for (const model of models) {
-        console.log(`\n🧪 [testApiKey] Testing model: ${model}`);
+      const modelsUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${key.api_key}`;
+      log('📤 GET URL:', modelsUrl);
+      log('📤 METHOD: GET');
+      log('📤 HEADERS: { Content-Type: application/json }');
+      
+      const modelsStartTime = Date.now();
+      const modelsResponse = await fetch(modelsUrl, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const modelsTime = Date.now() - modelsStartTime;
+      
+      log(`📥 Response received in ${modelsTime}ms`);
+      log('📥 Status:', `${modelsResponse.status} ${modelsResponse.statusText}`);
+      
+      // ვაჩვენოთ ყველა response header
+      log('📥 Response Headers:');
+      modelsResponse.headers.forEach((value, k) => {
+        log(`   📥 ${k}: ${value}`);
+      });
+      
+      const modelsText = await modelsResponse.text();
+      log('📥 Raw Response (first 3000 chars):', modelsText.substring(0, 3000));
+      
+      if (modelsText.length > 3000) {
+        log(`... (${modelsText.length - 3000} more chars)`);
+      }
+      
+      if (!modelsResponse.ok) {
+        log('❌ ❌ ❌ FAILED TO GET MODELS LIST ❌ ❌ ❌');
+        log('❌ This means the API key itself is invalid or blocked');
         
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key.api_key}`;
+        let errorData;
+        try {
+          errorData = JSON.parse(modelsText);
+          log('❌ Error details:', errorData);
+        } catch (e) {
+          log('⚠️ Response not valid JSON');
+        }
         
-        console.log('🧪 [testApiKey] URL:', url);
-        console.log('🧪 [testApiKey] Request body:', {
-          contents: [{ parts: [{ text: 'Say "OK"' }] }],
-          generationConfig: { maxOutputTokens: 10 }
+        return { 
+          success: false, 
+          message: `❌ Cannot get models list. Status: ${modelsResponse.status}`,
+          details: { 
+            status: modelsResponse.status,
+            statusText: modelsResponse.statusText,
+            response: errorData || modelsText,
+            debugLog 
+          }
+        };
+      }
+      
+      let modelsData;
+      try {
+        modelsData = JSON.parse(modelsText);
+      } catch (e) {
+        log('❌ Failed to parse models response as JSON');
+        return { success: false, message: '❌ Invalid JSON from Google', details: { response: modelsText, debugLog } };
+      }
+      
+      log('✅ ✅ ✅ Got models list from Google! ✅ ✅ ✅');
+      log(`📊 Total models returned: ${modelsData.models?.length || 0}`);
+      
+      // ============================================
+      // STEP 2: ვნახოთ ყველა მოდელი
+      // ============================================
+      log('\n📋 ===== STEP 2: LIST ALL MODELS =====');
+      
+      if (!modelsData.models || modelsData.models.length === 0) {
+        log('❌ No models found in response');
+        return { success: false, message: '❌ No models available', details: { debugLog } };
+      }
+      
+      modelsData.models.forEach((model: any, i: number) => {
+        log(`\n📋 Model ${i + 1}:`, {
+          name: model.name,
+          displayName: model.displayName,
+          description: model.description?.substring(0, 150),
+          supportedMethods: model.supportedGenerationMethods,
+          inputTokenLimit: model.inputTokenLimit,
+          outputTokenLimit: model.outputTokenLimit
         });
+      });
+      
+      // ============================================
+      // STEP 3: ვიპოვოთ რომელი მხარს უჭერს generateContent-ს
+      // ============================================
+      log('\n🔍 ===== STEP 3: FILTER MODELS =====');
+      
+      const generateModels = modelsData.models.filter((model: any) => 
+        model.supportedGenerationMethods?.includes('generateContent')
+      );
+      
+      log(`📊 Total models: ${modelsData.models.length}`);
+      log(`📊 Models supporting generateContent: ${generateModels.length}`);
+      
+      if (generateModels.length === 0) {
+        log('❌ No models support generateContent');
+        return { success: false, message: '❌ No models support generateContent', details: { debugLog } };
+      }
+      
+      log('📋 Models that support generateContent:');
+      generateModels.forEach((model: any, i: number) => {
+        log(`   ${i + 1}. ${model.name} (${model.displayName})`);
+      });
+      
+      // ============================================
+      // STEP 4: ვცადოთ თითოეული მოდელი
+      // ============================================
+      log('\n🧪 ===== STEP 4: TEST EACH MODEL =====');
+      
+      for (let i = 0; i < generateModels.length; i++) {
+        const model = generateModels[i];
+        const modelName = model.name.replace('models/', '');
+        
+        log(`\n🧪 ----- Testing Model ${i + 1}/${generateModels.length}: ${modelName} -----`);
+        log('📤 Model displayName:', model.displayName);
+        log('📤 Input limit:', model.inputTokenLimit);
+        log('📤 Output limit:', model.outputTokenLimit);
+        
+        const testUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key.api_key}`;
+        const testBody = {
+          contents: [{ parts: [{ text: 'Say "OK" in one word' }] }],
+          generationConfig: { 
+            maxOutputTokens: 10, 
+            temperature: 0.7 
+          }
+        };
+        
+        log('📤 POST URL:', testUrl);
+        log('📤 Request Body:', JSON.stringify(testBody, null, 2));
         
         try {
           const startTime = Date.now();
-          const response = await fetch(url, {
+          const testResponse = await fetch(testUrl, {
             method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              'User-Agent': 'LunaraAI/1.0'
-            },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: 'Say "OK"' }] }],
-              generationConfig: { 
-                maxOutputTokens: 10,
-                temperature: 0.7
-              }
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(testBody)
           });
-
+          
           const responseTime = Date.now() - startTime;
-          console.log(`🧪 [testApiKey] Response time: ${responseTime}ms`);
-          console.log(`🧪 [testApiKey] Status: ${response.status} ${response.statusText}`);
+          log(`📥 Response in ${responseTime}ms`);
+          log('📥 Status:', `${testResponse.status} ${testResponse.statusText}`);
           
-          const responseText = await response.text();
-          console.log(`🧪 [testApiKey] Response body:`, responseText);
+          const testText = await testResponse.text();
+          log('📥 Response (first 1500 chars):', testText.substring(0, 1500));
           
-          let responseData;
+          let testData;
           try {
-            responseData = JSON.parse(responseText);
+            testData = JSON.parse(testText);
           } catch (e) {
-            console.error('❌ [testApiKey] Failed to parse response as JSON');
+            log('⚠️ Response not valid JSON');
           }
-
-          if (response.ok) {
-            console.log(`✅ [testApiKey] Model ${model} works!`);
+          
+          // წარმატება!
+          if (testResponse.ok && testData?.candidates?.[0]?.content?.parts?.[0]?.text) {
+            const responseText = testData.candidates[0].content.parts[0].text;
+            log('\n✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅');
+            log(`✅ MODEL WORKS!`);
+            log(`✅ Model: ${modelName}`);
+            log(`✅ Display Name: ${model.displayName}`);
+            log(`✅ Response: "${responseText}"`);
+            log(`✅ Response time: ${responseTime}ms`);
+            log(`✅ Input tokens: ${testData.usageMetadata?.promptTokenCount}`);
+            log(`✅ Output tokens: ${testData.usageMetadata?.candidatesTokenCount}`);
+            log('✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅');
+            
             return { 
               success: true, 
-              message: `✅ Gemini API is working! (Model: ${model})`,
+              message: `✅ Gemini works! Model: ${model.displayName}`,
               details: {
-                model,
+                workingModel: modelName,
+                modelDisplayName: model.displayName,
+                response: responseText,
                 responseTime,
-                response: responseData
+                inputTokens: testData.usageMetadata?.promptTokenCount,
+                outputTokens: testData.usageMetadata?.candidatesTokenCount,
+                totalModelsFound: modelsData.models.length,
+                generateModelsFound: generateModels.length,
+                testedModels: i + 1,
+                debugLog
               }
             };
           } else {
-            console.error(`❌ [testApiKey] Model ${model} failed:`, {
-              status: response.status,
-              statusText: response.statusText,
-              error: responseData?.error
-            });
-            
-            // თუ ეს არის quota error, ვცადოთ შემდეგი მოდელი
-            if (responseData?.error?.code === 429 || 
-                responseData?.error?.message?.includes('quota') ||
-                responseData?.error?.message?.includes('limit')) {
-              console.log(`⚠️ [testApiKey] Quota error for ${model}, trying next model...`);
-              continue;
+            log(`❌ Model ${modelName} failed`);
+            if (testData?.error) {
+              log('❌ Error code:', testData.error.code);
+              log('❌ Error message:', testData.error.message);
+              log('❌ Error status:', testData.error.status);
             }
           }
+          
         } catch (fetchError) {
-          console.error(`❌ [testApiKey] Fetch error for ${model}:`, fetchError);
-          continue;
+          log('❌ Fetch exception:', (fetchError as Error).message);
+          log('❌ Stack:', (fetchError as Error).stack);
         }
       }
       
-      // თუ ყველა მოდელი ვერ მუშაობს
-      console.error('❌ [testApiKey] All Gemini models failed');
+      // ყველა მოდელი ვერ მუშაობს
+      log('\n❌ ❌ ❌ ALL MODELS FAILED ❌ ❌ ❌');
+      log(`❌ Tried ${generateModels.length} models, none worked`);
+      
       return { 
         success: false, 
-        message: '❌ All Gemini models failed. Check quota or try different provider.',
+        message: `❌ All ${generateModels.length} models failed. API key may be invalid or quota exceeded.`,
         details: {
-          triedModels: models,
-          suggestion: 'Try Groq provider instead - it has better free tier'
+          totalModelsFound: modelsData.models.length,
+          generateModelsFound: generateModels.length,
+          triedModels: generateModels.map((m: any) => m.name),
+          debugLog
         }
       };
     }
     
     // ============================================
-    // GROQ TEST - დეტალური
+    // GROQ TEST
     // ============================================
     if (providerName.includes('groq')) {
-      console.log('🧪 [testApiKey] === GROQ TEST START ===');
+      log('🧪 ===== GROQ TEST START =====');
+      
+      // ჯერ ვკითხოთ Groq-ს რა მოდელები აქვს
+      log('📤 STEP 1: Asking Groq for models list...');
+      
+      const modelsUrl = 'https://api.groq.com/openai/v1/models';
+      const modelsResponse = await fetch(modelsUrl, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${key.api_key}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      log('📥 Models Status:', `${modelsResponse.status} ${modelsResponse.statusText}`);
+      
+      const modelsText = await modelsResponse.text();
+      log('📥 Models Response (first 2000 chars):', modelsText.substring(0, 2000));
+      
+      let modelsData;
+      try {
+        modelsData = JSON.parse(modelsText);
+        log(`📊 Total models: ${modelsData.data?.length || 0}`);
+        
+        if (modelsData.data) {
+          modelsData.data.forEach((model: any, i: number) => {
+            log(`   ${i + 1}. ${model.id}`);
+          });
+        }
+      } catch (e) {
+        log('⚠️ Not valid JSON');
+      }
+      
+      // ვცადოთ chat completion
+      log('\n🧪 STEP 2: Testing chat completion...');
       
       const url = 'https://api.groq.com/openai/v1/chat/completions';
       const requestBody = {
@@ -418,9 +539,8 @@ export async function testApiKey(keyId: string): Promise<{
         max_tokens: 10
       };
       
-      console.log('🧪 [testApiKey] URL:', url);
-      console.log('🧪 [testApiKey] Request body:', requestBody);
-      console.log('🧪 [testApiKey] API Key preview:', key.api_key.substring(0, 10) + '...');
+      log('📤 URL:', url);
+      log('📤 BODY:', JSON.stringify(requestBody, null, 2));
       
       const startTime = Date.now();
       const response = await fetch(url, {
@@ -433,42 +553,28 @@ export async function testApiKey(keyId: string): Promise<{
       });
 
       const responseTime = Date.now() - startTime;
-      console.log(`🧪 [testApiKey] Response time: ${responseTime}ms`);
-      console.log(`🧪 [testApiKey] Status: ${response.status} ${response.statusText}`);
+      log(`📥 Response in ${responseTime}ms`);
+      log('📥 Status:', `${response.status} ${response.statusText}`);
       
       const responseText = await response.text();
-      console.log(`🧪 [testApiKey] Response body:`, responseText);
+      log('📥 Response:', responseText.substring(0, 2000));
       
       let responseData;
       try {
         responseData = JSON.parse(responseText);
-      } catch (e) {
-        console.error('❌ [testApiKey] Failed to parse response as JSON');
-      }
+      } catch (e) {}
 
       if (response.ok) {
-        console.log('✅ [testApiKey] Groq API works!');
         return { 
           success: true, 
           message: '✅ Groq API is working!',
-          details: {
-            responseTime,
-            response: responseData
-          }
+          details: { responseTime, response: responseData, debugLog }
         };
       } else {
-        console.error('❌ [testApiKey] Groq failed:', {
-          status: response.status,
-          statusText: response.statusText,
-          error: responseData?.error
-        });
         return { 
           success: false, 
           message: `❌ ${responseData?.error?.message || 'Groq API error'}`,
-          details: {
-            status: response.status,
-            error: responseData?.error
-          }
+          details: { status: response.status, error: responseData?.error, debugLog }
         };
       }
     }
@@ -477,7 +583,7 @@ export async function testApiKey(keyId: string): Promise<{
     // OPENAI TEST
     // ============================================
     if (providerName.includes('openai')) {
-      console.log('🧪 [testApiKey] === OPENAI TEST START ===');
+      log('🧪 ===== OPENAI TEST START =====');
       
       const url = 'https://api.openai.com/v1/chat/completions';
       const requestBody = {
@@ -486,8 +592,8 @@ export async function testApiKey(keyId: string): Promise<{
         max_tokens: 10
       };
       
-      console.log('🧪 [testApiKey] URL:', url);
-      console.log('🧪 [testApiKey] Request body:', requestBody);
+      log('📤 URL:', url);
+      log('📤 BODY:', JSON.stringify(requestBody, null, 2));
       
       const startTime = Date.now();
       const response = await fetch(url, {
@@ -500,46 +606,39 @@ export async function testApiKey(keyId: string): Promise<{
       });
 
       const responseTime = Date.now() - startTime;
-      console.log(`🧪 [testApiKey] Response time: ${responseTime}ms`);
-      console.log(`🧪 [testApiKey] Status: ${response.status} ${response.statusText}`);
+      log(`📥 Response in ${responseTime}ms`);
+      log('📥 Status:', `${response.status} ${response.statusText}`);
       
       const responseText = await response.text();
-      console.log(`🧪 [testApiKey] Response body:`, responseText);
+      log('📥 Response:', responseText.substring(0, 2000));
       
       let responseData;
       try {
         responseData = JSON.parse(responseText);
-      } catch (e) {
-        console.error('❌ [testApiKey] Failed to parse response as JSON');
-      }
+      } catch (e) {}
 
       if (response.ok) {
-        return { 
-          success: true, 
-          message: '✅ OpenAI API is working!',
-          details: { responseTime, response: responseData }
-        };
+        return { success: true, message: '✅ OpenAI API is working!', details: { responseTime, response: responseData, debugLog } };
       } else {
-        return { 
-          success: false, 
-          message: `❌ ${responseData?.error?.message || 'OpenAI API error'}`,
-          details: { status: response.status, error: responseData?.error }
-        };
+        return { success: false, message: `❌ ${responseData?.error?.message || 'OpenAI error'}`, details: { status: response.status, error: responseData?.error, debugLog } };
       }
     }
 
     return { 
       success: false, 
-      message: `⚠️ Test not implemented for provider: ${providerName}`,
-      details: { provider: providerName }
+      message: `⚠️ Test not implemented for: ${providerName}`,
+      details: { provider: providerName, debugLog }
     };
 
   } catch (error) {
-    console.error('❌ [testApiKey] Exception:', error);
+    log('❌ TOP-LEVEL EXCEPTION:', error);
+    log('❌ Error name:', (error as Error).name);
+    log('❌ Error message:', (error as Error).message);
+    log('❌ Error stack:', (error as Error).stack);
     return { 
       success: false, 
       message: `❌ ${(error as Error).message}`,
-      details: { error: (error as Error).stack }
+      details: { error: (error as Error).stack, debugLog }
     };
   }
 }
@@ -550,19 +649,13 @@ export async function testApiKey(keyId: string): Promise<{
 
 export async function getAllPrompts(): Promise<AIPrompt[]> {
   try {
-    console.log('🔍 [getAllPrompts] Fetching prompts...');
     const { data, error } = await supabase
       .from('ai_prompts')
       .select('*')
       .order('category', { ascending: true })
       .order('name', { ascending: true });
 
-    if (error) {
-      console.error('❌ [getAllPrompts] Error:', error);
-      throw error;
-    }
-    
-    console.log(`✅ [getAllPrompts] Found ${data?.length || 0} prompts`);
+    if (error) throw error;
     return data || [];
   } catch (error) {
     console.error('❌ [getAllPrompts] Exception:', error);
@@ -578,7 +671,6 @@ export async function addPrompt(prompt: {
   variables?: string[];
 }): Promise<OperationResult> {
   try {
-    console.log('📝 [addPrompt] Adding prompt:', prompt.name);
     const { data, error } = await supabase
       .from('ai_prompts')
       .insert({
@@ -589,62 +681,39 @@ export async function addPrompt(prompt: {
       })
       .select();
 
-    if (error) {
-      console.error('❌ [addPrompt] Error:', error);
-      return { success: false, error: error.message };
-    }
-    
-    console.log('✅ [addPrompt] Success');
+    if (error) return { success: false, error: error.message };
     return { success: true, data };
   } catch (error) {
-    console.error('❌ [addPrompt] Exception:', error);
     return { success: false, error: (error as Error).message };
   }
 }
 
-export async function updatePrompt(
-  promptId: string,
-  updates: Partial<AIPrompt>
-): Promise<OperationResult> {
+export async function updatePrompt(promptId: string, updates: Partial<AIPrompt>): Promise<OperationResult> {
   try {
-    console.log('🔄 [updatePrompt] Updating prompt:', promptId);
     const { data, error } = await supabase
       .from('ai_prompts')
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq('id', promptId)
       .select();
 
-    if (error) {
-      console.error('❌ [updatePrompt] Error:', error);
-      return { success: false, error: error.message };
-    }
-    
-    console.log('✅ [updatePrompt] Success');
+    if (error) return { success: false, error: error.message };
     return { success: true, data };
   } catch (error) {
-    console.error('❌ [updatePrompt] Exception:', error);
     return { success: false, error: (error as Error).message };
   }
 }
 
 export async function deletePrompt(promptId: string): Promise<OperationResult> {
   try {
-    console.log('🗑️ [deletePrompt] Deleting prompt:', promptId);
     const { data, error } = await supabase
       .from('ai_prompts')
       .delete()
       .eq('id', promptId)
       .select();
 
-    if (error) {
-      console.error('❌ [deletePrompt] Error:', error);
-      return { success: false, error: error.message };
-    }
-    
-    console.log('✅ [deletePrompt] Success');
+    if (error) return { success: false, error: error.message };
     return { success: true, data };
   } catch (error) {
-    console.error('❌ [deletePrompt] Exception:', error);
     return { success: false, error: (error as Error).message };
   }
 }
@@ -655,17 +724,8 @@ export async function deletePrompt(promptId: string): Promise<OperationResult> {
 
 export async function getTodayStats(): Promise<AIUsageStats[]> {
   try {
-    console.log('🔍 [getTodayStats] Fetching today stats...');
-    const { data, error } = await supabase
-      .from('v_ai_today_stats')
-      .select('*');
-
-    if (error) {
-      console.error('❌ [getTodayStats] Error:', error);
-      throw error;
-    }
-    
-    console.log(`✅ [getTodayStats] Found ${data?.length || 0} stats entries`);
+    const { data, error } = await supabase.from('v_ai_today_stats').select('*');
+    if (error) throw error;
     return data || [];
   } catch (error) {
     console.error('❌ [getTodayStats] Exception:', error);
@@ -675,17 +735,8 @@ export async function getTodayStats(): Promise<AIUsageStats[]> {
 
 export async function getApiKeyUsage(): Promise<any[]> {
   try {
-    console.log('🔍 [getApiKeyUsage] Fetching API key usage...');
-    const { data, error } = await supabase
-      .from('v_api_key_usage')
-      .select('*');
-
-    if (error) {
-      console.error('❌ [getApiKeyUsage] Error:', error);
-      throw error;
-    }
-    
-    console.log(`✅ [getApiKeyUsage] Found ${data?.length || 0} usage entries`);
+    const { data, error } = await supabase.from('v_api_key_usage').select('*');
+    if (error) throw error;
     return data || [];
   } catch (error) {
     console.error('❌ [getApiKeyUsage] Exception:', error);
@@ -695,17 +746,8 @@ export async function getApiKeyUsage(): Promise<any[]> {
 
 export async function getCacheStats(): Promise<any[]> {
   try {
-    console.log('🔍 [getCacheStats] Fetching cache stats...');
-    const { data, error } = await supabase
-      .from('v_cache_performance')
-      .select('*');
-
-    if (error) {
-      console.error('❌ [getCacheStats] Error:', error);
-      throw error;
-    }
-    
-    console.log(`✅ [getCacheStats] Found ${data?.length || 0} cache entries`);
+    const { data, error } = await supabase.from('v_cache_performance').select('*');
+    if (error) throw error;
     return data || [];
   } catch (error) {
     console.error('❌ [getCacheStats] Exception:', error);
@@ -713,26 +755,11 @@ export async function getCacheStats(): Promise<any[]> {
   }
 }
 
-// ============================================
-// KNOWLEDGE BASE
-// ============================================
-
 export async function getKnowledgeBaseStats(): Promise<{ total: number; categories: any[] }> {
   try {
-    console.log('🔍 [getKnowledgeBaseStats] Fetching KB stats...');
-    const { count } = await supabase
-      .from('knowledge_base')
-      .select('*', { count: 'exact', head: true });
-
-    const { data: categories } = await supabase
-      .from('knowledge_base')
-      .select('category');
-
-    console.log(`✅ [getKnowledgeBaseStats] Total: ${count}, Categories: ${categories?.length || 0}`);
-    return {
-      total: count || 0,
-      categories: categories || []
-    };
+    const { count } = await supabase.from('knowledge_base').select('*', { count: 'exact', head: true });
+    const { data: categories } = await supabase.from('knowledge_base').select('category');
+    return { total: count || 0, categories: categories || [] };
   } catch (error) {
     console.error('❌ [getKnowledgeBaseStats] Exception:', error);
     return { total: 0, categories: [] };
