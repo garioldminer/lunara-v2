@@ -68,21 +68,34 @@ export interface AIUsageStats {
   avg_response_time_ms: number;
 }
 
+// ✅ RESULT TYPE - უკეთესი error handling-ისთვის
+export interface OperationResult {
+  success: boolean;
+  error?: string;
+  data?: any;
+}
+
 // ============================================
 // PROVIDERS MANAGEMENT
 // ============================================
 
 export async function getAllProviders(): Promise<AIProvider[]> {
   try {
+    console.log('🔍 [getAllProviders] Fetching providers...');
     const { data, error } = await supabase
       .from('ai_providers')
       .select('*')
       .order('priority', { ascending: true });
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ [getAllProviders] Error:', error);
+      throw error;
+    }
+    
+    console.log(`✅ [getAllProviders] Found ${data?.length || 0} providers`);
     return data || [];
   } catch (error) {
-    console.error('❌ Error fetching providers:', error);
+    console.error('❌ [getAllProviders] Exception:', error);
     return [];
   }
 }
@@ -90,26 +103,33 @@ export async function getAllProviders(): Promise<AIProvider[]> {
 export async function updateProvider(
   providerId: string,
   updates: Partial<AIProvider>
-): Promise<boolean> {
+): Promise<OperationResult> {
   try {
-    const { error } = await supabase
+    console.log('🔄 [updateProvider] Updating provider:', providerId, updates);
+    const { data, error } = await supabase
       .from('ai_providers')
       .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('id', providerId);
+      .eq('id', providerId)
+      .select();
 
-    if (error) throw error;
-    return true;
+    if (error) {
+      console.error('❌ [updateProvider] Error:', error);
+      return { success: false, error: error.message };
+    }
+    
+    console.log('✅ [updateProvider] Success');
+    return { success: true, data };
   } catch (error) {
-    console.error('❌ Error updating provider:', error);
-    return false;
+    console.error('❌ [updateProvider] Exception:', error);
+    return { success: false, error: (error as Error).message };
   }
 }
 
-export async function toggleProvider(providerId: string, isActive: boolean): Promise<boolean> {
+export async function toggleProvider(providerId: string, isActive: boolean): Promise<OperationResult> {
   return updateProvider(providerId, { is_active: isActive });
 }
 
-export async function resetCircuitBreaker(providerId: string): Promise<boolean> {
+export async function resetCircuitBreaker(providerId: string): Promise<OperationResult> {
   return updateProvider(providerId, {
     circuit_breaker_state: 'closed',
     consecutive_failures: 0
@@ -122,6 +142,7 @@ export async function resetCircuitBreaker(providerId: string): Promise<boolean> 
 
 export async function getAllApiKeys(): Promise<AIApiKey[]> {
   try {
+    console.log('🔍 [getAllApiKeys] Fetching API keys...');
     const { data, error } = await supabase
       .from('ai_api_keys')
       .select(`
@@ -134,22 +155,35 @@ export async function getAllApiKeys(): Promise<AIApiKey[]> {
       .order('provider_name', { ascending: true })
       .order('priority', { ascending: true });
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ [getAllApiKeys] Error:', error);
+      throw error;
+    }
+    
+    console.log(`✅ [getAllApiKeys] Found ${data?.length || 0} API keys`);
     return data || [];
   } catch (error) {
-    console.error('❌ Error fetching API keys:', error);
+    console.error('❌ [getAllApiKeys] Exception:', error);
     return [];
   }
 }
 
+// ✅ განახლებული addApiKey - უკეთესი error logging-ით
 export async function addApiKey(
   providerName: string,
   apiKey: string,
   dailyLimit: number = 1000,
   priority: number = 1
-): Promise<boolean> {
+): Promise<OperationResult> {
   try {
-    const { error } = await supabase
+    console.log('🔑 [addApiKey] Attempting to insert API key:', {
+      providerName,
+      dailyLimit,
+      priority,
+      keyPreview: apiKey.substring(0, 10) + '...'
+    });
+    
+    const { data, error } = await supabase
       .from('ai_api_keys')
       .insert({
         provider_name: providerName,
@@ -159,55 +193,85 @@ export async function addApiKey(
         is_active: true,
         current_usage: 0,
         error_count: 0
-      });
+      })
+      .select(); // ✅ ვთხოვთ რომ დაგვიბრუნოს ჩაწერილი მონაცემი
 
-    if (error) throw error;
-    return true;
+    if (error) {
+      console.error('❌ [addApiKey] Supabase error:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      });
+      return { 
+        success: false, 
+        error: error.message,
+        data: { details: error.details, hint: error.hint, code: error.code }
+      };
+    }
+
+    console.log('✅ [addApiKey] Success! Inserted:', data);
+    return { success: true, data };
   } catch (error) {
-    console.error('❌ Error adding API key:', error);
-    return false;
+    console.error('❌ [addApiKey] Exception:', error);
+    return { success: false, error: (error as Error).message };
   }
 }
 
 export async function updateApiKey(
   keyId: string,
   updates: Partial<AIApiKey>
-): Promise<boolean> {
+): Promise<OperationResult> {
   try {
-    const { error } = await supabase
+    console.log('🔄 [updateApiKey] Updating key:', keyId, updates);
+    const { data, error } = await supabase
       .from('ai_api_keys')
       .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('id', keyId);
+      .eq('id', keyId)
+      .select();
 
-    if (error) throw error;
-    return true;
+    if (error) {
+      console.error('❌ [updateApiKey] Error:', error);
+      return { success: false, error: error.message };
+    }
+    
+    console.log('✅ [updateApiKey] Success');
+    return { success: true, data };
   } catch (error) {
-    console.error('❌ Error updating API key:', error);
-    return false;
+    console.error('❌ [updateApiKey] Exception:', error);
+    return { success: false, error: (error as Error).message };
   }
 }
 
-export async function deleteApiKey(keyId: string): Promise<boolean> {
+export async function deleteApiKey(keyId: string): Promise<OperationResult> {
   try {
-    const { error } = await supabase
+    console.log('🗑️ [deleteApiKey] Deleting key:', keyId);
+    const { data, error } = await supabase
       .from('ai_api_keys')
       .delete()
-      .eq('id', keyId);
+      .eq('id', keyId)
+      .select();
 
-    if (error) throw error;
-    return true;
+    if (error) {
+      console.error('❌ [deleteApiKey] Error:', error);
+      return { success: false, error: error.message };
+    }
+    
+    console.log('✅ [deleteApiKey] Success');
+    return { success: true, data };
   } catch (error) {
-    console.error('❌ Error deleting API key:', error);
-    return false;
+    console.error('❌ [deleteApiKey] Exception:', error);
+    return { success: false, error: (error as Error).message };
   }
 }
 
-export async function toggleApiKey(keyId: string, isActive: boolean): Promise<boolean> {
+export async function toggleApiKey(keyId: string, isActive: boolean): Promise<OperationResult> {
   return updateApiKey(keyId, { is_active: isActive });
 }
 
 export async function testApiKey(keyId: string): Promise<{ success: boolean; message: string }> {
   try {
+    console.log('🧪 [testApiKey] Testing key:', keyId);
     const { data: key, error } = await supabase
       .from('ai_api_keys')
       .select('*, ai_providers(name)')
@@ -215,10 +279,12 @@ export async function testApiKey(keyId: string): Promise<{ success: boolean; mes
       .single();
 
     if (error || !key) {
+      console.error('❌ [testApiKey] Key not found:', error);
       return { success: false, message: 'Key not found' };
     }
 
     const providerName = (key as any).ai_providers?.name || key.provider_name;
+    console.log('🧪 [testApiKey] Testing with provider:', providerName);
     
     // Test based on provider
     if (providerName.includes('gemini')) {
@@ -235,9 +301,11 @@ export async function testApiKey(keyId: string): Promise<{ success: boolean; mes
       );
 
       if (response.ok) {
+        console.log('✅ [testApiKey] Gemini API working!');
         return { success: true, message: '✅ Gemini API is working!' };
       } else {
         const errorData = await response.json();
+        console.error('❌ [testApiKey] Gemini error:', errorData);
         return { success: false, message: `❌ ${errorData.error?.message || 'API error'}` };
       }
     }
@@ -257,9 +325,11 @@ export async function testApiKey(keyId: string): Promise<{ success: boolean; mes
       });
 
       if (response.ok) {
+        console.log('✅ [testApiKey] Groq API working!');
         return { success: true, message: '✅ Groq API is working!' };
       } else {
         const errorData = await response.json();
+        console.error('❌ [testApiKey] Groq error:', errorData);
         return { success: false, message: `❌ ${errorData.error?.message || 'API error'}` };
       }
     }
@@ -267,7 +337,7 @@ export async function testApiKey(keyId: string): Promise<{ success: boolean; mes
     return { success: false, message: '⚠️ Test not implemented for this provider' };
 
   } catch (error) {
-    console.error('❌ Error testing API key:', error);
+    console.error('❌ [testApiKey] Exception:', error);
     return { success: false, message: `❌ ${(error as Error).message}` };
   }
 }
@@ -278,16 +348,22 @@ export async function testApiKey(keyId: string): Promise<{ success: boolean; mes
 
 export async function getAllPrompts(): Promise<AIPrompt[]> {
   try {
+    console.log('🔍 [getAllPrompts] Fetching prompts...');
     const { data, error } = await supabase
       .from('ai_prompts')
       .select('*')
       .order('category', { ascending: true })
       .order('name', { ascending: true });
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ [getAllPrompts] Error:', error);
+      throw error;
+    }
+    
+    console.log(`✅ [getAllPrompts] Found ${data?.length || 0} prompts`);
     return data || [];
   } catch (error) {
-    console.error('❌ Error fetching prompts:', error);
+    console.error('❌ [getAllPrompts] Exception:', error);
     return [];
   }
 }
@@ -298,55 +374,76 @@ export async function addPrompt(prompt: {
   system_prompt: string;
   user_prompt_template: string;
   variables?: string[];
-}): Promise<boolean> {
+}): Promise<OperationResult> {
   try {
-    const { error } = await supabase
+    console.log('📝 [addPrompt] Adding prompt:', prompt.name);
+    const { data, error } = await supabase
       .from('ai_prompts')
       .insert({
         ...prompt,
         variables: prompt.variables || [],
         is_active: true,
         version: 'v1'
-      });
+      })
+      .select();
 
-    if (error) throw error;
-    return true;
+    if (error) {
+      console.error('❌ [addPrompt] Error:', error);
+      return { success: false, error: error.message };
+    }
+    
+    console.log('✅ [addPrompt] Success');
+    return { success: true, data };
   } catch (error) {
-    console.error('❌ Error adding prompt:', error);
-    return false;
+    console.error('❌ [addPrompt] Exception:', error);
+    return { success: false, error: (error as Error).message };
   }
 }
 
 export async function updatePrompt(
   promptId: string,
   updates: Partial<AIPrompt>
-): Promise<boolean> {
+): Promise<OperationResult> {
   try {
-    const { error } = await supabase
+    console.log('🔄 [updatePrompt] Updating prompt:', promptId);
+    const { data, error } = await supabase
       .from('ai_prompts')
       .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('id', promptId);
+      .eq('id', promptId)
+      .select();
 
-    if (error) throw error;
-    return true;
+    if (error) {
+      console.error('❌ [updatePrompt] Error:', error);
+      return { success: false, error: error.message };
+    }
+    
+    console.log('✅ [updatePrompt] Success');
+    return { success: true, data };
   } catch (error) {
-    console.error('❌ Error updating prompt:', error);
-    return false;
+    console.error('❌ [updatePrompt] Exception:', error);
+    return { success: false, error: (error as Error).message };
   }
 }
 
-export async function deletePrompt(promptId: string): Promise<boolean> {
+export async function deletePrompt(promptId: string): Promise<OperationResult> {
   try {
-    const { error } = await supabase
+    console.log('🗑️ [deletePrompt] Deleting prompt:', promptId);
+    const { data, error } = await supabase
       .from('ai_prompts')
       .delete()
-      .eq('id', promptId);
+      .eq('id', promptId)
+      .select();
 
-    if (error) throw error;
-    return true;
+    if (error) {
+      console.error('❌ [deletePrompt] Error:', error);
+      return { success: false, error: error.message };
+    }
+    
+    console.log('✅ [deletePrompt] Success');
+    return { success: true, data };
   } catch (error) {
-    console.error('❌ Error deleting prompt:', error);
-    return false;
+    console.error('❌ [deletePrompt] Exception:', error);
+    return { success: false, error: (error as Error).message };
   }
 }
 
@@ -356,42 +453,60 @@ export async function deletePrompt(promptId: string): Promise<boolean> {
 
 export async function getTodayStats(): Promise<AIUsageStats[]> {
   try {
+    console.log('🔍 [getTodayStats] Fetching today stats...');
     const { data, error } = await supabase
       .from('v_ai_today_stats')
       .select('*');
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ [getTodayStats] Error:', error);
+      throw error;
+    }
+    
+    console.log(`✅ [getTodayStats] Found ${data?.length || 0} stats entries`);
     return data || [];
   } catch (error) {
-    console.error('❌ Error fetching today stats:', error);
+    console.error('❌ [getTodayStats] Exception:', error);
     return [];
   }
 }
 
 export async function getApiKeyUsage(): Promise<any[]> {
   try {
+    console.log('🔍 [getApiKeyUsage] Fetching API key usage...');
     const { data, error } = await supabase
       .from('v_api_key_usage')
       .select('*');
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ [getApiKeyUsage] Error:', error);
+      throw error;
+    }
+    
+    console.log(`✅ [getApiKeyUsage] Found ${data?.length || 0} usage entries`);
     return data || [];
   } catch (error) {
-    console.error('❌ Error fetching API key usage:', error);
+    console.error('❌ [getApiKeyUsage] Exception:', error);
     return [];
   }
 }
 
 export async function getCacheStats(): Promise<any[]> {
   try {
+    console.log('🔍 [getCacheStats] Fetching cache stats...');
     const { data, error } = await supabase
       .from('v_cache_performance')
       .select('*');
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ [getCacheStats] Error:', error);
+      throw error;
+    }
+    
+    console.log(`✅ [getCacheStats] Found ${data?.length || 0} cache entries`);
     return data || [];
   } catch (error) {
-    console.error('❌ Error fetching cache stats:', error);
+    console.error('❌ [getCacheStats] Exception:', error);
     return [];
   }
 }
@@ -402,6 +517,7 @@ export async function getCacheStats(): Promise<any[]> {
 
 export async function getKnowledgeBaseStats(): Promise<{ total: number; categories: any[] }> {
   try {
+    console.log('🔍 [getKnowledgeBaseStats] Fetching KB stats...');
     const { count } = await supabase
       .from('knowledge_base')
       .select('*', { count: 'exact', head: true });
@@ -410,12 +526,13 @@ export async function getKnowledgeBaseStats(): Promise<{ total: number; categori
       .from('knowledge_base')
       .select('category');
 
+    console.log(`✅ [getKnowledgeBaseStats] Total: ${count}, Categories: ${categories?.length || 0}`);
     return {
       total: count || 0,
       categories: categories || []
     };
   } catch (error) {
-    console.error('❌ Error fetching KB stats:', error);
+    console.error('❌ [getKnowledgeBaseStats] Exception:', error);
     return { total: 0, categories: [] };
   }
 }
