@@ -223,9 +223,6 @@ export async function toggleApiKey(keyId: string, isActive: boolean): Promise<Op
 
 // ============================================
 // 🔥 🔥 🔥 DYNAMIC MODEL DISCOVERY TEST 🔥 🔥 🔥
-// ჩვენ ვკითხულობთ Google-ს რა მოდელები აქვს
-// და ვცდილობთ ყველას თანმიმდევრობით
-// ✅ განახლებულია: გავთიშეთ "thinking" mode
 // ============================================
 export async function testApiKey(keyId: string): Promise<{ 
   success: boolean; 
@@ -243,7 +240,6 @@ export async function testApiKey(keyId: string): Promise<{
     log('🧪 ===== DYNAMIC MODEL DISCOVERY TEST START =====');
     log('🧪 Key ID:', keyId);
     
-    // 1. წაიკითხე გასაღები ბაზიდან
     const { data: key, error } = await supabase
       .from('ai_api_keys')
       .select('*, ai_providers(name, type)')
@@ -271,43 +267,23 @@ export async function testApiKey(keyId: string): Promise<{
     // ============================================
     if (providerName.includes('gemini')) {
       log('🧪 ===== GEMINI DYNAMIC DISCOVERY START =====');
-      log('🧪 Strategy: Ask Google "What models do you have?" then test each one');
       log('🧪 ⚠️ Thinking mode DISABLED (thinkingBudget: 0)');
-      
-      // ============================================
-      // STEP 1: ვკითხოთ Google-ს რა მოდელები აქვს
-      // ============================================
-      log('\n📤 ===== STEP 1: ASK GOOGLE FOR MODELS =====');
       
       const modelsUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${key.api_key}`;
       log('📤 GET URL:', modelsUrl);
       
-      const modelsStartTime = Date.now();
       const modelsResponse = await fetch(modelsUrl, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       });
-      const modelsTime = Date.now() - modelsStartTime;
-      
-      log(`📥 Response received in ${modelsTime}ms`);
-      log('📥 Status:', `${modelsResponse.status} ${modelsResponse.statusText}`);
       
       const modelsText = await modelsResponse.text();
-      log('📥 Raw Response (first 3000 chars):', modelsText.substring(0, 3000));
       
       if (!modelsResponse.ok) {
-        log('❌ ❌ ❌ FAILED TO GET MODELS LIST ❌ ❌ ❌');
-        
-        let errorData;
-        try {
-          errorData = JSON.parse(modelsText);
-          log('❌ Error details:', errorData);
-        } catch (e) {}
-        
         return { 
           success: false, 
           message: `❌ Cannot get models list. Status: ${modelsResponse.status}`,
-          details: { status: modelsResponse.status, response: errorData || modelsText, debugLog }
+          details: { status: modelsResponse.status, response: modelsText, debugLog }
         };
       }
       
@@ -318,145 +294,92 @@ export async function testApiKey(keyId: string): Promise<{
         return { success: false, message: '❌ Invalid JSON from Google', details: { response: modelsText, debugLog } };
       }
       
-      log('✅ ✅ ✅ Got models list from Google! ✅ ✅ ✅');
-      log(`📊 Total models returned: ${modelsData.models?.length || 0}`);
-      
-      // ============================================
-      // STEP 2: ვიპოვოთ რომელი მხარს უჭერს generateContent-ს
-      // ============================================
-      log('\n🔍 ===== STEP 2: FILTER MODELS =====');
+      log(`📊 Total models: ${modelsData.models?.length || 0}`);
       
       const generateModels = modelsData.models.filter((model: any) => 
         model.supportedGenerationMethods?.includes('generateContent')
       );
       
-      log(`📊 Total models: ${modelsData.models.length}`);
-      log(`📊 Models supporting generateContent: ${generateModels.length}`);
-      
       if (generateModels.length === 0) {
         return { success: false, message: '❌ No models support generateContent', details: { debugLog } };
       }
-      
-      log('📋 Models that support generateContent:');
-      generateModels.forEach((model: any, i: number) => {
-        log(`   ${i + 1}. ${model.name} (${model.displayName})`);
-      });
-      
-      // ============================================
-      // STEP 3: ვცადოთ თითოეული მოდელი
-      // ✅ განახლებულია: გავთიშეთ "thinking" mode
-      // ============================================
-      log('\n🧪 ===== STEP 3: TEST EACH MODEL =====');
       
       for (let i = 0; i < generateModels.length; i++) {
         const model = generateModels[i];
         const modelName = model.name.replace('models/', '');
         
-        log(`\n🧪 ----- Testing Model ${i + 1}/${generateModels.length}: ${modelName} -----`);
-        log('📤 Model displayName:', model.displayName);
-        
         const testUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key.api_key}`;
         
-        // ✅ განახლებული request body - გავთიშეთ thinking
         const testBody = {
           contents: [{ parts: [{ text: 'Say "OK" in one word' }] }],
           generationConfig: { 
             maxOutputTokens: 100,
             temperature: 0.7,
             thinkingConfig: {
-              thinkingBudget: 0  // ✅ გავთიშეთ "thinking" mode
+              thinkingBudget: 0
             }
           }
         };
         
-        log('📤 POST URL:', testUrl);
-        log('📤 Request Body:', JSON.stringify(testBody, null, 2));
-        
         try {
-          const startTime = Date.now();
           const testResponse = await fetch(testUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(testBody)
           });
           
-          const responseTime = Date.now() - startTime;
-          log(`📥 Response in ${responseTime}ms`);
-          log('📥 Status:', `${testResponse.status} ${testResponse.statusText}`);
-          
-          const testText = await testResponse.text();
-          log('📥 Response (first 1500 chars):', testText.substring(0, 1500));
-          
-          let testData;
-          try {
-            testData = JSON.parse(testText);
-          } catch (e) {
-            log('⚠️ Response not valid JSON');
-          }
-          
-          // ✅ განახლებული წარმატების შემოწმება
-          // ვპოულობთ პირველ ნაწილს რომელიც არ არის "thought"
-          if (testResponse.ok && testData?.candidates?.[0]?.content?.parts) {
-            const parts = testData.candidates[0].content.parts;
+          if (testResponse.ok) {
+            const testData = await testResponse.json();
             
-            // ვიპოვოთ პირველი ნაწილი რომელიც არ არის thought
-            const realPart = parts.find((p: any) => !p.thought && p.text);
-            
-            if (realPart && realPart.text && realPart.text.trim().length > 0) {
-              const responseText = realPart.text;
-              log('\n✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅');
-              log(`✅ MODEL WORKS!`);
-              log(`✅ Model: ${modelName}`);
-              log(`✅ Display Name: ${model.displayName}`);
-              log(`✅ Response: "${responseText}"`);
-              log(`✅ Response time: ${responseTime}ms`);
-              log(`✅ Input tokens: ${testData.usageMetadata?.promptTokenCount}`);
-              log(`✅ Output tokens: ${testData.usageMetadata?.candidatesTokenCount || testData.usageMetadata?.totalTokenCount}`);
-              log('✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅');
+            if (testData?.candidates?.[0]?.content?.parts) {
+              const parts = testData.candidates[0].content.parts;
+              const realPart = parts.find((p: any) => !p.thought && p.text);
               
-              return { 
-                success: true, 
-                message: `✅ Gemini works! Model: ${model.displayName}`,
-                details: {
-                  workingModel: modelName,
-                  modelDisplayName: model.displayName,
-                  response: responseText,
-                  responseTime,
-                  inputTokens: testData.usageMetadata?.promptTokenCount,
-                  outputTokens: testData.usageMetadata?.candidatesTokenCount || testData.usageMetadata?.totalTokenCount,
-                  totalModelsFound: modelsData.models.length,
-                  generateModelsFound: generateModels.length,
-                  testedModels: i + 1,
-                  debugLog
-                }
-              };
-            } else {
-              log(`❌ Model ${modelName} - only thoughts, no real response`);
-            }
-          } else {
-            log(`❌ Model ${modelName} failed`);
-            if (testData?.error) {
-              log('❌ Error code:', testData.error.code);
-              log('❌ Error message:', testData.error.message);
+              if (realPart && realPart.text && realPart.text.trim().length > 0) {
+                log(`✅ MODEL WORKS: ${model.displayName}`);
+                
+                try {
+                  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+                  await supabase
+                    .from('ai_cache')
+                    .upsert({
+                      cache_key: 'gemini_working_model',
+                      request_type: 'model_discovery',
+                      provider: 'gemini',
+                      model: modelName,
+                      response_text: modelName,
+                      input_tokens: 0,
+                      output_tokens: 0,
+                      cost: 0,
+                      ttl_seconds: 86400,
+                      expires_at: expiresAt,
+                      hit_count: 0,
+                      last_hit_at: new Date().toISOString()
+                    }, { onConflict: 'cache_key' });
+                } catch (e) {}
+                
+                return { 
+                  success: true, 
+                  message: `✅ Gemini works! Model: ${model.displayName}`,
+                  details: {
+                    workingModel: modelName,
+                    modelDisplayName: model.displayName,
+                    response: realPart.text,
+                    debugLog
+                  }
+                };
+              }
             }
           }
-          
-        } catch (fetchError) {
-          log('❌ Fetch exception:', (fetchError as Error).message);
+        } catch (e) {
+          continue;
         }
       }
       
-      log('\n❌ ❌ ❌ ALL MODELS FAILED ❌ ❌ ❌');
-      
       return { 
         success: false, 
-        message: `❌ All ${generateModels.length} models failed.`,
-        details: {
-          totalModelsFound: modelsData.models.length,
-          generateModelsFound: generateModels.length,
-          triedModels: generateModels.map((m: any) => m.name),
-          debugLog
-        }
+        message: `❌ All models failed.`,
+        details: { debugLog }
       };
     }
     
@@ -464,8 +387,6 @@ export async function testApiKey(keyId: string): Promise<{
     // GROQ TEST
     // ============================================
     if (providerName.includes('groq')) {
-      log('🧪 ===== GROQ TEST START =====');
-      
       const url = 'https://api.groq.com/openai/v1/chat/completions';
       const requestBody = {
         model: 'llama-3.3-70b-versatile',
@@ -473,10 +394,6 @@ export async function testApiKey(keyId: string): Promise<{
         max_tokens: 10
       };
       
-      log('📤 URL:', url);
-      log('📤 BODY:', JSON.stringify(requestBody, null, 2));
-      
-      const startTime = Date.now();
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -486,23 +403,13 @@ export async function testApiKey(keyId: string): Promise<{
         body: JSON.stringify(requestBody)
       });
 
-      const responseTime = Date.now() - startTime;
-      log(`📥 Response in ${responseTime}ms`);
-      log('📥 Status:', `${response.status} ${response.statusText}`);
-      
-      const responseText = await response.text();
-      log('📥 Response:', responseText.substring(0, 2000));
-      
-      let responseData;
-      try {
-        responseData = JSON.parse(responseText);
-      } catch (e) {}
+      const responseData = await response.json();
 
       if (response.ok) {
         return { 
           success: true, 
           message: '✅ Groq API is working!',
-          details: { responseTime, response: responseData, debugLog }
+          details: { response: responseData, debugLog }
         };
       } else {
         return { 
@@ -517,8 +424,6 @@ export async function testApiKey(keyId: string): Promise<{
     // OPENAI TEST
     // ============================================
     if (providerName.includes('openai')) {
-      log('🧪 ===== OPENAI TEST START =====');
-      
       const url = 'https://api.openai.com/v1/chat/completions';
       const requestBody = {
         model: 'gpt-4o-mini',
@@ -526,7 +431,6 @@ export async function testApiKey(keyId: string): Promise<{
         max_tokens: 10
       };
       
-      const startTime = Date.now();
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -536,20 +440,10 @@ export async function testApiKey(keyId: string): Promise<{
         body: JSON.stringify(requestBody)
       });
 
-      const responseTime = Date.now() - startTime;
-      log(`📥 Response in ${responseTime}ms`);
-      log('📥 Status:', `${response.status} ${response.statusText}`);
-      
-      const responseText = await response.text();
-      log('📥 Response:', responseText.substring(0, 2000));
-      
-      let responseData;
-      try {
-        responseData = JSON.parse(responseText);
-      } catch (e) {}
+      const responseData = await response.json();
 
       if (response.ok) {
-        return { success: true, message: '✅ OpenAI API is working!', details: { responseTime, response: responseData, debugLog } };
+        return { success: true, message: '✅ OpenAI API is working!', details: { response: responseData, debugLog } };
       } else {
         return { success: false, message: `❌ ${responseData?.error?.message || 'OpenAI error'}`, details: { status: response.status, error: responseData?.error, debugLog } };
       }
@@ -562,7 +456,6 @@ export async function testApiKey(keyId: string): Promise<{
     };
 
   } catch (error) {
-    log('❌ TOP-LEVEL EXCEPTION:', error);
     return { 
       success: false, 
       message: `❌ ${(error as Error).message}`,
@@ -647,14 +540,78 @@ export async function deletePrompt(promptId: string): Promise<OperationResult> {
 }
 
 // ============================================
-// USAGE STATISTICS
+// ✅ USAGE STATISTICS - განახლებული NaN-ის გარეშე
 // ============================================
 
 export async function getTodayStats(): Promise<AIUsageStats[]> {
   try {
-    const { data, error } = await supabase.from('v_ai_today_stats').select('*');
-    if (error) throw error;
-    return data || [];
+    console.log('🔍 [getTodayStats] Fetching today stats...');
+    
+    // მივიღოთ დღევანდელი მონაცემები ai_usage-დან
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString();
+    
+    const { data, error } = await supabase
+      .from('ai_usage')
+      .select('*')
+      .gte('created_at', todayStr)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('❌ [getTodayStats] Error:', error);
+      throw error;
+    }
+
+    if (!data || data.length === 0) {
+      console.log('📊 [getTodayStats] No data for today');
+      return [];
+    }
+
+    // დავაჯგუფოთ provider-ის მიხედვით
+    const grouped: { [key: string]: AIUsageStats } = {};
+    
+    data.forEach((item: any) => {
+      const provider = item.provider || 'unknown';
+      
+      if (!grouped[provider]) {
+        grouped[provider] = {
+          provider,
+          total_requests: 0,
+          successful_requests: 0,
+          failed_requests: 0,
+          total_tokens: 0,
+          total_cost: 0,
+          avg_response_time_ms: 0
+        };
+      }
+      
+      grouped[provider].total_requests++;
+      
+      if (item.success) {
+        grouped[provider].successful_requests++;
+      } else {
+        grouped[provider].failed_requests++;
+      }
+      
+      grouped[provider].total_tokens += item.total_tokens || 0;
+      grouped[provider].total_cost += Number(item.cost) || 0;
+    });
+    
+    // გამოვთვალოთ average response time
+    Object.keys(grouped).forEach(provider => {
+      const providerData = data.filter((item: any) => item.provider === provider);
+      const totalTime = providerData.reduce((sum: number, item: any) => 
+        sum + (item.response_time_ms || 0), 0
+      );
+      grouped[provider].avg_response_time_ms = totalTime / providerData.length;
+    });
+    
+    const result = Object.values(grouped);
+    console.log(`✅ [getTodayStats] Found ${result.length} providers with data`);
+    
+    return result;
+    
   } catch (error) {
     console.error('❌ [getTodayStats] Exception:', error);
     return [];
@@ -663,9 +620,42 @@ export async function getTodayStats(): Promise<AIUsageStats[]> {
 
 export async function getApiKeyUsage(): Promise<any[]> {
   try {
-    const { data, error } = await supabase.from('v_api_key_usage').select('*');
-    if (error) throw error;
-    return data || [];
+    console.log('🔍 [getApiKeyUsage] Fetching API key usage...');
+    
+    // მივიღოთ ყველა API key
+    const { data: keys, error: keysError } = await supabase
+      .from('ai_api_keys')
+      .select('id, provider_name, current_usage, daily_limit');
+    
+    if (keysError) {
+      console.error('❌ [getApiKeyUsage] Error:', keysError);
+      throw keysError;
+    }
+    
+    if (!keys || keys.length === 0) {
+      console.log('📊 [getApiKeyUsage] No API keys found');
+      return [];
+    }
+    
+    // გამოვთვალოთ usage percentage
+    const result = keys.map((key: any) => {
+      const currentUsage = key.current_usage || 0;
+      const dailyLimit = key.daily_limit || 1000;
+      const usagePercentage = dailyLimit > 0 ? (currentUsage / dailyLimit) * 100 : 0;
+      const remainingUsage = dailyLimit - currentUsage;
+      
+      return {
+        provider_name: key.provider_name,
+        current_usage: currentUsage,
+        daily_limit: dailyLimit,
+        usage_percentage: Math.round(usagePercentage * 100) / 100,
+        remaining_usage: remainingUsage > 0 ? remainingUsage : 0
+      };
+    });
+    
+    console.log(`✅ [getApiKeyUsage] Found ${result.length} API keys`);
+    return result;
+    
   } catch (error) {
     console.error('❌ [getApiKeyUsage] Exception:', error);
     return [];
@@ -674,7 +664,7 @@ export async function getApiKeyUsage(): Promise<any[]> {
 
 export async function getCacheStats(): Promise<any[]> {
   try {
-    const { data, error } = await supabase.from('v_cache_performance').select('*');
+    const { data, error } = await supabase.from('ai_cache').select('*');
     if (error) throw error;
     return data || [];
   } catch (error) {

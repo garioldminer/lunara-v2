@@ -49,7 +49,6 @@ interface Props {
 
 type Tab = 'dashboard' | 'keys' | 'providers' | 'prompts' | 'stats';
 
-// ✅ DEBUG LOG TYPE
 interface DebugLog {
   timestamp: string;
   type: 'info' | 'success' | 'error' | 'warn' | 'data';
@@ -62,23 +61,19 @@ export default function AdminAIManagement({ onNavigate }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [loading, setLoading] = useState(true);
   
-  // ✅ DEBUG STATE
   const [showDebug, setShowDebug] = useState(false);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
   
-  // Data states
   const [providers, setProviders] = useState<AIProvider[]>([]);
   const [apiKeys, setApiKeys] = useState<AIApiKey[]>([]);
   const [prompts, setPrompts] = useState<AIPrompt[]>([]);
   const [todayStats, setTodayStats] = useState<AIUsageStats[]>([]);
   const [apiKeyUsage, setApiKeyUsage] = useState<any[]>([]);
   
-  // Add/Edit states
   const [showAddKey, setShowAddKey] = useState(false);
   const [showAddPrompt, setShowAddPrompt] = useState(false);
   const [editingPrompt, setEditingPrompt] = useState<string | null>(null);
   
-  // Form states
   const [newKey, setNewKey] = useState({
     provider_name: 'gemini',
     api_key: '',
@@ -94,11 +89,32 @@ export default function AdminAIManagement({ onNavigate }: Props) {
     variables: ''
   });
   
-  // Test states
   const [testingKey, setTestingKey] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<{ [key: string]: { success: boolean; message: string } }>({});
 
-  // ✅ DEBUG HELPER FUNCTIONS
+  // ✅ SAFE NUMBER HELPER - NaN-ის თავიდან ასაცილებლად
+  const safeNum = (value: any): number => {
+    const num = Number(value);
+    return isNaN(num) || !isFinite(num) ? 0 : num;
+  };
+
+  // ✅ COMPUTED STATS - ერთხელ გამოითვლება
+  const totalRequests = todayStats.length > 0 
+    ? todayStats.reduce((sum, s) => sum + safeNum(s.total_requests), 0)
+    : 0;
+  
+  const successfulRequests = todayStats.length > 0 
+    ? todayStats.reduce((sum, s) => sum + safeNum(s.successful_requests), 0)
+    : 0;
+  
+  const failedRequests = todayStats.length > 0 
+    ? todayStats.reduce((sum, s) => sum + safeNum(s.failed_requests), 0)
+    : 0;
+  
+  const totalCost = todayStats.length > 0 
+    ? todayStats.reduce((sum, s) => sum + safeNum(s.total_cost), 0)
+    : 0;
+
   const addDebugLog = (type: DebugLog['type'], source: string, message: string, data?: any) => {
     const log: DebugLog = {
       timestamp: new Date().toLocaleTimeString(),
@@ -107,7 +123,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
       message,
       data
     };
-    setDebugLogs(prev => [log, ...prev].slice(0, 100)); // Keep last 100 logs
+    setDebugLogs(prev => [log, ...prev].slice(0, 100));
     console.log(`[${type.toUpperCase()}] [${source}] ${message}`, data || '');
   };
 
@@ -153,7 +169,6 @@ export default function AdminAIManagement({ onNavigate }: Props) {
       setTodayStats(statsData);
       setApiKeyUsage(usageData);
 
-      // ✅ DEBUG LOGS FOR DATA
       addDebugLog('data', 'PROVIDERS', `Loaded ${providersData.length} providers`, providersData);
       addDebugLog('data', 'API_KEYS', `Loaded ${keysData.length} API keys`, keysData);
       addDebugLog('data', 'PROMPTS', `Loaded ${promptsData.length} prompts`, promptsData);
@@ -161,12 +176,11 @@ export default function AdminAIManagement({ onNavigate }: Props) {
       addDebugLog('data', 'USAGE', `Loaded ${usageData.length} usage entries`, usageData);
 
       if (providersData.length === 0) {
-        addDebugLog('warn', 'PROVIDERS', '⚠️ No providers found! Dropdown will be empty.');
-        addDebugLog('warn', 'PROVIDERS', 'Run SQL to insert default providers into ai_providers table');
+        addDebugLog('warn', 'PROVIDERS', '⚠️ No providers found!');
       }
 
       if (keysData.length === 0) {
-        addDebugLog('warn', 'API_KEYS', '⚠️ No API keys found. Add keys through the UI.');
+        addDebugLog('warn', 'API_KEYS', '⚠️ No API keys found.');
       }
 
       addDebugLog('success', 'LOAD', '✅ All data loaded successfully');
@@ -178,7 +192,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
   };
 
   // ============================================
-  // ✅ API KEYS HANDLERS - OperationResult-თან თავსებადი
+  // API KEYS HANDLERS
   // ============================================
   
   const handleAddApiKey = async () => {
@@ -268,7 +282,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
   };
 
   // ============================================
-  // ✅ PROMPTS HANDLERS - OperationResult-თან თავსებადი
+  // PROMPTS HANDLERS
   // ============================================
   
   const handleAddPrompt = async () => {
@@ -389,7 +403,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
   };
 
   // ============================================
-  // ✅ PROVIDERS HANDLERS - OperationResult-თან თავსებადი
+  // PROVIDERS HANDLERS
   // ============================================
   
   const handleToggleProvider = async (providerId: string, isActive: boolean) => {
@@ -451,7 +465,6 @@ export default function AdminAIManagement({ onNavigate }: Props) {
           <h1>AI Management</h1>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
-          {/* ✅ DEBUG TOGGLE BUTTON */}
           <button 
             className="ai-admin-refresh-btn" 
             onClick={() => setShowDebug(!showDebug)}
@@ -469,7 +482,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* ✅ DEBUG PANEL */}
+      {/* DEBUG PANEL */}
       {showDebug && (
         <div className="debug-panel">
           <div className="debug-header">
@@ -484,7 +497,6 @@ export default function AdminAIManagement({ onNavigate }: Props) {
             </button>
           </div>
           
-          {/* ✅ STATUS SUMMARY */}
           <div className="debug-summary">
             <div className="debug-stat">
               <Info size={12} />
@@ -500,14 +512,12 @@ export default function AdminAIManagement({ onNavigate }: Props) {
             </div>
           </div>
 
-          {/* ✅ WARNINGS */}
           {providers.length === 0 && (
             <div className="debug-warning">
               ⚠️ <strong>No providers in database!</strong> Run SQL to insert default providers.
             </div>
           )}
 
-          {/* ✅ LOGS */}
           <div className="debug-logs">
             {debugLogs.length === 0 && (
               <div style={{ color: '#94a3b8', fontSize: '11px', textAlign: 'center', padding: '10px' }}>
@@ -590,7 +600,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
       {/* Content */}
       <div className="ai-admin-content">
         
-        {/* DASHBOARD TAB */}
+        {/* ✅ DASHBOARD TAB - NaN Fix-ით */}
         {activeTab === 'dashboard' && (
           <div className="ai-dashboard">
             <h2>📊 Today's Overview</h2>
@@ -601,9 +611,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
                   <Zap size={24} />
                 </div>
                 <div className="stat-info">
-                  <span className="stat-number">
-                    {todayStats.reduce((sum, s) => sum + s.total_requests, 0)}
-                  </span>
+                  <span className="stat-number">{totalRequests}</span>
                   <span className="stat-label">Total Requests</span>
                 </div>
               </div>
@@ -613,9 +621,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
                   <CheckCircle2 size={24} />
                 </div>
                 <div className="stat-info">
-                  <span className="stat-number">
-                    {todayStats.reduce((sum, s) => sum + s.successful_requests, 0)}
-                  </span>
+                  <span className="stat-number">{successfulRequests}</span>
                   <span className="stat-label">Successful</span>
                 </div>
               </div>
@@ -625,9 +631,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
                   <XCircle size={24} />
                 </div>
                 <div className="stat-info">
-                  <span className="stat-number">
-                    {todayStats.reduce((sum, s) => sum + s.failed_requests, 0)}
-                  </span>
+                  <span className="stat-number">{failedRequests}</span>
                   <span className="stat-label">Failed</span>
                 </div>
               </div>
@@ -637,9 +641,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
                   <Database size={24} />
                 </div>
                 <div className="stat-info">
-                  <span className="stat-number">
-                    {apiKeys.length}
-                  </span>
+                  <span className="stat-number">{apiKeys.length}</span>
                   <span className="stat-label">API Keys</span>
                 </div>
               </div>
@@ -648,7 +650,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
             <div className="dashboard-section">
               <h3>💰 Cost Today</h3>
               <div className="cost-display">
-                ${todayStats.reduce((sum, s) => sum + Number(s.total_cost), 0).toFixed(4)}
+                ${totalCost.toFixed(4)}
               </div>
             </div>
 
@@ -755,21 +757,21 @@ export default function AdminAIManagement({ onNavigate }: Props) {
                     <div className="key-usage">
                       <span className="key-label">Usage:</span>
                       <span className="key-text">
-                        {key.current_usage} / {key.daily_limit}
+                        {safeNum(key.current_usage)} / {safeNum(key.daily_limit)}
                       </span>
                       <div className="usage-bar">
                         <div
                           className="usage-fill"
                           style={{
-                            width: `${key.daily_limit > 0 ? (key.current_usage / key.daily_limit) * 100 : 0}%`,
-                            backgroundColor: key.daily_limit > 0 && key.current_usage / key.daily_limit > 0.8 ? '#ef4444' : '#10b981'
+                            width: `${safeNum(key.daily_limit) > 0 ? (safeNum(key.current_usage) / safeNum(key.daily_limit)) * 100 : 0}%`,
+                            backgroundColor: safeNum(key.daily_limit) > 0 && safeNum(key.current_usage) / safeNum(key.daily_limit) > 0.8 ? '#ef4444' : '#10b981'
                           }}
                         />
                       </div>
                     </div>
                     <div className="key-meta">
-                      <span>Priority: {key.priority}</span>
-                      <span>Errors: {key.error_count}</span>
+                      <span>Priority: {safeNum(key.priority)}</span>
+                      <span>Errors: {safeNum(key.error_count)}</span>
                     </div>
                   </div>
 
@@ -925,19 +927,19 @@ export default function AdminAIManagement({ onNavigate }: Props) {
                   <div className="provider-details">
                     <div className="detail-row">
                       <span className="label">RPM Limit:</span>
-                      <span className="value">{provider.rpm_limit}</span>
+                      <span className="value">{safeNum(provider.rpm_limit)}</span>
                     </div>
                     <div className="detail-row">
                       <span className="label">Daily Token Limit:</span>
-                      <span className="value">{provider.daily_token_limit.toLocaleString()}</span>
+                      <span className="value">{safeNum(provider.daily_token_limit).toLocaleString()}</span>
                     </div>
                     <div className="detail-row">
                       <span className="label">Cost per 1M tokens:</span>
-                      <span className="value">${provider.cost_per_1m_tokens}</span>
+                      <span className="value">${safeNum(provider.cost_per_1m_tokens)}</span>
                     </div>
                     <div className="detail-row">
                       <span className="label">Priority:</span>
-                      <span className="value">{provider.priority}</span>
+                      <span className="value">{safeNum(provider.priority)}</span>
                     </div>
                   </div>
 
@@ -946,7 +948,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
                       <Shield size={14} />
                       <span>Circuit: {provider.circuit_breaker_state}</span>
                     </div>
-                    {provider.consecutive_failures > 0 && (
+                    {safeNum(provider.consecutive_failures) > 0 && (
                       <div className="failures-indicator">
                         <AlertCircle size={14} />
                         <span>{provider.consecutive_failures} failures</span>
@@ -1160,11 +1162,11 @@ export default function AdminAIManagement({ onNavigate }: Props) {
                 {todayStats.map((stat, i) => (
                   <div key={i} className="stats-table-row">
                     <span className="provider-name">{stat.provider}</span>
-                    <span>{stat.total_requests}</span>
-                    <span className="success">{stat.successful_requests}</span>
-                    <span className="failed">{stat.failed_requests}</span>
-                    <span>{stat.total_tokens.toLocaleString()}</span>
-                    <span>${Number(stat.total_cost).toFixed(4)}</span>
+                    <span>{safeNum(stat.total_requests)}</span>
+                    <span className="success">{safeNum(stat.successful_requests)}</span>
+                    <span className="failed">{safeNum(stat.failed_requests)}</span>
+                    <span>{safeNum(stat.total_tokens).toLocaleString()}</span>
+                    <span>${safeNum(stat.total_cost).toFixed(4)}</span>
                   </div>
                 ))}
               </div>
@@ -1188,18 +1190,18 @@ export default function AdminAIManagement({ onNavigate }: Props) {
                 {apiKeyUsage.map((usage, i) => (
                   <div key={i} className="stats-table-row">
                     <span className="provider-name">{usage.provider_name}</span>
-                    <span>{usage.current_usage}</span>
-                    <span>{usage.daily_limit}</span>
+                    <span>{safeNum(usage.current_usage)}</span>
+                    <span>{safeNum(usage.daily_limit)}</span>
                     <span>
                       <div className="mini-progress-bar">
                         <div
                           className="mini-progress-fill"
-                          style={{ width: `${usage.usage_percentage || 0}%` }}
+                          style={{ width: `${safeNum(usage.usage_percentage)}%` }}
                         />
                       </div>
-                      <span className="percentage">{usage.usage_percentage || 0}%</span>
+                      <span className="percentage">{safeNum(usage.usage_percentage)}%</span>
                     </span>
-                    <span>{usage.remaining_usage}</span>
+                    <span>{safeNum(usage.remaining_usage)}</span>
                   </div>
                 ))}
               </div>
