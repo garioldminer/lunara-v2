@@ -38,7 +38,6 @@ type ElementPosition = {
   saved: boolean;
 };
 
-// ეს არის ჩაფიქსირებული კოორდინატები ყველასთვის
 const FIXED_POSITIONS: Record<string, ElementPosition> = {
   zodiac: { x: 40, y: 40, width: 320, saved: true },
   lunar: { x: 90, y: 400, width: 220, saved: true }
@@ -97,7 +96,6 @@ export default function AstroScreen() {
         style={{ backgroundImage: `url(${BG_IMAGE})` }}
       />
 
-      {/* Export Modal */}
       {showExport && (
         <div className="export-modal">
           <div className="export-modal-content">
@@ -118,7 +116,6 @@ export default function AstroScreen() {
         </div>
       )}
 
-      {/* Edit Mode Controls */}
       {editMode && (
         <div className="edit-controls">
           <button onClick={savePositions} className="edit-btn save-btn">
@@ -144,7 +141,6 @@ export default function AstroScreen() {
 
       <div className="astro-content">
         
-        {/* 🎯 ZODIAC WHEEL */}
         <DraggableElement
           position={positions.zodiac}
           editMode={editMode}
@@ -177,43 +173,64 @@ export default function AstroScreen() {
           </div>
         </DraggableElement>
 
-        {/* 🌙 LUNAR PHASE */}
+        {/* 🌙 LUNAR PHASE - with curved text */}
         <DraggableElement
           position={positions.lunar}
           editMode={editMode}
           onPositionChange={(pos) => setPositions(prev => ({ ...prev, lunar: pos }))}
         >
           <div className="lunar-section">
-            <div className="lunar-header">
-              <h2 className="lunar-title">LUNAR PHASE & WAXING GIBBOUS</h2>
-            </div>
-
-            <div className="lunar-content">
-              <div className="lunar-moon-container">
-                <div className="lunar-moon-circle">
-                  <img src={MOON_IMAGE} alt="Moon" className="lunar-moon-image" />
-                </div>
+            <div className="lunar-container">
+              {/* მთვარის სურათი */}
+              <div className="lunar-moon-wrapper">
+                <img src={MOON_IMAGE} alt="Moon" className="lunar-moon-img" />
               </div>
 
-              <div className="lunar-stats">
-                <div className="lunar-stat-item">
-                  <span className="stat-percentage">{moonIllumination}%</span>
+              {/* Curved Text - ზედა რკალი */}
+              <svg className="curved-text-svg" viewBox="0 0 300 300">
+                <defs>
+                  <path
+                    id="topCurve"
+                    d="M 30,150 A 120,120 0 0,1 270,150"
+                    fill="none"
+                  />
+                  <path
+                    id="bottomCurve"
+                    d="M 30,150 A 120,120 0 0,0 270,150"
+                    fill="none"
+                  />
+                </defs>
+                
+                {/* ზედა ტექსტი */}
+                <text className="curved-text-top">
+                  <textPath href="#topCurve" startOffset="50%" textAnchor="middle">
+                    LUNAR PHASE & WAXING GIBBOUS
+                  </textPath>
+                </text>
+
+                {/* ქვედა ტექსტი */}
+                <text className="curved-text-bottom">
+                  <textPath href="#bottomCurve" startOffset="50%" textAnchor="middle">
+                    High energy • Take action
+                  </textPath>
+                </text>
+              </svg>
+
+              {/* სტატისტიკა */}
+              <div className="lunar-stats-overlay">
+                <div className="lunar-stat">
+                  <span className="stat-value">{moonIllumination}%</span>
                   <span className="stat-label">Illuminated</span>
                 </div>
-                <div className="lunar-divider" />
-                <div className="lunar-stat-item">
-                  <span className="stat-percentage">{moonIllumination}%</span>
+                <div className="lunar-stat">
+                  <span className="stat-value">{moonIllumination}%</span>
                   <span className="stat-label">energy</span>
                 </div>
               </div>
 
-              <p className="lunar-description">
-                High energy, take action towards your goals.
-              </p>
-
-              <div className="lunar-ritual">
-                <span className="ritual-label">Best Ritual:</span>
-                <span className="ritual-value">Release & Manifest</span>
+              {/* რიტუალი */}
+              <div className="lunar-ritual-text">
+                <span>Best Ritual: Release & Manifest</span>
               </div>
             </div>
           </div>
