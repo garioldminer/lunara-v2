@@ -16,7 +16,7 @@ const ZODIAC_SIGNS = {
   libra: { name: 'Libra', symbol: '♎' },
   scorpio: { name: 'Scorpio', symbol: '♏' },
   sagittarius: { name: 'Sagittarius', symbol: '♐' },
-  capricorn: { name: 'Capricorn', symbol: '' },
+  capricorn: { name: 'Capricorn', symbol: '♑' },
   aquarius: { name: 'Aquarius', symbol: '♒' },
   pisces: { name: 'Pisces', symbol: '♓' }
 };
@@ -123,7 +123,7 @@ export default function AstroScreen() {
 
               {/* მომხმარებლის ნიშანი - ზუსტად ცენტრში */}
               <foreignObject x="150" y="150" width="100" height="100">
-                <div xmlns="http://www.w3.org/1999/xhtml" className="user-sign-container">
+                <div className="user-sign-container">
                   <div className="user-sign-content">
                     <span className="user-sign-symbol">{currentSign.symbol}</span>
                   </div>
