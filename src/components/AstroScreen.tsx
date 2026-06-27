@@ -21,7 +21,7 @@ const ZODIAC_SIGNS: Record<string, ZodiacSign> = {
   taurus: { name: 'Taurus', symbol: '♉' },
   gemini: { name: 'Gemini', symbol: '♊' },
   cancer: { name: 'Cancer', symbol: '♋' },
-  leo: { name: 'Leo', symbol: '♌' },
+  leo: { name: 'Leo', symbol: '' },
   virgo: { name: 'Virgo', symbol: '♍' },
   libra: { name: 'Libra', symbol: '' },
   scorpio: { name: 'Scorpio', symbol: '♏' },
@@ -38,8 +38,6 @@ type ElementPosition = {
   saved: boolean;
 };
 
-// Zodiac: ჰორიზონტალურად ცენტრში (CSS-ით), y=20px ზემოდან
-// Lunar: x=25%, y=28% (ზემოთ აწეული)
 const FIXED_POSITIONS: Record<string, ElementPosition> = {
   zodiac: { x: 50, y: 20, width: 320, saved: true },
   lunar: { x: 25, y: 28, width: 220, saved: true }
@@ -107,12 +105,8 @@ export default function AstroScreen() {
               {JSON.stringify(positions, null, 2)}
             </pre>
             <div className="export-buttons">
-              <button onClick={copyToClipboard} className="edit-btn save-btn">
-                📋 კოპირება
-              </button>
-              <button onClick={() => setShowExport(false)} className="edit-btn exit-btn">
-                ✕ დახურვა
-              </button>
+              <button onClick={copyToClipboard} className="edit-btn save-btn">📋 კოპირება</button>
+              <button onClick={() => setShowExport(false)} className="edit-btn exit-btn">✕ დახურვა</button>
             </div>
           </div>
         </div>
@@ -132,7 +126,7 @@ export default function AstroScreen() {
 
       <div className="astro-content">
         
-        {/*  ZODIAC WHEEL - ჰორიზონტალურად ცენტრში CSS-ით */}
+        {/* 🎯 ZODIAC WHEEL - ორიზონტალურად ცენტრში */}
         <DraggableElement
           position={positions.zodiac}
           editMode={editMode}
@@ -162,7 +156,7 @@ export default function AstroScreen() {
           </div>
         </DraggableElement>
 
-        {/* 🌙 LUNAR PHASE - პროპორციული პოზიცია, ზემოთ აწეული */}
+        {/* 🌙 LUNAR PHASE */}
         <DraggableElement
           position={positions.lunar}
           editMode={editMode}
@@ -171,21 +165,17 @@ export default function AstroScreen() {
         >
           <div className="lunar-section">
             <div className="lunar-container">
-              <div className="lunar-moon-wrapper">
-                <img src={MOON_IMAGE} alt="Moon" className="lunar-moon-img" />
-              </div>
-
-              {/* Curved Text - უფრო ახლოს მთვარესთან (radius: 95) */}
+              {/* Curved Text - წრესა და მთვარეს შორის (radius 108) */}
               <svg className="curved-text-svg" viewBox="0 0 300 300">
                 <defs>
                   <path
                     id="topCurve"
-                    d="M 55,150 A 95,95 0 0,1 245,150"
+                    d="M 42,150 A 108,108 0 0,1 258,150"
                     fill="none"
                   />
                   <path
                     id="bottomCurve"
-                    d="M 55,150 A 95,95 0 0,0 245,150"
+                    d="M 42,150 A 108,108 0 0,0 258,150"
                     fill="none"
                   />
                 </defs>
@@ -203,6 +193,12 @@ export default function AstroScreen() {
                 </text>
               </svg>
 
+              {/* მთვარის სურათი */}
+              <div className="lunar-moon-wrapper">
+                <img src={MOON_IMAGE} alt="Moon" className="lunar-moon-img" />
+              </div>
+
+              {/* სტატისტიკა */}
               <div className="lunar-stats-overlay">
                 <div className="lunar-stat">
                   <span className="stat-value">{moonIllumination}%</span>
@@ -214,9 +210,7 @@ export default function AstroScreen() {
                 </div>
               </div>
 
-              <div className="lunar-ritual-text">
-                <span>Best Ritual: Release & Manifest</span>
-              </div>
+              {/* ❌ წაშლილია: Best Ritual text */}
             </div>
           </div>
         </DraggableElement>
@@ -294,7 +288,6 @@ function DraggableElement({ position, editMode, onPositionChange, children, useP
     };
   }, [isDragging, position, dragOffset, onPositionChange]);
 
-  // centered = true: ჰორიზონტალურად ცენტრში CSS-ით
   const style = centered
     ? {
         position: 'absolute' as const,
