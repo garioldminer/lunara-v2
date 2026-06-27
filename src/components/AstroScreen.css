@@ -175,8 +175,15 @@
 .resize-icon { font-size: 14px; color: #050507; }
 
 /* ============================================
-   ZODIAC - ჰორიზონტალურად ცენტრში
+   ZODIAC - ორიზონტალურად ცენტრში CSS-ით
    ============================================ */
+.zodiac-centered-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding-top: 20px;
+}
+
 .zodiac-wrapper {
   position: relative;
   width: 320px;
@@ -237,7 +244,7 @@
 }
 
 /* ============================================
-   LUNAR PHASE - Curved Text წრესა და მთვარეს შორის
+   LUNAR PHASE
    ============================================ */
 .lunar-section {
   width: 100%;
@@ -251,7 +258,6 @@
   margin: 0 auto;
 }
 
-/* მთვარის წრე (გარე რგოლი) */
 .lunar-moon-wrapper {
   position: absolute;
   top: 50%;
@@ -273,7 +279,6 @@
   filter: brightness(1.1) contrast(1.1);
 }
 
-/* Curved Text SVG - წრესა და მთვარეს შორის */
 .curved-text-svg {
   position: absolute;
   top: 0;
@@ -301,7 +306,6 @@
   letter-spacing: 1px;
 }
 
-/* სტატისტიკა - ქვემოთ */
 .lunar-stats-overlay {
   position: absolute;
   bottom: 10px;

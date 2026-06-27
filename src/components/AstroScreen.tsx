@@ -21,12 +21,12 @@ const ZODIAC_SIGNS: Record<string, ZodiacSign> = {
   taurus: { name: 'Taurus', symbol: '♉' },
   gemini: { name: 'Gemini', symbol: '♊' },
   cancer: { name: 'Cancer', symbol: '♋' },
-  leo: { name: 'Leo', symbol: '' },
+  leo: { name: 'Leo', symbol: '♌' },
   virgo: { name: 'Virgo', symbol: '♍' },
   libra: { name: 'Libra', symbol: '' },
   scorpio: { name: 'Scorpio', symbol: '♏' },
   sagittarius: { name: 'Sagittarius', symbol: '' },
-  capricorn: { name: 'Capricorn', symbol: '♑' },
+  capricorn: { name: 'Capricorn', symbol: '' },
   aquarius: { name: 'Aquarius', symbol: '♒' },
   pisces: { name: 'Pisces', symbol: '' }
 };
@@ -115,7 +115,7 @@ export default function AstroScreen() {
       {editMode && (
         <div className="edit-controls">
           <button onClick={savePositions} className="edit-btn save-btn">💾 შენახვა</button>
-          <button onClick={resetPositions} className="edit-btn reset-btn">🔄 Reset</button>
+          <button onClick={resetPositions} className="edit-btn reset-btn"> Reset</button>
           <button onClick={() => { setEditMode(false); setShowExport(false); }} className="edit-btn exit-btn">✕ გასვლა</button>
         </div>
       )}
@@ -126,35 +126,36 @@ export default function AstroScreen() {
 
       <div className="astro-content">
         
-        {/* 🎯 ZODIAC WHEEL - ორიზონტალურად ცენტრში */}
-        <DraggableElement
-          position={positions.zodiac}
-          editMode={editMode}
-          onPositionChange={(pos) => setPositions(prev => ({ ...prev, zodiac: pos }))}
-          centered={true}
-        >
-          <div className="zodiac-wrapper">
-            <div className="user-sign-layer">
-              <div className="user-sign-circle">
-                {currentSign?.image ? (
-                  <img src={currentSign.image} alt={currentSign.name} className="user-sign-image" />
-                ) : (
-                  <span className="user-sign-symbol">{currentSign?.symbol}</span>
-                )}
+        {/* 🎯 ZODIAC WHEEL - CSS-ით ცენტრში */}
+        <div className="zodiac-centered-wrapper">
+          <DraggableElement
+            position={positions.zodiac}
+            editMode={editMode}
+            onPositionChange={(pos) => setPositions(prev => ({ ...prev, zodiac: pos }))}
+          >
+            <div className="zodiac-wrapper">
+              <div className="user-sign-layer">
+                <div className="user-sign-circle">
+                  {currentSign?.image ? (
+                    <img src={currentSign.image} alt={currentSign.name} className="user-sign-image" />
+                  ) : (
+                    <span className="user-sign-symbol">{currentSign?.symbol}</span>
+                  )}
+                </div>
               </div>
+
+              <motion.div 
+                className="zodiac-wheel-layer"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
+              >
+                <img src={ZODIAC_WHEEL} alt="Zodiac Wheel" className="zodiac-image" />
+              </motion.div>
+
+              <div className="zodiac-glow" />
             </div>
-
-            <motion.div 
-              className="zodiac-wheel-layer"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
-            >
-              <img src={ZODIAC_WHEEL} alt="Zodiac Wheel" className="zodiac-image" />
-            </motion.div>
-
-            <div className="zodiac-glow" />
-          </div>
-        </DraggableElement>
+          </DraggableElement>
+        </div>
 
         {/* 🌙 LUNAR PHASE */}
         <DraggableElement
@@ -165,7 +166,7 @@ export default function AstroScreen() {
         >
           <div className="lunar-section">
             <div className="lunar-container">
-              {/* Curved Text - წრესა და მთვარეს შორის (radius 108) */}
+              {/* Curved Text - წრესა და მთვარეს შორის */}
               <svg className="curved-text-svg" viewBox="0 0 300 300">
                 <defs>
                   <path
@@ -209,8 +210,6 @@ export default function AstroScreen() {
                   <span className="stat-label">energy</span>
                 </div>
               </div>
-
-              {/* ❌ წაშლილია: Best Ritual text */}
             </div>
           </div>
         </DraggableElement>
@@ -227,10 +226,9 @@ interface DraggableElementProps {
   onPositionChange: (pos: ElementPosition) => void;
   children: React.ReactNode;
   usePercentage?: boolean;
-  centered?: boolean;
 }
 
-function DraggableElement({ position, editMode, onPositionChange, children, usePercentage = false, centered = false }: DraggableElementProps) {
+function DraggableElement({ position, editMode, onPositionChange, children, usePercentage = false }: DraggableElementProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -288,16 +286,7 @@ function DraggableElement({ position, editMode, onPositionChange, children, useP
     };
   }, [isDragging, position, dragOffset, onPositionChange]);
 
-  const style = centered
-    ? {
-        position: 'absolute' as const,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        top: `${position.y}px`,
-        width: `${position.width}px`,
-        zIndex: editMode ? 100 : 5
-      }
-    : usePercentage
+  const style = usePercentage
     ? {
         position: 'absolute' as const,
         left: `${position.x}%`,
