@@ -35,13 +35,14 @@ type ElementPosition = {
   x: number;
   y: number;
   width: number;
-  height: number;
   saved: boolean;
 };
 
-const DEFAULT_POSITIONS: Record<string, ElementPosition> = {
-  zodiac: { x: 50, y: 50, width: 320, height: 320, saved: false },
-  lunar: { x: 50, y: 400, width: 200, height: 300, saved: false }
+// ეს არის ჩაფიქსირებული კოორდინატები ყველასთვის
+// როცა მომხმარებელი დააფიქსირებს, ეს მნიშვნელობები შეიცვლება კოდში
+const FIXED_POSITIONS: Record<string, ElementPosition> = {
+  zodiac: { x: 40, y: 40, width: 320, saved: true },
+  lunar: { x: 90, y: 400, width: 220, saved: true }
 };
 
 export default function AstroScreen() {
@@ -49,27 +50,50 @@ export default function AstroScreen() {
   const [moonIllumination] = useState(78);
   const [editMode, setEditMode] = useState(false);
   const [positions, setPositions] = useState<Record<string, ElementPosition>>(() => {
-    const saved = localStorage.getItem('astro-element-positions');
-    return saved ? JSON.parse(saved) : DEFAULT_POSITIONS;
+    if (editMode) {
+      const saved = localStorage.getItem('astro-editor-positions');
+      return saved ? JSON.parse(saved) : FIXED_POSITIONS;
+    }
+    return FIXED_POSITIONS;
   });
+  const [showExport, setShowExport] = useState(false);
 
   const currentSign = ZODIAC_SIGNS[userSign];
 
+  // Edit Mode-ში ვიყენებთ ლოკალურ კოორდინატებს
+  useEffect(() => {
+    if (editMode) {
+      const saved = localStorage.getItem('astro-editor-positions');
+      if (saved) {
+        setPositions(JSON.parse(saved));
+      } else {
+        setPositions(FIXED_POSITIONS);
+      }
+    } else {
+      // ჩვეულებრივ რეჟიმში ყოველთვის FIXED_POSITIONS
+      setPositions(FIXED_POSITIONS);
+    }
+  }, [editMode]);
+
   const savePositions = () => {
-    localStorage.setItem('astro-element-positions', JSON.stringify(positions));
-    setPositions(prev => {
-      const updated = { ...prev };
-      Object.keys(updated).forEach(key => {
-        updated[key] = { ...updated[key], saved: true };
-      });
-      return updated;
-    });
-    alert('✅ პოზიციები შენახულია!');
+    // ლოკალურად ვინახავთ
+    localStorage.setItem('astro-editor-positions', JSON.stringify(positions));
+    
+    // ვაჩვენებთ JSON-ს რომ გადმოიწეროს
+    setShowExport(true);
   };
 
   const resetPositions = () => {
-    localStorage.removeItem('astro-element-positions');
-    setPositions(DEFAULT_POSITIONS);
+    localStorage.removeItem('astro-editor-positions');
+    setPositions(FIXED_POSITIONS);
+    setShowExport(false);
+  };
+
+  const copyToClipboard = () => {
+    const json = JSON.stringify(positions, null, 2);
+    navigator.clipboard.writeText(json).then(() => {
+      alert('✅ კოპირებულია! გამომიგზავნე ეს კოდი.');
+    });
   };
 
   return (
@@ -79,6 +103,28 @@ export default function AstroScreen() {
         style={{ backgroundImage: `url(${BG_IMAGE})` }}
       />
 
+      {/* Export Modal */}
+      {showExport && (
+        <div className="export-modal">
+          <div className="export-modal-content">
+            <h3>📋 კოორდინატები</h3>
+            <p>გადმოიწერე და გამომიგზავნე ეს კოდი:</p>
+            <pre className="export-json">
+              {JSON.stringify(positions, null, 2)}
+            </pre>
+            <div className="export-buttons">
+              <button onClick={copyToClipboard} className="edit-btn save-btn">
+                📋 კოპირება
+              </button>
+              <button onClick={() => setShowExport(false)} className="edit-btn exit-btn">
+                ✕ დახურვა
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Mode Controls */}
       {editMode && (
         <div className="edit-controls">
           <button onClick={savePositions} className="edit-btn save-btn">
@@ -87,23 +133,24 @@ export default function AstroScreen() {
           <button onClick={resetPositions} className="edit-btn reset-btn">
             🔄 Reset
           </button>
-          <button onClick={() => setEditMode(false)} className="edit-btn exit-btn">
+          <button onClick={() => { setEditMode(false); setShowExport(false); }} className="edit-btn exit-btn">
             ✕ გასვლა
           </button>
         </div>
       )}
 
-      {!editMode && (
+      {!editMode && !showExport && (
         <button 
           className="edit-mode-toggle"
           onClick={() => setEditMode(true)}
         >
-           Edit Mode
+          ✏️
         </button>
       )}
 
       <div className="astro-content">
         
+        {/* 🎯 ZODIAC WHEEL */}
         <DraggableElement
           position={positions.zodiac}
           editMode={editMode}
@@ -136,6 +183,7 @@ export default function AstroScreen() {
           </div>
         </DraggableElement>
 
+        {/* 🌙 LUNAR PHASE */}
         <DraggableElement
           position={positions.lunar}
           editMode={editMode}
@@ -194,7 +242,6 @@ interface DraggableElementProps {
 }
 
 function DraggableElement({ position, editMode, onPositionChange, children }: DraggableElementProps) {
-  const elementRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -202,46 +249,25 @@ function DraggableElement({ position, editMode, onPositionChange, children }: Dr
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!editMode) return;
     if ((e.target as HTMLElement).classList.contains('resize-handle')) return;
-    
     e.preventDefault();
     setIsDragging(true);
-    setDragOffset({
-      x: e.clientX - position.x,
-      y: e.clientY - position.y
-    });
+    setDragOffset({ x: e.clientX - position.x, y: e.clientY - position.y });
   };
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (isDragging) {
-        onPositionChange({
-          ...position,
-          x: e.clientX - dragOffset.x,
-          y: e.clientY - dragOffset.y,
-          saved: false
-        });
+        onPositionChange({ ...position, x: e.clientX - dragOffset.x, y: e.clientY - dragOffset.y, saved: false });
       } else if (isResizing) {
         const newWidth = Math.max(100, e.clientX - position.x);
-        const newHeight = Math.max(100, e.clientY - position.y);
-        onPositionChange({
-          ...position,
-          width: newWidth,
-          height: newHeight,
-          saved: false
-        });
+        onPositionChange({ ...position, width: newWidth, saved: false });
       }
     };
-
-    const handleMouseUp = () => {
-      setIsDragging(false);
-      setIsResizing(false);
-    };
-
+    const handleMouseUp = () => { setIsDragging(false); setIsResizing(false); };
     if (isDragging || isResizing) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
     }
-
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
@@ -251,36 +277,22 @@ function DraggableElement({ position, editMode, onPositionChange, children }: Dr
   const handleTouchStart = (e: React.TouchEvent) => {
     if (!editMode) return;
     if ((e.target as HTMLElement).classList.contains('resize-handle')) return;
-    
     const touch = e.touches[0];
     setIsDragging(true);
-    setDragOffset({
-      x: touch.clientX - position.x,
-      y: touch.clientY - position.y
-    });
+    setDragOffset({ x: touch.clientX - position.x, y: touch.clientY - position.y });
   };
 
   useEffect(() => {
     const handleTouchMove = (e: TouchEvent) => {
       if (!isDragging) return;
       const touch = e.touches[0];
-      onPositionChange({
-        ...position,
-        x: touch.clientX - dragOffset.x,
-        y: touch.clientY - dragOffset.y,
-        saved: false
-      });
+      onPositionChange({ ...position, x: touch.clientX - dragOffset.x, y: touch.clientY - dragOffset.y, saved: false });
     };
-
-    const handleTouchEnd = () => {
-      setIsDragging(false);
-    };
-
+    const handleTouchEnd = () => setIsDragging(false);
     if (isDragging) {
       document.addEventListener('touchmove', handleTouchMove);
       document.addEventListener('touchend', handleTouchEnd);
     }
-
     return () => {
       document.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('touchend', handleTouchEnd);
@@ -289,35 +301,25 @@ function DraggableElement({ position, editMode, onPositionChange, children }: Dr
 
   return (
     <div
-      ref={elementRef}
-      className={`draggable-element ${editMode ? 'edit-mode' : ''} ${isDragging ? 'dragging' : ''} ${position.saved ? 'saved' : ''}`}
+      className={`draggable-element ${editMode ? 'edit-mode' : ''} ${isDragging ? 'dragging' : ''}`}
       style={{
         position: 'absolute',
         left: `${position.x}px`,
         top: `${position.y}px`,
         width: `${position.width}px`,
-        height: 'auto',
-        zIndex: position.saved ? 5 : 10
+        zIndex: editMode ? 100 : 5
       }}
       onMouseDown={handleMouseDown}
       onTouchStart={handleTouchStart}
     >
       {children}
-      
       {editMode && (
         <div
           className="resize-handle"
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            setIsResizing(true);
-          }}
+          onMouseDown={(e) => { e.stopPropagation(); setIsResizing(true); }}
         >
-          <div className="resize-icon"></div>
+          <div className="resize-icon">⤡</div>
         </div>
-      )}
-
-      {position.saved && (
-        <div className="saved-indicator">✓</div>
       )}
     </div>
   );
