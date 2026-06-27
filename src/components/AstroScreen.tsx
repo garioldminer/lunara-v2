@@ -5,61 +5,25 @@ import './AstroScreen.css';
 const BG_IMAGE = 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/backgrounds/space-bg.webp';
 const ZODIAC_WHEEL = 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/test/lucid-origin_a_cinematic_photo_of_Ultra_ornate_golden_zodiac_wheel_12_astrological_symbols_ar-0%20(1)-Photoroom.png';
 
-// ზოდიაქოს ნიშნები - აქ ჩასვი შენი URL-ები!
+// ზოდიაქოს ნიშნები
 const ZODIAC_SIGNS = {
-  aries: { 
-    name: 'Aries', 
-    image: 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/zodiac/signs/aries.png'
-  },
-  taurus: { 
-    name: 'Taurus', 
-    image: 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/zodiac/signs/taurus.png'
-  },
-  gemini: { 
-    name: 'Gemini', 
-    image: 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/zodiac/signs/gemini.png'
-  },
-  cancer: { 
-    name: 'Cancer', 
-    image: 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/zodiac/signs/cancer.png'
-  },
-  leo: { 
-    name: 'Leo', 
-    image: 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/zodiac/signs/leo.png'
-  },
-  virgo: { 
-    name: 'Virgo', 
-    image: 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/zodiac/signs/virgo.png'
-  },
-  libra: { 
-    name: 'Libra', 
-    image: 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/zodiac/signs/libra.png'
-  },
-  scorpio: { 
-    name: 'Scorpio', 
-    image: 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/zodiac/signs/scorpio.png'
-  },
-  sagittarius: { 
-    name: 'Sagittarius', 
-    image: 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/zodiac/signs/sagittarius.png'
-  },
-  capricorn: { 
-    name: 'Capricorn', 
-    image: 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/zodiac/signs/capricorn.png'
-  },
-  aquarius: { 
-    name: 'Aquarius', 
-    image: 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/zodiac/signs/aquarius.png'
-  },
-  pisces: { 
-    name: 'Pisces', 
-    image: 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/zodiac/signs/pisces.png'
-  }
+  aries: { name: 'Aries', symbol: '♈' },
+  taurus: { name: 'Taurus', symbol: '♉' },
+  gemini: { name: 'Gemini', symbol: '♊' },
+  cancer: { name: 'Cancer', symbol: '♋' },
+  leo: { name: 'Leo', symbol: '♌' },
+  virgo: { name: 'Virgo', symbol: '♍' },
+  libra: { name: 'Libra', symbol: '♎' },
+  scorpio: { name: 'Scorpio', symbol: '♏' },
+  sagittarius: { name: 'Sagittarius', symbol: '♐' },
+  capricorn: { name: 'Capricorn', symbol: '' },
+  aquarius: { name: 'Aquarius', symbol: '♒' },
+  pisces: { name: 'Pisces', symbol: '♓' }
 };
 
 export default function AstroScreen() {
   const [energy] = useState(78);
-  const [userSign] = useState<keyof typeof ZODIAC_SIGNS>('leo'); // ← მომხმარებლის ნიშანი
+  const [userSign] = useState<keyof typeof ZODIAC_SIGNS>('leo');
 
   const currentSign = ZODIAC_SIGNS[userSign];
 
@@ -74,39 +38,110 @@ export default function AstroScreen() {
       {/* 📱 Content */}
       <div className="astro-content">
         
-        {/* 🎯 ZODIAC WHEEL */}
+        {/* 🎯 ZODIAC WHEEL - SVG VERSION */}
         <section className="zodiac-section">
           <motion.div 
-            className="zodiac-wrapper"
+            className="zodiac-svg-wrapper"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, ease: "easeOut" }}
           >
-            {/* ბრუნვადი ბორბალი */}
-            <motion.div 
-              className="zodiac-rotating"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
+            <svg 
+              viewBox="0 0 400 400" 
+              className="zodiac-svg"
+              xmlns="http://www.w3.org/2000/svg"
             >
-              <img src={ZODIAC_WHEEL} alt="Zodiac Wheel" className="zodiac-image" />
-            </motion.div>
-            
-            {/* ცენტრში მომხმარებლის ნიშანი */}
-            <motion.div 
-              className="user-sign-center"
-              initial={{ opacity: 0, scale: 0, rotate: -180 }}
-              animate={{ opacity: 1, scale: 1, rotate: 0 }}
-              transition={{ delay: 0.8, type: "spring", stiffness: 200 }}
-            >
-              <img 
-                src={currentSign.image} 
-                alt={currentSign.name} 
-                className="user-sign-image"
+              <defs>
+                {/* Glow filter */}
+                <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="8" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+
+                {/* Strong glow */}
+                <filter id="strongGlow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="12" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+
+                {/* Center glow */}
+                <radialGradient id="centerGlow" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="rgba(217, 182, 111, 0.3)" />
+                  <stop offset="70%" stopColor="rgba(217, 182, 111, 0.1)" />
+                  <stop offset="100%" stopColor="rgba(217, 182, 111, 0)" />
+                </radialGradient>
+
+                {/* Sign glow */}
+                <filter id="signGlow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="4" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+
+              {/* ბორბლის სურათი */}
+              <image 
+                href={ZODIAC_WHEEL}
+                x="0" 
+                y="0" 
+                width="400" 
+                height="400"
+                className="zodiac-wheel-image"
               />
-            </motion.div>
-            
-            {/* Glow ეფექტი */}
-            <div className="zodiac-glow" />
+
+              {/* ცენტრის glow ეფექტი */}
+              <circle 
+                cx="200" 
+                cy="200" 
+                r="60" 
+                fill="url(#centerGlow)"
+                className="center-glow-circle"
+              />
+
+              {/* ცენტრის წრე (დეკორატიული) */}
+              <circle 
+                cx="200" 
+                cy="200" 
+                r="50" 
+                fill="none"
+                stroke="rgba(217, 182, 111, 0.6)"
+                strokeWidth="2"
+                filter="url(#glow)"
+                className="center-ring"
+              />
+
+              {/* მომხმარებლის ნიშანი - ზუსტად ცენტრში */}
+              <foreignObject x="150" y="150" width="100" height="100">
+                <div xmlns="http://www.w3.org/1999/xhtml" className="user-sign-container">
+                  <div className="user-sign-content">
+                    <span className="user-sign-symbol">{currentSign.symbol}</span>
+                  </div>
+                </div>
+              </foreignObject>
+
+              {/* გარე glow რგოლი */}
+              <circle 
+                cx="200" 
+                cy="200" 
+                r="195" 
+                fill="none"
+                stroke="rgba(217, 182, 111, 0.4)"
+                strokeWidth="1"
+                filter="url(#strongGlow)"
+                className="outer-glow-ring"
+              />
+            </svg>
           </motion.div>
 
           {/* სათაური */}
