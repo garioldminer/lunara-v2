@@ -87,10 +87,7 @@
   font-family: monospace;
 }
 
-.export-buttons {
-  display: flex;
-  gap: 10px;
-}
+.export-buttons { display: flex; gap: 10px; }
 
 /* Edit Controls */
 .edit-controls {
@@ -122,22 +119,9 @@
   white-space: nowrap;
 }
 
-.save-btn {
-  background: linear-gradient(135deg, #F4D47C, #D9B66F);
-  color: #050507;
-}
-
-.reset-btn {
-  background: rgba(255,100,100,0.2);
-  color: #FF6464;
-  border: 1px solid rgba(255,100,100,0.4);
-}
-
-.exit-btn {
-  background: rgba(255,255,255,0.1);
-  color: #F7F3EB;
-  border: 1px solid rgba(255,255,255,0.2);
-}
+.save-btn { background: linear-gradient(135deg, #F4D47C, #D9B66F); color: #050507; }
+.reset-btn { background: rgba(255,100,100,0.2); color: #FF6464; border: 1px solid rgba(255,100,100,0.4); }
+.exit-btn { background: rgba(255,255,255,0.1); color: #F7F3EB; border: 1px solid rgba(255,255,255,0.2); }
 
 .edit-mode-toggle {
   position: fixed;
@@ -188,21 +172,11 @@
   z-index: 1001;
 }
 
-.resize-icon {
-  font-size: 14px;
-  color: #050507;
-}
+.resize-icon { font-size: 14px; color: #050507; }
 
 /* ============================================
-   ZODIAC - ყოველთვის ცენტრში!
+   ZODIAC - ჰორიზონტალურად ცენტრში CSS-ით
    ============================================ */
-.zodiac-centered {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  padding-top: 20px;
-}
-
 .zodiac-wrapper {
   position: relative;
   width: 320px;
@@ -263,7 +237,7 @@
 }
 
 /* ============================================
-   LUNAR PHASE - პროპორციული პოზიცია
+   LUNAR PHASE - წარწერები უფრო ახლოს
    ============================================ */
 .lunar-section {
   width: 100%;
@@ -384,22 +358,11 @@
   .edit-btn { padding: 8px 12px; font-size: 10px; }
   .edit-mode-toggle { right: 10px; width: 40px; height: 40px; font-size: 16px; }
   
-  .zodiac-wrapper {
-    width: 280px;
-    height: 280px;
-  }
-  
+  .zodiac-wrapper { width: 280px; height: 280px; }
   .user-sign-symbol { font-size: 40px; }
   
-  .lunar-container {
-    width: 260px;
-    height: 260px;
-  }
-  
-  .lunar-moon-wrapper {
-    width: 150px;
-    height: 150px;
-  }
+  .lunar-container { width: 260px; height: 260px; }
+  .lunar-moon-wrapper { width: 150px; height: 150px; }
   
   .curved-text-top { font-size: 11px; }
   .curved-text-bottom { font-size: 10px; }
@@ -408,11 +371,7 @@
 }
 
 @media (max-width: 360px) {
-  .zodiac-wrapper {
-    width: 250px;
-    height: 250px;
-  }
-  
+  .zodiac-wrapper { width: 250px; height: 250px; }
   .user-sign-symbol { font-size: 36px; }
 }
 

@@ -38,12 +38,11 @@ type ElementPosition = {
   saved: boolean;
 };
 
-// პროპორციული კოორდინატები - ყველა რეზოლუციაზე მუშაობს
-// Zodiac: ყოველთვის ცენტრში (CSS-ით)
-// Lunar: 25% მარცხნიდან, 45% ზემოდან
+// Zodiac: ჰორიზონტალურად ცენტრში (CSS-ით), y=20px ზემოდან
+// Lunar: x=25%, y=28% (ზემოთ აწეული)
 const FIXED_POSITIONS: Record<string, ElementPosition> = {
-  zodiac: { x: 0, y: 0, width: 320, saved: true },  // CSS აკეთებს centering-ს
-  lunar: { x: 25, y: 45, width: 220, saved: true }  // პროცენტული პოზიცია
+  zodiac: { x: 50, y: 20, width: 320, saved: true },
+  lunar: { x: 25, y: 28, width: 220, saved: true }
 };
 
 export default function AstroScreen() {
@@ -88,7 +87,7 @@ export default function AstroScreen() {
   const copyToClipboard = () => {
     const json = JSON.stringify(positions, null, 2);
     navigator.clipboard.writeText(json).then(() => {
-      alert('✅ კოპირებულია! გამომიგზავნე ეს კოდი.');
+      alert('✅ კოპირებულია!');
     });
   };
 
@@ -109,7 +108,7 @@ export default function AstroScreen() {
             </pre>
             <div className="export-buttons">
               <button onClick={copyToClipboard} className="edit-btn save-btn">
-                 კოპირება
+                📋 კოპირება
               </button>
               <button onClick={() => setShowExport(false)} className="edit-btn exit-btn">
                 ✕ დახურვა
@@ -121,65 +120,49 @@ export default function AstroScreen() {
 
       {editMode && (
         <div className="edit-controls">
-          <button onClick={savePositions} className="edit-btn save-btn">
-            💾 შენახვა
-          </button>
-          <button onClick={resetPositions} className="edit-btn reset-btn">
-            🔄 Reset
-          </button>
-          <button onClick={() => { setEditMode(false); setShowExport(false); }} className="edit-btn exit-btn">
-            ✕ გასვლა
-          </button>
+          <button onClick={savePositions} className="edit-btn save-btn">💾 შენახვა</button>
+          <button onClick={resetPositions} className="edit-btn reset-btn">🔄 Reset</button>
+          <button onClick={() => { setEditMode(false); setShowExport(false); }} className="edit-btn exit-btn">✕ გასვლა</button>
         </div>
       )}
 
       {!editMode && !showExport && (
-        <button 
-          className="edit-mode-toggle"
-          onClick={() => setEditMode(true)}
-        >
-          
-        </button>
+        <button className="edit-mode-toggle" onClick={() => setEditMode(true)}>✏️</button>
       )}
 
       <div className="astro-content">
         
-        {/*  ZODIAC WHEEL - ყოველთვის ცენტრში CSS-ით */}
-        <div className="zodiac-centered">
-          <DraggableElement
-            position={positions.zodiac}
-            editMode={editMode}
-            onPositionChange={(pos) => setPositions(prev => ({ ...prev, zodiac: pos }))}
-          >
-            <div className="zodiac-wrapper">
-              <div className="user-sign-layer">
-                <div className="user-sign-circle">
-                  {currentSign?.image ? (
-                    <img 
-                      src={currentSign.image} 
-                      alt={currentSign.name}
-                      className="user-sign-image"
-                    />
-                  ) : (
-                    <span className="user-sign-symbol">{currentSign?.symbol}</span>
-                  )}
-                </div>
+        {/*  ZODIAC WHEEL - ჰორიზონტალურად ცენტრში CSS-ით */}
+        <DraggableElement
+          position={positions.zodiac}
+          editMode={editMode}
+          onPositionChange={(pos) => setPositions(prev => ({ ...prev, zodiac: pos }))}
+          centered={true}
+        >
+          <div className="zodiac-wrapper">
+            <div className="user-sign-layer">
+              <div className="user-sign-circle">
+                {currentSign?.image ? (
+                  <img src={currentSign.image} alt={currentSign.name} className="user-sign-image" />
+                ) : (
+                  <span className="user-sign-symbol">{currentSign?.symbol}</span>
+                )}
               </div>
-
-              <motion.div 
-                className="zodiac-wheel-layer"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
-              >
-                <img src={ZODIAC_WHEEL} alt="Zodiac Wheel" className="zodiac-image" />
-              </motion.div>
-
-              <div className="zodiac-glow" />
             </div>
-          </DraggableElement>
-        </div>
 
-        {/* 🌙 LUNAR PHASE - პროპორციული პოზიცია */}
+            <motion.div 
+              className="zodiac-wheel-layer"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
+            >
+              <img src={ZODIAC_WHEEL} alt="Zodiac Wheel" className="zodiac-image" />
+            </motion.div>
+
+            <div className="zodiac-glow" />
+          </div>
+        </DraggableElement>
+
+        {/* 🌙 LUNAR PHASE - პროპორციული პოზიცია, ზემოთ აწეული */}
         <DraggableElement
           position={positions.lunar}
           editMode={editMode}
@@ -192,16 +175,17 @@ export default function AstroScreen() {
                 <img src={MOON_IMAGE} alt="Moon" className="lunar-moon-img" />
               </div>
 
+              {/* Curved Text - უფრო ახლოს მთვარესთან (radius: 95) */}
               <svg className="curved-text-svg" viewBox="0 0 300 300">
                 <defs>
                   <path
                     id="topCurve"
-                    d="M 30,150 A 120,120 0 0,1 270,150"
+                    d="M 55,150 A 95,95 0 0,1 245,150"
                     fill="none"
                   />
                   <path
                     id="bottomCurve"
-                    d="M 30,150 A 120,120 0 0,0 270,150"
+                    d="M 55,150 A 95,95 0 0,0 245,150"
                     fill="none"
                   />
                 </defs>
@@ -249,9 +233,10 @@ interface DraggableElementProps {
   onPositionChange: (pos: ElementPosition) => void;
   children: React.ReactNode;
   usePercentage?: boolean;
+  centered?: boolean;
 }
 
-function DraggableElement({ position, editMode, onPositionChange, children, usePercentage = false }: DraggableElementProps) {
+function DraggableElement({ position, editMode, onPositionChange, children, usePercentage = false, centered = false }: DraggableElementProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -309,8 +294,17 @@ function DraggableElement({ position, editMode, onPositionChange, children, useP
     };
   }, [isDragging, position, dragOffset, onPositionChange]);
 
-  // პროპორციული პოზიცია თუ usePercentage=true
-  const style = usePercentage 
+  // centered = true: ჰორიზონტალურად ცენტრში CSS-ით
+  const style = centered
+    ? {
+        position: 'absolute' as const,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        top: `${position.y}px`,
+        width: `${position.width}px`,
+        zIndex: editMode ? 100 : 5
+      }
+    : usePercentage
     ? {
         position: 'absolute' as const,
         left: `${position.x}%`,
