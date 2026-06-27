@@ -1,13 +1,10 @@
 /* ============================================
    LUNARA - ASTRO SCREEN
-   SVG Zodiac Wheel with Perfect Center
+   No Glow on User Sign
    ============================================ */
 
    @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;500;600;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap');
 
-   /* ============================================
-      MAIN CONTAINER
-      ============================================ */
    .astro-screen {
      position: relative;
      width: 100%;
@@ -18,9 +15,6 @@
      color: #F7F3EB;
    }
    
-   /* ============================================
-      COSMIC BACKGROUND
-      ============================================ */
    .cosmic-background {
      position: fixed;
      top: 0;
@@ -49,9 +43,6 @@
      pointer-events: none;
    }
    
-   /* ============================================
-      CONTENT CONTAINER
-      ============================================ */
    .astro-content {
      position: relative;
      z-index: 10;
@@ -64,9 +55,6 @@
      align-items: center;
    }
    
-   /* ============================================
-      ZODIAC SECTION
-      ============================================ */
    .zodiac-section {
      display: flex;
      flex-direction: column;
@@ -76,159 +64,97 @@
      width: 100%;
    }
    
-   /* ============================================
-      SVG ZODIAC WHEEL
-      ============================================ */
-   .zodiac-svg-wrapper {
+   .zodiac-wrapper {
      position: relative;
-     width: 100%;
-     max-width: 320px;
-     aspect-ratio: 1;
+     width: 320px;
+     height: 320px;
+     margin: 0 auto;
+   }
+   
+   /* LAYER 1: ნიშანი (ქვედა ფენა) */
+   .user-sign-layer {
+     position: absolute;
+     inset: 0;
+     margin: auto;
+     width: 45%;
+     height: 45%;
+     z-index: 1;
      display: flex;
      align-items: center;
      justify-content: center;
    }
    
-   .zodiac-svg {
+   .user-sign-circle {
      width: 100%;
      height: 100%;
-     filter: drop-shadow(0 0 20px rgba(217, 182, 111, 0.5));
-     animation: svgGlow 4s ease-in-out infinite;
-   }
-   
-   @keyframes svgGlow {
-     0%, 100% { 
-       filter: drop-shadow(0 0 20px rgba(217, 182, 111, 0.5));
-     }
-     50% { 
-       filter: drop-shadow(0 0 30px rgba(217, 182, 111, 0.8));
-     }
-   }
-   
-   .zodiac-wheel-image {
-     width: 100%;
-     height: 100%;
-     object-fit: contain;
-   }
-   
-   /* ცენტრის glow */
-   .center-glow-circle {
-     animation: centerPulse 3s ease-in-out infinite;
-   }
-   
-   @keyframes centerPulse {
-     0%, 100% { 
-       opacity: 0.6;
-       r: 60;
-     }
-     50% { 
-       opacity: 1;
-       r: 65;
-     }
-   }
-   
-   /* ცენტრის წრე */
-   .center-ring {
-     animation: ringPulse 3s ease-in-out infinite;
-   }
-   
-   @keyframes ringPulse {
-     0%, 100% { 
-       opacity: 0.6;
-       stroke-width: 2;
-     }
-     50% { 
-       opacity: 1;
-       stroke-width: 3;
-     }
-   }
-   
-   /* გარე glow რგოლი */
-   .outer-glow-ring {
-     animation: outerPulse 4s ease-in-out infinite;
-   }
-   
-   @keyframes outerPulse {
-     0%, 100% { 
-       opacity: 0.4;
-       r: 195;
-     }
-     50% { 
-       opacity: 0.8;
-       r: 198;
-     }
-   }
-   
-   /* ============================================
-      USER SIGN IN CENTER (ზუსტი ცენტრი!)
-      ============================================ */
-   .user-sign-container {
-     width: 100%;
-     height: 100%;
-     display: flex;
-     align-items: center;
-     justify-content: center;
-   }
-   
-   .user-sign-content {
-     width: 90%;
-     height: 90%;
      border-radius: 50%;
      background: radial-gradient(
        circle at center,
-       rgba(217, 182, 111, 0.15) 0%,
-       rgba(5, 5, 7, 0.95) 70%
+       rgba(217, 182, 111, 0.1) 0%,
+       rgba(5, 5, 7, 0.8) 70%
      );
-     border: 2px solid rgba(217, 182, 111, 0.6);
+     border: 1px solid rgba(217, 182, 111, 0.3);
      display: flex;
      align-items: center;
      justify-content: center;
-     box-shadow: 
-       0 0 30px rgba(217, 182, 111, 0.5),
-       0 0 60px rgba(217, 182, 111, 0.3),
-       inset 0 0 25px rgba(217, 182, 111, 0.15);
-     animation: signContainerPulse 3s ease-in-out infinite;
-   }
-   
-   @keyframes signContainerPulse {
-     0%, 100% { 
-       box-shadow: 
-         0 0 30px rgba(217, 182, 111, 0.5),
-         0 0 60px rgba(217, 182, 111, 0.3),
-         inset 0 0 25px rgba(217, 182, 111, 0.15);
-     }
-     50% { 
-       box-shadow: 
-         0 0 40px rgba(217, 182, 111, 0.7),
-         0 0 80px rgba(217, 182, 111, 0.5),
-         inset 0 0 30px rgba(217, 182, 111, 0.2);
-     }
+     /* წაშლილია ყველა box-shadow */
+     overflow: hidden;
    }
    
    .user-sign-symbol {
      font-size: 48px;
      color: #F4D47C;
-     text-shadow: 
-       0 0 20px rgba(217, 182, 111, 0.9),
-       0 0 40px rgba(217, 182, 111, 0.6);
-     filter: drop-shadow(0 0 8px rgba(217, 182, 111, 0.8));
-     animation: symbolPulse 3s ease-in-out infinite;
+     /* წაშლილია text-shadow და filter */
    }
    
-   @keyframes symbolPulse {
-     0%, 100% { 
-       transform: scale(1);
-       filter: drop-shadow(0 0 8px rgba(217, 182, 111, 0.8));
-     }
-     50% { 
-       transform: scale(1.05);
-       filter: drop-shadow(0 0 12px rgba(217, 182, 111, 1));
-     }
+   .user-sign-image {
+     width: 90%;
+     height: 90%;
+     object-fit: contain;
+     /* წაშლილია drop-shadow filters */
    }
    
-   /* ============================================
-      ZODIAC TITLE
-      ============================================ */
+   /* LAYER 2: ბორბალი (ზედა ფენა) */
+   .zodiac-wheel-layer {
+     position: absolute;
+     inset: 0;
+     width: 100%;
+     height: 100%;
+     z-index: 10;
+     border-radius: 50%;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     /* მხოლოდ ბორბალს აქვს glow */
+     filter: 
+       drop-shadow(0 0 15px rgba(217, 182, 111, 0.5))
+       drop-shadow(0 0 25px rgba(217, 182, 111, 0.3));
+   }
+   
+   .zodiac-image {
+     width: 100%;
+     height: 100%;
+     object-fit: contain;
+   }
+   
+   .zodiac-glow {
+     position: absolute;
+     top: 50%;
+     left: 50%;
+     transform: translate(-50%, -50%);
+     width: 110%;
+     height: 110%;
+     border-radius: 50%;
+     background: radial-gradient(
+       circle,
+       rgba(217, 182, 111, 0.15) 0%,
+       rgba(217, 182, 111, 0.05) 40%,
+       transparent 70%
+     );
+     pointer-events: none;
+     z-index: 0;
+   }
+   
    .zodiac-title {
      text-align: center;
      margin-top: 10px;
@@ -254,9 +180,6 @@
      letter-spacing: 0.5px;
    }
    
-   /* ============================================
-      ENERGY BADGE
-      ============================================ */
    .energy-badge {
      position: relative;
      width: 70px;
@@ -281,37 +204,26 @@
      text-shadow: 0 0 10px rgba(217, 182, 111, 0.8);
    }
    
-   /* ============================================
-      EMPTY SPACE
-      ============================================ */
    .empty-space {
      flex: 1;
      width: 100%;
    }
    
-   /* ============================================
-      RESPONSIVE - TABLET
-      ============================================ */
    @media (max-width: 600px) {
-     .zodiac-svg-wrapper {
-       max-width: 300px;
-     }
-     
-     .user-sign-symbol {
-       font-size: 44px;
+     .zodiac-wrapper {
+       width: 300px;
+       height: 300px;
      }
    }
    
-   /* ============================================
-      RESPONSIVE - MOBILE
-      ============================================ */
    @media (max-width: 480px) {
      .astro-content {
        padding: 30px 16px 30px;
      }
      
-     .zodiac-svg-wrapper {
-       max-width: 280px;
+     .zodiac-wrapper {
+       width: 280px;
+       height: 280px;
      }
      
      .user-sign-symbol {
@@ -337,12 +249,10 @@
      }
    }
    
-   /* ============================================
-      RESPONSIVE - SMALL MOBILE
-      ============================================ */
    @media (max-width: 360px) {
-     .zodiac-svg-wrapper {
-       max-width: 250px;
+     .zodiac-wrapper {
+       width: 250px;
+       height: 250px;
      }
      
      .user-sign-symbol {
@@ -359,34 +269,25 @@
      }
    }
    
-   /* ============================================
-      ACCESSIBILITY - REDUCED MOTION
-      ============================================ */
    @media (prefers-reduced-motion: reduce) {
-     .zodiac-svg {
-       animation: none;
-     }
-     
-     .center-glow-circle,
-     .center-ring,
-     .outer-glow-ring,
-     .user-sign-content,
-     .user-sign-symbol {
+     .zodiac-wheel-layer,
+     .zodiac-image,
+     .user-sign-circle,
+     .user-sign-symbol,
+     .user-sign-image,
+     .zodiac-glow {
        animation: none;
      }
    }
    
-   /* ============================================
-      HOVER EFFECTS (Desktop)
-      ============================================ */
    @media (hover: hover) {
-     .zodiac-svg-wrapper:hover .zodiac-svg {
-       filter: drop-shadow(0 0 35px rgba(217, 182, 111, 0.8));
-       transition: filter 0.3s ease;
+     .zodiac-wrapper:hover .zodiac-glow {
+       opacity: 1;
+       transform: translate(-50%, -50%) scale(1.1);
      }
      
-     .user-sign-content:hover {
-       transform: scale(1.1);
+     .user-sign-layer:hover {
+       transform: translate(-50%, -50%) scale(1.1);
        transition: transform 0.3s ease;
      }
      

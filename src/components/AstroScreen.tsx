@@ -5,9 +5,13 @@ import './AstroScreen.css';
 const BG_IMAGE = 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/backgrounds/space-bg.webp';
 const ZODIAC_WHEEL = 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/test/lucid-origin_a_cinematic_photo_of_Ultra_ornate_golden_zodiac_wheel_12_astrological_symbols_ar-0%20(1)-Photoroom.png';
 
-// ზოდიაქოს ნიშნები
+// ზოდიაქოს ნიშნები - Aries-ს აქვს სურათი!
 const ZODIAC_SIGNS = {
-  aries: { name: 'Aries', symbol: '♈' },
+  aries: { 
+    name: 'Aries', 
+    symbol: '♈',
+    image: 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/test/Aries.png'
+  },
   taurus: { name: 'Taurus', symbol: '♉' },
   gemini: { name: 'Gemini', symbol: '♊' },
   cancer: { name: 'Cancer', symbol: '♋' },
@@ -23,7 +27,7 @@ const ZODIAC_SIGNS = {
 
 export default function AstroScreen() {
   const [energy] = useState(78);
-  const [userSign] = useState<keyof typeof ZODIAC_SIGNS>('leo');
+  const [userSign] = useState<keyof typeof ZODIAC_SIGNS>('aries');
 
   const currentSign = ZODIAC_SIGNS[userSign];
 
@@ -38,110 +42,46 @@ export default function AstroScreen() {
       {/* 📱 Content */}
       <div className="astro-content">
         
-        {/* 🎯 ZODIAC WHEEL - SVG VERSION */}
+        {/* 🎯 ZODIAC WHEEL */}
         <section className="zodiac-section">
           <motion.div 
-            className="zodiac-svg-wrapper"
+            className="zodiac-wrapper"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, ease: "easeOut" }}
           >
-            <svg 
-              viewBox="0 0 400 400" 
-              className="zodiac-svg"
-              xmlns="http://www.w3.org/2000/svg"
+            {/* LAYER 1: ბორბალი (ქვედა ფენა) */}
+            <motion.div 
+              className="zodiac-wheel-layer"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
             >
-              <defs>
-                {/* Glow filter */}
-                <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="8" result="blur" />
-                  <feMerge>
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
+              <img src={ZODIAC_WHEEL} alt="Zodiac Wheel" className="zodiac-image" />
+            </motion.div>
 
-                {/* Strong glow */}
-                <filter id="strongGlow" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="12" result="blur" />
-                  <feMerge>
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
+            {/* LAYER 2: ნიშნის წრე (ზედა ფენა) - ზუსტად ცენტრში */}
+            <motion.div 
+              className="user-sign-layer"
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.8, type: "spring" }}
+            >
+              <div className="user-sign-circle">
+                {/* თუ სურათი არსებობს - ვაჩვენოთ სურათი, თუ არა - სიმბოლო */}
+                {currentSign.image ? (
+                  <img 
+                    src={currentSign.image} 
+                    alt={currentSign.name}
+                    className="user-sign-image"
+                  />
+                ) : (
+                  <span className="user-sign-symbol">{currentSign.symbol}</span>
+                )}
+              </div>
+            </motion.div>
 
-                {/* Center glow */}
-                <radialGradient id="centerGlow" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%" stopColor="rgba(217, 182, 111, 0.3)" />
-                  <stop offset="70%" stopColor="rgba(217, 182, 111, 0.1)" />
-                  <stop offset="100%" stopColor="rgba(217, 182, 111, 0)" />
-                </radialGradient>
-
-                {/* Sign glow */}
-                <filter id="signGlow" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="4" result="blur" />
-                  <feMerge>
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-              </defs>
-
-              {/* ბორბლის სურათი */}
-              <image 
-                href={ZODIAC_WHEEL}
-                x="0" 
-                y="0" 
-                width="400" 
-                height="400"
-                className="zodiac-wheel-image"
-              />
-
-              {/* ცენტრის glow ეფექტი */}
-              <circle 
-                cx="200" 
-                cy="200" 
-                r="60" 
-                fill="url(#centerGlow)"
-                className="center-glow-circle"
-              />
-
-              {/* ცენტრის წრე (დეკორატიული) */}
-              <circle 
-                cx="200" 
-                cy="200" 
-                r="50" 
-                fill="none"
-                stroke="rgba(217, 182, 111, 0.6)"
-                strokeWidth="2"
-                filter="url(#glow)"
-                className="center-ring"
-              />
-
-              {/* მომხმარებლის ნიშანი - ზუსტად ცენტრში */}
-              <foreignObject x="150" y="150" width="100" height="100">
-                <div className="user-sign-container">
-                  <div className="user-sign-content">
-                    <span className="user-sign-symbol">{currentSign.symbol}</span>
-                  </div>
-                </div>
-              </foreignObject>
-
-              {/* გარე glow რგოლი */}
-              <circle 
-                cx="200" 
-                cy="200" 
-                r="195" 
-                fill="none"
-                stroke="rgba(217, 182, 111, 0.4)"
-                strokeWidth="1"
-                filter="url(#strongGlow)"
-                className="outer-glow-ring"
-              />
-            </svg>
+            {/* Glow ეფექტი */}
+            <div className="zodiac-glow" />
           </motion.div>
 
           {/* სათაური */}
