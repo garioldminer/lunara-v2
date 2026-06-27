@@ -31,7 +31,6 @@ const ZODIAC_SIGNS: Record<string, ZodiacSign> = {
   pisces: { name: 'Pisces', symbol: '♓' }
 };
 
-// Element position type
 type ElementPosition = {
   x: number;
   y: number;
@@ -40,7 +39,6 @@ type ElementPosition = {
   saved: boolean;
 };
 
-// Default positions
 const DEFAULT_POSITIONS: Record<string, ElementPosition> = {
   zodiac: { x: 50, y: 50, width: 320, height: 320, saved: false },
   lunar: { x: 50, y: 400, width: 200, height: 300, saved: false }
@@ -57,7 +55,6 @@ export default function AstroScreen() {
 
   const currentSign = ZODIAC_SIGNS[userSign];
 
-  // Save positions to localStorage
   const savePositions = () => {
     localStorage.setItem('astro-element-positions', JSON.stringify(positions));
     setPositions(prev => {
@@ -70,7 +67,6 @@ export default function AstroScreen() {
     alert('✅ პოზიციები შენახულია!');
   };
 
-  // Reset positions
   const resetPositions = () => {
     localStorage.removeItem('astro-element-positions');
     setPositions(DEFAULT_POSITIONS);
@@ -78,13 +74,11 @@ export default function AstroScreen() {
 
   return (
     <div className="astro-screen">
-      {/* 🌌 Background */}
       <div 
         className="cosmic-background"
         style={{ backgroundImage: `url(${BG_IMAGE})` }}
       />
 
-      {/* 🎛️ Edit Mode Controls */}
       {editMode && (
         <div className="edit-controls">
           <button onClick={savePositions} className="edit-btn save-btn">
@@ -104,22 +98,18 @@ export default function AstroScreen() {
           className="edit-mode-toggle"
           onClick={() => setEditMode(true)}
         >
-          ✏️ Edit Mode
+           Edit Mode
         </button>
       )}
 
-      {/*  Content */}
       <div className="astro-content">
         
-        {/* 🎯 ZODIAC WHEEL - Draggable */}
         <DraggableElement
-          id="zodiac"
           position={positions.zodiac}
           editMode={editMode}
           onPositionChange={(pos) => setPositions(prev => ({ ...prev, zodiac: pos }))}
         >
           <div className="zodiac-wrapper">
-            {/* LAYER 1: ნიშანი (ქვედა ფენა) */}
             <div className="user-sign-layer">
               <div className="user-sign-circle">
                 {currentSign?.image ? (
@@ -134,7 +124,6 @@ export default function AstroScreen() {
               </div>
             </div>
 
-            {/* LAYER 2: ბორბალი (ზედა ფენა) */}
             <motion.div 
               className="zodiac-wheel-layer"
               animate={{ rotate: 360 }}
@@ -147,9 +136,7 @@ export default function AstroScreen() {
           </div>
         </DraggableElement>
 
-        {/* 🌙 LUNAR PHASE - Draggable */}
         <DraggableElement
-          id="lunar"
           position={positions.lunar}
           editMode={editMode}
           onPositionChange={(pos) => setPositions(prev => ({ ...prev, lunar: pos }))}
@@ -200,20 +187,18 @@ export default function AstroScreen() {
 // DRAGGABLE ELEMENT COMPONENT
 // ============================================
 interface DraggableElementProps {
-  id: string;
   position: ElementPosition;
   editMode: boolean;
   onPositionChange: (pos: ElementPosition) => void;
   children: React.ReactNode;
 }
 
-function DraggableElement({ id, position, editMode, onPositionChange, children }: DraggableElementProps) {
+function DraggableElement({ position, editMode, onPositionChange, children }: DraggableElementProps) {
   const elementRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
-  // Mouse down - start dragging
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!editMode) return;
     if ((e.target as HTMLElement).classList.contains('resize-handle')) return;
@@ -226,7 +211,6 @@ function DraggableElement({ id, position, editMode, onPositionChange, children }
     });
   };
 
-  // Mouse move - dragging or resizing
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (isDragging) {
@@ -264,7 +248,6 @@ function DraggableElement({ id, position, editMode, onPositionChange, children }
     };
   }, [isDragging, isResizing, position, dragOffset, onPositionChange]);
 
-  // Touch support
   const handleTouchStart = (e: React.TouchEvent) => {
     if (!editMode) return;
     if ((e.target as HTMLElement).classList.contains('resize-handle')) return;
@@ -321,7 +304,6 @@ function DraggableElement({ id, position, editMode, onPositionChange, children }
     >
       {children}
       
-      {/* Resize handle - only in edit mode */}
       {editMode && (
         <div
           className="resize-handle"
@@ -330,11 +312,10 @@ function DraggableElement({ id, position, editMode, onPositionChange, children }
             setIsResizing(true);
           }}
         >
-          <div className="resize-icon">⤡</div>
+          <div className="resize-icon"></div>
         </div>
       )}
 
-      {/* Saved indicator */}
       {position.saved && (
         <div className="saved-indicator">✓</div>
       )}
