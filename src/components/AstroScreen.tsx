@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import './AstroScreen.css';
 
@@ -39,7 +39,6 @@ type ElementPosition = {
 };
 
 // ეს არის ჩაფიქსირებული კოორდინატები ყველასთვის
-// როცა მომხმარებელი დააფიქსირებს, ეს მნიშვნელობები შეიცვლება კოდში
 const FIXED_POSITIONS: Record<string, ElementPosition> = {
   zodiac: { x: 40, y: 40, width: 320, saved: true },
   lunar: { x: 90, y: 400, width: 220, saved: true }
@@ -60,7 +59,6 @@ export default function AstroScreen() {
 
   const currentSign = ZODIAC_SIGNS[userSign];
 
-  // Edit Mode-ში ვიყენებთ ლოკალურ კოორდინატებს
   useEffect(() => {
     if (editMode) {
       const saved = localStorage.getItem('astro-editor-positions');
@@ -70,16 +68,12 @@ export default function AstroScreen() {
         setPositions(FIXED_POSITIONS);
       }
     } else {
-      // ჩვეულებრივ რეჟიმში ყოველთვის FIXED_POSITIONS
       setPositions(FIXED_POSITIONS);
     }
   }, [editMode]);
 
   const savePositions = () => {
-    // ლოკალურად ვინახავთ
     localStorage.setItem('astro-editor-positions', JSON.stringify(positions));
-    
-    // ვაჩვენებთ JSON-ს რომ გადმოიწეროს
     setShowExport(true);
   };
 
@@ -144,7 +138,7 @@ export default function AstroScreen() {
           className="edit-mode-toggle"
           onClick={() => setEditMode(true)}
         >
-          ✏️
+          
         </button>
       )}
 
@@ -318,7 +312,7 @@ function DraggableElement({ position, editMode, onPositionChange, children }: Dr
           className="resize-handle"
           onMouseDown={(e) => { e.stopPropagation(); setIsResizing(true); }}
         >
-          <div className="resize-icon">⤡</div>
+          <div className="resize-icon"></div>
         </div>
       )}
     </div>
