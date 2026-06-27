@@ -193,11 +193,20 @@
   color: #050507;
 }
 
-/* Zodiac */
+/* ============================================
+   ZODIAC - ყოველთვის ცენტრში!
+   ============================================ */
+.zodiac-centered {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding-top: 20px;
+}
+
 .zodiac-wrapper {
   position: relative;
-  width: 100%;
-  aspect-ratio: 1;
+  width: 320px;
+  height: 320px;
 }
 
 .user-sign-layer {
@@ -254,7 +263,7 @@
 }
 
 /* ============================================
-   LUNAR PHASE - CURVED TEXT
+   LUNAR PHASE - პროპორციული პოზიცია
    ============================================ */
 .lunar-section {
   width: 100%;
@@ -289,7 +298,6 @@
   filter: brightness(1.1) contrast(1.1);
 }
 
-/* Curved Text SVG */
 .curved-text-svg {
   position: absolute;
   top: 0;
@@ -317,7 +325,6 @@
   letter-spacing: 1px;
 }
 
-/* Stats Overlay */
 .lunar-stats-overlay {
   position: absolute;
   top: 50%;
@@ -350,7 +357,6 @@
   letter-spacing: 1px;
 }
 
-/* Ritual Text */
 .lunar-ritual-text {
   position: absolute;
   bottom: 20px;
@@ -370,10 +376,20 @@
 
 .empty-space { height: 100px; }
 
+/* ============================================
+   RESPONSIVE
+   ============================================ */
 @media (max-width: 480px) {
   .edit-controls { right: 10px; padding: 10px; }
   .edit-btn { padding: 8px 12px; font-size: 10px; }
   .edit-mode-toggle { right: 10px; width: 40px; height: 40px; font-size: 16px; }
+  
+  .zodiac-wrapper {
+    width: 280px;
+    height: 280px;
+  }
+  
+  .user-sign-symbol { font-size: 40px; }
   
   .lunar-container {
     width: 260px;
@@ -385,20 +401,21 @@
     height: 150px;
   }
   
-  .curved-text-top {
-    font-size: 11px;
+  .curved-text-top { font-size: 11px; }
+  .curved-text-bottom { font-size: 10px; }
+  .stat-value { font-size: 16px; }
+  .lunar-ritual-text { font-size: 10px; bottom: 15px; }
+}
+
+@media (max-width: 360px) {
+  .zodiac-wrapper {
+    width: 250px;
+    height: 250px;
   }
   
-  .curved-text-bottom {
-    font-size: 10px;
-  }
-  
-  .stat-value {
-    font-size: 16px;
-  }
-  
-  .lunar-ritual-text {
-    font-size: 10px;
-    bottom: 15px;
-  }
+  .user-sign-symbol { font-size: 36px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zodiac-wheel-layer { animation: none; }
 }
