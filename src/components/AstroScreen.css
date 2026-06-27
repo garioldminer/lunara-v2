@@ -1,420 +1,437 @@
 /* ============================================
-   LUNARA - 3D COSMIC ASTRO SCREEN
+   LUNARA - ASTRO SCREEN
+   Premium Zodiac Wheel with User Sign
    ============================================ */
 
+   @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;500;600;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+
+   /* ============================================
+      MAIN CONTAINER
+      ============================================ */
    .astro-screen {
-    position: relative;
-    width: 100%;
-    min-height: 100vh;
-    background: #050507;
-    color: #F7F3EB;
-    overflow-x: hidden;
-    overflow-y: auto;
-    font-family: 'Inter', sans-serif;
-  }
-  
-  /* Cosmic Background */
-  .cosmic-background {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    pointer-events: none;
-    z-index: 0;
-  }
-  
-  .stars {
-    position: absolute;
-    width: 100%; height: 100%;
-    background-image: 
-      radial-gradient(1.5px 1.5px at 20px 30px, #D9B66F, transparent),
-      radial-gradient(1px 1px at 60px 80px, #fff, transparent),
-      radial-gradient(1.5px 1.5px at 100px 40px, #9C8CFF, transparent);
-    background-repeat: repeat;
-    background-size: 300px 150px;
-    animation: twinkle 8s ease-in-out infinite;
-    opacity: 0.7;
-  }
-  
-  @keyframes twinkle {
-    0%, 100% { opacity: 0.5; }
-    50% { opacity: 0.9; }
-  }
-  
-  .nebula {
-    position: absolute;
-    width: 100%; height: 100%;
-    background: radial-gradient(circle at 20% 30%, rgba(37, 21, 58, 0.4) 0%, transparent 50%);
-    animation: drift 40s ease-in-out infinite;
-  }
-  
-  @keyframes drift {
-    0%, 100% { transform: translate(0, 0); }
-    50% { transform: translate(-20px, 10px); }
-  }
-  
-  .flowing-energy {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(60px);
-    opacity: 0.3;
-    animation: flow 20s ease-in-out infinite;
-  }
-  
-  .energy-1 {
-    width: 300px; height: 300px;
-    background: radial-gradient(circle, rgba(217, 182, 111, 0.4), transparent);
-    top: 10%; left: 5%;
-  }
-  
-  .energy-2 {
-    width: 250px; height: 250px;
-    background: radial-gradient(circle, rgba(156, 140, 255, 0.3), transparent);
-    bottom: 20%; right: 5%;
-    animation-delay: -10s;
-  }
-  
-  @keyframes flow {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    50% { transform: translate(30px, -20px) scale(1.1); }
-  }
-  
-  .astro-content {
-    position: relative;
-    z-index: 10;
-    padding: 70px 16px 40px 16px;
-    max-width: 480px;
-    margin: 0 auto;
-  }
-  
-  /* Hero Section */
-  .hero-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 30px;
-  }
-  
-  .zodiac-wheel-container {
-    animation: rotateWheel 120s linear infinite;
-    margin-bottom: 20px;
-  }
-  
-  .zodiac-wheel-svg {
-    filter: drop-shadow(0 0 20px rgba(217, 182, 111, 0.4));
-  }
-  
-  @keyframes rotateWheel {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-  
-  .cosmic-energy-header {
-    text-align: center;
-    margin-bottom: 15px;
-  }
-  
-  .energy-title {
-    font-family: 'Cinzel', serif;
-    font-size: 24px;
-    font-weight: 700;
-    color: #D9B66F;
-    margin: 0 0 8px 0;
-    letter-spacing: 3px;
-    text-shadow: 0 0 20px rgba(217, 182, 111, 0.4);
-  }
-  
-  .energy-subtitle {
-    font-size: 13px;
-    color: rgba(247, 243, 235, 0.7);
-    margin: 0;
-  }
-  
-  .energy-badge {
-    display: flex;
-    justify-content: center;
-  }
-  
-  .energy-circle {
-    position: relative;
-    width: 85px; height: 85px;
-  }
-  
-  .energy-circle svg {
-    transform: rotate(-90deg);
-  }
-  
-  .energy-bg {
-    fill: none;
-    stroke: rgba(217, 182, 111, 0.15);
-    stroke-width: 8;
-  }
-  
-  .energy-progress {
-    fill: none;
-    stroke: #D9B66F;
-    stroke-width: 8;
-    stroke-linecap: round;
-    filter: drop-shadow(0 0 10px rgba(217, 182, 111, 0.6));
-  }
-  
-  .energy-value {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    font-family: 'Cinzel', serif;
-    font-size: 20px;
-    font-weight: 700;
-    color: #D9B66F;
-  }
-  
-  /* Main Grid */
-  .main-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-  }
-  
-  .left-section, .right-section {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-  
-  /* Organic Cards */
-  .organic-card {
-    background: rgba(11, 16, 32, 0.65);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(217, 182, 111, 0.2);
-    border-radius: 20px;
-    padding: 16px;
-    box-shadow: 
-      0 8px 32px rgba(0, 0, 0, 0.5),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  }
-  
-  .section-title {
-    font-family: 'Cinzel', serif;
-    font-size: 13px;
-    font-weight: 700;
-    color: #D9B66F;
-    margin: 0 0 15px 0;
-    letter-spacing: 1.5px;
-  }
-  
-  /* Insights */
-  .insights-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  
-  .insight-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  
-  .insight-icon {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    flex-shrink: 0;
-  }
-  
-  .purple-icon {
-    background: radial-gradient(circle, #9C8CFF, #6B5BFF);
-    box-shadow: 0 0 15px rgba(156, 140, 255, 0.4);
-  }
-  
-  .gold-icon {
-    background: radial-gradient(circle, #D9B66F, #C39A4B);
-    box-shadow: 0 0 15px rgba(217, 182, 111, 0.4);
-  }
-  
-  .insight-text {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .insight-label {
-    font-size: 10px;
-    color: rgba(247, 243, 235, 0.6);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 2px;
-  }
-  
-  .insight-value {
-    font-size: 12px;
-    color: #F7F3EB;
-    font-weight: 500;
-  }
-  
-  /* Compatible Signs */
-  .compatible-grid {
-    display: flex;
-    gap: 16px;
-    justify-content: space-around;
-  }
-  
-  .sign-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-  }
-  
-  .sign-circle {
-    width: 52px; height: 52px;
-    border-radius: 50%;
-    background: rgba(217, 182, 111, 0.08);
-    border: 2px solid rgba(217, 182, 111, 0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 26px;
-    color: #D9B66F;
-    box-shadow: 0 0 20px rgba(217, 182, 111, 0.15);
-  }
-  
-  .sign-name {
-    font-size: 11px;
-    color: rgba(247, 243, 235, 0.7);
-  }
-  
-  /* Lunar Phase */
-  .lunar-circle {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 1;
-    border-radius: 50%;
-    background: radial-gradient(circle at 50% 40%, rgba(15, 20, 40, 0.9), rgba(5, 5, 7, 0.95));
-    border: 2px solid rgba(217, 182, 111, 0.3);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    text-align: center;
-    box-shadow: 0 0 40px rgba(217, 182, 111, 0.15);
-  }
-  
-  .lunar-text-top {
-    position: absolute;
-    top: 15px;
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    font-weight: 700;
-    color: rgba(217, 182, 111, 0.7);
-    letter-spacing: 2px;
-  }
-  
-  .moon-realistic-container {
-    margin: 10px 0;
-  }
-  
-  .lunar-stats-row {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin: 8px 0;
-  }
-  
-  .lunar-stat {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .stat-percent {
-    font-family: 'Cinzel', serif;
-    font-size: 16px;
-    font-weight: 700;
-    color: #D9B66F;
-  }
-  
-  .stat-label {
-    font-size: 8px;
-    color: rgba(247, 243, 235, 0.5);
-  }
-  
-  .lunar-divider {
-    width: 1px; height: 30px;
-    background: rgba(217, 182, 111, 0.3);
-  }
-  
-  .lunar-desc {
-    font-size: 10px;
-    color: rgba(247, 243, 235, 0.8);
-    margin: 6px 0;
-    font-style: italic;
-  }
-  
-  .lunar-ritual {
-    display: flex;
-    gap: 6px;
-    font-size: 9px;
-  }
-  
-  .ritual-label { color: rgba(247, 243, 235, 0.5); }
-  .ritual-value { color: #D9B66F; font-weight: 600; }
-  
-  /* Small Planets */
-  .small-planets {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-  }
-  
-  .planet-svg-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-  }
-  
-  .planet-label {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-size: 9px;
-    color: #F7F3EB;
-    font-weight: 600;
-  }
-  
-  .planet-label span:last-child {
-    font-size: 8px;
-    color: #D9B66F;
-  }
-  
-  /* 3D Solar System */
-  .planetary-alignment {
-    min-height: 300px;
-  }
-  
-  .solar-system-3d {
-    width: 100%;
-    height: 260px;
-    border-radius: 12px;
-    overflow: hidden;
-    background: radial-gradient(circle at center, rgba(11, 16, 32, 0.8) 0%, rgba(5, 5, 7, 0.9) 100%);
-  }
-  
-  /* Responsive */
-  @media (max-width: 380px) {
-    .main-grid {
-      grid-template-columns: 1fr;
-    }
-    
-    .energy-title {
-      font-size: 20px;
-    }
-    
-    .zodiac-wheel-container svg {
-      width: 160px;
-      height: 160px;
-    }
-  }
+     position: relative;
+     width: 100%;
+     min-height: 100vh;
+     background: #050507;
+     overflow-x: hidden;
+     font-family: 'Cormorant Garamond', serif;
+     color: #F7F3EB;
+   }
+   
+   /* ============================================
+      COSMIC BACKGROUND
+      ============================================ */
+   .cosmic-background {
+     position: fixed;
+     top: 0;
+     left: 0;
+     width: 100%;
+     height: 100%;
+     background-size: cover;
+     background-position: center;
+     background-repeat: no-repeat;
+     z-index: 0;
+     pointer-events: none;
+   }
+   
+   /* დამატებითი overlay ფონისთვის */
+   .cosmic-background::after {
+     content: '';
+     position: absolute;
+     top: 0;
+     left: 0;
+     width: 100%;
+     height: 100%;
+     background: radial-gradient(
+       ellipse at center,
+       rgba(5, 5, 7, 0.2) 0%,
+       rgba(5, 5, 7, 0.5) 100%
+     );
+     pointer-events: none;
+   }
+   
+   /* ============================================
+      CONTENT CONTAINER
+      ============================================ */
+   .astro-content {
+     position: relative;
+     z-index: 10;
+     padding: 40px 20px 40px;
+     max-width: 480px;
+     margin: 0 auto;
+     min-height: 100vh;
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+   }
+   
+   /* ============================================
+      ZODIAC SECTION
+      ============================================ */
+   .zodiac-section {
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     gap: 20px;
+     margin-bottom: 30px;
+     width: 100%;
+   }
+   
+   /* ============================================
+      ZODIAC WHEEL WRAPPER
+      ============================================ */
+   .zodiac-wrapper {
+     position: relative;
+     width: 320px;
+     height: 320px;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+   }
+   
+   /* ბრუნვადი ბორბალი */
+   .zodiac-rotating {
+     width: 100%;
+     height: 100%;
+     border-radius: 50%;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     filter: 
+       drop-shadow(0 0 20px rgba(217, 182, 111, 0.6))
+       drop-shadow(0 0 40px rgba(217, 182, 111, 0.4))
+       drop-shadow(0 0 60px rgba(217, 182, 111, 0.2));
+   }
+   
+   .zodiac-image {
+     width: 100%;
+     height: 100%;
+     object-fit: contain;
+     animation: imageGlow 4s ease-in-out infinite;
+   }
+   
+   @keyframes imageGlow {
+     0%, 100% { 
+       filter: 
+         drop-shadow(0 0 15px rgba(217, 182, 111, 0.5))
+         drop-shadow(0 0 30px rgba(217, 182, 111, 0.3));
+     }
+     50% { 
+       filter: 
+         drop-shadow(0 0 25px rgba(217, 182, 111, 0.8))
+         drop-shadow(0 0 50px rgba(217, 182, 111, 0.5));
+     }
+   }
+   
+   /* ============================================
+      USER SIGN IN CENTER (მთავარი ელემენტი!)
+      ============================================ */
+   .user-sign-center {
+     position: absolute;
+     top: 50%;
+     left: 50%;
+     transform: translate(-50%, -50%);
+     width: 100px;
+     height: 100px;
+     border-radius: 50%;
+     background: radial-gradient(
+       circle at center,
+       rgba(217, 182, 111, 0.15) 0%,
+       rgba(5, 5, 7, 0.95) 70%
+     );
+     border: 2px solid rgba(217, 182, 111, 0.6);
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     box-shadow: 
+       0 0 30px rgba(217, 182, 111, 0.5),
+       0 0 60px rgba(217, 182, 111, 0.3),
+       inset 0 0 25px rgba(217, 182, 111, 0.15);
+     z-index: 10;
+     overflow: hidden;
+   }
+   
+   .user-sign-image {
+     width: 85%;
+     height: 85%;
+     object-fit: contain;
+     filter: 
+       drop-shadow(0 0 15px rgba(217, 182, 111, 0.9))
+       drop-shadow(0 0 30px rgba(217, 182, 111, 0.6));
+     animation: signPulse 3s ease-in-out infinite;
+   }
+   
+   .user-sign-symbol {
+     font-size: 56px;
+     color: #F4D47C;
+     text-shadow: 
+       0 0 20px rgba(217, 182, 111, 0.9),
+       0 0 40px rgba(217, 182, 111, 0.6);
+     filter: drop-shadow(0 0 8px rgba(217, 182, 111, 0.8));
+     animation: signPulse 3s ease-in-out infinite;
+   }
+   
+   @keyframes signPulse {
+     0%, 100% { 
+       filter: 
+         drop-shadow(0 0 15px rgba(217, 182, 111, 0.9))
+         drop-shadow(0 0 30px rgba(217, 182, 111, 0.6));
+       transform: scale(1);
+     }
+     50% { 
+       filter: 
+         drop-shadow(0 0 20px rgba(217, 182, 111, 1))
+         drop-shadow(0 0 40px rgba(217, 182, 111, 0.8));
+       transform: scale(1.05);
+     }
+   }
+   
+   /* ============================================
+      GLOW EFFECT (ბორბლის გარშემო)
+      ============================================ */
+   .zodiac-glow {
+     position: absolute;
+     top: 50%;
+     left: 50%;
+     transform: translate(-50%, -50%);
+     width: 110%;
+     height: 110%;
+     border-radius: 50%;
+     background: radial-gradient(
+       circle,
+       rgba(217, 182, 111, 0.25) 0%,
+       rgba(217, 182, 111, 0.1) 40%,
+       transparent 70%
+     );
+     animation: glowPulse 3s ease-in-out infinite;
+     pointer-events: none;
+     z-index: 1;
+   }
+   
+   @keyframes glowPulse {
+     0%, 100% { 
+       opacity: 0.5; 
+       transform: translate(-50%, -50%) scale(1);
+     }
+     50% { 
+       opacity: 1; 
+       transform: translate(-50%, -50%) scale(1.15);
+     }
+   }
+   
+   /* ============================================
+      ZODIAC TITLE
+      ============================================ */
+   .zodiac-title {
+     text-align: center;
+     margin-top: 10px;
+   }
+   
+   .zodiac-title h1 {
+     font-family: 'Cinzel Decorative', serif;
+     font-size: 22px;
+     font-weight: 700;
+     color: #D9B66F;
+     margin: 0;
+     letter-spacing: 3px;
+     text-shadow: 
+       0 0 20px rgba(217, 182, 111, 0.5),
+       0 0 40px rgba(217, 182, 111, 0.2);
+   }
+   
+   .zodiac-title p {
+     font-size: 13px;
+     color: rgba(247, 243, 235, 0.75);
+     margin: 8px 0 0;
+     font-style: italic;
+     letter-spacing: 0.5px;
+   }
+   
+   /* ============================================
+      ENERGY BADGE
+      ============================================ */
+   .energy-badge {
+     position: relative;
+     width: 70px;
+     height: 70px;
+     margin-top: 10px;
+   }
+   
+   .energy-badge svg {
+     width: 100%;
+     height: 100%;
+   }
+   
+   .energy-value {
+     position: absolute;
+     top: 50%;
+     left: 50%;
+     transform: translate(-50%, -50%);
+     font-family: 'Cinzel', serif;
+     font-size: 16px;
+     font-weight: 700;
+     color: #F4D47C;
+     text-shadow: 0 0 10px rgba(217, 182, 111, 0.8);
+   }
+   
+   /* ============================================
+      EMPTY SPACE (დანარჩენი ელემენტებისთვის)
+      ============================================ */
+   .empty-space {
+     flex: 1;
+     width: 100%;
+   }
+   
+   /* ============================================
+      RESPONSIVE - TABLET
+      ============================================ */
+   @media (max-width: 600px) {
+     .zodiac-wrapper {
+       width: 300px;
+       height: 300px;
+     }
+     
+     .user-sign-center {
+       width: 95px;
+       height: 95px;
+     }
+   }
+   
+   /* ============================================
+      RESPONSIVE - MOBILE
+      ============================================ */
+   @media (max-width: 480px) {
+     .astro-content {
+       padding: 30px 16px 30px;
+     }
+     
+     .zodiac-wrapper {
+       width: 280px;
+       height: 280px;
+     }
+     
+     .user-sign-center {
+       width: 85px;
+       height: 85px;
+     }
+     
+     .user-sign-image {
+       width: 80%;
+       height: 80%;
+     }
+     
+     .user-sign-symbol {
+       font-size: 48px;
+     }
+     
+     .zodiac-title h1 {
+       font-size: 18px;
+       letter-spacing: 2px;
+     }
+     
+     .zodiac-title p {
+       font-size: 12px;
+     }
+     
+     .energy-badge {
+       width: 60px;
+       height: 60px;
+     }
+     
+     .energy-value {
+       font-size: 14px;
+     }
+   }
+   
+   /* ============================================
+      RESPONSIVE - SMALL MOBILE
+      ============================================ */
+   @media (max-width: 360px) {
+     .zodiac-wrapper {
+       width: 250px;
+       height: 250px;
+     }
+     
+     .user-sign-center {
+       width: 75px;
+       height: 75px;
+     }
+     
+     .user-sign-symbol {
+       font-size: 42px;
+     }
+     
+     .zodiac-title h1 {
+       font-size: 16px;
+       letter-spacing: 1.5px;
+     }
+     
+     .zodiac-title p {
+       font-size: 11px;
+     }
+   }
+   
+   /* ============================================
+      ACCESSIBILITY - REDUCED MOTION
+      ============================================ */
+   @media (prefers-reduced-motion: reduce) {
+     .zodiac-rotating {
+       animation: none;
+     }
+     
+     .zodiac-image {
+       animation: none;
+     }
+     
+     .user-sign-image,
+     .user-sign-symbol {
+       animation: none;
+     }
+     
+     .zodiac-glow {
+       animation: none;
+       opacity: 0.7;
+     }
+   }
+   
+   /* ============================================
+      OPTIONAL - LOADING STATE
+      ============================================ */
+   .user-sign-center.loading {
+     opacity: 0.5;
+   }
+   
+   .user-sign-center.loading::after {
+     content: '';
+     position: absolute;
+     width: 60%;
+     height: 60%;
+     border: 3px solid rgba(217, 182, 111, 0.3);
+     border-top-color: #F4D47C;
+     border-radius: 50%;
+     animation: spin 1s linear infinite;
+   }
+   
+   @keyframes spin {
+     to { transform: rotate(360deg); }
+   }
+   
+   /* ============================================
+      OPTIONAL - HOVER EFFECTS
+      ============================================ */
+   @media (hover: hover) {
+     .zodiac-wrapper:hover .zodiac-glow {
+       opacity: 1;
+       transform: translate(-50%, -50%) scale(1.1);
+     }
+     
+     .user-sign-center:hover {
+       transform: translate(-50%, -50%) scale(1.1);
+       transition: transform 0.3s ease;
+     }
+     
+     .energy-badge:hover {
+       transform: scale(1.1);
+       transition: transform 0.3s ease;
+     }
+   }
