@@ -5,8 +5,15 @@ import './AstroScreen.css';
 const BG_IMAGE = 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/backgrounds/space-bg.webp';
 const ZODIAC_WHEEL = 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/test/lucid-origin_a_cinematic_photo_of_Ultra_ornate_golden_zodiac_wheel_12_astrological_symbols_ar-0%20(1)-Photoroom.png';
 
+// Type definition - ყველა ნიშანს შეიძლება ჰქონდეს image
+type ZodiacSign = {
+  name: string;
+  symbol: string;
+  image?: string;
+};
+
 // ზოდიაქოს ნიშნები - Aries-ს აქვს სურათი!
-const ZODIAC_SIGNS = {
+const ZODIAC_SIGNS: Record<string, ZodiacSign> = {
   aries: { 
     name: 'Aries', 
     symbol: '♈',
@@ -26,7 +33,7 @@ const ZODIAC_SIGNS = {
 };
 
 export default function AstroScreen() {
-  const [userSign] = useState<keyof typeof ZODIAC_SIGNS>('aries');
+  const [userSign] = useState<string>('aries');
 
   const currentSign = ZODIAC_SIGNS[userSign];
 
@@ -58,14 +65,14 @@ export default function AstroScreen() {
             >
               <div className="user-sign-circle">
                 {/* თუ სურათი არსებობს - ვაჩვენოთ სურათი, თუ არა - სიმბოლო */}
-                {currentSign.image ? (
+                {currentSign?.image ? (
                   <img 
                     src={currentSign.image} 
                     alt={currentSign.name}
                     className="user-sign-image"
                   />
                 ) : (
-                  <span className="user-sign-symbol">{currentSign.symbol}</span>
+                  <span className="user-sign-symbol">{currentSign?.symbol}</span>
                 )}
               </div>
             </motion.div>
@@ -84,7 +91,7 @@ export default function AstroScreen() {
           </motion.div>
         </section>
 
-        {/* ცარიელი სივრცე - აქ მომავალში დაემატება დანარჩენი ელემენტები */}
+        {/* ცარიელი სივრცე */}
         <div className="empty-space" />
       </div>
     </div>
