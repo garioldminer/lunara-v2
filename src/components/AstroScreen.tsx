@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { useCosmicData } from '../hooks/useCosmicData';
 import './AstroScreen.css';
 
 const BG_IMAGE = 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/backgrounds/space-bg.webp';
@@ -27,12 +28,41 @@ const ZODIAC_SIGNS: Record<string, ZodiacSign> = {
   pisces: { name: 'Pisces', symbol: '♓' }
 };
 
+// მთვარის ფაზის ფერები
+function getPhaseColor(phase: string): string {
+  const colors: Record<string, string> = {
+    'New Moon': 'rgba(20, 20, 40, 0.9)',
+    'Waxing Crescent': 'rgba(40, 40, 80, 0.9)',
+    'First Quarter': 'rgba(60, 60, 120, 0.9)',
+    'Waxing Gibbous': 'rgba(80, 80, 160, 0.9)',
+    'Full Moon': 'rgba(200, 200, 255, 0.9)',
+    'Waning Gibbous': 'rgba(160, 160, 200, 0.9)',
+    'Last Quarter': 'rgba(120, 120, 160, 0.9)',
+    'Waning Crescent': 'rgba(80, 80, 120, 0.9)'
+  };
+  return colors[phase] || colors['Waxing Gibbous'];
+}
+
 export default function AstroScreen() {
+  // რეალური მონაცემების მიღება ბაზიდან
+  const { data: cosmicData, loading, error } = useCosmicData();
+  
   const [userSign] = useState<string>('aries');
   const currentSign = ZODIAC_SIGNS[userSign];
 
-  const topText = 'LUNAR PHASE & WAXING GIBBOUS';
-  const bottomText = 'High energy • Take action';
+  // დინამიური მონაცემები რეალური ბაზიდან (fallback-ებით)
+  const moonPhase = cosmicData?.cosmic?.moon_phase || 'Waxing Gibbous';
+  const moonIllumination = cosmicData?.cosmic?.moon_illumination || 98;
+  const moonSign = cosmicData?.cosmic?.moon_sign || 'Capricorn';
+  const sunSign = cosmicData?.cosmic?.sun_sign || 'Cancer';
+  const energyLevel = cosmicData?.cosmic?.energy_level || 98;
+  const keyAdvice = cosmicData?.cosmic?.key_advice || 'Trust the cosmic flow today.';
+  const planets = cosmicData?.planets || [];
+  const aspects = cosmicData?.aspects || [];
+
+  // დინამიური ტექსტი
+  const topText = `LUNAR PHASE & ${moonPhase.toUpperCase()}`;
+  const bottomText = keyAdvice;
 
   const [needsMarqueeTop, setNeedsMarqueeTop] = useState(false);
   const [needsMarqueeBottom, setNeedsMarqueeBottom] = useState(false);
@@ -58,7 +88,36 @@ export default function AstroScreen() {
 
     const timer = setTimeout(measureText, 100);
     return () => clearTimeout(timer);
-  }, []);
+  }, [topText, bottomText]);
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="astro-screen">
+        <div className="cosmic-background" style={{ backgroundImage: `url(${BG_IMAGE})` }} />
+        <div className="loading-container">
+          <div className="loading-spinner" />
+          <p className="loading-text">Loading cosmic data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error handling - მაინც ვაჩვენოთ UI fallback-ებით
+  if (error) {
+    console.warn('⚠️ Cosmic data error, using fallbacks:', error);
+  }
+
+  // Debug info კონსოლში
+  console.log('🌙 Cosmic Data:', {
+    moonPhase,
+    moonIllumination,
+    moonSign,
+    sunSign,
+    energyLevel,
+    planetsCount: planets.length,
+    aspectsCount: aspects.length
+  });
 
   return (
     <div className="astro-screen">
@@ -123,16 +182,16 @@ export default function AstroScreen() {
               className="lunar-moon-svg"
             />
 
-            {/* 2. რგოლი */}
+            {/* 2. რგოლი - დინამიური ფერით */}
             <circle 
               cx="150" cy="150" r="85" 
               fill="none" 
-              stroke="rgba(20, 15, 50, 0.9)" 
+              stroke={getPhaseColor(moonPhase)} 
               strokeWidth="20" 
               className="lunar-ring" 
             />
 
-            {/* 3. ზედა ტექსტი */}
+            {/* 3. ზედა ტექსტი - დინამიური */}
             <text 
               ref={topTextRef}
               className={`lunar-text-top ${needsMarqueeTop ? 'marquee-text' : 'static-text'}`}
@@ -155,7 +214,7 @@ export default function AstroScreen() {
               )}
             </text>
 
-            {/* 4. ქვედა ტექსტი */}
+            {/* 4. ქვედა ტექსტი - დინამიური რჩევა */}
             <text 
               ref={bottomTextRef}
               className={`lunar-text-bottom ${needsMarqueeBottom ? 'marquee-text' : 'static-text'}`}
