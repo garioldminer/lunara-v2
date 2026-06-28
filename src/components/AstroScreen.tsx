@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useCosmicData } from '../hooks/useCosmicData';
 import './AstroScreen.css';
 
@@ -44,13 +44,13 @@ function getPhaseColor(phase: string): string {
 }
 
 export default function AstroScreen() {
-  // რეალური მონაცემების მიღება ბაზიდან
+  // მონაცემების მიღება ბაზიდან
   const { data: cosmicData, loading, error } = useCosmicData();
   
   const [userSign] = useState<string>('aries');
   const currentSign = ZODIAC_SIGNS[userSign];
 
-  // დინამიური მონაცემები რეალური ბაზიდან (fallback-ებით)
+  // მონაცემები fallback-ებით - ყოველთვის არის მნიშვნელობა
   const moonPhase = cosmicData?.cosmic?.moon_phase || 'Waxing Gibbous';
   const moonIllumination = cosmicData?.cosmic?.moon_illumination || 98;
   const moonSign = cosmicData?.cosmic?.moon_sign || 'Capricorn';
@@ -63,6 +63,24 @@ export default function AstroScreen() {
   // დინამიური ტექსტი
   const topText = `LUNAR PHASE & ${moonPhase.toUpperCase()}`;
   const bottomText = keyAdvice;
+
+  // მონაცემები ჩაიტვირთა?
+  const [dataLoaded, setDataLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!loading && cosmicData) {
+      setDataLoaded(true);
+      console.log('🌙 Cosmic Data Loaded:', {
+        moonPhase,
+        moonIllumination,
+        moonSign,
+        sunSign,
+        energyLevel,
+        planetsCount: planets.length,
+        aspectsCount: aspects.length
+      });
+    }
+  }, [loading, cosmicData]);
 
   const [needsMarqueeTop, setNeedsMarqueeTop] = useState(false);
   const [needsMarqueeBottom, setNeedsMarqueeBottom] = useState(false);
@@ -90,42 +108,14 @@ export default function AstroScreen() {
     return () => clearTimeout(timer);
   }, [topText, bottomText]);
 
-  // Loading state
-  if (loading) {
-    return (
-      <div className="astro-screen">
-        <div className="cosmic-background" style={{ backgroundImage: `url(${BG_IMAGE})` }} />
-        <div className="loading-container">
-          <div className="loading-spinner" />
-          <p className="loading-text">Loading cosmic data...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Error handling - მაინც ვაჩვენოთ UI fallback-ებით
-  if (error) {
-    console.warn('⚠️ Cosmic data error, using fallbacks:', error);
-  }
-
-  // Debug info კონსოლში
-  console.log('🌙 Cosmic Data:', {
-    moonPhase,
-    moonIllumination,
-    moonSign,
-    sunSign,
-    energyLevel,
-    planetsCount: planets.length,
-    aspectsCount: aspects.length
-  });
-
   return (
     <div className="astro-screen">
+      {/* ფონი - ყოველთვის ჩაიტვირთება */}
       <div className="cosmic-background" style={{ backgroundImage: `url(${BG_IMAGE})` }} />
 
       <div className="astro-content">
         
-        {/*  ZODIAC WHEEL */}
+        {/* 🌟 ZODIAC WHEEL - ყოველთვის ხილული */}
         <div className="zodiac-centered-wrapper">
           <div className="zodiac-wrapper">
             <div className="user-sign-layer">
@@ -150,7 +140,7 @@ export default function AstroScreen() {
           </div>
         </div>
 
-        {/* 🌙 LUNAR PHASE - მარჯვნივ 2px, ზემოთ აწეული */}
+        {/* 🌙 LUNAR PHASE - ყოველთვის ხილული */}
         <div className="lunar-right-wrapper">
           <svg className="lunar-svg" viewBox="0 0 300 300">
             <defs>
@@ -191,56 +181,99 @@ export default function AstroScreen() {
               className="lunar-ring" 
             />
 
-            {/* 3. ზედა ტექსტი - დინამიური */}
+            {/* 3. ზედა ტექსტი - AnimatePresence-ით */}
             <text 
               ref={topTextRef}
               className={`lunar-text-top ${needsMarqueeTop ? 'marquee-text' : 'static-text'}`}
             >
-              {needsMarqueeTop ? (
-                <textPath href="#topTextPath">
-                  {topText} • {topText} • {topText} •
-                  <animate 
-                    attributeName="startOffset" 
-                    from="0%" 
-                    to="-33.33%" 
-                    dur="20s" 
-                    repeatCount="indefinite" 
-                  />
-                </textPath>
-              ) : (
-                <textPath href="#topTextPath" startOffset="50%" textAnchor="middle">
-                  {topText}
-                </textPath>
-              )}
+              <AnimatePresence mode="wait">
+                {needsMarqueeTop ? (
+                  <motion.textPath 
+                    key={`top-marquee-${moonPhase}`}
+                    href="#topTextPath"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    {topText} • {topText} • {topText} •
+                    <animate 
+                      attributeName="startOffset" 
+                      from="0%" 
+                      to="-33.33%" 
+                      dur="20s" 
+                      repeatCount="indefinite" 
+                    />
+                  </motion.textPath>
+                ) : (
+                  <motion.textPath 
+                    key={`top-static-${moonPhase}`}
+                    href="#topTextPath" 
+                    startOffset="50%" 
+                    textAnchor="middle"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    {topText}
+                  </motion.textPath>
+                )}
+              </AnimatePresence>
             </text>
 
-            {/* 4. ქვედა ტექსტი - დინამიური რჩევა */}
+            {/* 4. ქვედა ტექსტი - AnimatePresence-ით */}
             <text 
               ref={bottomTextRef}
               className={`lunar-text-bottom ${needsMarqueeBottom ? 'marquee-text' : 'static-text'}`}
             >
-              {needsMarqueeBottom ? (
-                <textPath href="#bottomTextPath">
-                  {bottomText} • {bottomText} • {bottomText} •
-                  <animate 
-                    attributeName="startOffset" 
-                    from="0%" 
-                    to="-33.33%" 
-                    dur="20s" 
-                    repeatCount="indefinite" 
-                  />
-                </textPath>
-              ) : (
-                <textPath href="#bottomTextPath" startOffset="50%" textAnchor="middle">
-                  {bottomText}
-                </textPath>
-              )}
+              <AnimatePresence mode="wait">
+                {needsMarqueeBottom ? (
+                  <motion.textPath 
+                    key={`bottom-marquee-${keyAdvice}`}
+                    href="#bottomTextPath"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    {bottomText} • {bottomText} • {bottomText} •
+                    <animate 
+                      attributeName="startOffset" 
+                      from="0%" 
+                      to="-33.33%" 
+                      dur="20s" 
+                      repeatCount="indefinite" 
+                    />
+                  </motion.textPath>
+                ) : (
+                  <motion.textPath 
+                    key={`bottom-static-${keyAdvice}`}
+                    href="#bottomTextPath" 
+                    startOffset="50%" 
+                    textAnchor="middle"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    {bottomText}
+                  </motion.textPath>
+                )}
+              </AnimatePresence>
             </text>
           </svg>
         </div>
 
         <div className="empty-space" />
       </div>
+
+      {/* მცირე loading indicator კუთხეში - თუ მონაცემები ჯერ არ ჩაიტვირთა */}
+      {!dataLoaded && loading && (
+        <div className="corner-loading">
+          <div className="corner-spinner" />
+        </div>
+      )}
     </div>
   );
 }
