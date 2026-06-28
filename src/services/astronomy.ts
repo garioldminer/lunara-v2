@@ -1,6 +1,6 @@
 // src/services/astronomy.ts
 import { Jupiter, Mars, Mercury, Moon, Neptune, Saturn, Sun, Uranus, Venus } from 'astronomia';
-import { JulianDay } from 'astronomia/julian';
+import { JD } from 'astronomia/julian';
 
 // ზოდიაქოს ნიშნები
 const ZODIAC_SIGNS = [
@@ -16,32 +16,41 @@ const MOON_PHASES = [
 ];
 
 /**
+ * თარიღიდან Julian Day-ის გამოთვლა
+ */
+function dateToJD(date: Date): number {
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const hour = date.getHours() + date.getMinutes() / 60;
+  
+  return JD.fromCalendarDate(year, month, day + hour / 24);
+}
+
+/**
  * გამოთვლის პლანეტის პოზიციას კონკრეტულ თარიღზე
  */
 export function calculatePlanetPosition(
   planet: any, 
   date: Date
 ): { sign: string; degree: number; retrograde: boolean } {
-  const jd = JulianDay.fromCalendarDate(
-    date.getFullYear(),
-    date.getMonth() + 1,
-    date.getDate()
-  );
+  const jd = dateToJD(date);
   
   // პლანეტის გეოცენტრული პოზიცია
   const pos = planet.position(jd);
   
   // ეკლიპტიკური გრძედი (0-360°)
-  const eclipticLongitude = pos.toEcliptic().lon * 180 / Math.PI;
+  const ecliptic = pos.toEcliptic();
+  const eclipticLongitude = ((ecliptic.lon * 180) / Math.PI + 360) % 360;
   
   // ნიშნის განსაზღვრა (თითოეული 30°)
   const signIndex = Math.floor(eclipticLongitude / 30) % 12;
   const degree = eclipticLongitude % 30;
   
-  // რეტროგრადულობის შემოწმება (მარტივი მეთოდი)
+  // რეტროგრადულობის შემოწმება
   const jdYesterday = jd - 1;
   const posYesterday = planet.position(jdYesterday);
-  const lonYesterday = posYesterday.toEcliptic().lon * 180 / Math.PI;
+  const lonYesterday = ((posYesterday.toEcliptic().lon * 180) / Math.PI + 360) % 360;
   const retrograde = eclipticLongitude < lonYesterday;
   
   return {
@@ -60,28 +69,25 @@ export function calculateMoonData(date: Date): {
   sign: string;
   degree: number;
 } {
-  const jd = JulianDay.fromCalendarDate(
-    date.getFullYear(),
-    date.getMonth() + 1,
-    date.getDate()
-  );
+  const jd = dateToJD(date);
   
   // მთვარის პოზიცია
   const moonPos = Moon.position(jd);
-  const eclipticLongitude = moonPos.toEcliptic().lon * 180 / Math.PI;
+  const ecliptic = moonPos.toEcliptic();
+  const eclipticLongitude = ((ecliptic.lon * 180) / Math.PI + 360) % 360;
   
   // ნიშანი
   const signIndex = Math.floor(eclipticLongitude / 30) % 12;
   const degree = eclipticLongitude % 30;
   
-  // მთვარის ფაზა (მარტივი გამოთვლა)
-  // სინოდური თვე ≈ 29.53 დღე
-  const newMoonReference = JulianDay.fromCalendarDate(2000, 1, 6); // ცნობილი ახალმთვარე
-  const daysSinceNewMoon = (jd - newMoonReference) % 29.53;
-  const phaseIndex = Math.floor((daysSinceNewMoon / 29.53) * 8) % 8;
+  // მთვარის ფაზა
+  // სინოდური თვე ≈ 29.53059 დღე
+  const newMoonReference = JD.fromCalendarDate(2000, 1, 6);
+  const daysSinceNewMoon = (jd - newMoonReference) % 29.53059;
+  const phaseIndex = Math.floor((daysSinceNewMoon / 29.53059) * 8) % 8;
   
   // განათება (0-100%)
-  const illumination = ((1 - Math.cos((daysSinceNewMoon / 29.53) * 2 * Math.PI)) / 2) * 100;
+  const illumination = ((1 - Math.cos((daysSinceNewMoon / 29.53059) * 2 * Math.PI)) / 2) * 100;
   
   return {
     phase: MOON_PHASES[phaseIndex],
@@ -174,7 +180,7 @@ export function calculateCosmicData(date: Date = new Date()) {
   // 4. მზის ნიშანი
   const sunData = planets.find(p => p.name === 'Sun');
   
-  // 5. დომინანტი ელემენტი (მარტივი ლოგიკა)
+  // 5. დომინანტი ელემენტი
   const elementCounts = { Fire: 0, Earth: 0, Air: 0, Water: 0 };
   const signToElement: Record<string, string> = {
     'Aries': 'Fire', 'Leo': 'Fire', 'Sagittarius': 'Fire',
@@ -191,7 +197,7 @@ export function calculateCosmicData(date: Date = new Date()) {
   const dominantElement = Object.entries(elementCounts)
     .sort((a, b) => b[1] - a[1])[0][0];
   
-  // 6. ენერგიის დონე (მთვარის განათებაზე დაყრდნობით)
+  // 6. ენერგიის დონე
   const energyLevel = Math.round(moonData.illumination);
   
   return {
@@ -209,7 +215,7 @@ export function calculateCosmicData(date: Date = new Date()) {
 }
 
 // ტესტირებისთვის
-if (typeof window === 'undefined') {
+if (typeof window === 'undefined' && require.main === module) {
   const today = new Date();
   console.log('=== დღევანდელი კოსმოსური მონაცემები ===');
   console.log(JSON.stringify(calculateCosmicData(today), null, 2));
