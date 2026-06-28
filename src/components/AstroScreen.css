@@ -116,6 +116,44 @@
 }
 
 /* ============================================
+   HEADER - Back button
+   ============================================ */
+.astro-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.astro-back-btn {
+  background: rgba(217, 182, 111, 0.1);
+  border: 1px solid rgba(217, 182, 111, 0.3);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #D9B66F;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.astro-back-btn:hover {
+  background: rgba(217, 182, 111, 0.2);
+  transform: scale(1.1);
+}
+
+.astro-back-btn:active {
+  transform: scale(0.95);
+}
+
+/* ============================================
    LUNAR - მარჯვნივ 2px, ზემოთ აწეული
    ============================================ */
 .lunar-right-wrapper {
@@ -189,6 +227,8 @@
   .lunar-svg { width: 200px; height: 200px; }
   .lunar-text-top, .lunar-text-bottom { font-size: 8px; }
   .corner-spinner { width: 18px; height: 18px; }
+  .astro-header { padding: 12px; }
+  .astro-back-btn { width: 36px; height: 36px; }
 }
 
 @media (max-width: 360px) {
@@ -196,10 +236,13 @@
   .user-sign-symbol { font-size: 36px; }
   .lunar-svg { width: 180px; height: 180px; }
   .corner-spinner { width: 16px; height: 16px; }
+  .astro-header { padding: 10px; }
+  .astro-back-btn { width: 32px; height: 32px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .zodiac-wheel-layer { animation: none; }
   .corner-spinner { animation: none; border-top-color: transparent; }
   .lunar-ring { transition: none; }
+  .astro-back-btn { transition: none; }
 }

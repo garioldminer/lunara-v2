@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft } from 'lucide-react';
 import { useCosmicData } from '../hooks/useCosmicData';
 import './AstroScreen.css';
 
@@ -28,7 +29,7 @@ const ZODIAC_SIGNS: Record<string, ZodiacSign> = {
   pisces: { name: 'Pisces', symbol: '♓' }
 };
 
-// Props interface - onNavigate prop-ისთვის
+// Props interface
 interface Props {
   onNavigate?: (screen: string) => void;
 }
@@ -48,9 +49,8 @@ function getPhaseColor(phase: string): string {
   return colors[phase] || colors['Waxing Gibbous'];
 }
 
-// ✅ Props parameter დამატებულია
+// ✅ onNavigate prop-ი აქ არის destructured
 export default function AstroScreen({ onNavigate }: Props) {
-  // ✅ error variable ამოღებულია
   const { data: cosmicData, loading } = useCosmicData();
   
   const [userSign] = useState<string>('aries');
@@ -118,6 +118,15 @@ export default function AstroScreen({ onNavigate }: Props) {
     <div className="astro-screen">
       {/* ფონი */}
       <div className="cosmic-background" style={{ backgroundImage: `url(${BG_IMAGE})` }} />
+
+      {/* ✅ Back button header - onNavigate გამოიყენება აქ */}
+      {onNavigate && (
+        <div className="astro-header">
+          <button className="astro-back-btn" onClick={() => onNavigate('home')}>
+            <ArrowLeft size={20} />
+          </button>
+        </div>
+      )}
 
       <div className="astro-content">
         
