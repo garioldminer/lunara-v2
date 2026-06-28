@@ -2,12 +2,7 @@
 // AI ADMIN SERVICE - მართვის ფუნქციები
 // ============================================
 
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL!,
-  import.meta.env.VITE_SUPABASE_ANON_KEY!
-);
+import { supabase } from '../supabase';
 
 // ============================================
 // TYPES
@@ -79,6 +74,11 @@ export interface OperationResult {
 // ============================================
 
 export async function getAllProviders(): Promise<AIProvider[]> {
+  if (!supabase) {
+    console.error('❌ Supabase not initialized');
+    return [];
+  }
+
   try {
     console.log('🔍 [getAllProviders] Fetching providers...');
     const { data, error } = await supabase
@@ -99,6 +99,8 @@ export async function updateProvider(
   providerId: string,
   updates: Partial<AIProvider>
 ): Promise<OperationResult> {
+  if (!supabase) return { success: false, error: 'Supabase not initialized' };
+
   try {
     const { data, error } = await supabase
       .from('ai_providers')
@@ -129,6 +131,11 @@ export async function resetCircuitBreaker(providerId: string): Promise<Operation
 // ============================================
 
 export async function getAllApiKeys(): Promise<AIApiKey[]> {
+  if (!supabase) {
+    console.error('❌ Supabase not initialized');
+    return [];
+  }
+
   try {
     console.log('🔍 [getAllApiKeys] Fetching API keys...');
     const { data, error } = await supabase
@@ -158,6 +165,8 @@ export async function addApiKey(
   dailyLimit: number = 1000,
   priority: number = 1
 ): Promise<OperationResult> {
+  if (!supabase) return { success: false, error: 'Supabase not initialized' };
+
   try {
     console.log('🔑 [addApiKey] Attempting to insert:', { providerName, dailyLimit, priority });
     
@@ -188,6 +197,8 @@ export async function addApiKey(
 }
 
 export async function updateApiKey(keyId: string, updates: Partial<AIApiKey>): Promise<OperationResult> {
+  if (!supabase) return { success: false, error: 'Supabase not initialized' };
+
   try {
     const { data, error } = await supabase
       .from('ai_api_keys')
@@ -203,6 +214,8 @@ export async function updateApiKey(keyId: string, updates: Partial<AIApiKey>): P
 }
 
 export async function deleteApiKey(keyId: string): Promise<OperationResult> {
+  if (!supabase) return { success: false, error: 'Supabase not initialized' };
+
   try {
     const { data, error } = await supabase
       .from('ai_api_keys')
@@ -229,6 +242,8 @@ export async function testApiKey(keyId: string): Promise<{
   message: string;
   details?: any;
 }> {
+  if (!supabase) return { success: false, message: 'Supabase not initialized' };
+
   const debugLog: any[] = [];
   const log = (msg: string, data?: any) => {
     const entry = `[${new Date().toISOString()}] ${msg}`;
@@ -469,6 +484,11 @@ export async function testApiKey(keyId: string): Promise<{
 // ============================================
 
 export async function getAllPrompts(): Promise<AIPrompt[]> {
+  if (!supabase) {
+    console.error('❌ Supabase not initialized');
+    return [];
+  }
+
   try {
     const { data, error } = await supabase
       .from('ai_prompts')
@@ -491,6 +511,8 @@ export async function addPrompt(prompt: {
   user_prompt_template: string;
   variables?: string[];
 }): Promise<OperationResult> {
+  if (!supabase) return { success: false, error: 'Supabase not initialized' };
+
   try {
     const { data, error } = await supabase
       .from('ai_prompts')
@@ -510,6 +532,8 @@ export async function addPrompt(prompt: {
 }
 
 export async function updatePrompt(promptId: string, updates: Partial<AIPrompt>): Promise<OperationResult> {
+  if (!supabase) return { success: false, error: 'Supabase not initialized' };
+
   try {
     const { data, error } = await supabase
       .from('ai_prompts')
@@ -525,6 +549,8 @@ export async function updatePrompt(promptId: string, updates: Partial<AIPrompt>)
 }
 
 export async function deletePrompt(promptId: string): Promise<OperationResult> {
+  if (!supabase) return { success: false, error: 'Supabase not initialized' };
+
   try {
     const { data, error } = await supabase
       .from('ai_prompts')
@@ -544,10 +570,14 @@ export async function deletePrompt(promptId: string): Promise<OperationResult> {
 // ============================================
 
 export async function getTodayStats(): Promise<AIUsageStats[]> {
+  if (!supabase) {
+    console.error('❌ Supabase not initialized');
+    return [];
+  }
+
   try {
     console.log('🔍 [getTodayStats] Fetching today stats...');
     
-    // მივიღოთ დღევანდელი მონაცემები ai_usage-დან
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const todayStr = today.toISOString();
@@ -568,7 +598,6 @@ export async function getTodayStats(): Promise<AIUsageStats[]> {
       return [];
     }
 
-    // დავაჯგუფოთ provider-ის მიხედვით
     const grouped: { [key: string]: AIUsageStats } = {};
     
     data.forEach((item: any) => {
@@ -598,7 +627,6 @@ export async function getTodayStats(): Promise<AIUsageStats[]> {
       grouped[provider].total_cost += Number(item.cost) || 0;
     });
     
-    // გამოვთვალოთ average response time
     Object.keys(grouped).forEach(provider => {
       const providerData = data.filter((item: any) => item.provider === provider);
       const totalTime = providerData.reduce((sum: number, item: any) => 
@@ -619,10 +647,14 @@ export async function getTodayStats(): Promise<AIUsageStats[]> {
 }
 
 export async function getApiKeyUsage(): Promise<any[]> {
+  if (!supabase) {
+    console.error('❌ Supabase not initialized');
+    return [];
+  }
+
   try {
     console.log('🔍 [getApiKeyUsage] Fetching API key usage...');
     
-    // მივიღოთ ყველა API key
     const { data: keys, error: keysError } = await supabase
       .from('ai_api_keys')
       .select('id, provider_name, current_usage, daily_limit');
@@ -637,7 +669,6 @@ export async function getApiKeyUsage(): Promise<any[]> {
       return [];
     }
     
-    // გამოვთვალოთ usage percentage
     const result = keys.map((key: any) => {
       const currentUsage = key.current_usage || 0;
       const dailyLimit = key.daily_limit || 1000;
@@ -663,6 +694,11 @@ export async function getApiKeyUsage(): Promise<any[]> {
 }
 
 export async function getCacheStats(): Promise<any[]> {
+  if (!supabase) {
+    console.error('❌ Supabase not initialized');
+    return [];
+  }
+
   try {
     const { data, error } = await supabase.from('ai_cache').select('*');
     if (error) throw error;
@@ -674,6 +710,11 @@ export async function getCacheStats(): Promise<any[]> {
 }
 
 export async function getKnowledgeBaseStats(): Promise<{ total: number; categories: any[] }> {
+  if (!supabase) {
+    console.error('❌ Supabase not initialized');
+    return { total: 0, categories: [] };
+  }
+
   try {
     const { count } = await supabase.from('knowledge_base').select('*', { count: 'exact', head: true });
     const { data: categories } = await supabase.from('knowledge_base').select('category');
