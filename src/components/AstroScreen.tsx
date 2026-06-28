@@ -1,294 +1,325 @@
-import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
-import { useCosmicData } from '../hooks/useCosmicData';
-import './AstroScreen.css';
+import { useEffect, useState } from 'react';
+import SplashScreen from './components/SplashScreen';
+import OnboardingWelcome from './components/OnboardingWelcome';
+import OnboardingZodiac from './components/OnboardingZodiac';
+import OnboardingFirstReading from './components/OnboardingFirstReading';
+import HomeScreen from './components/HomeScreen';
+import CardsScreen from './components/CardsScreen';
+import ReadingScreen from './components/ReadingScreen';
+import AstroScreen from './components/AstroScreen';
+import ProfileScreen from './components/ProfileScreen';
+import CardFanScreen from './components/CardFanScreen';
+import CardDetailScreen from './components/CardDetailScreen';
+import DailyCardScreen from './components/DailyCardScreen';
+import ThreeCardReadingScreen from './components/ThreeCardReadingScreen';
+import ReadingHistoryScreen from './components/ReadingHistoryScreen';
+import CelticCrossReadingScreen from './components/CelticCrossReadingScreen';
+import HorseshoeReadingScreen from './components/HorseshoeReadingScreen';
+import RelationshipReadingScreen from './components/RelationshipReadingScreen';
+import AdminScreen from './components/AdminScreen';
+import AdminAIManagement from './components/AdminAIManagement';
+import SubscriptionScreen from './components/SubscriptionScreen';
+import ServicesScreen from './components/ServicesScreen';
+import BottomNav from './components/BottomNav';
+import { UserProvider, useUser } from './context/UserContext';
+import { SettingsProvider } from './context/SettingsContext';
+import { getTelegramUser } from './lib/telegramAuth';
+import { getOrCreateUser, completeOnboarding } from './lib/userService';
+import './App.css';
 
-const BG_IMAGE = 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/backgrounds/space-bg.webp';
-const ZODIAC_WHEEL = 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/test/lucid-origin_a_cinematic_photo_of_Ultra_ornate_golden_zodiac_wheel_12_astrological_symbols_ar-0%20(1)-Photoroom.png';
-const MOON_IMAGE = 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/planets/moon.webp';
+type Screen = 
+  | 'splash' 
+  | 'welcome' 
+  | 'zodiac' 
+  | 'first-reading' 
+  | 'home' 
+  | 'cards'
+  | 'reading'
+  | 'astro'
+  | 'profile'
+  | 'card-fan'
+  | 'card-detail'
+  | 'daily-card'
+  | 'three-card-reading'
+  | 'reading-history'
+  | 'celtic-cross'
+  | 'horseshoe'
+  | 'relationship'
+  | 'admin'
+  | 'ai-management'
+  | 'subscription'
+  | 'services';
 
-type ZodiacSign = {
-  name: string;
-  symbol: string;
-  image?: string;
-};
-
-const ZODIAC_SIGNS: Record<string, ZodiacSign> = {
-  aries: { name: 'Aries', symbol: '', image: 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/test/Aries.png' },
-  taurus: { name: 'Taurus', symbol: '♉' },
-  gemini: { name: 'Gemini', symbol: '♊' },
-  cancer: { name: 'Cancer', symbol: '♋' },
-  leo: { name: 'Leo', symbol: '' },
-  virgo: { name: 'Virgo', symbol: '♍' },
-  libra: { name: 'Libra', symbol: '♎' },
-  scorpio: { name: 'Scorpio', symbol: '♏' },
-  sagittarius: { name: 'Sagittarius', symbol: '♐' },
-  capricorn: { name: 'Capricorn', symbol: '♑' },
-  aquarius: { name: 'Aquarius', symbol: '' },
-  pisces: { name: 'Pisces', symbol: '♓' }
-};
-
-// Props interface
-interface Props {
-  onNavigate?: (screen: string) => void;
-}
-
-// მთვარის ფაზის ფერები
-function getPhaseColor(phase: string): string {
-  const colors: Record<string, string> = {
-    'New Moon': 'rgba(20, 20, 40, 0.9)',
-    'Waxing Crescent': 'rgba(40, 40, 80, 0.9)',
-    'First Quarter': 'rgba(60, 60, 120, 0.9)',
-    'Waxing Gibbous': 'rgba(80, 80, 160, 0.9)',
-    'Full Moon': 'rgba(200, 200, 255, 0.9)',
-    'Waning Gibbous': 'rgba(160, 160, 200, 0.9)',
-    'Last Quarter': 'rgba(120, 120, 160, 0.9)',
-    'Waning Crescent': 'rgba(80, 80, 120, 0.9)'
-  };
-  return colors[phase] || colors['Waxing Gibbous'];
-}
-
-// ✅ onNavigate prop-ი აქ არის destructured
-export default function AstroScreen({ onNavigate }: Props) {
-  const { data: cosmicData, loading } = useCosmicData();
-  
-  const [userSign] = useState<string>('aries');
-  const currentSign = ZODIAC_SIGNS[userSign];
-
-  // მონაცემები fallback-ებით
-  const moonPhase = cosmicData?.cosmic?.moon_phase || 'Waxing Gibbous';
-  const moonIllumination = cosmicData?.cosmic?.moon_illumination || 98;
-  const moonSign = cosmicData?.cosmic?.moon_sign || 'Capricorn';
-  const sunSign = cosmicData?.cosmic?.sun_sign || 'Cancer';
-  const energyLevel = cosmicData?.cosmic?.energy_level || 98;
-  const keyAdvice = cosmicData?.cosmic?.key_advice || 'Trust the cosmic flow today.';
-  const planets = cosmicData?.planets || [];
-  const aspects = cosmicData?.aspects || [];
-
-  // დინამიური ტექსტი
-  const topText = `LUNAR PHASE & ${moonPhase.toUpperCase()}`;
-  const bottomText = keyAdvice;
-
-  // მონაცემები ჩაიტვირთა?
-  const [dataLoaded, setDataLoaded] = useState(false);
+function UserLoader({ onReady }: { onReady: () => void }) {
+  const { setUser, setLoading } = useUser();
 
   useEffect(() => {
-    if (!loading && cosmicData) {
-      setDataLoaded(true);
-      console.log('🌙 Cosmic Data Loaded:', {
-        moonPhase,
-        moonIllumination,
-        moonSign,
-        sunSign,
-        energyLevel,
-        planetsCount: planets.length,
-        aspectsCount: aspects.length
-      });
+    async function loadUser() {
+      console.log('🔵 [UserLoader] Starting user load...');
+      
+      try {
+        const tgUser = getTelegramUser();
+        console.log('🔵 [UserLoader] Telegram user:', tgUser);
+        
+        if (!tgUser) {
+          console.warn('⚠️ [UserLoader] No Telegram user found');
+          setLoading(false);
+          onReady();
+          return;
+        }
+
+        console.log('🔵 [UserLoader] Loading from Supabase...');
+        const user = await getOrCreateUser(tgUser);
+        console.log('🔵 [UserLoader] User from Supabase:', user);
+        
+        if (user) {
+          setUser(user);
+          console.log('✅ [UserLoader] User saved to context!');
+          console.log('📊 Onboarding completed:', user.onboarding_completed);
+        }
+      } catch (error) {
+        console.error('❌ [UserLoader] Error:', error);
+      } finally {
+        setLoading(false);
+        onReady();
+      }
     }
-  }, [loading, cosmicData]);
 
-  const [needsMarqueeTop, setNeedsMarqueeTop] = useState(false);
-  const [needsMarqueeBottom, setNeedsMarqueeBottom] = useState(false);
+    loadUser();
+  }, [setUser, setLoading, onReady]);
 
-  const topTextRef = useRef<SVGTextElement>(null);
-  const bottomTextRef = useRef<SVGTextElement>(null);
-  const topPathRef = useRef<SVGPathElement>(null);
-  const bottomPathRef = useRef<SVGPathElement>(null);
+  return null;
+}
+
+function AppContent() {
+  const [currentScreen, setCurrentScreen] = useState<Screen>('splash');
+  const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState('home');
+  const [userReady, setUserReady] = useState(false);
+  const { user, setUser } = useUser();
 
   useEffect(() => {
-    const measureText = () => {
-      if (topTextRef.current && topPathRef.current) {
-        const textLength = topTextRef.current.getComputedTextLength();
-        const pathLength = topPathRef.current.getTotalLength();
-        setNeedsMarqueeTop(textLength > pathLength * 0.85);
+    const tg = (window as any).Telegram?.WebApp;
+    if (tg) {
+      console.log('🔵 Telegram WebApp detected');
+      if (typeof tg.setHeaderColor === 'function') {
+        tg.setHeaderColor('#0a0600');
       }
-      if (bottomTextRef.current && bottomPathRef.current) {
-        const textLength = bottomTextRef.current.getComputedTextLength();
-        const pathLength = bottomPathRef.current.getTotalLength();
-        setNeedsMarqueeBottom(textLength > pathLength * 0.85);
+      if (typeof tg.setBackgroundColor === 'function') {
+        tg.setBackgroundColor('#0a0600');
       }
-    };
+      if (typeof tg.expand === 'function') {
+        tg.expand();
+      }
+    } else {
+      console.warn('⚠️ Telegram WebApp NOT detected');
+    }
+  }, []);
 
-    const timer = setTimeout(measureText, 100);
-    return () => clearTimeout(timer);
-  }, [topText, bottomText]);
+  const goTo = (screen: Screen) => {
+    console.log('🔄 Navigating to:', screen);
+    setCurrentScreen(screen);
+  };
+
+  const handleTabChange = (tab: string) => {
+    console.log('📑 Tab change:', tab);
+    setActiveTab(tab);
+    goTo(tab as Screen);
+  };
+
+  const handleNavigate = (screen: string) => {
+    console.log('🧭 handleNavigate called with:', screen);
+    
+    if (screen.startsWith('card-detail-')) {
+      const cardId = parseInt(screen.split('-')[2]);
+      console.log('💎 Opening card detail for ID:', cardId);
+      setSelectedCardId(cardId);
+      goTo('card-detail');
+    }
+    else if (screen === 'daily-card') {
+      goTo('daily-card');
+    }
+    else if (screen === 'three-card-reading') {
+      goTo('three-card-reading');
+    }
+    else if (screen === 'reading-history') {
+      goTo('reading-history');
+    }
+    else if (screen === 'celtic-cross') {
+      goTo('celtic-cross');
+    }
+    else if (screen === 'horseshoe') {
+      goTo('horseshoe');
+    }
+    else if (screen === 'relationship') {
+      goTo('relationship');
+    }
+    else if (screen === 'admin') {
+      goTo('admin');
+    }
+    else if (screen === 'ai-management') {
+      goTo('ai-management');
+    }
+    else if (screen === 'subscription') {
+      goTo('subscription');
+    }
+    else if (screen === 'services') {
+      goTo('services');
+    }
+    else if (screen === 'draw' || screen === 'card-fan') {
+      goTo('card-fan');
+    }
+    else if (['home', 'cards', 'reading', 'astro', 'profile'].includes(screen)) {
+      handleTabChange(screen);
+    }
+    else {
+      console.log('⚠️ Unknown screen:', screen);
+    }
+  };
+
+  const handleUserReady = () => {
+    console.log('✅ User loading complete!');
+    setUserReady(true);
+  };
+
+  const handleSplashFinish = () => {
+    console.log('🎬 Splash finished');
+    console.log('📊 User onboarding_completed:', user?.onboarding_completed);
+    
+    if (!userReady) {
+      const checkInterval = setInterval(() => {
+        if (userReady) {
+          clearInterval(checkInterval);
+          handleSplashFinish();
+        }
+      }, 100);
+      return;
+    }
+    
+    if (user?.onboarding_completed) {
+      console.log('✅ User already completed onboarding → going to HOME');
+      goTo('home');
+    } else {
+      console.log('🆕 New user → starting onboarding');
+      goTo('welcome');
+    }
+  };
+
+  const handleOnboardingComplete = async () => {
+    console.log('🎉 Onboarding completed!');
+    
+    if (user) {
+      const updatedUser = await completeOnboarding(user.id);
+      if (updatedUser) {
+        setUser(updatedUser);
+        console.log('✅ Onboarding status updated in database');
+      }
+    }
+    
+    goTo('home');
+  };
+
+  console.log('📱 Current screen:', currentScreen);
+  console.log('👤 User loaded:', user ? user.display_name : 'null');
+  console.log('📊 Onboarding completed:', user?.onboarding_completed);
 
   return (
-    <div className="astro-screen">
-      {/* ფონი */}
-      <div className="cosmic-background" style={{ backgroundImage: `url(${BG_IMAGE})` }} />
+    <div className="app-container">
+      {!userReady && <UserLoader onReady={handleUserReady} />}
 
-      {/* ✅ Back button header - onNavigate გამოიყენება აქ */}
-      {onNavigate && (
-        <div className="astro-header">
-          <button className="astro-back-btn" onClick={() => onNavigate('home')}>
-            <ArrowLeft size={20} />
-          </button>
-        </div>
+      {currentScreen === 'splash' && (
+        <SplashScreen onFinish={handleSplashFinish} />
       )}
-
-      <div className="astro-content">
-        
-        {/* 🌟 ZODIAC WHEEL */}
-        <div className="zodiac-centered-wrapper">
-          <div className="zodiac-wrapper">
-            <div className="user-sign-layer">
-              <div className="user-sign-circle">
-                {currentSign?.image ? (
-                  <img src={currentSign.image} alt={currentSign.name} className="user-sign-image" />
-                ) : (
-                  <span className="user-sign-symbol">{currentSign?.symbol}</span>
-                )}
-              </div>
-            </div>
-
-            <motion.div 
-              className="zodiac-wheel-layer"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
-            >
-              <img src={ZODIAC_WHEEL} alt="Zodiac Wheel" className="zodiac-image" />
-            </motion.div>
-
-            <div className="zodiac-glow" />
-          </div>
-        </div>
-
-        {/* 🌙 LUNAR PHASE */}
-        <div className="lunar-right-wrapper">
-          <svg className="lunar-svg" viewBox="0 0 300 300">
-            <defs>
-              <path 
-                ref={topPathRef}
-                id="topTextPath" 
-                d="M 65,150 A 85,85 0 0,1 235,150" 
-                fill="none" 
-              />
-              <path 
-                ref={bottomPathRef}
-                id="bottomTextPath" 
-                d="M 235,150 A 85,85 0 0,1 65,150" 
-                fill="none" 
-              />
-              <clipPath id="moonClip">
-                <circle cx="150" cy="150" r="75" />
-              </clipPath>
-            </defs>
-
-            {/* 1. მთვარე */}
-            <image
-              href={MOON_IMAGE}
-              x="25"
-              y="25"
-              width="250"
-              height="250"
-              clipPath="url(#moonClip)"
-              className="lunar-moon-svg"
-            />
-
-            {/* 2. რგოლი */}
-            <circle 
-              cx="150" cy="150" r="85" 
-              fill="none" 
-              stroke={getPhaseColor(moonPhase)} 
-              strokeWidth="20" 
-              className="lunar-ring" 
-            />
-
-            {/* 3. ზედა ტექსტი */}
-            <text 
-              ref={topTextRef}
-              className={`lunar-text-top ${needsMarqueeTop ? 'marquee-text' : 'static-text'}`}
-            >
-              <AnimatePresence mode="wait">
-                {needsMarqueeTop ? (
-                  <motion.textPath 
-                    key={`top-marquee-${moonPhase}`}
-                    href="#topTextPath"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    {topText} • {topText} • {topText} •
-                    <animate 
-                      attributeName="startOffset" 
-                      from="0%" 
-                      to="-33.33%" 
-                      dur="20s" 
-                      repeatCount="indefinite" 
-                    />
-                  </motion.textPath>
-                ) : (
-                  <motion.textPath 
-                    key={`top-static-${moonPhase}`}
-                    href="#topTextPath" 
-                    startOffset="50%" 
-                    textAnchor="middle"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    {topText}
-                  </motion.textPath>
-                )}
-              </AnimatePresence>
-            </text>
-
-            {/* 4. ქვედა ტექსტი */}
-            <text 
-              ref={bottomTextRef}
-              className={`lunar-text-bottom ${needsMarqueeBottom ? 'marquee-text' : 'static-text'}`}
-            >
-              <AnimatePresence mode="wait">
-                {needsMarqueeBottom ? (
-                  <motion.textPath 
-                    key={`bottom-marquee-${keyAdvice}`}
-                    href="#bottomTextPath"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    {bottomText} • {bottomText} • {bottomText} •
-                    <animate 
-                      attributeName="startOffset" 
-                      from="0%" 
-                      to="-33.33%" 
-                      dur="20s" 
-                      repeatCount="indefinite" 
-                    />
-                  </motion.textPath>
-                ) : (
-                  <motion.textPath 
-                    key={`bottom-static-${keyAdvice}`}
-                    href="#bottomTextPath" 
-                    startOffset="50%" 
-                    textAnchor="middle"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    {bottomText}
-                  </motion.textPath>
-                )}
-              </AnimatePresence>
-            </text>
-          </svg>
-        </div>
-
-        <div className="empty-space" />
-      </div>
-
-      {/* Corner loading indicator */}
-      {!dataLoaded && loading && (
-        <div className="corner-loading">
-          <div className="corner-spinner" />
-        </div>
+      {currentScreen === 'welcome' && (
+        <OnboardingWelcome onFinish={() => goTo('zodiac')} />
+      )}
+      {currentScreen === 'zodiac' && (
+        <OnboardingZodiac onFinish={() => goTo('first-reading')} />
+      )}
+      {currentScreen === 'first-reading' && (
+        <OnboardingFirstReading onFinish={handleOnboardingComplete} />
+      )}
+      {currentScreen === 'home' && (
+        <>
+          <HomeScreen onNavigate={handleNavigate} />
+          <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+        </>
+      )}
+      {currentScreen === 'cards' && (
+        <>
+          <CardsScreen onNavigate={handleNavigate} />
+          <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+        </>
+      )}
+      {currentScreen === 'reading' && (
+        <>
+          <ReadingScreen onNavigate={handleNavigate} />
+          <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+        </>
+      )}
+      {currentScreen === 'astro' && (
+        <>
+          <AstroScreen onNavigate={handleNavigate} />
+          <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+        </>
+      )}
+      {currentScreen === 'profile' && (
+        <>
+          <ProfileScreen onNavigate={handleNavigate} />
+          <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+        </>
+      )}
+      {currentScreen === 'card-fan' && (
+        <CardFanScreen onNavigate={handleNavigate} />
+      )}
+      {currentScreen === 'card-detail' && selectedCardId && (
+        <CardDetailScreen 
+          cardId={selectedCardId} 
+          onNavigate={handleNavigate} 
+        />
+      )}
+      {currentScreen === 'daily-card' && (
+        <DailyCardScreen onNavigate={handleNavigate} />
+      )}
+      {currentScreen === 'three-card-reading' && (
+        <ThreeCardReadingScreen onNavigate={handleNavigate} />
+      )}
+      {currentScreen === 'reading-history' && (
+        <ReadingHistoryScreen onNavigate={handleNavigate} />
+      )}
+      {currentScreen === 'celtic-cross' && (
+        <CelticCrossReadingScreen onNavigate={handleNavigate} />
+      )}
+      {currentScreen === 'horseshoe' && (
+        <HorseshoeReadingScreen onNavigate={handleNavigate} />
+      )}
+      {currentScreen === 'relationship' && (
+        <RelationshipReadingScreen onNavigate={handleNavigate} />
+      )}
+      {currentScreen === 'admin' && (
+        <AdminScreen onNavigate={handleNavigate} />
+      )}
+      {currentScreen === 'ai-management' && (
+        <AdminAIManagement onNavigate={handleNavigate} />
+      )}
+      {currentScreen === 'subscription' && (
+        <SubscriptionScreen onNavigate={handleNavigate} />
+      )}
+      {currentScreen === 'services' && (
+        <ServicesScreen onNavigate={handleNavigate} />
       )}
     </div>
   );
 }
+
+function App() {
+  return (
+    <UserProvider>
+      <SettingsProvider>
+        <AppContent />
+      </SettingsProvider>
+    </UserProvider>
+  );
+}
+
+export default App;
