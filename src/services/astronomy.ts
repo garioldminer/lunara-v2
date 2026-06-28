@@ -14,19 +14,22 @@ const MOON_PHASES = [
   'Full Moon', 'Waning Gibbous', 'Last Quarter', 'Waning Crescent'
 ];
 
+// Body ტიპი astronomy-engine-ისთვის
+type BodyName = 'Sun' | 'Moon' | 'Mercury' | 'Venus' | 'Mars' | 'Jupiter' | 'Saturn' | 'Uranus' | 'Neptune' | 'Earth';
+
 /**
  * გამოთვლის პლანეტის სრულ ეკლიპტიკურ გრძედს (0-360°)
  */
-function getPlanetLongitude(planetName: string, date: Date): number {
+function getPlanetLongitude(planetName: BodyName, date: Date): number {
   // მზე - განსაკუთრებული შემთხვევა
   // მზის გეოცენტრული გრძედი = დედამიწის ელიოცენტრული გრძედი + 180°
   if (planetName === 'Sun') {
-    const earthLon = Astronomy.EclipticLongitude('Earth', date);
+    const earthLon = Astronomy.EclipticLongitude('Earth' as Astronomy.Body, date);
     return (earthLon + 180) % 360;
   }
   
   // მთვარე და სხვა პლანეტები
-  return Astronomy.EclipticLongitude(planetName, date);
+  return Astronomy.EclipticLongitude(planetName as Astronomy.Body, date);
 }
 
 /**
@@ -36,7 +39,7 @@ export function calculatePlanetPosition(
   planetName: string, 
   date: Date
 ): { sign: string; degree: number; retrograde: boolean } {
-  const eclipticLongitude = getPlanetLongitude(planetName, date);
+  const eclipticLongitude = getPlanetLongitude(planetName as BodyName, date);
   
   // ნიშნის განსაზღვრა (თითოეული 30°)
   const signIndex = Math.floor(eclipticLongitude / 30) % 12;
@@ -45,7 +48,7 @@ export function calculatePlanetPosition(
   // რეტროგრადულობის შემოწმება
   const yesterday = new Date(date);
   yesterday.setDate(yesterday.getDate() - 1);
-  const lonYesterday = getPlanetLongitude(planetName, yesterday);
+  const lonYesterday = getPlanetLongitude(planetName as BodyName, yesterday);
   
   let retrograde = false;
   if (eclipticLongitude < lonYesterday) {
@@ -71,7 +74,7 @@ export function calculateMoonData(date: Date): {
   sign: string;
   degree: number;
 } {
-  const eclipticLongitude = Astronomy.EclipticLongitude('Moon', date);
+  const eclipticLongitude = Astronomy.EclipticLongitude('Moon' as Astronomy.Body, date);
   
   const signIndex = Math.floor(eclipticLongitude / 30) % 12;
   const degree = eclipticLongitude % 30;
@@ -79,7 +82,7 @@ export function calculateMoonData(date: Date): {
   const moonPhaseAngle = Astronomy.MoonPhase(date);
   const phaseIndex = Math.floor((moonPhaseAngle / 360) * 8) % 8;
   
-  const illuminationData = Astronomy.Illumination('Moon', date);
+  const illuminationData = Astronomy.Illumination('Moon' as Astronomy.Body, date);
   const illumination = illuminationData.phase_fraction * 100;
   
   return {
@@ -95,7 +98,7 @@ export function calculateMoonData(date: Date): {
  * აბრუნებს სრულ ეკლიპტიკურ გრძედსაც (ასპექტებისთვის)
  */
 export function calculateAllPlanets(date: Date) {
-  const planetNames = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune'];
+  const planetNames: BodyName[] = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune'];
   
   return planetNames.map(name => {
     if (name === 'Moon') {
