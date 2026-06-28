@@ -103,11 +103,15 @@
   z-index: 0;
 }
 
-.lunar-centered-wrapper {
+/* ============================================
+   LUNAR - მარჯვნივ 2px, ზემოთ აწეული
+   ============================================ */
+.lunar-right-wrapper {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
+  padding-right: 2px;
+  padding-top: 10px;
   width: 100%;
-  padding-top: 30px;
 }
 
 .lunar-svg {
@@ -120,22 +124,18 @@
   filter: drop-shadow(0 0 8px rgba(80, 60, 160, 0.4));
 }
 
-.lunar-text-top {
+.lunar-text-top,
+.lunar-text-bottom {
   font-family: 'Cinzel', serif;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   fill: #D9B66F;
   letter-spacing: 1px;
   text-transform: uppercase;
 }
 
-.lunar-text-bottom {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 10px;
-  font-style: italic;
-  fill: rgba(247, 243, 235, 0.85);
-  letter-spacing: 0.5px;
-}
+.static-text { /* სტატიკური */ }
+.marquee-text { /* მორბენალი */ }
 
 .lunar-moon-svg {
   filter: brightness(1.1) contrast(1.1);
@@ -147,8 +147,7 @@
   .zodiac-wrapper { width: 280px; height: 280px; }
   .user-sign-symbol { font-size: 40px; }
   .lunar-svg { width: 200px; height: 200px; }
-  .lunar-text-top { font-size: 9px; }
-  .lunar-text-bottom { font-size: 8px; }
+  .lunar-text-top, .lunar-text-bottom { font-size: 8px; }
 }
 
 @media (max-width: 360px) {

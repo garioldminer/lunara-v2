@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import './AstroScreen.css';
 
@@ -23,7 +23,7 @@ const ZODIAC_SIGNS: Record<string, ZodiacSign> = {
   scorpio: { name: 'Scorpio', symbol: '♏' },
   sagittarius: { name: 'Sagittarius', symbol: '♐' },
   capricorn: { name: 'Capricorn', symbol: '♑' },
-  aquarius: { name: 'Aquarius', symbol: '♒' },
+  aquarius: { name: 'Aquarius', symbol: '' },
   pisces: { name: 'Pisces', symbol: '♓' }
 };
 
@@ -31,13 +31,42 @@ export default function AstroScreen() {
   const [userSign] = useState<string>('aries');
   const currentSign = ZODIAC_SIGNS[userSign];
 
+  const topText = 'LUNAR PHASE & WAXING GIBBOUS';
+  const bottomText = 'High energy • Take action';
+
+  const [needsMarqueeTop, setNeedsMarqueeTop] = useState(false);
+  const [needsMarqueeBottom, setNeedsMarqueeBottom] = useState(false);
+
+  const topTextRef = useRef<SVGTextElement>(null);
+  const bottomTextRef = useRef<SVGTextElement>(null);
+  const topPathRef = useRef<SVGPathElement>(null);
+  const bottomPathRef = useRef<SVGPathElement>(null);
+
+  useEffect(() => {
+    const measureText = () => {
+      if (topTextRef.current && topPathRef.current) {
+        const textLength = topTextRef.current.getComputedTextLength();
+        const pathLength = topPathRef.current.getTotalLength();
+        setNeedsMarqueeTop(textLength > pathLength * 0.85);
+      }
+      if (bottomTextRef.current && bottomPathRef.current) {
+        const textLength = bottomTextRef.current.getComputedTextLength();
+        const pathLength = bottomPathRef.current.getTotalLength();
+        setNeedsMarqueeBottom(textLength > pathLength * 0.85);
+      }
+    };
+
+    const timer = setTimeout(measureText, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div className="astro-screen">
       <div className="cosmic-background" style={{ backgroundImage: `url(${BG_IMAGE})` }} />
 
       <div className="astro-content">
         
-        {/* 🎯 ZODIAC WHEEL */}
+        {/*  ZODIAC WHEEL */}
         <div className="zodiac-centered-wrapper">
           <div className="zodiac-wrapper">
             <div className="user-sign-layer">
@@ -62,29 +91,28 @@ export default function AstroScreen() {
           </div>
         </div>
 
-        {/* 🌙 LUNAR PHASE */}
-        <div className="lunar-centered-wrapper">
+        {/* 🌙 LUNAR PHASE - მარჯვნივ 2px, ზემოთ აწეული */}
+        <div className="lunar-right-wrapper">
           <svg className="lunar-svg" viewBox="0 0 300 300">
             <defs>
-              <path id="topTextPath" d="M 65,150 A 85,85 0 0,1 235,150" fill="none" />
-              <path id="bottomTextPath" d="M 235,150 A 85,85 0 0,1 65,150" fill="none" />
+              <path 
+                ref={topPathRef}
+                id="topTextPath" 
+                d="M 65,150 A 85,85 0 0,1 235,150" 
+                fill="none" 
+              />
+              <path 
+                ref={bottomPathRef}
+                id="bottomTextPath" 
+                d="M 235,150 A 85,85 0 0,1 65,150" 
+                fill="none" 
+              />
               <clipPath id="moonClip">
                 <circle cx="150" cy="150" r="75" />
               </clipPath>
             </defs>
 
-            {/* რგოლი */}
-            <circle cx="150" cy="150" r="85" fill="none" stroke="rgba(20, 15, 50, 0.85)" strokeWidth="20" className="lunar-ring" />
-
-            {/* ტექსტი */}
-            <text className="lunar-text-top">
-              <textPath href="#topTextPath" startOffset="50%" textAnchor="middle">LUNAR PHASE & WAXING GIBBOUS</textPath>
-            </text>
-            <text className="lunar-text-bottom">
-              <textPath href="#bottomTextPath" startOffset="50%" textAnchor="middle">High energy • Take action</textPath>
-            </text>
-
-            {/* მთვარე - კიდევ უფრო დიდი */}
+            {/* 1. მთვარე */}
             <image
               href={MOON_IMAGE}
               x="25"
@@ -94,6 +122,61 @@ export default function AstroScreen() {
               clipPath="url(#moonClip)"
               className="lunar-moon-svg"
             />
+
+            {/* 2. რგოლი */}
+            <circle 
+              cx="150" cy="150" r="85" 
+              fill="none" 
+              stroke="rgba(20, 15, 50, 0.9)" 
+              strokeWidth="20" 
+              className="lunar-ring" 
+            />
+
+            {/* 3. ზედა ტექსტი */}
+            <text 
+              ref={topTextRef}
+              className={`lunar-text-top ${needsMarqueeTop ? 'marquee-text' : 'static-text'}`}
+            >
+              {needsMarqueeTop ? (
+                <textPath href="#topTextPath">
+                  {topText} • {topText} • {topText} •
+                  <animate 
+                    attributeName="startOffset" 
+                    from="0%" 
+                    to="-33.33%" 
+                    dur="20s" 
+                    repeatCount="indefinite" 
+                  />
+                </textPath>
+              ) : (
+                <textPath href="#topTextPath" startOffset="50%" textAnchor="middle">
+                  {topText}
+                </textPath>
+              )}
+            </text>
+
+            {/* 4. ქვედა ტექსტი */}
+            <text 
+              ref={bottomTextRef}
+              className={`lunar-text-bottom ${needsMarqueeBottom ? 'marquee-text' : 'static-text'}`}
+            >
+              {needsMarqueeBottom ? (
+                <textPath href="#bottomTextPath">
+                  {bottomText} • {bottomText} • {bottomText} •
+                  <animate 
+                    attributeName="startOffset" 
+                    from="0%" 
+                    to="-33.33%" 
+                    dur="20s" 
+                    repeatCount="indefinite" 
+                  />
+                </textPath>
+              ) : (
+                <textPath href="#bottomTextPath" startOffset="50%" textAnchor="middle">
+                  {bottomText}
+                </textPath>
+              )}
+            </text>
           </svg>
         </div>
 
