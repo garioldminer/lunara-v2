@@ -28,6 +28,11 @@ const ZODIAC_SIGNS: Record<string, ZodiacSign> = {
   pisces: { name: 'Pisces', symbol: '♓' }
 };
 
+// Props interface - onNavigate prop-ისთვის
+interface Props {
+  onNavigate?: (screen: string) => void;
+}
+
 // მთვარის ფაზის ფერები
 function getPhaseColor(phase: string): string {
   const colors: Record<string, string> = {
@@ -43,14 +48,15 @@ function getPhaseColor(phase: string): string {
   return colors[phase] || colors['Waxing Gibbous'];
 }
 
-export default function AstroScreen() {
-  // მონაცემების მიღება ბაზიდან
-  const { data: cosmicData, loading, error } = useCosmicData();
+// ✅ Props parameter დამატებულია
+export default function AstroScreen({ onNavigate }: Props) {
+  // ✅ error variable ამოღებულია
+  const { data: cosmicData, loading } = useCosmicData();
   
   const [userSign] = useState<string>('aries');
   const currentSign = ZODIAC_SIGNS[userSign];
 
-  // მონაცემები fallback-ებით - ყოველთვის არის მნიშვნელობა
+  // მონაცემები fallback-ებით
   const moonPhase = cosmicData?.cosmic?.moon_phase || 'Waxing Gibbous';
   const moonIllumination = cosmicData?.cosmic?.moon_illumination || 98;
   const moonSign = cosmicData?.cosmic?.moon_sign || 'Capricorn';
@@ -110,12 +116,12 @@ export default function AstroScreen() {
 
   return (
     <div className="astro-screen">
-      {/* ფონი - ყოველთვის ჩაიტვირთება */}
+      {/* ფონი */}
       <div className="cosmic-background" style={{ backgroundImage: `url(${BG_IMAGE})` }} />
 
       <div className="astro-content">
         
-        {/* 🌟 ZODIAC WHEEL - ყოველთვის ხილული */}
+        {/* 🌟 ZODIAC WHEEL */}
         <div className="zodiac-centered-wrapper">
           <div className="zodiac-wrapper">
             <div className="user-sign-layer">
@@ -140,7 +146,7 @@ export default function AstroScreen() {
           </div>
         </div>
 
-        {/* 🌙 LUNAR PHASE - ყოველთვის ხილული */}
+        {/* 🌙 LUNAR PHASE */}
         <div className="lunar-right-wrapper">
           <svg className="lunar-svg" viewBox="0 0 300 300">
             <defs>
@@ -172,7 +178,7 @@ export default function AstroScreen() {
               className="lunar-moon-svg"
             />
 
-            {/* 2. რგოლი - დინამიური ფერით */}
+            {/* 2. რგოლი */}
             <circle 
               cx="150" cy="150" r="85" 
               fill="none" 
@@ -181,7 +187,7 @@ export default function AstroScreen() {
               className="lunar-ring" 
             />
 
-            {/* 3. ზედა ტექსტი - AnimatePresence-ით */}
+            {/* 3. ზედა ტექსტი */}
             <text 
               ref={topTextRef}
               className={`lunar-text-top ${needsMarqueeTop ? 'marquee-text' : 'static-text'}`}
@@ -222,7 +228,7 @@ export default function AstroScreen() {
               </AnimatePresence>
             </text>
 
-            {/* 4. ქვედა ტექსტი - AnimatePresence-ით */}
+            {/* 4. ქვედა ტექსტი */}
             <text 
               ref={bottomTextRef}
               className={`lunar-text-bottom ${needsMarqueeBottom ? 'marquee-text' : 'static-text'}`}
@@ -268,7 +274,7 @@ export default function AstroScreen() {
         <div className="empty-space" />
       </div>
 
-      {/* მცირე loading indicator კუთხეში - თუ მონაცემები ჯერ არ ჩაიტვირთა */}
+      {/* Corner loading indicator */}
       {!dataLoaded && loading && (
         <div className="corner-loading">
           <div className="corner-spinner" />
