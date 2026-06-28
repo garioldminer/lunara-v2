@@ -1,277 +1,580 @@
-import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useCosmicData } from '../hooks/useCosmicData';
-import './AstroScreen.css';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { ArrowLeft, Users, Plus, Trash2, RefreshCw, Crown, ShieldAlert, Calendar, Clock, Zap, Key } from 'lucide-react';
+import { useUser } from '../context/UserContext';
+import { 
+  isAdmin, 
+  getAllUsersWithCredits, 
+  updateUserCredits, 
+  addCreditsToUser, 
+  deleteUserCredits,
+  getAllSubscriptions,
+  createSubscriptionForUser,
+  cancelSubscriptionForUser,
+  extendSubscription
+} from '../lib/adminService';
+import './AdminScreen.css';
 
-const BG_IMAGE = 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/backgrounds/space-bg.webp';
-const ZODIAC_WHEEL = 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/test/lucid-origin_a_cinematic_photo_of_Ultra_ornate_golden_zodiac_wheel_12_astrological_symbols_ar-0%20(1)-Photoroom.png';
-const MOON_IMAGE = 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/planets/moon.webp';
-
-type ZodiacSign = {
-  name: string;
-  symbol: string;
-  image?: string;
-};
-
-const ZODIAC_SIGNS: Record<string, ZodiacSign> = {
-  aries: { name: 'Aries', symbol: '', image: 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/test/Aries.png' },
-  taurus: { name: 'Taurus', symbol: '♉' },
-  gemini: { name: 'Gemini', symbol: '♊' },
-  cancer: { name: 'Cancer', symbol: '♋' },
-  leo: { name: 'Leo', symbol: '' },
-  virgo: { name: 'Virgo', symbol: '♍' },
-  libra: { name: 'Libra', symbol: '♎' },
-  scorpio: { name: 'Scorpio', symbol: '♏' },
-  sagittarius: { name: 'Sagittarius', symbol: '♐' },
-  capricorn: { name: 'Capricorn', symbol: '♑' },
-  aquarius: { name: 'Aquarius', symbol: '' },
-  pisces: { name: 'Pisces', symbol: '♓' }
-};
-
-// მთვარის ფაზის ფერები
-function getPhaseColor(phase: string): string {
-  const colors: Record<string, string> = {
-    'New Moon': 'rgba(20, 20, 40, 0.9)',
-    'Waxing Crescent': 'rgba(40, 40, 80, 0.9)',
-    'First Quarter': 'rgba(60, 60, 120, 0.9)',
-    'Waxing Gibbous': 'rgba(80, 80, 160, 0.9)',
-    'Full Moon': 'rgba(200, 200, 255, 0.9)',
-    'Waning Gibbous': 'rgba(160, 160, 200, 0.9)',
-    'Last Quarter': 'rgba(120, 120, 160, 0.9)',
-    'Waning Crescent': 'rgba(80, 80, 120, 0.9)'
-  };
-  return colors[phase] || colors['Waxing Gibbous'];
+interface Props {
+  onNavigate?: (screen: string) => void;
 }
 
-export default function AstroScreen() {
-  // ✅ error variable ამოღებულია
-  const { data: cosmicData, loading } = useCosmicData();
+interface UserWithCredits {
+  id: string;
+  display_name: string;
+  telegram_id: number;
+  username: string | null;
+  credits: Array<{
+    feature_id: string;
+    credits: number;
+  }>;
+}
+
+interface SubscriptionWithUser {
+  id: string;
+  user_id: string;
+  plan_type: string;
+  status: string;
+  started_at: string;
+  expires_at: string;
+  auto_renew: boolean;
+  created_at: string;
+  user: {
+    display_name: string;
+    telegram_id: number;
+    username: string | null;
+  };
+}
+
+export default function AdminScreen({ onNavigate }: Props) {
+  const { user } = useUser();
+  const [users, setUsers] = useState<UserWithCredits[]>([]);
+  const [subscriptions, setSubscriptions] = useState<SubscriptionWithUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isUserAdmin, setIsUserAdmin] = useState<boolean | null>(null);
+  const [editingUser, setEditingUser] = useState<string | null>(null);
+  const [editingFeature, setEditingFeature] = useState<string>('');
+  const [newAmount, setNewAmount] = useState(0);
+  const [activeTab, setActiveTab] = useState<'credits' | 'subscriptions'>('credits');
   
-  const [userSign] = useState<string>('aries');
-  const currentSign = ZODIAC_SIGNS[userSign];
-
-  // მონაცემები fallback-ებით
-  const moonPhase = cosmicData?.cosmic?.moon_phase || 'Waxing Gibbous';
-  const moonIllumination = cosmicData?.cosmic?.moon_illumination || 98;
-  const moonSign = cosmicData?.cosmic?.moon_sign || 'Capricorn';
-  const sunSign = cosmicData?.cosmic?.sun_sign || 'Cancer';
-  const energyLevel = cosmicData?.cosmic?.energy_level || 98;
-  const keyAdvice = cosmicData?.cosmic?.key_advice || 'Trust the cosmic flow today.';
-  const planets = cosmicData?.planets || [];
-  const aspects = cosmicData?.aspects || [];
-
-  // დინამიური ტექსტი
-  const topText = `LUNAR PHASE & ${moonPhase.toUpperCase()}`;
-  const bottomText = keyAdvice;
-
-  // მონაცემები ჩაიტვირთა?
-  const [dataLoaded, setDataLoaded] = useState(false);
+  // Subscription management states
+  const [showAddSubscription, setShowAddSubscription] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
+  const [selectedDays, setSelectedDays] = useState(30);
+  const [showExtendModal, setShowExtendModal] = useState(false);
+  const [extendingSubId, setExtendingSubId] = useState<string>('');
+  const [extendDays, setExtendDays] = useState(30);
 
   useEffect(() => {
-    if (!loading && cosmicData) {
-      setDataLoaded(true);
-      console.log('🌙 Cosmic Data Loaded:', {
-        moonPhase,
-        moonIllumination,
-        moonSign,
-        sunSign,
-        energyLevel,
-        planetsCount: planets.length,
-        aspectsCount: aspects.length
-      });
-    }
-  }, [loading, cosmicData]);
-
-  const [needsMarqueeTop, setNeedsMarqueeTop] = useState(false);
-  const [needsMarqueeBottom, setNeedsMarqueeBottom] = useState(false);
-
-  const topTextRef = useRef<SVGTextElement>(null);
-  const bottomTextRef = useRef<SVGTextElement>(null);
-  const topPathRef = useRef<SVGPathElement>(null);
-  const bottomPathRef = useRef<SVGPathElement>(null);
-
-  useEffect(() => {
-    const measureText = () => {
-      if (topTextRef.current && topPathRef.current) {
-        const textLength = topTextRef.current.getComputedTextLength();
-        const pathLength = topPathRef.current.getTotalLength();
-        setNeedsMarqueeTop(textLength > pathLength * 0.85);
-      }
-      if (bottomTextRef.current && bottomPathRef.current) {
-        const textLength = bottomTextRef.current.getComputedTextLength();
-        const pathLength = bottomPathRef.current.getTotalLength();
-        setNeedsMarqueeBottom(textLength > pathLength * 0.85);
+    const checkAdmin = async () => {
+      if (user) {
+        const admin = await isAdmin(user.id);
+        setIsUserAdmin(admin);
+        if (admin) {
+          await loadData();
+        } else {
+          setLoading(false);
+        }
+      } else {
+        setIsUserAdmin(false);
+        setLoading(false);
       }
     };
+    checkAdmin();
+  }, [user]);
 
-    const timer = setTimeout(measureText, 100);
-    return () => clearTimeout(timer);
-  }, [topText, bottomText]);
+  const loadData = async () => {
+    if (!user) return;
+    setLoading(true);
+    const [usersData, subsData] = await Promise.all([
+      getAllUsersWithCredits(user.id),
+      getAllSubscriptions(user.id)
+    ]);
+    setUsers(usersData);
+    setSubscriptions(subsData);
+    setLoading(false);
+  };
+
+  const handleUpdateCredits = async (targetUserId: string, featureId: string) => {
+    if (!user) return;
+    const success = await updateUserCredits(user.id, targetUserId, featureId, newAmount);
+    if (success) {
+      await loadData();
+      setEditingUser(null);
+      setNewAmount(0);
+    }
+  };
+
+  const handleAddCredits = async (targetUserId: string, featureId: string, amount: number) => {
+    if (!user) return;
+    const success = await addCreditsToUser(user.id, targetUserId, featureId, amount);
+    if (success) {
+      await loadData();
+    }
+  };
+
+  const handleDeleteCredits = async (targetUserId: string, featureId: string) => {
+    if (!user) return;
+    if (confirm('Are you sure you want to delete these credits?')) {
+      const success = await deleteUserCredits(user.id, targetUserId, featureId);
+      if (success) {
+        await loadData();
+      }
+    }
+  };
+
+  const handleCreateSubscription = async () => {
+    if (!user || !selectedUserId) return;
+    const success = await createSubscriptionForUser(user.id, selectedUserId, selectedPlan, selectedDays);
+    if (success) {
+      await loadData();
+      setShowAddSubscription(false);
+      setSelectedUserId('');
+      setSelectedPlan('monthly');
+      setSelectedDays(30);
+    }
+  };
+
+  const handleCancelSubscription = async (subscriptionId: string) => {
+    if (!user) return;
+    if (confirm('Are you sure you want to cancel this subscription?')) {
+      const success = await cancelSubscriptionForUser(user.id, subscriptionId);
+      if (success) {
+        await loadData();
+      }
+    }
+  };
+
+  const handleExtendSubscription = async () => {
+    if (!user || !extendingSubId) return;
+    const success = await extendSubscription(user.id, extendingSubId, extendDays);
+    if (success) {
+      await loadData();
+      setShowExtendModal(false);
+      setExtendingSubId('');
+      setExtendDays(30);
+    }
+  };
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const getDaysRemaining = (expiresAt: string) => {
+    const expires = new Date(expiresAt);
+    const now = new Date();
+    const diff = expires.getTime() - now.getTime();
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return days;
+  };
+
+  // ჯერ არ ვიცით admin თუ არა
+  if (isUserAdmin === null || loading) {
+    return (
+      <div className="admin-screen">
+        <div className="admin-loading">
+          <RefreshCw size={32} className="spin" />
+          <p>Verifying admin access...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // არ არის admin
+  if (!isUserAdmin) {
+    return (
+      <div className="admin-screen">
+        <div className="admin-error">
+          <ShieldAlert size={64} className="error-icon-large" />
+          <h2>⛔ Access Denied</h2>
+          <p>You do not have permission to access this page.</p>
+          <p className="error-detail">This incident will be reported.</p>
+          <button onClick={() => onNavigate?.('home')}>Return Home</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="astro-screen">
-      {/* ფონი */}
-      <div className="cosmic-background" style={{ backgroundImage: `url(${BG_IMAGE})` }} />
+    <div className="admin-screen">
+      {/* Header */}
+      <div className="admin-header">
+        <button className="admin-back-btn" onClick={() => onNavigate?.('home')}>
+          <ArrowLeft size={20} />
+        </button>
+        <div className="admin-header-center">
+          <Users size={24} />
+          <h1>Admin Panel</h1>
+        </div>
+        <button className="admin-refresh-btn" onClick={loadData}>
+          <RefreshCw size={20} />
+        </button>
+      </div>
 
-      <div className="astro-content">
-        
-        {/* 🌟 ZODIAC WHEEL */}
-        <div className="zodiac-centered-wrapper">
-          <div className="zodiac-wrapper">
-            <div className="user-sign-layer">
-              <div className="user-sign-circle">
-                {currentSign?.image ? (
-                  <img src={currentSign.image} alt={currentSign.name} className="user-sign-image" />
-                ) : (
-                  <span className="user-sign-symbol">{currentSign?.symbol}</span>
-                )}
+      {/* Content Area */}
+      <div className="admin-content-area">
+        {/* Credits Tab */}
+        {activeTab === 'credits' && (
+          <>
+            <div className="admin-stats">
+              <div className="stat-card">
+                <span className="stat-number">{users.length}</span>
+                <span className="stat-label">Total Users</span>
               </div>
             </div>
 
-            <motion.div 
-              className="zodiac-wheel-layer"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
+            <div className="admin-users-list">
+              {users.map((targetUser) => (
+                <motion.div
+                  key={targetUser.id}
+                  className="admin-user-card"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <div className="user-info">
+                    <div className="user-avatar">
+                      {targetUser.display_name?.charAt(0).toUpperCase() || 'U'}
+                    </div>
+                    <div className="user-details">
+                      <h3>{targetUser.display_name || 'Unknown'}</h3>
+                      <p>@{targetUser.username || targetUser.telegram_id}</p>
+                    </div>
+                  </div>
+
+                  <div className="user-credits">
+                    {['celtic_cross', 'horseshoe', 'relationship'].map((featureId) => {
+                      const credit = targetUser.credits.find(c => c.feature_id === featureId);
+                      const amount = credit?.credits || 0;
+
+                      return (
+                        <div key={featureId} className="credit-item">
+                          <span className="credit-label">
+                            {featureId === 'celtic_cross' && '✝️ Celtic'}
+                            {featureId === 'horseshoe' && '🐎 Horseshoe'}
+                            {featureId === 'relationship' && '❤️ Relationship'}
+                          </span>
+
+                          {editingUser === targetUser.id && editingFeature === featureId ? (
+                            <div className="credit-edit">
+                              <input
+                                type="number"
+                                value={newAmount}
+                                onChange={(e) => setNewAmount(parseInt(e.target.value) || 0)}
+                                min="0"
+                              />
+                              <button
+                                className="save-btn"
+                                onClick={() => handleUpdateCredits(targetUser.id, featureId)}
+                              >
+                                Save
+                              </button>
+                              <button
+                                className="cancel-btn"
+                                onClick={() => setEditingUser(null)}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="credit-actions">
+                              <span className="credit-amount">{amount}</span>
+                              <div className="credit-buttons">
+                                <button
+                                  className="add-btn"
+                                  onClick={() => handleAddCredits(targetUser.id, featureId, 1)}
+                                  title="Add 1"
+                                >
+                                  <Plus size={14} />
+                                </button>
+                                <button
+                                  className="add-btn"
+                                  onClick={() => handleAddCredits(targetUser.id, featureId, 5)}
+                                  title="Add 5"
+                                >
+                                  +5
+                                </button>
+                                <button
+                                  className="edit-btn"
+                                  onClick={() => {
+                                    setEditingUser(targetUser.id);
+                                    setEditingFeature(featureId);
+                                    setNewAmount(amount);
+                                  }}
+                                  title="Edit"
+                                >
+                                  Edit
+                                </button>
+                                {amount > 0 && (
+                                  <button
+                                    className="delete-btn"
+                                    onClick={() => handleDeleteCredits(targetUser.id, featureId)}
+                                    title="Delete"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* Subscriptions Tab */}
+        {activeTab === 'subscriptions' && (
+          <>
+            <div className="admin-stats">
+              <div className="stat-card">
+                <span className="stat-number">{subscriptions.filter(s => s.status === 'active').length}</span>
+                <span className="stat-label">Active</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-number">{subscriptions.filter(s => s.status === 'cancelled').length}</span>
+                <span className="stat-label">Cancelled</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-number">{subscriptions.filter(s => s.status === 'expired').length}</span>
+                <span className="stat-label">Expired</span>
+              </div>
+            </div>
+
+            <button 
+              className="add-subscription-btn"
+              onClick={() => setShowAddSubscription(true)}
             >
-              <img src={ZODIAC_WHEEL} alt="Zodiac Wheel" className="zodiac-image" />
-            </motion.div>
+              <Plus size={16} />
+              <span>Add Subscription</span>
+            </button>
 
-            <div className="zodiac-glow" />
-          </div>
-        </div>
-
-        {/* 🌙 LUNAR PHASE */}
-        <div className="lunar-right-wrapper">
-          <svg className="lunar-svg" viewBox="0 0 300 300">
-            <defs>
-              <path 
-                ref={topPathRef}
-                id="topTextPath" 
-                d="M 65,150 A 85,85 0 0,1 235,150" 
-                fill="none" 
-              />
-              <path 
-                ref={bottomPathRef}
-                id="bottomTextPath" 
-                d="M 235,150 A 85,85 0 0,1 65,150" 
-                fill="none" 
-              />
-              <clipPath id="moonClip">
-                <circle cx="150" cy="150" r="75" />
-              </clipPath>
-            </defs>
-
-            {/* 1. მთვარე */}
-            <image
-              href={MOON_IMAGE}
-              x="25"
-              y="25"
-              width="250"
-              height="250"
-              clipPath="url(#moonClip)"
-              className="lunar-moon-svg"
-            />
-
-            {/* 2. რგოლი */}
-            <circle 
-              cx="150" cy="150" r="85" 
-              fill="none" 
-              stroke={getPhaseColor(moonPhase)} 
-              strokeWidth="20" 
-              className="lunar-ring" 
-            />
-
-            {/* 3. ზედა ტექსტი */}
-            <text 
-              ref={topTextRef}
-              className={`lunar-text-top ${needsMarqueeTop ? 'marquee-text' : 'static-text'}`}
-            >
-              <AnimatePresence mode="wait">
-                {needsMarqueeTop ? (
-                  <motion.textPath 
-                    key={`top-marquee-${moonPhase}`}
-                    href="#topTextPath"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.5 }}
+            <div className="subscriptions-list">
+              {subscriptions.map((sub) => {
+                const daysRemaining = getDaysRemaining(sub.expires_at);
+                
+                return (
+                  <motion.div
+                    key={sub.id}
+                    className={`subscription-card ${sub.status}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
                   >
-                    {topText} • {topText} • {topText} •
-                    <animate 
-                      attributeName="startOffset" 
-                      from="0%" 
-                      to="-33.33%" 
-                      dur="20s" 
-                      repeatCount="indefinite" 
-                    />
-                  </motion.textPath>
-                ) : (
-                  <motion.textPath 
-                    key={`top-static-${moonPhase}`}
-                    href="#topTextPath" 
-                    startOffset="50%" 
-                    textAnchor="middle"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    {topText}
-                  </motion.textPath>
-                )}
-              </AnimatePresence>
-            </text>
+                    <div className="subscription-header">
+                      <div className="subscription-user">
+                        <div className="subscription-avatar">
+                          {sub.user.display_name?.charAt(0).toUpperCase() || 'U'}
+                        </div>
+                        <div className="subscription-user-info">
+                          <h4>{sub.user.display_name || 'Unknown'}</h4>
+                          <p>@{sub.user.username || sub.user.telegram_id}</p>
+                        </div>
+                      </div>
+                      <div className={`subscription-status ${sub.status}`}>
+                        {sub.status.toUpperCase()}
+                      </div>
+                    </div>
 
-            {/* 4. ქვედა ტექსტი */}
-            <text 
-              ref={bottomTextRef}
-              className={`lunar-text-bottom ${needsMarqueeBottom ? 'marquee-text' : 'static-text'}`}
-            >
-              <AnimatePresence mode="wait">
-                {needsMarqueeBottom ? (
-                  <motion.textPath 
-                    key={`bottom-marquee-${keyAdvice}`}
-                    href="#bottomTextPath"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    {bottomText} • {bottomText} • {bottomText} •
-                    <animate 
-                      attributeName="startOffset" 
-                      from="0%" 
-                      to="-33.33%" 
-                      dur="20s" 
-                      repeatCount="indefinite" 
-                    />
-                  </motion.textPath>
-                ) : (
-                  <motion.textPath 
-                    key={`bottom-static-${keyAdvice}`}
-                    href="#bottomTextPath" 
-                    startOffset="50%" 
-                    textAnchor="middle"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    {bottomText}
-                  </motion.textPath>
-                )}
-              </AnimatePresence>
-            </text>
-          </svg>
-        </div>
+                    <div className="subscription-details">
+                      <div className="subscription-detail-row">
+                        <Crown size={14} />
+                        <span className="detail-label">Plan:</span>
+                        <span className="detail-value">
+                          {sub.plan_type === 'monthly' ? 'Monthly' : 'Yearly'}
+                        </span>
+                      </div>
+                      <div className="subscription-detail-row">
+                        <Calendar size={14} />
+                        <span className="detail-label">Started:</span>
+                        <span className="detail-value">{formatDate(sub.started_at)}</span>
+                      </div>
+                      <div className="subscription-detail-row">
+                        <Calendar size={14} />
+                        <span className="detail-label">Expires:</span>
+                        <span className="detail-value">{formatDate(sub.expires_at)}</span>
+                      </div>
+                      <div className="subscription-detail-row highlight">
+                        <Clock size={14} />
+                        <span className="detail-label">Remaining:</span>
+                        <span className={`detail-value ${daysRemaining <= 7 ? 'warning' : ''}`}>
+                          {daysRemaining > 0 ? `${daysRemaining} days` : 'Expired'}
+                        </span>
+                      </div>
+                    </div>
 
-        <div className="empty-space" />
+                    {sub.status === 'active' && (
+                      <div className="subscription-actions">
+                        <button
+                          className="extend-btn"
+                          onClick={() => {
+                            setExtendingSubId(sub.id);
+                            setShowExtendModal(true);
+                          }}
+                        >
+                          <Plus size={14} />
+                          <span>Extend</span>
+                        </button>
+                        <button
+                          className="cancel-sub-btn"
+                          onClick={() => handleCancelSubscription(sub.id)}
+                        >
+                          <Trash2 size={14} />
+                          <span>Cancel</span>
+                        </button>
+                      </div>
+                    )}
+                  </motion.div>
+                );
+              })}
+            </div>
+          </>
+        )}
       </div>
 
-      {/* Corner loading indicator */}
-      {!dataLoaded && loading && (
-        <div className="corner-loading">
-          <div className="corner-spinner" />
+      {/* ქვედა ნავიგაციის პანელი */}
+      <div className="admin-bottom-nav">
+        <button
+          className={`admin-nav-btn ${activeTab === 'credits' ? 'active' : ''}`}
+          onClick={() => setActiveTab('credits')}
+        >
+          <Key size={20} />
+          <span>Credits</span>
+        </button>
+        <button
+          className={`admin-nav-btn ${activeTab === 'subscriptions' ? 'active' : ''}`}
+          onClick={() => setActiveTab('subscriptions')}
+        >
+          <Crown size={20} />
+          <span>Subs</span>
+        </button>
+        <button
+          className="admin-nav-btn ai-nav-btn"
+          onClick={() => onNavigate?.('ai-management')}
+        >
+          <Zap size={20} />
+          <span>AI</span>
+        </button>
+      </div>
+
+      {/* Add Subscription Modal */}
+      {showAddSubscription && (
+        <div className="modal-overlay" onClick={() => setShowAddSubscription(false)}>
+          <motion.div
+            className="modal"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3>Add Subscription</h3>
+            
+            <div className="modal-field">
+              <label>Select User:</label>
+              <select
+                value={selectedUserId}
+                onChange={(e) => setSelectedUserId(e.target.value)}
+              >
+                <option value="">-- Select User --</option>
+                {users.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.display_name || 'Unknown'} (@{u.username || u.telegram_id})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="modal-field">
+              <label>Plan Type:</label>
+              <div className="plan-selector">
+                <button
+                  className={`plan-option ${selectedPlan === 'monthly' ? 'active' : ''}`}
+                  onClick={() => setSelectedPlan('monthly')}
+                >
+                  Monthly
+                </button>
+                <button
+                  className={`plan-option ${selectedPlan === 'yearly' ? 'active' : ''}`}
+                  onClick={() => setSelectedPlan('yearly')}
+                >
+                  Yearly
+                </button>
+              </div>
+            </div>
+
+            <div className="modal-field">
+              <label>Duration (days):</label>
+              <input
+                type="number"
+                value={selectedDays}
+                onChange={(e) => setSelectedDays(parseInt(e.target.value) || 30)}
+                min="1"
+                max="365"
+              />
+            </div>
+
+            <div className="modal-buttons">
+              <button
+                className="modal-btn cancel"
+                onClick={() => setShowAddSubscription(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="modal-btn confirm"
+                onClick={handleCreateSubscription}
+                disabled={!selectedUserId}
+              >
+                Create Subscription
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Extend Subscription Modal */}
+      {showExtendModal && (
+        <div className="modal-overlay" onClick={() => setShowExtendModal(false)}>
+          <motion.div
+            className="modal"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3>Extend Subscription</h3>
+            
+            <div className="modal-field">
+              <label>Additional Days:</label>
+              <input
+                type="number"
+                value={extendDays}
+                onChange={(e) => setExtendDays(parseInt(e.target.value) || 30)}
+                min="1"
+                max="365"
+              />
+            </div>
+
+            <div className="modal-buttons">
+              <button
+                className="modal-btn cancel"
+                onClick={() => setShowExtendModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="modal-btn confirm"
+                onClick={handleExtendSubscription}
+              >
+                Extend
+              </button>
+            </div>
+          </motion.div>
         </div>
       )}
     </div>

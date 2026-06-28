@@ -27,23 +27,56 @@ import { getTelegramUser } from './lib/telegramAuth';
 import { getOrCreateUser, completeOnboarding } from './lib/userService';
 import './App.css';
 
-type Screen = 'splash' | 'welcome' | 'zodiac' | 'first-reading' | 'home' | 'cards' | 'reading' | 'astro' | 'profile' | 'card-fan' | 'card-detail' | 'daily-card' | 'three-card-reading' | 'reading-history' | 'celtic-cross' | 'horseshoe' | 'relationship' | 'admin' | 'ai-management' | 'subscription' | 'services';
+type Screen = 
+  | 'splash' 
+  | 'welcome' 
+  | 'zodiac' 
+  | 'first-reading' 
+  | 'home' 
+  | 'cards'
+  | 'reading'
+  | 'astro'
+  | 'profile'
+  | 'card-fan'
+  | 'card-detail'
+  | 'daily-card'
+  | 'three-card-reading'
+  | 'reading-history'
+  | 'celtic-cross'
+  | 'horseshoe'
+  | 'relationship'
+  | 'admin'
+  | 'ai-management'
+  | 'subscription'
+  | 'services';
 
+// ===== USER LOADER COMPONENT =====
 function UserLoader({ onReady }: { onReady: () => void }) {
   const { setUser, setLoading } = useUser();
 
   useEffect(() => {
     async function loadUser() {
+      console.log('🔵 [UserLoader] Starting user load...');
+      
       try {
         const tgUser = getTelegramUser();
+        console.log('🔵 [UserLoader] Telegram user:', tgUser);
+        
         if (!tgUser) {
+          console.warn('⚠️ [UserLoader] No Telegram user found');
           setLoading(false);
           onReady();
           return;
         }
+
+        console.log('🔵 [UserLoader] Loading from Supabase...');
         const user = await getOrCreateUser(tgUser);
+        console.log('🔵 [UserLoader] User from Supabase:', user);
+        
         if (user) {
           setUser(user);
+          console.log('✅ [UserLoader] User saved to context!');
+          console.log('📊 Onboarding completed:', user.onboarding_completed);
         }
       } catch (error) {
         console.error('❌ [UserLoader] Error:', error);
@@ -52,12 +85,14 @@ function UserLoader({ onReady }: { onReady: () => void }) {
         onReady();
       }
     }
+
     loadUser();
   }, [setUser, setLoading, onReady]);
 
   return null;
 }
 
+// ===== MAIN APP CONTENT =====
 function AppContent() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('splash');
   const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
@@ -68,37 +103,103 @@ function AppContent() {
   useEffect(() => {
     const tg = (window as any).Telegram?.WebApp;
     if (tg) {
-      if (typeof tg.setHeaderColor === 'function') tg.setHeaderColor('#0a0600');
-      if (typeof tg.setBackgroundColor === 'function') tg.setBackgroundColor('#0a0600');
-      if (typeof tg.expand === 'function') tg.expand();
+      console.log('🔵 Telegram WebApp detected');
+      if (typeof tg.setHeaderColor === 'function') {
+        tg.setHeaderColor('#0a0600');
+      }
+      if (typeof tg.setBackgroundColor === 'function') {
+        tg.setBackgroundColor('#0a0600');
+      }
+      if (typeof tg.expand === 'function') {
+        tg.expand();
+      }
+    } else {
+      console.warn('⚠️ Telegram WebApp NOT detected');
     }
   }, []);
 
-  const goTo = (screen: Screen) => setCurrentScreen(screen);
+  const goTo = (screen: Screen) => {
+    console.log('🔄 Navigating to:', screen);
+    setCurrentScreen(screen);
+  };
 
   const handleTabChange = (tab: string) => {
+    console.log('📑 Tab change:', tab);
     setActiveTab(tab);
     goTo(tab as Screen);
   };
 
   const handleNavigate = (screen: string) => {
+    console.log('🧭 handleNavigate called with:', screen);
+    
     if (screen.startsWith('card-detail-')) {
       const cardId = parseInt(screen.split('-')[2]);
+      console.log('💎 Opening card detail for ID:', cardId);
       setSelectedCardId(cardId);
       goTo('card-detail');
-    } else if (['daily-card', 'three-card-reading', 'reading-history', 'celtic-cross', 'horseshoe', 'relationship', 'admin', 'ai-management', 'subscription', 'services'].includes(screen)) {
-      goTo(screen as Screen);
-    } else if (screen === 'draw' || screen === 'card-fan') {
+    }
+    else if (screen === 'daily-card') {
+      console.log('🌅 Opening Daily Card');
+      goTo('daily-card');
+    }
+    else if (screen === 'three-card-reading') {
+      console.log('🔮 Opening Three Card Reading');
+      goTo('three-card-reading');
+    }
+    else if (screen === 'reading-history') {
+      console.log('📚 Opening Reading History');
+      goTo('reading-history');
+    }
+    else if (screen === 'celtic-cross') {
+      console.log('✝️ Opening Celtic Cross Reading');
+      goTo('celtic-cross');
+    }
+    else if (screen === 'horseshoe') {
+      console.log('🐎 Opening Horseshoe Reading');
+      goTo('horseshoe');
+    }
+    else if (screen === 'relationship') {
+      console.log('❤️ Opening Relationship Reading');
+      goTo('relationship');
+    }
+    else if (screen === 'admin') {
+      console.log('🔐 Opening Admin Panel');
+      goTo('admin');
+    }
+    else if (screen === 'ai-management') {
+      console.log('🤖 Opening AI Management');
+      goTo('ai-management');
+    }
+    else if (screen === 'subscription') {
+      console.log('💎 Opening Subscription Screen');
+      goTo('subscription');
+    }
+    else if (screen === 'services') {
+      console.log('🛍️ Opening Services Screen');
+      goTo('services');
+    }
+    else if (screen === 'draw' || screen === 'card-fan') {
       goTo('card-fan');
-    } else if (['home', 'cards', 'reading', 'astro', 'profile'].includes(screen)) {
+    }
+    else if (['home', 'cards', 'reading', 'astro', 'profile'].includes(screen)) {
       handleTabChange(screen);
+    }
+    else {
+      console.log('⚠️ Unknown screen:', screen);
     }
   };
 
-  const handleUserReady = () => setUserReady(true);
+  const handleUserReady = () => {
+    console.log('✅ User loading complete!');
+    setUserReady(true);
+  };
 
   const handleSplashFinish = () => {
+    console.log('🎬 Splash finished');
+    console.log('📊 User onboarding_completed:', user?.onboarding_completed);
+    
     if (!userReady) {
+      console.log('⏳ Waiting for user to load...');
       const checkInterval = setInterval(() => {
         if (userReady) {
           clearInterval(checkInterval);
@@ -107,49 +208,124 @@ function AppContent() {
       }, 100);
       return;
     }
+    
     if (user?.onboarding_completed) {
+      console.log('✅ User already completed onboarding → going to HOME');
       goTo('home');
     } else {
+      console.log('🆕 New user → starting onboarding');
       goTo('welcome');
     }
   };
 
   const handleOnboardingComplete = async () => {
+    console.log('🎉 Onboarding completed!');
+    
     if (user) {
       const updatedUser = await completeOnboarding(user.id);
-      if (updatedUser) setUser(updatedUser);
+      if (updatedUser) {
+        setUser(updatedUser);
+        console.log('✅ Onboarding status updated in database');
+      }
     }
+    
     goTo('home');
   };
+
+  console.log('📱 Current screen:', currentScreen);
+  console.log('👤 User loaded:', user ? user.display_name : 'null');
+  console.log('📊 Onboarding completed:', user?.onboarding_completed);
 
   return (
     <div className="app-container">
       {!userReady && <UserLoader onReady={handleUserReady} />}
-      {currentScreen === 'splash' && <SplashScreen onFinish={handleSplashFinish} />}
-      {currentScreen === 'welcome' && <OnboardingWelcome onFinish={() => goTo('zodiac')} />}
-      {currentScreen === 'zodiac' && <OnboardingZodiac onFinish={() => goTo('first-reading')} />}
-      {currentScreen === 'first-reading' && <OnboardingFirstReading onFinish={handleOnboardingComplete} />}
-      {currentScreen === 'home' && <><HomeScreen onNavigate={handleNavigate} /><BottomNav activeTab={activeTab} onTabChange={handleTabChange} /></>}
-      {currentScreen === 'cards' && <><CardsScreen onNavigate={handleNavigate} /><BottomNav activeTab={activeTab} onTabChange={handleTabChange} /></>}
-      {currentScreen === 'reading' && <><ReadingScreen onNavigate={handleNavigate} /><BottomNav activeTab={activeTab} onTabChange={handleTabChange} /></>}
-      {currentScreen === 'astro' && <><AstroScreen onNavigate={handleNavigate} /><BottomNav activeTab={activeTab} onTabChange={handleTabChange} /></>}
-      {currentScreen === 'profile' && <><ProfileScreen onNavigate={handleNavigate} /><BottomNav activeTab={activeTab} onTabChange={handleTabChange} /></>}
-      {currentScreen === 'card-fan' && <CardFanScreen onNavigate={handleNavigate} />}
-      {currentScreen === 'card-detail' && selectedCardId && <CardDetailScreen cardId={selectedCardId} onNavigate={handleNavigate} />}
-      {currentScreen === 'daily-card' && <DailyCardScreen onNavigate={handleNavigate} />}
-      {currentScreen === 'three-card-reading' && <ThreeCardReadingScreen onNavigate={handleNavigate} />}
-      {currentScreen === 'reading-history' && <ReadingHistoryScreen onNavigate={handleNavigate} />}
-      {currentScreen === 'celtic-cross' && <CelticCrossReadingScreen onNavigate={handleNavigate} />}
-      {currentScreen === 'horseshoe' && <HorseshoeReadingScreen onNavigate={handleNavigate} />}
-      {currentScreen === 'relationship' && <RelationshipReadingScreen onNavigate={handleNavigate} />}
-      {currentScreen === 'admin' && <AdminScreen onNavigate={handleNavigate} />}
-      {currentScreen === 'ai-management' && <AdminAIManagement onNavigate={handleNavigate} />}
-      {currentScreen === 'subscription' && <SubscriptionScreen onNavigate={handleNavigate} />}
-      {currentScreen === 'services' && <ServicesScreen onNavigate={handleNavigate} />}
+
+      {currentScreen === 'splash' && (
+        <SplashScreen onFinish={handleSplashFinish} />
+      )}
+      {currentScreen === 'welcome' && (
+        <OnboardingWelcome onFinish={() => goTo('zodiac')} />
+      )}
+      {currentScreen === 'zodiac' && (
+        <OnboardingZodiac onFinish={() => goTo('first-reading')} />
+      )}
+      {currentScreen === 'first-reading' && (
+        <OnboardingFirstReading onFinish={handleOnboardingComplete} />
+      )}
+      {currentScreen === 'home' && (
+        <>
+          <HomeScreen onNavigate={handleNavigate} />
+          <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+        </>
+      )}
+      {currentScreen === 'cards' && (
+        <>
+          <CardsScreen onNavigate={handleNavigate} />
+          <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+        </>
+      )}
+      {currentScreen === 'reading' && (
+        <>
+          <ReadingScreen onNavigate={handleNavigate} />
+          <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+        </>
+      )}
+      {currentScreen === 'astro' && (
+        <>
+          <AstroScreen onNavigate={handleNavigate} />
+          <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+        </>
+      )}
+      {currentScreen === 'profile' && (
+        <>
+          <ProfileScreen onNavigate={handleNavigate} />
+          <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+        </>
+      )}
+      {currentScreen === 'card-fan' && (
+        <CardFanScreen onNavigate={handleNavigate} />
+      )}
+      {currentScreen === 'card-detail' && selectedCardId && (
+        <CardDetailScreen 
+          cardId={selectedCardId} 
+          onNavigate={handleNavigate} 
+        />
+      )}
+      {currentScreen === 'daily-card' && (
+        <DailyCardScreen onNavigate={handleNavigate} />
+      )}
+      {currentScreen === 'three-card-reading' && (
+        <ThreeCardReadingScreen onNavigate={handleNavigate} />
+      )}
+      {currentScreen === 'reading-history' && (
+        <ReadingHistoryScreen onNavigate={handleNavigate} />
+      )}
+      {currentScreen === 'celtic-cross' && (
+        <CelticCrossReadingScreen onNavigate={handleNavigate} />
+      )}
+      {currentScreen === 'horseshoe' && (
+        <HorseshoeReadingScreen onNavigate={handleNavigate} />
+      )}
+      {currentScreen === 'relationship' && (
+        <RelationshipReadingScreen onNavigate={handleNavigate} />
+      )}
+      {currentScreen === 'admin' && (
+        <AdminScreen onNavigate={handleNavigate} />
+      )}
+      {currentScreen === 'ai-management' && (
+        <AdminAIManagement onNavigate={handleNavigate} />
+      )}
+      {currentScreen === 'subscription' && (
+        <SubscriptionScreen onNavigate={handleNavigate} />
+      )}
+      {currentScreen === 'services' && (
+        <ServicesScreen onNavigate={handleNavigate} />
+      )}
     </div>
   );
 }
 
+// ===== MAIN APP WITH PROVIDERS =====
 function App() {
   return (
     <UserProvider>
