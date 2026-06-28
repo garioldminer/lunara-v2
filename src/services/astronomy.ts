@@ -1,6 +1,5 @@
 // src/services/astronomy.ts
-import { Jupiter, Mars, Mercury, Moon, Neptune, Saturn, Sun, Uranus, Venus } from 'astronomia';
-import { JD } from 'astronomia/julian';
+import * as Astronomy from 'astronomy-engine';
 
 // ზოდიაქოს ნიშნები
 const ZODIAC_SIGNS = [
@@ -16,42 +15,45 @@ const MOON_PHASES = [
 ];
 
 /**
- * თარიღიდან Julian Day-ის გამოთვლა
+ * გამოთვლის პლანეტის სრულ ეკლიპტიკურ გრძედს (0-360°)
  */
-function dateToJD(date: Date): number {
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const hour = date.getHours() + date.getMinutes() / 60;
+function getPlanetLongitude(planetName: string, date: Date): number {
+  // მზე - განსაკუთრებული შემთხვევა
+  // მზის გეოცენტრული გრძედი = დედამიწის ელიოცენტრული გრძედი + 180°
+  if (planetName === 'Sun') {
+    const earthLon = Astronomy.EclipticLongitude('Earth', date);
+    return (earthLon + 180) % 360;
+  }
   
-  return JD.fromCalendarDate(year, month, day + hour / 24);
+  // მთვარე და სხვა პლანეტები
+  return Astronomy.EclipticLongitude(planetName, date);
 }
 
 /**
  * გამოთვლის პლანეტის პოზიციას კონკრეტულ თარიღზე
  */
 export function calculatePlanetPosition(
-  planet: any, 
+  planetName: string, 
   date: Date
 ): { sign: string; degree: number; retrograde: boolean } {
-  const jd = dateToJD(date);
-  
-  // პლანეტის გეოცენტრული პოზიცია
-  const pos = planet.position(jd);
-  
-  // ეკლიპტიკური გრძედი (0-360°)
-  const ecliptic = pos.toEcliptic();
-  const eclipticLongitude = ((ecliptic.lon * 180) / Math.PI + 360) % 360;
+  const eclipticLongitude = getPlanetLongitude(planetName, date);
   
   // ნიშნის განსაზღვრა (თითოეული 30°)
   const signIndex = Math.floor(eclipticLongitude / 30) % 12;
   const degree = eclipticLongitude % 30;
   
   // რეტროგრადულობის შემოწმება
-  const jdYesterday = jd - 1;
-  const posYesterday = planet.position(jdYesterday);
-  const lonYesterday = ((posYesterday.toEcliptic().lon * 180) / Math.PI + 360) % 360;
-  const retrograde = eclipticLongitude < lonYesterday;
+  const yesterday = new Date(date);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const lonYesterday = getPlanetLongitude(planetName, yesterday);
+  
+  let retrograde = false;
+  if (eclipticLongitude < lonYesterday) {
+    const diff = lonYesterday - eclipticLongitude;
+    if (diff < 180) {
+      retrograde = true;
+    }
+  }
   
   return {
     sign: ZODIAC_SIGNS[signIndex],
@@ -69,25 +71,16 @@ export function calculateMoonData(date: Date): {
   sign: string;
   degree: number;
 } {
-  const jd = dateToJD(date);
+  const eclipticLongitude = Astronomy.EclipticLongitude('Moon', date);
   
-  // მთვარის პოზიცია
-  const moonPos = Moon.position(jd);
-  const ecliptic = moonPos.toEcliptic();
-  const eclipticLongitude = ((ecliptic.lon * 180) / Math.PI + 360) % 360;
-  
-  // ნიშანი
   const signIndex = Math.floor(eclipticLongitude / 30) % 12;
   const degree = eclipticLongitude % 30;
   
-  // მთვარის ფაზა
-  // სინოდური თვე ≈ 29.53059 დღე
-  const newMoonReference = JD.fromCalendarDate(2000, 1, 6);
-  const daysSinceNewMoon = (jd - newMoonReference) % 29.53059;
-  const phaseIndex = Math.floor((daysSinceNewMoon / 29.53059) * 8) % 8;
+  const moonPhaseAngle = Astronomy.MoonPhase(date);
+  const phaseIndex = Math.floor((moonPhaseAngle / 360) * 8) % 8;
   
-  // განათება (0-100%)
-  const illumination = ((1 - Math.cos((daysSinceNewMoon / 29.53059) * 2 * Math.PI)) / 2) * 100;
+  const illuminationData = Astronomy.Illumination('Moon', date);
+  const illumination = illuminationData.phase_fraction * 100;
   
   return {
     phase: MOON_PHASES[phaseIndex],
@@ -99,30 +92,53 @@ export function calculateMoonData(date: Date): {
 
 /**
  * გამოთვლის ყველა პლანეტის პოზიციას
+ * აბრუნებს სრულ ეკლიპტიკურ გრძედსაც (ასპექტებისთვის)
  */
 export function calculateAllPlanets(date: Date) {
-  const planets = [
-    { name: 'Sun', calculator: Sun },
-    { name: 'Moon', calculator: Moon },
-    { name: 'Mercury', calculator: Mercury },
-    { name: 'Venus', calculator: Venus },
-    { name: 'Mars', calculator: Mars },
-    { name: 'Jupiter', calculator: Jupiter },
-    { name: 'Saturn', calculator: Saturn },
-    { name: 'Uranus', calculator: Uranus },
-    { name: 'Neptune', calculator: Neptune }
-  ];
+  const planetNames = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune'];
   
-  return planets.map(planet => ({
-    name: planet.name,
-    ...calculatePlanetPosition(planet.calculator, date)
-  }));
+  return planetNames.map(name => {
+    if (name === 'Moon') {
+      const moonData = calculateMoonData(date);
+      const totalDegree = ZODIAC_SIGNS.indexOf(moonData.sign) * 30 + moonData.degree;
+      return {
+        name: 'Moon',
+        sign: moonData.sign,
+        degree: moonData.degree,
+        totalDegree,
+        retrograde: false
+      };
+    }
+    
+    const eclipticLongitude = getPlanetLongitude(name, date);
+    const signIndex = Math.floor(eclipticLongitude / 30) % 12;
+    const degree = eclipticLongitude % 30;
+    const totalDegree = eclipticLongitude;
+    
+    const yesterday = new Date(date);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const lonYesterday = getPlanetLongitude(name, yesterday);
+    let retrograde = false;
+    if (eclipticLongitude < lonYesterday) {
+      const diff = lonYesterday - eclipticLongitude;
+      if (diff < 180) retrograde = true;
+    }
+    
+    return {
+      name,
+      sign: ZODIAC_SIGNS[signIndex],
+      degree: parseFloat(degree.toFixed(4)),
+      totalDegree,
+      retrograde
+    };
+  });
 }
 
 /**
  * გამოთვლის ასპექტებს პლანეტებს შორის
+ * იყენებს სრულ ეკლიპტიკურ გრძედს (totalDegree)
  */
-export function calculateAspects(planets: Array<{ name: string; degree: number }>) {
+export function calculateAspects(planets: Array<{ name: string; totalDegree: number }>) {
   const aspects = [];
   const aspectTypes = [
     { type: 'conjunction', angle: 0, orb: 8 },
@@ -137,11 +153,10 @@ export function calculateAspects(planets: Array<{ name: string; degree: number }
       const planet1 = planets[i];
       const planet2 = planets[j];
       
-      // კუთხე პლანეტებს შორის
-      let angle = Math.abs(planet1.degree - planet2.degree);
+      // სრული ეკლიპტიკური გრძედის სხვაობა
+      let angle = Math.abs(planet1.totalDegree - planet2.totalDegree);
       if (angle > 180) angle = 360 - angle;
       
-      // შეამოწმე თითოეული ასპექტი
       for (const aspect of aspectTypes) {
         const orb = Math.abs(angle - aspect.angle);
         
@@ -168,19 +183,11 @@ export function calculateAspects(planets: Array<{ name: string; degree: number }
  * მთავარი ფუნქცია - ყველაფრის გამოთვლა ერთდროულად
  */
 export function calculateCosmicData(date: Date = new Date()) {
-  // 1. მთვარის მონაცემები
   const moonData = calculateMoonData(date);
-  
-  // 2. ყველა პლანეტის პოზიცია
   const planets = calculateAllPlanets(date);
-  
-  // 3. ასპექტები
   const aspects = calculateAspects(planets);
-  
-  // 4. მზის ნიშანი
   const sunData = planets.find(p => p.name === 'Sun');
   
-  // 5. დომინანტი ელემენტი
   const elementCounts = { Fire: 0, Earth: 0, Air: 0, Water: 0 };
   const signToElement: Record<string, string> = {
     'Aries': 'Fire', 'Leo': 'Fire', 'Sagittarius': 'Fire',
@@ -197,8 +204,16 @@ export function calculateCosmicData(date: Date = new Date()) {
   const dominantElement = Object.entries(elementCounts)
     .sort((a, b) => b[1] - a[1])[0][0];
   
-  // 6. ენერგიის დონე
   const energyLevel = Math.round(moonData.illumination);
+  
+  // ასპექტებიდან totalDegree-ის ამოღება (ფრონტენდისთვის არ გვჭირდება)
+  const cleanAspects = aspects.map(({ planet1, planet2, aspect_type, degree, orb, influence }) => ({
+    planet1, planet2, aspect_type, degree, orb, influence
+  }));
+  
+  const cleanPlanets = planets.map(({ name, sign, degree, retrograde }) => ({
+    name, sign, degree, retrograde
+  }));
   
   return {
     date: date.toISOString().split('T')[0],
@@ -207,16 +222,9 @@ export function calculateCosmicData(date: Date = new Date()) {
       sign: sunData?.sign || 'Unknown',
       degree: sunData?.degree || 0
     },
-    planets,
-    aspects,
+    planets: cleanPlanets,
+    aspects: cleanAspects,
     energy_level: energyLevel,
     dominant_element: dominantElement
   };
-}
-
-// ტესტირებისთვის
-if (typeof window === 'undefined' && require.main === module) {
-  const today = new Date();
-  console.log('=== დღევანდელი კოსმოსური მონაცემები ===');
-  console.log(JSON.stringify(calculateCosmicData(today), null, 2));
 }
