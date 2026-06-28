@@ -37,9 +37,6 @@
   min-height: 100vh;
 }
 
-/* ============================================
-   ZODIAC
-   ============================================ */
 .zodiac-centered-wrapper {
   display: flex;
   justify-content: center;
@@ -106,9 +103,6 @@
   z-index: 0;
 }
 
-/* ============================================
-   LUNAR PHASE
-   ============================================ */
 .lunar-centered-wrapper {
   display: flex;
   justify-content: center;
@@ -149,18 +143,10 @@
 
 .empty-space { height: 100px; }
 
-/* ============================================
-   RESPONSIVE
-   ============================================ */
 @media (max-width: 480px) {
   .zodiac-wrapper { width: 280px; height: 280px; }
   .user-sign-symbol { font-size: 40px; }
-  
-  .lunar-svg {
-    width: 200px;
-    height: 200px;
-  }
-  
+  .lunar-svg { width: 200px; height: 200px; }
   .lunar-text-top { font-size: 9px; }
   .lunar-text-bottom { font-size: 8px; }
 }
@@ -168,11 +154,7 @@
 @media (max-width: 360px) {
   .zodiac-wrapper { width: 250px; height: 250px; }
   .user-sign-symbol { font-size: 36px; }
-  
-  .lunar-svg {
-    width: 180px;
-    height: 180px;
-  }
+  .lunar-svg { width: 180px; height: 180px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
