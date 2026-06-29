@@ -33,7 +33,7 @@
 .astro-content {
   position: relative;
   z-index: 10;
-  padding: 0;
+  padding: 0 15px 100px;
   min-height: 100vh;
 }
 
@@ -189,6 +189,284 @@
   filter: brightness(1.1) contrast(1.1);
 }
 
+/* ============================================
+   NEW SECTIONS - Planet Positions, Aspects, Energy
+   ============================================ */
+.astro-section {
+  background: rgba(217, 182, 111, 0.05);
+  border: 1px solid rgba(217, 182, 111, 0.15);
+  border-radius: 16px;
+  padding: 20px;
+  margin-top: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.section-title {
+  font-family: 'Cinzel', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #D9B66F;
+  margin: 0 0 15px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: 0.5px;
+}
+
+/* ============================================
+   PLANET POSITIONS
+   ============================================ */
+.planets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.planet-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: rgba(217, 182, 111, 0.08);
+  border: 1px solid rgba(217, 182, 111, 0.12);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.planet-item:hover {
+  background: rgba(217, 182, 111, 0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(217, 182, 111, 0.15);
+}
+
+.planet-symbol {
+  font-size: 24px;
+  filter: drop-shadow(0 0 6px rgba(217, 182, 111, 0.5));
+}
+
+.planet-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.planet-name {
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #F7F3EB;
+  letter-spacing: 0.3px;
+}
+
+.planet-sign {
+  font-size: 11px;
+  color: #D9B66F;
+  opacity: 0.9;
+}
+
+.planets-loading {
+  text-align: center;
+  padding: 20px;
+  color: #D9B66F;
+  font-style: italic;
+}
+
+/* ============================================
+   KEY ASPECTS
+   ============================================ */
+.aspects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.aspect-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  background: rgba(217, 182, 111, 0.06);
+  border: 1px solid rgba(217, 182, 111, 0.12);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.aspect-item:hover {
+  background: rgba(217, 182, 111, 0.1);
+  transform: translateX(4px);
+}
+
+.aspect-planets {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.aspect-planet {
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #F7F3EB;
+}
+
+.aspect-symbol {
+  font-size: 18px;
+  font-weight: 700;
+  filter: drop-shadow(0 0 4px currentColor);
+}
+
+.aspect-details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.aspect-type {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.aspect-orb {
+  font-size: 10px;
+  color: #b3a68c;
+  opacity: 0.7;
+}
+
+/* ============================================
+   COSMIC ENERGY
+   ============================================ */
+.energy-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.energy-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: rgba(217, 182, 111, 0.06);
+  border: 1px solid rgba(217, 182, 111, 0.12);
+  border-radius: 10px;
+}
+
+.energy-icon {
+  font-size: 24px;
+  filter: drop-shadow(0 0 6px rgba(217, 182, 111, 0.4));
+}
+
+.energy-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.energy-label {
+  font-size: 10px;
+  color: #b3a68c;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.7;
+}
+
+.energy-value {
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #D9B66F;
+}
+
+.energy-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(217, 182, 111, 0.15);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.energy-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #D9B66F, #F4D47C);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(217, 182, 111, 0.6);
+  transition: width 0.5s ease;
+}
+
+/* ============================================
+   GET HOROSCOPE BUTTON
+   ============================================ */
+.get-horoscope-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 25px;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, rgba(217, 182, 111, 0.2) 0%, rgba(217, 182, 111, 0.1) 100%);
+  border: 2px solid rgba(217, 182, 111, 0.4);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.get-horoscope-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(217, 182, 111, 0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.get-horoscope-btn:hover::before {
+  left: 100%;
+}
+
+.get-horoscope-btn:hover {
+  background: linear-gradient(135deg, rgba(217, 182, 111, 0.3) 0%, rgba(217, 182, 111, 0.15) 100%);
+  border-color: rgba(217, 182, 111, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(217, 182, 111, 0.25);
+}
+
+.get-horoscope-btn:active {
+  transform: translateY(0);
+}
+
+.btn-icon {
+  font-size: 24px;
+  filter: drop-shadow(0 0 8px rgba(217, 182, 111, 0.6));
+}
+
+.btn-text {
+  font-family: 'Cinzel', serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #D9B66F;
+  letter-spacing: 0.5px;
+}
+
+.btn-arrow {
+  font-size: 18px;
+  color: #D9B66F;
+  transition: transform 0.3s ease;
+}
+
+.get-horoscope-btn:hover .btn-arrow {
+  transform: translateX(4px);
+}
+
 .empty-space { 
   height: 100px; 
 }
@@ -229,6 +507,18 @@
   .corner-spinner { width: 18px; height: 18px; }
   .astro-header { padding: 12px; }
   .astro-back-btn { width: 36px; height: 36px; }
+  
+  .planets-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+  .planet-symbol { font-size: 20px; }
+  .planet-name { font-size: 11px; }
+  .planet-sign { font-size: 10px; }
+  
+  .energy-grid { grid-template-columns: 1fr; }
+  .energy-icon { font-size: 20px; }
+  .energy-value { font-size: 12px; }
+  
+  .btn-text { font-size: 14px; }
+  .btn-icon { font-size: 20px; }
 }
 
 @media (max-width: 360px) {
@@ -238,6 +528,17 @@
   .corner-spinner { width: 16px; height: 16px; }
   .astro-header { padding: 10px; }
   .astro-back-btn { width: 32px; height: 32px; }
+  
+  .planets-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .planet-item { padding: 8px; }
+  
+  .aspect-item { padding: 10px 12px; }
+  .aspect-planet { font-size: 12px; }
+  
+  .energy-item { padding: 10px; }
+  
+  .get-horoscope-btn { padding: 14px 20px; }
+  .btn-text { font-size: 13px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -245,4 +546,202 @@
   .corner-spinner { animation: none; border-top-color: transparent; }
   .lunar-ring { transition: none; }
   .astro-back-btn { transition: none; }
+  .get-horoscope-btn::before { transition: none; }
+  .energy-fill { transition: none; }
 }
+/* ============================================
+   PLANET ORBIT WHEEL
+   ============================================ */
+   .planet-orbit-container {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .planet-orbit-svg {
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 0 20px rgba(217, 182, 111, 0.2));
+  }
+  
+  .orbit-circle {
+    transition: all 0.3s ease;
+  }
+  
+  .orbit-circle:hover {
+    stroke: rgba(217, 182, 111, 0.4);
+    stroke-width: 2;
+  }
+  
+  .sun-center {
+    animation: sunPulse 3s ease-in-out infinite;
+  }
+  
+  @keyframes sunPulse {
+    0%, 100% {
+      opacity: 1;
+      filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8));
+    }
+    50% {
+      opacity: 0.9;
+      filter: drop-shadow(0 0 20px rgba(255, 215, 0, 1));
+    }
+  }
+  
+  .sun-symbol {
+    font-size: 24px;
+    pointer-events: none;
+  }
+  
+  .planet-dot {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 0 6px currentColor);
+  }
+  
+  .planet-dot:hover {
+    filter: drop-shadow(0 0 12px currentColor);
+  }
+  
+  .planet-symbol-text {
+    font-size: 12px;
+    pointer-events: none;
+    transition: all 0.3s ease;
+  }
+  
+  .zodiac-sign-text {
+    font-size: 10px;
+    fill: rgba(217, 182, 111, 0.7);
+    pointer-events: none;
+  }
+  
+  .planet-hover-info {
+    animation: fadeIn 0.3s ease;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  .hover-planet-name {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    font-weight: 700;
+    fill: #D9B66F;
+  }
+  
+  .hover-planet-sign {
+    font-size: 10px;
+    fill: #F7F3EB;
+  }
+  
+  .planet-legend {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(217, 182, 111, 0.05);
+    border: 1px solid rgba(217, 182, 111, 0.15);
+    border-radius: 12px;
+  }
+  
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: rgba(217, 182, 111, 0.08);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+  }
+  
+  .legend-item:hover {
+    background: rgba(217, 182, 111, 0.15);
+    transform: translateX(4px);
+  }
+  
+  .legend-symbol {
+    font-size: 18px;
+    filter: drop-shadow(0 0 4px currentColor);
+  }
+  
+  .legend-name {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: #F7F3EB;
+    flex: 1;
+  }
+  
+  .legend-sign {
+    font-size: 10px;
+    color: #D9B66F;
+    opacity: 0.9;
+  }
+  
+  .planet-orbit-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: #D9B66F;
+  }
+  
+  .planet-orbit-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(217, 182, 111, 0.2);
+    border-top-color: #D9B66F;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+  }
+  
+  @media (max-width: 480px) {
+    .planet-orbit-container {
+      padding: 10px;
+    }
+  
+    .planet-legend {
+      grid-template-columns: 1fr;
+      gap: 6px;
+      padding: 10px;
+    }
+  
+    .legend-item {
+      padding: 5px 8px;
+    }
+  
+    .legend-symbol {
+      font-size: 16px;
+    }
+  
+    .legend-name {
+      font-size: 10px;
+    }
+  
+    .legend-sign {
+      font-size: 9px;
+    }
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .sun-center {
+      animation: none;
+    }
+  
+    .planet-dot {
+      transition: none;
+    }
+  }

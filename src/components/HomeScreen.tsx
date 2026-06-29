@@ -132,6 +132,8 @@ export default function HomeScreen({ onNavigate }: Props) {
         onNavigate('horseshoe');
       } else if (action === 'Relationship') {
         onNavigate('relationship');
+      } else if (action === 'Horoscope') {
+        onNavigate('horoscope');
       } else if (action === 'Admin') {
         onNavigate('admin');
       } else if (action === 'Subscription') {
@@ -142,7 +144,7 @@ export default function HomeScreen({ onNavigate }: Props) {
     }
   };
 
-  // ✅ განახლებული - Premium/Paywall-ის ნაცვლად Services
+  // ✅ განახლებული - Crystals → Horoscope
   const quickActions = [
     { icon: <Sparkles size={28} />, label: 'Daily', sublabel: 'Card', color: '#C5A059', action: 'Daily' },
     { icon: <LayoutGrid size={28} />, label: '3 Cards', sublabel: 'Reading', color: '#a78bfa', action: '3Cards' },
@@ -152,8 +154,7 @@ export default function HomeScreen({ onNavigate }: Props) {
     { icon: <Crown size={28} />, label: 'Celtic', sublabel: 'Cross', color: '#C5A059', action: 'CelticCross', isPremium: true },
     { icon: <span style={{ fontSize: '28px' }}>🐎</span>, label: 'Horseshoe', sublabel: '7 Cards', color: '#fb923c', action: 'Horseshoe', isPremium: true },
     { icon: <span style={{ fontSize: '28px' }}>❤️</span>, label: 'Love', sublabel: 'Spread', color: '#f472b6', action: 'Relationship', isPremium: true },
-    { icon: <Gem size={28} />, label: 'Crystals', sublabel: '', color: '#f472b6', action: 'Crystals' },
-    // ✅ ახალი Services ღილაკი - Premium-ის ნაცვლად
+    { icon: <Sparkles size={28} />, label: 'Horoscope', sublabel: 'Daily', color: '#C5A059', action: 'Horoscope' },
     { icon: <Sparkles size={28} />, label: 'Services', sublabel: 'Shop', color: '#FFD700', action: 'Services', isServices: true },
   ];
 

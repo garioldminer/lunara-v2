@@ -12,6 +12,153 @@
 }
 
 /* ============================================
+   LOADING STATE - "ცოცხალი" ანიმაციები
+   ============================================ */
+.horoscope-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+  position: relative;
+}
+
+.loading-moon {
+  position: relative;
+  z-index: 2;
+}
+
+.moon-icon {
+  color: #D9B66F;
+  filter: drop-shadow(0 0 20px rgba(217, 182, 111, 0.6));
+}
+
+.loading-stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.star {
+  position: absolute;
+  color: #D9B66F;
+  font-size: 16px;
+  filter: drop-shadow(0 0 8px rgba(217, 182, 111, 0.8));
+}
+
+.loading-message {
+  margin-top: 30px;
+  font-family: 'Cinzel', serif;
+  font-size: 18px;
+  color: #D9B66F;
+  text-align: center;
+  letter-spacing: 1px;
+  z-index: 2;
+}
+
+.cosmic-progress {
+  width: 200px;
+  height: 3px;
+  background: rgba(217, 182, 111, 0.2);
+  border-radius: 2px;
+  margin-top: 20px;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.cosmic-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #D9B66F, #F4D47C);
+  border-radius: 2px;
+  box-shadow: 0 0 10px rgba(217, 182, 111, 0.6);
+}
+
+/* ============================================
+   ERROR STATE
+   ============================================ */
+.horoscope-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+  text-align: center;
+}
+
+.error-icon {
+  margin-bottom: 20px;
+}
+
+.error-moon {
+  color: #D9B66F;
+  opacity: 0.6;
+  filter: drop-shadow(0 0 15px rgba(217, 182, 111, 0.4));
+}
+
+.error-message {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  color: #F7F3EB;
+  opacity: 0.8;
+  margin-bottom: 30px;
+  line-height: 1.6;
+  max-width: 300px;
+}
+
+.retry-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  background: rgba(217, 182, 111, 0.15);
+  border: 1px solid rgba(217, 182, 111, 0.4);
+  border-radius: 12px;
+  color: #D9B66F;
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.retry-button:hover {
+  background: rgba(217, 182, 111, 0.25);
+  border-color: rgba(217, 182, 111, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(217, 182, 111, 0.2);
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+.horoscope-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+  text-align: center;
+}
+
+.empty-moon {
+  color: #D9B66F;
+  opacity: 0.5;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 0 15px rgba(217, 182, 111, 0.3));
+}
+
+.horoscope-empty p {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  color: #F7F3EB;
+  opacity: 0.7;
+  font-style: italic;
+}
+
+/* ============================================
    HEADER
    ============================================ */
 .horoscope-header {
@@ -23,8 +170,8 @@
   justify-content: space-between;
   padding: 15px;
   background: rgba(10, 6, 0, 0.95);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(217, 182, 111, 0.2);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(217, 182, 111, 0.15);
 }
 
 .horoscope-back-btn,
@@ -59,66 +206,25 @@
   font-weight: 700;
   color: #D9B66F;
   margin: 0 0 5px 0;
+  letter-spacing: 0.5px;
 }
 
 .horoscope-date {
-  font-size: 14px;
+  font-size: 13px;
   color: #F7F3EB;
-  opacity: 0.8;
+  opacity: 0.7;
   margin: 0 0 3px 0;
 }
 
 .horoscope-moon {
-  font-size: 12px;
+  font-size: 11px;
   color: #D9B66F;
   margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 5px;
-}
-
-/* ============================================
-   LOADING & ERROR STATES
-   ============================================ */
-.horoscope-loading,
-.horoscope-error,
-.horoscope-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 80vh;
-  text-align: center;
-  padding: 20px;
-}
-
-.horoscope-loading p {
-  font-family: 'Cinzel', serif;
-  font-size: 18px;
-  color: #D9B66F;
-}
-
-.horoscope-error p {
-  font-size: 16px;
-  color: #ff6b6b;
-}
-
-.btn-primary {
-  background: rgba(217, 182, 111, 0.2);
-  border: 1px solid rgba(217, 182, 111, 0.5);
-  color: #D9B66F;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-family: 'Cinzel', serif;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.btn-primary:hover {
-  background: rgba(217, 182, 111, 0.3);
-  transform: scale(1.05);
+  opacity: 0.9;
 }
 
 /* ============================================
@@ -130,12 +236,39 @@
   margin: 0 auto;
 }
 
+/* ============================================
+   PREDICTION SECTIONS
+   ============================================ */
 .prediction-section {
   background: rgba(217, 182, 111, 0.05);
-  border: 1px solid rgba(217, 182, 111, 0.15);
-  border-radius: 12px;
-  padding: 20px;
+  border: 1px solid rgba(217, 182, 111, 0.12);
+  border-radius: 16px;
+  padding: 24px 20px;
   margin-bottom: 20px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.prediction-section:hover {
+  background: rgba(217, 182, 111, 0.08);
+  border-color: rgba(217, 182, 111, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.section-icon {
+  position: absolute;
+  top: -12px;
+  left: 20px;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #D9B66F 0%, #F4D47C 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0a0600;
+  box-shadow: 0 4px 12px rgba(217, 182, 111, 0.4);
 }
 
 .prediction-section h2 {
@@ -143,43 +276,48 @@
   font-size: 16px;
   font-weight: 700;
   color: #D9B66F;
-  margin: 0 0 12px 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  margin: 10px 0 12px 0;
+  letter-spacing: 0.5px;
 }
 
 .prediction-section p {
   font-size: 16px;
-  line-height: 1.6;
+  line-height: 1.7;
   color: #F7F3EB;
   margin: 0;
+}
+
+.finance-additional {
+  margin-top: 12px !important;
+  padding-top: 12px;
+  border-top: 1px solid rgba(217, 182, 111, 0.1);
 }
 
 /* ============================================
    LUCKY ELEMENTS
    ============================================ */
-.lucky-elements {
+.lucky-section {
   background: linear-gradient(135deg, rgba(217, 182, 111, 0.1) 0%, rgba(217, 182, 111, 0.05) 100%);
-  border: 1px solid rgba(217, 182, 111, 0.3);
-  border-radius: 12px;
-  padding: 20px;
+  border: 1px solid rgba(217, 182, 111, 0.25);
+  border-radius: 16px;
+  padding: 24px 20px;
   margin-bottom: 20px;
 }
 
-.lucky-elements h3 {
+.lucky-title {
   font-family: 'Cinzel', serif;
   font-size: 16px;
   font-weight: 700;
   color: #D9B66F;
-  margin: 0 0 15px 0;
+  margin: 0 0 20px 0;
   text-align: center;
+  letter-spacing: 0.5px;
 }
 
 .lucky-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
 }
 
 .lucky-item {
@@ -187,16 +325,34 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
+  padding: 16px 12px;
+  background: rgba(217, 182, 111, 0.08);
+  border: 1px solid rgba(217, 182, 111, 0.15);
+  border-radius: 12px;
+  transition: all 0.3s ease;
 }
 
-.lucky-item .label {
-  font-size: 12px;
+.lucky-item:hover {
+  background: rgba(217, 182, 111, 0.12);
+  transform: translateY(-2px);
+}
+
+.lucky-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 0 8px rgba(217, 182, 111, 0.4));
+}
+
+.lucky-label {
+  font-size: 10px;
   color: #F7F3EB;
-  opacity: 0.7;
-  margin-bottom: 5px;
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
 }
 
-.lucky-item .value {
+.lucky-value {
   font-family: 'Cinzel', serif;
   font-size: 18px;
   font-weight: 700;
@@ -208,10 +364,18 @@
    ============================================ */
 .affirmation-section {
   background: linear-gradient(135deg, rgba(100, 80, 180, 0.1) 0%, rgba(100, 80, 180, 0.05) 100%);
-  border: 1px solid rgba(100, 80, 180, 0.3);
-  border-radius: 12px;
-  padding: 25px 20px;
+  border: 1px solid rgba(100, 80, 180, 0.25);
+  border-radius: 16px;
+  padding: 32px 24px;
   text-align: center;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.affirmation-icon {
+  font-size: 32px;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 0 12px rgba(100, 80, 180, 0.6));
 }
 
 .affirmation-section h3 {
@@ -219,15 +383,56 @@
   font-size: 16px;
   font-weight: 700;
   color: #D9B66F;
-  margin: 0 0 15px 0;
+  margin: 0 0 16px 0;
+  letter-spacing: 0.5px;
 }
 
 .affirmation-text {
   font-size: 18px;
   font-style: italic;
-  line-height: 1.6;
+  line-height: 1.7;
   color: #F7F3EB;
-  margin: 0;
+  margin: 0 0 20px 0;
+}
+
+.share-affirmation-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: rgba(100, 80, 180, 0.2);
+  border: 1px solid rgba(100, 80, 180, 0.4);
+  border-radius: 8px;
+  color: #D9B66F;
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.share-affirmation-btn:hover {
+  background: rgba(100, 80, 180, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(100, 80, 180, 0.3);
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+.horoscope-footer {
+  text-align: center;
+  padding: 30px 20px;
+  margin-top: 20px;
+}
+
+.footer-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 14px;
+  color: #D9B66F;
+  opacity: 0.6;
+  font-style: italic;
+  letter-spacing: 0.5px;
 }
 
 /* ============================================
@@ -238,6 +443,10 @@
     font-size: 16px;
   }
   
+  .prediction-section {
+    padding: 20px 16px;
+  }
+  
   .prediction-section h2 {
     font-size: 14px;
   }
@@ -246,7 +455,35 @@
     font-size: 15px;
   }
   
+  .lucky-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  .lucky-item {
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 12px 16px;
+  }
+  
+  .lucky-icon {
+    margin-bottom: 0;
+    margin-right: 12px;
+  }
+  
   .affirmation-text {
     font-size: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-moon,
+  .star,
+  .prediction-section,
+  .lucky-item,
+  .retry-button,
+  .share-affirmation-btn {
+    animation: none !important;
+    transition: none !important;
   }
 }

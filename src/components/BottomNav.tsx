@@ -8,7 +8,7 @@ interface Props {
 const tabs = [
   { id: 'home', icon: '🏠', label: 'HOME' },
   { id: 'cards', icon: '🃏', label: 'CARDS' },
-  { id: 'reading', icon: '🔮', label: 'READING' },
+  { id: 'horoscope', icon: '🔮', label: 'HOROSCOPE' },
   { id: 'astro', icon: '🪐', label: 'ASTRO' },
   { id: 'profile', icon: '👤', label: 'PROFILE' },
 ];

@@ -48,7 +48,7 @@ export function useHoroscope(userId: string, date?: string): UseHoroscopeResult 
 
       const targetDate = date || new Date().toISOString().split('T')[0];
       
-      console.log('🔮 Fetching horoscope for:', { userId, date: targetDate });
+      console.log(' Fetching cosmic guidance for:', { userId, date: targetDate });
 
       const response = await fetch(
         'https://eutavdhcxpfhpfsyaskb.supabase.co/functions/v1/generate-horoscope',
@@ -67,19 +67,19 @@ export function useHoroscope(userId: string, date?: string): UseHoroscopeResult 
       );
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`Cosmic connection failed: ${response.status}`);
       }
 
       const result = await response.json();
 
       if (result.success) {
-        console.log('✅ Horoscope received:', result.data);
+        console.log('✨ Cosmic guidance received:', result.data);
         setHoroscope(result.data);
       } else {
-        throw new Error(result.error || 'Unknown error');
+        throw new Error(result.error || 'The stars are silent');
       }
     } catch (err: any) {
-      console.error('❌ Error fetching horoscope:', err);
+      console.error('🌑 Cosmic error:', err);
       setError(err.message);
     } finally {
       setLoading(false);

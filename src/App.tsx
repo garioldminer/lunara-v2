@@ -187,7 +187,7 @@ function AppContent() {
     else if (screen === 'draw' || screen === 'card-fan') {
       goTo('card-fan');
     }
-    else if (['home', 'cards', 'reading', 'astro', 'profile'].includes(screen)) {
+    else if (['home', 'cards', 'horoscope', 'astro', 'profile'].includes(screen)) {
       handleTabChange(screen);
     }
     else {
@@ -283,7 +283,10 @@ function AppContent() {
         </>
       )}
       {currentScreen === 'horoscope' && (
-        <HoroscopeScreen onNavigate={handleNavigate} />
+        <>
+          <HoroscopeScreen onNavigate={handleNavigate} />
+          <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+        </>
       )}
       {currentScreen === 'profile' && (
         <>
