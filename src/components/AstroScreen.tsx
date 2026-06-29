@@ -74,14 +74,25 @@ function PlanetOrbitWheel() {
 
   useEffect(() => {
     const fetchPlanets = async () => {
+      // ✅ FIX: null check supabase-ისთვის
+      if (!supabase) {
+        console.error('Supabase client is not initialized');
+        setLoading(false);
+        return;
+      }
+
       try {
         const today = new Date().toISOString().split('T')[0];
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('planet_positions')
           .select('*')
           .eq('date', today);
         
-        if (data) setPlanets(data);
+        if (error) {
+          console.error('Error fetching planets:', error);
+        } else if (data) {
+          setPlanets(data);
+        }
       } catch (error) {
         console.error('Error fetching planets:', error);
       } finally {
