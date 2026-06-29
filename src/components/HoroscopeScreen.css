@@ -1,0 +1,252 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+
+.horoscope-screen {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a0600 0%, #1a0f05 50%, #0a0600 100%);
+  overflow-x: hidden;
+  font-family: 'Cormorant Garamond', serif;
+  color: #F7F3EB;
+  padding-bottom: 80px;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+.horoscope-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px;
+  background: rgba(10, 6, 0, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(217, 182, 111, 0.2);
+}
+
+.horoscope-back-btn,
+.horoscope-refresh-btn {
+  background: rgba(217, 182, 111, 0.1);
+  border: 1px solid rgba(217, 182, 111, 0.3);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #D9B66F;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.horoscope-back-btn:hover,
+.horoscope-refresh-btn:hover {
+  background: rgba(217, 182, 111, 0.2);
+  transform: scale(1.1);
+}
+
+.horoscope-title {
+  flex: 1;
+  text-align: center;
+}
+
+.horoscope-title h1 {
+  font-family: 'Cinzel', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #D9B66F;
+  margin: 0 0 5px 0;
+}
+
+.horoscope-date {
+  font-size: 14px;
+  color: #F7F3EB;
+  opacity: 0.8;
+  margin: 0 0 3px 0;
+}
+
+.horoscope-moon {
+  font-size: 12px;
+  color: #D9B66F;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+/* ============================================
+   LOADING & ERROR STATES
+   ============================================ */
+.horoscope-loading,
+.horoscope-error,
+.horoscope-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  text-align: center;
+  padding: 20px;
+}
+
+.horoscope-loading p {
+  font-family: 'Cinzel', serif;
+  font-size: 18px;
+  color: #D9B66F;
+}
+
+.horoscope-error p {
+  font-size: 16px;
+  color: #ff6b6b;
+}
+
+.btn-primary {
+  background: rgba(217, 182, 111, 0.2);
+  border: 1px solid rgba(217, 182, 111, 0.5);
+  color: #D9B66F;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: rgba(217, 182, 111, 0.3);
+  transform: scale(1.05);
+}
+
+/* ============================================
+   CONTENT
+   ============================================ */
+.horoscope-content {
+  padding: 20px 15px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.prediction-section {
+  background: rgba(217, 182, 111, 0.05);
+  border: 1px solid rgba(217, 182, 111, 0.15);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.prediction-section h2 {
+  font-family: 'Cinzel', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #D9B66F;
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.prediction-section p {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #F7F3EB;
+  margin: 0;
+}
+
+/* ============================================
+   LUCKY ELEMENTS
+   ============================================ */
+.lucky-elements {
+  background: linear-gradient(135deg, rgba(217, 182, 111, 0.1) 0%, rgba(217, 182, 111, 0.05) 100%);
+  border: 1px solid rgba(217, 182, 111, 0.3);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.lucky-elements h3 {
+  font-family: 'Cinzel', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #D9B66F;
+  margin: 0 0 15px 0;
+  text-align: center;
+}
+
+.lucky-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 15px;
+}
+
+.lucky-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.lucky-item .label {
+  font-size: 12px;
+  color: #F7F3EB;
+  opacity: 0.7;
+  margin-bottom: 5px;
+}
+
+.lucky-item .value {
+  font-family: 'Cinzel', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #D9B66F;
+}
+
+/* ============================================
+   AFFIRMATION
+   ============================================ */
+.affirmation-section {
+  background: linear-gradient(135deg, rgba(100, 80, 180, 0.1) 0%, rgba(100, 80, 180, 0.05) 100%);
+  border: 1px solid rgba(100, 80, 180, 0.3);
+  border-radius: 12px;
+  padding: 25px 20px;
+  text-align: center;
+}
+
+.affirmation-section h3 {
+  font-family: 'Cinzel', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #D9B66F;
+  margin: 0 0 15px 0;
+}
+
+.affirmation-text {
+  font-size: 18px;
+  font-style: italic;
+  line-height: 1.6;
+  color: #F7F3EB;
+  margin: 0;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 480px) {
+  .horoscope-title h1 {
+    font-size: 16px;
+  }
+  
+  .prediction-section h2 {
+    font-size: 14px;
+  }
+  
+  .prediction-section p {
+    font-size: 15px;
+  }
+  
+  .affirmation-text {
+    font-size: 16px;
+  }
+}

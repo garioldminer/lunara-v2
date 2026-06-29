@@ -16,6 +16,7 @@ import ReadingHistoryScreen from './components/ReadingHistoryScreen';
 import CelticCrossReadingScreen from './components/CelticCrossReadingScreen';
 import HorseshoeReadingScreen from './components/HorseshoeReadingScreen';
 import RelationshipReadingScreen from './components/RelationshipReadingScreen';
+import HoroscopeScreen from './components/HoroscopeScreen';
 import AdminScreen from './components/AdminScreen';
 import AdminAIManagement from './components/AdminAIManagement';
 import SubscriptionScreen from './components/SubscriptionScreen';
@@ -36,6 +37,7 @@ type Screen =
   | 'cards'
   | 'reading'
   | 'astro'
+  | 'horoscope'
   | 'profile'
   | 'card-fan'
   | 'card-detail'
@@ -162,6 +164,10 @@ function AppContent() {
       console.log('❤️ Opening Relationship Reading');
       goTo('relationship');
     }
+    else if (screen === 'horoscope') {
+      console.log('🔮 Opening Horoscope Screen');
+      goTo('horoscope');
+    }
     else if (screen === 'admin') {
       console.log('🔐 Opening Admin Panel');
       goTo('admin');
@@ -275,6 +281,9 @@ function AppContent() {
           <AstroScreen onNavigate={handleNavigate} />
           <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
         </>
+      )}
+      {currentScreen === 'horoscope' && (
+        <HoroscopeScreen onNavigate={handleNavigate} />
       )}
       {currentScreen === 'profile' && (
         <>
