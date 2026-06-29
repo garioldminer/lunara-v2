@@ -310,35 +310,201 @@
 .tab-btn svg { opacity: 0.7; }
 .tab-btn.active svg { opacity: 1; }
 
-/* ===== LUCKY ELEMENTS ===== */
-.lucky-section { background: linear-gradient(135deg, rgba(217, 182, 111, 0.08) 0%, rgba(217, 182, 111, 0.03) 100%); border: 1px solid rgba(217, 182, 111, 0.2); border-radius: 16px; padding: 25px 20px; margin-bottom: 20px; }
-.section-title { font-family: 'Cinzel', serif; font-size: 14px; font-weight: 700; color: #D9B66F; text-align: center; letter-spacing: 2px; margin: 0 0 20px 0; }
-.lucky-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-.lucky-item { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 16px 12px; background: rgba(217, 182, 111, 0.05); border: 1px solid rgba(217, 182, 111, 0.12); border-radius: 12px; transition: all 0.3s ease; }
-.lucky-item:hover { background: rgba(217, 182, 111, 0.1); border-color: rgba(217, 182, 111, 0.25); transform: translateY(-3px); }
-.lucky-icon-wrapper { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
-.color-circle { width: 50px; height: 50px; border-radius: 50%; border: 2px solid rgba(217, 182, 111, 0.5); box-shadow: 0 0 15px rgba(217, 182, 111, 0.3); }
-.number-display { font-family: 'Cinzel', serif; font-size: 32px; font-weight: 700; color: #D9B66F; text-shadow: 0 0 10px rgba(217, 182, 111, 0.5); }
-.planet-icon { color: #D9B66F; filter: drop-shadow(0 0 8px rgba(217, 182, 111, 0.5)); }
-.crystal-shape { font-size: 32px; filter: drop-shadow(0 0 10px rgba(217, 182, 111, 0.4)); }
-.lucky-label { font-size: 9px; color: #F7F3EB; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
-.lucky-value { font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700; color: #D9B66F; }
+/* ============================================
+   LUCKY ELEMENTS - 4 ელემენტი ერთ ხაზზე
+   ============================================ */
+.lucky-section { 
+  background: linear-gradient(135deg, rgba(217, 182, 111, 0.08) 0%, rgba(217, 182, 111, 0.03) 100%); 
+  border: 1px solid rgba(217, 182, 111, 0.2); 
+  border-radius: 16px; 
+  padding: 25px 20px; 
+  margin-bottom: 20px; 
+}
 
-/* ===== INSIGHTS ===== */
-.insights-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; }
-.insight-card { background: linear-gradient(135deg, rgba(217, 182, 111, 0.06) 0%, rgba(217, 182, 111, 0.03) 100%); border: 1px solid rgba(217, 182, 111, 0.15); border-radius: 16px; padding: 20px; transition: all 0.3s ease; }
-.insight-card:hover { background: rgba(217, 182, 111, 0.1); border-color: rgba(217, 182, 111, 0.25); transform: translateY(-2px); }
-.insight-header { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
-.insight-icon { color: #D9B66F; filter: drop-shadow(0 0 8px rgba(217, 182, 111, 0.4)); }
-.insight-header h3 { font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700; color: #D9B66F; margin: 0; letter-spacing: 1px; }
-.insight-percentage { display: flex; flex-direction: column; align-items: center; text-align: center; }
-.percentage-circle { position: relative; width: 80px; height: 80px; margin-bottom: 10px; }
-.circular-chart { width: 100%; height: 100%; transform: rotate(-90deg); }
-.circle-bg { stroke: rgba(255, 255, 255, 0.1); }
-.circle { stroke: #D9B66F; stroke-linecap: round; animation: progress 1.5s ease-out; }
-@keyframes progress { from { stroke-dasharray: 0, 100; } }
-.percentage-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700; color: #D9B66F; }
-.insight-description { font-size: 11px; color: #F7F3EB; opacity: 0.7; line-height: 1.4; margin: 0; }
+.section-title { 
+  font-family: 'Cinzel', serif; 
+  font-size: 14px; 
+  font-weight: 700; 
+  color: #D9B66F; 
+  text-align: center; 
+  letter-spacing: 2px; 
+  margin: 0 0 20px 0; 
+}
+
+/* ✅ 4 ელემენტი ყოველთვის ერთ ხაზზე */
+.lucky-grid { 
+  display: grid; 
+  grid-template-columns: repeat(4, 1fr); 
+  gap: 12px; 
+}
+
+.lucky-item { 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  text-align: center; 
+  padding: 16px 12px; 
+  background: rgba(217, 182, 111, 0.05); 
+  border: 1px solid rgba(217, 182, 111, 0.12); 
+  border-radius: 12px; 
+  transition: all 0.3s ease; 
+}
+
+.lucky-item:hover { 
+  background: rgba(217, 182, 111, 0.1); 
+  border-color: rgba(217, 182, 111, 0.25); 
+  transform: translateY(-3px); 
+}
+
+.lucky-icon-wrapper { 
+  width: 60px; 
+  height: 60px; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  margin-bottom: 10px; 
+}
+
+.color-circle { 
+  width: 50px; 
+  height: 50px; 
+  border-radius: 50%; 
+  border: 2px solid rgba(217, 182, 111, 0.5); 
+  box-shadow: 0 0 15px rgba(217, 182, 111, 0.3); 
+}
+
+.number-display { 
+  font-family: 'Cinzel', serif; 
+  font-size: 32px; 
+  font-weight: 700; 
+  color: #D9B66F; 
+  text-shadow: 0 0 10px rgba(217, 182, 111, 0.5); 
+}
+
+.planet-icon { 
+  color: #D9B66F; 
+  filter: drop-shadow(0 0 8px rgba(217, 182, 111, 0.5)); 
+}
+
+.crystal-shape { 
+  font-size: 32px; 
+  filter: drop-shadow(0 0 10px rgba(217, 182, 111, 0.4)); 
+}
+
+.lucky-label { 
+  font-size: 9px; 
+  color: #F7F3EB; 
+  opacity: 0.6; 
+  text-transform: uppercase; 
+  letter-spacing: 1px; 
+  margin-bottom: 5px; 
+}
+
+.lucky-value { 
+  font-family: 'Cinzel', serif; 
+  font-size: 13px; 
+  font-weight: 700; 
+  color: #D9B66F; 
+}
+
+/* ============================================
+   INSIGHTS - 2 ელემენტი გვერდიგვერდ
+   ============================================ */
+/* ✅ 2 ელემენტი ყოველთვის გვერდიგვერდ */
+.insights-grid { 
+  display: grid; 
+  grid-template-columns: repeat(2, 1fr); 
+  gap: 15px; 
+  margin-bottom: 20px; 
+}
+
+.insight-card { 
+  background: linear-gradient(135deg, rgba(217, 182, 111, 0.06) 0%, rgba(217, 182, 111, 0.03) 100%); 
+  border: 1px solid rgba(217, 182, 111, 0.15); 
+  border-radius: 16px; 
+  padding: 20px; 
+  transition: all 0.3s ease; 
+}
+
+.insight-card:hover { 
+  background: rgba(217, 182, 111, 0.1); 
+  border-color: rgba(217, 182, 111, 0.25); 
+  transform: translateY(-2px); 
+}
+
+.insight-header { 
+  display: flex; 
+  align-items: center; 
+  gap: 10px; 
+  margin-bottom: 15px; 
+}
+
+.insight-icon { 
+  color: #D9B66F; 
+  filter: drop-shadow(0 0 8px rgba(217, 182, 111, 0.4)); 
+}
+
+.insight-header h3 { 
+  font-family: 'Cinzel', serif; 
+  font-size: 12px; 
+  font-weight: 700; 
+  color: #D9B66F; 
+  margin: 0; 
+  letter-spacing: 1px; 
+}
+
+.insight-percentage { 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  text-align: center; 
+}
+
+.percentage-circle { 
+  position: relative; 
+  width: 80px; 
+  height: 80px; 
+  margin-bottom: 10px; 
+}
+
+.circular-chart { 
+  width: 100%; 
+  height: 100%; 
+  transform: rotate(-90deg); 
+}
+
+.circle-bg { 
+  stroke: rgba(255, 255, 255, 0.1); 
+}
+
+.circle { 
+  stroke: #D9B66F; 
+  stroke-linecap: round; 
+  animation: progress 1.5s ease-out; 
+}
+
+@keyframes progress { 
+  from { stroke-dasharray: 0, 100; } 
+}
+
+.percentage-text { 
+  position: absolute; 
+  top: 50%; 
+  left: 50%; 
+  transform: translate(-50%, -50%); 
+  font-family: 'Cinzel', serif; 
+  font-size: 18px; 
+  font-weight: 700; 
+  color: #D9B66F; 
+}
+
+.insight-description { 
+  font-size: 11px; 
+  color: #F7F3EB; 
+  opacity: 0.7; 
+  line-height: 1.4; 
+  margin: 0; 
+}
 
 /* ===== PREDICTION SECTIONS ===== */
 .prediction-section { background: rgba(217, 182, 111, 0.05); border: 1px solid rgba(217, 182, 111, 0.12); border-radius: 16px; padding: 24px 20px; margin-bottom: 20px; position: relative; transition: all 0.3s ease; }
@@ -359,7 +525,9 @@
 .horoscope-footer { text-align: center; padding: 30px 20px; margin-top: 20px; }
 .footer-text { font-family: 'Cormorant Garamond', serif; font-size: 14px; color: #D9B66F; opacity: 0.6; font-style: italic; letter-spacing: 0.5px; }
 
-/* ===== RESPONSIVE ===== */
+/* ============================================
+   RESPONSIVE - მხოლოდ ზომების შემცირება
+   ============================================ */
 @media (max-width: 768px) {
   .hero-banner {
     aspect-ratio: 2 / 1;
@@ -387,6 +555,47 @@
     width: 20px;
     height: 20px;
     font-size: 12px;
+  }
+
+  /* Lucky - უფრო პატარა padding */
+  .lucky-item {
+    padding: 12px 8px;
+  }
+
+  .lucky-icon-wrapper {
+    width: 50px;
+    height: 50px;
+  }
+
+  .color-circle {
+    width: 40px;
+    height: 40px;
+  }
+
+  .number-display {
+    font-size: 26px;
+  }
+
+  .crystal-shape {
+    font-size: 26px;
+  }
+
+  .lucky-value {
+    font-size: 12px;
+  }
+
+  /* Insights - უფრო პატარა */
+  .insight-card {
+    padding: 15px;
+  }
+
+  .percentage-circle {
+    width: 70px;
+    height: 70px;
+  }
+
+  .percentage-text {
+    font-size: 16px;
   }
 }
 
@@ -441,9 +650,81 @@
     font-size: 6px;
   }
 
-  .lucky-grid { grid-template-columns: repeat(2, 1fr); }
-  .insights-grid { grid-template-columns: 1fr; }
-  .tab-btn { padding: 10px 6px; font-size: 9px; }
+  /* Lucky - კიდევ უფრო პატარა */
+  .lucky-section {
+    padding: 20px 15px;
+  }
+
+  .lucky-grid {
+    gap: 8px;
+  }
+
+  .lucky-item {
+    padding: 10px 6px;
+  }
+
+  .lucky-icon-wrapper {
+    width: 45px;
+    height: 45px;
+    margin-bottom: 8px;
+  }
+
+  .color-circle {
+    width: 35px;
+    height: 35px;
+  }
+
+  .number-display {
+    font-size: 22px;
+  }
+
+  .planet-icon {
+    width: 26px;
+    height: 26px;
+  }
+
+  .crystal-shape {
+    font-size: 22px;
+  }
+
+  .lucky-label {
+    font-size: 8px;
+  }
+
+  .lucky-value {
+    font-size: 11px;
+  }
+
+  /* Insights - კიდევ უფრო პატარა */
+  .insights-grid {
+    gap: 10px;
+  }
+
+  .insight-card {
+    padding: 12px;
+  }
+
+  .insight-header h3 {
+    font-size: 10px;
+  }
+
+  .percentage-circle {
+    width: 60px;
+    height: 60px;
+  }
+
+  .percentage-text {
+    font-size: 14px;
+  }
+
+  .insight-description {
+    font-size: 10px;
+  }
+
+  .tab-btn {
+    padding: 10px 6px;
+    font-size: 9px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

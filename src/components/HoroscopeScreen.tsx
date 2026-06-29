@@ -211,7 +211,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           ))}
         </div>
 
-        {/* Lucky Elements */}
+        {/* Lucky Elements - 4 ელემენტი ერთ ხაზზე */}
         <motion.div className="lucky-section" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.6 }}>
           <h3 className="section-title">LUCKY ELEMENTS</h3>
           <div className="lucky-grid">
@@ -250,7 +250,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           </div>
         </motion.div>
 
-        {/* Love & Career Insights */}
+        {/* Love & Career Insights - გვერდიგვერდ */}
         <div className="insights-grid">
           <motion.div className="insight-card love-card" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3, duration: 0.6 }}>
             <div className="insight-header">
