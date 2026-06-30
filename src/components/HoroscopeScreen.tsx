@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, Moon, Star, Heart, Briefcase, Activity,
   Sparkles, RotateCcw, Share2, Sun, Calendar, ChevronRight,
-  Zap, TrendingUp, X
+  Zap, X
 } from 'lucide-react';
 import './HoroscopeScreen.css';
 
