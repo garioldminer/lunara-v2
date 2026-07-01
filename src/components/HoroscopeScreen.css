@@ -247,7 +247,6 @@
 }
 .read-full-button:hover { background: rgba(217, 182, 111, 0.25); border-color: rgba(217, 182, 111, 0.6); box-shadow: 0 3px 12px rgba(217,182,111,0.25); }
 
-/* მარჯვენა ნახევარი */
 .hero-right {
   flex: 0 0 35%;
   display: flex;
@@ -337,7 +336,7 @@
   50% { opacity: 0.9; }
 }
 
-/* ===== TAB NAVIGATION - 38px ===== */
+/* ===== TAB NAVIGATION ===== */
 .tab-navigation { 
   position: relative;
   display: grid; 
@@ -381,79 +380,109 @@
 .tab-btn.active svg { opacity: 1; filter: drop-shadow(0 0 3px rgba(217,182,111,0.6)); }
 
 /* ============================================
-   3-COLUMN GRID - 75px
+   3-COLUMN GRID - EMOJI + TEXT
    ============================================ */
 .three-column-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
+  gap: 8px;
   margin: 8px 0 0 0;
 }
 
-.energy-score-section {
-  background: linear-gradient(135deg, rgba(217, 182, 111, 0.10) 0%, rgba(100, 80, 180, 0.06) 100%);
+.energy-score-section,
+.insight-card {
+  background: linear-gradient(135deg, rgba(217, 182, 111, 0.08) 0%, rgba(217, 182, 111, 0.03) 100%);
   border: 1px solid rgba(217, 182, 111, 0.22);
   border-radius: 12px;
-  padding: 8px 6px;
+  padding: 10px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   position: relative;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  transition: all 0.3s ease;
 }
-.energy-score-section::before {
+
+.energy-score-section:hover,
+.insight-card:hover {
+  background: rgba(217, 182, 111, 0.12);
+  border-color: rgba(217, 182, 111, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(217, 182, 111, 0.25);
+}
+
+.energy-score-section::before,
+.insight-card::before {
   content: '';
   position: absolute;
-  top: -30%; right: -20%;
-  width: 80px; height: 80px;
-  background: radial-gradient(circle, rgba(217,182,111,0.12), transparent 70%);
+  top: -30%;
+  right: -20%;
+  width: 80px;
+  height: 80px;
+  background: radial-gradient(circle, rgba(217,182,111,0.10), transparent 70%);
   pointer-events: none;
 }
-.energy-orbit {
-  position: relative;
-  width: 40px; height: 40px;
-  margin-bottom: 4px;
-}
-.energy-ring { width: 100%; height: 100%; }
-.energy-orbit-center {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1px;
-}
-.energy-icon { color: #F4D47C; filter: drop-shadow(0 0 4px rgba(217,182,111,0.7)); }
-.energy-percent { font-family: 'Cinzel', serif; font-size: 10px; font-weight: 700; color: #D9B66F; }
-.energy-label { font-family: 'Cinzel', serif; font-size: 5.5px; letter-spacing: 0.4px; color: #D9B66F; text-align: center; margin: 0; }
 
-.insight-card {
-  background: linear-gradient(135deg, rgba(217, 182, 111, 0.06) 0%, rgba(217, 182, 111, 0.03) 100%);
-  border: 1px solid rgba(217, 182, 111, 0.15);
-  border-radius: 12px;
-  padding: 8px 6px;
-  transition: background 0.3s ease, border-color 0.3s ease;
+/* Emoji container */
+.energy-emoji,
+.insight-emoji {
+  font-size: 16px;
+  margin-bottom: 6px;
+  letter-spacing: 3px;
+  line-height: 1;
+  filter: drop-shadow(0 0 8px rgba(217, 182, 111, 0.5));
+  animation: emojiPulse 3s ease-in-out infinite;
+  text-align: center;
+  min-height: 18px;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
 }
-.insight-card:hover { background: rgba(217, 182, 111, 0.1); border-color: rgba(217, 182, 111, 0.25); }
-.insight-header { display: flex; align-items: center; gap: 3px; margin-bottom: 4px; }
-.insight-icon { color: #D9B66F; filter: drop-shadow(0 0 5px rgba(217, 182, 111, 0.4)); }
-.insight-header h3 { font-family: 'Cinzel', serif; font-size: 6.5px; font-weight: 700; color: #D9B66F; margin: 0; letter-spacing: 0.4px; }
-.percentage-circle { position: relative; width: 36px; height: 36px; margin-bottom: 4px; }
-.circular-chart { width: 100%; height: 100%; transform: rotate(-90deg); }
-.circle-bg { stroke: rgba(255, 255, 255, 0.1); }
-.circle { stroke: #D9B66F; stroke-linecap: round; animation: progress 1.5s ease-out; }
-@keyframes progress { from { stroke-dasharray: 0, 100; } }
-.percentage-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Cinzel', serif; font-size: 10px; font-weight: 700; color: #D9B66F; }
-.insight-description { font-size: 6.5px; color: #F7F3EB; opacity: 0.7; line-height: 1.2; margin: 0; text-align: center; }
+
+@keyframes emojiPulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 8px rgba(217, 182, 111, 0.5));
+  }
+  50% {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 12px rgba(244, 212, 124, 0.8));
+  }
+}
+
+/* Energy level text - VERY HIGH / HIGH / MEDIUM / LOW */
+.energy-level-text {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  margin: 0 0 3px 0;
+  text-align: center;
+  text-transform: uppercase;
+  line-height: 1.2;
+  background: linear-gradient(135deg, #F4D47C 30%, #D9B66F 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 8px rgba(244, 212, 124, 0.4);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+/* Category label - ENERGY / LOVE / CAREER */
+.energy-label {
+  font-family: 'Cinzel', serif;
+  font-size: 6px;
+  font-weight: 600;
+  color: rgba(217, 182, 111, 0.75);
+  letter-spacing: 1.2px;
+  margin: 0;
+  text-align: center;
+  text-transform: uppercase;
+}
 
 /* ============================================
-   LUCKY ELEMENTS - 75px
+   LUCKY ELEMENTS
    ============================================ */
 .lucky-section {
   background: linear-gradient(135deg, rgba(217, 182, 111, 0.08) 0%, rgba(217, 182, 111, 0.03) 100%);
@@ -661,7 +690,7 @@
 }
 
 /* ============================================
-   AFFIRMATION - 90px
+   AFFIRMATION
    ============================================ */
 .affirmation-section { 
   background: linear-gradient(135deg, rgba(100, 80, 180, 0.1) 0%, rgba(100, 80, 180, 0.05) 100%); 
@@ -680,7 +709,7 @@
 .share-affirmation-btn { display: inline-flex; align-items: center; gap: 5px; padding: 8px 14px; background: rgba(100, 80, 180, 0.2); border: 1px solid rgba(100, 80, 180, 0.4); border-radius: 6px; color: #D9B66F; font-family: 'Cinzel', serif; font-size: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; position: relative; }
 .share-affirmation-btn:hover { background: rgba(100, 80, 180, 0.3); transform: translateY(-2px); box-shadow: 0 3px 10px rgba(100, 80, 180, 0.3); }
 
-/* ===== FOOTER - 35px ===== */
+/* ===== FOOTER ===== */
 .horoscope-footer { text-align: center; padding: 15px 15px 5px 15px; margin-top: 8px; }
 .footer-text { font-family: 'Cormorant Garamond', serif; font-size: 11px; color: #D9B66F; opacity: 0.6; font-style: italic; letter-spacing: 0.4px; }
 
@@ -761,7 +790,66 @@
   text-align: center;
 }
 
-/* ===== RESPONSIVE ===== */
+/* ============================================
+   SHARE MODAL (NEW!)
+   ============================================ */
+.share-modal {
+  max-width: 500px;
+}
+
+.share-preview-container {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.share-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.share-action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(217, 182, 111, 0.1);
+  border: 1px solid rgba(217, 182, 111, 0.3);
+  border-radius: 8px;
+  color: #D9B66F;
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.share-action-btn:hover {
+  background: rgba(217, 182, 111, 0.2);
+  border-color: rgba(217, 182, 111, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(217, 182, 111, 0.2);
+}
+
+.share-action-btn.primary {
+  background: rgba(217, 182, 111, 0.3);
+  border-color: rgba(217, 182, 111, 0.6);
+}
+
+.share-action-btn.primary:hover {
+  background: rgba(217, 182, 111, 0.4);
+  box-shadow: 0 6px 18px rgba(217, 182, 111, 0.3);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
 @media (max-width: 768px) {
   .horoscope-header { padding: 45px 10px 8px 10px; }
   .hero-banner { height: 115px; margin: 6px 0 0 0; }
@@ -769,19 +857,28 @@
   .hero-sign-name { font-size: 20px; }
   .hero-description { font-size: 9px; }
   .hero-tarot-card { width: 85px; height: 130px; }
-  .tab-navigation { margin: 6px 0 0 0; }
-  .three-column-grid { margin: 6px 0 0 0; }
+  
+  .three-column-grid { gap: 6px; margin: 6px 0 0 0; }
+  .energy-score-section,
+  .insight-card { padding: 9px 5px; }
+  .energy-emoji,
+  .insight-emoji { font-size: 14px; margin-bottom: 5px; letter-spacing: 2px; min-height: 16px; }
+  .energy-level-text { font-size: 8px; }
+  .energy-label { font-size: 5.5px; }
+  
   .lucky-section { margin: 6px 0 0 0; }
-  .two-column-grid { margin: 6px 0 0 0; }
-  .affirmation-section { margin: 6px 0 0 0; }
-  .energy-orbit { width: 36px; height: 36px; }
-  .percentage-circle { width: 32px; height: 32px; }
-  .percentage-text { font-size: 9px; }
   .lucky-icon-wrapper { width: 28px; height: 28px; }
   .color-circle { width: 24px; height: 24px; }
   .number-display { font-size: 18px; }
   .crystal-shape { font-size: 18px; }
   .lucky-value { font-size: 8px; }
+  
+  .two-column-grid { margin: 6px 0 0 0; }
+  .affirmation-section { margin: 6px 0 0 0; }
+  
+  .share-modal { max-width: 90%; }
+  .share-preview-container { max-height: 50vh; }
+  .share-action-btn { padding: 10px; font-size: 11px; }
 }
 
 @media (max-width: 480px) {
@@ -796,15 +893,14 @@
   .read-full-button { padding: 4px 8px; font-size: 6.5px; }
   .hero-tarot-card { width: 75px; height: 115px; }
   .tab-btn { padding: 5px 3px; font-size: 7px; }
-  .energy-score-section { padding: 6px 5px; }
-  .energy-orbit { width: 32px; height: 32px; }
-  .energy-percent { font-size: 9px; }
-  .energy-label { font-size: 5px; }
-  .insight-card { padding: 6px 5px; }
-  .insight-header h3 { font-size: 6px; }
-  .percentage-circle { width: 28px; height: 28px; }
-  .percentage-text { font-size: 8px; }
-  .insight-description { font-size: 5.5px; }
+  
+  .energy-score-section,
+  .insight-card { padding: 7px 4px; border-radius: 10px; }
+  .energy-emoji,
+  .insight-emoji { font-size: 13px; letter-spacing: 1.5px; min-height: 14px; margin-bottom: 4px; }
+  .energy-level-text { font-size: 7.5px; letter-spacing: 1px; margin-bottom: 2px; }
+  .energy-label { font-size: 5.5px; letter-spacing: 1px; }
+  
   .lucky-section { padding: 8px 6px; }
   .section-title { font-size: 9px; }
   .lucky-item { padding: 6px 4px; }
@@ -819,8 +915,16 @@
   .preview-text { font-size: 9px; }
   .affirmation-section { padding: 14px 12px; }
   .affirmation-text { font-size: 13px; }
+  
+  .share-modal { padding: 20px 15px; }
+  .share-preview-container { margin: 15px 0; }
+  .share-actions { flex-direction: column; }
+  .share-action-btn { padding: 10px; font-size: 11px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .circle, .card-glow, .aurora-layer, .particle, .hero-shimmer, .card-sheen, .subtitle-spark, .planet-icon, .crystal-shape, .cardFloat { animation: none !important; }
+  .card-glow, .aurora-layer, .particle, .hero-shimmer, .card-sheen, .subtitle-spark, 
+  .planet-icon, .crystal-shape, .cardFloat, .emojiPulse { 
+    animation: none !important; 
+  }
 }

@@ -1,0 +1,410 @@
+.share-card {
+    position: relative;
+    width: 405px;
+    height: 720px;
+    overflow: hidden;
+    font-family: 'Cormorant Garamond', serif;
+    color: #F7F3EB;
+    border-radius: 20px;
+  }
+  
+  /* ბექგრაუნდი - Cosmic Purple/Pink Nebula */
+  .share-card-bg {
+    position: absolute;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse at 20% 30%, rgba(147, 51, 234, 0.4) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 70%, rgba(236, 72, 153, 0.3) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(88, 28, 135, 0.5) 0%, transparent 70%),
+      linear-gradient(135deg, #0f0720 0%, #1a0b2e 50%, #0f0720 100%);
+    z-index: 0;
+  }
+  
+  /* ვარსკვლავები */
+  .share-card-stars {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+  
+  .star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: #F4D47C;
+    border-radius: 50%;
+    box-shadow: 0 0 8px 1px rgba(244, 212, 124, 0.8);
+    animation: starTwinkle 3s ease-in-out infinite;
+  }
+  
+  @keyframes starTwinkle {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.5); }
+  }
+  
+  /* ჩარჩო */
+  .share-card-frame {
+    position: relative;
+    z-index: 2;
+    width: calc(100% - 30px);
+    height: calc(100% - 30px);
+    padding: 25px 20px;
+    border: 2px solid rgba(217, 182, 111, 0.5);
+    border-radius: 18px;
+    margin: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(10, 6, 0, 0.4);
+    backdrop-filter: blur(10px);
+  }
+  
+  /* Header - ზედა მარცხენა და მარჯვენა */
+  .share-card-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px; /* 5px padding between header and zodiac */
+  }
+  
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .logo-crescent {
+    font-size: 24px;
+    color: #D9B66F;
+    filter: drop-shadow(0 0 8px rgba(217, 182, 111, 0.6));
+  }
+  
+  .logo-text {
+    font-family: 'Cinzel', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #D9B66F;
+    letter-spacing: 1px;
+  }
+  
+  .date {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    color: #D9B66F;
+    letter-spacing: 1px;
+  }
+  
+  /* Zodiac Section - აწეული ზემოთ */
+  .zodiac-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .zodiac-circle {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    border: 2px solid rgba(217, 182, 111, 0.6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 
+      0 0 40px rgba(217, 182, 111, 0.4),
+      inset 0 0 30px rgba(217, 182, 111, 0.15);
+  }
+  
+  .zodiac-art {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    z-index: 2;
+  }
+  
+  .zodiac-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(1.15) contrast(1.1) sepia(0.3) hue-rotate(340deg) saturate(1.5);
+  }
+  
+  .circle-decorations {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  
+  .circle-decorations .star {
+    position: absolute;
+    font-size: 12px;
+    color: #F4D47C;
+    filter: drop-shadow(0 0 6px rgba(244, 212, 124, 0.9));
+  }
+  
+  .circle-decorations .star-1 { top: 10px; left: 50%; transform: translateX(-50%); }
+  .circle-decorations .star-2 { bottom: 10px; left: 50%; transform: translateX(-50%); }
+  .circle-decorations .star-3 { left: 10px; top: 50%; transform: translateY(-50%); }
+  .circle-decorations .star-4 { right: 10px; top: 50%; transform: translateY(-50%); }
+  
+  .zodiac-name {
+    font-family: 'Cinzel', serif;
+    font-size: 48px;
+    font-weight: 900;
+    color: #D9B66F;
+    margin: 15px 0 0 0;
+    letter-spacing: 6px;
+    text-shadow: 0 0 30px rgba(217, 182, 111, 0.6);
+  }
+  
+  /* Affirmation */
+  .affirmation-section {
+    text-align: center;
+    margin-bottom: 25px;
+    padding: 0 15px;
+  }
+  
+  .affirmation-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-style: italic;
+    line-height: 1.5;
+    color: #F7F3EB;
+    margin: 0;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+  }
+  
+  /* Lucky Elements - ერთ ხაზზე ჰორიზონტალურად (NEW!) */
+  .lucky-elements-horizontal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 25px;
+    width: 100%;
+  }
+  
+  .lucky-item-horizontal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    max-width: 100px;
+  }
+  
+  .lucky-icon {
+    width: 55px;
+    height: 55px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    border-radius: 50%;
+    border: 2px solid rgba(217, 182, 111, 0.6);
+    background: rgba(217, 182, 111, 0.1);
+    box-shadow: 0 0 20px rgba(217, 182, 111, 0.4);
+    position: relative;
+  }
+  
+  .moon-icon {
+    font-size: 36px;
+  }
+  
+  .number-icon {
+    font-size: 28px;
+  }
+  
+  .number-circle {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cinzel', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: #D9B66F;
+    border: 2px solid rgba(217, 182, 111, 0.6);
+    border-radius: 50%;
+    background: rgba(217, 182, 111, 0.1);
+    box-shadow: 0 0 15px rgba(217, 182, 111, 0.4);
+  }
+  
+  .color-icon {
+    font-size: 32px;
+  }
+  
+  .lucky-label {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    color: #F7F3EB;
+    letter-spacing: 0.5px;
+    text-align: center;
+  }
+  
+  /* QR Section */
+  .qr-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-top: auto;
+    padding-top: 10px;
+  }
+  
+  .qr-code {
+    width: 90px;
+    height: 90px;
+    background: white;
+    border-radius: 10px;
+    padding: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  }
+  
+  .qr-placeholder {
+    width: 100%;
+    height: 100%;
+    background: 
+      linear-gradient(45deg, #000 25%, transparent 25%),
+      linear-gradient(-45deg, #000 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #000 75%),
+      linear-gradient(-45deg, transparent 75%, #000 75%);
+    background-size: 18px 18px;
+    background-position: 0 0, 0 9px, 9px -9px, -9px 0px;
+    border-radius: 6px;
+  }
+  
+  .qr-pattern {
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+  
+  .qr-pattern::before,
+  .qr-pattern::after {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border: 3px solid #000;
+    background: white;
+  }
+  
+  .qr-pattern::before {
+    top: 6px;
+    left: 6px;
+  }
+  
+  .qr-pattern::after {
+    bottom: 6px;
+    right: 6px;
+  }
+  
+  .qr-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .qr-cta {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px;
+    color: #F7F3EB;
+    margin: 0;
+    line-height: 1.3;
+    font-style: italic;
+  }
+  
+  .qr-url {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    color: #D9B66F;
+    margin: 0;
+    letter-spacing: 1px;
+  }
+  
+  /* Responsive */
+  @media (max-width: 480px) {
+    .share-card {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 9/16;
+    }
+    
+    .share-card-frame {
+      padding: 20px 15px;
+      margin: 10px;
+    }
+    
+    .share-card-header {
+      margin-bottom: 5px;
+    }
+    
+    .logo-text {
+      font-size: 18px;
+    }
+    
+    .date {
+      font-size: 11px;
+    }
+    
+    .zodiac-circle {
+      width: 150px;
+      height: 150px;
+    }
+    
+    .zodiac-art {
+      width: 115px;
+      height: 115px;
+    }
+    
+    .zodiac-name {
+      font-size: 38px;
+    }
+    
+    .affirmation-text {
+      font-size: 17px;
+    }
+    
+    .lucky-elements-horizontal {
+      gap: 15px;
+    }
+    
+    .lucky-item-horizontal {
+      max-width: 80px;
+    }
+    
+    .lucky-icon {
+      width: 45px;
+      height: 45px;
+      font-size: 26px;
+    }
+    
+    .number-circle {
+      width: 42px;
+      height: 42px;
+      font-size: 24px;
+    }
+    
+    .lucky-label {
+      font-size: 9px;
+    }
+    
+    .qr-code {
+      width: 75px;
+      height: 75px;
+    }
+    
+    .qr-cta {
+      font-size: 13px;
+    }
+    
+    .qr-url {
+      font-size: 12px;
+    }
+  }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export interface Horoscope {
   id: string;
@@ -31,14 +31,24 @@ export interface UseHoroscopeResult {
   refetch: () => void;
 }
 
-export function useHoroscope(userId: string, date?: string): UseHoroscopeResult {
+export function useHoroscope(userId: string, readingType: string = 'daily', date?: string): UseHoroscopeResult {
   const [horoscope, setHoroscope] = useState<Horoscope | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // ✅ Prevent double invocation in StrictMode
+  const hasFetched = useRef(false);
+  const currentKey = useRef('');
 
-  const fetchHoroscope = async () => {
+  const fetchHoroscope = async (forceRefresh = false) => {
     if (!userId) {
       setLoading(false);
+      return;
+    }
+
+    // ✅ Prevent duplicate fetches for same parameters
+    const key = `${userId}-${readingType}-${date}`;
+    if (!forceRefresh && hasFetched.current && currentKey.current === key) {
       return;
     }
 
@@ -48,7 +58,7 @@ export function useHoroscope(userId: string, date?: string): UseHoroscopeResult 
 
       const targetDate = date || new Date().toISOString().split('T')[0];
       
-      console.log(' Fetching cosmic guidance for:', { userId, date: targetDate });
+      console.log('🔮 Fetching horoscope:', { userId, readingType, date: targetDate });
 
       const response = await fetch(
         'https://eutavdhcxpfhpfsyaskb.supabase.co/functions/v1/generate-horoscope',
@@ -60,7 +70,7 @@ export function useHoroscope(userId: string, date?: string): UseHoroscopeResult 
           },
           body: JSON.stringify({
             user_id: userId,
-            reading_type: 'daily',
+            reading_type: readingType,
             date: targetDate
           })
         }
@@ -73,8 +83,10 @@ export function useHoroscope(userId: string, date?: string): UseHoroscopeResult 
       const result = await response.json();
 
       if (result.success) {
-        console.log('✨ Cosmic guidance received:', result.data);
+        console.log('✨ Horoscope received:', result.data);
         setHoroscope(result.data);
+        hasFetched.current = true;
+        currentKey.current = key;
       } else {
         throw new Error(result.error || 'The stars are silent');
       }
@@ -88,12 +100,17 @@ export function useHoroscope(userId: string, date?: string): UseHoroscopeResult 
 
   useEffect(() => {
     fetchHoroscope();
-  }, [userId, date]);
+  }, [userId, readingType, date]);
+
+  const refetch = () => {
+    hasFetched.current = false;
+    fetchHoroscope(true);
+  };
 
   return {
     horoscope,
     loading,
     error,
-    refetch: fetchHoroscope
+    refetch
   };
 }

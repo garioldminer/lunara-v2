@@ -27,7 +27,7 @@ serve(async (req) => {
     }
 
     const targetDate = date || new Date().toISOString().split('T')[0];
-    console.log(`Generating horoscope for user ${user_id} on ${targetDate}`);
+    console.log(`Generating horoscope for user ${user_id} on ${targetDate} (type: ${reading_type})`);
 
     // 2. შეამოწე არსებობს თუ არა უკვე horoscope
     const { data: existing, error: existingError } = await supabase
@@ -63,33 +63,47 @@ serve(async (req) => {
 
     console.log(`User sign: ${profile.sun_sign}, Moon: ${profile.moon_sign}`);
 
-    // 4. მიიღე დღევანდელი კოსმოსური მონაცემები
+    // 4. მიიღე კოსმოსური მონაცემები
+    const today = new Date().toISOString().split('T')[0];
+
     const { data: cosmicData, error: cosmicError } = await supabase
       .from('cosmic_daily_data')
       .select('*')
-      .eq('date', targetDate)
+      .eq('date', today)
       .single();
 
     if (cosmicError || !cosmicData) {
-      throw new Error('Cosmic data not found for this date');
+      throw new Error('Cosmic data not found for today');
     }
 
-    // 5. მიიღე ასპექტები
+    // 5. მიიღე ასპექტები (დღევანდელი)
     const { data: aspects, error: aspectsError } = await supabase
       .from('aspects')
       .select('*')
-      .eq('date', targetDate);
+      .eq('date', today);
 
-    // 6. აიღე prompt template
+    // 6. აიღე prompt template reading_type-ის მიხედვით
+    const promptNames: Record<string, string> = {
+      daily: 'daily_horoscope_base',
+      today: 'daily_horoscope_base',
+      tomorrow: 'tomorrow_horoscope_base',
+      weekly: 'weekly_horoscope_base',
+      monthly: 'monthly_horoscope_base'
+    };
+
+    const promptName = promptNames[reading_type] || 'daily_horoscope_base';
+    console.log(`Using prompt template: ${promptName}`);
+
     const { data: prompt, error: promptError } = await supabase
       .from('ai_prompts')
       .select('*')
-      .eq('name', 'daily_horoscope_base')
+      .eq('name', promptName)
       .eq('is_active', true)
       .single();
 
     if (promptError || !prompt) {
-      throw new Error('Prompt template not found');
+      console.error('Prompt error:', promptError);
+      throw new Error(`Prompt template not found: ${promptName}`);
     }
 
     // 7. მოამზადე ტრანზიტების ტექსტი
@@ -100,17 +114,17 @@ serve(async (req) => {
 
     // 8. ჩაასვი ცვლადები prompt-ში
     const userPrompt = prompt.user_prompt_template
-      .replace('{{sun_sign}}', profile.sun_sign)
-      .replace('{{moon_sign}}', profile.moon_sign || 'Unknown')
-      .replace('{{rising_sign}}', profile.rising_sign || 'Unknown')
-      .replace('{{date}}', targetDate)
-      .replace('{{moon_phase}}', cosmicData.moon_phase)
-      .replace('{{moon_illumination}}', String(cosmicData.moon_illumination))
-      .replace('{{moon_sign_current}}', cosmicData.moon_sign)
-      .replace('{{sun_sign_current}}', cosmicData.sun_sign)
-      .replace('{{transits}}', transitsText || 'No major transits')
-      .replace('{{dominant_element}}', cosmicData.dominant_element)
-      .replace('{{energy_level}}', String(cosmicData.energy_level));
+      .replace(/\{\{sun_sign\}\}/g, profile.sun_sign)
+      .replace(/\{\{moon_sign\}\}/g, profile.moon_sign || 'Unknown')
+      .replace(/\{\{rising_sign\}\}/g, profile.rising_sign || 'Unknown')
+      .replace(/\{\{date\}\}/g, targetDate)
+      .replace(/\{\{moon_phase\}\}/g, cosmicData.moon_phase)
+      .replace(/\{\{moon_illumination\}\}/g, String(cosmicData.moon_illumination))
+      .replace(/\{\{moon_sign_current\}\}/g, cosmicData.moon_sign)
+      .replace(/\{\{sun_sign_current\}\}/g, cosmicData.sun_sign)
+      .replace(/\{\{transits\}\}/g, transitsText || 'No major transits')
+      .replace(/\{\{dominant_element\}\}/g, cosmicData.dominant_element)
+      .replace(/\{\{energy_level\}\}/g, String(cosmicData.energy_level));
 
     console.log('Prompt prepared, calling AI...');
 
@@ -157,6 +171,9 @@ serve(async (req) => {
         career_prediction: parsed.career,
         health_prediction: parsed.health,
         finance_prediction: parsed.finance,
+        cosmic_energy_level: parsed.cosmic_energy_level,
+        love_energy_level: parsed.love_energy_level,
+        career_energy_level: parsed.career_energy_level,
         moon_phase: cosmicData.moon_phase,
         moon_sign: cosmicData.moon_sign,
         key_transits: aspects || [],
@@ -192,7 +209,7 @@ serve(async (req) => {
       })
       .eq('provider_name', aiModel);
 
-    console.log(`Horoscope saved successfully for ${targetDate}`);
+    console.log(`Horoscope saved successfully for ${targetDate} (${reading_type})`);
 
     return new Response(
       JSON.stringify({ 
@@ -314,12 +331,53 @@ function parseHoroscopeResponse(text: string) {
     career: '',
     health: '',
     finance: '',
+    cosmic_energy_level: 'Medium',
+    love_energy_level: 'Medium',
+    career_energy_level: 'Medium',
     lucky_color: '',
     lucky_number: 0,
     affirmation: ''
   };
 
-  // პარსე სექციები
+  // 1. სცადე JSON parsing პირველ რიგში
+  try {
+    // ამოიღე JSON ტექსტიდან (შეიძლება იყოს wrapped in ```json ... ```)
+    const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/) || text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const jsonText = jsonMatch[1] || jsonMatch[0];
+      const parsed = JSON.parse(jsonText);
+      
+      sections.general = parsed.general_prediction || '';
+      sections.love = parsed.love_prediction || '';
+      sections.career = parsed.career_prediction || '';
+      sections.health = parsed.health_prediction || '';
+      sections.finance = parsed.finance_prediction || '';
+      sections.lucky_color = parsed.lucky_color || '';
+      sections.lucky_number = parsed.lucky_number || 0;
+      sections.affirmation = parsed.affirmation || '';
+      
+      // Energy levels normalization
+      const normalizeLevel = (level: string) => {
+        if (!level) return 'Medium';
+        const lower = level.toLowerCase();
+        if (lower.includes('very')) return 'Very High';
+        if (lower.includes('high')) return 'High';
+        if (lower.includes('medium')) return 'Medium';
+        if (lower.includes('low')) return 'Low';
+        return 'Medium';
+      };
+      
+      sections.cosmic_energy_level = normalizeLevel(parsed.cosmic_energy_level);
+      sections.love_energy_level = normalizeLevel(parsed.love_energy_level);
+      sections.career_energy_level = normalizeLevel(parsed.career_energy_level);
+      
+      return sections;
+    }
+  } catch (e) {
+    console.log('JSON parsing failed, trying markdown format');
+  }
+
+  // 2. Fallback: markdown parsing
   const generalMatch = text.match(/## General Energy\n([\s\S]*?)(?=##|$)/i);
   if (generalMatch) sections.general = generalMatch[1].trim();
 
@@ -335,15 +393,44 @@ function parseHoroscopeResponse(text: string) {
   const healthMatch = text.match(/## Health & Wellness\n([\s\S]*?)(?=##|$)/i);
   if (healthMatch) sections.health = healthMatch[1].trim();
 
+  // Energy levels - markdown format
+  const cosmicMatch = text.match(/"cosmic_energy_level":\s*"([^"]+)"/i);
+  if (cosmicMatch) {
+    const level = cosmicMatch[1].trim().toLowerCase();
+    if (['low', 'medium', 'high', 'very high'].includes(level)) {
+      sections.cosmic_energy_level = level.charAt(0).toUpperCase() + level.slice(1);
+    }
+  }
+
+  const loveEnergyMatch = text.match(/"love_energy_level":\s*"([^"]+)"/i);
+  if (loveEnergyMatch) {
+    const level = loveEnergyMatch[1].trim().toLowerCase();
+    if (['low', 'medium', 'high', 'very high'].includes(level)) {
+      sections.love_energy_level = level.charAt(0).toUpperCase() + level.slice(1);
+    }
+  }
+
+  const careerEnergyMatch = text.match(/"career_energy_level":\s*"([^"]+)"/i);
+  if (careerEnergyMatch) {
+    const level = careerEnergyMatch[1].trim().toLowerCase();
+    if (['low', 'medium', 'high', 'very high'].includes(level)) {
+      sections.career_energy_level = level.charAt(0).toUpperCase() + level.slice(1);
+    }
+  }
+
   // Lucky elements
-  const colorMatch = text.match(/Color:\s*([^\n]+)/i);
+  const colorMatch = text.match(/Color:\s*([^\n]+)/i) || text.match(/"lucky_color":\s*"([^"]+)"/i);
   if (colorMatch) sections.lucky_color = colorMatch[1].trim();
 
-  const numberMatch = text.match(/Number:\s*(\d+)/i);
+  const numberMatch = text.match(/Number:\s*(\d+)/i) || text.match(/"lucky_number":\s*(\d+)/i);
   if (numberMatch) sections.lucky_number = parseInt(numberMatch[1]);
 
   // Affirmation
-  const affirmationMatch = text.match(/## Daily Affirmation\n"([^"]+)"/i);
+  const affirmationMatch = text.match(/## (?:Daily|Weekly|Monthly)?\s*Affirmation\n"([^"]+)"/i) 
+    || text.match(/Affirmation:\s*"([^"]+)"/i)
+    || text.match(/"affirmation":\s*"([^"]+)"/i)
+    || text.match(/"([^"]{20,})"/);
+  
   if (affirmationMatch) sections.affirmation = affirmationMatch[1].trim();
 
   return sections;

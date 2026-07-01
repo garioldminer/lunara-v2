@@ -6,8 +6,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, Moon, Star, Heart, Briefcase, Activity,
   Sparkles, RotateCcw, Share2, Sun, Calendar, ChevronRight,
-  Zap, X
+  Zap, X, Download
 } from 'lucide-react';
+import ShareCardPreview from './ShareCardPreview';
 import './HoroscopeScreen.css';
 
 type TabType = 'today' | 'tomorrow' | 'weekly' | 'monthly';
@@ -32,11 +33,37 @@ const ERROR_MESSAGES = [
   "The celestial wires are crossed. Please retry."
 ];
 
+const TAB_LABELS: Record<TabType, string> = {
+  today: "TODAY'S HOROSCOPE",
+  tomorrow: "TOMORROW'S HOROSCOPE",
+  weekly: "WEEKLY HOROSCOPE",
+  monthly: "MONTHLY HOROSCOPE"
+};
+
+const HEADER_LABELS: Record<TabType, string> = {
+  today: "Your Daily Guidance",
+  tomorrow: "Your Tomorrow Preview",
+  weekly: "Your Weekly Outlook",
+  monthly: "Your Monthly Forecast"
+};
+
+// Helper function: Energy level-ის მიხედვით emojis
+const getEnergyEmojis = (level: string | undefined, emoji: string): string => {
+  const normalized = level?.toLowerCase() || 'medium';
+  if (normalized.includes('very')) return `${emoji}${emoji}${emoji}${emoji}`;
+  if (normalized.includes('high')) return `${emoji}${emoji}${emoji}`;
+  if (normalized.includes('medium')) return `${emoji}${emoji}`;
+  if (normalized.includes('low')) return `${emoji}`;
+  return `${emoji}${emoji}`;
+};
+
 export default function HoroscopeScreen({ onNavigate }: Props) {
   const { user } = useUser();
-  const { horoscope, loading, error, refetch } = useHoroscope(user?.id || '');
   const [activeTab, setActiveTab] = useState<TabType>('today');
   const [openModal, setOpenModal] = useState<string | null>(null);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+
+  const { horoscope, loading, error, refetch } = useHoroscope(user?.id || '', activeTab);
 
   const userSign = user?.sun_sign?.toLowerCase() || 'leo';
   const zodiacData = ZODIAC_SIGNS[userSign] || ZODIAC_SIGNS['leo'];
@@ -50,6 +77,30 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     { id: 'weekly' as TabType, icon: <Calendar size={12} />, label: 'WEEKLY' },
     { id: 'monthly' as TabType, icon: <Star size={12} />, label: 'MONTHLY' },
   ];
+
+  // Share handlers
+  const handleDownloadCard = async () => {
+    // TODO: Implement image generation with html2canvas
+    alert('Download feature coming soon!');
+  };
+
+  const handleShareToTelegram = async () => {
+    // TODO: Implement Telegram share
+    const shareText = `Check out my ${userSign} horoscope on Lunara! 🔮✨`;
+    const shareUrl = `https://lunara.app/horoscope?sign=${userSign}&date=${horoscope?.date}`;
+    
+    if (window.Telegram?.WebApp) {
+      window.Telegram.WebApp.openTelegramLink(
+        `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`
+      );
+    } else {
+      // Fallback for browser
+      window.open(
+        `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
+        '_blank'
+      );
+    }
+  };
 
   if (loading) {
     return (
@@ -129,7 +180,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           <ArrowLeft size={18} />
         </button>
         <div className="horoscope-title">
-          <h1>Your Daily Guidance</h1>
+          <h1>{HEADER_LABELS[activeTab]}</h1>
           <p className="horoscope-date">{horoscope.date}</p>
         </div>
         <button className="horoscope-refresh-btn" onClick={refetch}>
@@ -149,7 +200,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           <div className="hero-left">
             <motion.div className="hero-text-content" initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15, duration: 0.5 }}>
               <p className="hero-subtitle">
-                <Sparkles size={8} className="subtitle-spark" /> TODAY'S HOROSCOPE
+                <Sparkles size={8} className="subtitle-spark" /> {TAB_LABELS[activeTab]}
               </p>
               <h1 className="hero-sign-name">
                 {userSign.charAt(0).toUpperCase() + userSign.slice(1)}
@@ -199,56 +250,54 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           ))}
         </div>
 
-        {/* 3-COLUMN GRID */}
+        {/* 3-COLUMN GRID - Emoji + Text */}
         <div className="three-column-grid">
-          <motion.div className="energy-score-section" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.5 }}>
-            <div className="energy-orbit">
-              <svg viewBox="0 0 100 100" className="energy-ring">
-                <circle cx="50" cy="50" r="44" fill="none" stroke="rgba(217,182,111,0.12)" strokeWidth="5" />
-                <motion.circle cx="50" cy="50" r="44" fill="none" stroke="url(#energyGrad)" strokeWidth="5" strokeLinecap="round" strokeDasharray="276.5" initial={{ strokeDashoffset: 276.5 }} animate={{ strokeDashoffset: 276.5 - (276.5 * 0.82) }} transition={{ duration: 1.2, ease: 'easeOut', delay: 0.2 }} transform="rotate(-90 50 50)" />
-                <defs>
-                  <linearGradient id="energyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#F4D47C" />
-                    <stop offset="100%" stopColor="#D9B66F" />
-                  </linearGradient>
-                </defs>
-              </svg>
-              <div className="energy-orbit-center">
-                <Zap size={12} className="energy-icon" />
-                <span className="energy-percent">82%</span>
-              </div>
+          {/* COSMIC ENERGY */}
+          <motion.div 
+            className="energy-score-section" 
+            initial={{ opacity: 0, y: 20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ delay: 0.1, duration: 0.5 }}
+          >
+            <div className="energy-emoji">
+              {getEnergyEmojis(horoscope.cosmic_energy_level, '⚡')}
             </div>
-            <p className="energy-label">COSMIC ENERGY</p>
+            <p className="energy-level-text">
+              {horoscope.cosmic_energy_level?.toUpperCase() || 'MEDIUM'}
+            </p>
+            <p className="energy-label">ENERGY</p>
           </motion.div>
 
-          <motion.div className="insight-card love-card" initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15, duration: 0.5 }}>
-            <div className="insight-header">
-              <Heart size={12} className="insight-icon" />
-              <h3>LOVE</h3>
+          {/* LOVE */}
+          <motion.div 
+            className="insight-card love-card" 
+            initial={{ opacity: 0, x: -15 }} 
+            animate={{ opacity: 1, x: 0 }} 
+            transition={{ delay: 0.15, duration: 0.5 }}
+          >
+            <div className="insight-emoji">
+              {getEnergyEmojis(horoscope.love_energy_level, '💕')}
             </div>
-            <div className="percentage-circle">
-              <svg viewBox="0 0 36 36" className="circular-chart">
-                <path className="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="3" />
-                <path className="circle" stroke="#D9B66F" strokeWidth="3" strokeDasharray="85, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" />
-              </svg>
-              <span className="percentage-text">85%</span>
-            </div>
-            <p className="insight-description">High chance of connection.</p>
+            <p className="energy-level-text">
+              {horoscope.love_energy_level?.toUpperCase() || 'MEDIUM'}
+            </p>
+            <p className="energy-label">LOVE</p>
           </motion.div>
 
-          <motion.div className="insight-card career-card" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.5 }}>
-            <div className="insight-header">
-              <Briefcase size={12} className="insight-icon" />
-              <h3>CAREER</h3>
+          {/* CAREER */}
+          <motion.div 
+            className="insight-card career-card" 
+            initial={{ opacity: 0, x: 15 }} 
+            animate={{ opacity: 1, x: 0 }} 
+            transition={{ delay: 0.2, duration: 0.5 }}
+          >
+            <div className="insight-emoji">
+              {getEnergyEmojis(horoscope.career_energy_level, '💼')}
             </div>
-            <div className="percentage-circle">
-              <svg viewBox="0 0 36 36" className="circular-chart">
-                <path className="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="3" />
-                <path className="circle" stroke="#D9B66F" strokeWidth="3" strokeDasharray="70, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" />
-              </svg>
-              <span className="percentage-text">70%</span>
-            </div>
-            <p className="insight-description">New opportunities ahead.</p>
+            <p className="energy-level-text">
+              {horoscope.career_energy_level?.toUpperCase() || 'MEDIUM'}
+            </p>
+            <p className="energy-label">CAREER</p>
           </motion.div>
         </div>
 
@@ -326,14 +375,17 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           )}
         </div>
 
-        {/* Daily Affirmation */}
+        {/* Affirmation */}
         {horoscope.affirmation && (
           <motion.div className="affirmation-section" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.5 }}>
             <div className="affirmation-glow" />
             <div className="affirmation-icon">✨</div>
-            <h3>Daily Affirmation</h3>
+            <h3>{activeTab === 'weekly' ? 'Weekly' : activeTab === 'monthly' ? 'Monthly' : 'Daily'} Affirmation</h3>
             <p className="affirmation-text">"{horoscope.affirmation}"</p>
-            <button className="share-affirmation-btn">
+            <button 
+              className="share-affirmation-btn"
+              onClick={() => setIsShareModalOpen(true)}
+            >
               <Share2 size={12} /><span>Share</span>
             </button>
           </motion.div>
@@ -344,7 +396,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* MODAL */}
+      {/* MODAL - General/Health */}
       <AnimatePresence>
         {openModal && (
           <motion.div className="modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpenModal(null)}>
@@ -366,6 +418,55 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                   <p className="modal-text">{horoscope.health_prediction}</p>
                 </>
               )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* SHARE MODAL */}
+      <AnimatePresence>
+        {isShareModalOpen && (
+          <motion.div 
+            className="modal-overlay" 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            onClick={() => setIsShareModalOpen(false)}
+          >
+            <motion.div 
+              className="modal-content share-modal"
+              initial={{ scale: 0.9, y: 20 }} 
+              animate={{ scale: 1, y: 0 }} 
+              exit={{ scale: 0.9, y: 20 }} 
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button className="modal-close" onClick={() => setIsShareModalOpen(false)}>
+                <X size={20} />
+              </button>
+              
+              <h2 className="modal-title">Share Your Horoscope</h2>
+              
+              <div className="share-preview-container">
+                <ShareCardPreview
+                  userSign={userSign}
+                  date={horoscope.date}
+                  affirmation={horoscope.affirmation}
+                  moonPhase={horoscope.moon_phase}
+                  luckyNumber={horoscope.lucky_number}
+                  luckyColor={horoscope.lucky_color}
+                />
+              </div>
+              
+              <div className="share-actions">
+                <button className="share-action-btn" onClick={handleDownloadCard}>
+                  <Download size={16} />
+                  <span>Download</span>
+                </button>
+                <button className="share-action-btn primary" onClick={handleShareToTelegram}>
+                  <Share2 size={16} />
+                  <span>Share</span>
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}
