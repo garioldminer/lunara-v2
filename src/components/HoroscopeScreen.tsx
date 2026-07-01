@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, Moon, Star, Activity,
   Sparkles, RotateCcw, Share2, Sun, Calendar, ChevronRight,
-  X, Download
+  X, Download, Heart, Briefcase, Zap, Palette, Hash
 } from 'lucide-react';
 import ShareCardPreview from './ShareCardPreview';
 import './HoroscopeScreen.css';
@@ -62,6 +62,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const [activeTab, setActiveTab] = useState<TabType>('today');
   const [openModal, setOpenModal] = useState<string | null>(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isReadFullOpen, setIsReadFullOpen] = useState(false);
 
   const { horoscope, loading, error, refetch } = useHoroscope(user?.id || '', activeTab);
 
@@ -80,7 +81,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
   // Share handlers
   const handleDownloadCard = async () => {
-    // TODO: Implement image generation with html2canvas
     alert('Download feature coming soon!');
   };
 
@@ -88,7 +88,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     const shareText = `Check out my ${userSign} horoscope on Lunara! 🔮✨`;
     const shareUrl = `https://lunara.app/horoscope?sign=${userSign}&date=${horoscope?.date}`;
     
-    // ✅ Telegram WebApp-ის შემოწმება (TypeScript-safe)
     const telegram = (window as any).Telegram?.WebApp;
     
     if (telegram) {
@@ -96,7 +95,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`
       );
     } else {
-      // Fallback for browser
       window.open(
         `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
         '_blank'
@@ -215,7 +213,12 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
               <p className="hero-description">
                 The universe is aligning in your favor.
               </p>
-              <motion.button className="read-full-button" whileHover={{ scale: 1.02, x: 3 }} whileTap={{ scale: 0.98 }}>
+              <motion.button 
+                className="read-full-button" 
+                whileHover={{ scale: 1.02, x: 3 }} 
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setIsReadFullOpen(true)}
+              >
                 <span>READ FULL</span>
                 <ChevronRight size={12} />
               </motion.button>
@@ -254,51 +257,19 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
         {/* 3-COLUMN GRID - Emoji + Text */}
         <div className="three-column-grid">
-          {/* COSMIC ENERGY */}
-          <motion.div 
-            className="energy-score-section" 
-            initial={{ opacity: 0, y: 20 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            transition={{ delay: 0.1, duration: 0.5 }}
-          >
-            <div className="energy-emoji">
-              {getEnergyEmojis(horoscope.cosmic_energy_level, '⚡')}
-            </div>
-            <p className="energy-level-text">
-              {horoscope.cosmic_energy_level?.toUpperCase() || 'MEDIUM'}
-            </p>
+          <motion.div className="energy-score-section" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.5 }}>
+            <div className="energy-emoji">{getEnergyEmojis(horoscope.cosmic_energy_level, '⚡')}</div>
+            <p className="energy-level-text">{horoscope.cosmic_energy_level?.toUpperCase() || 'MEDIUM'}</p>
             <p className="energy-label">ENERGY</p>
           </motion.div>
-
-          {/* LOVE */}
-          <motion.div 
-            className="insight-card love-card" 
-            initial={{ opacity: 0, x: -15 }} 
-            animate={{ opacity: 1, x: 0 }} 
-            transition={{ delay: 0.15, duration: 0.5 }}
-          >
-            <div className="insight-emoji">
-              {getEnergyEmojis(horoscope.love_energy_level, '💕')}
-            </div>
-            <p className="energy-level-text">
-              {horoscope.love_energy_level?.toUpperCase() || 'MEDIUM'}
-            </p>
+          <motion.div className="insight-card love-card" initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15, duration: 0.5 }}>
+            <div className="insight-emoji">{getEnergyEmojis(horoscope.love_energy_level, '💕')}</div>
+            <p className="energy-level-text">{horoscope.love_energy_level?.toUpperCase() || 'MEDIUM'}</p>
             <p className="energy-label">LOVE</p>
           </motion.div>
-
-          {/* CAREER */}
-          <motion.div 
-            className="insight-card career-card" 
-            initial={{ opacity: 0, x: 15 }} 
-            animate={{ opacity: 1, x: 0 }} 
-            transition={{ delay: 0.2, duration: 0.5 }}
-          >
-            <div className="insight-emoji">
-              {getEnergyEmojis(horoscope.career_energy_level, '💼')}
-            </div>
-            <p className="energy-level-text">
-              {horoscope.career_energy_level?.toUpperCase() || 'MEDIUM'}
-            </p>
+          <motion.div className="insight-card career-card" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.5 }}>
+            <div className="insight-emoji">{getEnergyEmojis(horoscope.career_energy_level, '💼')}</div>
+            <p className="energy-level-text">{horoscope.career_energy_level?.toUpperCase() || 'MEDIUM'}</p>
             <p className="energy-label">CAREER</p>
           </motion.div>
         </div>
@@ -309,33 +280,25 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           <div className="lucky-grid">
             {horoscope.lucky_color && (
               <motion.div className="lucky-item" whileHover={{ y: -2, scale: 1.02 }}>
-                <div className="lucky-icon-wrapper">
-                  <div className="color-circle" style={{ background: `linear-gradient(135deg, ${horoscope.lucky_color}, transparent)` }} />
-                </div>
+                <div className="lucky-icon-wrapper"><div className="color-circle" style={{ background: `linear-gradient(135deg, ${horoscope.lucky_color}, transparent)` }} /></div>
                 <div className="lucky-label">COLOR</div>
                 <div className="lucky-value">{horoscope.lucky_color}</div>
               </motion.div>
             )}
             {horoscope.lucky_number > 0 && (
               <motion.div className="lucky-item" whileHover={{ y: -2, scale: 1.02 }}>
-                <div className="lucky-icon-wrapper">
-                  <span className="number-display">{horoscope.lucky_number}</span>
-                </div>
+                <div className="lucky-icon-wrapper"><span className="number-display">{horoscope.lucky_number}</span></div>
                 <div className="lucky-label">NUMBER</div>
                 <div className="lucky-value">{horoscope.lucky_number}</div>
               </motion.div>
             )}
             <motion.div className="lucky-item" whileHover={{ y: -2, scale: 1.02 }}>
-              <div className="lucky-icon-wrapper">
-                <Sun size={18} className="planet-icon" />
-              </div>
+              <div className="lucky-icon-wrapper"><Sun size={18} className="planet-icon" /></div>
               <div className="lucky-label">PLANET</div>
               <div className="lucky-value">{zodiacData.planet}</div>
             </motion.div>
             <motion.div className="lucky-item" whileHover={{ y: -2, scale: 1.02 }}>
-              <div className="lucky-icon-wrapper">
-                <div className="crystal-shape">💎</div>
-              </div>
+              <div className="lucky-icon-wrapper"><div className="crystal-shape">💎</div></div>
               <div className="lucky-label">CRYSTAL</div>
               <div className="lucky-value">Quartz</div>
             </motion.div>
@@ -345,30 +308,15 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         {/* General + Health - 2 COLUMN GRID */}
         <div className="two-column-grid">
           {horoscope.general_prediction && (
-            <motion.section 
-              className="prediction-card clickable"
-              initial={{ opacity: 0, y: 20 }} 
-              animate={{ opacity: 1, y: 0 }} 
-              transition={{ delay: 0.3, duration: 0.5 }}
-              onClick={() => setOpenModal('general')}
-              whileHover={{ y: -2, scale: 1.01 }}
-            >
+            <motion.section className="prediction-card clickable" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.5 }} onClick={() => setOpenModal('general')} whileHover={{ y: -2, scale: 1.01 }}>
               <div className="prediction-icon"><Sparkles size={16} /></div>
               <h2>General Energy</h2>
               <p className="preview-text">Click to read full prediction...</p>
               <div className="read-more-indicator">Read More →</div>
             </motion.section>
           )}
-
           {horoscope.health_prediction && (
-            <motion.section 
-              className="prediction-card clickable"
-              initial={{ opacity: 0, y: 20 }} 
-              animate={{ opacity: 1, y: 0 }} 
-              transition={{ delay: 0.35, duration: 0.5 }}
-              onClick={() => setOpenModal('health')}
-              whileHover={{ y: -2, scale: 1.01 }}
-            >
+            <motion.section className="prediction-card clickable" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.5 }} onClick={() => setOpenModal('health')} whileHover={{ y: -2, scale: 1.01 }}>
               <div className="prediction-icon"><Activity size={16} /></div>
               <h2>Health & Wellness</h2>
               <p className="preview-text">Click to read full prediction...</p>
@@ -384,10 +332,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
             <div className="affirmation-icon">✨</div>
             <h3>{activeTab === 'weekly' ? 'Weekly' : activeTab === 'monthly' ? 'Monthly' : 'Daily'} Affirmation</h3>
             <p className="affirmation-text">"{horoscope.affirmation}"</p>
-            <button 
-              className="share-affirmation-btn"
-              onClick={() => setIsShareModalOpen(true)}
-            >
+            <button className="share-affirmation-btn" onClick={() => setIsShareModalOpen(true)}>
               <Share2 size={12} /><span>Share</span>
             </button>
           </motion.div>
@@ -403,9 +348,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         {openModal && (
           <motion.div className="modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpenModal(null)}>
             <motion.div className="modal-content" initial={{ scale: 0.9, y: 15 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 15 }} onClick={(e) => e.stopPropagation()}>
-              <button className="modal-close" onClick={() => setOpenModal(null)}>
-                <X size={20} />
-              </button>
+              <button className="modal-close" onClick={() => setOpenModal(null)}><X size={20} /></button>
               {openModal === 'general' && (
                 <>
                   <div className="modal-icon"><Sparkles size={28} /></div>
@@ -428,46 +371,185 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
       {/* SHARE MODAL */}
       <AnimatePresence>
         {isShareModalOpen && (
+          <motion.div className="modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsShareModalOpen(false)}>
+            <motion.div className="modal-content share-modal" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} onClick={(e) => e.stopPropagation()}>
+              <button className="modal-close" onClick={() => setIsShareModalOpen(false)}><X size={20} /></button>
+              <h2 className="modal-title">Share Your Horoscope</h2>
+              <div className="share-preview-container">
+                <ShareCardPreview userSign={userSign} date={horoscope.date} affirmation={horoscope.affirmation} moonPhase={horoscope.moon_phase} luckyNumber={horoscope.lucky_number} luckyColor={horoscope.lucky_color} />
+              </div>
+              <div className="share-actions">
+                <button className="share-action-btn" onClick={handleDownloadCard}><Download size={16} /><span>Download</span></button>
+                <button className="share-action-btn primary" onClick={handleShareToTelegram}><Share2 size={16} /><span>Share</span></button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ============================================
+          READ FULL MODAL - სრული ჰოროსკოპი
+          ============================================ */}
+      <AnimatePresence>
+        {isReadFullOpen && (
           <motion.div 
-            className="modal-overlay" 
+            className="read-full-overlay" 
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
-            exit={{ opacity: 0 }} 
-            onClick={() => setIsShareModalOpen(false)}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsReadFullOpen(false)}
           >
             <motion.div 
-              className="modal-content share-modal"
-              initial={{ scale: 0.9, y: 20 }} 
-              animate={{ scale: 1, y: 0 }} 
-              exit={{ scale: 0.9, y: 20 }} 
+              className="read-full-modal"
+              initial={{ scale: 0.85, y: 40, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.85, y: 40, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 250 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <button className="modal-close" onClick={() => setIsShareModalOpen(false)}>
-                <X size={20} />
+              {/* Glow Effect */}
+              <div className="rf-glow" />
+              
+              {/* Close Button */}
+              <button className="rf-close" onClick={() => setIsReadFullOpen(false)}>
+                <X size={22} />
               </button>
-              
-              <h2 className="modal-title">Share Your Horoscope</h2>
-              
-              <div className="share-preview-container">
-                <ShareCardPreview
-                  userSign={userSign}
-                  date={horoscope.date}
-                  affirmation={horoscope.affirmation}
-                  moonPhase={horoscope.moon_phase}
-                  luckyNumber={horoscope.lucky_number}
-                  luckyColor={horoscope.lucky_color}
-                />
-              </div>
-              
-              <div className="share-actions">
-                <button className="share-action-btn" onClick={handleDownloadCard}>
-                  <Download size={16} />
-                  <span>Download</span>
-                </button>
-                <button className="share-action-btn primary" onClick={handleShareToTelegram}>
-                  <Share2 size={16} />
-                  <span>Share</span>
-                </button>
+
+              {/* Scrollable Content */}
+              <div className="rf-scroll">
+                
+                {/* Header */}
+                <div className="rf-header">
+                  <div className="rf-sign-icon">{zodiacData.symbol}</div>
+                  <h1 className="rf-sign-name">{userSign.charAt(0).toUpperCase() + userSign.slice(1)}</h1>
+                  <div className="rf-date-row">
+                    <span className="rf-divider-line" />
+                    <span className="rf-date">{TAB_LABELS[activeTab]} • {horoscope.date}</span>
+                    <span className="rf-divider-line" />
+                  </div>
+                </div>
+
+                {/* Energy Overview */}
+                <div className="rf-energy-overview">
+                  <div className="rf-energy-item">
+                    <span className="rf-energy-emoji">{getEnergyEmojis(horoscope.cosmic_energy_level, '⚡')}</span>
+                    <span className="rf-energy-level">{horoscope.cosmic_energy_level?.toUpperCase() || 'MEDIUM'}</span>
+                    <span className="rf-energy-cat">Energy</span>
+                  </div>
+                  <div className="rf-energy-divider" />
+                  <div className="rf-energy-item">
+                    <span className="rf-energy-emoji">{getEnergyEmojis(horoscope.love_energy_level, '💕')}</span>
+                    <span className="rf-energy-level">{horoscope.love_energy_level?.toUpperCase() || 'MEDIUM'}</span>
+                    <span className="rf-energy-cat">Love</span>
+                  </div>
+                  <div className="rf-energy-divider" />
+                  <div className="rf-energy-item">
+                    <span className="rf-energy-emoji">{getEnergyEmojis(horoscope.career_energy_level, '💼')}</span>
+                    <span className="rf-energy-level">{horoscope.career_energy_level?.toUpperCase() || 'MEDIUM'}</span>
+                    <span className="rf-energy-cat">Career</span>
+                  </div>
+                </div>
+
+                {/* Predictions */}
+                <div className="rf-sections">
+                  
+                  {/* General */}
+                  {horoscope.general_prediction && (
+                    <div className="rf-section">
+                      <div className="rf-section-header">
+                        <Sparkles size={18} className="rf-section-icon" />
+                        <h3>General Energy</h3>
+                      </div>
+                      <p className="rf-section-text">{horoscope.general_prediction}</p>
+                    </div>
+                  )}
+
+                  {/* Love */}
+                  {horoscope.love_prediction && (
+                    <div className="rf-section">
+                      <div className="rf-section-header love">
+                        <Heart size={18} className="rf-section-icon" />
+                        <h3>Love & Relationships</h3>
+                      </div>
+                      <p className="rf-section-text">{horoscope.love_prediction}</p>
+                    </div>
+                  )}
+
+                  {/* Career */}
+                  {horoscope.career_prediction && (
+                    <div className="rf-section">
+                      <div className="rf-section-header career">
+                        <Briefcase size={18} className="rf-section-icon" />
+                        <h3>Career & Finance</h3>
+                      </div>
+                      <p className="rf-section-text">{horoscope.career_prediction}</p>
+                    </div>
+                  )}
+
+                  {/* Health */}
+                  {horoscope.health_prediction && (
+                    <div className="rf-section">
+                      <div className="rf-section-header health">
+                        <Activity size={18} className="rf-section-icon" />
+                        <h3>Health & Wellness</h3>
+                      </div>
+                      <p className="rf-section-text">{horoscope.health_prediction}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Lucky Elements */}
+                <div className="rf-lucky">
+                  <h3 className="rf-lucky-title">
+                    <Sparkles size={14} />
+                    LUCKY ELEMENTS
+                    <Sparkles size={14} />
+                  </h3>
+                  <div className="rf-lucky-grid">
+                    <div className="rf-lucky-item">
+                      <Palette size={20} className="rf-lucky-icon" />
+                      <span className="rf-lucky-label">Color</span>
+                      <span className="rf-lucky-value">{horoscope.lucky_color || 'Gold'}</span>
+                    </div>
+                    <div className="rf-lucky-item">
+                      <Hash size={20} className="rf-lucky-icon" />
+                      <span className="rf-lucky-label">Number</span>
+                      <span className="rf-lucky-value">{horoscope.lucky_number || 7}</span>
+                    </div>
+                    <div className="rf-lucky-item">
+                      <Sun size={20} className="rf-lucky-icon" />
+                      <span className="rf-lucky-label">Planet</span>
+                      <span className="rf-lucky-value">{zodiacData.planet}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Moon Info */}
+                <div className="rf-moon-info">
+                  <Moon size={22} className="rf-moon-icon" />
+                  <div className="rf-moon-details">
+                    <span className="rf-moon-phase">{horoscope.moon_phase}</span>
+                    <span className="rf-moon-sign">Moon in {horoscope.moon_sign}</span>
+                  </div>
+                </div>
+
+                {/* Affirmation */}
+                {horoscope.affirmation && (
+                  <div className="rf-affirmation">
+                    <div className="rf-aff-glow" />
+                    <div className="rf-aff-icon">✨</div>
+                    <h3 className="rf-aff-title">{activeTab === 'weekly' ? 'Weekly' : activeTab === 'monthly' ? 'Monthly' : 'Daily'} Affirmation</h3>
+                    <p className="rf-aff-text">"{horoscope.affirmation}"</p>
+                  </div>
+                )}
+
+                {/* Footer */}
+                <div className="rf-footer">
+                  <div className="rf-footer-divider">
+                    <span className="rf-fd-star">✦</span>
+                  </div>
+                  <p className="rf-footer-text">The stars have spoken.<br />Trust your intuition.</p>
+                </div>
               </div>
             </motion.div>
           </motion.div>
