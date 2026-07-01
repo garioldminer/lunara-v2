@@ -4,8 +4,8 @@
    .share-card {
     position: relative;
     width: 405px;
-    height: 720px;
-    overflow: hidden;
+    min-height: 720px;
+    overflow: visible;
     font-family: 'Cormorant Garamond', serif;
     color: #F7F3EB;
     border-radius: 20px;
@@ -63,7 +63,7 @@
     position: relative;
     z-index: 2;
     width: calc(100% - 30px);
-    height: calc(100% - 30px);
+    min-height: calc(100% - 30px);
     padding: 25px 20px;
     border: 2px solid rgba(217, 182, 111, 0.5);
     border-radius: 18px;
@@ -357,8 +357,7 @@
   @media (max-width: 480px) {
     .share-card {
       width: 100%;
-      height: auto;
-      aspect-ratio: 9/16;
+      min-height: auto;
     }
     
     .share-card-frame {
