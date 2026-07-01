@@ -1,5 +1,6 @@
 import { forwardRef } from 'react';
 import { ZODIAC_SIGNS } from '../data/zodiacData';
+import './ShareCardPreview.css';
 
 interface ShareCardPreviewProps {
   userSign: string;
@@ -14,7 +15,6 @@ const ShareCardPreview = forwardRef<HTMLDivElement, ShareCardPreviewProps>(
   ({ userSign, date, affirmation, moonPhase, luckyNumber, luckyColor }, ref) => {
     const zodiacData = ZODIAC_SIGNS[userSign] || ZODIAC_SIGNS['leo'];
     
-    // ფორმატირებული თარიღი
     const formattedDate = new Date(date).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
@@ -23,15 +23,15 @@ const ShareCardPreview = forwardRef<HTMLDivElement, ShareCardPreviewProps>(
 
     return (
       <div ref={ref} className="share-card" id="share-card">
-        {/* ბექგრაუნდი */}
+        {/* Background */}
         <div className="share-card-bg" />
         
-        {/* ვარსკვლავები */}
+        {/* Stars */}
         <div className="share-card-stars">
           {[...Array(40)].map((_, i) => (
             <div 
               key={i} 
-              className="star" 
+              className="share-star" 
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
@@ -42,28 +42,28 @@ const ShareCardPreview = forwardRef<HTMLDivElement, ShareCardPreviewProps>(
           ))}
         </div>
 
-        {/* ჩარჩო */}
+        {/* Frame */}
         <div className="share-card-frame">
-          {/* Header - ზედა მარცხენა და მარჯვენა */}
-          <div className="share-card-header">
-            <div className="logo">
+          {/* Header */}
+          <div className="share-header">
+            <div className="share-logo">
               <span className="logo-crescent">☾</span>
               <span className="logo-text">Lunara</span>
             </div>
-            <div className="date">{formattedDate}</div>
+            <div className="share-date">{formattedDate}</div>
           </div>
 
-          {/* Zodiac Section - აწეული ზემოთ */}
+          {/* Zodiac Section */}
           <div className="zodiac-section">
             <div className="zodiac-circle">
-              <div className="zodiac-art">
+              <div className="zodiac-image-wrapper">
                 <img src={zodiacData.imageUrl} alt={userSign} className="zodiac-image" />
               </div>
-              <div className="circle-decorations">
-                <div className="star star-1">✦</div>
-                <div className="star star-2">✦</div>
-                <div className="star star-3">✦</div>
-                <div className="star star-4">✦</div>
+              <div className="circle-stars">
+                <span className="c-star c-star-1">✦</span>
+                <span className="c-star c-star-2">✦</span>
+                <span className="c-star c-star-3">✦</span>
+                <span className="c-star c-star-4">✦</span>
               </div>
             </div>
             <h1 className="zodiac-name">{userSign.toUpperCase()}</h1>
@@ -74,32 +74,30 @@ const ShareCardPreview = forwardRef<HTMLDivElement, ShareCardPreviewProps>(
             <p className="affirmation-text">{affirmation}</p>
           </div>
 
-          {/* Lucky Elements - ერთ ხაზზე ჰორიზონტალურად */}
-          <div className="lucky-elements-horizontal">
-            <div className="lucky-item-horizontal">
-              <div className="lucky-icon moon-icon">🌕</div>
+          {/* Lucky Elements - Horizontal */}
+          <div className="lucky-row">
+            <div className="lucky-item">
+              <div className="lucky-icon lucky-moon"></div>
               <div className="lucky-label">{moonPhase}</div>
             </div>
-            <div className="lucky-item-horizontal">
-              <div className="lucky-icon number-icon">
+            <div className="lucky-item">
+              <div className="lucky-icon lucky-number">
                 <div className="number-circle">{luckyNumber}</div>
               </div>
               <div className="lucky-label">Lucky: {luckyNumber}</div>
             </div>
-            <div className="lucky-item-horizontal">
-              <div className="lucky-icon color-icon">🍀</div>
+            <div className="lucky-item">
+              <div className="lucky-icon lucky-color">🍀</div>
               <div className="lucky-label">Color: {luckyColor}</div>
             </div>
           </div>
 
-          {/* QR Code & CTA */}
-          <div className="qr-section">
-            <div className="qr-code">
-              <div className="qr-placeholder">
-                <div className="qr-pattern" />
-              </div>
+          {/* QR Section */}
+          <div className="qr-row">
+            <div className="qr-box">
+              <div className="qr-pattern" />
             </div>
-            <div className="qr-text">
+            <div className="qr-info">
               <p className="qr-cta">Scan to get<br />your horoscope</p>
               <p className="qr-url">lunara.app</p>
             </div>

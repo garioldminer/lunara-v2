@@ -1,4 +1,7 @@
-.share-card {
+/* ============================================
+   SHARE CARD - MAIN CONTAINER
+   ============================================ */
+   .share-card {
     position: relative;
     width: 405px;
     height: 720px;
@@ -8,10 +11,15 @@
     border-radius: 20px;
   }
   
-  /* ბექგრაუნდი - Cosmic Purple/Pink Nebula */
+  /* ============================================
+     BACKGROUND
+     ============================================ */
   .share-card-bg {
     position: absolute;
-    inset: 0;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background: 
       radial-gradient(ellipse at 20% 30%, rgba(147, 51, 234, 0.4) 0%, transparent 50%),
       radial-gradient(ellipse at 80% 70%, rgba(236, 72, 153, 0.3) 0%, transparent 50%),
@@ -20,15 +28,20 @@
     z-index: 0;
   }
   
-  /* ვარსკვლავები */
+  /* ============================================
+     STARS
+     ============================================ */
   .share-card-stars {
     position: absolute;
-    inset: 0;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     z-index: 1;
     pointer-events: none;
   }
   
-  .star {
+  .share-star {
     position: absolute;
     width: 2px;
     height: 2px;
@@ -43,7 +56,9 @@
     50% { opacity: 1; transform: scale(1.5); }
   }
   
-  /* ჩარჩო */
+  /* ============================================
+     FRAME
+     ============================================ */
   .share-card-frame {
     position: relative;
     z-index: 2;
@@ -58,18 +73,21 @@
     align-items: center;
     background: rgba(10, 6, 0, 0.4);
     backdrop-filter: blur(10px);
+    box-sizing: border-box;
   }
   
-  /* Header - ზედა მარცხენა და მარჯვენა */
-  .share-card-header {
+  /* ============================================
+     HEADER
+     ============================================ */
+  .share-header {
     width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 5px; /* 5px padding between header and zodiac */
+    margin-bottom: 5px;
   }
   
-  .logo {
+  .share-logo {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -89,14 +107,16 @@
     letter-spacing: 1px;
   }
   
-  .date {
+  .share-date {
     font-family: 'Cinzel', serif;
     font-size: 12px;
     color: #D9B66F;
     letter-spacing: 1px;
   }
   
-  /* Zodiac Section - აწეული ზემოთ */
+  /* ============================================
+     ZODIAC SECTION
+     ============================================ */
   .zodiac-section {
     display: flex;
     flex-direction: column;
@@ -118,7 +138,7 @@
       inset 0 0 30px rgba(217, 182, 111, 0.15);
   }
   
-  .zodiac-art {
+  .zodiac-image-wrapper {
     width: 140px;
     height: 140px;
     border-radius: 50%;
@@ -134,23 +154,26 @@
     filter: brightness(1.15) contrast(1.1) sepia(0.3) hue-rotate(340deg) saturate(1.5);
   }
   
-  .circle-decorations {
+  .circle-stars {
     position: absolute;
-    inset: 0;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     pointer-events: none;
   }
   
-  .circle-decorations .star {
+  .c-star {
     position: absolute;
     font-size: 12px;
     color: #F4D47C;
     filter: drop-shadow(0 0 6px rgba(244, 212, 124, 0.9));
   }
   
-  .circle-decorations .star-1 { top: 10px; left: 50%; transform: translateX(-50%); }
-  .circle-decorations .star-2 { bottom: 10px; left: 50%; transform: translateX(-50%); }
-  .circle-decorations .star-3 { left: 10px; top: 50%; transform: translateY(-50%); }
-  .circle-decorations .star-4 { right: 10px; top: 50%; transform: translateY(-50%); }
+  .c-star-1 { top: 10px; left: 50%; transform: translateX(-50%); }
+  .c-star-2 { bottom: 10px; left: 50%; transform: translateX(-50%); }
+  .c-star-3 { left: 10px; top: 50%; transform: translateY(-50%); }
+  .c-star-4 { right: 10px; top: 50%; transform: translateY(-50%); }
   
   .zodiac-name {
     font-family: 'Cinzel', serif;
@@ -162,7 +185,9 @@
     text-shadow: 0 0 30px rgba(217, 182, 111, 0.6);
   }
   
-  /* Affirmation */
+  /* ============================================
+     AFFIRMATION
+     ============================================ */
   .affirmation-section {
     text-align: center;
     margin-bottom: 25px;
@@ -179,8 +204,10 @@
     text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
   }
   
-  /* Lucky Elements - ერთ ხაზზე ჰორიზონტალურად (NEW!) */
-  .lucky-elements-horizontal {
+  /* ============================================
+     LUCKY ELEMENTS - HORIZONTAL
+     ============================================ */
+  .lucky-row {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -189,7 +216,7 @@
     width: 100%;
   }
   
-  .lucky-item-horizontal {
+  .lucky-item {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -209,14 +236,13 @@
     border: 2px solid rgba(217, 182, 111, 0.6);
     background: rgba(217, 182, 111, 0.1);
     box-shadow: 0 0 20px rgba(217, 182, 111, 0.4);
-    position: relative;
   }
   
-  .moon-icon {
+  .lucky-moon {
     font-size: 36px;
   }
   
-  .number-icon {
+  .lucky-number {
     font-size: 28px;
   }
   
@@ -236,7 +262,7 @@
     box-shadow: 0 0 15px rgba(217, 182, 111, 0.4);
   }
   
-  .color-icon {
+  .lucky-color {
     font-size: 32px;
   }
   
@@ -248,8 +274,10 @@
     text-align: center;
   }
   
-  /* QR Section */
-  .qr-section {
+  /* ============================================
+     QR SECTION
+     ============================================ */
+  .qr-row {
     display: flex;
     align-items: center;
     gap: 20px;
@@ -257,7 +285,7 @@
     padding-top: 10px;
   }
   
-  .qr-code {
+  .qr-box {
     width: 90px;
     height: 90px;
     background: white;
@@ -266,7 +294,7 @@
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
   }
   
-  .qr-placeholder {
+  .qr-pattern {
     width: 100%;
     height: 100%;
     background: 
@@ -277,11 +305,6 @@
     background-size: 18px 18px;
     background-position: 0 0, 0 9px, 9px -9px, -9px 0px;
     border-radius: 6px;
-  }
-  
-  .qr-pattern {
-    width: 100%;
-    height: 100%;
     position: relative;
   }
   
@@ -305,7 +328,7 @@
     right: 6px;
   }
   
-  .qr-text {
+  .qr-info {
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -328,7 +351,9 @@
     letter-spacing: 1px;
   }
   
-  /* Responsive */
+  /* ============================================
+     RESPONSIVE
+     ============================================ */
   @media (max-width: 480px) {
     .share-card {
       width: 100%;
@@ -341,15 +366,11 @@
       margin: 10px;
     }
     
-    .share-card-header {
-      margin-bottom: 5px;
-    }
-    
     .logo-text {
       font-size: 18px;
     }
     
-    .date {
+    .share-date {
       font-size: 11px;
     }
     
@@ -358,7 +379,7 @@
       height: 150px;
     }
     
-    .zodiac-art {
+    .zodiac-image-wrapper {
       width: 115px;
       height: 115px;
     }
@@ -371,11 +392,11 @@
       font-size: 17px;
     }
     
-    .lucky-elements-horizontal {
+    .lucky-row {
       gap: 15px;
     }
     
-    .lucky-item-horizontal {
+    .lucky-item {
       max-width: 80px;
     }
     
@@ -395,7 +416,7 @@
       font-size: 9px;
     }
     
-    .qr-code {
+    .qr-box {
       width: 75px;
       height: 75px;
     }
