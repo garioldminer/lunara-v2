@@ -22,6 +22,10 @@ export interface Horoscope {
   tokens_used: number;
   generation_time_ms: number;
   created_at: string;
+  // ✅ ახალი fields - Energy Levels
+  cosmic_energy_level?: string;
+  love_energy_level?: string;
+  career_energy_level?: string;
 }
 
 export interface UseHoroscopeResult {

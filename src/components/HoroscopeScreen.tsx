@@ -4,9 +4,9 @@ import { useUser } from '../context/UserContext';
 import { ZODIAC_SIGNS, BACKGROUND_IMAGE } from '../data/zodiacData';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ArrowLeft, Moon, Star, Heart, Briefcase, Activity,
+  ArrowLeft, Moon, Star, Activity,
   Sparkles, RotateCcw, Share2, Sun, Calendar, ChevronRight,
-  Zap, X, Download
+  X, Download
 } from 'lucide-react';
 import ShareCardPreview from './ShareCardPreview';
 import './HoroscopeScreen.css';
@@ -85,12 +85,14 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   };
 
   const handleShareToTelegram = async () => {
-    // TODO: Implement Telegram share
     const shareText = `Check out my ${userSign} horoscope on Lunara! 🔮✨`;
     const shareUrl = `https://lunara.app/horoscope?sign=${userSign}&date=${horoscope?.date}`;
     
-    if (window.Telegram?.WebApp) {
-      window.Telegram.WebApp.openTelegramLink(
+    // ✅ Telegram WebApp-ის შემოწმება (TypeScript-safe)
+    const telegram = (window as any).Telegram?.WebApp;
+    
+    if (telegram) {
+      telegram.openTelegramLink(
         `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`
       );
     } else {
