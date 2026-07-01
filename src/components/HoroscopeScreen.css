@@ -8,7 +8,7 @@
   overflow-x: hidden;
   font-family: 'Cormorant Garamond', serif;
   color: #F7F3EB;
-  padding-bottom: 80px;
+  padding-bottom: 70px;
 }
 
 .cosmic-background {
@@ -96,40 +96,40 @@
   display: flex; 
   align-items: center; 
   justify-content: space-between; 
-  padding: 55px 15px 12px 15px;
+  padding: 50px 12px 10px 12px;
   background: rgba(10, 6, 0, 0.95); 
   backdrop-filter: blur(20px); 
   border-bottom: 1px solid rgba(217, 182, 111, 0.15); 
 }
-.horoscope-back-btn, .horoscope-refresh-btn { background: rgba(217, 182, 111, 0.1); border: 1px solid rgba(217, 182, 111, 0.3); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: #D9B66F; cursor: pointer; transition: all 0.3s ease; }
+.horoscope-back-btn, .horoscope-refresh-btn { background: rgba(217, 182, 111, 0.1); border: 1px solid rgba(217, 182, 111, 0.3); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; color: #D9B66F; cursor: pointer; transition: all 0.3s ease; }
 .horoscope-back-btn:hover, .horoscope-refresh-btn:hover { background: rgba(217, 182, 111, 0.2); transform: scale(1.1); }
 .horoscope-title { flex: 1; text-align: center; }
-.horoscope-title h1 { font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700; color: #D9B66F; margin: 0 0 5px 0; letter-spacing: 0.5px; }
-.horoscope-date { font-size: 13px; color: #F7F3EB; opacity: 0.7; margin: 0; }
+.horoscope-title h1 { font-family: 'Cinzel', serif; font-size: 16px; font-weight: 700; color: #D9B66F; margin: 0 0 3px 0; letter-spacing: 0.5px; }
+.horoscope-date { font-size: 11px; color: #F7F3EB; opacity: 0.7; margin: 0; }
 
 /* ===== CONTENT ===== */
 .horoscope-content {
   position: relative;
   z-index: 10;
-  padding: 0 3px 20px 3px;
+  padding: 0 3px 15px 3px;
   max-width: 100%;
   margin: 0 auto;
 }
 
 /* ============================================
-   HERO BANNER
+   HERO BANNER - 125px
    ============================================ */
 .hero-banner {
   position: relative;
   width: 100%;
-  height: 150px;
+  height: 125px;
   background: linear-gradient(135deg, rgba(10, 6, 0, 0.95) 0%, rgba(26, 15, 62, 0.9) 100%);
   border: 2px solid rgba(217, 182, 111, 0.3);
-  border-radius: 16px;
-  margin: 10px 0 0 0;
+  border-radius: 14px;
+  margin: 8px 0 0 0;
   overflow: visible;
   display: flex;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
 }
 
 .hero-shimmer {
@@ -147,10 +147,9 @@
   100% { left: 130%; }
 }
 
-/* მარცხენა ნახევარი - პროპორციული განლაგება */
 .hero-left {
   flex: 0 0 65%;
-  padding: 10px 15px;
+  padding: 8px 12px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -162,22 +161,22 @@
 .hero-text-content {
   display: flex;
   flex-direction: column;
-  gap: 6px; /* პროპორციული დაშორება ელემენტებს შორის */
+  gap: 4px;
 }
 
 .hero-subtitle {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   font-family: 'Cinzel', serif;
-  font-size: 8px;
+  font-size: 7px;
   font-weight: 600;
   color: #D9B66F;
-  letter-spacing: 1.5px;
+  letter-spacing: 1.2px;
   margin: 0;
 }
 .subtitle-spark {
-  filter: drop-shadow(0 0 4px rgba(217,182,111,0.8));
+  filter: drop-shadow(0 0 3px rgba(217,182,111,0.8));
   animation: sparkPulse 2.2s ease-in-out infinite;
 }
 @keyframes sparkPulse {
@@ -187,12 +186,12 @@
 
 .hero-sign-name {
   font-family: 'Cinzel', serif;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 900;
   color: #F7F3EB;
   margin: 0;
   letter-spacing: 2px;
-  text-shadow: 0 0 20px rgba(217, 182, 111, 0.5);
+  text-shadow: 0 0 15px rgba(217, 182, 111, 0.5);
   line-height: 1;
   background: linear-gradient(135deg, #F7F3EB 30%, #D9B66F 100%);
   -webkit-background-clip: text;
@@ -203,7 +202,7 @@
 .hero-date-divider { 
   display: flex; 
   align-items: center; 
-  gap: 6px; 
+  gap: 5px; 
   margin: 0;
 }
 .divider-line { 
@@ -213,16 +212,16 @@
 }
 .hero-dates { 
   font-family: 'Cinzel', serif; 
-  font-size: 9px; 
+  font-size: 8px; 
   color: #D9B66F; 
-  letter-spacing: 1px; 
+  letter-spacing: 0.8px; 
   white-space: nowrap; 
 }
 
 .hero-description { 
   font-family: 'Cormorant Garamond', serif; 
-  font-size: 11px; 
-  line-height: 1.4; 
+  font-size: 10px; 
+  line-height: 1.3; 
   color: #F7F3EB; 
   opacity: 0.9; 
   margin: 0; 
@@ -231,22 +230,22 @@
 .read-full-button {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
+  gap: 4px;
+  padding: 5px 10px;
   background: rgba(217, 182, 111, 0.15);
-  border: 2px solid rgba(217, 182, 111, 0.4);
-  border-radius: 8px;
+  border: 1.5px solid rgba(217, 182, 111, 0.4);
+  border-radius: 6px;
   color: #D9B66F;
   font-family: 'Cinzel', serif;
-  font-size: 8px;
+  font-size: 7px;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
   cursor: pointer;
   transition: all 0.3s ease;
   align-self: flex-start;
   margin: 0;
 }
-.read-full-button:hover { background: rgba(217, 182, 111, 0.25); border-color: rgba(217, 182, 111, 0.6); box-shadow: 0 4px 16px rgba(217,182,111,0.25); }
+.read-full-button:hover { background: rgba(217, 182, 111, 0.25); border-color: rgba(217, 182, 111, 0.6); box-shadow: 0 3px 12px rgba(217,182,111,0.25); }
 
 /* მარჯვენა ნახევარი */
 .hero-right {
@@ -254,7 +253,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 10px;
+  padding: 8px;
   position: relative;
   z-index: 2;
 }
@@ -264,17 +263,17 @@
    ============================================ */
 .hero-tarot-card {
   position: relative;
-  width: 110px;
-  height: 170px;
+  width: 95px;
+  height: 145px;
   perspective: 1000px;
-  transform: translateY(-20px);
-  filter: drop-shadow(0 20px 30px rgba(0,0,0,0.6)) drop-shadow(0 0 20px rgba(217,182,111,0.3));
+  transform: translateY(-18px);
+  filter: drop-shadow(0 15px 25px rgba(0,0,0,0.6)) drop-shadow(0 0 15px rgba(217,182,111,0.3));
   animation: cardFloat 4s ease-in-out infinite;
 }
 
 @keyframes cardFloat {
-  0%, 100% { transform: translateY(-20px) rotateY(0deg); }
-  50% { transform: translateY(-25px) rotateY(2deg); }
+  0%, 100% { transform: translateY(-18px) rotateY(0deg); }
+  50% { transform: translateY(-22px) rotateY(2deg); }
 }
 
 .card-outer-frame {
@@ -282,11 +281,11 @@
   width: 100%;
   height: 100%;
   background: linear-gradient(135deg, #D9B66F 0%, #F4D47C 50%, #D9B66F 100%);
-  border-radius: 12px;
-  padding: 3px;
+  border-radius: 10px;
+  padding: 2.5px;
   box-shadow:
-    0 0 20px rgba(217, 182, 111, 0.5),
-    0 8px 25px rgba(0, 0, 0, 0.6),
+    0 0 15px rgba(217, 182, 111, 0.5),
+    0 6px 20px rgba(0, 0, 0, 0.6),
     inset 0 1px 0 rgba(255, 255, 255, 0.3),
     inset 0 -1px 0 rgba(0, 0, 0, 0.3);
 }
@@ -296,7 +295,7 @@
   width: 100%;
   height: 100%;
   background: linear-gradient(180deg, #1a0f3e 0%, #0a0600 100%);
-  border-radius: 9px;
+  border-radius: 7px;
   border: 1px solid rgba(217, 182, 111, 0.6);
   overflow: hidden;
 }
@@ -325,9 +324,9 @@
 
 .card-glow {
   position: absolute;
-  inset: -15px;
+  inset: -12px;
   background: radial-gradient(circle, rgba(217, 182, 111, 0.4) 0%, transparent 70%);
-  filter: blur(20px);
+  filter: blur(15px);
   z-index: -1;
   animation: glowPulse 3s ease-in-out infinite;
   pointer-events: none;
@@ -338,13 +337,13 @@
   50% { opacity: 0.9; }
 }
 
-/* ===== TAB NAVIGATION ===== */
+/* ===== TAB NAVIGATION - 38px ===== */
 .tab-navigation { 
   position: relative;
   display: grid; 
   grid-template-columns: repeat(4, 1fr); 
-  gap: 8px; 
-  margin: 10px 0 0 0;
+  gap: 6px; 
+  margin: 8px 0 0 0;
 }
 
 .tab-btn { 
@@ -352,50 +351,50 @@
   display: flex; 
   flex-direction: column; 
   align-items: center; 
-  gap: 4px;
-  padding: 8px 6px;
+  gap: 3px;
+  padding: 6px 4px;
   background: rgba(217, 182, 111, 0.05);
   border: 1px solid rgba(217, 182, 111, 0.15);
-  border-radius: 10px;
+  border-radius: 8px;
   color: #F7F3EB;
   font-family: 'Cinzel', serif;
-  font-size: 9px; font-weight: 600;
+  font-size: 8px; font-weight: 600;
   cursor: pointer;
   transition: border-color 0.3s ease, color 0.3s ease;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
   overflow: hidden;
 }
 .tab-btn:hover { border-color: rgba(217, 182, 111, 0.3); }
 .tab-active-bg {
   position: absolute; inset: 0;
   background: linear-gradient(135deg, rgba(217,182,111,0.28), rgba(217,182,111,0.10));
-  border-radius: 10px;
-  box-shadow: 0 4px 14px rgba(217,182,111,0.25), inset 0 0 0 1px rgba(217,182,111,0.5);
+  border-radius: 8px;
+  box-shadow: 0 3px 10px rgba(217,182,111,0.25), inset 0 0 0 1px rgba(217,182,111,0.5);
 }
 .tab-content {
   position: relative;
   z-index: 1;
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
 }
 .tab-btn.active { color: #D9B66F; }
 .tab-btn svg { opacity: 0.7; }
-.tab-btn.active svg { opacity: 1; filter: drop-shadow(0 0 4px rgba(217,182,111,0.6)); }
+.tab-btn.active svg { opacity: 1; filter: drop-shadow(0 0 3px rgba(217,182,111,0.6)); }
 
 /* ============================================
-   3-COLUMN GRID
+   3-COLUMN GRID - 75px
    ============================================ */
 .three-column-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin: 10px 0 0 0;
+  gap: 6px;
+  margin: 8px 0 0 0;
 }
 
 .energy-score-section {
   background: linear-gradient(135deg, rgba(217, 182, 111, 0.10) 0%, rgba(100, 80, 180, 0.06) 100%);
   border: 1px solid rgba(217, 182, 111, 0.22);
-  border-radius: 14px;
-  padding: 10px 8px;
+  border-radius: 12px;
+  padding: 8px 6px;
   position: relative;
   overflow: hidden;
   display: flex;
@@ -407,14 +406,14 @@
   content: '';
   position: absolute;
   top: -30%; right: -20%;
-  width: 100px; height: 100px;
+  width: 80px; height: 80px;
   background: radial-gradient(circle, rgba(217,182,111,0.12), transparent 70%);
   pointer-events: none;
 }
 .energy-orbit {
   position: relative;
-  width: 46px; height: 46px;
-  margin-bottom: 5px;
+  width: 40px; height: 40px;
+  margin-bottom: 4px;
 }
 .energy-ring { width: 100%; height: 100%; }
 .energy-orbit-center {
@@ -426,15 +425,15 @@
   justify-content: center;
   gap: 1px;
 }
-.energy-icon { color: #F4D47C; filter: drop-shadow(0 0 5px rgba(217,182,111,0.7)); }
-.energy-percent { font-family: 'Cinzel', serif; font-size: 11px; font-weight: 700; color: #D9B66F; }
-.energy-label { font-family: 'Cinzel', serif; font-size: 6px; letter-spacing: 0.5px; color: #D9B66F; text-align: center; margin: 0; }
+.energy-icon { color: #F4D47C; filter: drop-shadow(0 0 4px rgba(217,182,111,0.7)); }
+.energy-percent { font-family: 'Cinzel', serif; font-size: 10px; font-weight: 700; color: #D9B66F; }
+.energy-label { font-family: 'Cinzel', serif; font-size: 5.5px; letter-spacing: 0.4px; color: #D9B66F; text-align: center; margin: 0; }
 
 .insight-card {
   background: linear-gradient(135deg, rgba(217, 182, 111, 0.06) 0%, rgba(217, 182, 111, 0.03) 100%);
   border: 1px solid rgba(217, 182, 111, 0.15);
-  border-radius: 14px;
-  padding: 10px 8px;
+  border-radius: 12px;
+  padding: 8px 6px;
   transition: background 0.3s ease, border-color 0.3s ease;
   display: flex;
   flex-direction: column;
@@ -442,42 +441,42 @@
   justify-content: center;
 }
 .insight-card:hover { background: rgba(217, 182, 111, 0.1); border-color: rgba(217, 182, 111, 0.25); }
-.insight-header { display: flex; align-items: center; gap: 4px; margin-bottom: 5px; }
-.insight-icon { color: #D9B66F; filter: drop-shadow(0 0 6px rgba(217, 182, 111, 0.4)); }
-.insight-header h3 { font-family: 'Cinzel', serif; font-size: 7px; font-weight: 700; color: #D9B66F; margin: 0; letter-spacing: 0.5px; }
-.percentage-circle { position: relative; width: 42px; height: 42px; margin-bottom: 5px; }
+.insight-header { display: flex; align-items: center; gap: 3px; margin-bottom: 4px; }
+.insight-icon { color: #D9B66F; filter: drop-shadow(0 0 5px rgba(217, 182, 111, 0.4)); }
+.insight-header h3 { font-family: 'Cinzel', serif; font-size: 6.5px; font-weight: 700; color: #D9B66F; margin: 0; letter-spacing: 0.4px; }
+.percentage-circle { position: relative; width: 36px; height: 36px; margin-bottom: 4px; }
 .circular-chart { width: 100%; height: 100%; transform: rotate(-90deg); }
 .circle-bg { stroke: rgba(255, 255, 255, 0.1); }
 .circle { stroke: #D9B66F; stroke-linecap: round; animation: progress 1.5s ease-out; }
 @keyframes progress { from { stroke-dasharray: 0, 100; } }
-.percentage-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Cinzel', serif; font-size: 11px; font-weight: 700; color: #D9B66F; }
-.insight-description { font-size: 7px; color: #F7F3EB; opacity: 0.7; line-height: 1.3; margin: 0; text-align: center; }
+.percentage-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Cinzel', serif; font-size: 10px; font-weight: 700; color: #D9B66F; }
+.insight-description { font-size: 6.5px; color: #F7F3EB; opacity: 0.7; line-height: 1.2; margin: 0; text-align: center; }
 
 /* ============================================
-   LUCKY ELEMENTS
+   LUCKY ELEMENTS - 75px
    ============================================ */
 .lucky-section {
   background: linear-gradient(135deg, rgba(217, 182, 111, 0.08) 0%, rgba(217, 182, 111, 0.03) 100%);
   border: 1px solid rgba(217, 182, 111, 0.2);
-  border-radius: 14px;
-  padding: 12px 10px;
-  margin: 10px 0 0 0;
+  border-radius: 12px;
+  padding: 10px 8px;
+  margin: 8px 0 0 0;
 }
 
 .section-title {
   font-family: 'Cinzel', serif;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   color: #D9B66F;
   text-align: center;
-  letter-spacing: 2px;
-  margin: 0 0 10px 0;
+  letter-spacing: 1.5px;
+  margin: 0 0 8px 0;
 }
 
 .lucky-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  gap: 6px;
 }
 
 .lucky-item {
@@ -485,10 +484,10 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 10px 6px;
+  padding: 8px 5px;
   background: rgba(217, 182, 111, 0.06);
   border: 1px solid rgba(217, 182, 111, 0.15);
-  border-radius: 10px;
+  border-radius: 8px;
   transition: all 0.3s ease;
   cursor: pointer;
   position: relative;
@@ -499,7 +498,7 @@
   content: '';
   position: absolute;
   top: 0; left: 0;
-  width: 100%; height: 3px;
+  width: 100%; height: 2.5px;
   background: linear-gradient(90deg, #D9B66F, #F4D47C, #D9B66F);
   opacity: 0;
   transition: opacity 0.3s ease;
@@ -508,53 +507,53 @@
 .lucky-item:hover {
   background: rgba(217, 182, 111, 0.12);
   border-color: rgba(217, 182, 111, 0.3);
-  transform: translateY(-3px);
-  box-shadow: 0 6px 15px rgba(217, 182, 111, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(217, 182, 111, 0.2);
 }
 
 .lucky-item:hover::before { opacity: 1; }
 
 .lucky-icon-wrapper {
-  width: 38px;
-  height: 38px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
   position: relative;
 }
 
 .color-circle {
-  width: 34px;
-  height: 34px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  border: 2px solid rgba(217, 182, 111, 0.6);
-  box-shadow: 0 0 12px rgba(217, 182, 111, 0.4), inset 0 0 10px rgba(217, 182, 111, 0.2);
+  border: 1.5px solid rgba(217, 182, 111, 0.6);
+  box-shadow: 0 0 10px rgba(217, 182, 111, 0.4), inset 0 0 8px rgba(217, 182, 111, 0.2);
   position: relative;
 }
 
 .color-circle::after {
   content: '';
   position: absolute;
-  inset: 3px;
+  inset: 2px;
   border-radius: 50%;
   background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4), transparent 50%);
 }
 
 .number-display {
   font-family: 'Cinzel', serif;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   background: linear-gradient(135deg, #F4D47C, #D9B66F);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
 }
 
 .planet-icon {
   color: #D9B66F;
-  filter: drop-shadow(0 0 8px rgba(217, 182, 111, 0.6));
+  filter: drop-shadow(0 0 6px rgba(217, 182, 111, 0.6));
   animation: planetPulse 3s ease-in-out infinite;
 }
 
@@ -564,97 +563,126 @@
 }
 
 .crystal-shape {
-  font-size: 22px;
-  filter: drop-shadow(0 0 10px rgba(217, 182, 111, 0.5));
+  font-size: 20px;
+  filter: drop-shadow(0 0 8px rgba(217, 182, 111, 0.5));
   animation: crystalGlow 3s ease-in-out infinite;
 }
 
 @keyframes crystalGlow {
-  0%, 100% { filter: drop-shadow(0 0 8px rgba(217, 182, 111, 0.4)); }
-  50% { filter: drop-shadow(0 0 14px rgba(217, 182, 111, 0.7)); }
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(217, 182, 111, 0.4)); }
+  50% { filter: drop-shadow(0 0 12px rgba(217, 182, 111, 0.7)); }
 }
 
 .lucky-label {
-  font-size: 7px;
+  font-size: 6px;
   color: #F7F3EB;
   opacity: 0.7;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 2px;
+  letter-spacing: 0.8px;
+  margin-bottom: 1.5px;
   font-weight: 600;
 }
 
 .lucky-value {
   font-family: 'Cinzel', serif;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   color: #D9B66F;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
 }
 
 /* ============================================
-   PREDICTION SECTIONS
+   TWO-COLUMN GRID (General + Health)
    ============================================ */
-.prediction-section { 
+.two-column-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  margin: 8px 0 0 0;
+}
+
+.prediction-card { 
   background: rgba(217, 182, 111, 0.05); 
   border: 1px solid rgba(217, 182, 111, 0.12); 
-  border-radius: 16px; 
-  padding: 20px 15px; 
-  margin: 10px 0 0 0; 
+  border-radius: 12px; 
+  padding: 12px 10px; 
   position: relative; 
   transition: all 0.3s ease; 
   cursor: pointer;
 }
 
-.prediction-section.clickable:hover { 
+.prediction-card.clickable:hover { 
   background: rgba(217, 182, 111, 0.1); 
   border-color: rgba(217, 182, 111, 0.3);
-  box-shadow: 0 8px 25px rgba(217, 182, 111, 0.2);
+  box-shadow: 0 6px 18px rgba(217, 182, 111, 0.2);
 }
 
-.section-icon { 
-  position: absolute; 
-  top: -12px; 
-  left: 20px; 
-  width: 40px; 
-  height: 40px; 
+.prediction-icon { 
+  width: 32px; 
+  height: 32px; 
   background: linear-gradient(135deg, #D9B66F 0%, #F4D47C 100%); 
   border-radius: 50%; 
   display: flex; 
   align-items: center; 
   justify-content: center; 
   color: #0a0600; 
-  box-shadow: 0 4px 12px rgba(217, 182, 111, 0.4); 
+  box-shadow: 0 3px 10px rgba(217, 182, 111, 0.4);
+  margin-bottom: 8px;
 }
 
-.prediction-section h2 { 
+.prediction-card h2 { 
   font-family: 'Cinzel', serif; 
-  font-size: 15px; 
+  font-size: 12px; 
   font-weight: 700; 
   color: #D9B66F; 
-  margin: 8px 0 10px 0; 
-  letter-spacing: 0.5px; 
+  margin: 0 0 6px 0; 
+  letter-spacing: 0.4px; 
 }
 
 .preview-text {
-  font-size: 12px;
-  line-height: 1.6;
+  font-size: 10px;
+  line-height: 1.4;
   color: #F7F3EB;
   opacity: 0.7;
   font-style: italic;
+  margin: 0;
 }
 
 .read-more-indicator {
-  margin-top: 10px;
+  margin-top: 8px;
   font-family: 'Cinzel', serif;
-  font-size: 10px;
+  font-size: 8px;
   color: #D9B66F;
   font-weight: 600;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 3px;
 }
+
+/* ============================================
+   AFFIRMATION - 90px
+   ============================================ */
+.affirmation-section { 
+  background: linear-gradient(135deg, rgba(100, 80, 180, 0.1) 0%, rgba(100, 80, 180, 0.05) 100%); 
+  border: 1px solid rgba(100, 80, 180, 0.25); 
+  border-radius: 12px; 
+  padding: 18px 15px; 
+  text-align: center; 
+  margin: 8px 0 0 0; 
+  position: relative; 
+  overflow: hidden; 
+}
+.affirmation-glow { position: absolute; top: -40%; left: 50%; width: 150px; height: 150px; margin-left: -75px; background: radial-gradient(circle, rgba(100,80,180,0.18), transparent 70%); pointer-events: none; }
+.affirmation-icon { font-size: 24px; margin-bottom: 8px; filter: drop-shadow(0 0 10px rgba(100, 80, 180, 0.6)); position: relative; }
+.affirmation-section h3 { font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700; color: #D9B66F; margin: 0 0 8px 0; letter-spacing: 0.4px; position: relative; }
+.affirmation-text { font-size: 14px; font-style: italic; line-height: 1.5; color: #F7F3EB; margin: 0 0 10px 0; position: relative; }
+.share-affirmation-btn { display: inline-flex; align-items: center; gap: 5px; padding: 8px 14px; background: rgba(100, 80, 180, 0.2); border: 1px solid rgba(100, 80, 180, 0.4); border-radius: 6px; color: #D9B66F; font-family: 'Cinzel', serif; font-size: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; position: relative; }
+.share-affirmation-btn:hover { background: rgba(100, 80, 180, 0.3); transform: translateY(-2px); box-shadow: 0 3px 10px rgba(100, 80, 180, 0.3); }
+
+/* ===== FOOTER - 35px ===== */
+.horoscope-footer { text-align: center; padding: 15px 15px 5px 15px; margin-top: 8px; }
+.footer-text { font-family: 'Cormorant Garamond', serif; font-size: 11px; color: #D9B66F; opacity: 0.6; font-style: italic; letter-spacing: 0.4px; }
 
 /* ============================================
    MODAL
@@ -674,25 +702,25 @@
 .modal-content {
   background: linear-gradient(135deg, rgba(26, 15, 62, 0.95) 0%, rgba(10, 6, 0, 0.95) 100%);
   border: 2px solid rgba(217, 182, 111, 0.4);
-  border-radius: 20px;
-  padding: 35px 25px;
-  max-width: 500px;
+  border-radius: 16px;
+  padding: 30px 20px;
+  max-width: 450px;
   width: 100%;
-  max-height: 80vh;
+  max-height: 75vh;
   overflow-y: auto;
   position: relative;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(217, 182, 111, 0.2);
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(217, 182, 111, 0.2);
 }
 
 .modal-close {
   position: absolute;
-  top: 15px;
-  right: 15px;
+  top: 12px;
+  right: 12px;
   background: rgba(217, 182, 111, 0.15);
   border: 1px solid rgba(217, 182, 111, 0.3);
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -710,103 +738,87 @@
 .modal-icon {
   display: flex;
   justify-content: center;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
   color: #D9B66F;
-  filter: drop-shadow(0 0 10px rgba(217, 182, 111, 0.6));
+  filter: drop-shadow(0 0 8px rgba(217, 182, 111, 0.6));
 }
 
 .modal-title {
   font-family: 'Cinzel', serif;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   color: #D9B66F;
   text-align: center;
-  margin: 0 0 15px 0;
-  letter-spacing: 2px;
+  margin: 0 0 12px 0;
+  letter-spacing: 1.5px;
 }
 
 .modal-text {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 15px;
-  line-height: 1.8;
+  font-size: 14px;
+  line-height: 1.7;
   color: #F7F3EB;
   text-align: center;
 }
 
-/* ===== AFFIRMATION ===== */
-.affirmation-section { 
-  background: linear-gradient(135deg, rgba(100, 80, 180, 0.1) 0%, rgba(100, 80, 180, 0.05) 100%); 
-  border: 1px solid rgba(100, 80, 180, 0.25); 
-  border-radius: 16px; 
-  padding: 25px 20px; 
-  text-align: center; 
-  margin: 10px 0 0 0; 
-  position: relative; 
-  overflow: hidden; 
-}
-.affirmation-glow { position: absolute; top: -40%; left: 50%; width: 200px; height: 200px; margin-left: -100px; background: radial-gradient(circle, rgba(100,80,180,0.18), transparent 70%); pointer-events: none; }
-.affirmation-icon { font-size: 28px; margin-bottom: 12px; filter: drop-shadow(0 0 12px rgba(100, 80, 180, 0.6)); position: relative; }
-.affirmation-section h3 { font-family: 'Cinzel', serif; font-size: 15px; font-weight: 700; color: #D9B66F; margin: 0 0 12px 0; letter-spacing: 0.5px; position: relative; }
-.affirmation-text { font-size: 16px; font-style: italic; line-height: 1.7; color: #F7F3EB; margin: 0 0 15px 0; position: relative; }
-.share-affirmation-btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; background: rgba(100, 80, 180, 0.2); border: 1px solid rgba(100, 80, 180, 0.4); border-radius: 8px; color: #D9B66F; font-family: 'Cinzel', serif; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; position: relative; }
-.share-affirmation-btn:hover { background: rgba(100, 80, 180, 0.3); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(100, 80, 180, 0.3); }
-
-/* ===== FOOTER ===== */
-.horoscope-footer { text-align: center; padding: 25px 20px; margin-top: 15px; }
-.footer-text { font-family: 'Cormorant Garamond', serif; font-size: 13px; color: #D9B66F; opacity: 0.6; font-style: italic; letter-spacing: 0.5px; }
-
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
-  .horoscope-header { padding: 50px 12px 10px 12px; }
-  .hero-banner { height: 140px; margin: 10px 0 0 0; }
-  .hero-left { padding: 10px 12px; }
-  .hero-sign-name { font-size: 24px; }
-  .hero-description { font-size: 10px; }
-  .hero-tarot-card { width: 100px; height: 155px; }
-  .tab-navigation { margin: 10px 0 0 0; }
-  .three-column-grid { margin: 10px 0 0 0; }
-  .lucky-section { margin: 10px 0 0 0; }
-  .prediction-section { margin: 10px 0 0 0; }
-  .affirmation-section { margin: 10px 0 0 0; }
-  .energy-orbit { width: 42px; height: 42px; }
-  .percentage-circle { width: 38px; height: 38px; }
-  .percentage-text { font-size: 10px; }
-  .lucky-icon-wrapper { width: 34px; height: 34px; }
-  .color-circle { width: 30px; height: 30px; }
-  .number-display { font-size: 20px; }
-  .crystal-shape { font-size: 20px; }
-  .lucky-value { font-size: 9px; }
+  .horoscope-header { padding: 45px 10px 8px 10px; }
+  .hero-banner { height: 115px; margin: 6px 0 0 0; }
+  .hero-left { padding: 6px 10px; }
+  .hero-sign-name { font-size: 20px; }
+  .hero-description { font-size: 9px; }
+  .hero-tarot-card { width: 85px; height: 130px; }
+  .tab-navigation { margin: 6px 0 0 0; }
+  .three-column-grid { margin: 6px 0 0 0; }
+  .lucky-section { margin: 6px 0 0 0; }
+  .two-column-grid { margin: 6px 0 0 0; }
+  .affirmation-section { margin: 6px 0 0 0; }
+  .energy-orbit { width: 36px; height: 36px; }
+  .percentage-circle { width: 32px; height: 32px; }
+  .percentage-text { font-size: 9px; }
+  .lucky-icon-wrapper { width: 28px; height: 28px; }
+  .color-circle { width: 24px; height: 24px; }
+  .number-display { font-size: 18px; }
+  .crystal-shape { font-size: 18px; }
+  .lucky-value { font-size: 8px; }
 }
 
 @media (max-width: 480px) {
-  .horoscope-header { padding: 48px 10px 10px 10px; }
-  .hero-banner { height: 130px; }
-  .hero-left { padding: 8px 10px; }
-  .hero-text-content { gap: 5px; }
-  .hero-sign-name { font-size: 20px; }
-  .hero-subtitle { font-size: 7px; }
-  .hero-dates { font-size: 8px; }
-  .hero-description { font-size: 9px; }
-  .read-full-button { padding: 5px 10px; font-size: 7px; }
-  .hero-tarot-card { width: 90px; height: 140px; }
-  .tab-btn { padding: 6px 4px; font-size: 7.5px; }
-  .energy-score-section { padding: 8px 6px; }
-  .energy-orbit { width: 38px; height: 38px; }
-  .energy-percent { font-size: 10px; }
-  .energy-label { font-size: 5.5px; }
-  .insight-card { padding: 8px 6px; }
-  .insight-header h3 { font-size: 6.5px; }
-  .percentage-circle { width: 34px; height: 34px; }
-  .percentage-text { font-size: 9px; }
-  .insight-description { font-size: 6px; }
-  .lucky-section { padding: 10px 8px; }
-  .section-title { font-size: 10px; }
-  .lucky-item { padding: 8px 5px; }
-  .lucky-icon-wrapper { width: 32px; height: 32px; }
-  .color-circle { width: 28px; height: 28px; }
-  .number-display { font-size: 18px; }
-  .lucky-label { font-size: 6.5px; }
-  .lucky-value { font-size: 8.5px; }
+  .horoscope-header { padding: 42px 8px 8px 8px; }
+  .hero-banner { height: 105px; }
+  .hero-left { padding: 5px 8px; }
+  .hero-text-content { gap: 3px; }
+  .hero-sign-name { font-size: 18px; }
+  .hero-subtitle { font-size: 6.5px; }
+  .hero-dates { font-size: 7px; }
+  .hero-description { font-size: 8.5px; }
+  .read-full-button { padding: 4px 8px; font-size: 6.5px; }
+  .hero-tarot-card { width: 75px; height: 115px; }
+  .tab-btn { padding: 5px 3px; font-size: 7px; }
+  .energy-score-section { padding: 6px 5px; }
+  .energy-orbit { width: 32px; height: 32px; }
+  .energy-percent { font-size: 9px; }
+  .energy-label { font-size: 5px; }
+  .insight-card { padding: 6px 5px; }
+  .insight-header h3 { font-size: 6px; }
+  .percentage-circle { width: 28px; height: 28px; }
+  .percentage-text { font-size: 8px; }
+  .insight-description { font-size: 5.5px; }
+  .lucky-section { padding: 8px 6px; }
+  .section-title { font-size: 9px; }
+  .lucky-item { padding: 6px 4px; }
+  .lucky-icon-wrapper { width: 26px; height: 26px; }
+  .color-circle { width: 22px; height: 22px; }
+  .number-display { font-size: 16px; }
+  .lucky-label { font-size: 5.5px; }
+  .lucky-value { font-size: 7.5px; }
+  .prediction-card { padding: 10px 8px; }
+  .prediction-icon { width: 28px; height: 28px; }
+  .prediction-card h2 { font-size: 11px; }
+  .preview-text { font-size: 9px; }
+  .affirmation-section { padding: 14px 12px; }
+  .affirmation-text { font-size: 13px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

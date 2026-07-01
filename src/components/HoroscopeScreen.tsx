@@ -45,10 +45,10 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const randomErrorMessage = ERROR_MESSAGES[Math.floor(Math.random() * ERROR_MESSAGES.length)];
 
   const tabs = [
-    { id: 'today' as TabType, icon: <Sun size={14} />, label: 'TODAY' },
-    { id: 'tomorrow' as TabType, icon: <Moon size={14} />, label: 'TOMORROW' },
-    { id: 'weekly' as TabType, icon: <Calendar size={14} />, label: 'WEEKLY' },
-    { id: 'monthly' as TabType, icon: <Star size={14} />, label: 'MONTHLY' },
+    { id: 'today' as TabType, icon: <Sun size={12} />, label: 'TODAY' },
+    { id: 'tomorrow' as TabType, icon: <Moon size={12} />, label: 'TOMORROW' },
+    { id: 'weekly' as TabType, icon: <Calendar size={12} />, label: 'WEEKLY' },
+    { id: 'monthly' as TabType, icon: <Star size={12} />, label: 'MONTHLY' },
   ];
 
   if (loading) {
@@ -68,7 +68,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           </motion.div>
           <div className="loading-stars">
             {[...Array(14)].map((_, i) => (
-              <motion.div key={i} className="star" animate={{ opacity: [0.2, 1, 0.2], scale: [0.8, 1.3, 0.8] }} transition={{ duration: 2, repeat: Infinity, delay: i * 0.15, ease: "easeInOut" }} style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%` }}>✦</motion.div>
+              <motion.div key={i} className="star" animate={{ opacity: [0.2, 1, 0.2], scale: [0.8, 1.3, 0.8] }} transition={{ duration: 2, repeat: Infinity, delay: i * 0.15, ease: "easeInOut" }} style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%` }}></motion.div>
             ))}
           </div>
           <motion.p className="loading-message" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>{randomLoadingMessage}</motion.p>
@@ -126,14 +126,14 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
       {/* Header */}
       <div className="horoscope-header">
         <button className="horoscope-back-btn" onClick={() => onNavigate?.('home')}>
-          <ArrowLeft size={20} />
+          <ArrowLeft size={18} />
         </button>
         <div className="horoscope-title">
           <h1>Your Daily Guidance</h1>
           <p className="horoscope-date">{horoscope.date}</p>
         </div>
         <button className="horoscope-refresh-btn" onClick={refetch}>
-          <RotateCcw size={18} />
+          <RotateCcw size={16} />
         </button>
       </div>
 
@@ -141,16 +141,15 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         {/* ===== HERO BANNER ===== */}
         <motion.div
           className="hero-banner"
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
         >
           <div className="hero-shimmer" />
-          {/* მარცხენა ნახევარი - ტექსტი */}
           <div className="hero-left">
-            <motion.div className="hero-text-content" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.6 }}>
+            <motion.div className="hero-text-content" initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15, duration: 0.5 }}>
               <p className="hero-subtitle">
-                <Sparkles size={10} className="subtitle-spark" /> TODAY'S HOROSCOPE
+                <Sparkles size={8} className="subtitle-spark" /> TODAY'S HOROSCOPE
               </p>
               <h1 className="hero-sign-name">
                 {userSign.charAt(0).toUpperCase() + userSign.slice(1)}
@@ -161,22 +160,21 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                 <span className="divider-line" />
               </div>
               <p className="hero-description">
-                The universe is aligning in your favor. Step forward with confidence.
+                The universe is aligning in your favor.
               </p>
-              <motion.button className="read-full-button" whileHover={{ scale: 1.02, x: 5 }} whileTap={{ scale: 0.98 }}>
+              <motion.button className="read-full-button" whileHover={{ scale: 1.02, x: 3 }} whileTap={{ scale: 0.98 }}>
                 <span>READ FULL</span>
-                <ChevronRight size={16} />
+                <ChevronRight size={12} />
               </motion.button>
             </motion.div>
           </div>
 
-          {/* მარჯვენა ნახევარი - კარტი */}
           <div className="hero-right">
             <motion.div
               className="hero-tarot-card"
-              initial={{ opacity: 0, scale: 0.8, y: 20 }}
+              initial={{ opacity: 0, scale: 0.85, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.8, ease: "easeOut" }}
+              transition={{ delay: 0.25, duration: 0.6, ease: "easeOut" }}
             >
               <div className="card-outer-frame">
                 <div className="card-inner-frame">
@@ -203,11 +201,11 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
         {/* 3-COLUMN GRID */}
         <div className="three-column-grid">
-          <motion.div className="energy-score-section" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.6 }}>
+          <motion.div className="energy-score-section" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.5 }}>
             <div className="energy-orbit">
               <svg viewBox="0 0 100 100" className="energy-ring">
                 <circle cx="50" cy="50" r="44" fill="none" stroke="rgba(217,182,111,0.12)" strokeWidth="5" />
-                <motion.circle cx="50" cy="50" r="44" fill="none" stroke="url(#energyGrad)" strokeWidth="5" strokeLinecap="round" strokeDasharray="276.5" initial={{ strokeDashoffset: 276.5 }} animate={{ strokeDashoffset: 276.5 - (276.5 * 0.82) }} transition={{ duration: 1.4, ease: 'easeOut', delay: 0.3 }} transform="rotate(-90 50 50)" />
+                <motion.circle cx="50" cy="50" r="44" fill="none" stroke="url(#energyGrad)" strokeWidth="5" strokeLinecap="round" strokeDasharray="276.5" initial={{ strokeDashoffset: 276.5 }} animate={{ strokeDashoffset: 276.5 - (276.5 * 0.82) }} transition={{ duration: 1.2, ease: 'easeOut', delay: 0.2 }} transform="rotate(-90 50 50)" />
                 <defs>
                   <linearGradient id="energyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor="#F4D47C" />
@@ -216,16 +214,16 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                 </defs>
               </svg>
               <div className="energy-orbit-center">
-                <Zap size={14} className="energy-icon" />
+                <Zap size={12} className="energy-icon" />
                 <span className="energy-percent">82%</span>
               </div>
             </div>
             <p className="energy-label">COSMIC ENERGY</p>
           </motion.div>
 
-          <motion.div className="insight-card love-card" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.6 }}>
+          <motion.div className="insight-card love-card" initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15, duration: 0.5 }}>
             <div className="insight-header">
-              <Heart size={14} className="insight-icon" />
+              <Heart size={12} className="insight-icon" />
               <h3>LOVE</h3>
             </div>
             <div className="percentage-circle">
@@ -235,12 +233,12 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
               </svg>
               <span className="percentage-text">85%</span>
             </div>
-            <p className="insight-description">High chance of meaningful connection.</p>
+            <p className="insight-description">High chance of connection.</p>
           </motion.div>
 
-          <motion.div className="insight-card career-card" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25, duration: 0.6 }}>
+          <motion.div className="insight-card career-card" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.5 }}>
             <div className="insight-header">
-              <Briefcase size={14} className="insight-icon" />
+              <Briefcase size={12} className="insight-icon" />
               <h3>CAREER</h3>
             </div>
             <div className="percentage-circle">
@@ -255,11 +253,11 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         </div>
 
         {/* Lucky Elements */}
-        <motion.div className="lucky-section" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.6 }}>
+        <motion.div className="lucky-section" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25, duration: 0.5 }}>
           <h3 className="section-title">LUCKY ELEMENTS</h3>
           <div className="lucky-grid">
             {horoscope.lucky_color && (
-              <motion.div className="lucky-item" whileHover={{ y: -3, scale: 1.03 }}>
+              <motion.div className="lucky-item" whileHover={{ y: -2, scale: 1.02 }}>
                 <div className="lucky-icon-wrapper">
                   <div className="color-circle" style={{ background: `linear-gradient(135deg, ${horoscope.lucky_color}, transparent)` }} />
                 </div>
@@ -268,7 +266,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
               </motion.div>
             )}
             {horoscope.lucky_number > 0 && (
-              <motion.div className="lucky-item" whileHover={{ y: -3, scale: 1.03 }}>
+              <motion.div className="lucky-item" whileHover={{ y: -2, scale: 1.02 }}>
                 <div className="lucky-icon-wrapper">
                   <span className="number-display">{horoscope.lucky_number}</span>
                 </div>
@@ -276,14 +274,14 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                 <div className="lucky-value">{horoscope.lucky_number}</div>
               </motion.div>
             )}
-            <motion.div className="lucky-item" whileHover={{ y: -3, scale: 1.03 }}>
+            <motion.div className="lucky-item" whileHover={{ y: -2, scale: 1.02 }}>
               <div className="lucky-icon-wrapper">
-                <Sun size={22} className="planet-icon" />
+                <Sun size={18} className="planet-icon" />
               </div>
               <div className="lucky-label">PLANET</div>
               <div className="lucky-value">{zodiacData.planet}</div>
             </motion.div>
-            <motion.div className="lucky-item" whileHover={{ y: -3, scale: 1.03 }}>
+            <motion.div className="lucky-item" whileHover={{ y: -2, scale: 1.02 }}>
               <div className="lucky-icon-wrapper">
                 <div className="crystal-shape">💎</div>
               </div>
@@ -293,35 +291,50 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           </div>
         </motion.div>
 
-        {/* General Energy */}
-        {horoscope.general_prediction && (
-          <motion.section className="prediction-section clickable" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.6 }} onClick={() => setOpenModal('general')} whileHover={{ y: -2, scale: 1.01 }}>
-            <div className="section-icon"><Sparkles size={20} /></div>
-            <h2>General Energy</h2>
-            <p className="preview-text">Click to read full prediction...</p>
-            <div className="read-more-indicator">Read More →</div>
-          </motion.section>
-        )}
+        {/* General + Health - 2 COLUMN GRID */}
+        <div className="two-column-grid">
+          {horoscope.general_prediction && (
+            <motion.section 
+              className="prediction-card clickable"
+              initial={{ opacity: 0, y: 20 }} 
+              animate={{ opacity: 1, y: 0 }} 
+              transition={{ delay: 0.3, duration: 0.5 }}
+              onClick={() => setOpenModal('general')}
+              whileHover={{ y: -2, scale: 1.01 }}
+            >
+              <div className="prediction-icon"><Sparkles size={16} /></div>
+              <h2>General Energy</h2>
+              <p className="preview-text">Click to read full prediction...</p>
+              <div className="read-more-indicator">Read More →</div>
+            </motion.section>
+          )}
 
-        {/* Health & Wellness */}
-        {horoscope.health_prediction && (
-          <motion.section className="prediction-section clickable" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.6 }} onClick={() => setOpenModal('health')} whileHover={{ y: -2, scale: 1.01 }}>
-            <div className="section-icon"><Activity size={20} /></div>
-            <h2>Health & Wellness</h2>
-            <p className="preview-text">Click to read full prediction...</p>
-            <div className="read-more-indicator">Read More →</div>
-          </motion.section>
-        )}
+          {horoscope.health_prediction && (
+            <motion.section 
+              className="prediction-card clickable"
+              initial={{ opacity: 0, y: 20 }} 
+              animate={{ opacity: 1, y: 0 }} 
+              transition={{ delay: 0.35, duration: 0.5 }}
+              onClick={() => setOpenModal('health')}
+              whileHover={{ y: -2, scale: 1.01 }}
+            >
+              <div className="prediction-icon"><Activity size={16} /></div>
+              <h2>Health & Wellness</h2>
+              <p className="preview-text">Click to read full prediction...</p>
+              <div className="read-more-indicator">Read More →</div>
+            </motion.section>
+          )}
+        </div>
 
         {/* Daily Affirmation */}
         {horoscope.affirmation && (
-          <motion.div className="affirmation-section" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.6 }}>
+          <motion.div className="affirmation-section" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.5 }}>
             <div className="affirmation-glow" />
             <div className="affirmation-icon">✨</div>
             <h3>Daily Affirmation</h3>
             <p className="affirmation-text">"{horoscope.affirmation}"</p>
             <button className="share-affirmation-btn">
-              <Share2 size={14} /><span>Share</span>
+              <Share2 size={12} /><span>Share</span>
             </button>
           </motion.div>
         )}
@@ -335,20 +348,20 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
       <AnimatePresence>
         {openModal && (
           <motion.div className="modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpenModal(null)}>
-            <motion.div className="modal-content" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} onClick={(e) => e.stopPropagation()}>
+            <motion.div className="modal-content" initial={{ scale: 0.9, y: 15 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 15 }} onClick={(e) => e.stopPropagation()}>
               <button className="modal-close" onClick={() => setOpenModal(null)}>
-                <X size={24} />
+                <X size={20} />
               </button>
               {openModal === 'general' && (
                 <>
-                  <div className="modal-icon"><Sparkles size={32} /></div>
+                  <div className="modal-icon"><Sparkles size={28} /></div>
                   <h2 className="modal-title">General Energy</h2>
                   <p className="modal-text">{horoscope.general_prediction}</p>
                 </>
               )}
               {openModal === 'health' && (
                 <>
-                  <div className="modal-icon"><Activity size={32} /></div>
+                  <div className="modal-icon"><Activity size={28} /></div>
                   <h2 className="modal-title">Health & Wellness</h2>
                   <p className="modal-text">{horoscope.health_prediction}</p>
                 </>
