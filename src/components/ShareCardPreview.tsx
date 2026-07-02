@@ -1,5 +1,6 @@
-import { forwardRef } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import { ZODIAC_SIGNS } from '../data/zodiacData';
+import QRCode from 'qrcode';
 import './ShareCardPreview.css';
 
 interface ShareCardPreviewProps {
@@ -14,12 +15,27 @@ interface ShareCardPreviewProps {
 const ShareCardPreview = forwardRef<HTMLDivElement, ShareCardPreviewProps>(
   ({ userSign, date, affirmation, moonPhase, luckyNumber, luckyColor }, ref) => {
     const zodiacData = ZODIAC_SIGNS[userSign] || ZODIAC_SIGNS['leo'];
+    const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
     
     const formattedDate = new Date(date).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric'
     }).toUpperCase();
+
+    // Generate QR Code
+    useEffect(() => {
+      const shareUrl = `https://lunara.app/horoscope?sign=${userSign}&date=${date}`;
+      QRCode.toDataURL(shareUrl, {
+        width: 200,
+        margin: 2,
+        color: {
+          dark: '#D9B66F',
+          light: '#FFFFFF'
+        }
+      }).then(setQrCodeUrl)
+      .catch(console.error);
+    }, [userSign, date]);
 
     return (
       <div ref={ref} className="share-card" id="share-card">
@@ -77,7 +93,7 @@ const ShareCardPreview = forwardRef<HTMLDivElement, ShareCardPreviewProps>(
           {/* Lucky Elements - Horizontal */}
           <div className="lucky-row">
             <div className="lucky-item">
-              <div className="lucky-icon lucky-moon"></div>
+              <div className="lucky-icon lucky-moon">🌕</div>
               <div className="lucky-label">{moonPhase}</div>
             </div>
             <div className="lucky-item">
@@ -92,10 +108,14 @@ const ShareCardPreview = forwardRef<HTMLDivElement, ShareCardPreviewProps>(
             </div>
           </div>
 
-          {/* QR Section */}
+          {/* QR Code & CTA */}
           <div className="qr-row">
             <div className="qr-box">
-              <div className="qr-pattern" />
+              {qrCodeUrl ? (
+                <img src={qrCodeUrl} alt="QR Code" className="qr-image" />
+              ) : (
+                <div className="qr-loading">...</div>
+              )}
             </div>
             <div className="qr-info">
               <p className="qr-cta">Scan to get<br />your horoscope</p>

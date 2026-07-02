@@ -79,9 +79,52 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     { id: 'monthly' as TabType, icon: <Star size={12} />, label: 'MONTHLY' },
   ];
 
-  // Share handlers
+  // ✅ განახლებული Download handler - html2canvas-ით
   const handleDownloadCard = async () => {
-    alert('Download feature coming soon!');
+    try {
+      // Import html2canvas dynamically
+      const html2canvas = (await import('html2canvas')).default;
+      
+      const element = document.getElementById('share-card');
+      if (!element) {
+        alert('Card not found!');
+        return;
+      }
+
+      // Generate image
+      const canvas = await html2canvas(element, {
+        scale: 2, // High resolution
+        backgroundColor: null,
+        logging: false,
+        useCORS: true,
+        allowTaint: true,
+      });
+
+      // Convert to blob
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          alert('Failed to generate image!');
+          return;
+        }
+
+        // Create download link
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.download = `lunara-${userSign}-${horoscope?.date}.png`;
+        link.href = url;
+        link.click();
+
+        // Cleanup
+        URL.revokeObjectURL(url);
+        
+        // Show success message
+        alert('Horoscope card downloaded! 🌟');
+      }, 'image/png', 1.0);
+
+    } catch (error) {
+      console.error('Download error:', error);
+      alert('Failed to download card. Please try again.');
+    }
   };
 
   const handleShareToTelegram = async () => {
