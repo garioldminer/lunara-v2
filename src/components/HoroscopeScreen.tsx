@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, Moon, Star, Activity,
   Sparkles, RotateCcw, Share2, Sun, Calendar, ChevronRight,
-  X, Download, Heart, Briefcase, Zap, Palette, Hash
+  X, Download, Heart, Briefcase, Palette, Hash
 } from 'lucide-react';
 import ShareCardPreview from './ShareCardPreview';
 import './HoroscopeScreen.css';
