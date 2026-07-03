@@ -5,8 +5,8 @@ import { ZODIAC_SIGNS, BACKGROUND_IMAGE } from '../data/zodiacData';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, Moon, Star, Activity,
-  Sparkles, RotateCcw, Share2, Sun, Calendar, ChevronRight,
-  X, Download, Heart, Briefcase, Palette, Hash, DollarSign, Flame, Zap, Briefcase as BriefcaseIcon
+  Sparkles, RotateCcw, Share2, Sun, ChevronRight,
+  X, Download, Heart, Briefcase, Palette, Hash, DollarSign, Zap, Briefcase as BriefcaseIcon
 } from 'lucide-react';
 import ShareCardPreview from './ShareCardPreview';
 import './HoroscopeScreen.css';
@@ -37,20 +37,6 @@ const ERROR_MESSAGES = [
   "The universe needs a moment. Try again in a few minutes.",
   "The celestial wires are crossed. Please retry."
 ];
-
-const TAB_PREFIXES: Record<TabType, string> = {
-  today: "Today's cosmic energy:",
-  tomorrow: "Tomorrow's preview:",
-  weekly: "This week's alignment:",
-  monthly: "This month's forecast:"
-};
-
-const TAB_FALLBACKS: Record<TabType, string> = {
-  today: "The universe is aligning in your favor.",
-  tomorrow: "The stars reveal what's coming.",
-  weekly: "Planetary forces guide your path.",
-  monthly: "Cosmic cycles shape your journey."
-};
 
 const getEnergyEmojis = (level: string | undefined, emoji: string): string => {
   const normalized = level?.toLowerCase() || 'medium';
@@ -265,7 +251,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         )}
       </AnimatePresence>
 
-      {/* ✅ Premium Header */}
+      {/* Premium Header */}
       <div className="premium-header">
         <button className="premium-back-btn" onClick={() => onNavigate?.('home')}>
           <ArrowLeft size={24} />
@@ -280,7 +266,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
       </div>
 
       <div className="horoscope-content premium-content">
-        {/* ✅ Premium Hero Banner - Reference Design */}
+        {/* Premium Hero Banner */}
         <motion.div
           className="premium-hero-banner"
           initial={{ opacity: 0, y: 20 }}
@@ -362,7 +348,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           </div>
         </motion.div>
 
-        {/* ✅ Premium Tab Navigation */}
+        {/* Premium Tab Navigation */}
         <div className="premium-tab-nav">
           {tabs.map((tab) => (
             <button 
@@ -382,7 +368,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           ))}
         </div>
 
-        {/* ✅ Cosmic Energy Levels */}
+        {/* Cosmic Energy Levels */}
         <div className="premium-section">
           <h3 className="premium-section-title">
             <Sparkles size={12} />
@@ -447,7 +433,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           </div>
         </div>
 
-        {/* ✅ Premium Moon Info */}
+        {/* Premium Moon Info */}
         <motion.div 
           className="premium-moon-card"
           initial={{ opacity: 0, y: 20 }}
@@ -472,7 +458,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           </div>
         </motion.div>
 
-        {/* ✅ Premium Predictions Grid */}
+        {/* Premium Predictions Grid */}
         <div className="premium-section">
           <h3 className="premium-section-title">
             <Sparkles size={12} />
