@@ -22,10 +22,14 @@ export interface Horoscope {
   tokens_used: number;
   generation_time_ms: number;
   created_at: string;
-  // ✅ ახალი fields - Energy Levels
+  // ✅ Energy Levels
   cosmic_energy_level?: string;
   love_energy_level?: string;
   career_energy_level?: string;
+  // ✅ ახალი ველები (AI-დან)
+  lucky_crystal?: string;
+  lucky_planet?: string;
+  hero_description?: string;
 }
 
 export interface UseHoroscopeResult {

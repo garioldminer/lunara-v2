@@ -82,7 +82,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   // ✅ განახლებული Download handler - html2canvas-ით
   const handleDownloadCard = async () => {
     try {
-      // Import html2canvas dynamically
       const html2canvas = (await import('html2canvas')).default;
       
       const element = document.getElementById('share-card');
@@ -91,33 +90,28 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         return;
       }
 
-      // Generate image
       const canvas = await html2canvas(element, {
-        scale: 2, // High resolution
+        scale: 2,
         backgroundColor: null,
         logging: false,
         useCORS: true,
         allowTaint: true,
       });
 
-      // Convert to blob
       canvas.toBlob((blob) => {
         if (!blob) {
           alert('Failed to generate image!');
           return;
         }
 
-        // Create download link
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.download = `lunara-${userSign}-${horoscope?.date}.png`;
         link.href = url;
         link.click();
 
-        // Cleanup
         URL.revokeObjectURL(url);
         
-        // Show success message
         alert('Horoscope card downloaded! 🌟');
       }, 'image/png', 1.0);
 
@@ -253,8 +247,9 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                 <span className="hero-dates">{zodiacData.dateRange}</span>
                 <span className="divider-line" />
               </div>
+              {/* ✅ ცვლილება 1: Hero Description AI-დან */}
               <p className="hero-description">
-                The universe is aligning in your favor.
+                {horoscope.hero_description || "The universe is aligning in your favor."}
               </p>
               <motion.button 
                 className="read-full-button" 
@@ -335,15 +330,17 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                 <div className="lucky-value">{horoscope.lucky_number}</div>
               </motion.div>
             )}
+            {/* ✅ ცვლილება 2: Lucky Planet AI-დან */}
             <motion.div className="lucky-item" whileHover={{ y: -2, scale: 1.02 }}>
               <div className="lucky-icon-wrapper"><Sun size={18} className="planet-icon" /></div>
               <div className="lucky-label">PLANET</div>
-              <div className="lucky-value">{zodiacData.planet}</div>
+              <div className="lucky-value">{horoscope.lucky_planet || zodiacData.planet}</div>
             </motion.div>
+            {/* ✅ ცვლილება 3: Lucky Crystal AI-დან */}
             <motion.div className="lucky-item" whileHover={{ y: -2, scale: 1.02 }}>
               <div className="lucky-icon-wrapper"><div className="crystal-shape">💎</div></div>
               <div className="lucky-label">CRYSTAL</div>
-              <div className="lucky-value">Quartz</div>
+              <div className="lucky-value">{horoscope.lucky_crystal || 'Quartz'}</div>
             </motion.div>
           </div>
         </motion.div>
@@ -559,10 +556,11 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                       <span className="rf-lucky-label">Number</span>
                       <span className="rf-lucky-value">{horoscope.lucky_number || 7}</span>
                     </div>
+                    {/* ✅ ცვლილება 4: Planet READ FULL modal-შიც AI-დან */}
                     <div className="rf-lucky-item">
                       <Sun size={20} className="rf-lucky-icon" />
                       <span className="rf-lucky-label">Planet</span>
-                      <span className="rf-lucky-value">{zodiacData.planet}</span>
+                      <span className="rf-lucky-value">{horoscope.lucky_planet || zodiacData.planet}</span>
                     </div>
                   </div>
                 </div>

@@ -135,7 +135,7 @@ serve(async (req) => {
     let tokensUsed = 0;
 
     try {
-      // Gemini API
+      // Gemini API (updated model name)
       const geminiKey = await getApiKey(supabase, 'gemini');
       aiResponse = await callGemini(geminiKey, prompt.system_prompt, userPrompt);
       tokensUsed = aiResponse.tokensUsed || 0;
@@ -159,8 +159,10 @@ serve(async (req) => {
     // 10. პარსე AI პასუხი
     const parsed = parseHoroscopeResponse(aiResponse.text);
 
-    // 11. შეინახე horoscopes ცხრილში
-    const { data: newHoroscope, error: insertError } = await supabase
+    // 11. შეინახე horoscopes ცხრილში (DUPLICATE KEY HANDLING)
+    let newHoroscope;
+    
+    const { data, error: insertError } = await supabase
       .from('horoscopes')
       .insert({
         user_id,
@@ -179,6 +181,9 @@ serve(async (req) => {
         key_transits: aspects || [],
         lucky_color: parsed.lucky_color,
         lucky_number: parsed.lucky_number,
+        lucky_planet: parsed.lucky_planet,
+        lucky_crystal: parsed.lucky_crystal,
+        hero_description: parsed.hero_description,
         affirmation: parsed.affirmation,
         ai_model_used: aiModel,
         tokens_used: tokensUsed,
@@ -188,33 +193,54 @@ serve(async (req) => {
       .single();
 
     if (insertError) {
-      throw insertError;
+      // ✅ Duplicate key error handling (React StrictMode fix)
+      if (insertError.code === '23505') {
+        console.log('⚠️ Duplicate key detected (race condition), fetching existing horoscope...');
+        const { data: existingHoroscope, error: fetchError } = await supabase
+          .from('horoscopes')
+          .select('*')
+          .eq('user_id', user_id)
+          .eq('reading_type', reading_type)
+          .eq('date', targetDate)
+          .single();
+        
+        if (fetchError) {
+          throw fetchError;
+        }
+        newHoroscope = existingHoroscope;
+      } else {
+        throw insertError;
+      }
+    } else {
+      newHoroscope = data;
     }
 
-    // 12. განაახლე მომხმარებლის სტატისტიკა
-    await supabase
-      .from('user_profiles')
-      .update({
-        total_readings: (profile.total_readings || 0) + 1,
-        last_reading_at: new Date().toISOString()
-      })
-      .eq('id', user_id);
+    // 12. განაახლე მომხმარებლის სტატისტიკა (მხოლოდ თუ ახალი horoscope შეიქმნა)
+    if (data) {
+      await supabase
+        .from('user_profiles')
+        .update({
+          total_readings: (profile.total_readings || 0) + 1,
+          last_reading_at: new Date().toISOString()
+        })
+        .eq('id', user_id);
 
-    // 13. განაახლე API key usage
-    await supabase
-      .from('ai_api_keys')
-      .update({
-        current_usage: (await getCurrentUsage(supabase, aiModel)) + 1,
-        last_used_at: new Date().toISOString()
-      })
-      .eq('provider_name', aiModel);
+      // 13. განაახლე API key usage
+      await supabase
+        .from('ai_api_keys')
+        .update({
+          current_usage: (await getCurrentUsage(supabase, aiModel)) + 1,
+          last_used_at: new Date().toISOString()
+        })
+        .eq('provider_name', aiModel);
+    }
 
     console.log(`Horoscope saved successfully for ${targetDate} (${reading_type})`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        cached: false, 
+        cached: !data, // თუ data არის null, მაშინ cached იყო
         data: newHoroscope,
         ai_model: aiModel,
         tokens_used: tokensUsed,
@@ -261,8 +287,9 @@ async function getCurrentUsage(supabase: any, provider: string): Promise<number>
   return data?.current_usage || 0;
 }
 
+// ✅ განახლებული Gemini API (სწორი model name)
 async function callGemini(apiKey: string, systemPrompt: string, userPrompt: string) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
   const response = await fetch(url, {
     method: 'POST',
@@ -336,12 +363,14 @@ function parseHoroscopeResponse(text: string) {
     career_energy_level: 'Medium',
     lucky_color: '',
     lucky_number: 0,
+    lucky_planet: '',
+    lucky_crystal: '',
+    hero_description: '',
     affirmation: ''
   };
 
   // 1. სცადე JSON parsing პირველ რიგში
   try {
-    // ამოიღე JSON ტექსტიდან (შეიძლება იყოს wrapped in ```json ... ```)
     const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/) || text.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       const jsonText = jsonMatch[1] || jsonMatch[0];
@@ -354,9 +383,11 @@ function parseHoroscopeResponse(text: string) {
       sections.finance = parsed.finance_prediction || '';
       sections.lucky_color = parsed.lucky_color || '';
       sections.lucky_number = parsed.lucky_number || 0;
+      sections.lucky_planet = parsed.lucky_planet || '';
+      sections.lucky_crystal = parsed.lucky_crystal || '';
+      sections.hero_description = parsed.hero_description || '';
       sections.affirmation = parsed.affirmation || '';
       
-      // Energy levels normalization
       const normalizeLevel = (level: string) => {
         if (!level) return 'Medium';
         const lower = level.toLowerCase();
@@ -393,7 +424,6 @@ function parseHoroscopeResponse(text: string) {
   const healthMatch = text.match(/## Health & Wellness\n([\s\S]*?)(?=##|$)/i);
   if (healthMatch) sections.health = healthMatch[1].trim();
 
-  // Energy levels - markdown format
   const cosmicMatch = text.match(/"cosmic_energy_level":\s*"([^"]+)"/i);
   if (cosmicMatch) {
     const level = cosmicMatch[1].trim().toLowerCase();
@@ -418,14 +448,21 @@ function parseHoroscopeResponse(text: string) {
     }
   }
 
-  // Lucky elements
   const colorMatch = text.match(/Color:\s*([^\n]+)/i) || text.match(/"lucky_color":\s*"([^"]+)"/i);
   if (colorMatch) sections.lucky_color = colorMatch[1].trim();
 
   const numberMatch = text.match(/Number:\s*(\d+)/i) || text.match(/"lucky_number":\s*(\d+)/i);
   if (numberMatch) sections.lucky_number = parseInt(numberMatch[1]);
 
-  // Affirmation
+  const planetMatch = text.match(/"lucky_planet":\s*"([^"]+)"/i);
+  if (planetMatch) sections.lucky_planet = planetMatch[1].trim();
+
+  const crystalMatch = text.match(/"lucky_crystal":\s*"([^"]+)"/i);
+  if (crystalMatch) sections.lucky_crystal = crystalMatch[1].trim();
+
+  const heroMatch = text.match(/"hero_description":\s*"([^"]+)"/i);
+  if (heroMatch) sections.hero_description = heroMatch[1].trim();
+
   const affirmationMatch = text.match(/## (?:Daily|Weekly|Monthly)?\s*Affirmation\n"([^"]+)"/i) 
     || text.match(/Affirmation:\s*"([^"]+)"/i)
     || text.match(/"affirmation":\s*"([^"]+)"/i)
