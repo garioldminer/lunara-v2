@@ -98,7 +98,7 @@
 .horoscope-empty p { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: #F7F3EB; opacity: 0.7; font-style: italic; }
 
 /* ============================================
-   ✅ PREMIUM HEADER
+   ✅ PREMIUM HEADER - NO BACKGROUND, BACK BUTTON LOWER
    ============================================ */
 .premium-header {
   position: sticky;
@@ -107,14 +107,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 50px 20px 15px 20px;
-  background: rgba(10, 6, 0, 0.95);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(217, 182, 111, 0.15);
+  padding: 65px 20px 15px 20px; /* ⬆️ back button ჩამოწეულია (65px) */
+  background: transparent; /* ❌ ბექგრაუნდი წაშლილია */
+  backdrop-filter: none;
+  border-bottom: none; /* ❌ ბორდერი წაშლილია */
 }
 
-.premium-back-btn,
-.premium-refresh-btn {
+.premium-back-btn {
   background: rgba(217, 182, 111, 0.1);
   border: 1px solid rgba(217, 182, 111, 0.3);
   border-radius: 50%;
@@ -128,8 +127,7 @@
   transition: all 0.3s ease;
 }
 
-.premium-back-btn:hover,
-.premium-refresh-btn:hover {
+.premium-back-btn:hover {
   background: rgba(217, 182, 111, 0.2);
   transform: scale(1.1);
   box-shadow: 0 0 20px rgba(217, 182, 111, 0.3);
@@ -163,6 +161,11 @@
   letter-spacing: 0.5px;
 }
 
+/* ❌ RELOAD BUTTON - დამალულია */
+.premium-refresh-btn {
+  display: none !important;
+}
+
 /* ============================================
    PREMIUM CONTENT
    ============================================ */
@@ -175,12 +178,12 @@
 }
 
 /* ============================================
-   ✅ PREMIUM HERO BANNER - EXACT REFERENCE
+   ✅ PREMIUM HERO BANNER - SMALLER HEIGHT
    ============================================ */
 .premium-hero-banner {
   position: relative;
   width: 100%;
-  min-height: 320px;
+  min-height: 260px; /* ⬇️ სიმაღლე შემცირებულია (320px → 260px) */
   margin: 12px 0 0 0;
   background: linear-gradient(135deg, #0a0600 0%, #1a0f3e 40%, #2d1b69 70%, #0a0600 100%);
   border: 1px solid rgba(217, 182, 111, 0.2);
@@ -189,7 +192,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 30px 24px;
+  padding: 24px 20px; /* ⬇️ პადინგი შემცირებულია */
   box-shadow: 
     0 20px 60px rgba(0, 0, 0, 0.8),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
@@ -250,7 +253,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px; /* ⬇️ gap შემცირებულია */
   position: relative;
   z-index: 2;
   max-width: 55%;
@@ -282,7 +285,7 @@
 
 .premium-hero-title {
   font-family: 'Cinzel', serif;
-  font-size: 32px;
+  font-size: 28px; /* ⬇️ ზომა შემცირებულია */
   font-weight: 900;
   color: #D9B66F;
   margin: 0;
@@ -297,7 +300,7 @@
 
 .premium-hero-description {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 15px;
+  font-size: 14px; /* ⬇️ ზომა შემცირებულია */
   line-height: 1.5;
   color: rgba(247, 243, 235, 0.85);
   margin: 0;
@@ -308,19 +311,19 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 28px;
+  padding: 10px 24px; /* ⬇️ ზომა შემცირებულია */
   background: transparent;
   border: 2px solid rgba(217, 182, 111, 0.6);
   border-radius: 30px;
   color: #D9B66F;
   font-family: 'Cinzel', serif;
-  font-size: 12px;
+  font-size: 11px; /* ⬇️ ზომა შემცირებულია */
   font-weight: 700;
   letter-spacing: 2px;
   cursor: pointer;
   transition: all 0.3s ease;
   align-self: flex-start;
-  margin-top: 8px;
+  margin-top: 6px;
   box-shadow: 0 0 20px rgba(217, 182, 111, 0.15);
 }
 
@@ -334,7 +337,7 @@
 /* Right Side - Card (ყოველთვის მარჯვნივ!) */
 .premium-hero-right {
   flex-shrink: 0;
-  margin-left: 20px;
+  margin-left: 16px; /* ⬇️ margin შემცირებულია */
   position: relative;
   z-index: 2;
   display: flex;
@@ -345,8 +348,8 @@
 /* 🔥🔥 CLEAN TAROT CARD - მხოლოდ ფოტო! 🔥🔥🔥 */
 .premium-tarot-card {
   position: relative;
-  width: 160px;
-  height: 250px;
+  width: 130px; /* ⬇️ ომა შემცირებულია */
+  height: 200px; /* ⬇️ ზომა შემცირებულია */
   perspective: 1000px;
   transform: rotateY(-12deg) rotateX(6deg);
   animation: cardFloat 4s ease-in-out infinite;
@@ -360,10 +363,10 @@
 /* 🔥 MEGA GLOW - მარჯვენა edge */
 .premium-card-glow {
   position: absolute;
-  top: -20px;
-  right: -45px;
-  width: 110px;
-  height: 290px;
+  top: -15px;
+  right: -35px;
+  width: 90px;
+  height: 230px;
   background: linear-gradient(180deg, 
     rgba(217, 182, 111, 1) 0%, 
     rgba(244, 212, 124, 1) 15%,
@@ -542,12 +545,12 @@
 }
 
 /* ============================================
-   ✅ PREMIUM ENERGY GRID
+   ✅ PREMIUM ENERGY GRID - ჰორიზონტალური (3 ერთ ხაზზე!)
    ============================================ */
 .premium-energy-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(3, 1fr); /* ✅ 3 ერთ ხაზზე */
+  gap: 10px; /* ⬇️ gap შემცირებულია */
 }
 
 .premium-energy-card {
@@ -555,11 +558,11 @@
   background: linear-gradient(135deg, rgba(217, 182, 111, 0.08) 0%, rgba(217, 182, 111, 0.03) 100%);
   border: 1px solid rgba(217, 182, 111, 0.2);
   border-radius: 16px;
-  padding: 20px 12px;
+  padding: 16px 10px; /* ⬇️ padding შემცირებულია */
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px; /* ⬇️ gap შემცირებულია */
   transition: all 0.3s ease;
   overflow: hidden;
 }
@@ -582,8 +585,8 @@
 }
 
 .premium-energy-icon {
-  width: 60px;
-  height: 60px;
+  width: 50px; /* ⬇️ ზომა შემცირებულია */
+  height: 50px; /* ⬇️ ზომა შემცირებულია */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -615,7 +618,7 @@
 
 .premium-energy-level {
   font-family: 'Cinzel', serif;
-  font-size: 11px;
+  font-size: 10px; /* ⬇️ ზომა შემცირებულია */
   font-weight: 900;
   color: #D9B66F;
   letter-spacing: 1px;
@@ -625,7 +628,7 @@
 
 .premium-energy-subtitle {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 11px;
+  font-size: 10px; /* ⬇️ ზომა შემცირებულია */
   color: rgba(247, 243, 235, 0.6);
   margin: 0;
   font-style: italic;
@@ -774,12 +777,12 @@
 }
 
 /* ============================================
-   ✅ PREMIUM PREDICTIONS GRID
+   ✅ PREMIUM PREDICTIONS GRID - ჰორიზონტალური (5 ერთ ხაზზე!)
    ============================================ */
 .premium-predictions-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(5, 1fr); /* ✅ 5 ერთ ხაზზე */
+  gap: 8px; /* ⬇️ gap შემცირებულია */
 }
 
 .premium-prediction-card {
@@ -787,11 +790,11 @@
   background: linear-gradient(135deg, rgba(217, 182, 111, 0.05) 0%, rgba(217, 182, 111, 0.02) 100%);
   border: 1px solid rgba(217, 182, 111, 0.15);
   border-radius: 16px;
-  padding: 20px 12px;
+  padding: 14px 8px; /* ⬇️ padding შემცირებულია */
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px; /* ⬇️ gap შემცირებულია */
   cursor: pointer;
   transition: all 0.3s ease;
   overflow: hidden;
@@ -828,8 +831,8 @@
 
 .premium-prediction-icon {
   position: relative;
-  width: 60px;
-  height: 60px;
+  width: 44px; /* ⬇️ ომა შემცირებულია */
+  height: 44px; /* ⬇️ ზომა შემცირებულია */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -894,17 +897,17 @@
 
 .premium-prediction-card h4 {
   font-family: 'Cinzel', serif;
-  font-size: 11px;
+  font-size: 9px; /* ⬇️ ზომა შემცირებულია */
   font-weight: 900;
   color: #D9B66F;
-  letter-spacing: 1.5px;
+  letter-spacing: 1px; /* ⬇️ letter-spacing შემცირებულია */
   margin: 0;
   text-align: center;
 }
 
 .premium-prediction-card p {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 11px;
+  font-size: 9px; /* ⬇️ ზომა შემცირებულია */
   color: rgba(247, 243, 235, 0.6);
   margin: 0;
   font-style: italic;
@@ -1173,34 +1176,38 @@
    RESPONSIVE - ყოველთვის გვერდიგვერდ!
    ============================================ */
 @media (max-width: 768px) {
-  .premium-header { padding: 45px 16px 12px 16px; }
+  .premium-header { padding: 65px 16px 12px 16px; }
   .premium-sign-name { font-size: 28px; letter-spacing: 3px; }
   .premium-date { font-size: 12px; }
   
   /* ✅ ბანერი ყოველთვის გვერდიგვერდ! */
-  .premium-hero-banner { min-height: 280px; padding: 24px 18px; }
-  .premium-hero-title { font-size: 26px; }
+  .premium-hero-banner { min-height: 240px; padding: 20px 16px; }
+  .premium-hero-title { font-size: 24px; }
   .premium-hero-description { font-size: 13px; }
   .premium-hero-subtitle { font-size: 9px; letter-spacing: 2px; }
-  .premium-read-full-btn { padding: 10px 20px; font-size: 11px; }
+  .premium-read-full-btn { padding: 9px 18px; font-size: 10px; }
   
   /* 🔥 Card - Tablet */
   .premium-tarot-card { 
-    width: 140px; 
-    height: 220px; 
+    width: 120px; 
+    height: 180px; 
     transform: rotateY(-12deg) rotateX(6deg);
   }
-  .premium-card-glow { right: -35px; width: 85px; height: 250px; filter: blur(28px); }
+  .premium-card-glow { right: -30px; width: 75px; height: 210px; filter: blur(28px); }
   
   .premium-tab-nav { padding: 5px; }
   .premium-tab { padding: 9px 10px; font-size: 9px; }
   
-  .premium-energy-grid { gap: 10px; }
-  .premium-energy-card { padding: 16px 10px; }
-  .premium-energy-icon { width: 50px; height: 50px; }
-  .premium-energy-icon svg { width: 28px; height: 28px; }
-  .premium-energy-level { font-size: 10px; }
-  .premium-energy-subtitle { font-size: 10px; }
+  /* ✅ COSMIC ENERGY - 3 ერთ ხაზზე */
+  .premium-energy-grid { 
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 8px;
+  }
+  .premium-energy-card { padding: 14px 8px; }
+  .premium-energy-icon { width: 44px; height: 44px; }
+  .premium-energy-icon svg { width: 24px; height: 24px; }
+  .premium-energy-level { font-size: 9px; }
+  .premium-energy-subtitle { font-size: 9px; }
   
   .premium-moon-card { padding: 16px; gap: 12px; }
   .premium-moon-image-container { width: 70px; height: 70px; }
@@ -1211,18 +1218,22 @@
   .premium-symbol-circle { width: 44px; height: 44px; }
   .premium-zodiac-symbol { font-size: 20px; }
   
-  .premium-predictions-grid { gap: 10px; }
-  .premium-prediction-card { padding: 16px 10px; }
-  .premium-prediction-icon { width: 50px; height: 50px; }
-  .premium-prediction-icon svg { width: 24px; height: 24px; }
-  .premium-prediction-card h4 { font-size: 10px; }
-  .premium-prediction-card p { font-size: 10px; }
+  /* ✅ PREDICTIONS - 5 ერთ ხაზზე */
+  .premium-predictions-grid { 
+    grid-template-columns: repeat(5, 1fr); 
+    gap: 6px;
+  }
+  .premium-prediction-card { padding: 12px 6px; }
+  .premium-prediction-icon { width: 38px; height: 38px; }
+  .premium-prediction-icon svg { width: 20px; height: 20px; }
+  .premium-prediction-card h4 { font-size: 8px; }
+  .premium-prediction-card p { font-size: 8px; }
   
   .toast { min-width: 260px; padding: 10px 16px; font-size: 11px; }
 }
 
 @media (max-width: 480px) {
-  .premium-header { padding: 42px 12px 10px 12px; }
+  .premium-header { padding: 65px 12px 10px 12px; }
   .premium-back-btn,
   .premium-refresh-btn { width: 38px; height: 38px; }
   .premium-back-btn svg,
@@ -1232,39 +1243,46 @@
   
   /* ✅ ბანერი ყოველთვის გვერდიგვერდ მობილურზეც! */
   .premium-hero-banner { 
-    min-height: 240px; 
-    padding: 20px 14px;
+    min-height: 220px; 
+    padding: 18px 12px;
   }
   .premium-hero-left { max-width: 55%; }
   .premium-hero-right { margin-left: 10px; }
   .premium-hero-title { font-size: 20px; letter-spacing: 1px; }
   .premium-hero-description { font-size: 11px; }
   .premium-hero-subtitle { font-size: 8px; letter-spacing: 1.5px; gap: 6px; }
-  .premium-read-full-btn { padding: 8px 16px; font-size: 10px; letter-spacing: 1.5px; }
+  .premium-read-full-btn { padding: 8px 14px; font-size: 9px; letter-spacing: 1.5px; }
   
   /* 🔥 Card - Mobile */
   .premium-tarot-card { 
-    width: 110px; 
-    height: 175px; 
+    width: 100px; 
+    height: 155px; 
     transform: rotateY(-10deg) rotateX(5deg);
   }
   .premium-card-glow { 
-    right: -30px; 
-    width: 70px; 
-    height: 200px; 
+    right: -25px; 
+    width: 60px; 
+    height: 180px; 
     filter: blur(28px);
   }
   
   .premium-tab-nav { padding: 4px; }
   .premium-tab { padding: 8px 6px; font-size: 7px; letter-spacing: 0.5px; }
   
-  .premium-energy-grid { grid-template-columns: 1fr; gap: 8px; }
-  .premium-energy-card { flex-direction: row; padding: 14px 16px; gap: 12px; }
-  .premium-energy-icon { width: 48px; height: 48px; flex-shrink: 0; }
-  .premium-energy-icon svg { width: 26px; height: 26px; }
-  .premium-energy-level { font-size: 10px; }
-  .premium-energy-subtitle { font-size: 10px; }
-  .premium-energy-dots { margin-top: 0; margin-left: auto; }
+  /* ✅ COSMIC ENERGY - 3 ერთ ხაზზე მობილურზეც */
+  .premium-energy-grid { 
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 6px;
+  }
+  .premium-energy-card { 
+    padding: 12px 6px; 
+    gap: 4px;
+  }
+  .premium-energy-icon { width: 40px; height: 40px; }
+  .premium-energy-icon svg { width: 22px; height: 22px; }
+  .premium-energy-level { font-size: 8px; }
+  .premium-energy-subtitle { font-size: 8px; }
+  .premium-energy-dots { margin-top: 0; }
   
   .premium-moon-card { flex-direction: column; text-align: center; }
   .premium-moon-image-container { width: 80px; height: 80px; }
@@ -1272,12 +1290,16 @@
   .premium-moon-content { align-items: center; }
   .premium-moon-symbol { margin-top: 8px; }
   
-  .premium-predictions-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-  .premium-prediction-card { padding: 14px 8px; }
-  .premium-prediction-icon { width: 44px; height: 44px; }
-  .premium-prediction-icon svg { width: 22px; height: 22px; }
-  .premium-prediction-card h4 { font-size: 9px; }
-  .premium-prediction-card p { font-size: 9px; }
+  /* ✅ PREDICTIONS - 5 ერთ ხაზზე მობილურზეც */
+  .premium-predictions-grid { 
+    grid-template-columns: repeat(5, 1fr); 
+    gap: 4px;
+  }
+  .premium-prediction-card { padding: 10px 4px; }
+  .premium-prediction-icon { width: 34px; height: 34px; }
+  .premium-prediction-icon svg { width: 18px; height: 18px; }
+  .premium-prediction-card h4 { font-size: 7px; letter-spacing: 0.5px; }
+  .premium-prediction-card p { font-size: 7px; }
   
   .toast { min-width: 240px; padding: 10px 14px; font-size: 10px; bottom: 80px; }
   .toast-icon { font-size: 14px; }
