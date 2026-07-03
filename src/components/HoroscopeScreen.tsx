@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, Moon, Star, Activity,
   Sparkles, RotateCcw, Share2, Sun, Calendar, ChevronRight,
-  X, Download, Heart, Briefcase, Palette, Hash
+  X, Download, Heart, Briefcase, Palette, Hash, DollarSign
 } from 'lucide-react';
 import ShareCardPreview from './ShareCardPreview';
 import './HoroscopeScreen.css';
@@ -45,6 +45,21 @@ const HEADER_LABELS: Record<TabType, string> = {
   tomorrow: "Your Tomorrow Preview",
   weekly: "Your Weekly Outlook",
   monthly: "Your Monthly Forecast"
+};
+
+// ✅ ახალი: Tab-specific prefixes
+const TAB_PREFIXES: Record<TabType, string> = {
+  today: "Today's cosmic energy:",
+  tomorrow: "Tomorrow's preview:",
+  weekly: "This week's alignment:",
+  monthly: "This month's forecast:"
+};
+
+const TAB_FALLBACKS: Record<TabType, string> = {
+  today: "The universe is aligning in your favor.",
+  tomorrow: "The stars reveal what's coming.",
+  weekly: "Planetary forces guide your path.",
+  monthly: "Cosmic cycles shape your journey."
 };
 
 // Helper function: Energy level-ის მიხედვით emojis
@@ -247,9 +262,9 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                 <span className="hero-dates">{zodiacData.dateRange}</span>
                 <span className="divider-line" />
               </div>
-              {/* ✅ ცვლილება 1: Hero Description AI-დან */}
+              {/* ✅ ახალი: Tab-specific Hero Description */}
               <p className="hero-description">
-                {horoscope.hero_description || "The universe is aligning in your favor."}
+                {TAB_PREFIXES[activeTab]} {horoscope.hero_description || TAB_FALLBACKS[activeTab]}
               </p>
               <motion.button 
                 className="read-full-button" 
@@ -330,13 +345,13 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                 <div className="lucky-value">{horoscope.lucky_number}</div>
               </motion.div>
             )}
-            {/* ✅ ცვლილება 2: Lucky Planet AI-დან */}
+            {/* ✅ Lucky Planet AI-დან */}
             <motion.div className="lucky-item" whileHover={{ y: -2, scale: 1.02 }}>
               <div className="lucky-icon-wrapper"><Sun size={18} className="planet-icon" /></div>
               <div className="lucky-label">PLANET</div>
               <div className="lucky-value">{horoscope.lucky_planet || zodiacData.planet}</div>
             </motion.div>
-            {/* ✅ ცვლილება 3: Lucky Crystal AI-დან */}
+            {/* ✅ Lucky Crystal AI-დან */}
             <motion.div className="lucky-item" whileHover={{ y: -2, scale: 1.02 }}>
               <div className="lucky-icon-wrapper"><div className="crystal-shape">💎</div></div>
               <div className="lucky-label">CRYSTAL</div>
@@ -345,8 +360,8 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           </div>
         </motion.div>
 
-        {/* General + Health - 2 COLUMN GRID */}
-        <div className="two-column-grid">
+        {/* ✅ General + Health + Finance - 3 COLUMN GRID */}
+        <div className="three-column-predictions">
           {horoscope.general_prediction && (
             <motion.section className="prediction-card clickable" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.5 }} onClick={() => setOpenModal('general')} whileHover={{ y: -2, scale: 1.01 }}>
               <div className="prediction-icon"><Sparkles size={16} /></div>
@@ -363,11 +378,20 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
               <div className="read-more-indicator">Read More →</div>
             </motion.section>
           )}
+          {/* ✅ Finance Card */}
+          {horoscope.finance_prediction && (
+            <motion.section className="prediction-card finance-card clickable" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.5 }} onClick={() => setOpenModal('finance')} whileHover={{ y: -2, scale: 1.01 }}>
+              <div className="prediction-icon"><DollarSign size={16} /></div>
+              <h2>Finance & Money</h2>
+              <p className="preview-text">Click to read full prediction...</p>
+              <div className="read-more-indicator">Read More →</div>
+            </motion.section>
+          )}
         </div>
 
         {/* Affirmation */}
         {horoscope.affirmation && (
-          <motion.div className="affirmation-section" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.5 }}>
+          <motion.div className="affirmation-section" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.5 }}>
             <div className="affirmation-glow" />
             <div className="affirmation-icon">✨</div>
             <h3>{activeTab === 'weekly' ? 'Weekly' : activeTab === 'monthly' ? 'Monthly' : 'Daily'} Affirmation</h3>
@@ -383,7 +407,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* MODAL - General/Health */}
+      {/* MODAL - General/Health/Finance */}
       <AnimatePresence>
         {openModal && (
           <motion.div className="modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpenModal(null)}>
@@ -401,6 +425,13 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                   <div className="modal-icon"><Activity size={28} /></div>
                   <h2 className="modal-title">Health & Wellness</h2>
                   <p className="modal-text">{horoscope.health_prediction}</p>
+                </>
+              )}
+              {openModal === 'finance' && (
+                <>
+                  <div className="modal-icon"><DollarSign size={28} /></div>
+                  <h2 className="modal-title">Finance & Money</h2>
+                  <p className="modal-text">{horoscope.finance_prediction}</p>
                 </>
               )}
             </motion.div>
@@ -520,7 +551,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                     <div className="rf-section">
                       <div className="rf-section-header career">
                         <Briefcase size={18} className="rf-section-icon" />
-                        <h3>Career & Finance</h3>
+                        <h3>Career & Work</h3>
                       </div>
                       <p className="rf-section-text">{horoscope.career_prediction}</p>
                     </div>
@@ -534,6 +565,17 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                         <h3>Health & Wellness</h3>
                       </div>
                       <p className="rf-section-text">{horoscope.health_prediction}</p>
+                    </div>
+                  )}
+
+                  {/* Finance */}
+                  {horoscope.finance_prediction && (
+                    <div className="rf-section">
+                      <div className="rf-section-header finance">
+                        <DollarSign size={18} className="rf-section-icon" />
+                        <h3>Finance & Money</h3>
+                      </div>
+                      <p className="rf-section-text">{horoscope.finance_prediction}</p>
                     </div>
                   )}
                 </div>
@@ -556,7 +598,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                       <span className="rf-lucky-label">Number</span>
                       <span className="rf-lucky-value">{horoscope.lucky_number || 7}</span>
                     </div>
-                    {/* ✅ ცვლილება 4: Planet READ FULL modal-შიც AI-დან */}
                     <div className="rf-lucky-item">
                       <Sun size={20} className="rf-lucky-icon" />
                       <span className="rf-lucky-label">Planet</span>

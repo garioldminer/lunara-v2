@@ -621,13 +621,23 @@
 }
 
 /* ============================================
-   TWO-COLUMN GRID (General + Health)
+   ✅ THREE-COLUMN PREDICTIONS (General + Health + Finance)
    ============================================ */
-.two-column-grid {
+.three-column-predictions {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 6px;
   margin: 8px 0 0 0;
+}
+
+/* ✅ Finance Card-ის განსხვავებული ფერი */
+.prediction-card.finance-card .prediction-icon {
+  background: linear-gradient(135deg, #7CE8A6 0%, #4CAF50 100%);
+}
+
+.prediction-card.finance-card:hover {
+  border-color: rgba(124, 232, 166, 0.3);
+  box-shadow: 0 6px 18px rgba(124, 232, 166, 0.2);
 }
 
 .prediction-card { 
@@ -1066,7 +1076,9 @@
 .rf-section-header.love .rf-section-icon { color: #E8738A; filter: drop-shadow(0 0 8px rgba(232, 115, 138, 0.4)); }
 .rf-section-header.career .rf-section-icon { color: #7CB3E8; filter: drop-shadow(0 0 8px rgba(124, 179, 232, 0.4)); }
 .rf-section-header.health .rf-section-icon { color: #7CE8A6; filter: drop-shadow(0 0 8px rgba(124, 232, 166, 0.4)); }
-.rf-section-header:not(.love):not(.career):not(.health) .rf-section-icon { color: #D9B66F; filter: drop-shadow(0 0 8px rgba(217, 182, 111, 0.4)); }
+/* ✅ ახალი: Finance section-ის ფერი */
+.rf-section-header.finance .rf-section-icon { color: #7CE8A6; filter: drop-shadow(0 0 8px rgba(124, 232, 166, 0.4)); }
+.rf-section-header:not(.love):not(.career):not(.health):not(.finance) .rf-section-icon { color: #D9B66F; filter: drop-shadow(0 0 8px rgba(217, 182, 111, 0.4)); }
 
 .rf-section-header h3 {
   font-family: 'Cinzel', serif;
@@ -1308,7 +1320,9 @@
   .crystal-shape { font-size: 18px; }
   .lucky-value { font-size: 8px; }
   
-  .two-column-grid { margin: 6px 0 0 0; }
+  /* ✅ ახალი: 3-column predictions tablet-ზე */
+  .three-column-predictions { margin: 6px 0 0 0; gap: 6px; }
+  
   .affirmation-section { margin: 6px 0 0 0; }
   
   .share-modal { max-width: 90%; }
@@ -1358,6 +1372,14 @@
   .number-display { font-size: 16px; }
   .lucky-label { font-size: 5.5px; }
   .lucky-value { font-size: 7.5px; }
+  
+  /* ✅ ახალი: მობილურზე 1 column */
+  .three-column-predictions { 
+    grid-template-columns: 1fr; 
+    gap: 6px; 
+    margin: 8px 0 0 0; 
+  }
+  
   .prediction-card { padding: 10px 8px; }
   .prediction-icon { width: 28px; height: 28px; }
   .prediction-card h2 { font-size: 11px; }
