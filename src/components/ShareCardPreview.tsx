@@ -3,6 +3,13 @@ import { ZODIAC_SIGNS } from '../data/zodiacData';
 import QRCode from 'qrcode';
 import './ShareCardPreview.css';
 
+interface Transit {
+  planet1: string;
+  aspect_type: string;
+  planet2: string;
+  influence: string;
+}
+
 interface ShareCardPreviewProps {
   userSign: string;
   date: string;
@@ -10,10 +17,23 @@ interface ShareCardPreviewProps {
   moonPhase: string;
   luckyNumber: number;
   luckyColor: string;
+  luckyCrystal?: string;
+  luckyPlanet?: string;
+  keyTransits?: Transit[];
 }
 
 const ShareCardPreview = forwardRef<HTMLDivElement, ShareCardPreviewProps>(
-  ({ userSign, date, affirmation, moonPhase, luckyNumber, luckyColor }, ref) => {
+  ({ 
+    userSign, 
+    date, 
+    affirmation, 
+    moonPhase, 
+    luckyNumber, 
+    luckyColor,
+    luckyCrystal = 'Quartz',
+    luckyPlanet = 'Sun',
+    keyTransits = []
+  }, ref) => {
     const zodiacData = ZODIAC_SIGNS[userSign] || ZODIAC_SIGNS['leo'];
     const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
     
@@ -90,23 +110,61 @@ const ShareCardPreview = forwardRef<HTMLDivElement, ShareCardPreviewProps>(
             <p className="affirmation-text">{affirmation}</p>
           </div>
 
-          {/* Lucky Elements - Horizontal */}
-          <div className="lucky-row">
-            <div className="lucky-item">
-              <div className="lucky-icon lucky-moon">🌕</div>
-              <div className="lucky-label">{moonPhase}</div>
-            </div>
-            <div className="lucky-item">
-              <div className="lucky-icon lucky-number">
-                <div className="number-circle">{luckyNumber}</div>
+          {/* ✅ ახალი: Lucky Elements - 5 ელემენტი (2 rows) */}
+          <div className="lucky-elements-expanded">
+            {/* Row 1: Moon, Number, Color */}
+            <div className="lucky-row">
+              <div className="lucky-item">
+                <div className="lucky-icon lucky-moon">🌕</div>
+                <div className="lucky-label">{moonPhase}</div>
               </div>
-              <div className="lucky-label">Lucky: {luckyNumber}</div>
+              <div className="lucky-item">
+                <div className="lucky-icon lucky-number">
+                  <div className="number-circle">{luckyNumber}</div>
+                </div>
+                <div className="lucky-label">Lucky: {luckyNumber}</div>
+              </div>
+              <div className="lucky-item">
+                <div className="lucky-icon lucky-color">🍀</div>
+                <div className="lucky-label">Color: {luckyColor}</div>
+              </div>
             </div>
-            <div className="lucky-item">
-              <div className="lucky-icon lucky-color">🍀</div>
-              <div className="lucky-label">Color: {luckyColor}</div>
+
+            {/* Row 2: Crystal, Planet */}
+            <div className="lucky-row">
+              <div className="lucky-item">
+                <div className="lucky-icon lucky-crystal">💎</div>
+                <div className="lucky-label">Crystal: {luckyCrystal}</div>
+              </div>
+              <div className="lucky-item">
+                <div className="lucky-icon lucky-planet">☀️</div>
+                <div className="lucky-label">Planet: {luckyPlanet}</div>
+              </div>
+              {/* Empty space for balance */}
+              <div className="lucky-item lucky-spacer" />
             </div>
           </div>
+
+          {/* ✅ ახალი: Key Transits (top 2) */}
+          {keyTransits.length > 0 && (
+            <div className="share-transits">
+              <h4 className="share-transits-title">✦ Key Transits ✦</h4>
+              <div className="share-transits-list">
+                {keyTransits.slice(0, 2).map((transit, index) => (
+                  <div key={index} className={`share-transit-item ${transit.influence}`}>
+                    <span className="share-transit-text">
+                      {transit.planet1} {transit.aspect_type} {transit.planet2}
+                    </span>
+                    <span className="share-transit-badge">
+                      {transit.influence === 'harmonious' && '🟢'}
+                      {transit.influence === 'challenging' && '🔴'}
+                      {transit.influence === 'neutral' && '⚪'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* QR Code & CTA */}
           <div className="qr-row">
