@@ -500,6 +500,15 @@
   text-align: center;
   letter-spacing: 1.5px;
   margin: 0 0 8px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.title-icon {
+  color: #D9B66F;
+  filter: drop-shadow(0 0 4px rgba(217, 182, 111, 0.6));
 }
 
 .lucky-grid {
@@ -618,6 +627,135 @@
   font-weight: 700;
   color: #D9B66F;
   letter-spacing: 0.4px;
+}
+
+/* ============================================
+   ✅ KEY TRANSITS SECTION (NEW!)
+   ============================================ */
+.transits-section {
+  background: linear-gradient(135deg, rgba(217, 182, 111, 0.08) 0%, rgba(100, 80, 180, 0.05) 100%);
+  border: 1px solid rgba(217, 182, 111, 0.2);
+  border-radius: 12px;
+  padding: 12px 10px;
+  margin: 8px 0 0 0;
+}
+
+.transits-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.transit-card {
+  background: rgba(217, 182, 111, 0.06);
+  border: 1px solid rgba(217, 182, 111, 0.15);
+  border-radius: 10px;
+  padding: 10px 8px;
+  text-align: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.transit-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(217, 182, 111, 0.5), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.transit-card:hover::before {
+  opacity: 1;
+}
+
+.transit-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(217, 182, 111, 0.15);
+}
+
+.transit-card.harmonious {
+  border-color: rgba(124, 232, 166, 0.3);
+  background: rgba(124, 232, 166, 0.04);
+}
+
+.transit-card.harmonious::before {
+  background: linear-gradient(90deg, transparent, rgba(124, 232, 166, 0.6), transparent);
+}
+
+.transit-card.challenging {
+  border-color: rgba(232, 115, 138, 0.3);
+  background: rgba(232, 115, 138, 0.04);
+}
+
+.transit-card.challenging::before {
+  background: linear-gradient(90deg, transparent, rgba(232, 115, 138, 0.6), transparent);
+}
+
+.transit-card.neutral {
+  border-color: rgba(200, 200, 200, 0.25);
+  background: rgba(200, 200, 200, 0.03);
+}
+
+.transit-planets {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.planet-name {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: #D9B66F;
+  letter-spacing: 0.5px;
+}
+
+.transit-aspect {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 11px;
+  font-style: italic;
+  color: #F7F3EB;
+  opacity: 0.8;
+}
+
+.transit-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-family: 'Cinzel', serif;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.transit-badge.harmonious {
+  background: rgba(124, 232, 166, 0.15);
+  color: #7CE8A6;
+  border: 1px solid rgba(124, 232, 166, 0.3);
+}
+
+.transit-badge.challenging {
+  background: rgba(232, 115, 138, 0.15);
+  color: #E8738A;
+  border: 1px solid rgba(232, 115, 138, 0.3);
+}
+
+.transit-badge.neutral {
+  background: rgba(200, 200, 200, 0.15);
+  color: #C8C8C8;
+  border: 1px solid rgba(200, 200, 200, 0.3);
 }
 
 /* ============================================
@@ -1076,7 +1214,6 @@
 .rf-section-header.love .rf-section-icon { color: #E8738A; filter: drop-shadow(0 0 8px rgba(232, 115, 138, 0.4)); }
 .rf-section-header.career .rf-section-icon { color: #7CB3E8; filter: drop-shadow(0 0 8px rgba(124, 179, 232, 0.4)); }
 .rf-section-header.health .rf-section-icon { color: #7CE8A6; filter: drop-shadow(0 0 8px rgba(124, 232, 166, 0.4)); }
-/* ✅ ახალი: Finance section-ის ფერი */
 .rf-section-header.finance .rf-section-icon { color: #7CE8A6; filter: drop-shadow(0 0 8px rgba(124, 232, 166, 0.4)); }
 .rf-section-header:not(.love):not(.career):not(.health):not(.finance) .rf-section-icon { color: #D9B66F; filter: drop-shadow(0 0 8px rgba(217, 182, 111, 0.4)); }
 
@@ -1095,6 +1232,105 @@
   line-height: 1.7;
   color: rgba(247, 243, 235, 0.85);
   margin: 0;
+}
+
+/* ✅ ახალი: Key Transits READ FULL modal-ში */
+.rf-transits {
+  text-align: center;
+  padding: 20px 16px;
+  background: linear-gradient(135deg, rgba(217, 182, 111, 0.08) 0%, rgba(100, 80, 180, 0.05) 100%);
+  border: 1px solid rgba(217, 182, 111, 0.2);
+  border-radius: 14px;
+  margin-bottom: 20px;
+}
+
+.rf-transits-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rf-transit-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(10, 6, 0, 0.3);
+  border: 1px solid rgba(217, 182, 111, 0.15);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.rf-transit-item:hover {
+  background: rgba(10, 6, 0, 0.5);
+  border-color: rgba(217, 182, 111, 0.3);
+}
+
+.rf-transit-item.harmonious {
+  border-color: rgba(124, 232, 166, 0.3);
+}
+
+.rf-transit-item.challenging {
+  border-color: rgba(232, 115, 138, 0.3);
+}
+
+.rf-transit-item.neutral {
+  border-color: rgba(200, 200, 200, 0.25);
+}
+
+.rf-transit-main {
+  flex: 1;
+  text-align: left;
+}
+
+.rf-transit-planets {
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #D9B66F;
+  letter-spacing: 0.5px;
+}
+
+.rf-transit-aspect {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px;
+  font-style: italic;
+  color: #F7F3EB;
+  opacity: 0.8;
+  margin: 0 4px;
+}
+
+.rf-transit-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.rf-transit-badge.harmonious {
+  background: rgba(124, 232, 166, 0.15);
+  color: #7CE8A6;
+  border: 1px solid rgba(124, 232, 166, 0.3);
+}
+
+.rf-transit-badge.challenging {
+  background: rgba(232, 115, 138, 0.15);
+  color: #E8738A;
+  border: 1px solid rgba(232, 115, 138, 0.3);
+}
+
+.rf-transit-badge.neutral {
+  background: rgba(200, 200, 200, 0.15);
+  color: #C8C8C8;
+  border: 1px solid rgba(200, 200, 200, 0.3);
 }
 
 /* Lucky Elements */
@@ -1320,7 +1556,14 @@
   .crystal-shape { font-size: 18px; }
   .lucky-value { font-size: 8px; }
   
-  /* ✅ ახალი: 3-column predictions tablet-ზე */
+  /* ✅ Key Transits tablet-ზე */
+  .transits-section { margin: 6px 0 0 0; padding: 10px 8px; }
+  .transits-grid { gap: 6px; }
+  .planet-name { font-size: 9px; }
+  .transit-aspect { font-size: 10px; }
+  .transit-badge { font-size: 7px; padding: 2px 6px; }
+  
+  /* ✅ 3-column predictions tablet-ზე */
   .three-column-predictions { margin: 6px 0 0 0; gap: 6px; }
   
   .affirmation-section { margin: 6px 0 0 0; }
@@ -1342,6 +1585,12 @@
   .rf-lucky-item { padding: 10px 6px; }
   .rf-lucky-value { font-size: 12px; }
   .rf-aff-text { font-size: 14px; }
+  
+  /* ✅ RF Transits tablet-ზე */
+  .rf-transits { padding: 16px 12px; }
+  .rf-transit-item { padding: 8px 12px; }
+  .rf-transit-planets { font-size: 11px; }
+  .rf-transit-badge { font-size: 8px; padding: 3px 8px; }
 }
 
 @media (max-width: 480px) {
@@ -1373,7 +1622,18 @@
   .lucky-label { font-size: 5.5px; }
   .lucky-value { font-size: 7.5px; }
   
-  /* ✅ ახალი: მობილურზე 1 column */
+  /* ✅ Key Transits მობილურზე 1 column */
+  .transits-section { padding: 10px 8px; }
+  .transits-grid { 
+    grid-template-columns: 1fr; 
+    gap: 6px; 
+  }
+  .transit-card { padding: 8px 6px; }
+  .planet-name { font-size: 9px; }
+  .transit-aspect { font-size: 10px; }
+  .transit-badge { font-size: 7px; padding: 2px 6px; }
+  
+  /* ✅ მობილურზე 1 column predictions */
   .three-column-predictions { 
     grid-template-columns: 1fr; 
     gap: 6px; 
@@ -1401,6 +1661,13 @@
   .rf-aff-text { font-size: 13px; }
   .rf-moon-phase { font-size: 12px; }
   .rf-moon-sign { font-size: 11px; }
+  
+  /* ✅ RF Transits მობილურზე */
+  .rf-transits { padding: 14px 10px; }
+  .rf-transit-item { padding: 8px 10px; flex-direction: column; gap: 6px; }
+  .rf-transit-main { text-align: center; }
+  .rf-transit-planets { font-size: 10px; }
+  .rf-transit-badge { font-size: 7px; padding: 2px 8px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
