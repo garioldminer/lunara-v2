@@ -35,20 +35,26 @@ export interface Horoscope {
 export interface UseHoroscopeResult {
   horoscope: Horoscope | null;
   loading: boolean;
+  refreshing: boolean; // ✅ ახალი: ფონური განახლების indicator
   error: string | null;
   refetch: () => void;
 }
 
+// ✅ Cache duration: 1 საათი (3600000 ms)
+const CACHE_DURATION = 3600000;
+
 export function useHoroscope(userId: string, readingType: string = 'daily', date?: string): UseHoroscopeResult {
   const [horoscope, setHoroscope] = useState<Horoscope | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false); // ✅ ახალი
   const [error, setError] = useState<string | null>(null);
   
   // ✅ Prevent double invocation in StrictMode
   const hasFetched = useRef(false);
   const currentKey = useRef('');
+  const previousDataRef = useRef<Horoscope | null>(null); // ✅ ახალი: ძველი მონაცემების შესანახად
 
-  const fetchHoroscope = async (forceRefresh = false) => {
+  const fetchHoroscope = async (forceRefresh = false, isBackgroundRefresh = false) => {
     if (!userId) {
       setLoading(false);
       return;
@@ -56,17 +62,22 @@ export function useHoroscope(userId: string, readingType: string = 'daily', date
 
     // ✅ Prevent duplicate fetches for same parameters
     const key = `${userId}-${readingType}-${date}`;
-    if (!forceRefresh && hasFetched.current && currentKey.current === key) {
+    if (!forceRefresh && !isBackgroundRefresh && hasFetched.current && currentKey.current === key) {
       return;
     }
 
     try {
-      setLoading(true);
+      // ✅ განსხვავებული loading states
+      if (isBackgroundRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
       setError(null);
 
       const targetDate = date || new Date().toISOString().split('T')[0];
       
-      console.log('🔮 Fetching horoscope:', { userId, readingType, date: targetDate });
+      console.log('🔮 Fetching horoscope:', { userId, readingType, date: targetDate, isBackgroundRefresh });
 
       const response = await fetch(
         'https://eutavdhcxpfhpfsyaskb.supabase.co/functions/v1/generate-horoscope',
@@ -93,24 +104,90 @@ export function useHoroscope(userId: string, readingType: string = 'daily', date
       if (result.success) {
         console.log('✨ Horoscope received:', result.data);
         setHoroscope(result.data);
+        previousDataRef.current = result.data; // ✅ შევინახოთ ძველი მონაცემები
         hasFetched.current = true;
         currentKey.current = key;
+        
+        // ✅ Cache the data
+        try {
+          const cacheKey = `horoscope_${userId}_${readingType}_${targetDate}`;
+          localStorage.setItem(cacheKey, JSON.stringify({
+            data: result.data,
+            timestamp: Date.now()
+          }));
+        } catch (cacheError) {
+          console.warn('⚠️ Failed to cache horoscope:', cacheError);
+        }
       } else {
         throw new Error(result.error || 'The stars are silent');
       }
     } catch (err: any) {
       console.error('🌑 Cosmic error:', err);
       setError(err.message);
+      
+      // ✅ თუ error მოხდა, ვაჩვენოთ ძველი მონაცემები (თუ არსებობს)
+      if (previousDataRef.current) {
+        console.log('🔄 Using cached data after error');
+        setHoroscope(previousDataRef.current);
+      }
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
   useEffect(() => {
-    fetchHoroscope();
+    if (!userId) return;
+
+    const targetDate = date || new Date().toISOString().split('T')[0];
+    const cacheKey = `horoscope_${userId}_${readingType}_${targetDate}`;
+    
+    // ✅ შევამოწმოთ cache
+    let hasCache = false;
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        const cacheAge = Date.now() - parsed.timestamp;
+        
+        // ✅ თუ cache < 1 საათის, ვაჩვენოთ cache და ფონზე განვაახლოთ
+        if (cacheAge < CACHE_DURATION) {
+          console.log('⚡ Using cached horoscope (age:', Math.round(cacheAge / 1000), 's)');
+          setHoroscope(parsed.data);
+          previousDataRef.current = parsed.data;
+          hasFetched.current = true;
+          currentKey.current = `${userId}-${readingType}-${date}`;
+          setLoading(false);
+          hasCache = true;
+          
+          // ✅ ფონზე განვაახლოთ მონაცემები (user-მა ვერ შეამჩნია)
+          fetchHoroscope(false, true);
+          return;
+        } else {
+          console.log('⏰ Cache expired (age:', Math.round(cacheAge / 1000), 's)');
+        }
+      }
+    } catch (cacheError) {
+      console.warn('⚠️ Failed to read cache:', cacheError);
+    }
+
+    // ✅ თუ cache არ არის ან ვადაგასულია, full loading
+    if (!hasCache) {
+      fetchHoroscope();
+    }
   }, [userId, readingType, date]);
 
   const refetch = () => {
+    // ✅ წავშალოთ cache და თავიდან ვიტვირთოთ
+    const targetDate = date || new Date().toISOString().split('T')[0];
+    const cacheKey = `horoscope_${userId}_${readingType}_${targetDate}`;
+    
+    try {
+      localStorage.removeItem(cacheKey);
+    } catch (cacheError) {
+      console.warn('⚠️ Failed to clear cache:', cacheError);
+    }
+    
     hasFetched.current = false;
     fetchHoroscope(true);
   };
@@ -118,6 +195,7 @@ export function useHoroscope(userId: string, readingType: string = 'daily', date
   return {
     horoscope,
     loading,
+    refreshing, // ✅ ახალი
     error,
     refetch
   };

@@ -9,6 +9,7 @@ import {
   X, Download, Heart, Briefcase, Palette, Hash, DollarSign, Zap, Briefcase as BriefcaseIcon
 } from 'lucide-react';
 import ShareCardPreview from './ShareCardPreview';
+import CosmicSkeleton from './CosmicSkeleton'; // ✅ ახალი
 import './HoroscopeScreen.css';
 
 type TabType = 'today' | 'tomorrow' | 'weekly' | 'monthly';
@@ -38,6 +39,37 @@ const ERROR_MESSAGES = [
   "The celestial wires are crossed. Please retry."
 ];
 
+// ✅ დინამიური ტექსტები activeTab-ის მიხედვით
+const TAB_LABELS: Record<TabType, string> = {
+  today: "TODAY'S HOROSCOPE",
+  tomorrow: "TOMORROW'S HOROSCOPE",
+  weekly: "WEEKLY HOROSCOPE",
+  monthly: "MONTHLY HOROSCOPE"
+};
+
+const TAB_PREDICTIONS_TITLE: Record<TabType, string> = {
+  today: "TODAY'S PREDICTIONS",
+  tomorrow: "TOMORROW'S PREDICTIONS",
+  weekly: "THIS WEEK'S PREDICTIONS",
+  monthly: "THIS MONTH'S PREDICTIONS"
+};
+
+const TAB_HERO_FALLBACK: Record<TabType, string> = {
+  today: "Cosmic winds fuel your mind",
+  tomorrow: "Tomorrow holds new possibilities",
+  weekly: "A week of transformation awaits",
+  monthly: "The month brings cosmic shifts"
+};
+
+// ✅ დინამიური subtitle-ები predictions-ისთვის
+const PREDICTION_SUBTITLES = {
+  general: ["Insight", "Guidance", "Wisdom", "Vision", "Clarity"],
+  love: ["Connections", "Romance", "Passion", "Harmony", "Devotion"],
+  career: ["Path", "Growth", "Success", "Ambition", "Progress"],
+  health: ["Wellness", "Vitality", "Balance", "Strength", "Healing"],
+  finance: ["Prosperity", "Abundance", "Wealth", "Fortune", "Gains"]
+};
+
 const getEnergyEmojis = (level: string | undefined, emoji: string): string => {
   const normalized = level?.toLowerCase() || 'medium';
   if (normalized.includes('very')) return `${emoji}${emoji}${emoji}${emoji}`;
@@ -45,6 +77,34 @@ const getEnergyEmojis = (level: string | undefined, emoji: string): string => {
   if (normalized.includes('medium')) return `${emoji}${emoji}`;
   if (normalized.includes('low')) return `${emoji}`;
   return `${emoji}${emoji}`;
+};
+
+// ✅ Helper: დინამიური subtitle-ის მიღება
+const getPredictionSubtitle = (category: keyof typeof PREDICTION_SUBTITLES, date?: string): string => {
+  const subtitles = PREDICTION_SUBTITLES[category];
+  if (!date) return subtitles[0];
+  
+  // დღის მიხედვით subtitle-ის არჩევა (დინამიური)
+  const dayIndex = new Date(date).getDate() % subtitles.length;
+  return subtitles[dayIndex];
+};
+
+// ✅ Helper: Moon description-ის გენერაცია
+const getMoonDescription = (moonPhase?: string, moonSign?: string): string => {
+  if (!moonPhase) return "The moon guides your path through the cosmic landscape.";
+  
+  const phaseDescriptions: Record<string, string> = {
+    'New Moon': "A time for new beginnings. Set your intentions and plant seeds for the future.",
+    'Waxing Crescent': "Building momentum. Take action on your dreams and watch them grow.",
+    'First Quarter': "Time for decisions. Push forward with determination and courage.",
+    'Waxing Gibbous': "Refining your path. Make adjustments and stay focused on your goals.",
+    'Full Moon': "Peak energy! Celebrate achievements and release what no longer serves you.",
+    'Waning Gibbous': "Sharing wisdom. Express gratitude and share your light with others.",
+    'Last Quarter': "Letting go. Release old patterns and make space for the new.",
+    'Waning Crescent': "Rest and reflect. Prepare for the next cycle with inner peace."
+  };
+  
+  return phaseDescriptions[moonPhase] || "The moon guides your path through the cosmic landscape.";
 };
 
 // Toast Component
@@ -85,7 +145,8 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const [isReadFullOpen, setIsReadFullOpen] = useState(false);
   const [toast, setToast] = useState<Toast | null>(null);
 
-  const { horoscope, loading, error, refetch } = useHoroscope(user?.id || '', activeTab);
+  // ✅ ახალი: refreshing state-იც
+  const { horoscope, loading, refreshing, error, refetch } = useHoroscope(user?.id || '', activeTab);
 
   const userSign = user?.sun_sign?.toLowerCase() || 'leo';
   const zodiacData = ZODIAC_SIGNS[userSign] || ZODIAC_SIGNS['leo'];
@@ -166,34 +227,12 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     showToast('Opening Telegram...', 'info');
   };
 
-  if (loading) {
-    return (
-      <div className="horoscope-screen">
-        <div className="cosmic-background" style={{ backgroundImage: `url(${BACKGROUND_IMAGE})` }} />
-        <div className="aurora-layer" />
-        <div className="horoscope-loading">
-          <motion.div className="loading-moon-ring" animate={{ rotate: 360 }} transition={{ duration: 12, repeat: Infinity, ease: "linear" }}>
-            <div className="ring-dot" />
-            <div className="ring-dot" style={{ top: '50%', right: 0, transform: 'translateY(-50%)' }} />
-            <div className="ring-dot" style={{ bottom: 0, left: '50%', transform: 'translateX(-50%)' }} />
-            <div className="ring-dot" style={{ top: '50%', left: 0, transform: 'translateY(-50%)' }} />
-          </motion.div>
-          <motion.div className="loading-moon" animate={{ rotate: 360, scale: [1, 1.1, 1] }} transition={{ rotate: { duration: 8, repeat: Infinity, ease: "linear" }, scale: { duration: 2, repeat: Infinity, ease: "easeInOut" } }}>
-            <Moon size={56} className="moon-icon" />
-          </motion.div>
-          <div className="loading-stars">
-            {[...Array(14)].map((_, i) => (
-              <motion.div key={i} className="star" animate={{ opacity: [0.2, 1, 0.2], scale: [0.8, 1.3, 0.8] }} transition={{ duration: 2, repeat: Infinity, delay: i * 0.15, ease: "easeInOut" }} style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%` }}></motion.div>
-            ))}
-          </div>
-          <motion.p className="loading-message" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>{randomLoadingMessage}</motion.p>
-          <div className="cosmic-progress"><motion.div className="cosmic-progress-fill" initial={{ width: "0%" }} animate={{ width: "100%" }} transition={{ duration: 4, ease: "linear" }} /></div>
-        </div>
-      </div>
-    );
+  // ✅ ახალი: მხოლოდ პირველ ვიზიტზე (როცა horoscope არ გვაქვს) ვაჩვენოთ skeleton
+  if (loading && !horoscope) {
+    return <CosmicSkeleton />;
   }
 
-  if (error) {
+  if (error && !horoscope) {
     return (
       <div className="horoscope-screen">
         <div className="cosmic-background" style={{ backgroundImage: `url(${BACKGROUND_IMAGE})` }} />
@@ -230,6 +269,17 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     year: 'numeric'
   });
 
+  // ✅ დინამიური ტექსტები
+  const heroTitle = horoscope.hero_description 
+    ? horoscope.hero_description.split(' ').slice(0, 2).join(' ').toUpperCase()
+    : TAB_HERO_FALLBACK[activeTab].split(' ').slice(0, 2).join(' ').toUpperCase();
+
+  const heroDescription = horoscope.hero_description 
+    ? horoscope.hero_description
+    : TAB_HERO_FALLBACK[activeTab];
+
+  const moonDescription = getMoonDescription(horoscope.moon_phase, horoscope.moon_sign);
+
   return (
     <div className="horoscope-screen premium-design">
       <div className="cosmic-background" style={{ backgroundImage: `url(${BACKGROUND_IMAGE})` }} />
@@ -248,6 +298,28 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
       <AnimatePresence>
         {toast && (
           <ToastNotification toast={toast} onClose={() => setToast(null)} />
+        )}
+      </AnimatePresence>
+
+      {/* ✅ ახალი: Refreshing Indicator (ფონური განახლება) */}
+      <AnimatePresence>
+        {refreshing && (
+          <motion.div 
+            className="refreshing-indicator"
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+          >
+            <motion.div 
+              className="refreshing-icon"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            >
+              <RotateCcw size={14} />
+            </motion.div>
+            <span>Updating cosmic energies...</span>
+          </motion.div>
         )}
       </AnimatePresence>
 
@@ -272,6 +344,8 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
+          // ✅ ახალი: refreshing-ის დროს ოდნავ dimmed
+          style={{ opacity: refreshing ? 0.7 : 1 }}
         >
           {/* Cosmic Background */}
           <div className="premium-hero-cosmic-bg">
@@ -283,23 +357,18 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           <div className="premium-glowing-ring" />
 
           <div className="premium-hero-left">
+            {/* ✅ დინამიური: activeTab-ის მიხედვით */}
             <div className="premium-hero-subtitle">
               <span className="subtitle-star">✦</span>
-              <span>TODAY'S HOROSCOPE</span>
+              <span>{TAB_LABELS[activeTab]}</span>
               <span className="subtitle-star">✦</span>
             </div>
             
-            <h2 className="premium-hero-title">
-              {horoscope.hero_description 
-                ? horoscope.hero_description.split(' ').slice(0, 2).join(' ').toUpperCase()
-                : "TRANSFORMATION AWAITS"}
-            </h2>
+            {/* ✅ დინამიური: AI-დან ან fallback */}
+            <h2 className="premium-hero-title">{heroTitle}</h2>
             
-            <p className="premium-hero-description">
-              {horoscope.hero_description 
-                ? horoscope.hero_description
-                : "Deep shifts are aligning in your favor. Trust the process, embrace change, and step into your power."}
-            </p>
+            {/* ✅ დინამიური: AI-დან ან fallback */}
+            <p className="premium-hero-description">{heroDescription}</p>
             
             <motion.button 
               className="premium-read-full-btn"
@@ -448,7 +517,8 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
             <h4 className="premium-moon-label">MOON INFO</h4>
             <h3 className="premium-moon-phase">{horoscope.moon_phase}</h3>
             <p className="premium-moon-sign">IN {horoscope.moon_sign?.toUpperCase()}</p>
-            <p className="premium-moon-desc">Ground your energy. Focus on stability and self-worth.</p>
+            {/* ✅ დინამიური: AI-დან ან phase-ის მიხედვით */}
+            <p className="premium-moon-desc">{moonDescription}</p>
           </div>
 
           <div className="premium-moon-symbol">
@@ -462,7 +532,8 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         <div className="premium-section">
           <h3 className="premium-section-title">
             <Sparkles size={12} />
-            TODAY'S PREDICTIONS
+            {/* ✅ დინამიური: activeTab-ის მიხედვით */}
+            {TAB_PREDICTIONS_TITLE[activeTab]}
             <Sparkles size={12} />
           </h3>
           
@@ -480,7 +551,8 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                 <Sparkles size={28} />
               </div>
               <h4>GENERAL</h4>
-              <p>Insight</p>
+              {/* ✅ დინამიური: დღის მიხედვით */}
+              <p>{getPredictionSubtitle('general', horoscope.date)}</p>
             </motion.div>
 
             <motion.div 
@@ -496,7 +568,8 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                 <Heart size={28} />
               </div>
               <h4>LOVE</h4>
-              <p>Connections</p>
+              {/* ✅ დინამიური: დღის მიხედვით */}
+              <p>{getPredictionSubtitle('love', horoscope.date)}</p>
             </motion.div>
 
             <motion.div 
@@ -512,7 +585,8 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                 <BriefcaseIcon size={28} />
               </div>
               <h4>CAREER</h4>
-              <p>Path</p>
+              {/* ✅ დინამიური: დღის მიხედვით */}
+              <p>{getPredictionSubtitle('career', horoscope.date)}</p>
             </motion.div>
 
             <motion.div 
@@ -528,7 +602,8 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                 <Activity size={28} />
               </div>
               <h4>HEALTH</h4>
-              <p>Wellness</p>
+              {/* ✅ დინამიური: დღის მიხედვით */}
+              <p>{getPredictionSubtitle('health', horoscope.date)}</p>
             </motion.div>
 
             <motion.div 
@@ -544,7 +619,8 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                 <DollarSign size={28} />
               </div>
               <h4>FINANCE</h4>
-              <p>Prosperity</p>
+              {/* ✅ დინამიური: დღის მიხედვით */}
+              <p>{getPredictionSubtitle('finance', horoscope.date)}</p>
             </motion.div>
           </div>
         </div>

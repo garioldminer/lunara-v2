@@ -107,10 +107,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 65px 20px 15px 20px; /* ⬆️ back button ჩამოწეულია (65px) */
-  background: transparent; /* ❌ ბექგრაუნდი წაშლილია */
+  padding: 65px 20px 15px 20px;
+  background: transparent;
   backdrop-filter: none;
-  border-bottom: none; /* ❌ ბორდერი წაშლილია */
+  border-bottom: none;
 }
 
 .premium-back-btn {
@@ -161,7 +161,6 @@
   letter-spacing: 0.5px;
 }
 
-/* ❌ RELOAD BUTTON - დამალულია */
 .premium-refresh-btn {
   display: none !important;
 }
@@ -183,7 +182,7 @@
 .premium-hero-banner {
   position: relative;
   width: 100%;
-  min-height: 260px; /* ⬇️ სიმაღლე შემცირებულია (320px → 260px) */
+  min-height: 260px;
   margin: 12px 0 0 0;
   background: linear-gradient(135deg, #0a0600 0%, #1a0f3e 40%, #2d1b69 70%, #0a0600 100%);
   border: 1px solid rgba(217, 182, 111, 0.2);
@@ -192,13 +191,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px 20px; /* ⬇️ პადინგი შემცირებულია */
+  padding: 24px 20px;
   box-shadow: 
     0 20px 60px rgba(0, 0, 0, 0.8),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: opacity 0.3s ease;
 }
 
-/* Cosmic Background - Dramatic Purple/Pink */
 .premium-hero-cosmic-bg {
   position: absolute;
   inset: 0;
@@ -230,7 +229,6 @@
   opacity: 0.6;
 }
 
-/* Glowing Ring (ქვემოთ - platform effect) */
 .premium-glowing-ring {
   position: absolute;
   bottom: 20px;
@@ -248,12 +246,11 @@
   50% { opacity: 1; transform: translateX(-50%) scaleX(1.15); }
 }
 
-/* Left Side - Text (ყოველთვის მარცხნივ!) */
 .premium-hero-left {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px; /* ⬇️ gap შემცირებულია */
+  gap: 12px;
   position: relative;
   z-index: 2;
   max-width: 55%;
@@ -285,7 +282,7 @@
 
 .premium-hero-title {
   font-family: 'Cinzel', serif;
-  font-size: 28px; /* ⬇️ ზომა შემცირებულია */
+  font-size: 28px;
   font-weight: 900;
   color: #D9B66F;
   margin: 0;
@@ -300,7 +297,7 @@
 
 .premium-hero-description {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 14px; /* ⬇️ ზომა შემცირებულია */
+  font-size: 14px;
   line-height: 1.5;
   color: rgba(247, 243, 235, 0.85);
   margin: 0;
@@ -311,13 +308,13 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 24px; /* ⬇️ ზომა შემცირებულია */
+  padding: 10px 24px;
   background: transparent;
   border: 2px solid rgba(217, 182, 111, 0.6);
   border-radius: 30px;
   color: #D9B66F;
   font-family: 'Cinzel', serif;
-  font-size: 11px; /* ⬇️ ზომა შემცირებულია */
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 2px;
   cursor: pointer;
@@ -334,10 +331,9 @@
   transform: translateX(3px);
 }
 
-/* Right Side - Card (ყოველთვის მარჯვნივ!) */
 .premium-hero-right {
   flex-shrink: 0;
-  margin-left: 16px; /* ⬇️ margin შემცირებულია */
+  margin-left: 16px;
   position: relative;
   z-index: 2;
   display: flex;
@@ -345,11 +341,10 @@
   justify-content: center;
 }
 
-/* 🔥🔥 CLEAN TAROT CARD - მხოლოდ ფოტო! 🔥🔥🔥 */
 .premium-tarot-card {
   position: relative;
-  width: 130px; /* ⬇️ ომა შემცირებულია */
-  height: 200px; /* ⬇️ ზომა შემცირებულია */
+  width: 130px;
+  height: 200px;
   perspective: 1000px;
   transform: rotateY(-12deg) rotateX(6deg);
   animation: cardFloat 4s ease-in-out infinite;
@@ -360,7 +355,6 @@
   50% { transform: rotateY(-12deg) rotateX(6deg) translateY(-10px); }
 }
 
-/* 🔥 MEGA GLOW - მარჯვენა edge */
 .premium-card-glow {
   position: absolute;
   top: -15px;
@@ -387,7 +381,6 @@
   50% { opacity: 1; transform: scaleY(1.08) scaleX(1.05); }
 }
 
-/* 🔥 THICK GOLD BORDER */
 .premium-card-frame {
   position: relative;
   width: 100%;
@@ -411,7 +404,6 @@
   border: 3px solid rgba(217, 182, 111, 1);
 }
 
-/* 🔥 CLEAN CARD INNER - მხოლოდ ფოტო, ყველაფრის გარეშე! */
 .premium-card-inner {
   position: relative;
   width: 100%;
@@ -425,7 +417,6 @@
   box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
 }
 
-/* 🔥 FULL-COVER IMAGE - მთლიანად ფარავს ბარათს! */
 .premium-card-image {
   position: absolute;
   top: 0;
@@ -441,7 +432,6 @@
   z-index: 1;
 }
 
-/* მსუბუქი overlay - ფოტო უფრო ნათელი რომ იყოს */
 .premium-card-inner::after {
   content: '';
   position: absolute;
@@ -459,7 +449,6 @@
   pointer-events: none;
 }
 
-/* ყველა დანარჩენი ელემენტი დამალულია */
 .premium-card-numeral,
 .premium-card-symbol,
 .premium-card-sign-name,
@@ -549,8 +538,8 @@
    ============================================ */
 .premium-energy-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* ✅ 3 ერთ ხაზზე */
-  gap: 10px; /* ⬇️ gap შემცირებულია */
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
 }
 
 .premium-energy-card {
@@ -558,11 +547,11 @@
   background: linear-gradient(135deg, rgba(217, 182, 111, 0.08) 0%, rgba(217, 182, 111, 0.03) 100%);
   border: 1px solid rgba(217, 182, 111, 0.2);
   border-radius: 16px;
-  padding: 16px 10px; /* ⬇️ padding შემცირებულია */
+  padding: 16px 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px; /* ⬇️ gap შემცირებულია */
+  gap: 6px;
   transition: all 0.3s ease;
   overflow: hidden;
 }
@@ -585,8 +574,8 @@
 }
 
 .premium-energy-icon {
-  width: 50px; /* ⬇️ ზომა შემცირებულია */
-  height: 50px; /* ⬇️ ზომა შემცირებულია */
+  width: 50px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -618,7 +607,7 @@
 
 .premium-energy-level {
   font-family: 'Cinzel', serif;
-  font-size: 10px; /* ⬇️ ზომა შემცირებულია */
+  font-size: 10px;
   font-weight: 900;
   color: #D9B66F;
   letter-spacing: 1px;
@@ -628,7 +617,7 @@
 
 .premium-energy-subtitle {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 10px; /* ⬇️ ზომა შემცირებულია */
+  font-size: 10px;
   color: rgba(247, 243, 235, 0.6);
   margin: 0;
   font-style: italic;
@@ -655,19 +644,20 @@
 }
 
 /* ============================================
-   ✅ PREMIUM MOON CARD
+   ✅ PREMIUM MOON CARD - განახლებული ლეიაუთი
    ============================================ */
 .premium-moon-card {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin: 20px 0 0 0;
-  padding: 20px;
+  gap: 14px;
+  margin: 16px 0 0 0;
+  padding: 14px 16px;
   background: linear-gradient(135deg, rgba(100, 80, 180, 0.15) 0%, rgba(100, 80, 180, 0.08) 100%);
   border: 1px solid rgba(100, 80, 180, 0.3);
-  border-radius: 16px;
+  border-radius: 14px;
   overflow: hidden;
+  min-height: 100px;
 }
 
 .premium-moon-card::before {
@@ -683,8 +673,8 @@
 
 .premium-moon-image-container {
   flex-shrink: 0;
-  width: 80px;
-  height: 80px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
   background: linear-gradient(135deg, rgba(217, 182, 111, 0.2) 0%, rgba(100, 80, 180, 0.2) 100%);
   border: 2px solid rgba(217, 182, 111, 0.4);
@@ -694,11 +684,12 @@
   box-shadow: 0 0 30px rgba(217, 182, 111, 0.3);
   position: relative;
   overflow: hidden;
+  z-index: 2;
 }
 
 .premium-moon-image {
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   background: radial-gradient(circle at 30% 30%, #F4D47C 0%, #D9B66F 50%, #8B6914 100%);
   border-radius: 50%;
   box-shadow: inset -5px -5px 15px rgba(0, 0, 0, 0.3);
@@ -714,12 +705,13 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
+  z-index: 2;
 }
 
 .premium-moon-label {
   font-family: 'Cinzel', serif;
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 700;
   color: rgba(217, 182, 111, 0.7);
   letter-spacing: 2px;
@@ -728,16 +720,17 @@
 
 .premium-moon-phase {
   font-family: 'Cinzel', serif;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 900;
   color: #F7F3EB;
   margin: 0;
   letter-spacing: 1px;
+  line-height: 1.2;
 }
 
 .premium-moon-sign {
   font-family: 'Cinzel', serif;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   color: #D9B66F;
   margin: 0;
@@ -746,21 +739,22 @@
 
 .premium-moon-desc {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 12px;
+  font-size: 11px;
   color: rgba(247, 243, 235, 0.7);
   margin: 0;
   font-style: italic;
-  line-height: 1.4;
+  line-height: 1.3;
 }
 
 .premium-moon-symbol {
   flex-shrink: 0;
   position: relative;
+  z-index: 2;
 }
 
 .premium-symbol-circle {
-  width: 50px;
-  height: 50px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: linear-gradient(135deg, rgba(217, 182, 111, 0.2) 0%, rgba(217, 182, 111, 0.1) 100%);
   border: 2px solid rgba(217, 182, 111, 0.4);
@@ -771,7 +765,7 @@
 }
 
 .premium-zodiac-symbol {
-  font-size: 24px;
+  font-size: 22px;
   color: #D9B66F;
   filter: drop-shadow(0 0 8px rgba(217, 182, 111, 0.6));
 }
@@ -781,8 +775,8 @@
    ============================================ */
 .premium-predictions-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr); /* ✅ 5 ერთ ხაზზე */
-  gap: 8px; /* ⬇️ gap შემცირებულია */
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
 }
 
 .premium-prediction-card {
@@ -790,11 +784,11 @@
   background: linear-gradient(135deg, rgba(217, 182, 111, 0.05) 0%, rgba(217, 182, 111, 0.02) 100%);
   border: 1px solid rgba(217, 182, 111, 0.15);
   border-radius: 16px;
-  padding: 14px 8px; /* ⬇️ padding შემცირებულია */
+  padding: 14px 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px; /* ⬇️ gap შემცირებულია */
+  gap: 6px;
   cursor: pointer;
   transition: all 0.3s ease;
   overflow: hidden;
@@ -831,8 +825,8 @@
 
 .premium-prediction-icon {
   position: relative;
-  width: 44px; /* ⬇️ ომა შემცირებულია */
-  height: 44px; /* ⬇️ ზომა შემცირებულია */
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -897,21 +891,57 @@
 
 .premium-prediction-card h4 {
   font-family: 'Cinzel', serif;
-  font-size: 9px; /* ⬇️ ზომა შემცირებულია */
+  font-size: 9px;
   font-weight: 900;
   color: #D9B66F;
-  letter-spacing: 1px; /* ⬇️ letter-spacing შემცირებულია */
+  letter-spacing: 1px;
   margin: 0;
   text-align: center;
 }
 
 .premium-prediction-card p {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 9px; /* ⬇️ ზომა შემცირებულია */
+  font-size: 9px;
   color: rgba(247, 243, 235, 0.6);
   margin: 0;
   font-style: italic;
   text-align: center;
+}
+
+/* ============================================
+   ✅ REFRESHING INDICATOR (ფონური განახლება)
+   ============================================ */
+.refreshing-indicator {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, 
+    rgba(217, 182, 111, 0.2) 0%, 
+    rgba(217, 182, 111, 0.1) 100%);
+  border: 1px solid rgba(217, 182, 111, 0.4);
+  border-radius: 20px;
+  backdrop-filter: blur(20px);
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(217, 182, 111, 0.2);
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: #D9B66F;
+  letter-spacing: 0.5px;
+}
+
+.refreshing-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #D9B66F;
 }
 
 /* ============================================
@@ -1026,7 +1056,6 @@
 .modal-title { font-family: 'Cinzel', serif; font-size: 20px; font-weight: 700; color: #D9B66F; text-align: center; margin: 0 0 12px 0; letter-spacing: 1.5px; }
 .modal-text { font-family: 'Cormorant Garamond', serif; font-size: 14px; line-height: 1.7; color: #F7F3EB; text-align: center; }
 
-/* SHARE MODAL */
 .share-modal { max-width: 500px; }
 .share-preview-container { display: flex; justify-content: center; margin: 20px 0; max-height: 60vh; overflow-y: auto; padding: 10px; }
 .share-actions { display: flex; gap: 10px; margin-top: 20px; }
@@ -1059,7 +1088,6 @@
 .share-action-btn.primary { background: rgba(217, 182, 111, 0.3); border-color: rgba(217, 182, 111, 0.6); }
 .share-action-btn.primary:hover { background: rgba(217, 182, 111, 0.4); box-shadow: 0 6px 18px rgba(217, 182, 111, 0.3); }
 
-/* READ FULL MODAL */
 .read-full-overlay { position: fixed; inset: 0; background: rgba(5, 3, 10, 0.92); backdrop-filter: blur(12px); z-index: 1100; display: flex; align-items: center; justify-content: center; padding: 16px; }
 
 .read-full-modal {
@@ -1173,21 +1201,19 @@
 .rf-footer-text { font-family: 'Cormorant Garamond', serif; font-size: 12px; font-style: italic; color: rgba(217, 182, 111, 0.5); line-height: 1.6; margin: 0; letter-spacing: 0.3px; }
 
 /* ============================================
-   RESPONSIVE - ყოველთვის გვერდიგვერდ!
+   RESPONSIVE
    ============================================ */
 @media (max-width: 768px) {
   .premium-header { padding: 65px 16px 12px 16px; }
   .premium-sign-name { font-size: 28px; letter-spacing: 3px; }
   .premium-date { font-size: 12px; }
   
-  /* ✅ ბანერი ყოველთვის გვერდიგვერდ! */
   .premium-hero-banner { min-height: 240px; padding: 20px 16px; }
   .premium-hero-title { font-size: 24px; }
   .premium-hero-description { font-size: 13px; }
   .premium-hero-subtitle { font-size: 9px; letter-spacing: 2px; }
   .premium-read-full-btn { padding: 9px 18px; font-size: 10px; }
   
-  /* 🔥 Card - Tablet */
   .premium-tarot-card { 
     width: 120px; 
     height: 180px; 
@@ -1198,7 +1224,6 @@
   .premium-tab-nav { padding: 5px; }
   .premium-tab { padding: 9px 10px; font-size: 9px; }
   
-  /* ✅ COSMIC ENERGY - 3 ერთ ხაზზე */
   .premium-energy-grid { 
     grid-template-columns: repeat(3, 1fr); 
     gap: 8px;
@@ -1209,16 +1234,36 @@
   .premium-energy-level { font-size: 9px; }
   .premium-energy-subtitle { font-size: 9px; }
   
-  .premium-moon-card { padding: 16px; gap: 12px; }
-  .premium-moon-image-container { width: 70px; height: 70px; }
-  .premium-moon-image { width: 50px; height: 50px; }
-  .premium-moon-phase { font-size: 16px; }
-  .premium-moon-sign { font-size: 10px; }
-  .premium-moon-desc { font-size: 11px; }
-  .premium-symbol-circle { width: 44px; height: 44px; }
-  .premium-zodiac-symbol { font-size: 20px; }
+  .premium-moon-card { 
+    padding: 12px 14px; 
+    gap: 12px;
+    min-height: 90px;
+  }
+  .premium-moon-image-container { 
+    width: 60px; 
+    height: 60px; 
+  }
+  .premium-moon-image { 
+    width: 42px; 
+    height: 42px; 
+  }
+  .premium-moon-phase { 
+    font-size: 14px; 
+  }
+  .premium-moon-sign { 
+    font-size: 9px; 
+  }
+  .premium-moon-desc { 
+    font-size: 10px; 
+  }
+  .premium-symbol-circle { 
+    width: 38px; 
+    height: 38px; 
+  }
+  .premium-zodiac-symbol { 
+    font-size: 18px; 
+  }
   
-  /* ✅ PREDICTIONS - 5 ერთ ხაზზე */
   .premium-predictions-grid { 
     grid-template-columns: repeat(5, 1fr); 
     gap: 6px;
@@ -1230,6 +1275,13 @@
   .premium-prediction-card p { font-size: 8px; }
   
   .toast { min-width: 260px; padding: 10px 16px; font-size: 11px; }
+  
+  /* ✅ Refreshing Indicator tablet */
+  .refreshing-indicator {
+    top: 15px;
+    padding: 7px 14px;
+    font-size: 10px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1241,7 +1293,6 @@
   .premium-sign-name { font-size: 22px; letter-spacing: 2px; }
   .premium-date { font-size: 11px; }
   
-  /* ✅ ბანერი ყოველთვის გვერდიგვერდ მობილურზეც! */
   .premium-hero-banner { 
     min-height: 220px; 
     padding: 18px 12px;
@@ -1253,7 +1304,6 @@
   .premium-hero-subtitle { font-size: 8px; letter-spacing: 1.5px; gap: 6px; }
   .premium-read-full-btn { padding: 8px 14px; font-size: 9px; letter-spacing: 1.5px; }
   
-  /* 🔥 Card - Mobile */
   .premium-tarot-card { 
     width: 100px; 
     height: 155px; 
@@ -1269,7 +1319,6 @@
   .premium-tab-nav { padding: 4px; }
   .premium-tab { padding: 8px 6px; font-size: 7px; letter-spacing: 0.5px; }
   
-  /* ✅ COSMIC ENERGY - 3 ერთ ხაზზე მობილურზეც */
   .premium-energy-grid { 
     grid-template-columns: repeat(3, 1fr); 
     gap: 6px;
@@ -1284,13 +1333,36 @@
   .premium-energy-subtitle { font-size: 8px; }
   .premium-energy-dots { margin-top: 0; }
   
-  .premium-moon-card { flex-direction: column; text-align: center; }
-  .premium-moon-image-container { width: 80px; height: 80px; }
-  .premium-moon-image { width: 60px; height: 60px; }
-  .premium-moon-content { align-items: center; }
-  .premium-moon-symbol { margin-top: 8px; }
+  .premium-moon-card { 
+    padding: 10px 12px; 
+    gap: 10px;
+    min-height: 80px;
+  }
+  .premium-moon-image-container { 
+    width: 50px; 
+    height: 50px; 
+  }
+  .premium-moon-image { 
+    width: 36px; 
+    height: 36px; 
+  }
+  .premium-moon-phase { 
+    font-size: 13px; 
+  }
+  .premium-moon-sign { 
+    font-size: 8px; 
+  }
+  .premium-moon-desc { 
+    font-size: 9px; 
+  }
+  .premium-symbol-circle { 
+    width: 34px; 
+    height: 34px; 
+  }
+  .premium-zodiac-symbol { 
+    font-size: 16px; 
+  }
   
-  /* ✅ PREDICTIONS - 5 ერთ ხაზზე მობილურზეც */
   .premium-predictions-grid { 
     grid-template-columns: repeat(5, 1fr); 
     gap: 4px;
@@ -1303,6 +1375,19 @@
   
   .toast { min-width: 240px; padding: 10px 14px; font-size: 10px; bottom: 80px; }
   .toast-icon { font-size: 14px; }
+  
+  /* ✅ Refreshing Indicator mobile */
+  .refreshing-indicator {
+    top: 12px;
+    padding: 6px 12px;
+    font-size: 9px;
+    gap: 6px;
+  }
+  
+  .refreshing-indicator svg {
+    width: 12px;
+    height: 12px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
