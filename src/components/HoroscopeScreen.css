@@ -909,6 +909,89 @@
 }
 
 /* ============================================
+   ✅ AFFIRMATION SECTION - მთავარ გვერდზე
+   ============================================ */
+.affirmation-section {
+  position: relative;
+  margin: 20px 0 0 0;
+  padding: 28px 24px;
+  background: linear-gradient(135deg, rgba(100, 80, 180, 0.12) 0%, rgba(100, 80, 180, 0.04) 100%);
+  border: 1px solid rgba(217, 182, 111, 0.25);
+  border-radius: 16px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.affirmation-glow {
+  position: absolute;
+  top: -60%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(100, 80, 180, 0.25), transparent 60%);
+  pointer-events: none;
+}
+
+.affirmation-icon {
+  font-size: 26px;
+  filter: drop-shadow(0 0 10px rgba(217, 182, 111, 0.6));
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.affirmation-section h3 {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #D9B66F;
+  letter-spacing: 1.5px;
+  margin: 0 0 12px 0;
+  position: relative;
+}
+
+.affirmation-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 16px;
+  font-style: italic;
+  line-height: 1.6;
+  color: #F7F3EB;
+  margin: 0 0 16px 0;
+  position: relative;
+}
+
+/* ✅ SHARE ღილაკი - Affirmation-ში */
+.share-affirmation-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  background: rgba(217, 182, 111, 0.1);
+  border: 1px solid rgba(217, 182, 111, 0.4);
+  border-radius: 24px;
+  color: #D9B66F;
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  box-shadow: 0 0 15px rgba(217, 182, 111, 0.15);
+}
+
+.share-affirmation-btn:hover {
+  background: rgba(217, 182, 111, 0.2);
+  border-color: rgba(217, 182, 111, 0.7);
+  box-shadow: 0 0 25px rgba(217, 182, 111, 0.35);
+  transform: translateY(-2px);
+}
+
+.share-affirmation-btn:active {
+  transform: translateY(0);
+}
+
+/* ============================================
    ✅ REFRESHING INDICATOR (ფონური განახლება)
    ============================================ */
 .refreshing-indicator {
@@ -1190,7 +1273,7 @@
 .rf-aff-glow { position: absolute; top: -50%; left: 50%; transform: translateX(-50%); width: 120px; height: 120px; background: radial-gradient(circle, rgba(100, 80, 180, 0.2), transparent 60%); pointer-events: none; }
 .rf-aff-icon { font-size: 22px; filter: drop-shadow(0 0 8px rgba(100, 80, 180, 0.5)); position: relative; margin-bottom: 8px; }
 .rf-aff-title { font-family: 'Cinzel', serif; font-size: 11px; font-weight: 700; color: #D9B66F; letter-spacing: 1.5px; margin: 0 0 10px 0; position: relative; }
-.rf-aff-text { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-style: italic; line-height: 1.6; color: #F7F3EB; margin: 0; position: relative; }
+.rf-aff-text { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-style: italic; line-height: 1.6; color: #F7F3EB; margin: 0 0 14px 0; position: relative; }
 
 .rf-footer { text-align: center; padding-top: 8px; }
 .rf-footer-divider { display: flex; align-items: center; justify-content: center; margin-bottom: 12px; position: relative; }
@@ -1274,9 +1357,20 @@
   .premium-prediction-card h4 { font-size: 8px; }
   .premium-prediction-card p { font-size: 8px; }
   
+  /* ✅ Affirmation tablet */
+  .affirmation-section {
+    padding: 22px 20px;
+  }
+  .affirmation-text {
+    font-size: 14px;
+  }
+  .share-affirmation-btn {
+    padding: 9px 20px;
+    font-size: 9px;
+  }
+  
   .toast { min-width: 260px; padding: 10px 16px; font-size: 11px; }
   
-  /* ✅ Refreshing Indicator tablet */
   .refreshing-indicator {
     top: 15px;
     padding: 7px 14px;
@@ -1373,10 +1467,36 @@
   .premium-prediction-card h4 { font-size: 7px; letter-spacing: 0.5px; }
   .premium-prediction-card p { font-size: 7px; }
   
+  /* ✅ Affirmation mobile */
+  .affirmation-section {
+    padding: 18px 16px;
+    margin: 16px 0 0 0;
+  }
+  .affirmation-icon {
+    font-size: 22px;
+    margin-bottom: 8px;
+  }
+  .affirmation-section h3 {
+    font-size: 10px;
+    margin-bottom: 10px;
+  }
+  .affirmation-text {
+    font-size: 13px;
+    margin-bottom: 14px;
+  }
+  .share-affirmation-btn {
+    padding: 8px 18px;
+    font-size: 9px;
+    gap: 6px;
+  }
+  .share-affirmation-btn svg {
+    width: 11px;
+    height: 11px;
+  }
+  
   .toast { min-width: 240px; padding: 10px 14px; font-size: 10px; bottom: 80px; }
   .toast-icon { font-size: 14px; }
   
-  /* ✅ Refreshing Indicator mobile */
   .refreshing-indicator {
     top: 12px;
     padding: 6px 12px;
