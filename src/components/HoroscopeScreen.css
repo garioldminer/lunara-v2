@@ -98,7 +98,7 @@
 .horoscope-empty p { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: #F7F3EB; opacity: 0.7; font-style: italic; }
 
 /* ============================================
-   ✅ PREMIUM HEADER - NO BACKGROUND, BACK BUTTON LOWER
+   ✅ PREMIUM HEADER - განახლებული
    ============================================ */
 .premium-header {
   position: sticky;
@@ -107,7 +107,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 65px 20px 15px 20px;
+  padding: 58px 20px 10px 20px;
   background: transparent;
   backdrop-filter: none;
   border-bottom: none;
@@ -125,6 +125,7 @@
   color: #D9B66F;
   cursor: pointer;
   transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 
 .premium-back-btn:hover {
@@ -136,29 +137,36 @@
 .premium-header-center {
   flex: 1;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .premium-sign-name {
   font-family: 'Cinzel', serif;
-  font-size: 32px;
+  font-size: 34px;
   font-weight: 900;
   color: #D9B66F;
-  margin: 0 0 4px 0;
-  letter-spacing: 4px;
-  text-shadow: 0 0 20px rgba(217, 182, 111, 0.5);
+  margin: 0;
+  letter-spacing: 5px;
+  text-shadow: 0 0 25px rgba(217, 182, 111, 0.6);
   background: linear-gradient(135deg, #F7F3EB 30%, #D9B66F 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  line-height: 1.1;
 }
 
+/* ✅ განახლებული: უკეთესი ფონტი, დიდი ზომა, 3px padding */
 .premium-date {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 13px;
-  color: rgba(247, 243, 235, 0.7);
-  margin: 0;
-  font-style: italic;
-  letter-spacing: 0.5px;
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(247, 243, 235, 0.8);
+  margin: 3px 0 0 0;
+  font-style: normal;
+  letter-spacing: 1.5px;
 }
 
 .premium-refresh-btn {
@@ -177,13 +185,13 @@
 }
 
 /* ============================================
-   ✅ PREMIUM HERO BANNER - SMALLER HEIGHT
+   ✅ PREMIUM HERO BANNER - განახლებული
    ============================================ */
 .premium-hero-banner {
   position: relative;
   width: 100%;
-  min-height: 260px;
-  margin: 12px 0 0 0;
+  min-height: 220px;
+  margin: 3px 0 0 0;
   background: linear-gradient(135deg, #0a0600 0%, #1a0f3e 40%, #2d1b69 70%, #0a0600 100%);
   border: 1px solid rgba(217, 182, 111, 0.2);
   border-radius: 20px;
@@ -191,7 +199,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px 20px;
+  padding: 20px 18px;
   box-shadow: 
     0 20px 60px rgba(0, 0, 0, 0.8),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
@@ -341,18 +349,19 @@
   justify-content: center;
 }
 
+/* ✅ განახლებული: ცოტა მეტი დახრა (3D space-ში) */
 .premium-tarot-card {
   position: relative;
-  width: 130px;
-  height: 200px;
+  width: 120px;
+  height: 185px;
   perspective: 1000px;
-  transform: rotateY(-12deg) rotateX(6deg);
+  transform: rotateY(-20deg) rotateX(8deg) rotateZ(-2deg);
   animation: cardFloat 4s ease-in-out infinite;
 }
 
 @keyframes cardFloat {
-  0%, 100% { transform: rotateY(-12deg) rotateX(6deg) translateY(0); }
-  50% { transform: rotateY(-12deg) rotateX(6deg) translateY(-10px); }
+  0%, 100% { transform: rotateY(-20deg) rotateX(8deg) rotateZ(-2deg) translateY(0); }
+  50% { transform: rotateY(-20deg) rotateX(8deg) rotateZ(-2deg) translateY(-8px); }
 }
 
 .premium-card-glow {
@@ -1287,20 +1296,29 @@
    RESPONSIVE
    ============================================ */
 @media (max-width: 768px) {
-  .premium-header { padding: 65px 16px 12px 16px; }
-  .premium-sign-name { font-size: 28px; letter-spacing: 3px; }
-  .premium-date { font-size: 12px; }
+  .premium-header { 
+    padding: 58px 16px 10px 16px; 
+  }
+  .premium-sign-name { 
+    font-size: 30px; 
+    letter-spacing: 4px; 
+  }
+  .premium-date { 
+    font-size: 13px; 
+  }
   
-  .premium-hero-banner { min-height: 240px; padding: 20px 16px; }
+  .premium-hero-banner { 
+    min-height: 200px; 
+    padding: 18px 16px; 
+  }
   .premium-hero-title { font-size: 24px; }
   .premium-hero-description { font-size: 13px; }
   .premium-hero-subtitle { font-size: 9px; letter-spacing: 2px; }
   .premium-read-full-btn { padding: 9px 18px; font-size: 10px; }
   
   .premium-tarot-card { 
-    width: 120px; 
-    height: 180px; 
-    transform: rotateY(-12deg) rotateX(6deg);
+    width: 110px; 
+    height: 170px; 
   }
   .premium-card-glow { right: -30px; width: 75px; height: 210px; filter: blur(28px); }
   
@@ -1379,17 +1397,25 @@
 }
 
 @media (max-width: 480px) {
-  .premium-header { padding: 65px 12px 10px 12px; }
+  .premium-header { 
+    padding: 58px 12px 8px 12px; 
+  }
   .premium-back-btn,
   .premium-refresh-btn { width: 38px; height: 38px; }
   .premium-back-btn svg,
   .premium-refresh-btn svg { width: 20px; height: 20px; }
-  .premium-sign-name { font-size: 22px; letter-spacing: 2px; }
-  .premium-date { font-size: 11px; }
+  .premium-sign-name { 
+    font-size: 26px; 
+    letter-spacing: 3px; 
+  }
+  .premium-date { 
+    font-size: 12px; 
+    letter-spacing: 1px;
+  }
   
   .premium-hero-banner { 
-    min-height: 220px; 
-    padding: 18px 12px;
+    min-height: 180px; 
+    padding: 16px 14px;
   }
   .premium-hero-left { max-width: 55%; }
   .premium-hero-right { margin-left: 10px; }
@@ -1399,9 +1425,8 @@
   .premium-read-full-btn { padding: 8px 14px; font-size: 9px; letter-spacing: 1.5px; }
   
   .premium-tarot-card { 
-    width: 100px; 
-    height: 155px; 
-    transform: rotateY(-10deg) rotateX(5deg);
+    width: 95px; 
+    height: 150px; 
   }
   .premium-card-glow { 
     right: -25px; 
