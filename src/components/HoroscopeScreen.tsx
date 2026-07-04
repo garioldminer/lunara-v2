@@ -9,7 +9,7 @@ import {
   X, Download, Heart, Briefcase, Palette, Hash, DollarSign, Zap, Briefcase as BriefcaseIcon
 } from 'lucide-react';
 import ShareCardPreview from './ShareCardPreview';
-import CosmicSkeleton from './CosmicSkeleton'; // ✅ ახალი
+import CosmicSkeleton from './CosmicSkeleton';
 import './HoroscopeScreen.css';
 
 type TabType = 'today' | 'tomorrow' | 'weekly' | 'monthly';
@@ -39,7 +39,6 @@ const ERROR_MESSAGES = [
   "The celestial wires are crossed. Please retry."
 ];
 
-// ✅ დინამიური ტექსტები activeTab-ის მიხედვით
 const TAB_LABELS: Record<TabType, string> = {
   today: "TODAY'S HOROSCOPE",
   tomorrow: "TOMORROW'S HOROSCOPE",
@@ -61,7 +60,6 @@ const TAB_HERO_FALLBACK: Record<TabType, string> = {
   monthly: "The month brings cosmic shifts"
 };
 
-// ✅ დინამიური subtitle-ები predictions-ისთვის
 const PREDICTION_SUBTITLES = {
   general: ["Insight", "Guidance", "Wisdom", "Vision", "Clarity"],
   love: ["Connections", "Romance", "Passion", "Harmony", "Devotion"],
@@ -79,17 +77,13 @@ const getEnergyEmojis = (level: string | undefined, emoji: string): string => {
   return `${emoji}${emoji}`;
 };
 
-// ✅ Helper: დინამიური subtitle-ის მიღება
 const getPredictionSubtitle = (category: keyof typeof PREDICTION_SUBTITLES, date?: string): string => {
   const subtitles = PREDICTION_SUBTITLES[category];
   if (!date) return subtitles[0];
-  
-  // დღის მიხედვით subtitle-ის არჩევა (დინამიური)
   const dayIndex = new Date(date).getDate() % subtitles.length;
   return subtitles[dayIndex];
 };
 
-// ✅ Helper: Moon description-ის გენერაცია
 const getMoonDescription = (moonPhase?: string, moonSign?: string): string => {
   if (!moonPhase) return "The moon guides your path through the cosmic landscape.";
   
@@ -107,7 +101,6 @@ const getMoonDescription = (moonPhase?: string, moonSign?: string): string => {
   return phaseDescriptions[moonPhase] || "The moon guides your path through the cosmic landscape.";
 };
 
-// Toast Component
 function ToastNotification({ toast, onClose }: { toast: Toast; onClose: () => void }) {
   useEffect(() => {
     const timer = setTimeout(onClose, 3000);
@@ -145,7 +138,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const [isReadFullOpen, setIsReadFullOpen] = useState(false);
   const [toast, setToast] = useState<Toast | null>(null);
 
-  // ✅ ახალი: refreshing state-იც
   const { horoscope, loading, refreshing, error, refetch } = useHoroscope(user?.id || '', activeTab);
 
   const userSign = user?.sun_sign?.toLowerCase() || 'leo';
@@ -227,7 +219,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     showToast('Opening Telegram...', 'info');
   };
 
-  // ✅ ახალი: მხოლოდ პირველ ვიზიტზე (როცა horoscope არ გვაქვს) ვაჩვენოთ skeleton
   if (loading && !horoscope) {
     return <CosmicSkeleton />;
   }
@@ -269,7 +260,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     year: 'numeric'
   });
 
-  // ✅ დინამიური ტექსტები
   const heroTitle = horoscope.hero_description 
     ? horoscope.hero_description.split(' ').slice(0, 2).join(' ').toUpperCase()
     : TAB_HERO_FALLBACK[activeTab].split(' ').slice(0, 2).join(' ').toUpperCase();
@@ -301,7 +291,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         )}
       </AnimatePresence>
 
-      {/* ✅ ახალი: Refreshing Indicator (ფონური განახლება) */}
+      {/* Refreshing Indicator */}
       <AnimatePresence>
         {refreshing && (
           <motion.div 
@@ -344,30 +334,24 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          // ✅ ახალი: refreshing-ის დროს ოდნავ dimmed
           style={{ opacity: refreshing ? 0.7 : 1 }}
         >
-          {/* Cosmic Background */}
           <div className="premium-hero-cosmic-bg">
             <div className="cosmic-nebula nebula-1" />
             <div className="cosmic-nebula nebula-2" />
           </div>
 
-          {/* Glowing Ring */}
           <div className="premium-glowing-ring" />
 
           <div className="premium-hero-left">
-            {/* ✅ დინამიური: activeTab-ის მიხედვით */}
             <div className="premium-hero-subtitle">
               <span className="subtitle-star">✦</span>
               <span>{TAB_LABELS[activeTab]}</span>
               <span className="subtitle-star">✦</span>
             </div>
             
-            {/* ✅ დინამიური: AI-დან ან fallback */}
             <h2 className="premium-hero-title">{heroTitle}</h2>
             
-            {/* ✅ დინამიური: AI-დან ან fallback */}
             <p className="premium-hero-description">{heroDescription}</p>
             
             <motion.button 
@@ -387,26 +371,18 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
               animate={{ opacity: 1, rotateY: 0, scale: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 1, ease: "easeOut" }}
             >
-              {/* Card Glow */}
               <div className="premium-card-glow" />
               
-              {/* Card Frame */}
               <div className="premium-card-frame">
-                {/* Card Inner */}
                 <div className="premium-card-inner">
-                  {/* Roman Numeral */}
                   <div className="premium-card-numeral">VIII</div>
                   
-                  {/* Zodiac Image */}
                   <img src={zodiacData.imageUrl} alt={userSign} className="premium-card-image" />
                   
-                  {/* Zodiac Symbol */}
                   <div className="premium-card-symbol">{zodiacData.symbol}</div>
                   
-                  {/* Sign Name */}
                   <div className="premium-card-sign-name">{userSign.toUpperCase()}</div>
                   
-                  {/* Corner Decorations */}
                   <div className="card-corner card-corner-tl" />
                   <div className="card-corner card-corner-tr" />
                   <div className="card-corner card-corner-bl" />
@@ -517,7 +493,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
             <h4 className="premium-moon-label">MOON INFO</h4>
             <h3 className="premium-moon-phase">{horoscope.moon_phase}</h3>
             <p className="premium-moon-sign">IN {horoscope.moon_sign?.toUpperCase()}</p>
-            {/* ✅ დინამიური: AI-დან ან phase-ის მიხედვით */}
             <p className="premium-moon-desc">{moonDescription}</p>
           </div>
 
@@ -532,7 +507,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         <div className="premium-section">
           <h3 className="premium-section-title">
             <Sparkles size={12} />
-            {/* ✅ დინამიური: activeTab-ის მიხედვით */}
             {TAB_PREDICTIONS_TITLE[activeTab]}
             <Sparkles size={12} />
           </h3>
@@ -551,7 +525,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                 <Sparkles size={28} />
               </div>
               <h4>GENERAL</h4>
-              {/* ✅ დინამიური: დღის მიხედვით */}
               <p>{getPredictionSubtitle('general', horoscope.date)}</p>
             </motion.div>
 
@@ -568,7 +541,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                 <Heart size={28} />
               </div>
               <h4>LOVE</h4>
-              {/* ✅ დინამიური: დღის მიხედვით */}
               <p>{getPredictionSubtitle('love', horoscope.date)}</p>
             </motion.div>
 
@@ -585,7 +557,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                 <BriefcaseIcon size={28} />
               </div>
               <h4>CAREER</h4>
-              {/* ✅ დინამიური: დღის მიხედვით */}
               <p>{getPredictionSubtitle('career', horoscope.date)}</p>
             </motion.div>
 
@@ -602,7 +573,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                 <Activity size={28} />
               </div>
               <h4>HEALTH</h4>
-              {/* ✅ დინამიური: დღის მიხედვით */}
               <p>{getPredictionSubtitle('health', horoscope.date)}</p>
             </motion.div>
 
@@ -619,11 +589,33 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                 <DollarSign size={28} />
               </div>
               <h4>FINANCE</h4>
-              {/* ✅ დინამიური: დღის მიხედვით */}
               <p>{getPredictionSubtitle('finance', horoscope.date)}</p>
             </motion.div>
           </div>
         </div>
+
+        {/* ✅ AFFIRMATION SECTION - დავაბრუნე! */}
+        {horoscope.affirmation && (
+          <motion.div 
+            className="affirmation-section"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.0 }}
+          >
+            <div className="affirmation-glow" />
+            <div className="affirmation-icon">✨</div>
+            <h3>{activeTab === 'weekly' ? 'Weekly' : activeTab === 'monthly' ? 'Monthly' : 'Daily'} Affirmation</h3>
+            <p className="affirmation-text">"{horoscope.affirmation}"</p>
+            {/* ✅ SHARE ღილაკი - დავაბრუნე! */}
+            <button 
+              className="share-affirmation-btn" 
+              onClick={() => setIsShareModalOpen(true)}
+            >
+              <Share2 size={12} />
+              <span>Share</span>
+            </button>
+          </motion.div>
+        )}
       </div>
 
       {/* MODAL - Predictions */}
@@ -867,12 +859,24 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                   </div>
                 </div>
 
+                {/* ✅ AFFIRMATION + SHARE ღილაკი READ FULL MODAL-შიც! */}
                 {horoscope.affirmation && (
                   <div className="rf-affirmation">
                     <div className="rf-aff-glow" />
                     <div className="rf-aff-icon">✨</div>
                     <h3 className="rf-aff-title">{activeTab === 'weekly' ? 'Weekly' : activeTab === 'monthly' ? 'Monthly' : 'Daily'} Affirmation</h3>
                     <p className="rf-aff-text">"{horoscope.affirmation}"</p>
+                    {/* ✅ SHARE ღილაკი READ FULL MODAL-შიც */}
+                    <button 
+                      className="share-affirmation-btn" 
+                      onClick={() => {
+                        setIsReadFullOpen(false);
+                        setIsShareModalOpen(true);
+                      }}
+                    >
+                      <Share2 size={12} />
+                      <span>Share</span>
+                    </button>
                   </div>
                 )}
 
