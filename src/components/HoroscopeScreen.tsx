@@ -23,15 +23,6 @@ interface Toast {
   type: 'success' | 'error' | 'info';
 }
 
-const LOADING_MESSAGES = [
-  "Aligning with the cosmos...",
-  "Reading the stars...",
-  "Channeling cosmic energy...",
-  "Connecting to the universe...",
-  "The stars are speaking...",
-  "Your message is arriving..."
-];
-
 const ERROR_MESSAGES = [
   "The stars are clouded today. Please try again.",
   "Cosmic connection interrupted. Mercury might be in retrograde.",
@@ -84,7 +75,8 @@ const getPredictionSubtitle = (category: keyof typeof PREDICTION_SUBTITLES, date
   return subtitles[dayIndex];
 };
 
-const getMoonDescription = (moonPhase?: string, moonSign?: string): string => {
+// ✅ moonSign parameter წაშლილია
+const getMoonDescription = (moonPhase?: string): string => {
   if (!moonPhase) return "The moon guides your path through the cosmic landscape.";
   
   const phaseDescriptions: Record<string, string> = {
@@ -143,7 +135,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const userSign = user?.sun_sign?.toLowerCase() || 'leo';
   const zodiacData = ZODIAC_SIGNS[userSign] || ZODIAC_SIGNS['leo'];
 
-  const randomLoadingMessage = LOADING_MESSAGES[Math.floor(Math.random() * LOADING_MESSAGES.length)];
+  // ✅ randomLoadingMessage წაშლილია
   const randomErrorMessage = ERROR_MESSAGES[Math.floor(Math.random() * ERROR_MESSAGES.length)];
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
@@ -268,7 +260,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     ? horoscope.hero_description
     : TAB_HERO_FALLBACK[activeTab];
 
-  const moonDescription = getMoonDescription(horoscope.moon_phase, horoscope.moon_sign);
+  const moonDescription = getMoonDescription(horoscope.moon_phase);
 
   return (
     <div className="horoscope-screen premium-design">
@@ -594,7 +586,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           </div>
         </div>
 
-        {/* ✅ AFFIRMATION SECTION - დავაბრუნე! */}
+        {/* Affirmation Section */}
         {horoscope.affirmation && (
           <motion.div 
             className="affirmation-section"
@@ -606,7 +598,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
             <div className="affirmation-icon">✨</div>
             <h3>{activeTab === 'weekly' ? 'Weekly' : activeTab === 'monthly' ? 'Monthly' : 'Daily'} Affirmation</h3>
             <p className="affirmation-text">"{horoscope.affirmation}"</p>
-            {/* ✅ SHARE ღილაკი - დავაბრუნე! */}
             <button 
               className="share-affirmation-btn" 
               onClick={() => setIsShareModalOpen(true)}
@@ -859,14 +850,12 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                   </div>
                 </div>
 
-                {/* ✅ AFFIRMATION + SHARE ღილაკი READ FULL MODAL-შიც! */}
                 {horoscope.affirmation && (
                   <div className="rf-affirmation">
                     <div className="rf-aff-glow" />
                     <div className="rf-aff-icon">✨</div>
                     <h3 className="rf-aff-title">{activeTab === 'weekly' ? 'Weekly' : activeTab === 'monthly' ? 'Monthly' : 'Daily'} Affirmation</h3>
                     <p className="rf-aff-text">"{horoscope.affirmation}"</p>
-                    {/* ✅ SHARE ღილაკი READ FULL MODAL-შიც */}
                     <button 
                       className="share-affirmation-btn" 
                       onClick={() => {
