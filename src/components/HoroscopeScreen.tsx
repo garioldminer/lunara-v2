@@ -75,7 +75,6 @@ const getPredictionSubtitle = (category: keyof typeof PREDICTION_SUBTITLES, date
   return subtitles[dayIndex];
 };
 
-// ✅ moonSign parameter წაშლილია
 const getMoonDescription = (moonPhase?: string): string => {
   if (!moonPhase) return "The moon guides your path through the cosmic landscape.";
   
@@ -135,7 +134,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const userSign = user?.sun_sign?.toLowerCase() || 'leo';
   const zodiacData = ZODIAC_SIGNS[userSign] || ZODIAC_SIGNS['leo'];
 
-  // ✅ randomLoadingMessage წაშლილია
   const randomErrorMessage = ERROR_MESSAGES[Math.floor(Math.random() * ERROR_MESSAGES.length)];
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
@@ -586,27 +584,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           </div>
         </div>
 
-        {/* Affirmation Section */}
-        {horoscope.affirmation && (
-          <motion.div 
-            className="affirmation-section"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.0 }}
-          >
-            <div className="affirmation-glow" />
-            <div className="affirmation-icon">✨</div>
-            <h3>{activeTab === 'weekly' ? 'Weekly' : activeTab === 'monthly' ? 'Monthly' : 'Daily'} Affirmation</h3>
-            <p className="affirmation-text">"{horoscope.affirmation}"</p>
-            <button 
-              className="share-affirmation-btn" 
-              onClick={() => setIsShareModalOpen(true)}
-            >
-              <Share2 size={12} />
-              <span>Share</span>
-            </button>
-          </motion.div>
-        )}
+        {/* ✅ AFFIRMATION AMOღებულია! */}
       </div>
 
       {/* MODAL - Predictions */}

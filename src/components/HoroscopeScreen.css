@@ -98,7 +98,7 @@
 .horoscope-empty p { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: #F7F3EB; opacity: 0.7; font-style: italic; }
 
 /* ============================================
-   ✅ PREMIUM HEADER - განახლებული
+   ✅ PREMIUM HEADER - განახლებული (65px padding)
    ============================================ */
 .premium-header {
   position: sticky;
@@ -107,7 +107,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 58px 20px 10px 20px;
+  padding: 65px 20px 10px 20px;
   background: transparent;
   backdrop-filter: none;
   border-bottom: none;
@@ -143,9 +143,10 @@
   justify-content: center;
 }
 
+/* ✅ განახლებული: 30px ზომა */
 .premium-sign-name {
   font-family: 'Cinzel', serif;
-  font-size: 34px;
+  font-size: 30px;
   font-weight: 900;
   color: #D9B66F;
   margin: 0;
@@ -158,7 +159,7 @@
   line-height: 1.1;
 }
 
-/* ✅ განახლებული: უკეთესი ფონტი, დიდი ზომა, 3px padding */
+/* ✅ განახლებული: 3px margin */
 .premium-date {
   font-family: 'Cinzel', serif;
   font-size: 14px;
@@ -174,23 +175,23 @@
 }
 
 /* ============================================
-   PREMIUM CONTENT
+   ✅ PREMIUM CONTENT - 3px დაშორება კიდეებიდან
    ============================================ */
 .premium-content {
   position: relative;
   z-index: 10;
-  padding: 0 16px 15px 16px;
+  padding: 0 3px 15px 3px;
   max-width: 600px;
   margin: 0 auto;
 }
 
 /* ============================================
-   ✅ PREMIUM HERO BANNER - განახლებული
+   ✅ PREMIUM HERO BANNER - 200px სიმაღლე, 3px margin
    ============================================ */
 .premium-hero-banner {
   position: relative;
   width: 100%;
-  min-height: 220px;
+  min-height: 200px;
   margin: 3px 0 0 0;
   background: linear-gradient(135deg, #0a0600 0%, #1a0f3e 40%, #2d1b69 70%, #0a0600 100%);
   border: 1px solid rgba(217, 182, 111, 0.2);
@@ -290,7 +291,7 @@
 
 .premium-hero-title {
   font-family: 'Cinzel', serif;
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 900;
   color: #D9B66F;
   margin: 0;
@@ -305,7 +306,7 @@
 
 .premium-hero-description {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.5;
   color: rgba(247, 243, 235, 0.85);
   margin: 0;
@@ -349,19 +350,19 @@
   justify-content: center;
 }
 
-/* ✅ განახლებული: ცოტა მეტი დახრა (3D space-ში) */
+/* ✅ განახლებული: 12deg rotateY, 2deg rotateZ, პროპორციულად გადიდებული */
 .premium-tarot-card {
   position: relative;
-  width: 120px;
-  height: 185px;
+  width: 135px;
+  height: 208px;
   perspective: 1000px;
-  transform: rotateY(-20deg) rotateX(8deg) rotateZ(-2deg);
+  transform: rotateY(12deg) rotateX(8deg) rotateZ(2deg);
   animation: cardFloat 4s ease-in-out infinite;
 }
 
 @keyframes cardFloat {
-  0%, 100% { transform: rotateY(-20deg) rotateX(8deg) rotateZ(-2deg) translateY(0); }
-  50% { transform: rotateY(-20deg) rotateX(8deg) rotateZ(-2deg) translateY(-8px); }
+  0%, 100% { transform: rotateY(12deg) rotateX(8deg) rotateZ(2deg) translateY(0); }
+  50% { transform: rotateY(12deg) rotateX(8deg) rotateZ(2deg) translateY(-8px); }
 }
 
 .premium-card-glow {
@@ -466,12 +467,12 @@
 }
 
 /* ============================================
-   ✅ PREMIUM TAB NAVIGATION
+   ✅ PREMIUM TAB NAVIGATION - 3px margin
    ============================================ */
 .premium-tab-nav {
   display: flex;
   gap: 4px;
-  margin: 16px 0 0 0;
+  margin: 3px 0 0 0;
   padding: 6px;
   background: rgba(217, 182, 111, 0.05);
   border: 1px solid rgba(217, 182, 111, 0.15);
@@ -517,10 +518,10 @@
 }
 
 /* ============================================
-   ✅ PREMIUM SECTION
+   ✅ PREMIUM SECTION - 3px margin
    ============================================ */
 .premium-section {
-  margin: 20px 0 0 0;
+  margin: 3px 0 0 0;
 }
 
 .premium-section-title {
@@ -530,7 +531,7 @@
   color: #D9B66F;
   text-align: center;
   letter-spacing: 2px;
-  margin: 0 0 16px 0;
+  margin: 0 0 3px 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -543,7 +544,7 @@
 }
 
 /* ============================================
-   ✅ PREMIUM ENERGY GRID - ჰორიზონტალური (3 ერთ ხაზზე!)
+   ✅ PREMIUM ENERGY GRID - 3 ერთ ხაზზე
    ============================================ */
 .premium-energy-grid {
   display: grid;
@@ -653,14 +654,14 @@
 }
 
 /* ============================================
-   ✅ PREMIUM MOON CARD - განახლებული ლეიაუთი
+   ✅ PREMIUM MOON CARD - 3px margin
    ============================================ */
 .premium-moon-card {
   position: relative;
   display: flex;
   align-items: center;
   gap: 14px;
-  margin: 16px 0 0 0;
+  margin: 3px 0 0 0;
   padding: 14px 16px;
   background: linear-gradient(135deg, rgba(100, 80, 180, 0.15) 0%, rgba(100, 80, 180, 0.08) 100%);
   border: 1px solid rgba(100, 80, 180, 0.3);
@@ -780,7 +781,7 @@
 }
 
 /* ============================================
-   ✅ PREMIUM PREDICTIONS GRID - ჰორიზონტალური (5 ერთ ხაზზე!)
+   ✅ PREMIUM PREDICTIONS GRID - 5 ერთ ხაზზე
    ============================================ */
 .premium-predictions-grid {
   display: grid;
@@ -918,90 +919,7 @@
 }
 
 /* ============================================
-   ✅ AFFIRMATION SECTION - მთავარ გვერდზე
-   ============================================ */
-.affirmation-section {
-  position: relative;
-  margin: 20px 0 0 0;
-  padding: 28px 24px;
-  background: linear-gradient(135deg, rgba(100, 80, 180, 0.12) 0%, rgba(100, 80, 180, 0.04) 100%);
-  border: 1px solid rgba(217, 182, 111, 0.25);
-  border-radius: 16px;
-  text-align: center;
-  overflow: hidden;
-}
-
-.affirmation-glow {
-  position: absolute;
-  top: -60%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 180px;
-  height: 180px;
-  background: radial-gradient(circle, rgba(100, 80, 180, 0.25), transparent 60%);
-  pointer-events: none;
-}
-
-.affirmation-icon {
-  font-size: 26px;
-  filter: drop-shadow(0 0 10px rgba(217, 182, 111, 0.6));
-  position: relative;
-  margin-bottom: 10px;
-}
-
-.affirmation-section h3 {
-  font-family: 'Cinzel', serif;
-  font-size: 11px;
-  font-weight: 700;
-  color: #D9B66F;
-  letter-spacing: 1.5px;
-  margin: 0 0 12px 0;
-  position: relative;
-}
-
-.affirmation-text {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 16px;
-  font-style: italic;
-  line-height: 1.6;
-  color: #F7F3EB;
-  margin: 0 0 16px 0;
-  position: relative;
-}
-
-/* ✅ SHARE ღილაკი - Affirmation-ში */
-.share-affirmation-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 22px;
-  background: rgba(217, 182, 111, 0.1);
-  border: 1px solid rgba(217, 182, 111, 0.4);
-  border-radius: 24px;
-  color: #D9B66F;
-  font-family: 'Cinzel', serif;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  box-shadow: 0 0 15px rgba(217, 182, 111, 0.15);
-}
-
-.share-affirmation-btn:hover {
-  background: rgba(217, 182, 111, 0.2);
-  border-color: rgba(217, 182, 111, 0.7);
-  box-shadow: 0 0 25px rgba(217, 182, 111, 0.35);
-  transform: translateY(-2px);
-}
-
-.share-affirmation-btn:active {
-  transform: translateY(0);
-}
-
-/* ============================================
-   ✅ REFRESHING INDICATOR (ფონური განახლება)
+   ✅ REFRESHING INDICATOR
    ============================================ */
 .refreshing-indicator {
   position: fixed;
@@ -1297,10 +1215,10 @@
    ============================================ */
 @media (max-width: 768px) {
   .premium-header { 
-    padding: 58px 16px 10px 16px; 
+    padding: 65px 16px 10px 16px; 
   }
   .premium-sign-name { 
-    font-size: 30px; 
+    font-size: 28px; 
     letter-spacing: 4px; 
   }
   .premium-date { 
@@ -1308,17 +1226,17 @@
   }
   
   .premium-hero-banner { 
-    min-height: 200px; 
-    padding: 18px 16px; 
+    min-height: 180px; 
+    padding: 16px 14px; 
   }
-  .premium-hero-title { font-size: 24px; }
-  .premium-hero-description { font-size: 13px; }
+  .premium-hero-title { font-size: 22px; }
+  .premium-hero-description { font-size: 12px; }
   .premium-hero-subtitle { font-size: 9px; letter-spacing: 2px; }
-  .premium-read-full-btn { padding: 9px 18px; font-size: 10px; }
+  .premium-read-full-btn { padding: 8px 18px; font-size: 10px; }
   
   .premium-tarot-card { 
-    width: 110px; 
-    height: 170px; 
+    width: 120px; 
+    height: 185px; 
   }
   .premium-card-glow { right: -30px; width: 75px; height: 210px; filter: blur(28px); }
   
@@ -1375,18 +1293,6 @@
   .premium-prediction-card h4 { font-size: 8px; }
   .premium-prediction-card p { font-size: 8px; }
   
-  /* ✅ Affirmation tablet */
-  .affirmation-section {
-    padding: 22px 20px;
-  }
-  .affirmation-text {
-    font-size: 14px;
-  }
-  .share-affirmation-btn {
-    padding: 9px 20px;
-    font-size: 9px;
-  }
-  
   .toast { min-width: 260px; padding: 10px 16px; font-size: 11px; }
   
   .refreshing-indicator {
@@ -1398,35 +1304,35 @@
 
 @media (max-width: 480px) {
   .premium-header { 
-    padding: 58px 12px 8px 12px; 
+    padding: 65px 12px 8px 12px; 
   }
   .premium-back-btn,
   .premium-refresh-btn { width: 38px; height: 38px; }
   .premium-back-btn svg,
   .premium-refresh-btn svg { width: 20px; height: 20px; }
   .premium-sign-name { 
-    font-size: 26px; 
+    font-size: 24px; 
     letter-spacing: 3px; 
   }
   .premium-date { 
-    font-size: 12px; 
+    font-size: 11px; 
     letter-spacing: 1px;
   }
   
   .premium-hero-banner { 
-    min-height: 180px; 
-    padding: 16px 14px;
+    min-height: 160px; 
+    padding: 14px 12px;
   }
   .premium-hero-left { max-width: 55%; }
   .premium-hero-right { margin-left: 10px; }
-  .premium-hero-title { font-size: 20px; letter-spacing: 1px; }
-  .premium-hero-description { font-size: 11px; }
+  .premium-hero-title { font-size: 18px; letter-spacing: 1px; }
+  .premium-hero-description { font-size: 10px; }
   .premium-hero-subtitle { font-size: 8px; letter-spacing: 1.5px; gap: 6px; }
-  .premium-read-full-btn { padding: 8px 14px; font-size: 9px; letter-spacing: 1.5px; }
+  .premium-read-full-btn { padding: 7px 12px; font-size: 9px; letter-spacing: 1.5px; }
   
   .premium-tarot-card { 
-    width: 95px; 
-    height: 150px; 
+    width: 105px; 
+    height: 162px; 
   }
   .premium-card-glow { 
     right: -25px; 
@@ -1491,33 +1397,6 @@
   .premium-prediction-icon svg { width: 18px; height: 18px; }
   .premium-prediction-card h4 { font-size: 7px; letter-spacing: 0.5px; }
   .premium-prediction-card p { font-size: 7px; }
-  
-  /* ✅ Affirmation mobile */
-  .affirmation-section {
-    padding: 18px 16px;
-    margin: 16px 0 0 0;
-  }
-  .affirmation-icon {
-    font-size: 22px;
-    margin-bottom: 8px;
-  }
-  .affirmation-section h3 {
-    font-size: 10px;
-    margin-bottom: 10px;
-  }
-  .affirmation-text {
-    font-size: 13px;
-    margin-bottom: 14px;
-  }
-  .share-affirmation-btn {
-    padding: 8px 18px;
-    font-size: 9px;
-    gap: 6px;
-  }
-  .share-affirmation-btn svg {
-    width: 11px;
-    height: 11px;
-  }
   
   .toast { min-width: 240px; padding: 10px 14px; font-size: 10px; bottom: 80px; }
   .toast-icon { font-size: 14px; }
