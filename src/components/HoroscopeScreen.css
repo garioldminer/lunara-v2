@@ -107,7 +107,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 65px 20px 10px 20px; /* ✅ 65px top padding */
+  padding: 65px 20px 10px 20px;
   background: transparent;
   backdrop-filter: none;
   border-bottom: none;
@@ -138,7 +138,7 @@
 .premium-header-center {
   position: absolute;
   left: 50%;
-  top: calc(50% + 5px); /* ✅ 5px ქვევით ჩაწეული */
+  top: calc(50% + 5px);
   transform: translate(-50%, -50%);
   text-align: center;
   display: flex;
@@ -631,11 +631,11 @@
   text-align: center;
 }
 
-/* ✅ განახლებული: 12px (10px-ის ნაცვლად) */
+/* ✅ განახლებული: 14px (12px-ის ნაცვლად) */
 .premium-energy-subtitle {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 12px;
-  color: rgba(247, 243, 235, 0.6);
+  font-size: 14px;
+  color: rgba(247, 243, 235, 0.7);
   margin: 0;
   font-style: italic;
 }
@@ -921,11 +921,11 @@
   text-align: center;
 }
 
-/* ✅ განახლებული: 11px (9px-ის ნაცვლად) */
+/* ✅ განახლებული: 14px (11px-ის ნაცვლად) */
 .premium-prediction-card p {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 11px;
-  color: rgba(247, 243, 235, 0.6);
+  font-size: 14px;
+  color: rgba(247, 243, 235, 0.7);
   margin: 0;
   font-style: italic;
   text-align: center;
@@ -1228,7 +1228,7 @@
    ============================================ */
 @media (max-width: 768px) {
   .premium-header { 
-    padding: 65px 16px 10px 16px; /* ✅ 65px */
+    padding: 65px 16px 10px 16px;
   }
   .premium-sign-name { 
     font-size: 28px; 
@@ -1264,7 +1264,7 @@
   .premium-energy-icon { width: 44px; height: 44px; }
   .premium-energy-icon svg { width: 24px; height: 24px; }
   .premium-energy-level { font-size: 9px; }
-  .premium-energy-subtitle { font-size: 10px; }
+  .premium-energy-subtitle { font-size: 12px; }
   
   .premium-moon-card { 
     padding: 12px 14px; 
@@ -1304,7 +1304,7 @@
   .premium-prediction-icon { width: 38px; height: 38px; }
   .premium-prediction-icon svg { width: 20px; height: 20px; }
   .premium-prediction-card h4 { font-size: 9px; }
-  .premium-prediction-card p { font-size: 9px; }
+  .premium-prediction-card p { font-size: 12px; }
   
   .toast { min-width: 260px; padding: 10px 16px; font-size: 11px; }
   
@@ -1317,7 +1317,7 @@
 
 @media (max-width: 480px) {
   .premium-header { 
-    padding: 65px 12px 8px 12px; /* ✅ 65px */
+    padding: 65px 12px 8px 12px;
   }
   .premium-back-btn,
   .premium-refresh-btn { width: 38px; height: 38px; }
@@ -1368,7 +1368,7 @@
   .premium-energy-icon { width: 40px; height: 40px; }
   .premium-energy-icon svg { width: 22px; height: 22px; }
   .premium-energy-level { font-size: 8px; }
-  .premium-energy-subtitle { font-size: 9px; }
+  .premium-energy-subtitle { font-size: 11px; }
   .premium-energy-dots { margin-top: 0; }
   
   .premium-moon-card { 
@@ -1409,7 +1409,7 @@
   .premium-prediction-icon { width: 34px; height: 34px; }
   .premium-prediction-icon svg { width: 18px; height: 18px; }
   .premium-prediction-card h4 { font-size: 8px; letter-spacing: 0.5px; }
-  .premium-prediction-card p { font-size: 8px; }
+  .premium-prediction-card p { font-size: 11px; }
   
   .toast { min-width: 240px; padding: 10px 14px; font-size: 10px; bottom: 80px; }
   .toast-icon { font-size: 14px; }
