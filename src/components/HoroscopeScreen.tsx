@@ -128,7 +128,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const [openModal, setOpenModal] = useState<string | null>(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isReadFullOpen, setIsReadFullOpen] = useState(false);
-  const [openAccordion, setOpenAccordion] = useState<string | null>(null); // ✅ ახალი
+  const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
 
   const { horoscope, loading, refreshing, error, refetch } = useHoroscope(user?.id || '', activeTab);
@@ -142,7 +142,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     setToast({ message, type });
   };
 
-  // ✅ Accordion toggle function
   const toggleAccordion = (section: string) => {
     setOpenAccordion(openAccordion === section ? null : section);
   };
@@ -776,23 +775,13 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                   )}
                 </div>
 
-                {/* 🟢 AFFIRMATION - პირდაპირ */}
+                {/* 🟢 AFFIRMATION - პირდაპირ (Share ღილაკის გარეშე) */}
                 {horoscope.affirmation && (
                   <div className="rf-affirmation">
                     <div className="rf-aff-glow" />
                     <div className="rf-aff-icon">✨</div>
                     <h3 className="rf-aff-title">{activeTab === 'weekly' ? 'Weekly' : activeTab === 'monthly' ? 'Monthly' : 'Daily'} Affirmation</h3>
                     <p className="rf-aff-text">"{horoscope.affirmation}"</p>
-                    <button 
-                      className="share-affirmation-btn" 
-                      onClick={() => {
-                        setIsReadFullOpen(false);
-                        setIsShareModalOpen(true);
-                      }}
-                    >
-                      <Share2 size={12} />
-                      <span>Share</span>
-                    </button>
                   </div>
                 )}
 
@@ -948,6 +937,22 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                     </AnimatePresence>
                   </div>
                 </div>
+
+                {/* ✅ SHARE ღილაკი ბოლოში (Accordion-ის შემდეგ) */}
+                {horoscope.affirmation && (
+                  <div className="rf-share-bottom">
+                    <button 
+                      className="share-affirmation-btn" 
+                      onClick={() => {
+                        setIsReadFullOpen(false);
+                        setIsShareModalOpen(true);
+                      }}
+                    >
+                      <Share2 size={12} />
+                      <span>Share Affirmation</span>
+                    </button>
+                  </div>
+                )}
 
                 {/* 🟢 FOOTER - პირდაპირ */}
                 <div className="rf-footer">

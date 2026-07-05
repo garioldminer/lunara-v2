@@ -1111,7 +1111,20 @@
 .share-action-btn.primary { background: rgba(217, 182, 111, 0.3); border-color: rgba(217, 182, 111, 0.6); }
 .share-action-btn.primary:hover { background: rgba(217, 182, 111, 0.4); box-shadow: 0 6px 18px rgba(217, 182, 111, 0.3); }
 
-.read-full-overlay { position: fixed; inset: 0; background: rgba(5, 3, 10, 0.92); backdrop-filter: blur(12px); z-index: 1100; display: flex; align-items: center; justify-content: center; padding: 16px; }
+/* ============================================
+   ✅ READ FULL MODAL - განახლებული (3 ცვლილებით)
+   ============================================ */
+.read-full-overlay { 
+  position: fixed; 
+  inset: 0; 
+  background: rgba(5, 3, 10, 0.92); 
+  backdrop-filter: blur(12px); 
+  z-index: 1100; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  padding: 16px 3px; /* ✅ 3px მარცხენა და მარჯვენა კიდეებიდან */
+}
 
 .read-full-modal {
   position: relative;
@@ -1127,7 +1140,24 @@
 
 .rf-glow { position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 300px; height: 300px; background: radial-gradient(circle, rgba(217, 182, 111, 0.12) 0%, transparent 65%); pointer-events: none; z-index: 0; }
 
-.rf-close { position: absolute; top: 16px; right: 16px; z-index: 10; background: rgba(217, 182, 111, 0.1); border: 1px solid rgba(217, 182, 111, 0.3); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: #D9B66F; cursor: pointer; transition: all 0.3s ease; }
+/* ✅ განახლებული: 65px top (Telegram ღილაკებს რომ არ შეუშალოს ხელი) */
+.rf-close { 
+  position: absolute; 
+  top: 65px; /* ✅ 65px ქვევით ეკრანის ზედა ნაწილიდან */
+  right: 16px; 
+  z-index: 10; 
+  background: rgba(217, 182, 111, 0.1); 
+  border: 1px solid rgba(217, 182, 111, 0.3); 
+  border-radius: 50%; 
+  width: 40px; 
+  height: 40px; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  color: #D9B66F; 
+  cursor: pointer; 
+  transition: all 0.3s ease; 
+}
 .rf-close:hover { background: rgba(217, 182, 111, 0.25); border-color: rgba(217, 182, 111, 0.6); transform: rotate(90deg); }
 
 .rf-scroll { position: relative; z-index: 2; max-height: 90vh; overflow-y: auto; padding: 30px 24px; scrollbar-width: thin; scrollbar-color: rgba(217, 182, 111, 0.3) transparent; }
@@ -1172,7 +1202,7 @@
 .rf-section-text { font-family: 'Cormorant Garamond', serif; font-size: 15px; line-height: 1.7; color: rgba(247, 243, 235, 0.85); margin: 0; }
 
 /* ============================================
-   ✅ ACCORDION STYLES (NEW!)
+   ✅ ACCORDION STYLES
    ============================================ */
 .rf-accordion-container {
   display: flex;
@@ -1348,52 +1378,24 @@
 }
 
 /* ============================================
-   RF TRANSITS (EXISTING)
+   RF AFFIRMATION & SHARE BUTTON
    ============================================ */
-.rf-transits { text-align: center; padding: 20px 16px; background: linear-gradient(135deg, rgba(217, 182, 111, 0.08) 0%, rgba(100, 80, 180, 0.05) 100%); border: 1px solid rgba(217, 182, 111, 0.2); border-radius: 14px; margin-bottom: 20px; }
-.rf-transits-list { display: flex; flex-direction: column; gap: 8px; }
-
-.rf-transit-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; background: rgba(10, 6, 0, 0.3); border: 1px solid rgba(217, 182, 111, 0.15); border-radius: 10px; transition: all 0.3s ease; }
-.rf-transit-item:hover { background: rgba(10, 6, 0, 0.5); border-color: rgba(217, 182, 111, 0.3); }
-.rf-transit-item.harmonious { border-color: rgba(124, 232, 166, 0.3); }
-.rf-transit-item.challenging { border-color: rgba(232, 115, 138, 0.3); }
-.rf-transit-item.neutral { border-color: rgba(200, 200, 200, 0.25); }
-
-.rf-transit-main { flex: 1; text-align: left; }
-.rf-transit-planets { font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700; color: #D9B66F; letter-spacing: 0.5px; }
-.rf-transit-aspect { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: #F7F3EB; opacity: 0.8; margin: 0 4px; }
-
-.rf-transit-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 12px; font-family: 'Cinzel', serif; font-size: 9px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; }
-.rf-transit-badge.harmonious { background: rgba(124, 232, 166, 0.15); color: #7CE8A6; border: 1px solid rgba(124, 232, 166, 0.3); }
-.rf-transit-badge.challenging { background: rgba(232, 115, 138, 0.15); color: #E8738A; border: 1px solid rgba(232, 115, 138, 0.3); }
-.rf-transit-badge.neutral { background: rgba(200, 200, 200, 0.15); color: #C8C8C8; border: 1px solid rgba(200, 200, 200, 0.3); }
-
-.rf-lucky { text-align: center; padding: 20px 16px; background: linear-gradient(135deg, rgba(217, 182, 111, 0.08) 0%, rgba(100, 80, 180, 0.05) 100%); border: 1px solid rgba(217, 182, 111, 0.2); border-radius: 14px; margin-bottom: 20px; }
-.rf-lucky-title { font-family: 'Cinzel', serif; font-size: 10px; font-weight: 700; color: #D9B66F; letter-spacing: 2px; margin: 0 0 16px 0; display: flex; align-items: center; justify-content: center; gap: 8px; }
-.rf-lucky-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.rf-lucky-item { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 8px; background: rgba(10, 6, 0, 0.3); border: 1px solid rgba(217, 182, 111, 0.15); border-radius: 10px; }
-.rf-lucky-icon { color: #D9B66F; filter: drop-shadow(0 0 6px rgba(217, 182, 111, 0.4)); }
-.rf-lucky-label { font-family: 'Cinzel', serif; font-size: 7px; font-weight: 600; color: rgba(247, 243, 235, 0.5); letter-spacing: 1px; text-transform: uppercase; }
-.rf-lucky-value { font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700; color: #D9B66F; }
-
-.rf-moon-info { display: flex; align-items: center; gap: 14px; padding: 16px 18px; background: rgba(100, 80, 180, 0.08); border: 1px solid rgba(100, 80, 180, 0.2); border-radius: 12px; margin-bottom: 20px; }
-.rf-moon-icon { color: #D9B66F; filter: drop-shadow(0 0 10px rgba(217, 182, 111, 0.5)); animation: rfMoonGlow 3s ease-in-out infinite; }
-
-@keyframes rfMoonGlow {
-  0%, 100% { filter: drop-shadow(0 0 8px rgba(217, 182, 111, 0.4)); }
-  50% { filter: drop-shadow(0 0 16px rgba(217, 182, 111, 0.8)); }
+.rf-affirmation { 
+  text-align: center; 
+  padding: 24px 20px; 
+  background: linear-gradient(135deg, rgba(100, 80, 180, 0.1) 0%, rgba(100, 80, 180, 0.04) 100%); 
+  border: 1px solid rgba(100, 80, 180, 0.25); 
+  border-radius: 14px; 
+  position: relative; 
+  overflow: hidden; 
+  margin-bottom: 24px; 
 }
-
-.rf-moon-details { display: flex; flex-direction: column; gap: 2px; }
-.rf-moon-phase { font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700; color: #F7F3EB; }
-.rf-moon-sign { font-family: 'Cormorant Garamond', serif; font-size: 12px; color: rgba(247, 243, 235, 0.6); font-style: italic; }
-
-.rf-affirmation { text-align: center; padding: 24px 20px; background: linear-gradient(135deg, rgba(100, 80, 180, 0.1) 0%, rgba(100, 80, 180, 0.04) 100%); border: 1px solid rgba(100, 80, 180, 0.25); border-radius: 14px; position: relative; overflow: hidden; margin-bottom: 24px; }
 .rf-aff-glow { position: absolute; top: -50%; left: 50%; transform: translateX(-50%); width: 120px; height: 120px; background: radial-gradient(circle, rgba(100, 80, 180, 0.2), transparent 60%); pointer-events: none; }
 .rf-aff-icon { font-size: 22px; filter: drop-shadow(0 0 8px rgba(100, 80, 180, 0.5)); position: relative; margin-bottom: 8px; }
 .rf-aff-title { font-family: 'Cinzel', serif; font-size: 11px; font-weight: 700; color: #D9B66F; letter-spacing: 1.5px; margin: 0 0 10px 0; position: relative; }
 .rf-aff-text { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-style: italic; line-height: 1.6; color: #F7F3EB; margin: 0 0 14px 0; position: relative; }
 
+/* ✅ განახლებული: Share ღილაკი ბოლოში */
 .share-affirmation-btn {
   display: inline-flex;
   align-items: center;
@@ -1410,12 +1412,22 @@
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
+  margin-top: 12px; /* ✅ დამატებითი margin */
 }
 
 .share-affirmation-btn:hover {
   background: rgba(217, 182, 111, 0.2);
   border-color: rgba(217, 182, 111, 0.5);
   box-shadow: 0 0 15px rgba(217, 182, 111, 0.3);
+}
+
+/* ✅ განახლებული: Share button container ბოლოში */
+.rf-share-bottom {
+  display: flex;
+  justify-content: center;
+  margin: 24px 0 16px 0;
+  padding-top: 16px;
+  border-top: 1px solid rgba(217, 182, 111, 0.15);
 }
 
 .rf-footer { text-align: center; padding-top: 8px; }
@@ -1515,6 +1527,19 @@
     top: 15px;
     padding: 7px 14px;
     font-size: 10px;
+  }
+  
+  /* Read Full Modal responsive */
+  .read-full-overlay {
+    padding: 16px 3px; /* ✅ 3px მარცხენა და მარჯვენა კიდეებიდან */
+  }
+  
+  .rf-close {
+    top: 65px; /* ✅ 65px ქვევით */
+  }
+  
+  .rf-scroll {
+    padding: 24px 20px;
   }
   
   /* Accordion responsive */
@@ -1659,6 +1684,21 @@
     height: 12px;
   }
   
+  /* Read Full Modal mobile */
+  .read-full-overlay {
+    padding: 16px 3px; /* ✅ 3px მარცხენა და მარჯვენა კიდეებიდან */
+  }
+  
+  .rf-close {
+    top: 65px; /* ✅ 65px ქვევით */
+    width: 36px;
+    height: 36px;
+  }
+  
+  .rf-scroll {
+    padding: 20px 16px;
+  }
+  
   /* Accordion mobile */
   .rf-accordion-header {
     padding: 12px 14px;
@@ -1715,6 +1755,12 @@
   
   .rf-moon-desc-expanded {
     font-size: 12px;
+  }
+  
+  /* Share button mobile */
+  .share-affirmation-btn {
+    padding: 7px 14px;
+    font-size: 9px;
   }
 }
 
