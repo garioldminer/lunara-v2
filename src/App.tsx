@@ -17,6 +17,7 @@ import CelticCrossReadingScreen from './components/CelticCrossReadingScreen';
 import HorseshoeReadingScreen from './components/HorseshoeReadingScreen';
 import RelationshipReadingScreen from './components/RelationshipReadingScreen';
 import HoroscopeScreen from './components/HoroscopeScreen';
+import SignSelectionScreen from './components/SignSelectionScreen'; // ✅ ახალი
 import AdminScreen from './components/AdminScreen';
 import AdminAIManagement from './components/AdminAIManagement';
 import SubscriptionScreen from './components/SubscriptionScreen';
@@ -38,6 +39,7 @@ type Screen =
   | 'reading'
   | 'astro'
   | 'horoscope'
+  | 'sign-selection' // ✅ ახალი
   | 'profile'
   | 'card-fan'
   | 'card-detail'
@@ -79,6 +81,7 @@ function UserLoader({ onReady }: { onReady: () => void }) {
           setUser(user);
           console.log('✅ [UserLoader] User saved to context!');
           console.log('📊 Onboarding completed:', user.onboarding_completed);
+          console.log('♏ Sun sign:', user.sun_sign);
         }
       } catch (error) {
         console.error('❌ [UserLoader] Error:', error);
@@ -131,6 +134,27 @@ function AppContent() {
     goTo(tab as Screen);
   };
 
+  // ✅ ახალი: Horoscope navigation with sign check
+  const handleHoroscopeNavigate = (screen: string) => {
+    console.log('🔮 Horoscope navigate called with:', screen);
+    
+    if (screen === 'horoscope') {
+      // Check if user has sun_sign
+      if (!user?.sun_sign) {
+        console.log('⚠️ User has no sun_sign → redirecting to sign-selection');
+        goTo('sign-selection');
+        return;
+      }
+      
+      console.log('✅ User has sun_sign → going to horoscope');
+      goTo('horoscope');
+    } else if (screen === 'sign-selection') {
+      goTo('sign-selection');
+    } else {
+      handleNavigate(screen);
+    }
+  };
+
   const handleNavigate = (screen: string) => {
     console.log('🧭 handleNavigate called with:', screen);
     
@@ -166,7 +190,11 @@ function AppContent() {
     }
     else if (screen === 'horoscope') {
       console.log('🔮 Opening Horoscope Screen');
-      goTo('horoscope');
+      handleHoroscopeNavigate('horoscope'); // ✅ redirect logic
+    }
+    else if (screen === 'sign-selection') {
+      console.log('♏ Opening Sign Selection Screen');
+      goTo('sign-selection');
     }
     else if (screen === 'admin') {
       console.log('🔐 Opening Admin Panel');
@@ -238,9 +266,16 @@ function AppContent() {
     goTo('home');
   };
 
+  // ✅ ახალი: Sign selection complete handler
+  const handleSignSelectionComplete = () => {
+    console.log('♏ Sign selection completed!');
+    goTo('horoscope');
+  };
+
   console.log('📱 Current screen:', currentScreen);
   console.log('👤 User loaded:', user ? user.display_name : 'null');
   console.log('📊 Onboarding completed:', user?.onboarding_completed);
+  console.log('♏ Sun sign:', user?.sun_sign);
 
   return (
     <div className="app-container">
@@ -287,6 +322,9 @@ function AppContent() {
           <HoroscopeScreen onNavigate={handleNavigate} />
           <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
         </>
+      )}
+      {currentScreen === 'sign-selection' && (
+        <SignSelectionScreen onNavigate={handleNavigate} /> // ✅ ახალი
       )}
       {currentScreen === 'profile' && (
         <>

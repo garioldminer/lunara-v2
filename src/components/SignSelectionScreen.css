@@ -1,0 +1,644 @@
+/* ============================================
+   SIGN SELECTION SCREEN - MAIN CONTAINER
+   ============================================ */
+   .sign-selection-screen {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    background: #0a0600;
+    overflow-x: hidden;
+    font-family: 'Cormorant Garamond', serif;
+    color: #F7F3EB;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 60px 20px 40px 20px;
+  }
+  
+  /* ============================================
+     BACKGROUND EFFECTS
+     ============================================ */
+  .ss-background {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #0a0600 0%, #1a0f3e 40%, #2d1b69 70%, #0a0600 100%);
+    z-index: 0;
+  }
+  
+  .ss-aurora {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: 
+      radial-gradient(ellipse 600px 400px at 15% 10%, rgba(217,182,111,0.10), transparent 60%),
+      radial-gradient(ellipse 500px 500px at 85% 25%, rgba(100,80,180,0.10), transparent 60%),
+      radial-gradient(ellipse 500px 400px at 50% 90%, rgba(217,182,111,0.06), transparent 65%);
+    animation: ssAuroraDrift 14s ease-in-out infinite alternate;
+  }
+  
+  @keyframes ssAuroraDrift {
+    0% { opacity: 0.7; transform: translateY(0) scale(1); }
+    100% { opacity: 1; transform: translateY(-10px) scale(1.03); }
+  }
+  
+  .ss-particles {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  
+  .ss-particle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: #D9B66F;
+    box-shadow: 0 0 6px 1px rgba(217,182,111,0.7);
+    opacity: 0;
+    animation: ssParticleRise linear infinite;
+  }
+  
+  @keyframes ssParticleRise {
+    0% { transform: translateY(0) translateX(0); opacity: 0; }
+    10% { opacity: 0.8; }
+    90% { opacity: 0.3; }
+    100% { transform: translateY(-100vh) translateX(20px); opacity: 0; }
+  }
+  
+  /* ============================================
+     CONTENT CONTAINER
+     ============================================ */
+  .ss-content {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+  
+  /* ============================================
+     HEADER
+     ============================================ */
+  .ss-header {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  
+  .ss-icon {
+    font-size: 48px;
+    filter: drop-shadow(0 0 20px rgba(217, 182, 111, 0.6));
+    animation: ssIconFloat 3s ease-in-out infinite;
+  }
+  
+  @keyframes ssIconFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  
+  .ss-title {
+    font-family: 'Cinzel', serif;
+    font-size: 32px;
+    font-weight: 900;
+    color: #D9B66F;
+    margin: 0;
+    letter-spacing: 3px;
+    text-shadow: 0 0 25px rgba(217, 182, 111, 0.6);
+    background: linear-gradient(135deg, #F7F3EB 30%, #D9B66F 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .ss-subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    color: rgba(247, 243, 235, 0.7);
+    margin: 0;
+    font-style: italic;
+    line-height: 1.5;
+  }
+  
+  /* ============================================
+     MODE SELECTION (Initial Choice)
+     ============================================ */
+  .ss-mode-selection {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+  }
+  
+  .ss-mode-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 24px;
+    background: linear-gradient(135deg, rgba(217, 182, 111, 0.08) 0%, rgba(217, 182, 111, 0.03) 100%);
+    border: 1px solid rgba(217, 182, 111, 0.2);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    overflow: hidden;
+  }
+  
+  .ss-mode-btn::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(217, 182, 111, 0.15), transparent 70%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .ss-mode-btn:hover {
+    transform: translateY(-3px);
+    border-color: rgba(217, 182, 111, 0.4);
+    box-shadow: 0 10px 30px rgba(217, 182, 111, 0.2);
+  }
+  
+  .ss-mode-btn:hover::before {
+    opacity: 1;
+  }
+  
+  .ss-mode-icon {
+    font-size: 40px;
+    filter: drop-shadow(0 0 10px rgba(217, 182, 111, 0.5));
+    flex-shrink: 0;
+  }
+  
+  .ss-mode-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: left;
+  }
+  
+  .ss-mode-content h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #D9B66F;
+    margin: 0;
+    letter-spacing: 1px;
+  }
+  
+  .ss-mode-content p {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 14px;
+    color: rgba(247, 243, 235, 0.6);
+    margin: 0;
+    font-style: italic;
+  }
+  
+  /* ============================================
+     MANUAL SELECTION MODE
+     ============================================ */
+  .ss-manual-mode,
+  .ss-birth-date-mode {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .ss-mode-title {
+    font-family: 'Cinzel', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #D9B66F;
+    text-align: center;
+    margin: 0;
+    letter-spacing: 2px;
+  }
+  
+  .ss-signs-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    width: 100%;
+  }
+  
+  .ss-sign-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 8px;
+    background: linear-gradient(135deg, rgba(217, 182, 111, 0.05) 0%, rgba(217, 182, 111, 0.02) 100%);
+    border: 1px solid rgba(217, 182, 111, 0.15);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    overflow: hidden;
+  }
+  
+  .ss-sign-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, rgba(217, 182, 111, 0.15), transparent 70%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .ss-sign-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(217, 182, 111, 0.4);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  }
+  
+  .ss-sign-card:hover::before {
+    opacity: 1;
+  }
+  
+  .ss-sign-card.selected {
+    background: linear-gradient(135deg, rgba(217, 182, 111, 0.2) 0%, rgba(217, 182, 111, 0.1) 100%);
+    border-color: rgba(217, 182, 111, 0.6);
+    box-shadow: 0 0 30px rgba(217, 182, 111, 0.3);
+  }
+  
+  .ss-sign-symbol {
+    font-size: 36px;
+    color: #D9B66F;
+    filter: drop-shadow(0 0 8px rgba(217, 182, 111, 0.6));
+    transition: all 0.3s ease;
+  }
+  
+  .ss-sign-card.selected .ss-sign-symbol {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 15px rgba(217, 182, 111, 0.8));
+  }
+  
+  .ss-sign-label {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #D9B66F;
+    letter-spacing: 1px;
+    margin: 0;
+    text-align: center;
+  }
+  
+  .ss-sign-dates {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 10px;
+    color: rgba(247, 243, 235, 0.5);
+    margin: 0;
+    text-align: center;
+    font-style: italic;
+  }
+  
+  /* ============================================
+     BIRTH DATE MODE
+     ============================================ */
+  .ss-date-inputs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    width: 100%;
+  }
+  
+  .ss-date-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .ss-date-field label {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(217, 182, 111, 0.8);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  
+  .ss-date-field input {
+    width: 100%;
+    padding: 12px;
+    background: rgba(217, 182, 111, 0.05);
+    border: 1px solid rgba(217, 182, 111, 0.3);
+    border-radius: 8px;
+    color: #F7F3EB;
+    font-family: 'Cinzel', serif;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+  
+  .ss-date-field input::placeholder {
+    color: rgba(247, 243, 235, 0.3);
+  }
+  
+  .ss-date-field input:focus {
+    outline: none;
+    border-color: rgba(217, 182, 111, 0.6);
+    box-shadow: 0 0 15px rgba(217, 182, 111, 0.2);
+    background: rgba(217, 182, 111, 0.08);
+  }
+  
+  /* ✅ განახლებული: Remove spinner arrows - standard appearance property-ით */
+  .ss-date-field input[type="number"]::-webkit-inner-spin-button,
+  .ss-date-field input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+  }
+  
+  .ss-date-field input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+  
+  .ss-calculated-sign {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(217, 182, 111, 0.15) 0%, rgba(217, 182, 111, 0.08) 100%);
+    border: 1px solid rgba(217, 182, 111, 0.4);
+    border-radius: 12px;
+    animation: ssCalculatedGlow 2s ease-in-out infinite;
+  }
+  
+  @keyframes ssCalculatedGlow {
+    0%, 100% { box-shadow: 0 0 20px rgba(217, 182, 111, 0.2); }
+    50% { box-shadow: 0 0 30px rgba(217, 182, 111, 0.4); }
+  }
+  
+  .ss-calculated-icon {
+    font-size: 48px;
+    color: #D9B66F;
+    filter: drop-shadow(0 0 12px rgba(217, 182, 111, 0.8));
+    flex-shrink: 0;
+  }
+  
+  .ss-calculated-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .ss-calculated-info h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(217, 182, 111, 0.7);
+    letter-spacing: 2px;
+    margin: 0;
+    text-transform: uppercase;
+  }
+  
+  .ss-calculated-info p {
+    font-family: 'Cinzel', serif;
+    font-size: 24px;
+    font-weight: 900;
+    color: #D9B66F;
+    margin: 0;
+    letter-spacing: 2px;
+  }
+  
+  /* ============================================
+     BUTTONS
+     ============================================ */
+  .ss-calculate-btn,
+  .ss-continue-btn {
+    width: 100%;
+    padding: 14px 24px;
+    background: linear-gradient(135deg, rgba(217, 182, 111, 0.2) 0%, rgba(217, 182, 111, 0.1) 100%);
+    border: 2px solid rgba(217, 182, 111, 0.6);
+    border-radius: 30px;
+    color: #D9B66F;
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 20px rgba(217, 182, 111, 0.15);
+  }
+  
+  .ss-calculate-btn:hover,
+  .ss-continue-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, rgba(217, 182, 111, 0.3) 0%, rgba(217, 182, 111, 0.2) 100%);
+    border-color: rgba(217, 182, 111, 0.9);
+    box-shadow: 0 0 30px rgba(217, 182, 111, 0.3);
+    transform: translateY(-2px);
+  }
+  
+  .ss-continue-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .ss-back-btn {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: 1px solid rgba(217, 182, 111, 0.3);
+    border-radius: 20px;
+    color: rgba(247, 243, 235, 0.6);
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .ss-back-btn:hover {
+    background: rgba(217, 182, 111, 0.1);
+    border-color: rgba(217, 182, 111, 0.5);
+    color: #D9B66F;
+  }
+  
+  .ss-birth-date-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  /* ============================================
+     ERROR MESSAGE
+     ============================================ */
+  .ss-error {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(232, 115, 138, 0.15);
+    border: 1px solid rgba(232, 115, 138, 0.4);
+    border-radius: 8px;
+    color: #E8738A;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 14px;
+    text-align: center;
+    animation: ssErrorShake 0.5s ease-in-out;
+  }
+  
+  @keyframes ssErrorShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+  
+  /* ============================================
+     RESPONSIVE DESIGN
+     ============================================ */
+  @media (max-width: 768px) {
+    .sign-selection-screen {
+      padding: 50px 16px 30px 16px;
+    }
+  
+    .ss-title {
+      font-size: 28px;
+      letter-spacing: 2px;
+    }
+  
+    .ss-subtitle {
+      font-size: 14px;
+    }
+  
+    .ss-icon {
+      font-size: 40px;
+    }
+  
+    .ss-mode-btn {
+      padding: 20px;
+      gap: 16px;
+    }
+  
+    .ss-mode-icon {
+      font-size: 32px;
+    }
+  
+    .ss-mode-content h3 {
+      font-size: 16px;
+    }
+  
+    .ss-mode-content p {
+      font-size: 13px;
+    }
+  
+    .ss-signs-grid {
+      gap: 10px;
+    }
+  
+    .ss-sign-card {
+      padding: 14px 6px;
+    }
+  
+    .ss-sign-symbol {
+      font-size: 32px;
+    }
+  
+    .ss-sign-label {
+      font-size: 11px;
+    }
+  
+    .ss-sign-dates {
+      font-size: 9px;
+    }
+  
+    .ss-date-inputs {
+      gap: 10px;
+    }
+  
+    .ss-date-field input {
+      padding: 10px;
+      font-size: 14px;
+    }
+  
+    .ss-calculated-sign {
+      padding: 16px;
+      gap: 12px;
+    }
+  
+    .ss-calculated-icon {
+      font-size: 40px;
+    }
+  
+    .ss-calculated-info p {
+      font-size: 20px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .sign-selection-screen {
+      padding: 40px 12px 20px 12px;
+    }
+  
+    .ss-title {
+      font-size: 24px;
+    }
+  
+    .ss-signs-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+  
+    .ss-sign-card {
+      padding: 12px 4px;
+    }
+  
+    .ss-sign-symbol {
+      font-size: 28px;
+    }
+  
+    .ss-sign-label {
+      font-size: 10px;
+    }
+  
+    .ss-sign-dates {
+      font-size: 8px;
+    }
+  
+    .ss-mode-btn {
+      padding: 16px;
+      gap: 12px;
+    }
+  
+    .ss-mode-icon {
+      font-size: 28px;
+    }
+  
+    .ss-mode-content h3 {
+      font-size: 14px;
+    }
+  
+    .ss-mode-content p {
+      font-size: 12px;
+    }
+  }
+  
+  /* ============================================
+     ACCESSIBILITY & MOTION
+     ============================================ */
+  @media (prefers-reduced-motion: reduce) {
+    .ss-aurora,
+    .ss-particle,
+    .ss-icon,
+    .ss-calculated-sign {
+      animation: none !important;
+    }
+  }
