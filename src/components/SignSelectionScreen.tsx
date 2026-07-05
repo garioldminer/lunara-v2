@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useUser } from '../context/UserContext';
 import { updateUser } from '../lib/userService';
 import { calculateZodiacSign, validateBirthDate } from '../utils/zodiacCalculator';
-import { ArrowLeft } from 'lucide-react'; // ✅ ახალი import
+import { ArrowLeft } from 'lucide-react';
 import './SignSelectionScreen.css';
 
 interface Props {
@@ -33,20 +33,17 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // ✅ Handle manual sign selection
   const handleManualSelect = (signName: string) => {
     setSelectedSign(signName);
     setError(null);
   };
 
-  // ✅ Handle birth date input
   const handleBirthDateChange = (field: 'day' | 'month' | 'year', value: string) => {
     setBirthDate(prev => ({ ...prev, [field]: value }));
     setError(null);
     setCalculatedSign(null);
   };
 
-  // ✅ Calculate sign from birth date
   const handleCalculateSign = () => {
     const { day, month, year } = birthDate;
     
@@ -68,7 +65,6 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
     setError(null);
   };
 
-  // ✅ Save to database and continue
   const handleContinue = async () => {
     if (!selectedSign || !user) {
       setError('Please select your zodiac sign');
@@ -105,7 +101,6 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
     }
   };
 
-  // ✅ Back button handler
   const handleBack = () => {
     if (selectedMode) {
       setSelectedMode(null);
@@ -119,11 +114,9 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
 
   return (
     <div className="sign-selection-screen">
-      {/* Background */}
       <div className="ss-background" />
       <div className="ss-aurora" />
       
-      {/* Particles */}
       <div className="ss-particles">
         {[...Array(15)].map((_, i) => (
           <div
@@ -139,7 +132,7 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
         ))}
       </div>
 
-      {/* ✅ Back Button - Fixed top-left */}
+      {/* Back Button */}
       <button 
         className="ss-back-btn-fixed"
         onClick={handleBack}
@@ -147,12 +140,11 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
         <ArrowLeft size={24} />
       </button>
 
-      {/* Content */}
       <div className="ss-content">
-        {/* Header - ორი ხაზი */}
+        {/* ✅ HEADER - გაცვლილი ტექსტები */}
         <div className="ss-header">
-          <h1 className="ss-title">Discover Your Sign</h1>
-          <p className="ss-subtitle">Select Your Zodiac Sign</p>
+          <p className="ss-subtitle-top">Discover Your Sign</p>
+          <h1 className="ss-title-main">Select Your Zodiac Sign</h1>
         </div>
 
         {/* Mode Selection */}
@@ -185,10 +177,8 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
         {/* Manual Selection Mode */}
         {selectedMode === 'manual' && (
           <div className="ss-manual-mode">
-            <h2 className="ss-mode-title">Select Your Zodiac Sign</h2>
-            
-            {/* ✅ 4 ნიშანი ხაზზე */}
-            <div className="ss-signs-grid">
+            {/* ✅ Grid-ს აქვს 'has-selection' class თუ ნიშანი არჩეულია */}
+            <div className={`ss-signs-grid ${selectedSign ? 'has-selection' : ''}`}>
               {ZODIAC_SIGNS.map(sign => (
                 <button
                   key={sign.name}
@@ -270,15 +260,14 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
           </div>
         )}
 
-        {/* Error Message */}
         {error && (
           <div className="ss-error">
             ⚠️ {error}
           </div>
         )}
 
-        {/* Continue Button */}
-        {selectedSign && selectedMode && (
+        {/* ✅ Continue ღილაკი - მხოლოდ selectedSign-ზე */}
+        {selectedSign && (
           <button
             className="ss-continue-btn"
             onClick={handleContinue}
