@@ -278,7 +278,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     padding: 14px 6px;
     background: linear-gradient(135deg, rgba(217, 182, 111, 0.05) 0%, rgba(217, 182, 111, 0.02) 100%);
     border: 1px solid rgba(217, 182, 111, 0.15);
@@ -324,17 +324,47 @@
   }
   
   /* ============================================
-     ✅ ZODIAC SIGN IMAGES (NEW!)
+     ✅ ZODIAC SIGN IMAGES - ბანქოს კარტის ფორმატი
      ============================================ */
   .ss-sign-image-container {
     width: 60px;
-    height: 60px;
-    border-radius: 50%;
+    height: 85px; /* ✅ Portrait format (2:3 ratio) */
+    border-radius: 8px; /* ✅ ბანქოს კარტის ფორმა */
     overflow: hidden;
     border: 2px solid rgba(217, 182, 111, 0.4);
     transition: all 0.3s ease;
-    box-shadow: 0 0 10px rgba(217, 182, 111, 0.2);
+    box-shadow: 
+      0 4px 12px rgba(0, 0, 0, 0.3),
+      0 0 10px rgba(217, 182, 111, 0.2);
     background: rgba(217, 182, 111, 0.05);
+    position: relative;
+  }
+  
+  /* ✅ Gold corner accents (ბანქოს კარტის სტილი) */
+  .ss-sign-image-container::before,
+  .ss-sign-image-container::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border: 1.5px solid rgba(217, 182, 111, 0.7);
+    z-index: 2;
+    pointer-events: none;
+    transition: all 0.3s ease;
+  }
+  
+  .ss-sign-image-container::before {
+    top: 4px;
+    left: 4px;
+    border-right: none;
+    border-bottom: none;
+  }
+  
+  .ss-sign-image-container::after {
+    bottom: 4px;
+    right: 4px;
+    border-left: none;
+    border-top: none;
   }
   
   .ss-sign-image {
@@ -344,24 +374,31 @@
     transition: all 0.3s ease;
   }
   
-  /* ✅ Selected state - ფოტო */
+  /* ✅ Selected state - ბანქოს კარტი */
   .ss-sign-card.selected .ss-sign-image-container {
     border-color: rgba(217, 182, 111, 0.9);
     box-shadow: 
       0 0 20px rgba(217, 182, 111, 0.5),
-      0 0 40px rgba(217, 182, 111, 0.3);
-    transform: scale(1.1);
+      0 0 40px rgba(217, 182, 111, 0.3),
+      0 8px 20px rgba(0, 0, 0, 0.4);
+    transform: scale(1.08);
+  }
+  
+  .ss-sign-card.selected .ss-sign-image-container::before,
+  .ss-sign-card.selected .ss-sign-image-container::after {
+    border-color: rgba(217, 182, 111, 1);
+    width: 12px;
+    height: 12px;
   }
   
   .ss-sign-card.selected .ss-sign-image {
-    transform: scale(1.05);
-    filter: brightness(1.1) saturate(1.1);
+    filter: brightness(1.15) saturate(1.15);
   }
   
-  /* ✅ Hover effect ფოტოზე */
+  /* ✅ Hover effect */
   .ss-sign-card:hover .ss-sign-image {
-    transform: scale(1.08);
-    filter: brightness(1.05);
+    transform: scale(1.05);
+    filter: brightness(1.1);
   }
   
   .ss-sign-label {
@@ -450,7 +487,7 @@
   }
   
   /* ============================================
-     ✅ CALCULATED SIGN (NEW - ფოტოთი)
+     ✅ CALCULATED SIGN - ბანქოს კარტის ფორმატი
      ============================================ */
   .ss-calculated-sign {
     display: flex;
@@ -468,16 +505,45 @@
     50% { box-shadow: 0 0 30px rgba(217, 182, 111, 0.4); }
   }
   
-  /* ✅ Calculated sign image container */
+  /* ✅ Calculated sign image container - ბანქოს კარტი */
   .ss-calculated-image-container {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
+    width: 90px;
+    height: 127px; /* ✅ 2:3 ratio */
+    border-radius: 10px;
     overflow: hidden;
     border: 3px solid rgba(217, 182, 111, 0.8);
-    box-shadow: 0 0 30px rgba(217, 182, 111, 0.5);
+    box-shadow: 
+      0 0 30px rgba(217, 182, 111, 0.5),
+      0 8px 24px rgba(0, 0, 0, 0.4);
     flex-shrink: 0;
     background: rgba(217, 182, 111, 0.05);
+    position: relative;
+  }
+  
+  /* ✅ Gold corner accents */
+  .ss-calculated-image-container::before,
+  .ss-calculated-image-container::after {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(217, 182, 111, 0.9);
+    z-index: 2;
+    pointer-events: none;
+  }
+  
+  .ss-calculated-image-container::before {
+    top: 6px;
+    left: 6px;
+    border-right: none;
+    border-bottom: none;
+  }
+  
+  .ss-calculated-image-container::after {
+    bottom: 6px;
+    right: 6px;
+    border-left: none;
+    border-top: none;
   }
   
   .ss-calculated-image {
@@ -621,10 +687,10 @@
       padding: 12px 4px;
     }
   
-    /* ✅ Tablet image size */
+    /* ✅ Tablet - ბანქოს კარტი */
     .ss-sign-image-container {
       width: 52px;
-      height: 52px;
+      height: 73px; /* 2:3 ratio */
     }
   
     .ss-sign-label {
@@ -649,10 +715,10 @@
       gap: 12px;
     }
   
-    /* ✅ Tablet calculated image size */
+    /* ✅ Tablet calculated image */
     .ss-calculated-image-container {
-      width: 70px;
-      height: 70px;
+      width: 78px;
+      height: 110px; /* 2:3 ratio */
     }
   
     .ss-calculated-info p {
@@ -696,10 +762,28 @@
       gap: 4px;
     }
   
-    /* ✅ Mobile image size */
+    /* ✅ Mobile - ბანქოს კარტი */
     .ss-sign-image-container {
       width: 44px;
-      height: 44px;
+      height: 62px; /* 2:3 ratio */
+    }
+  
+    /* ✅ Mobile corner accents უფრო პატარა */
+    .ss-sign-image-container::before,
+    .ss-sign-image-container::after {
+      width: 7px;
+      height: 7px;
+      border-width: 1px;
+    }
+  
+    .ss-sign-image-container::before {
+      top: 3px;
+      left: 3px;
+    }
+  
+    .ss-sign-image-container::after {
+      bottom: 3px;
+      right: 3px;
     }
   
     .ss-sign-label {
@@ -727,10 +811,16 @@
       font-size: 12px;
     }
   
-    /* ✅ Mobile calculated image size */
+    /* ✅ Mobile calculated image */
     .ss-calculated-image-container {
-      width: 60px;
-      height: 60px;
+      width: 66px;
+      height: 93px; /* 2:3 ratio */
+    }
+  
+    .ss-calculated-image-container::before,
+    .ss-calculated-image-container::after {
+      width: 10px;
+      height: 10px;
     }
   
     .ss-calculated-info p {
