@@ -13,7 +13,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    padding: 60px 20px 40px 20px;
+    padding: 100px 20px 40px 20px; /* ✅ 100px top padding */
   }
   
   /* ============================================
@@ -70,6 +70,35 @@
   }
   
   /* ============================================
+     ✅ BACK BUTTON - FIXED TOP-LEFT (65px from top)
+     ============================================ */
+  .ss-back-btn-fixed {
+    position: fixed;
+    top: 65px; /* ✅ 65px from top */
+    left: 20px;
+    z-index: 100;
+    background: rgba(217, 182, 111, 0.1);
+    border: 1px solid rgba(217, 182, 111, 0.3);
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #D9B66F;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+  }
+  
+  .ss-back-btn-fixed:hover {
+    background: rgba(217, 182, 111, 0.2);
+    border-color: rgba(217, 182, 111, 0.5);
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(217, 182, 111, 0.3);
+  }
+  
+  /* ============================================
      CONTENT CONTAINER
      ============================================ */
   .ss-content {
@@ -84,26 +113,15 @@
   }
   
   /* ============================================
-     HEADER
+     ✅ HEADER - ორი ხაზი
      ============================================ */
   .ss-header {
     text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     margin-bottom: 32px;
-  }
-  
-  .ss-icon {
-    font-size: 48px;
-    filter: drop-shadow(0 0 20px rgba(217, 182, 111, 0.6));
-    animation: ssIconFloat 3s ease-in-out infinite;
-  }
-  
-  @keyframes ssIconFloat {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
   }
   
   .ss-title {
@@ -118,6 +136,8 @@
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+    line-height: 1.2;
+    white-space: nowrap; /* ✅ ერთ ხაზზე */
   }
   
   .ss-subtitle {
@@ -127,6 +147,7 @@
     margin: 0;
     font-style: italic;
     line-height: 1.5;
+    white-space: nowrap; /* ✅ ერთ ხაზზე */
   }
   
   /* ============================================
@@ -227,9 +248,10 @@
     letter-spacing: 2px;
   }
   
+  /* ✅ 4 ნიშანი ხაზზე (4 columns, 3 rows) */
   .ss-signs-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr); /* ✅ 4 columns */
     gap: 12px;
     width: 100%;
   }
@@ -239,8 +261,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-    padding: 16px 8px;
+    gap: 6px;
+    padding: 14px 6px;
     background: linear-gradient(135deg, rgba(217, 182, 111, 0.05) 0%, rgba(217, 182, 111, 0.02) 100%);
     border: 1px solid rgba(217, 182, 111, 0.15);
     border-radius: 12px;
@@ -279,7 +301,7 @@
   }
   
   .ss-sign-symbol {
-    font-size: 36px;
+    font-size: 32px;
     color: #D9B66F;
     filter: drop-shadow(0 0 8px rgba(217, 182, 111, 0.6));
     transition: all 0.3s ease;
@@ -292,7 +314,7 @@
   
   .ss-sign-label {
     font-family: 'Cinzel', serif;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     color: #D9B66F;
     letter-spacing: 1px;
@@ -302,7 +324,7 @@
   
   .ss-sign-dates {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 10px;
+    font-size: 9px;
     color: rgba(247, 243, 235, 0.5);
     margin: 0;
     text-align: center;
@@ -359,7 +381,6 @@
     background: rgba(217, 182, 111, 0.08);
   }
   
-  /* ✅ განახლებული: Remove spinner arrows - standard appearance property-ით */
   .ss-date-field input[type="number"]::-webkit-inner-spin-button,
   .ss-date-field input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: none;
@@ -453,27 +474,6 @@
     cursor: not-allowed;
   }
   
-  .ss-back-btn {
-    width: 100%;
-    padding: 12px;
-    background: transparent;
-    border: 1px solid rgba(217, 182, 111, 0.3);
-    border-radius: 20px;
-    color: rgba(247, 243, 235, 0.6);
-    font-family: 'Cinzel', serif;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-  
-  .ss-back-btn:hover {
-    background: rgba(217, 182, 111, 0.1);
-    border-color: rgba(217, 182, 111, 0.5);
-    color: #D9B66F;
-  }
-  
   .ss-birth-date-actions {
     display: flex;
     flex-direction: column;
@@ -507,7 +507,14 @@
      ============================================ */
   @media (max-width: 768px) {
     .sign-selection-screen {
-      padding: 50px 16px 30px 16px;
+      padding: 90px 16px 30px 16px;
+    }
+  
+    .ss-back-btn-fixed {
+      top: 65px;
+      left: 16px;
+      width: 40px;
+      height: 40px;
     }
   
     .ss-title {
@@ -517,10 +524,6 @@
   
     .ss-subtitle {
       font-size: 14px;
-    }
-  
-    .ss-icon {
-      font-size: 40px;
     }
   
     .ss-mode-btn {
@@ -540,24 +543,25 @@
       font-size: 13px;
     }
   
+    /* ✅ 4 columns on tablet */
     .ss-signs-grid {
       gap: 10px;
     }
   
     .ss-sign-card {
-      padding: 14px 6px;
+      padding: 12px 4px;
     }
   
     .ss-sign-symbol {
-      font-size: 32px;
+      font-size: 28px;
     }
   
     .ss-sign-label {
-      font-size: 11px;
+      font-size: 10px;
     }
   
     .ss-sign-dates {
-      font-size: 9px;
+      font-size: 8px;
     }
   
     .ss-date-inputs {
@@ -585,32 +589,51 @@
   
   @media (max-width: 480px) {
     .sign-selection-screen {
-      padding: 40px 12px 20px 12px;
+      padding: 80px 12px 20px 12px;
+    }
+  
+    .ss-back-btn-fixed {
+      top: 65px;
+      left: 12px;
+      width: 38px;
+      height: 38px;
+    }
+  
+    .ss-back-btn-fixed svg {
+      width: 20px;
+      height: 20px;
     }
   
     .ss-title {
       font-size: 24px;
+      letter-spacing: 1.5px;
     }
   
+    .ss-subtitle {
+      font-size: 13px;
+    }
+  
+    /* ✅ 4 columns on mobile (smaller cards) */
     .ss-signs-grid {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 8px;
     }
   
     .ss-sign-card {
-      padding: 12px 4px;
+      padding: 10px 2px;
+      gap: 4px;
     }
   
     .ss-sign-symbol {
-      font-size: 28px;
+      font-size: 24px;
     }
   
     .ss-sign-label {
-      font-size: 10px;
+      font-size: 9px;
     }
   
     .ss-sign-dates {
-      font-size: 8px;
+      font-size: 7px;
     }
   
     .ss-mode-btn {
@@ -637,7 +660,6 @@
   @media (prefers-reduced-motion: reduce) {
     .ss-aurora,
     .ss-particle,
-    .ss-icon,
     .ss-calculated-sign {
       animation: none !important;
     }

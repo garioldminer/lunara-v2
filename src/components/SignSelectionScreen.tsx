@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useUser } from '../context/UserContext';
 import { updateUser } from '../lib/userService';
 import { calculateZodiacSign, validateBirthDate } from '../utils/zodiacCalculator';
+import { ArrowLeft } from 'lucide-react'; // ✅ ახალი import
 import './SignSelectionScreen.css';
 
 interface Props {
@@ -82,7 +83,6 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
 
       const updates: any = { sun_sign: selectedSign };
       
-      // თუ birth date შევსებულია, შევინახოთ
       if (birthDate.day && birthDate.month && birthDate.year) {
         updates.birth_date = `${birthDate.year}-${birthDate.month.padStart(2, '0')}-${birthDate.day.padStart(2, '0')}`;
       }
@@ -93,7 +93,6 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
         setUser(updatedUser);
         console.log('✅ Sign saved successfully!');
         
-        // Navigate to horoscope
         if (onNavigate) {
           onNavigate('horoscope');
         }
@@ -103,6 +102,18 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
       setError('Failed to save. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // ✅ Back button handler
+  const handleBack = () => {
+    if (selectedMode) {
+      setSelectedMode(null);
+      setSelectedSign(null);
+      setCalculatedSign(null);
+      setError(null);
+    } else if (onNavigate) {
+      onNavigate('home');
     }
   };
 
@@ -128,13 +139,20 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
         ))}
       </div>
 
+      {/* ✅ Back Button - Fixed top-left */}
+      <button 
+        className="ss-back-btn-fixed"
+        onClick={handleBack}
+      >
+        <ArrowLeft size={24} />
+      </button>
+
       {/* Content */}
       <div className="ss-content">
-        {/* Header */}
+        {/* Header - ორი ხაზი */}
         <div className="ss-header">
-          <div className="ss-icon">🔮</div>
           <h1 className="ss-title">Discover Your Sign</h1>
-          <p className="ss-subtitle">Choose how you want to find your zodiac sign</p>
+          <p className="ss-subtitle">Select Your Zodiac Sign</p>
         </div>
 
         {/* Mode Selection */}
@@ -169,6 +187,7 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
           <div className="ss-manual-mode">
             <h2 className="ss-mode-title">Select Your Zodiac Sign</h2>
             
+            {/* ✅ 4 ნიშანი ხაზზე */}
             <div className="ss-signs-grid">
               {ZODIAC_SIGNS.map(sign => (
                 <button
@@ -182,13 +201,6 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
                 </button>
               ))}
             </div>
-
-            <button
-              className="ss-back-btn"
-              onClick={() => setSelectedMode(null)}
-            >
-              ← Back
-            </button>
           </div>
         )}
 
@@ -253,13 +265,6 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
                 onClick={handleCalculateSign}
               >
                 Calculate Sign
-              </button>
-
-              <button
-                className="ss-back-btn"
-                onClick={() => setSelectedMode(null)}
-              >
-                ← Back
               </button>
             </div>
           </div>
