@@ -134,13 +134,18 @@
   box-shadow: 0 0 20px rgba(217, 182, 111, 0.3);
 }
 
+/* ✅ განახლებული: ზუსტად ეკრანის ცენტრში! */
 .premium-header-center {
-  flex: 1;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  width: auto;
 }
 
 /* ✅ განახლებული: 30px ზომა */
@@ -518,10 +523,10 @@
 }
 
 /* ============================================
-   ✅ PREMIUM SECTION - 3px margin
+   ✅ PREMIUM SECTION - 5px margin (განახლებული!)
    ============================================ */
 .premium-section {
-  margin: 3px 0 0 0;
+  margin: 5px 0 0 0;
 }
 
 .premium-section-title {
@@ -697,10 +702,14 @@
   z-index: 2;
 }
 
+/* ✅ განახლებული: Supabase-დან მთვარის ლოგო */
 .premium-moon-image {
   width: 50px;
   height: 50px;
-  background: radial-gradient(circle at 30% 30%, #F4D47C 0%, #D9B66F 50%, #8B6914 100%);
+  background-image: url('https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/planets/moon.webp');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   border-radius: 50%;
   box-shadow: inset -5px -5px 15px rgba(0, 0, 0, 0.3);
   animation: moonRotate 20s linear infinite;
