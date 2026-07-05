@@ -6,7 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, Moon, Star, Activity,
   Sparkles, RotateCcw, Share2, Sun, ChevronRight,
-  X, Download, Heart, Briefcase, Palette, Hash, DollarSign, Zap, Briefcase as BriefcaseIcon
+  X, Download, Heart, Briefcase, Palette, Hash, DollarSign, Zap, Briefcase as BriefcaseIcon,
+  ChevronDown
 } from 'lucide-react';
 import ShareCardPreview from './ShareCardPreview';
 import CosmicSkeleton from './CosmicSkeleton';
@@ -127,6 +128,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const [openModal, setOpenModal] = useState<string | null>(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isReadFullOpen, setIsReadFullOpen] = useState(false);
+  const [openAccordion, setOpenAccordion] = useState<string | null>(null); // ✅ ახალი
   const [toast, setToast] = useState<Toast | null>(null);
 
   const { horoscope, loading, refreshing, error, refetch } = useHoroscope(user?.id || '', activeTab);
@@ -138,6 +140,11 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     setToast({ message, type });
+  };
+
+  // ✅ Accordion toggle function
+  const toggleAccordion = (section: string) => {
+    setOpenAccordion(openAccordion === section ? null : section);
   };
 
   const tabs = [
@@ -583,8 +590,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
             </motion.div>
           </div>
         </div>
-
-        {/* ✅ AFFIRMATION AMOღებულია! */}
       </div>
 
       {/* MODAL - Predictions */}
@@ -662,7 +667,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         )}
       </AnimatePresence>
 
-      {/* READ FULL MODAL */}
+      {/* ✅ READ FULL MODAL - A + C კომბინაცია (Accordion Style) */}
       <AnimatePresence>
         {isReadFullOpen && (
           <motion.div 
@@ -686,6 +691,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
               </button>
 
               <div className="rf-scroll">
+                {/* 🟢 HEADER - პირდაპირ */}
                 <div className="rf-header">
                   <div className="rf-sign-icon">{zodiacData.symbol}</div>
                   <h1 className="rf-sign-name">{userSign.toUpperCase()}</h1>
@@ -696,6 +702,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                   </div>
                 </div>
 
+                {/* 🟢 ENERGY OVERVIEW - პირდაპირ */}
                 <div className="rf-energy-overview">
                   <div className="rf-energy-item">
                     <span className="rf-energy-emoji">{getEnergyEmojis(horoscope.cosmic_energy_level, '⚡')}</span>
@@ -716,6 +723,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                   </div>
                 </div>
 
+                {/* 🟢 PREDICTIONS - პირდაპირ */}
                 <div className="rf-sections">
                   {horoscope.general_prediction && (
                     <div className="rf-section">
@@ -768,66 +776,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                   )}
                 </div>
 
-                {horoscope.key_transits && horoscope.key_transits.length > 0 && (
-                  <div className="rf-transits">
-                    <h3 className="rf-lucky-title">
-                      <Star size={14} />
-                      KEY TRANSITS
-                      <Star size={14} />
-                    </h3>
-                    <div className="rf-transits-list">
-                      {horoscope.key_transits.slice(0, 5).map((transit, index) => (
-                        <div key={index} className={`rf-transit-item ${transit.influence}`}>
-                          <div className="rf-transit-main">
-                            <span className="rf-transit-planets">
-                              {transit.planet1} <span className="rf-transit-aspect">{transit.aspect_type}</span> {transit.planet2}
-                            </span>
-                          </div>
-                          <div className={`rf-transit-badge ${transit.influence}`}>
-                            {transit.influence === 'harmonious' && '🟢'}
-                            {transit.influence === 'challenging' && '🔴'}
-                            {transit.influence === 'neutral' && '⚪'}
-                            {transit.influence}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="rf-lucky">
-                  <h3 className="rf-lucky-title">
-                    <Sparkles size={14} />
-                    LUCKY ELEMENTS
-                    <Sparkles size={14} />
-                  </h3>
-                  <div className="rf-lucky-grid">
-                    <div className="rf-lucky-item">
-                      <Palette size={20} className="rf-lucky-icon" />
-                      <span className="rf-lucky-label">Color</span>
-                      <span className="rf-lucky-value">{horoscope.lucky_color || 'Gold'}</span>
-                    </div>
-                    <div className="rf-lucky-item">
-                      <Hash size={20} className="rf-lucky-icon" />
-                      <span className="rf-lucky-label">Number</span>
-                      <span className="rf-lucky-value">{horoscope.lucky_number || 7}</span>
-                    </div>
-                    <div className="rf-lucky-item">
-                      <Sun size={20} className="rf-lucky-icon" />
-                      <span className="rf-lucky-label">Planet</span>
-                      <span className="rf-lucky-value">{horoscope.lucky_planet || zodiacData.planet}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rf-moon-info">
-                  <Moon size={22} className="rf-moon-icon" />
-                  <div className="rf-moon-details">
-                    <span className="rf-moon-phase">{horoscope.moon_phase}</span>
-                    <span className="rf-moon-sign">Moon in {horoscope.moon_sign}</span>
-                  </div>
-                </div>
-
+                {/* 🟢 AFFIRMATION - პირდაპირ */}
                 {horoscope.affirmation && (
                   <div className="rf-affirmation">
                     <div className="rf-aff-glow" />
@@ -847,6 +796,160 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                   </div>
                 )}
 
+                {/* 🟡 ACCORDION SECTIONS */}
+                <div className="rf-accordion-container">
+                  {/* 🟡 KEY TRANSITS - Accordion */}
+                  {horoscope.key_transits && horoscope.key_transits.length > 0 && (
+                    <div className="rf-accordion">
+                      <button 
+                        className="rf-accordion-header"
+                        onClick={() => toggleAccordion('transits')}
+                      >
+                        <div className="rf-accordion-title">
+                          <Star size={16} />
+                          <span>Key Transits</span>
+                        </div>
+                        <motion.div
+                          className="rf-accordion-arrow"
+                          animate={{ rotate: openAccordion === 'transits' ? 180 : 0 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <ChevronDown size={18} />
+                        </motion.div>
+                      </button>
+                      
+                      <AnimatePresence>
+                        {openAccordion === 'transits' && (
+                          <motion.div
+                            className="rf-accordion-content"
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <div className="rf-transits-list">
+                              {horoscope.key_transits.slice(0, 5).map((transit, index) => (
+                                <div key={index} className={`rf-transit-item ${transit.influence}`}>
+                                  <div className="rf-transit-main">
+                                    <span className="rf-transit-planets">
+                                      {transit.planet1} <span className="rf-transit-aspect">{transit.aspect_type}</span> {transit.planet2}
+                                    </span>
+                                  </div>
+                                  <div className={`rf-transit-badge ${transit.influence}`}>
+                                    {transit.influence === 'harmonious' && '🟢'}
+                                    {transit.influence === 'challenging' && '🔴'}
+                                    {transit.influence === 'neutral' && '⚪'}
+                                    {transit.influence}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )}
+
+                  {/* 🟡 LUCKY ELEMENTS - Accordion */}
+                  <div className="rf-accordion">
+                    <button 
+                      className="rf-accordion-header"
+                      onClick={() => toggleAccordion('lucky')}
+                    >
+                      <div className="rf-accordion-title">
+                        <Sparkles size={16} />
+                        <span>Lucky Elements</span>
+                      </div>
+                      <motion.div
+                        className="rf-accordion-arrow"
+                        animate={{ rotate: openAccordion === 'lucky' ? 180 : 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <ChevronDown size={18} />
+                      </motion.div>
+                    </button>
+                    
+                    <AnimatePresence>
+                      {openAccordion === 'lucky' && (
+                        <motion.div
+                          className="rf-accordion-content"
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <div className="rf-lucky-grid">
+                            <div className="rf-lucky-item">
+                              <Palette size={20} className="rf-lucky-icon" />
+                              <span className="rf-lucky-label">Color</span>
+                              <span className="rf-lucky-value">{horoscope.lucky_color || 'Gold'}</span>
+                            </div>
+                            <div className="rf-lucky-item">
+                              <Hash size={20} className="rf-lucky-icon" />
+                              <span className="rf-lucky-label">Number</span>
+                              <span className="rf-lucky-value">{horoscope.lucky_number || 7}</span>
+                            </div>
+                            <div className="rf-lucky-item">
+                              <Sun size={20} className="rf-lucky-icon" />
+                              <span className="rf-lucky-label">Planet</span>
+                              <span className="rf-lucky-value">{horoscope.lucky_planet || zodiacData.planet}</span>
+                            </div>
+                            {horoscope.lucky_crystal && (
+                              <div className="rf-lucky-item">
+                                <Star size={20} className="rf-lucky-icon" />
+                                <span className="rf-lucky-label">Crystal</span>
+                                <span className="rf-lucky-value">{horoscope.lucky_crystal}</span>
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  {/* 🟡 MOON INFO - Accordion */}
+                  <div className="rf-accordion">
+                    <button 
+                      className="rf-accordion-header"
+                      onClick={() => toggleAccordion('moon')}
+                    >
+                      <div className="rf-accordion-title">
+                        <Moon size={16} />
+                        <span>Moon Info</span>
+                      </div>
+                      <motion.div
+                        className="rf-accordion-arrow"
+                        animate={{ rotate: openAccordion === 'moon' ? 180 : 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <ChevronDown size={18} />
+                      </motion.div>
+                    </button>
+                    
+                    <AnimatePresence>
+                      {openAccordion === 'moon' && (
+                        <motion.div
+                          className="rf-accordion-content"
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <div className="rf-moon-info-expanded">
+                            <Moon size={24} className="rf-moon-icon-large" />
+                            <div className="rf-moon-details-expanded">
+                              <span className="rf-moon-phase-large">{horoscope.moon_phase}</span>
+                              <span className="rf-moon-sign-large">Moon in {horoscope.moon_sign}</span>
+                              <p className="rf-moon-desc-expanded">{moonDescription}</p>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+
+                {/* 🟢 FOOTER - პირდაპირ */}
                 <div className="rf-footer">
                   <div className="rf-footer-divider">
                     <span className="rf-fd-star">✦</span>

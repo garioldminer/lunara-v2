@@ -1171,6 +1171,185 @@
 .rf-section-header h3 { font-family: 'Cinzel', serif; font-size: 14px; font-weight: 700; color: #F7F3EB; letter-spacing: 1px; margin: 0; }
 .rf-section-text { font-family: 'Cormorant Garamond', serif; font-size: 15px; line-height: 1.7; color: rgba(247, 243, 235, 0.85); margin: 0; }
 
+/* ============================================
+   ✅ ACCORDION STYLES (NEW!)
+   ============================================ */
+.rf-accordion-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.rf-accordion {
+  background: rgba(217, 182, 111, 0.06);
+  border: 1px solid rgba(217, 182, 111, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.rf-accordion:hover {
+  border-color: rgba(217, 182, 111, 0.35);
+}
+
+.rf-accordion-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.rf-accordion-header:hover {
+  background: rgba(217, 182, 111, 0.04);
+}
+
+.rf-accordion-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #D9B66F;
+  letter-spacing: 1px;
+}
+
+.rf-accordion-title svg {
+  color: #D9B66F;
+  filter: drop-shadow(0 0 6px rgba(217, 182, 111, 0.5));
+}
+
+.rf-accordion-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #D9B66F;
+  filter: drop-shadow(0 0 4px rgba(217, 182, 111, 0.4));
+}
+
+.rf-accordion-content {
+  overflow: hidden;
+  border-top: 1px solid rgba(217, 182, 111, 0.15);
+  padding: 16px 18px;
+}
+
+/* Accordion Transit Items */
+.rf-accordion .rf-transits-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rf-accordion .rf-transit-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(10, 6, 0, 0.3);
+  border: 1px solid rgba(217, 182, 111, 0.15);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.rf-accordion .rf-transit-item:hover {
+  background: rgba(10, 6, 0, 0.5);
+  border-color: rgba(217, 182, 111, 0.3);
+}
+
+/* Accordion Lucky Elements */
+.rf-accordion .rf-lucky-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.rf-accordion .rf-lucky-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 8px;
+  background: rgba(10, 6, 0, 0.3);
+  border: 1px solid rgba(217, 182, 111, 0.15);
+  border-radius: 10px;
+}
+
+.rf-accordion .rf-lucky-icon {
+  color: #D9B66F;
+  filter: drop-shadow(0 0 6px rgba(217, 182, 111, 0.4));
+}
+
+.rf-accordion .rf-lucky-label {
+  font-family: 'Cinzel', serif;
+  font-size: 7px;
+  font-weight: 600;
+  color: rgba(247, 243, 235, 0.5);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.rf-accordion .rf-lucky-value {
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #D9B66F;
+}
+
+/* Accordion Moon Info */
+.rf-moon-info-expanded {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.rf-moon-icon-large {
+  color: #D9B66F;
+  filter: drop-shadow(0 0 12px rgba(217, 182, 111, 0.6));
+  flex-shrink: 0;
+}
+
+.rf-moon-details-expanded {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.rf-moon-phase-large {
+  font-family: 'Cinzel', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #F7F3EB;
+}
+
+.rf-moon-sign-large {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: #D9B66F;
+  letter-spacing: 1px;
+}
+
+.rf-moon-desc-expanded {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 14px;
+  font-style: italic;
+  line-height: 1.6;
+  color: rgba(247, 243, 235, 0.8);
+  margin-top: 4px;
+}
+
+/* ============================================
+   RF TRANSITS (EXISTING)
+   ============================================ */
 .rf-transits { text-align: center; padding: 20px 16px; background: linear-gradient(135deg, rgba(217, 182, 111, 0.08) 0%, rgba(100, 80, 180, 0.05) 100%); border: 1px solid rgba(217, 182, 111, 0.2); border-radius: 14px; margin-bottom: 20px; }
 .rf-transits-list { display: flex; flex-direction: column; gap: 8px; }
 
@@ -1214,6 +1393,30 @@
 .rf-aff-icon { font-size: 22px; filter: drop-shadow(0 0 8px rgba(100, 80, 180, 0.5)); position: relative; margin-bottom: 8px; }
 .rf-aff-title { font-family: 'Cinzel', serif; font-size: 11px; font-weight: 700; color: #D9B66F; letter-spacing: 1.5px; margin: 0 0 10px 0; position: relative; }
 .rf-aff-text { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-style: italic; line-height: 1.6; color: #F7F3EB; margin: 0 0 14px 0; position: relative; }
+
+.share-affirmation-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: rgba(217, 182, 111, 0.1);
+  border: 1px solid rgba(217, 182, 111, 0.3);
+  border-radius: 20px;
+  color: #D9B66F;
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.share-affirmation-btn:hover {
+  background: rgba(217, 182, 111, 0.2);
+  border-color: rgba(217, 182, 111, 0.5);
+  box-shadow: 0 0 15px rgba(217, 182, 111, 0.3);
+}
 
 .rf-footer { text-align: center; padding-top: 8px; }
 .rf-footer-divider { display: flex; align-items: center; justify-content: center; margin-bottom: 12px; position: relative; }
@@ -1312,6 +1515,36 @@
     top: 15px;
     padding: 7px 14px;
     font-size: 10px;
+  }
+  
+  /* Accordion responsive */
+  .rf-accordion-header {
+    padding: 14px 16px;
+  }
+  
+  .rf-accordion-title {
+    font-size: 12px;
+  }
+  
+  .rf-accordion-content {
+    padding: 14px 16px;
+  }
+  
+  .rf-accordion .rf-lucky-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  
+  .rf-moon-info-expanded {
+    gap: 12px;
+  }
+  
+  .rf-moon-phase-large {
+    font-size: 14px;
+  }
+  
+  .rf-moon-desc-expanded {
+    font-size: 13px;
   }
 }
 
@@ -1424,6 +1657,64 @@
   .refreshing-indicator svg {
     width: 12px;
     height: 12px;
+  }
+  
+  /* Accordion mobile */
+  .rf-accordion-header {
+    padding: 12px 14px;
+  }
+  
+  .rf-accordion-title {
+    font-size: 11px;
+    gap: 8px;
+  }
+  
+  .rf-accordion-title svg {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .rf-accordion-arrow svg {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .rf-accordion-content {
+    padding: 12px 14px;
+  }
+  
+  .rf-accordion .rf-lucky-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  
+  .rf-accordion .rf-lucky-item {
+    padding: 10px 6px;
+  }
+  
+  .rf-accordion .rf-lucky-value {
+    font-size: 12px;
+  }
+  
+  .rf-moon-info-expanded {
+    gap: 10px;
+  }
+  
+  .rf-moon-icon-large {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .rf-moon-phase-large {
+    font-size: 13px;
+  }
+  
+  .rf-moon-sign-large {
+    font-size: 10px;
+  }
+  
+  .rf-moon-desc-expanded {
+    font-size: 12px;
   }
 }
 
