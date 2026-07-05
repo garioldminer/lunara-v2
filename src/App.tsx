@@ -17,7 +17,7 @@ import CelticCrossReadingScreen from './components/CelticCrossReadingScreen';
 import HorseshoeReadingScreen from './components/HorseshoeReadingScreen';
 import RelationshipReadingScreen from './components/RelationshipReadingScreen';
 import HoroscopeScreen from './components/HoroscopeScreen';
-import SignSelectionScreen from './components/SignSelectionScreen'; // ✅ ახალი
+import SignSelectionScreen from './components/SignSelectionScreen';
 import AdminScreen from './components/AdminScreen';
 import AdminAIManagement from './components/AdminAIManagement';
 import SubscriptionScreen from './components/SubscriptionScreen';
@@ -39,7 +39,7 @@ type Screen =
   | 'reading'
   | 'astro'
   | 'horoscope'
-  | 'sign-selection' // ✅ ახალი
+  | 'sign-selection'
   | 'profile'
   | 'card-fan'
   | 'card-detail'
@@ -54,7 +54,6 @@ type Screen =
   | 'subscription'
   | 'services';
 
-// ===== USER LOADER COMPONENT =====
 function UserLoader({ onReady }: { onReady: () => void }) {
   const { setUser, setLoading } = useUser();
 
@@ -97,7 +96,6 @@ function UserLoader({ onReady }: { onReady: () => void }) {
   return null;
 }
 
-// ===== MAIN APP CONTENT =====
 function AppContent() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('splash');
   const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
@@ -134,12 +132,10 @@ function AppContent() {
     goTo(tab as Screen);
   };
 
-  // ✅ ახალი: Horoscope navigation with sign check
   const handleHoroscopeNavigate = (screen: string) => {
     console.log('🔮 Horoscope navigate called with:', screen);
     
     if (screen === 'horoscope') {
-      // Check if user has sun_sign
       if (!user?.sun_sign) {
         console.log('⚠️ User has no sun_sign → redirecting to sign-selection');
         goTo('sign-selection');
@@ -190,7 +186,7 @@ function AppContent() {
     }
     else if (screen === 'horoscope') {
       console.log('🔮 Opening Horoscope Screen');
-      handleHoroscopeNavigate('horoscope'); // ✅ redirect logic
+      handleHoroscopeNavigate('horoscope');
     }
     else if (screen === 'sign-selection') {
       console.log('♏ Opening Sign Selection Screen');
@@ -266,12 +262,6 @@ function AppContent() {
     goTo('home');
   };
 
-  // ✅ ახალი: Sign selection complete handler
-  const handleSignSelectionComplete = () => {
-    console.log('♏ Sign selection completed!');
-    goTo('horoscope');
-  };
-
   console.log('📱 Current screen:', currentScreen);
   console.log('👤 User loaded:', user ? user.display_name : 'null');
   console.log('📊 Onboarding completed:', user?.onboarding_completed);
@@ -324,7 +314,7 @@ function AppContent() {
         </>
       )}
       {currentScreen === 'sign-selection' && (
-        <SignSelectionScreen onNavigate={handleNavigate} /> // ✅ ახალი
+        <SignSelectionScreen onNavigate={handleNavigate} />
       )}
       {currentScreen === 'profile' && (
         <>
@@ -375,7 +365,6 @@ function AppContent() {
   );
 }
 
-// ===== MAIN APP WITH PROVIDERS =====
 function App() {
   return (
     <UserProvider>
