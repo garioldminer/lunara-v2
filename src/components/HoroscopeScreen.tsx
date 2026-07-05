@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import ShareCardPreview from './ShareCardPreview';
 import CosmicSkeleton from './CosmicSkeleton';
+import SignSelectionScreen from './SignSelectionScreen'; // ✅ ახალი import
 import './HoroscopeScreen.css';
 
 type TabType = 'today' | 'tomorrow' | 'weekly' | 'monthly';
@@ -131,9 +132,16 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
 
+  // ✅ ყველა hooks უნდა იყოს აქ (React-ის წესი)
   const { horoscope, loading, refreshing, error, refetch } = useHoroscope(user?.id || '', activeTab);
 
-  const userSign = user?.sun_sign?.toLowerCase() || 'leo';
+  // ✅ ახალი: Check if user has sun_sign
+  if (!user?.sun_sign) {
+    console.log('⚠️ [HoroscopeScreen] No sun_sign found → showing SignSelectionScreen');
+    return <SignSelectionScreen onNavigate={onNavigate} />;
+  }
+
+  const userSign = user.sun_sign.toLowerCase(); // ✅ აღარ გვაქვს fallback 'leo'
   const zodiacData = ZODIAC_SIGNS[userSign] || ZODIAC_SIGNS['leo'];
 
   const randomErrorMessage = ERROR_MESSAGES[Math.floor(Math.random() * ERROR_MESSAGES.length)];
@@ -690,7 +698,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
               </button>
 
               <div className="rf-scroll">
-                {/* 🟢 HEADER - პირდაპირ */}
+                {/* 🟢 HEADER */}
                 <div className="rf-header">
                   <div className="rf-sign-icon">{zodiacData.symbol}</div>
                   <h1 className="rf-sign-name">{userSign.toUpperCase()}</h1>
@@ -701,7 +709,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                   </div>
                 </div>
 
-                {/* 🟢 ENERGY OVERVIEW - პირდაპირ */}
+                {/* 🟢 ENERGY OVERVIEW */}
                 <div className="rf-energy-overview">
                   <div className="rf-energy-item">
                     <span className="rf-energy-emoji">{getEnergyEmojis(horoscope.cosmic_energy_level, '⚡')}</span>
@@ -722,7 +730,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                   </div>
                 </div>
 
-                {/* 🟢 PREDICTIONS - პირდაპირ */}
+                {/* 🟢 PREDICTIONS */}
                 <div className="rf-sections">
                   {horoscope.general_prediction && (
                     <div className="rf-section">
@@ -775,7 +783,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                   )}
                 </div>
 
-                {/* 🟢 AFFIRMATION - პირდაპირ (Share ღილაკის გარეშე) */}
+                {/* 🟢 AFFIRMATION */}
                 {horoscope.affirmation && (
                   <div className="rf-affirmation">
                     <div className="rf-aff-glow" />
@@ -787,7 +795,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
                 {/* 🟡 ACCORDION SECTIONS */}
                 <div className="rf-accordion-container">
-                  {/* 🟡 KEY TRANSITS - Accordion */}
+                  {/* KEY TRANSITS */}
                   {horoscope.key_transits && horoscope.key_transits.length > 0 && (
                     <div className="rf-accordion">
                       <button 
@@ -839,7 +847,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                     </div>
                   )}
 
-                  {/* 🟡 LUCKY ELEMENTS - Accordion */}
+                  {/* LUCKY ELEMENTS */}
                   <div className="rf-accordion">
                     <button 
                       className="rf-accordion-header"
@@ -896,7 +904,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                     </AnimatePresence>
                   </div>
 
-                  {/* 🟡 MOON INFO - Accordion */}
+                  {/* MOON INFO */}
                   <div className="rf-accordion">
                     <button 
                       className="rf-accordion-header"
@@ -938,7 +946,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                   </div>
                 </div>
 
-                {/* ✅ SHARE ღილაკი ბოლოში (Accordion-ის შემდეგ) */}
+                {/* ✅ SHARE ღილაკი ბოლოში */}
                 {horoscope.affirmation && (
                   <div className="rf-share-bottom">
                     <button 
@@ -954,7 +962,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                   </div>
                 )}
 
-                {/* 🟢 FOOTER - პირდაპირ */}
+                {/* 🟢 FOOTER */}
                 <div className="rf-footer">
                   <div className="rf-footer-divider">
                     <span className="rf-fd-star">✦</span>
