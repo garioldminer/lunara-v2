@@ -120,11 +120,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px; /* ✅ 5px padding ორ წარწერას შორის */
+    gap: 5px;
     margin-bottom: 32px;
   }
   
-  /* ✅ "Discover Your Sign" - პატარა, ზემოთ */
   .ss-subtitle-top {
     font-family: 'Cormorant Garamond', serif;
     font-size: 16px;
@@ -135,7 +134,6 @@
     white-space: nowrap;
   }
   
-  /* ✅ "Select Your Zodiac Sign" - დიდი, ქვემოთ, ერთ ხაზად */
   .ss-title-main {
     font-family: 'Cinzel', serif;
     font-size: 28px;
@@ -149,7 +147,7 @@
     background-clip: text;
     -webkit-text-fill-color: transparent;
     line-height: 1.2;
-    white-space: nowrap; /* ✅ ერთ ხაზად */
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 100%;
@@ -325,17 +323,45 @@
     filter: none !important;
   }
   
-  .ss-sign-symbol {
-    font-size: 32px;
-    color: #D9B66F;
-    filter: drop-shadow(0 0 8px rgba(217, 182, 111, 0.6));
+  /* ============================================
+     ✅ ZODIAC SIGN IMAGES (NEW!)
+     ============================================ */
+  .ss-sign-image-container {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid rgba(217, 182, 111, 0.4);
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px rgba(217, 182, 111, 0.2);
+    background: rgba(217, 182, 111, 0.05);
+  }
+  
+  .ss-sign-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     transition: all 0.3s ease;
   }
   
-  .ss-sign-card.selected .ss-sign-symbol {
-    transform: scale(1.15);
-    filter: drop-shadow(0 0 15px rgba(217, 182, 111, 0.9));
-    color: #F4D47C;
+  /* ✅ Selected state - ფოტო */
+  .ss-sign-card.selected .ss-sign-image-container {
+    border-color: rgba(217, 182, 111, 0.9);
+    box-shadow: 
+      0 0 20px rgba(217, 182, 111, 0.5),
+      0 0 40px rgba(217, 182, 111, 0.3);
+    transform: scale(1.1);
+  }
+  
+  .ss-sign-card.selected .ss-sign-image {
+    transform: scale(1.05);
+    filter: brightness(1.1) saturate(1.1);
+  }
+  
+  /* ✅ Hover effect ფოტოზე */
+  .ss-sign-card:hover .ss-sign-image {
+    transform: scale(1.08);
+    filter: brightness(1.05);
   }
   
   .ss-sign-label {
@@ -423,6 +449,9 @@
     appearance: textfield;
   }
   
+  /* ============================================
+     ✅ CALCULATED SIGN (NEW - ფოტოთი)
+     ============================================ */
   .ss-calculated-sign {
     display: flex;
     align-items: center;
@@ -439,11 +468,22 @@
     50% { box-shadow: 0 0 30px rgba(217, 182, 111, 0.4); }
   }
   
-  .ss-calculated-icon {
-    font-size: 48px;
-    color: #D9B66F;
-    filter: drop-shadow(0 0 12px rgba(217, 182, 111, 0.8));
+  /* ✅ Calculated sign image container */
+  .ss-calculated-image-container {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid rgba(217, 182, 111, 0.8);
+    box-shadow: 0 0 30px rgba(217, 182, 111, 0.5);
     flex-shrink: 0;
+    background: rgba(217, 182, 111, 0.05);
+  }
+  
+  .ss-calculated-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
   
   .ss-calculated-info {
@@ -581,8 +621,10 @@
       padding: 12px 4px;
     }
   
-    .ss-sign-symbol {
-      font-size: 28px;
+    /* ✅ Tablet image size */
+    .ss-sign-image-container {
+      width: 52px;
+      height: 52px;
     }
   
     .ss-sign-label {
@@ -607,8 +649,10 @@
       gap: 12px;
     }
   
-    .ss-calculated-icon {
-      font-size: 40px;
+    /* ✅ Tablet calculated image size */
+    .ss-calculated-image-container {
+      width: 70px;
+      height: 70px;
     }
   
     .ss-calculated-info p {
@@ -633,7 +677,6 @@
       height: 20px;
     }
   
-    /* ✅ Mobile-ზე title უფრო პატარა რომ ერთ ხაზად ეტიოს */
     .ss-title-main {
       font-size: 20px;
       letter-spacing: 1px;
@@ -653,8 +696,10 @@
       gap: 4px;
     }
   
-    .ss-sign-symbol {
-      font-size: 24px;
+    /* ✅ Mobile image size */
+    .ss-sign-image-container {
+      width: 44px;
+      height: 44px;
     }
   
     .ss-sign-label {
@@ -680,6 +725,16 @@
   
     .ss-mode-content p {
       font-size: 12px;
+    }
+  
+    /* ✅ Mobile calculated image size */
+    .ss-calculated-image-container {
+      width: 60px;
+      height: 60px;
+    }
+  
+    .ss-calculated-info p {
+      font-size: 18px;
     }
   }
   

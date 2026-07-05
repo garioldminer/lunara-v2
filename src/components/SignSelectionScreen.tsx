@@ -9,19 +9,22 @@ interface Props {
   onNavigate?: (screen: string) => void;
 }
 
+// ✅ Supabase-ის base URL
+const SUPABASE_BASE_URL = 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/Horoscope';
+
 const ZODIAC_SIGNS = [
-  { name: 'aries', symbol: '♈', label: 'Aries', dates: 'Mar 21 - Apr 19' },
-  { name: 'taurus', symbol: '♉', label: 'Taurus', dates: 'Apr 20 - May 20' },
-  { name: 'gemini', symbol: '♊', label: 'Gemini', dates: 'May 21 - Jun 20' },
-  { name: 'cancer', symbol: '♋', label: 'Cancer', dates: 'Jun 21 - Jul 22' },
-  { name: 'leo', symbol: '♌', label: 'Leo', dates: 'Jul 23 - Aug 22' },
-  { name: 'virgo', symbol: '♍', label: 'Virgo', dates: 'Aug 23 - Sep 22' },
-  { name: 'libra', symbol: '♎', label: 'Libra', dates: 'Sep 23 - Oct 22' },
-  { name: 'scorpio', symbol: '♏', label: 'Scorpio', dates: 'Oct 23 - Nov 21' },
-  { name: 'sagittarius', symbol: '♐', label: 'Sagittarius', dates: 'Nov 22 - Dec 21' },
-  { name: 'capricorn', symbol: '♑', label: 'Capricorn', dates: 'Dec 22 - Jan 19' },
-  { name: 'aquarius', symbol: '♒', label: 'Aquarius', dates: 'Jan 20 - Feb 18' },
-  { name: 'pisces', symbol: '♓', label: 'Pisces', dates: 'Feb 19 - Mar 20' },
+  { name: 'aries', symbol: '♈', label: 'Aries', dates: 'Mar 21 - Apr 19', imageUrl: `${SUPABASE_BASE_URL}/Aries.jpg` },
+  { name: 'taurus', symbol: '♉', label: 'Taurus', dates: 'Apr 20 - May 20', imageUrl: `${SUPABASE_BASE_URL}/Taurus.jpg` },
+  { name: 'gemini', symbol: '♊', label: 'Gemini', dates: 'May 21 - Jun 20', imageUrl: `${SUPABASE_BASE_URL}/Gemini.jpg` },
+  { name: 'cancer', symbol: '♋', label: 'Cancer', dates: 'Jun 21 - Jul 22', imageUrl: `${SUPABASE_BASE_URL}/Cancer1.jpg` },
+  { name: 'leo', symbol: '♌', label: 'Leo', dates: 'Jul 23 - Aug 22', imageUrl: `${SUPABASE_BASE_URL}/Leo1.jpg` },
+  { name: 'virgo', symbol: '♍', label: 'Virgo', dates: 'Aug 23 - Sep 22', imageUrl: `${SUPABASE_BASE_URL}/Virgo.jpg` },
+  { name: 'libra', symbol: '♎', label: 'Libra', dates: 'Sep 23 - Oct 22', imageUrl: `${SUPABASE_BASE_URL}/Libra.jpg` },
+  { name: 'scorpio', symbol: '♏', label: 'Scorpio', dates: 'Oct 23 - Nov 21', imageUrl: `${SUPABASE_BASE_URL}/Scorpio.jpg` },
+  { name: 'sagittarius', symbol: '♐', label: 'Sagittarius', dates: 'Nov 22 - Dec 21', imageUrl: `${SUPABASE_BASE_URL}/Sagittarius.jpg` },
+  { name: 'capricorn', symbol: '♑', label: 'Capricorn', dates: 'Dec 22 - Jan 19', imageUrl: `${SUPABASE_BASE_URL}/Capricorn.jpg` },
+  { name: 'aquarius', symbol: '♒', label: 'Aquarius', dates: 'Jan 20 - Feb 18', imageUrl: `${SUPABASE_BASE_URL}/Aquarius.jpg` },
+  { name: 'pisces', symbol: '♓', label: 'Pisces', dates: 'Feb 19 - Mar 20', imageUrl: `${SUPABASE_BASE_URL}/Pisces.jpg` },
 ];
 
 export default function SignSelectionScreen({ onNavigate }: Props) {
@@ -112,6 +115,10 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
     }
   };
 
+  const getSignData = (signName: string) => {
+    return ZODIAC_SIGNS.find(s => s.name === signName);
+  };
+
   return (
     <div className="sign-selection-screen">
       <div className="ss-background" />
@@ -132,7 +139,6 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
         ))}
       </div>
 
-      {/* Back Button */}
       <button 
         className="ss-back-btn-fixed"
         onClick={handleBack}
@@ -141,13 +147,11 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
       </button>
 
       <div className="ss-content">
-        {/* ✅ HEADER - გაცვლილი ტექსტები */}
         <div className="ss-header">
           <p className="ss-subtitle-top">Discover Your Sign</p>
           <h1 className="ss-title-main">Select Your Zodiac Sign</h1>
         </div>
 
-        {/* Mode Selection */}
         {!selectedMode && (
           <div className="ss-mode-selection">
             <button
@@ -174,10 +178,8 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
           </div>
         )}
 
-        {/* Manual Selection Mode */}
         {selectedMode === 'manual' && (
           <div className="ss-manual-mode">
-            {/* ✅ Grid-ს აქვს 'has-selection' class თუ ნიშანი არჩეულია */}
             <div className={`ss-signs-grid ${selectedSign ? 'has-selection' : ''}`}>
               {ZODIAC_SIGNS.map(sign => (
                 <button
@@ -185,7 +187,14 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
                   className={`ss-sign-card ${selectedSign === sign.name ? 'selected' : ''}`}
                   onClick={() => handleManualSelect(sign.name)}
                 >
-                  <div className="ss-sign-symbol">{sign.symbol}</div>
+                  <div className="ss-sign-image-container">
+                    <img 
+                      src={sign.imageUrl} 
+                      alt={sign.label}
+                      className="ss-sign-image"
+                      loading="lazy"
+                    />
+                  </div>
                   <div className="ss-sign-label">{sign.label}</div>
                   <div className="ss-sign-dates">{sign.dates}</div>
                 </button>
@@ -194,7 +203,6 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
           </div>
         )}
 
-        {/* Birth Date Mode */}
         {selectedMode === 'birth-date' && (
           <div className="ss-birth-date-mode">
             <h2 className="ss-mode-title">When were you born?</h2>
@@ -239,12 +247,16 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
 
             {calculatedSign && (
               <div className="ss-calculated-sign">
-                <div className="ss-calculated-icon">
-                  {ZODIAC_SIGNS.find(s => s.name === calculatedSign)?.symbol}
+                <div className="ss-calculated-image-container">
+                  <img 
+                    src={getSignData(calculatedSign)?.imageUrl} 
+                    alt={getSignData(calculatedSign)?.label}
+                    className="ss-calculated-image"
+                  />
                 </div>
                 <div className="ss-calculated-info">
                   <h3>Your Sign</h3>
-                  <p>{ZODIAC_SIGNS.find(s => s.name === calculatedSign)?.label}</p>
+                  <p>{getSignData(calculatedSign)?.label}</p>
                 </div>
               </div>
             )}
@@ -266,7 +278,6 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
           </div>
         )}
 
-        {/* ✅ Continue ღილაკი - მხოლოდ selectedSign-ზე */}
         {selectedSign && (
           <button
             className="ss-continue-btn"
