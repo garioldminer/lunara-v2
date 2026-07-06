@@ -20,16 +20,17 @@ const PLANET_IMAGES: Record<string, string> = {
   'Neptune': 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/planets/neptune.webp',
 };
 
+// ✅ გადიდებული orbit radii
 const PLANET_CONFIG: Record<string, { color: string; orbitRadius: number }> = {
   'Sun': { color: '#FFD700', orbitRadius: 0 },
-  'Moon': { color: '#C0C0C0', orbitRadius: 50 },
-  'Mercury': { color: '#A0A0A0', orbitRadius: 70 },
-  'Venus': { color: '#E6B800', orbitRadius: 90 },
-  'Mars': { color: '#FF4500', orbitRadius: 110 },
-  'Jupiter': { color: '#DAA520', orbitRadius: 135 },
-  'Saturn': { color: '#F4A460', orbitRadius: 160 },
-  'Uranus': { color: '#40E0D0', orbitRadius: 185 },
-  'Neptune': { color: '#4169E1', orbitRadius: 210 }
+  'Moon': { color: '#C0C0C0', orbitRadius: 70 },
+  'Mercury': { color: '#A0A0A0', orbitRadius: 95 },
+  'Venus': { color: '#E6B800', orbitRadius: 120 },
+  'Mars': { color: '#FF4500', orbitRadius: 145 },
+  'Jupiter': { color: '#DAA520', orbitRadius: 175 },
+  'Saturn': { color: '#F4A460', orbitRadius: 205 },
+  'Uranus': { color: '#40E0D0', orbitRadius: 235 },
+  'Neptune': { color: '#4169E1', orbitRadius: 265 }
 };
 
 const ZODIAC_SYMBOLS: Record<string, string> = {
@@ -42,26 +43,26 @@ export interface AstroScreenProps {
   onNavigate?: (screen: string) => void;
 }
 
-// ===== PLANET ORBIT DIAGRAM =====
+// ===== PLANET ORBIT DIAGRAM - გადიდებული =====
 function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
   const [hoveredPlanet, setHoveredPlanet] = useState<string | null>(null);
 
   const getPlanetPosition = (planet: any) => {
     const config = PLANET_CONFIG[planet.planet_name];
-    if (!config) return { x: 200, y: 200 };
+    if (!config) return { x: 250, y: 250 };
 
     const signIndex = Object.keys(ZODIAC_SYMBOLS).indexOf(planet.sign);
     const signAngle = (signIndex * 30) + planet.degree;
     const angle = (signAngle * Math.PI) / 180;
-    const x = 200 + config.orbitRadius * Math.cos(angle);
-    const y = 200 + config.orbitRadius * Math.sin(angle);
+    const x = 250 + config.orbitRadius * Math.cos(angle);
+    const y = 250 + config.orbitRadius * Math.sin(angle);
 
     return { x, y };
   };
 
   return (
     <div className="orbit-diagram-container">
-      <svg className="orbit-svg" viewBox="0 0 400 400">
+      <svg className="orbit-svg" viewBox="0 0 500 500">
         <defs>
           <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="#FFD700" stopOpacity="1" />
@@ -76,31 +77,31 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
           .map(([name, config]) => (
             <circle
               key={`orbit-${name}`}
-              cx="200"
-              cy="200"
+              cx="250"
+              cy="250"
               r={config.orbitRadius}
               fill="none"
               stroke="rgba(217, 182, 111, 0.2)"
-              strokeWidth="0.8"
-              strokeDasharray="3 3"
+              strokeWidth="1"
+              strokeDasharray="4 4"
             />
           ))}
 
-        {/* Sun center */}
-        <circle cx="200" cy="200" r="25" fill="url(#sunGlow)" className="sun-glow" />
+        {/* Sun center - გადიდებული */}
+        <circle cx="250" cy="250" r="35" fill="url(#sunGlow)" className="sun-glow" />
         {PLANET_IMAGES['Sun'] && (
           <image
             href={PLANET_IMAGES['Sun']}
-            x="178"
-            y="178"
-            width="44"
-            height="44"
+            x="220"
+            y="220"
+            width="60"
+            height="60"
             className="planet-img sun-img"
             preserveAspectRatio="xMidYMid slice"
           />
         )}
 
-        {/* Planets */}
+        {/* Planets - გადიდებული */}
         {planets.map((planet, index) => {
           const config = PLANET_CONFIG[planet.planet_name];
           if (!config) return null;
@@ -108,7 +109,7 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
           const pos = getPlanetPosition(planet);
           const isHovered = hoveredPlanet === planet.planet_name;
           const planetImage = PLANET_IMAGES[planet.planet_name];
-          const size = isHovered ? 32 : 24;
+          const size = isHovered ? 40 : 32; // ✅ 24→32, 32→40
 
           return (
             <g key={planet.planet_name}>
@@ -133,19 +134,20 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
                   {/* Planet label */}
                   <text
                     x={pos.x}
-                    y={pos.y - size / 2 - 4}
+                    y={pos.y - size / 2 - 6}
                     textAnchor="middle"
                     className="planet-label"
-                    style={{ fontSize: isHovered ? '10px' : '8px' }}
+                    style={{ fontSize: isHovered ? '12px' : '10px' }}
                   >
                     {planet.planet_name}
                   </text>
                   {/* Zodiac symbol */}
                   <text
                     x={pos.x}
-                    y={pos.y + size / 2 + 10}
+                    y={pos.y + size / 2 + 14}
                     textAnchor="middle"
                     className="zodiac-symbol"
+                    style={{ fontSize: '13px' }}
                   >
                     {ZODIAC_SYMBOLS[planet.sign] || ''}
                   </text>
@@ -154,7 +156,7 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
                 <motion.circle
                   cx={pos.x}
                   cy={pos.y}
-                  r={isHovered ? 10 : 7}
+                  r={isHovered ? 14 : 10}
                   fill={config.color}
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
@@ -209,7 +211,7 @@ function PlanetDataTable({ planets }: { planets: any[] }) {
   );
 }
 
-// ===== BIG THREE CARDS =====
+// ===== BIG THREE CARDS - უფრო compact =====
 function BigThreeCards({ birthChart }: { birthChart: any }) {
   if (!birthChart) return null;
 
@@ -318,7 +320,6 @@ export default function AstroScreen({ onNavigate }: AstroScreenProps) {
   const [planets, setPlanets] = useState<any[]>([]);
   const [planetsLoading, setPlanetsLoading] = useState(true);
 
-  // Fetch planet positions
   useEffect(() => {
     const fetchPlanets = async () => {
       if (!supabase) {
@@ -352,7 +353,7 @@ export default function AstroScreen({ onNavigate }: AstroScreenProps) {
     <div className="astro-screen">
       <div className="cosmic-background" style={{ backgroundImage: `url(${BG_IMAGE})` }} />
 
-      {/* Header */}
+      {/* Header - უფრო ახლოს ზედა კიდესთან */}
       <div className="astro-header">
         <button className="astro-back-btn" onClick={() => onNavigate?.('home')}>
           <ArrowLeft size={18} />
@@ -363,7 +364,7 @@ export default function AstroScreen({ onNavigate }: AstroScreenProps) {
         </button>
       </div>
 
-      {/* Main Content - No Scroll */}
+      {/* Main Content */}
       <div className="astro-content">
         
         {/* 1. Big Three */}
