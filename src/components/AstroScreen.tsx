@@ -20,258 +20,231 @@ const PLANET_IMAGES: Record<string, string> = {
   'Neptune': 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/planets/neptune.webp',
 };
 
-// ✅ ჰოროსკოპის ნიშნების ფოტოები
-const ZODIAC_IMAGES: Record<string, string> = {
-  'Aries': 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/Horoscope/Aries.jpg',
-  'Taurus': 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/Horoscope/Taurus.jpg',
-  'Gemini': 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/Horoscope/Gemini.jpg',
-  'Cancer': 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/Horoscope/Cancer1.jpg',
-  'Leo': 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/Horoscope/Leo1.jpg',
-  'Virgo': 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/Horoscope/Virgo.jpg',
-  'Libra': 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/Horoscope/Libra.jpg',
-  'Scorpio': 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/Horoscope/Scorpio.jpg',
-  'Sagittarius': 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/Horoscope/Sagittarius.jpg',
-  'Capricorn': 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/Horoscope/Capricorn.jpg',
-  'Aquarius': 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/Horoscope/Aquarius.jpg',
-  'Pisces': 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/Horoscope/Pisces.jpg'
-};
-
 const ZODIAC_SYMBOLS: Record<string, string> = {
   'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊', 'Cancer': '♋',
   'Leo': '♌', 'Virgo': '♍', 'Libra': '♎', 'Scorpio': '♏',
   'Sagittarius': '♐', 'Capricorn': '♑', 'Aquarius': '♒', 'Pisces': '♓'
 };
 
-// ✅ გადიდებული orbit radii (3D ეფექტისთვის)
+// ✅ გადიდებული orbit radii (2x ზომა)
 const PLANET_CONFIG: Record<string, { color: string; orbitRadius: number }> = {
   'Sun': { color: '#FFD700', orbitRadius: 0 },
-  'Moon': { color: '#C0C0C0', orbitRadius: 80 },
-  'Mercury': { color: '#A0A0A0', orbitRadius: 110 },
-  'Venus': { color: '#E6B800', orbitRadius: 140 },
-  'Mars': { color: '#FF4500', orbitRadius: 170 },
-  'Jupiter': { color: '#DAA520', orbitRadius: 205 },
-  'Saturn': { color: '#F4A460', orbitRadius: 240 },
-  'Uranus': { color: '#40E0D0', orbitRadius: 275 },
-  'Neptune': { color: '#4169E1', orbitRadius: 310 }
+  'Moon': { color: '#C0C0C0', orbitRadius: 100 },
+  'Mercury': { color: '#A0A0A0', orbitRadius: 140 },
+  'Venus': { color: '#E6B800', orbitRadius: 180 },
+  'Mars': { color: '#FF4500', orbitRadius: 220 },
+  'Jupiter': { color: '#DAA520', orbitRadius: 265 },
+  'Saturn': { color: '#F4A460', orbitRadius: 310 },
+  'Uranus': { color: '#40E0D0', orbitRadius: 355 },
+  'Neptune': { color: '#4169E1', orbitRadius: 400 }
 };
 
 export interface AstroScreenProps {
   onNavigate?: (screen: string) => void;
 }
 
-// ===== PLANET ORBIT DIAGRAM - 3D ეფექტით =====
+// ===== PLANET ORBIT DIAGRAM - 2x ზომა, სტატიკური =====
 function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
   const [hoveredPlanet, setHoveredPlanet] = useState<string | null>(null);
 
   const getPlanetPosition = (planet: any) => {
     const config = PLANET_CONFIG[planet.planet_name];
-    if (!config) return { x: 300, y: 300 };
+    if (!config) return { x: 400, y: 400 };
 
     const signIndex = Object.keys(ZODIAC_SYMBOLS).indexOf(planet.sign);
     const signAngle = (signIndex * 30) + planet.degree;
     const angle = (signAngle * Math.PI) / 180;
-    const x = 300 + config.orbitRadius * Math.cos(angle);
-    const y = 300 + config.orbitRadius * Math.sin(angle);
+    const x = 400 + config.orbitRadius * Math.cos(angle);
+    const y = 400 + config.orbitRadius * Math.sin(angle);
 
     return { x, y };
   };
 
   return (
     <div className="orbit-diagram-container">
-      <div className="orbit-3d-wrapper">
-        <svg className="orbit-svg" viewBox="0 0 600 600">
-          <defs>
-            <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#FFD700" stopOpacity="1" />
-              <stop offset="40%" stopColor="#FFA500" stopOpacity="0.7" />
-              <stop offset="100%" stopColor="#FF8C00" stopOpacity="0" />
-            </radialGradient>
-            <filter id="planetShadow">
-              <feGaussianBlur in="SourceAlpha" stdDeviation="3" />
-              <feOffset dx="2" dy="2" result="offsetblur" />
-              <feComponentTransfer>
-                <feFuncA type="linear" slope="0.5" />
-              </feComponentTransfer>
-              <feMerge>
-                <feMergeNode />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-            <filter id="sunGlowFilter">
-              <feGaussianBlur stdDeviation="4" result="coloredBlur" />
-              <feMerge>
-                <feMergeNode in="coloredBlur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
+      <svg className="orbit-svg" viewBox="0 0 800 800">
+        <defs>
+          <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#FFD700" stopOpacity="1" />
+            <stop offset="40%" stopColor="#FFA500" stopOpacity="0.7" />
+            <stop offset="100%" stopColor="#FF8C00" stopOpacity="0" />
+          </radialGradient>
+          <filter id="planetShadow">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="4" />
+            <feOffset dx="3" dy="3" result="offsetblur" />
+            <feComponentTransfer>
+              <feFuncA type="linear" slope="0.5" />
+            </feComponentTransfer>
+            <feMerge>
+              <feMergeNode />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <filter id="sunGlowFilter">
+            <feGaussianBlur stdDeviation="6" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
 
-          {/* Orbital rings - 3D ეფექტით */}
-          {Object.entries(PLANET_CONFIG)
-            .filter(([name]) => name !== 'Sun')
-            .map(([name, config]) => (
-              <circle
-                key={`orbit-${name}`}
-                cx="300"
-                cy="300"
-                r={config.orbitRadius}
-                fill="none"
-                stroke="rgba(217, 182, 111, 0.15)"
-                strokeWidth="1"
-                strokeDasharray="5 5"
-                className="orbit-ring"
-              />
-            ))}
-
-          {/* Sun center - გადიდებული 3D ეფექტით */}
-          <circle cx="300" cy="300" r="50" fill="url(#sunGlow)" className="sun-glow" filter="url(#sunGlowFilter)" />
-          {PLANET_IMAGES['Sun'] && (
-            <image
-              href={PLANET_IMAGES['Sun']}
-              x="260"
-              y="260"
-              width="80"
-              height="80"
-              className="planet-img sun-img"
-              preserveAspectRatio="xMidYMid slice"
-              clipPath="circle(40px at center)"
+        {/* Orbital rings */}
+        {Object.entries(PLANET_CONFIG)
+          .filter(([name]) => name !== 'Sun')
+          .map(([name, config]) => (
+            <circle
+              key={`orbit-${name}`}
+              cx="400"
+              cy="400"
+              r={config.orbitRadius}
+              fill="none"
+              stroke="rgba(217, 182, 111, 0.15)"
+              strokeWidth="1.5"
+              strokeDasharray="6 6"
             />
-          )}
+          ))}
 
-          {/* Planets - გადიდებული 3D ეფექტით */}
-          {planets.map((planet, index) => {
-            const config = PLANET_CONFIG[planet.planet_name];
-            if (!config) return null;
+        {/* Sun center - 2x ზომა */}
+        <circle cx="400" cy="400" r="70" fill="url(#sunGlow)" className="sun-glow" filter="url(#sunGlowFilter)" />
+        {PLANET_IMAGES['Sun'] && (
+          <image
+            href={PLANET_IMAGES['Sun']}
+            x="340"
+            y="340"
+            width="120"
+            height="120"
+            className="planet-img sun-img"
+            preserveAspectRatio="xMidYMid slice"
+            clipPath="circle(60px at center)"
+          />
+        )}
 
-            const pos = getPlanetPosition(planet);
-            const isHovered = hoveredPlanet === planet.planet_name;
-            const planetImage = PLANET_IMAGES[planet.planet_name];
-            const size = isHovered ? 50 : 40;
+        {/* Planets - 2x ზომა, სტატიკური */}
+        {planets.map((planet, index) => {
+          const config = PLANET_CONFIG[planet.planet_name];
+          if (!config) return null;
 
-            return (
-              <g key={planet.planet_name}>
-                {planetImage ? (
-                  <motion.g
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: index * 0.08, duration: 0.4 }}
-                    onMouseEnter={() => setHoveredPlanet(planet.planet_name)}
-                    onMouseLeave={() => setHoveredPlanet(null)}
-                    style={{ cursor: 'pointer' }}
-                    filter="url(#planetShadow)"
-                  >
-                    {/* Glow ring */}
-                    <circle
-                      cx={pos.x}
-                      cy={pos.y}
-                      r={size / 2 + 4}
-                      fill="none"
-                      stroke={config.color}
-                      strokeWidth="1.5"
-                      opacity={isHovered ? 0.8 : 0.4}
-                      className="planet-glow-ring"
-                    />
-                    <image
-                      href={planetImage}
-                      x={pos.x - size / 2}
-                      y={pos.y - size / 2}
-                      width={size}
-                      height={size}
-                      className="planet-img"
-                      preserveAspectRatio="xMidYMid slice"
-                      clipPath={`circle(${size / 2}px at center)`}
-                    />
-                    {/* Planet label */}
-                    <text
-                      x={pos.x}
-                      y={pos.y - size / 2 - 8}
-                      textAnchor="middle"
-                      className="planet-label"
-                      style={{ fontSize: isHovered ? '13px' : '11px' }}
-                    >
-                      {planet.planet_name}
-                    </text>
-                    {/* Zodiac symbol */}
-                    <text
-                      x={pos.x}
-                      y={pos.y + size / 2 + 16}
-                      textAnchor="middle"
-                      className="zodiac-symbol"
-                      style={{ fontSize: '14px' }}
-                    >
-                      {ZODIAC_SYMBOLS[planet.sign] || ''}
-                    </text>
-                  </motion.g>
-                ) : (
-                  <motion.circle
+          const pos = getPlanetPosition(planet);
+          const isHovered = hoveredPlanet === planet.planet_name;
+          const planetImage = PLANET_IMAGES[planet.planet_name];
+          const size = isHovered ? 80 : 64; // ✅ 2x ზომა (32→64, 40→80)
+
+          return (
+            <g key={planet.planet_name}>
+              {planetImage ? (
+                <motion.g
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: index * 0.08, duration: 0.5 }}
+                  onMouseEnter={() => setHoveredPlanet(planet.planet_name)}
+                  onMouseLeave={() => setHoveredPlanet(null)}
+                  style={{ cursor: 'pointer' }}
+                  filter="url(#planetShadow)"
+                >
+                  {/* Glow ring */}
+                  <circle
                     cx={pos.x}
                     cy={pos.y}
-                    r={isHovered ? 18 : 14}
-                    fill={config.color}
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: index * 0.08 }}
-                    onMouseEnter={() => setHoveredPlanet(planet.planet_name)}
-                    onMouseLeave={() => setHoveredPlanet(null)}
-                    style={{ cursor: 'pointer' }}
-                    filter="url(#planetShadow)"
+                    r={size / 2 + 6}
+                    fill="none"
+                    stroke={config.color}
+                    strokeWidth="2"
+                    opacity={isHovered ? 0.8 : 0.4}
+                    className="planet-glow-ring"
                   />
-                )}
-              </g>
-            );
-          })}
-        </svg>
-      </div>
+                  <image
+                    href={planetImage}
+                    x={pos.x - size / 2}
+                    y={pos.y - size / 2}
+                    width={size}
+                    height={size}
+                    className="planet-img"
+                    preserveAspectRatio="xMidYMid slice"
+                    clipPath={`circle(${size / 2}px at center)`}
+                  />
+                  {/* Planet name */}
+                  <text
+                    x={pos.x}
+                    y={pos.y + size / 2 + 20}
+                    textAnchor="middle"
+                    className="planet-name-text"
+                    style={{ fontSize: isHovered ? '16px' : '14px' }}
+                  >
+                    {planet.planet_name}
+                  </text>
+                  {/* Zodiac sign name only */}
+                  <text
+                    x={pos.x}
+                    y={pos.y + size / 2 + 38}
+                    textAnchor="middle"
+                    className="zodiac-name-text"
+                  >
+                    {planet.sign}
+                  </text>
+                </motion.g>
+              ) : (
+                <motion.circle
+                  cx={pos.x}
+                  cy={pos.y}
+                  r={isHovered ? 28 : 22}
+                  fill={config.color}
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: index * 0.08 }}
+                  onMouseEnter={() => setHoveredPlanet(planet.planet_name)}
+                  onMouseLeave={() => setHoveredPlanet(null)}
+                  style={{ cursor: 'pointer' }}
+                  filter="url(#planetShadow)"
+                />
+              )}
+            </g>
+          );
+        })}
+      </svg>
     </div>
   );
 }
 
-// ===== PLANET DATA TABLE - ფოტოებით =====
-function PlanetDataTable({ planets }: { planets: any[] }) {
+// ===== PLANET DATA LIST - მარტივი (ბანქოს კარტების გარეშე) =====
+function PlanetDataList({ planets }: { planets: any[] }) {
   const leftPlanets = planets.slice(0, 4);
   const rightPlanets = planets.slice(4, 8);
 
   const renderPlanetRow = (planet: any) => {
     const config = PLANET_CONFIG[planet.planet_name];
     const planetImage = PLANET_IMAGES[planet.planet_name];
-    const zodiacImage = ZODIAC_IMAGES[planet.sign];
     
     return (
-      <div key={planet.planet_name} className="planet-row">
+      <div key={planet.planet_name} className="planet-simple-row">
         {/* Planet image */}
         {planetImage ? (
-          <img src={planetImage} alt={planet.planet_name} className="planet-row-img" />
+          <img src={planetImage} alt={planet.planet_name} className="planet-simple-img" />
         ) : (
-          <span className="planet-row-dot" style={{ backgroundColor: config?.color }} />
+          <span className="planet-simple-dot" style={{ backgroundColor: config?.color }} />
         )}
-        <span className="planet-row-name">{planet.planet_name}</span>
-        
-        {/* Zodiac card-style image */}
-        <div className="zodiac-card-mini">
-          {zodiacImage ? (
-            <img src={zodiacImage} alt={planet.sign} className="zodiac-card-img" />
-          ) : (
-            <span className="zodiac-card-symbol">{ZODIAC_SYMBOLS[planet.sign]}</span>
-          )}
-          <span className="zodiac-card-degree">{planet.degree.toFixed(0)}°</span>
+        <div className="planet-simple-info">
+          <span className="planet-simple-name">{planet.planet_name}</span>
+          <span className="planet-simple-sign">{planet.sign}</span>
         </div>
+        <span className="planet-simple-degree">{planet.degree.toFixed(0)}°</span>
       </div>
     );
   };
 
   return (
-    <div className="planet-data-table">
-      <div className="planet-data-column">
+    <div className="planet-simple-list">
+      <div className="planet-simple-column">
         {leftPlanets.map(renderPlanetRow)}
       </div>
-      <div className="planet-data-column">
+      <div className="planet-simple-column">
         {rightPlanets.map(renderPlanetRow)}
       </div>
     </div>
   );
 }
 
-// ===== BIG THREE CARDS - უფრო ლამაზი =====
+// ===== BIG THREE CARDS =====
 function BigThreeCards({ birthChart }: { birthChart: any }) {
   if (!birthChart) return null;
 
@@ -331,7 +304,7 @@ function BigThreeCards({ birthChart }: { birthChart: any }) {
   );
 }
 
-// ===== COSMIC ENERGY CARDS - უცვლელი =====
+// ===== COSMIC ENERGY CARDS =====
 function CosmicEnergyCards({ cosmicData, birthChart }: { cosmicData: any; birthChart: any }) {
   const dominantElement = cosmicData?.cosmic?.dominant_element || 'Earth';
   const energyLevel = cosmicData?.cosmic?.energy_level || 85;
@@ -443,7 +416,7 @@ export default function AstroScreen({ onNavigate }: AstroScreenProps) {
     <div className="astro-screen">
       <div className="cosmic-background" style={{ backgroundImage: `url(${BG_IMAGE})` }} />
 
-      {/* Header - 70px padding, ASTRO + back button only */}
+      {/* Header */}
       <div className="astro-header">
         <button className="astro-back-btn" onClick={() => onNavigate?.('home')}>
           <ArrowLeft size={18} />
@@ -469,7 +442,7 @@ export default function AstroScreen({ onNavigate }: AstroScreenProps) {
           <BigThreeCards birthChart={birthChart} />
         </motion.section>
 
-        {/* 2. Planet Positions - 3D ეფექტით */}
+        {/* 2. Planet Positions - 2x ზომა */}
         <motion.section 
           className="astro-section planets-section"
           initial={{ opacity: 0, y: 10 }}
@@ -491,12 +464,12 @@ export default function AstroScreen({ onNavigate }: AstroScreenProps) {
           ) : (
             <>
               <PlanetOrbitDiagram planets={planets} />
-              <PlanetDataTable planets={planets} />
+              <PlanetDataList planets={planets} />
             </>
           )}
         </motion.section>
 
-        {/* 3. Cosmic Energy - უცვლელი */}
+        {/* 3. Cosmic Energy */}
         <motion.section 
           className="astro-section energy-section"
           initial={{ opacity: 0, y: 10 }}
@@ -510,7 +483,7 @@ export default function AstroScreen({ onNavigate }: AstroScreenProps) {
           <CosmicEnergyCards cosmicData={cosmicData} birthChart={birthChart} />
         </motion.section>
 
-        {/* 4. CTA Button - უცვლელი */}
+        {/* 4. CTA Button */}
         <motion.button
           className="cta-horoscope-btn"
           initial={{ opacity: 0, y: 10 }}
@@ -522,6 +495,9 @@ export default function AstroScreen({ onNavigate }: AstroScreenProps) {
           <span className="cta-text">Get My Personal Horoscope</span>
           <span className="cta-arrow">→</span>
         </motion.button>
+
+        {/* Bottom padding for scroll */}
+        <div className="bottom-padding" />
 
       </div>
     </div>

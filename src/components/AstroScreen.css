@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap');
 
 /* ============================================
-   MAIN CONTAINER - WITH SCROLL
+   MAIN CONTAINER
    ============================================ */
 .astro-screen {
   position: relative;
@@ -38,7 +38,7 @@
 }
 
 /* ============================================
-   HEADER - 70px from top
+   HEADER
    ============================================ */
 .astro-header {
   position: relative;
@@ -82,7 +82,6 @@
   text-align: center;
 }
 
-/* ✅ Spacer for balance (instead of sparkle button) */
 .astro-header-spacer {
   width: 36px;
   height: 36px;
@@ -90,15 +89,21 @@
 }
 
 /* ============================================
-   CONTENT - Scrollable, 3px margins
+   CONTENT
    ============================================ */
 .astro-content {
   position: relative;
   z-index: 10;
-  padding: 0 3px 80px; /* ✅ 3px left/right margins */
+  padding: 0 3px 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+/* ✅ Bottom padding for scroll - 15px after CTA button */
+.bottom-padding {
+  height: 15px;
+  flex-shrink: 0;
 }
 
 /* ============================================
@@ -137,7 +142,7 @@
 }
 
 /* ============================================
-   BIG THREE - ლამაზი layout
+   BIG THREE
    ============================================ */
 .big-three-container {
   display: grid;
@@ -230,7 +235,7 @@
 }
 
 /* ============================================
-   PLANET POSITIONS - 3D ეფექტით
+   PLANET POSITIONS - 2x ზომა, ცენტრში
    ============================================ */
 .planets-section {
   padding: 14px;
@@ -261,40 +266,21 @@
   background: rgba(217, 182, 111, 0.2);
 }
 
-/* ✅ 3D Orbit Container */
 .orbit-diagram-container {
   width: 100%;
   display: flex;
   justify-content: center;
+  align-items: center;
   margin-bottom: 12px;
-  perspective: 1000px;
-}
-
-.orbit-3d-wrapper {
-  transform: rotateX(15deg);
-  transform-style: preserve-3d;
-  transition: transform 0.5s ease;
-}
-
-.orbit-3d-wrapper:hover {
-  transform: rotateX(10deg) scale(1.02);
+  min-height: 400px;
 }
 
 .orbit-svg {
   width: 100%;
-  max-width: 550px;
+  max-width: 650px;
   height: auto;
-  max-height: 450px;
+  max-height: 550px;
   filter: drop-shadow(0 10px 30px rgba(217, 182, 111, 0.15));
-}
-
-.orbit-ring {
-  transition: all 0.3s ease;
-}
-
-.orbit-ring:hover {
-  stroke: rgba(217, 182, 111, 0.4);
-  stroke-width: 1.5;
 }
 
 .sun-glow {
@@ -303,31 +289,24 @@
 
 @keyframes sunPulse {
   0%, 100% { 
-    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8));
-    transform-origin: center;
+    filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.8));
   }
   50% { 
-    filter: drop-shadow(0 0 25px rgba(255, 215, 0, 1));
+    filter: drop-shadow(0 0 30px rgba(255, 215, 0, 1));
   }
 }
 
 .planet-img {
   transition: all 0.3s ease;
-  filter: drop-shadow(0 0 8px rgba(217, 182, 111, 0.5));
+  filter: drop-shadow(0 0 10px rgba(217, 182, 111, 0.5));
 }
 
 .planet-img:hover {
-  filter: drop-shadow(0 0 20px rgba(217, 182, 111, 1));
+  filter: drop-shadow(0 0 25px rgba(217, 182, 111, 1));
 }
 
 .sun-img {
-  filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.9));
-  animation: sunRotate 30s linear infinite;
-}
-
-@keyframes sunRotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  filter: drop-shadow(0 0 18px rgba(255, 215, 0, 0.9));
 }
 
 .planet-glow-ring {
@@ -340,139 +319,112 @@
   50% { opacity: 0.8; }
 }
 
-.planet-label {
+.planet-name-text {
   font-family: 'Cinzel', serif;
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   fill: #F7F3EB;
-  text-shadow: 0 0 6px rgba(0, 0, 0, 0.9);
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.9);
 }
 
-.zodiac-symbol {
-  font-size: 14px;
-  fill: rgba(217, 182, 111, 0.9);
-  filter: drop-shadow(0 0 3px rgba(217, 182, 111, 0.5));
+.zodiac-name-text {
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  font-weight: 600;
+  fill: #D9B66F;
+  text-shadow: 0 0 6px rgba(217, 182, 111, 0.5);
 }
 
 /* ============================================
-   PLANET DATA TABLE - ფოტოებით
+   PLANET DATA LIST - მარტივი
    ============================================ */
-.planet-data-table {
+.planet-simple-list {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px 10px;
+  gap: 8px 12px;
   padding-top: 10px;
   border-top: 1px solid rgba(217, 182, 111, 0.15);
 }
 
-.planet-data-column {
+.planet-simple-column {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
 }
 
-.planet-row {
+.planet-simple-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
+  gap: 10px;
+  padding: 8px 10px;
   background: rgba(217, 182, 111, 0.05);
-  border-radius: 8px;
+  border-radius: 10px;
   transition: all 0.2s ease;
 }
 
-.planet-row:hover {
+.planet-simple-row:hover {
   background: rgba(217, 182, 111, 0.12);
-  transform: translateX(2px);
+  transform: translateX(3px);
 }
 
-.planet-row-img {
-  width: 26px;
-  height: 26px;
+.planet-simple-img {
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1.5px solid rgba(217, 182, 111, 0.4);
+  border: 2px solid rgba(217, 182, 111, 0.4);
   flex-shrink: 0;
-  box-shadow: 0 0 8px rgba(217, 182, 111, 0.3);
+  box-shadow: 0 0 10px rgba(217, 182, 111, 0.3);
 }
 
-.planet-row-dot {
-  width: 20px;
-  height: 20px;
+.planet-simple-dot {
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   flex-shrink: 0;
-  box-shadow: 0 0 8px currentColor;
+  box-shadow: 0 0 10px currentColor;
 }
 
-.planet-row-name {
-  font-family: 'Cinzel', serif;
-  font-size: 11px;
-  font-weight: 600;
-  color: #F7F3EB;
+.planet-simple-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   flex: 1;
   min-width: 0;
 }
 
-/* ✅ Zodiac Card Mini - ბანქოს კარტის ფორმატი */
-.zodiac-card-mini {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  padding: 3px;
-  background: linear-gradient(135deg, 
-    rgba(217, 182, 111, 0.15), 
-    rgba(100, 80, 180, 0.1));
-  border: 1.5px solid rgba(217, 182, 111, 0.4);
-  border-radius: 6px;
-  min-width: 44px;
-  box-shadow: 
-    0 2px 6px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
-}
-
-.zodiac-card-mini:hover {
-  transform: scale(1.05);
-  border-color: rgba(217, 182, 111, 0.7);
-  box-shadow: 
-    0 4px 12px rgba(217, 182, 111, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
-}
-
-.zodiac-card-img {
-  width: 36px;
-  height: 44px;
-  object-fit: cover;
-  border-radius: 3px;
-  border: 1px solid rgba(217, 182, 111, 0.3);
-}
-
-.zodiac-card-symbol {
-  font-size: 20px;
-  color: #D9B66F;
-  filter: drop-shadow(0 0 4px rgba(217, 182, 111, 0.6));
-  line-height: 1;
-  padding: 4px 0;
-}
-
-.zodiac-card-degree {
+.planet-simple-name {
   font-family: 'Cinzel', serif;
-  font-size: 9px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #F7F3EB;
+}
+
+.planet-simple-sign {
+  font-size: 11px;
+  color: #D9B66F;
+  font-weight: 600;
+}
+
+.planet-simple-degree {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
   color: #b3a68c;
   font-weight: 600;
+  min-width: 45px;
+  text-align: right;
 }
 
 .loading-placeholder {
   text-align: center;
-  padding: 30px;
+  padding: 40px;
   color: #D9B66F;
   font-style: italic;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 /* ============================================
-   COSMIC ENERGY - უცვლელი
+   COSMIC ENERGY
    ============================================ */
 .energy-section {
   padding: 12px;
@@ -561,7 +513,7 @@
 }
 
 /* ============================================
-   CTA BUTTON - უცვლელი
+   CTA BUTTON
    ============================================ */
 .cta-horoscope-btn {
   display: flex;
@@ -630,7 +582,7 @@
   }
 
   .astro-content {
-    padding: 0 3px 60px;
+    padding: 0 3px 0;
     gap: 10px;
   }
 
@@ -664,44 +616,43 @@
   }
 
   .orbit-svg {
-    max-width: 400px;
-    max-height: 360px;
+    max-width: 450px;
+    max-height: 420px;
   }
 
-  .planet-label {
-    font-size: 10px;
-  }
-
-  .zodiac-symbol {
+  .planet-name-text {
     font-size: 12px;
   }
 
-  .planet-data-table {
-    gap: 4px 8px;
+  .zodiac-name-text {
+    font-size: 11px;
   }
 
-  .planet-row {
-    padding: 5px 6px;
-    gap: 6px;
+  .planet-simple-list {
+    gap: 6px 8px;
   }
 
-  .planet-row-img {
-    width: 22px;
-    height: 22px;
+  .planet-simple-row {
+    padding: 6px 8px;
+    gap: 8px;
   }
 
-  .planet-row-name {
+  .planet-simple-img {
+    width: 28px;
+    height: 28px;
+  }
+
+  .planet-simple-name {
+    font-size: 11px;
+  }
+
+  .planet-simple-sign {
     font-size: 10px;
   }
 
-  .zodiac-card-mini {
-    min-width: 38px;
-    padding: 2px;
-  }
-
-  .zodiac-card-img {
-    width: 30px;
-    height: 38px;
+  .planet-simple-degree {
+    font-size: 10px;
+    min-width: 40px;
   }
 
   .cosmic-energy-grid {
@@ -733,6 +684,10 @@
   .cta-text {
     font-size: 12px;
   }
+
+  .bottom-padding {
+    height: 15px;
+  }
 }
 
 @media (max-width: 360px) {
@@ -742,8 +697,8 @@
   }
 
   .orbit-svg {
-    max-width: 320px;
-    max-height: 300px;
+    max-width: 380px;
+    max-height: 360px;
   }
 
   .big-three-container {
@@ -754,28 +709,21 @@
     padding: 8px 4px;
   }
 
-  .zodiac-card-mini {
-    min-width: 34px;
-  }
-
-  .zodiac-card-img {
-    width: 26px;
-    height: 34px;
+  .planet-simple-list {
+    grid-template-columns: 1fr;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .sun-glow { animation: none; }
-  .sun-img { animation: none; }
   .planet-glow-ring { animation: none; }
   .energy-progress-fill { animation: none; }
-  .orbit-3d-wrapper { transform: none; }
   .astro-back-btn,
   .info-btn,
   .big-three-card,
   .energy-card,
   .cta-horoscope-btn,
-  .zodiac-card-mini {
+  .planet-simple-row {
     transition: none;
   }
 }
