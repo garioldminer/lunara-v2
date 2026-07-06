@@ -1,841 +1,647 @@
-/* ============================================
-   ADMIN SCREEN - SCOPED STYLES
-   ============================================ */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap');
 
-   .admin-screen {
-    position: relative;
-    width: 100%;
-    min-height: 100vh;
-    background: #0a0600;
-    color: #ffe566;
-    /* ✅ ერთნაირი padding HomeScreen-თან */
-    padding: 70px 12px 90px 12px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    font-family: 'Georgia', serif;
-    box-sizing: border-box;
+/* ============================================
+   MAIN CONTAINER - WITH SCROLL
+   ============================================ */
+.astro-screen {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background: #050507;
+  overflow-y: auto; /* ✅ SCROLL if needed */
+  overflow-x: hidden;
+  font-family: 'Cormorant Garamond', serif;
+  color: #F7F3EB;
+}
+
+.cosmic-background {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-size: cover;
+  background-position: center;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.cosmic-background::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: 
+    radial-gradient(ellipse at 20% 30%, rgba(100, 80, 180, 0.2) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(217, 182, 111, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at center, rgba(5,5,7,0.3) 0%, rgba(5,5,7,0.7) 100%);
+  pointer-events: none;
+}
+
+/* ============================================
+   HEADER - 70px from top
+   ============================================ */
+.astro-header {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 70px 16px 12px; /* ✅ 70px top padding */
+  background: linear-gradient(180deg, rgba(5, 5, 7, 0.95) 0%, transparent 100%);
+}
+
+.astro-back-btn,
+.astro-sparkle-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(217, 182, 111, 0.1);
+  border: 1.5px solid rgba(217, 182, 111, 0.4);
+  color: #D9B66F;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.astro-back-btn:hover,
+.astro-sparkle-btn:hover {
+  background: rgba(217, 182, 111, 0.2);
+  transform: scale(1.05);
+}
+
+.astro-title {
+  font-family: 'Cinzel', serif;
+  font-size: 22px;
+  font-weight: 900;
+  color: #D9B66F;
+  letter-spacing: 4px;
+  margin: 0;
+  text-shadow: 0 0 15px rgba(217, 182, 111, 0.5);
+}
+
+/* ============================================
+   CONTENT - Scrollable
+   ============================================ */
+.astro-content {
+  position: relative;
+  z-index: 10;
+  padding: 0 12px 80px; /* ✅ Bottom padding for scroll */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ============================================
+   SECTIONS
+   ============================================ */
+.astro-section {
+  background: linear-gradient(135deg, 
+    rgba(217, 182, 111, 0.08) 0%, 
+    rgba(100, 80, 180, 0.05) 100%);
+  border: 1.5px solid rgba(217, 182, 111, 0.25);
+  border-radius: 12px;
+  padding: 12px;
+  position: relative;
+}
+
+.section-heading {
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #D9B66F;
+  margin: 0 0 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 1px;
+}
+
+.section-icon {
+  filter: drop-shadow(0 0 4px rgba(217, 182, 111, 0.6));
+}
+
+/* ============================================
+   BIG THREE - Horizontal 3 cards
+   ============================================ */
+.big-three-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* ✅ 3 equal columns */
+  gap: 8px;
+}
+
+.big-three-card {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 6px;
+  border: 1px solid rgba(217, 182, 111, 0.25);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  min-width: 0; /* ✅ Allow shrinking */
+}
+
+.big-three-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(217, 182, 111, 0.5);
+  box-shadow: 0 4px 12px rgba(217, 182, 111, 0.2);
+}
+
+.big-three-icon {
+  font-size: 22px;
+  filter: drop-shadow(0 0 6px currentColor);
+  flex-shrink: 0;
+}
+
+.big-three-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.big-three-label {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  font-weight: 600;
+  color: #b3a68c;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+}
+
+.big-three-value {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.big-three-symbol {
+  font-size: 13px;
+  filter: drop-shadow(0 0 4px rgba(217, 182, 111, 0.6));
+}
+
+.big-three-name {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #D9B66F;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ============================================
+   PLANET POSITIONS - გადიდებული
+   ============================================ */
+.planets-section {
+  padding: 14px;
+}
+
+.planets-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.info-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(217, 182, 111, 0.1);
+  border: 1px solid rgba(217, 182, 111, 0.3);
+  color: #D9B66F;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.info-btn:hover {
+  background: rgba(217, 182, 111, 0.2);
+}
+
+/* ✅ გადიდებული ორბიტა */
+.orbit-diagram-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.orbit-svg {
+  width: 100%;
+  max-width: 450px; /* ✅ 400px → 450px */
+  height: auto;
+  max-height: 350px; /* ✅ 250px → 350px */
+}
+
+.sun-glow {
+  animation: sunPulse 3s ease-in-out infinite;
+}
+
+@keyframes sunPulse {
+  0%, 100% { filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8)); }
+  50% { filter: drop-shadow(0 0 18px rgba(255, 215, 0, 1)); }
+}
+
+.planet-img {
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 0 6px rgba(217, 182, 111, 0.4));
+}
+
+.planet-img:hover {
+  filter: drop-shadow(0 0 12px rgba(217, 182, 111, 0.8));
+}
+
+.sun-img {
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8));
+}
+
+.planet-label {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  font-weight: 600;
+  fill: #F7F3EB;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+}
+
+.zodiac-symbol {
+  font-size: 11px;
+  fill: rgba(217, 182, 111, 0.9);
+}
+
+/* Planet Data Table */
+.planet-data-table {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(217, 182, 111, 0.15);
+}
+
+.planet-data-column {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.planet-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: rgba(217, 182, 111, 0.05);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.planet-row:hover {
+  background: rgba(217, 182, 111, 0.12);
+}
+
+.planet-row-img {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(217, 182, 111, 0.3);
+  flex-shrink: 0;
+}
+
+.planet-row-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.planet-row-name {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  font-weight: 600;
+  color: #F7F3EB;
+  flex: 1;
+  min-width: 0;
+}
+
+.planet-row-sign {
+  font-size: 10px;
+  color: #D9B66F;
+  white-space: nowrap;
+}
+
+.planet-row-degree {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  color: #b3a68c;
+  white-space: nowrap;
+}
+
+.loading-placeholder {
+  text-align: center;
+  padding: 30px;
+  color: #D9B66F;
+  font-style: italic;
+  font-size: 12px;
+}
+
+/* ============================================
+   COSMIC ENERGY
+   ============================================ */
+.energy-section {
+  padding: 12px;
+}
+
+.cosmic-energy-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.energy-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(217, 182, 111, 0.2);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.energy-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(217, 182, 111, 0.4);
+  box-shadow: 0 4px 12px rgba(217, 182, 111, 0.15);
+}
+
+.energy-icon-wrapper {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.energy-icon {
+  font-size: 16px;
+}
+
+.energy-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.energy-label {
+  font-size: 9px;
+  color: #b3a68c;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.energy-value {
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #D9B66F;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.energy-progress-bar {
+  width: 100%;
+  height: 3px;
+  background: rgba(217, 182, 111, 0.15);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 3px;
+}
+
+.energy-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #D9B66F, #F4D47C);
+  border-radius: 2px;
+  box-shadow: 0 0 6px rgba(217, 182, 111, 0.6);
+  transition: width 0.8s ease;
+  animation: shimmer 2s linear infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -100% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ============================================
+   CTA BUTTON
+   ============================================ */
+.cta-horoscope-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, 
+    rgba(217, 182, 111, 0.3) 0%, 
+    rgba(217, 182, 111, 0.2) 50%,
+    rgba(217, 182, 111, 0.3) 100%);
+  border: 2px solid rgba(217, 182, 111, 0.5);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 8px;
+  box-shadow: 0 4px 16px rgba(217, 182, 111, 0.2);
+}
+
+.cta-horoscope-btn:hover {
+  background: linear-gradient(135deg, 
+    rgba(217, 182, 111, 0.4) 0%, 
+    rgba(217, 182, 111, 0.3) 50%,
+    rgba(217, 182, 111, 0.4) 100%);
+  border-color: rgba(217, 182, 111, 0.7);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(217, 182, 111, 0.3);
+}
+
+.cta-horoscope-btn:active {
+  transform: translateY(0);
+}
+
+.cta-icon {
+  font-size: 20px;
+  filter: drop-shadow(0 0 6px rgba(217, 182, 111, 0.7));
+}
+
+.cta-text {
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #D9B66F;
+  letter-spacing: 0.5px;
+  flex: 1;
+  text-align: center;
+}
+
+.cta-arrow {
+  font-size: 16px;
+  color: #D9B66F;
+  transition: transform 0.3s ease;
+}
+
+.cta-horoscope-btn:hover .cta-arrow {
+  transform: translateX(4px);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 480px) {
+  .astro-header {
+    padding: 70px 12px 10px;
   }
-  
-  .admin-loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    gap: 16px;
-    color: #ffe566;
-  }
-  
-  .admin-screen .spin {
-    animation: adminSpin 1s linear infinite;
-  }
-  
-  @keyframes adminSpin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-  
-  /* ============================================
-     HEADER
-     ============================================ */
-  .admin-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-    padding: 12px 14px;
-    background: linear-gradient(135deg, #1a0f05, #0a0600);
-    border: 1px solid rgba(200, 120, 0, 0.4);
-    border-radius: 14px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-  }
-  
-  .admin-header-center {
-    display: flex;
-    align-items: center;
+
+  .astro-content {
+    padding: 0 10px 60px;
     gap: 10px;
-    color: #ffe566;
-    flex: 1;
-    justify-content: center;
-    min-width: 0;
-    overflow: hidden;
   }
-  
-  .admin-header-center h1 {
-    font-family: 'Georgia', serif;
-    font-size: 16px;
-    color: #ffe566;
-    margin: 0;
-    font-weight: bold;
-    letter-spacing: 0.5px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+
+  .astro-section {
+    padding: 10px;
   }
-  
-  .admin-back-btn,
-  .admin-refresh-btn {
-    background: rgba(200, 120, 0, 0.15);
-    border: 1px solid rgba(200, 120, 0, 0.3);
-    border-radius: 10px;
-    width: 36px;
-    height: 36px;
-    padding: 0;
-    color: #ffe566;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+
+  .section-heading {
+    font-size: 12px;
+    margin-bottom: 8px;
   }
-  
-  .admin-back-btn:active,
-  .admin-refresh-btn:active {
-    transform: scale(0.92);
-    background: rgba(200, 120, 0, 0.3);
-  }
-  
-  /* ============================================
-     CONTENT AREA
-     ============================================ */
-  .admin-content-area {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
-    box-sizing: border-box;
-  }
-  
-  /* ============================================
-     ქვედა ნავიგაციის პანელი - ცისფერი
-     ============================================ */
-  .admin-bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    padding: 8px 10px;
-    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
-    background: linear-gradient(to top, #0a0600 70%, rgba(10, 6, 0, 0.95));
-    border-top: 1px solid rgba(96, 165, 250, 0.3);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    z-index: 100;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
-    max-width: 100%;
-    box-sizing: border-box;
-  }
-  
-  .admin-nav-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+
+  /* Big Three - Mobile */
+  .big-three-card {
+    padding: 6px 4px;
     gap: 4px;
-    padding: 8px 12px;
-    min-width: 70px;
-    max-width: 100px;
-    background: rgba(96, 165, 250, 0.08);
-    border: 1px solid rgba(96, 165, 250, 0.25);
-    border-radius: 12px;
-    color: #60a5fa;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-family: 'Georgia', serif;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.3px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    box-sizing: border-box;
   }
-  
-  .admin-nav-btn span {
-    font-size: 10px;
-    text-align: center;
-    line-height: 1.2;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  
-  .admin-nav-btn.active {
-    background: linear-gradient(135deg, rgba(96, 165, 250, 0.3), rgba(59, 130, 246, 0.2));
-    border-color: #60a5fa;
-    color: #60a5fa;
-    box-shadow: 0 0 12px rgba(96, 165, 250, 0.4);
-  }
-  
-  .admin-nav-btn.ai-nav-btn {
-    background: linear-gradient(135deg, rgba(96, 165, 250, 0.15), rgba(147, 197, 253, 0.1));
-    border-color: rgba(96, 165, 250, 0.4);
-    color: #93c5fd;
-  }
-  
-  .admin-nav-btn.ai-nav-btn:active {
-    background: linear-gradient(135deg, rgba(96, 165, 250, 0.4), rgba(59, 130, 246, 0.3));
-    border-color: #93c5fd;
-    transform: scale(0.95);
-  }
-  
-  .admin-nav-btn:active {
-    transform: scale(0.92);
-    background: rgba(96, 165, 250, 0.2);
-  }
-  
-  /* ============================================
-     STATS
-     ============================================ */
-  .admin-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-  }
-  
-  .stat-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 12px 8px;
-    background: linear-gradient(135deg, #1a0f05, #0a0600);
-    border: 1px solid rgba(200, 120, 0, 0.3);
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    min-width: 0;
-    box-sizing: border-box;
-  }
-  
-  .stat-number {
-    font-family: 'Georgia', serif;
+
+  .big-three-icon {
     font-size: 20px;
-    font-weight: bold;
-    color: #ffe566;
-    line-height: 1;
   }
-  
-  .stat-label {
-    font-family: 'Georgia', serif;
+
+  .big-three-label {
+    font-size: 8px;
+  }
+
+  .big-three-name {
+    font-size: 10px;
+  }
+
+  /* Planet Orbit - Mobile */
+  .orbit-svg {
+    max-width: 320px;
+    max-height: 280px;
+  }
+
+  .planet-label {
+    font-size: 8px;
+  }
+
+  .zodiac-symbol {
+    font-size: 10px;
+  }
+
+  .planet-data-table {
+    gap: 4px 8px;
+  }
+
+  .planet-row {
+    padding: 3px 6px;
+    gap: 4px;
+  }
+
+  .planet-row-img {
+    width: 16px;
+    height: 16px;
+  }
+
+  .planet-row-name {
     font-size: 9px;
-    color: #c87800;
-    margin-top: 4px;
-    text-align: center;
   }
-  
-  /* ============================================
-     USERS LIST
-     ============================================ */
-  .admin-users-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-    max-width: 100%;
+
+  .planet-row-sign {
+    font-size: 9px;
   }
-  
-  .admin-user-card {
-    padding: 14px;
-    background: linear-gradient(135deg, #1a0f05, #0a0600);
-    border: 1px solid rgba(200, 120, 0, 0.3);
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    width: 100%;
-    box-sizing: border-box;
+
+  .planet-row-degree {
+    font-size: 8px;
   }
-  
-  .user-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
+
+  /* Energy - Mobile */
+  .cosmic-energy-grid {
+    gap: 6px;
   }
-  
-  .user-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #c87800, #ffe566);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Georgia', serif;
+
+  .energy-card {
+    padding: 8px;
+    gap: 6px;
+  }
+
+  .energy-icon-wrapper {
+    width: 28px;
+    height: 28px;
+  }
+
+  .energy-icon {
+    font-size: 14px;
+  }
+
+  .energy-value {
+    font-size: 12px;
+  }
+
+  /* CTA - Mobile */
+  .cta-horoscope-btn {
+    padding: 12px 16px;
+  }
+
+  .cta-text {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .astro-title {
     font-size: 18px;
-    font-weight: bold;
-    color: #0a0600;
-    flex-shrink: 0;
+    letter-spacing: 3px;
   }
-  
-  .user-details h3 {
-    margin: 0;
-    font-size: 14px;
-    color: #ffe566;
-    font-weight: bold;
+
+  .orbit-svg {
+    max-width: 280px;
+    max-height: 240px;
   }
-  
-  .user-details p {
-    margin: 2px 0 0;
-    font-size: 11px;
-    color: #c87800;
-  }
-  
-  .user-credits {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  
-  .credit-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 10px;
-    background: rgba(20, 12, 5, 0.6);
-    border: 1px solid rgba(200, 120, 0, 0.2);
-    border-radius: 8px;
-    gap: 8px;
-    flex-wrap: wrap;
-    width: 100%;
-    box-sizing: border-box;
-  }
-  
-  .credit-label {
-    font-size: 11px;
-    color: #ffe566;
-    font-weight: 600;
-    flex: 1;
-    min-width: 100px;
-  }
-  
-  .credit-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  
-  .credit-amount {
-    font-size: 14px;
-    color: #ffe566;
-    font-weight: bold;
-    min-width: 30px;
-    text-align: center;
-  }
-  
-  .credit-buttons {
-    display: flex;
-    gap: 4px;
-    flex-wrap: wrap;
-  }
-  
-  /* ============================================
-     ✅ SCOPED BUTTONS - მხოლოდ AdminScreen-ში
-     ============================================ */
-  .admin-screen .add-btn,
-  .admin-screen .edit-btn,
-  .admin-screen .save-btn,
-  .admin-screen .extend-btn,
-  .admin-screen .add-subscription-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    padding: 6px 10px;
-    background: linear-gradient(135deg, rgba(96, 165, 250, 0.2), rgba(59, 130, 246, 0.15));
-    border: 1px solid rgba(96, 165, 250, 0.5);
-    border-radius: 8px;
-    color: #60a5fa;
-    font-family: 'Georgia', serif;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    white-space: nowrap;
-    min-height: 28px;
-    letter-spacing: 0.3px;
-    max-width: 100%;
-    box-sizing: border-box;
-  }
-  
-  .admin-screen .add-btn:active,
-  .admin-screen .edit-btn:active,
-  .admin-screen .save-btn:active,
-  .admin-screen .extend-btn:active,
-  .admin-screen .add-subscription-btn:active {
-    transform: scale(0.95);
-    background: linear-gradient(135deg, rgba(96, 165, 250, 0.35), rgba(59, 130, 246, 0.3));
-    border-color: #93c5fd;
-  }
-  
-  .admin-screen .add-subscription-btn {
-    width: 100%;
-    padding: 12px;
-    font-size: 13px;
-    min-height: 44px;
-    margin-bottom: 10px;
-    background: linear-gradient(135deg, rgba(96, 165, 250, 0.25), rgba(59, 130, 246, 0.2));
-    box-shadow: 0 2px 8px rgba(96, 165, 250, 0.3);
-  }
-  
-  .admin-screen .cancel-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 6px 10px;
-    background: rgba(200, 120, 0, 0.1);
-    border: 1px solid rgba(200, 120, 0, 0.3);
-    border-radius: 8px;
-    color: #c87800;
-    font-family: 'Georgia', serif;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    min-height: 28px;
-  }
-  
-  .admin-screen .cancel-btn:active {
-    transform: scale(0.95);
-    background: rgba(200, 120, 0, 0.2);
-  }
-  
-  .admin-screen .delete-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 6px;
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.4);
-    border-radius: 8px;
-    color: #ef4444;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    min-height: 28px;
-    min-width: 28px;
-  }
-  
-  .admin-screen .delete-btn:active {
-    transform: scale(0.9);
-    background: rgba(239, 68, 68, 0.2);
-  }
-  
-  .admin-screen .cancel-sub-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    padding: 6px 10px;
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.4);
-    border-radius: 8px;
-    color: #ef4444;
-    font-family: 'Georgia', serif;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    min-height: 28px;
-  }
-  
-  .admin-screen .cancel-sub-btn:active {
-    transform: scale(0.95);
-    background: rgba(239, 68, 68, 0.2);
-  }
-  
-  .credit-edit {
-    display: flex;
-    align-items: center;
+
+  .big-three-container {
     gap: 6px;
-    flex-wrap: wrap;
   }
-  
-  .credit-edit input {
-    width: 60px;
-    padding: 6px 8px;
-    background: rgba(20, 12, 5, 0.8);
-    border: 1px solid rgba(96, 165, 250, 0.4);
-    border-radius: 6px;
-    color: #60a5fa;
-    font-family: 'Georgia', serif;
-    font-size: 12px;
-    outline: none;
-    text-align: center;
+
+  .big-three-card {
+    padding: 5px 3px;
   }
-  
-  /* ============================================
-     SUBSCRIPTIONS
-     ============================================ */
-  .subscriptions-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-    max-width: 100%;
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  .sun-glow { animation: none; }
+  .energy-progress-fill { animation: none; }
+  .astro-back-btn,
+  .astro-sparkle-btn,
+  .info-btn,
+  .big-three-card,
+  .energy-card,
+  .cta-horoscope-btn {
+    transition: none;
   }
-  
-  .subscription-card {
-    padding: 14px;
-    background: linear-gradient(135deg, #1a0f05, #0a0600);
-    border: 1px solid rgba(200, 120, 0, 0.3);
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    width: 100%;
-    box-sizing: border-box;
-  }
-  
-  .subscription-card.cancelled { opacity: 0.6; }
-  .subscription-card.expired { opacity: 0.4; }
-  
-  .subscription-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 12px;
-    gap: 10px;
-    flex-wrap: wrap;
-    width: 100%;
-  }
-  
-  .subscription-user {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex: 1;
-    min-width: 0;
-  }
-  
-  .subscription-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #c87800, #ffe566);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Georgia', serif;
-    font-size: 16px;
-    font-weight: bold;
-    color: #0a0600;
-    flex-shrink: 0;
-  }
-  
-  .subscription-user-info h4 {
-    margin: 0;
-    font-size: 13px;
-    color: #ffe566;
-    font-weight: bold;
-  }
-  
-  .subscription-user-info p {
-    margin: 2px 0 0;
-    font-size: 10px;
-    color: #c87800;
-  }
-  
-  .subscription-status {
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 9px;
-    font-weight: bold;
-    letter-spacing: 0.5px;
-    flex-shrink: 0;
-  }
-  
-  .subscription-status.active {
-    background: rgba(16, 185, 129, 0.2);
-    color: #10b981;
-    border: 1px solid rgba(16, 185, 129, 0.4);
-  }
-  
-  .subscription-status.cancelled {
-    background: rgba(251, 191, 36, 0.2);
-    color: #fbbf24;
-    border: 1px solid rgba(251, 191, 36, 0.4);
-  }
-  
-  .subscription-status.expired {
-    background: rgba(239, 68, 68, 0.2);
-    color: #ef4444;
-    border: 1px solid rgba(239, 68, 68, 0.4);
-  }
-  
-  .subscription-details {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 10px;
-    background: rgba(20, 12, 5, 0.5);
-    border-radius: 8px;
-    margin-bottom: 10px;
-    width: 100%;
-    box-sizing: border-box;
-  }
-  
-  .subscription-detail-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 11px;
-    color: #ffe566;
-    flex-wrap: wrap;
-  }
-  
-  .subscription-detail-row.highlight {
-    padding-top: 6px;
-    border-top: 1px solid rgba(200, 120, 0, 0.2);
-    margin-top: 2px;
-  }
-  
-  .detail-label {
-    color: #c87800;
-    font-weight: 600;
-    min-width: 70px;
-  }
-  
-  .detail-value {
-    color: #ffe566;
-  }
-  
-  .detail-value.warning {
-    color: #ef4444;
-    font-weight: bold;
-  }
-  
-  .subscription-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  
-  /* ============================================
-     ✅ SCOPED MODALS - მხოლოდ AdminScreen-ში
-     ============================================ */
-  .admin-screen .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    padding: 20px;
-  }
-  
-  .admin-screen .modal {
-    background: linear-gradient(135deg, #1a0f05, #0a0600);
-    border: 2px solid rgba(200, 120, 0, 0.5);
-    border-radius: 18px;
-    padding: 22px 18px;
-    max-width: 400px;
-    width: 100%;
-    max-height: 85vh;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    box-shadow: 0 0 40px rgba(200, 120, 0, 0.3);
-    box-sizing: border-box;
-  }
-  
-  .admin-screen .modal h3 {
-    font-family: 'Georgia', serif;
-    font-size: 16px;
-    color: #ffe566;
-    margin: 0 0 18px;
-    text-align: center;
-    letter-spacing: 1px;
-  }
-  
-  .admin-screen .modal-field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 14px;
-    width: 100%;
-  }
-  
-  .admin-screen .modal-field label {
-    font-size: 11px;
-    color: #c87800;
-    font-weight: 600;
-  }
-  
-  .admin-screen .modal-field input,
-  .admin-screen .modal-field select {
-    background: rgba(20, 12, 5, 0.8);
-    border: 1px solid rgba(200, 120, 0, 0.3);
-    border-radius: 10px;
-    padding: 11px 12px;
-    color: #ffe566;
-    font-family: 'Georgia', serif;
-    font-size: 12px;
-    outline: none;
-    width: 100%;
-    box-sizing: border-box;
-    min-height: 44px;
-  }
-  
-  .admin-screen .modal-field select {
-    background-color: rgba(20, 12, 5, 0.8);
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c87800' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    background-size: 16px;
-    padding-right: 40px;
-    -webkit-appearance: menulist;
-    appearance: menulist;
-    cursor: pointer;
-  }
-  
-  .admin-screen .modal-field select option {
-    background: #1a0f05;
-    color: #ffe566;
-  }
-  
-  .plan-selector {
-    display: flex;
-    gap: 8px;
-  }
-  
-  .plan-option {
-    flex: 1;
-    padding: 10px;
-    background: rgba(20, 12, 5, 0.8);
-    border: 1px solid rgba(200, 120, 0, 0.3);
-    border-radius: 10px;
-    color: #c87800;
-    font-family: 'Georgia', serif;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    min-height: 44px;
-  }
-  
-  .plan-option.active {
-    background: linear-gradient(135deg, rgba(96, 165, 250, 0.25), rgba(59, 130, 246, 0.2));
-    border-color: #60a5fa;
-    color: #60a5fa;
-    box-shadow: 0 0 8px rgba(96, 165, 250, 0.3);
-  }
-  
-  .admin-screen .modal-buttons {
-    display: flex;
-    gap: 10px;
-    margin-top: 18px;
-  }
-  
-  .admin-screen .modal-btn {
-    flex: 1;
-    padding: 12px;
-    border-radius: 10px;
-    font-family: 'Georgia', serif;
-    font-size: 12px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: none;
-    min-height: 44px;
-  }
-  
-  .admin-screen .modal-btn.cancel {
-    background: rgba(200, 120, 0, 0.15);
-    border: 1px solid rgba(200, 120, 0, 0.3);
-    color: #c87800;
-  }
-  
-  .admin-screen .modal-btn.confirm {
-    background: linear-gradient(135deg, #60a5fa, #93c5fd);
-    color: #0a0600;
-    box-shadow: 0 2px 10px rgba(96, 165, 250, 0.4);
-  }
-  
-  .admin-screen .modal-btn.confirm:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-  
-  .admin-screen .modal-btn:active {
-    transform: scale(0.96);
-  }
-  
-  /* ============================================
-     ERROR SCREEN
-     ============================================ */
-  .admin-error {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    text-align: center;
-    gap: 12px;
-    padding: 20px;
-  }
-  
-  .error-icon-large {
-    color: #ef4444;
-  }
-  
-  .admin-error h2 {
-    color: #ef4444;
-    margin: 0;
-    font-size: 20px;
-  }
-  
-  .admin-error p {
-    color: #c87800;
-    margin: 0;
-    font-size: 13px;
-  }
-  
-  .error-detail {
-    font-size: 11px;
-    color: #886600;
-  }
-  
-  .admin-error button {
-    margin-top: 16px;
-    padding: 12px 24px;
-    background: linear-gradient(135deg, #60a5fa, #93c5fd);
-    border: none;
-    border-radius: 10px;
-    color: #0a0600;
-    font-family: 'Georgia', serif;
-    font-size: 13px;
-    font-weight: bold;
-    cursor: pointer;
-  }
-  
-  /* ============================================
-     RESPONSIVE
-     ============================================ */
-  @media (max-width: 380px) {
-    .admin-stats {
-      grid-template-columns: 1fr 1fr;
-    }
-    
-    .admin-nav-btn {
-      min-width: 60px;
-      padding: 6px 8px;
-    }
-    
-    .admin-nav-btn span {
-      font-size: 9px;
-    }
-  }
+}
