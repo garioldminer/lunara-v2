@@ -1,19 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap');
 
 /* ============================================
-   MAIN CONTAINER - NO SCROLL
+   MAIN CONTAINER - WITH SCROLL
    ============================================ */
 .astro-screen {
   position: relative;
   width: 100%;
-  height: 100vh;
-  height: 100dvh;
+  min-height: 100vh;
   background: #050507;
-  overflow: hidden; /* ❌ NO SCROLL */
+  overflow-y: auto;
+  overflow-x: hidden;
   font-family: 'Cormorant Garamond', serif;
   color: #F7F3EB;
-  display: flex;
-  flex-direction: column;
 }
 
 .cosmic-background {
@@ -39,7 +37,7 @@
 }
 
 /* ============================================
-   HEADER
+   HEADER - 70px from top
    ============================================ */
 .astro-header {
   position: relative;
@@ -47,9 +45,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 16px;
-  background: linear-gradient(180deg, rgba(5, 5, 7, 0.9) 0%, transparent 100%);
-  flex-shrink: 0;
+  padding: 70px 16px 12px;
+  background: linear-gradient(180deg, rgba(5, 5, 7, 0.95) 0%, transparent 100%);
 }
 
 .astro-back-btn,
@@ -84,22 +81,19 @@
 }
 
 /* ============================================
-   CONTENT - FLEX LAYOUT (NO SCROLL)
+   CONTENT - Scrollable
    ============================================ */
 .astro-content {
   position: relative;
   z-index: 10;
-  flex: 1;
+  padding: 0 12px 80px;
   display: flex;
   flex-direction: column;
-  padding: 8px 12px 12px;
-  gap: 8px;
-  overflow: hidden; /* ❌ NO SCROLL */
-  min-height: 0; /* Important for flex children */
+  gap: 12px;
 }
 
 /* ============================================
-   SECTIONS - COMPACT
+   SECTIONS
    ============================================ */
 .astro-section {
   background: linear-gradient(135deg, 
@@ -107,8 +101,7 @@
     rgba(100, 80, 180, 0.05) 100%);
   border: 1.5px solid rgba(217, 182, 111, 0.25);
   border-radius: 12px;
-  padding: 10px 12px;
-  flex-shrink: 0;
+  padding: 12px;
   position: relative;
 }
 
@@ -117,7 +110,7 @@
   font-size: 13px;
   font-weight: 700;
   color: #D9B66F;
-  margin: 0 0 8px 0;
+  margin: 0 0 10px 0;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -129,7 +122,7 @@
 }
 
 /* ============================================
-   BIG THREE CARDS
+   BIG THREE - Horizontal 3 cards
    ============================================ */
 .big-three-container {
   display: grid;
@@ -140,12 +133,13 @@
 .big-three-card {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
+  gap: 6px;
+  padding: 8px 6px;
   border: 1px solid rgba(217, 182, 111, 0.25);
   border-radius: 10px;
   transition: all 0.3s ease;
   cursor: pointer;
+  min-width: 0;
 }
 
 .big-three-card:hover {
@@ -155,7 +149,7 @@
 }
 
 .big-three-icon {
-  font-size: 24px;
+  font-size: 22px;
   filter: drop-shadow(0 0 6px currentColor);
   flex-shrink: 0;
 }
@@ -167,7 +161,7 @@
 
 .big-three-label {
   font-family: 'Cinzel', serif;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
   color: #b3a68c;
   text-transform: uppercase;
@@ -178,17 +172,17 @@
 .big-three-value {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
 }
 
 .big-three-symbol {
-  font-size: 14px;
+  font-size: 13px;
   filter: drop-shadow(0 0 4px rgba(217, 182, 111, 0.6));
 }
 
 .big-three-name {
   font-family: 'Cinzel', serif;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   color: #D9B66F;
   white-space: nowrap;
@@ -197,19 +191,17 @@
 }
 
 /* ============================================
-   PLANET POSITIONS
+   PLANET POSITIONS - გადიდებული
    ============================================ */
 .planets-section {
-  flex: 1; /* Takes remaining space */
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
+  padding: 14px;
 }
 
 .planets-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 12px;
 }
 
 .info-btn {
@@ -230,21 +222,18 @@
   background: rgba(217, 182, 111, 0.2);
 }
 
-/* Orbit Diagram */
 .orbit-diagram-container {
-  flex: 1;
-  min-height: 0;
+  width: 100%;
   display: flex;
-  align-items: center;
   justify-content: center;
-  padding: 4px 0;
+  margin-bottom: 12px;
 }
 
 .orbit-svg {
   width: 100%;
-  max-width: 320px;
+  max-width: 450px;
   height: auto;
-  max-height: 200px;
+  max-height: 350px;
 }
 
 .sun-glow {
@@ -271,38 +260,36 @@
 
 .planet-label {
   font-family: 'Cinzel', serif;
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 600;
   fill: #F7F3EB;
   text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
 }
 
 .zodiac-symbol {
-  font-size: 10px;
+  font-size: 11px;
   fill: rgba(217, 182, 111, 0.9);
 }
 
-/* Planet Data Table */
 .planet-data-table {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 4px 12px;
-  margin-top: 6px;
-  padding-top: 6px;
+  gap: 6px 12px;
+  padding-top: 10px;
   border-top: 1px solid rgba(217, 182, 111, 0.15);
 }
 
 .planet-data-column {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
 }
 
 .planet-row {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 6px;
+  padding: 4px 8px;
   background: rgba(217, 182, 111, 0.05);
   border-radius: 6px;
   transition: all 0.2s ease;
@@ -313,8 +300,8 @@
 }
 
 .planet-row-img {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   object-fit: cover;
   border: 1px solid rgba(217, 182, 111, 0.3);
@@ -322,8 +309,8 @@
 }
 
 .planet-row-dot {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -352,7 +339,7 @@
 
 .loading-placeholder {
   text-align: center;
-  padding: 20px;
+  padding: 30px;
   color: #D9B66F;
   font-style: italic;
   font-size: 12px;
@@ -362,7 +349,7 @@
    COSMIC ENERGY
    ============================================ */
 .energy-section {
-  flex-shrink: 0;
+  padding: 12px;
 }
 
 .cosmic-energy-grid {
@@ -375,7 +362,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 10px;
+  padding: 10px;
   border: 1px solid rgba(217, 182, 111, 0.2);
   border-radius: 10px;
   transition: all 0.3s ease;
@@ -456,7 +443,7 @@
   justify-content: center;
   gap: 10px;
   width: 100%;
-  padding: 12px 20px;
+  padding: 14px 20px;
   background: linear-gradient(135deg, 
     rgba(217, 182, 111, 0.3) 0%, 
     rgba(217, 182, 111, 0.2) 50%,
@@ -465,7 +452,7 @@
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
-  flex-shrink: 0;
+  margin-top: 8px;
   box-shadow: 0 4px 16px rgba(217, 182, 111, 0.2);
 }
 
@@ -512,23 +499,27 @@
    RESPONSIVE
    ============================================ */
 @media (max-width: 480px) {
+  .astro-header {
+    padding: 70px 12px 10px;
+  }
+
   .astro-content {
-    padding: 6px 10px 10px;
-    gap: 6px;
+    padding: 0 10px 60px;
+    gap: 10px;
   }
 
   .astro-section {
-    padding: 8px 10px;
+    padding: 10px;
   }
 
   .section-heading {
     font-size: 12px;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
   }
 
   .big-three-card {
-    padding: 6px 8px;
-    gap: 6px;
+    padding: 6px 4px;
+    gap: 4px;
   }
 
   .big-three-icon {
@@ -536,21 +527,38 @@
   }
 
   .big-three-label {
-    font-size: 9px;
+    font-size: 8px;
   }
 
   .big-three-name {
-    font-size: 11px;
+    font-size: 10px;
   }
 
   .orbit-svg {
-    max-width: 280px;
-    max-height: 180px;
+    max-width: 320px;
+    max-height: 280px;
+  }
+
+  .planet-label {
+    font-size: 8px;
+  }
+
+  .zodiac-symbol {
+    font-size: 10px;
+  }
+
+  .planet-data-table {
+    gap: 4px 8px;
   }
 
   .planet-row {
-    padding: 2px 4px;
+    padding: 3px 6px;
     gap: 4px;
+  }
+
+  .planet-row-img {
+    width: 16px;
+    height: 16px;
   }
 
   .planet-row-name {
@@ -565,8 +573,12 @@
     font-size: 8px;
   }
 
+  .cosmic-energy-grid {
+    gap: 6px;
+  }
+
   .energy-card {
-    padding: 6px 8px;
+    padding: 8px;
     gap: 6px;
   }
 
@@ -584,7 +596,7 @@
   }
 
   .cta-horoscope-btn {
-    padding: 10px 16px;
+    padding: 12px 16px;
   }
 
   .cta-text {
@@ -592,43 +604,26 @@
   }
 }
 
-@media (max-height: 700px) {
-  .astro-content {
-    padding: 4px 10px 8px;
+@media (max-width: 360px) {
+  .astro-title {
+    font-size: 18px;
+    letter-spacing: 3px;
+  }
+
+  .orbit-svg {
+    max-width: 280px;
+    max-height: 240px;
+  }
+
+  .big-three-container {
     gap: 6px;
   }
 
-  .orbit-svg {
-    max-height: 160px;
-  }
-
   .big-three-card {
-    padding: 6px 8px;
-  }
-
-  .energy-card {
-    padding: 6px 8px;
+    padding: 5px 3px;
   }
 }
 
-@media (max-height: 600px) {
-  .astro-title {
-    font-size: 18px;
-  }
-
-  .orbit-svg {
-    max-height: 140px;
-  }
-
-  .section-heading {
-    font-size: 11px;
-    margin-bottom: 4px;
-  }
-}
-
-/* ============================================
-   REDUCED MOTION
-   ============================================ */
 @media (prefers-reduced-motion: reduce) {
   .sun-glow { animation: none; }
   .energy-progress-fill { animation: none; }
