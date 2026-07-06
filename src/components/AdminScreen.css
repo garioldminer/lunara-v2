@@ -1,9 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;500;600;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap');
 
 /* ============================================
-   ADMIN SCREEN - ძველი AstroScreen სტილი
+   ADMIN SCREEN - MAIN CONTAINER
    ============================================ */
-.astro-screen {
+.admin-screen {
   position: relative;
   width: 100%;
   min-height: 100vh;
@@ -33,7 +33,7 @@
   pointer-events: none;
 }
 
-.astro-content {
+.admin-content {
   position: relative;
   z-index: 10;
   padding: 0 15px 100px;
@@ -43,7 +43,7 @@
 /* ============================================
    HEADER
    ============================================ */
-.astro-header {
+.admin-header {
   position: fixed;
   top: 0;
   left: 0;
@@ -54,7 +54,7 @@
   align-items: center;
 }
 
-.astro-back-btn {
+.admin-back-btn {
   background: rgba(217, 182, 111, 0.1);
   border: 1px solid rgba(217, 182, 111, 0.3);
   border-radius: 50%;
@@ -69,12 +69,12 @@
   backdrop-filter: blur(10px);
 }
 
-.astro-back-btn:hover {
+.admin-back-btn:hover {
   background: rgba(217, 182, 111, 0.2);
   transform: scale(1.1);
 }
 
-.astro-back-btn:active {
+.admin-back-btn:active {
   transform: scale(0.95);
 }
 
@@ -193,15 +193,6 @@
 
 .lunar-moon-svg {
   filter: brightness(1.1) contrast(1.1);
-}
-
-.marquee-text textPath {
-  animation: marqueeScroll 20s linear infinite;
-}
-
-@keyframes marqueeScroll {
-  from { offset-distance: 0%; }
-  to { offset-distance: 33.33%; }
 }
 
 /* ============================================
@@ -637,8 +628,8 @@
   .lunar-svg { width: 200px; height: 200px; }
   .lunar-text-top, .lunar-text-bottom { font-size: 8px; }
   .corner-spinner { width: 18px; height: 18px; }
-  .astro-header { padding: 12px; }
-  .astro-back-btn { width: 36px; height: 36px; }
+  .admin-header { padding: 12px; }
+  .admin-back-btn { width: 36px; height: 36px; }
   
   .big-three-grid { gap: 8px; }
   .big-three-item { padding: 12px 8px; }
@@ -670,8 +661,8 @@
   .user-sign-symbol { font-size: 36px; }
   .lunar-svg { width: 180px; height: 180px; }
   .corner-spinner { width: 16px; height: 16px; }
-  .astro-header { padding: 10px; }
-  .astro-back-btn { width: 32px; height: 32px; }
+  .admin-header { padding: 10px; }
+  .admin-back-btn { width: 32px; height: 32px; }
   
   .big-three-grid { grid-template-columns: 1fr; }
   .big-three-item {
@@ -689,7 +680,7 @@
   .planet-orbit-spinner { animation: none; }
   .zodiac-wheel-layer { animation: none; }
   .lunar-ring { transition: none; }
-  .astro-back-btn { transition: none; }
+  .admin-back-btn { transition: none; }
   .get-horoscope-btn::before { transition: none; }
   .energy-fill { transition: none; }
   .planet-dot { transition: none; }

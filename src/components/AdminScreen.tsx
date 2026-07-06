@@ -5,7 +5,7 @@ import { useCosmicData } from '../hooks/useCosmicData';
 import { useBirthChart } from '../hooks/useBirthChart';
 import { useUser } from '../context/UserContext';
 import { supabase } from '../lib/supabase';
-import './AstroScreen.css';
+import './AdminScreen.css';
 
 const BG_IMAGE = 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/backgrounds/space-bg.webp';
 const ZODIAC_WHEEL = 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/test/lucid-origin_a_cinematic_photo_of_Ultra_ornate_golden_zodiac_wheel_12_astrological_symbols_ar-0%20(1)-Photoroom.png';
@@ -50,7 +50,7 @@ const ZODIAC_SYMBOLS: Record<string, string> = {
   'Sagittarius': '♐', 'Capricorn': '♑', 'Aquarius': '', 'Pisces': '♓'
 };
 
-export interface AstroScreenProps {
+export interface AdminScreenProps {
   onNavigate?: (screen: string) => void;
 }
 
@@ -291,8 +291,8 @@ function BirthChartPreview({ birthChart }: { birthChart: any }) {
   );
 }
 
-// ===== MAIN ASTRO SCREEN =====
-export default function AstroScreen({ onNavigate }: AstroScreenProps) {
+// ===== MAIN ADMIN SCREEN =====
+export default function AdminScreen({ onNavigate }: AdminScreenProps) {
   const { user } = useUser();
   const { birthChart, loading: birthChartLoading } = useBirthChart();
   const { data: cosmicData, loading } = useCosmicData();
@@ -356,18 +356,18 @@ export default function AstroScreen({ onNavigate }: AstroScreenProps) {
   };
 
   return (
-    <div className="astro-screen">
+    <div className="admin-screen">
       <div className="cosmic-background" style={{ backgroundImage: `url(${BG_IMAGE})` }} />
 
       {onNavigate && (
-        <div className="astro-header">
-          <button className="astro-back-btn" onClick={() => onNavigate('home')}>
+        <div className="admin-header">
+          <button className="admin-back-btn" onClick={() => onNavigate('home')}>
             <ArrowLeft size={20} />
           </button>
         </div>
       )}
 
-      <div className="astro-content">
+      <div className="admin-content">
         <div className="zodiac-centered-wrapper">
           <div className="zodiac-wrapper">
             <div className="user-sign-layer">
