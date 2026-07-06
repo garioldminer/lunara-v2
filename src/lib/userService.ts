@@ -20,7 +20,7 @@ export interface User {
   gems: number;
   streak: number;
   current_plan: string;
-  onboarding_completed: boolean; // ✅ ახალი field
+  onboarding_completed: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -114,4 +114,15 @@ export async function updateUser(userId: string, updates: Partial<User>): Promis
 export async function completeOnboarding(userId: string): Promise<User | null> {
   console.log('✅ Completing onboarding for user:', userId);
   return updateUser(userId, { onboarding_completed: true });
+}
+
+// ✅ ახალი ფუნქცია - Zodiac Sign reset-ისთვის
+export async function resetZodiacSign(userId: string): Promise<User | null> {
+  console.log('🔄 Resetting zodiac sign for user:', userId);
+  return updateUser(userId, { 
+    sun_sign: null,
+    birth_date: null,
+    birth_time: null,
+    birth_place: null
+  });
 }

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import './ProfileScreen.css';
 import { useUser } from '../context/UserContext';
 import { useSettings } from '../context/SettingsContext';
-import { updateUser } from '../lib/userService';
+import { updateUser, resetZodiacSign } from '../lib/userService';
 import { getActiveSubscription } from '../lib/subscriptionService';
 
 interface Props {
@@ -76,14 +76,13 @@ export default function ProfileScreen({ onNavigate }: Props) {
   const [activeTab, setActiveTab] = useState<'profile' | 'achievements' | 'settings'>('profile');
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showBirthInfo, setShowBirthInfo] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false); // ✅ ახალი
+  const [resetting, setResetting] = useState(false); // ✅ ახალი
   const [editSection, setEditSection] = useState<'personal' | 'astrology' | 'preferences'>('personal');
   const [mounted, setMounted] = useState(false);
   const [activeSubscription, setActiveSubscription] = useState<any>(null);
   
-  // ✅ User-ს ვიღებთ Context-დან
   const { user, setUser, loading } = useUser();
-  
-  // ✅ Settings-ს ვიღებთ SettingsContext-დან
   const { settings, updateSetting } = useSettings();
 
   useEffect(() => {
@@ -92,7 +91,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
     setMounted(true);
   }, [user]);
 
-  // ✅ Subscription-ის შემოწმება
   useEffect(() => {
     if (user) {
       getActiveSubscription(user.id).then(sub => {
@@ -101,7 +99,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
     }
   }, [user]);
 
-  // ✅ userData-ს ვქმნით context-ის user-ისგან
   const userData = user ? {
     telegramUsername: '@' + (user.username || 'user'),
     displayName: user.display_name || 'User',
@@ -177,7 +174,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
     { id: '8', icon: '💰', title: 'High Roller', description: 'Spin the wheel 100 times', unlocked: false, progress: 23, total: 100 },
   ];
 
-  // ✅ განახლებული - Subscription navigation
   const handleSettingClick = (setting: string) => {
     console.log(`Setting clicked: ${setting}`);
     if (setting === 'subscription' && onNavigate) {
@@ -186,6 +182,45 @@ export default function ProfileScreen({ onNavigate }: Props) {
       } else {
         onNavigate('services');
       }
+    }
+  };
+
+  // ✅ ახალი: Change Sign handler
+  const handleChangeSign = () => {
+    console.log('🔄 Changing zodiac sign...');
+    if (onNavigate) {
+      onNavigate('sign-selection');
+    }
+  };
+
+  // ✅ ახალი: Reset Sign handler
+  const handleResetSign = async () => {
+    if (!user) {
+      console.warn('⚠️ No user to reset');
+      return;
+    }
+
+    setResetting(true);
+    
+    try {
+      console.log('🗑️ Resetting zodiac sign...');
+      const updatedUser = await resetZodiacSign(user.id);
+      
+      if (updatedUser) {
+        setUser(updatedUser);
+        console.log('✅ Zodiac sign reset successfully');
+        setShowResetConfirm(false);
+        
+        // Navigate to sign selection
+        if (onNavigate) {
+          onNavigate('sign-selection');
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error resetting zodiac sign:', error);
+      alert('Failed to reset zodiac sign. Please try again.');
+    } finally {
+      setResetting(false);
     }
   };
 
@@ -255,7 +290,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
 
   const planConfig = userData ? getPlanConfig(userData.currentPlan) : getPlanConfig('FREE');
 
-  // ✅ Loading state
   if (loading || !userData) {
     return (
       <div className="screen-container profile">
@@ -438,6 +472,23 @@ export default function ProfileScreen({ onNavigate }: Props) {
                   </div>
                 ))}
               </div>
+              
+              {/* ✅ ახალი: Change/Reset Sign ღილაკები */}
+              <div className="sign-actions">
+                <button 
+                  className="change-sign-btn" 
+                  onClick={handleChangeSign}
+                >
+                  <span>🔄 Change Sign</span>
+                </button>
+                <button 
+                  className="reset-sign-btn" 
+                  onClick={() => setShowResetConfirm(true)}
+                >
+                  <span>🗑️ Reset Sign</span>
+                </button>
+              </div>
+
               <button className="birth-chart-btn" onClick={() => setShowBirthInfo(true)}>
                 <span>View Birth Chart</span>
                 <span className="arrow">→</span>
@@ -512,17 +563,14 @@ export default function ProfileScreen({ onNavigate }: Props) {
           </div>
         )}
 
-        {/* ✅ SETTINGS TAB - რეალური ფუნქციონალი */}
         {activeTab === 'settings' && (
           <div className="settings-tab">
             <PillTabs activeTab={activeTab} setActiveTab={setActiveTab} />
             <h3 className="section-title">✦ SETTINGS ✦</h3>
             
-            {/* APPEARANCE SECTION */}
             <div className="settings-section">
               <h4 className="settings-section-title">🎨 Appearance</h4>
               
-              {/* Theme Selector */}
               <div className="setting-item animate-fade-in stagger-1">
                 <span className="setting-icon">🌗</span>
                 <div className="setting-content">
@@ -550,7 +598,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
                 </div>
               </div>
 
-              {/* Language Selector */}
               <div className="setting-item animate-fade-in stagger-2">
                 <span className="setting-icon">🌐</span>
                 <div className="setting-content">
@@ -569,11 +616,9 @@ export default function ProfileScreen({ onNavigate }: Props) {
               </div>
             </div>
 
-            {/* NOTIFICATIONS SECTION */}
             <div className="settings-section">
               <h4 className="settings-section-title">🔔 Notifications</h4>
               
-              {/* Daily Reminder */}
               <div className="setting-item animate-fade-in stagger-3">
                 <span className="setting-icon">📅</span>
                 <div className="setting-content">
@@ -604,7 +649,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
                 </div>
               )}
 
-              {/* Horoscope Notifications */}
               <div className="setting-item animate-fade-in stagger-5">
                 <span className="setting-icon">🌙</span>
                 <div className="setting-content">
@@ -620,7 +664,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
                 </div>
               </div>
 
-              {/* Moon Phase Alerts */}
               <div className="setting-item animate-fade-in stagger-6">
                 <span className="setting-icon">🌕</span>
                 <div className="setting-content">
@@ -637,11 +680,9 @@ export default function ProfileScreen({ onNavigate }: Props) {
               </div>
             </div>
 
-            {/* SOUNDS & FEEDBACK SECTION */}
             <div className="settings-section">
               <h4 className="settings-section-title">🔊 Sounds & Feedback</h4>
               
-              {/* Sound Effects */}
               <div className="setting-item animate-fade-in stagger-7">
                 <span className="setting-icon">🔊</span>
                 <div className="setting-content">
@@ -657,7 +698,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
                 </div>
               </div>
 
-              {/* Haptic Feedback */}
               <div className="setting-item animate-fade-in stagger-8">
                 <span className="setting-icon">📳</span>
                 <div className="setting-content">
@@ -674,11 +714,9 @@ export default function ProfileScreen({ onNavigate }: Props) {
               </div>
             </div>
 
-            {/* ACCOUNT SECTION */}
             <div className="settings-section">
               <h4 className="settings-section-title">💎 Account</h4>
               
-              {/* Subscription */}
               <div 
                 className="setting-item premium animate-fade-in stagger-9" 
                 onClick={() => handleSettingClick('subscription')}
@@ -689,21 +727,18 @@ export default function ProfileScreen({ onNavigate }: Props) {
                 <span className="setting-arrow">→</span>
               </div>
 
-              {/* Support */}
               <div className="setting-item animate-fade-in stagger-10" onClick={() => handleSettingClick('support')}>
                 <span className="setting-icon">📧</span>
                 <span className="setting-label">Support</span>
                 <span className="setting-arrow">→</span>
               </div>
 
-              {/* About */}
               <div className="setting-item animate-fade-in stagger-11" onClick={() => handleSettingClick('about')}>
                 <span className="setting-icon">ℹ️</span>
                 <span className="setting-label">About</span>
                 <span className="setting-arrow">→</span>
               </div>
 
-              {/* Logout */}
               <div className="setting-item danger animate-fade-in stagger-12" onClick={() => handleSettingClick('logout')}>
                 <span className="setting-icon">🚪</span>
                 <span className="setting-label">Logout</span>
@@ -735,6 +770,15 @@ export default function ProfileScreen({ onNavigate }: Props) {
           birthPlace={userData.birthPlace}
           onSave={handleSaveBirthInfo}
           onClose={() => setShowBirthInfo(false)}
+        />
+      )}
+
+      {/* ✅ ახალი: Reset Confirmation Modal */}
+      {showResetConfirm && (
+        <ResetConfirmModal
+          resetting={resetting}
+          onConfirm={handleResetSign}
+          onCancel={() => setShowResetConfirm(false)}
         />
       )}
     </div>
@@ -896,6 +940,46 @@ function BirthInfoModal({ birthDate, birthTime, birthPlace, onSave, onClose }: {
           </div>
           <button type="submit" className="modal-submit-btn">SAVE BIRTH INFO</button>
         </form>
+      </div>
+    </div>
+  );
+}
+
+// ✅ ახალი: Reset Confirmation Modal
+function ResetConfirmModal({ 
+  resetting, 
+  onConfirm, 
+  onCancel 
+}: { 
+  resetting: boolean; 
+  onConfirm: () => void; 
+  onCancel: () => void;
+}) {
+  return (
+    <div className="modal-overlay" onClick={onCancel}>
+      <div className="modal-content reset-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="reset-icon">⚠️</div>
+        <h2 className="modal-title">Reset Zodiac Sign?</h2>
+        <p className="reset-message">
+          This will remove your current zodiac sign and birth information. 
+          You'll need to select your sign again to continue using the horoscope features.
+        </p>
+        <div className="reset-actions">
+          <button 
+            className="reset-cancel-btn" 
+            onClick={onCancel}
+            disabled={resetting}
+          >
+            Cancel
+          </button>
+          <button 
+            className="reset-confirm-btn" 
+            onClick={onConfirm}
+            disabled={resetting}
+          >
+            {resetting ? 'Resetting...' : 'Reset Sign'}
+          </button>
+        </div>
       </div>
     </div>
   );

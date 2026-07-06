@@ -1514,6 +1514,240 @@
   border-radius: 2px;
 }
 
+/* ============================================
+   ✅ NEW: SIGN ACTION BUTTONS (Change/Reset Sign)
+   ============================================ */
+.sign-actions {
+  display: flex;
+  gap: 10px;
+  margin: 16px 0;
+  width: 100%;
+}
+
+.change-sign-btn,
+.reset-sign-btn {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-family: 'Georgia', serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  position: relative;
+  overflow: hidden;
+}
+
+.change-sign-btn {
+  background: linear-gradient(135deg, rgba(217, 182, 111, 0.2) 0%, rgba(217, 182, 111, 0.1) 100%);
+  border-color: rgba(217, 182, 111, 0.4);
+  color: #D9B66F;
+}
+
+.change-sign-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 229, 102, 0.1);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+}
+
+.change-sign-btn:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+.change-sign-btn:hover {
+  background: linear-gradient(135deg, rgba(217, 182, 111, 0.3) 0%, rgba(217, 182, 111, 0.2) 100%);
+  border-color: rgba(217, 182, 111, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(217, 182, 111, 0.3);
+}
+
+.change-sign-btn:active {
+  transform: scale(0.98);
+}
+
+.reset-sign-btn {
+  background: linear-gradient(135deg, rgba(232, 115, 138, 0.15) 0%, rgba(232, 115, 138, 0.08) 100%);
+  border-color: rgba(232, 115, 138, 0.3);
+  color: #E8738A;
+}
+
+.reset-sign-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(232, 115, 138, 0.1);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+}
+
+.reset-sign-btn:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+.reset-sign-btn:hover {
+  background: linear-gradient(135deg, rgba(232, 115, 138, 0.25) 0%, rgba(232, 115, 138, 0.15) 100%);
+  border-color: rgba(232, 115, 138, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(232, 115, 138, 0.3);
+}
+
+.reset-sign-btn:active {
+  transform: scale(0.98);
+}
+
+/* ============================================
+   ✅ NEW: RESET CONFIRMATION MODAL
+   ============================================ */
+.reset-modal {
+  max-width: 400px;
+  text-align: center;
+  padding: 32px 24px;
+}
+
+.reset-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  animation: resetIconPulse 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 12px rgba(232, 115, 138, 0.5));
+}
+
+@keyframes resetIconPulse {
+  0%, 100% { 
+    transform: scale(1); 
+    filter: drop-shadow(0 0 12px rgba(232, 115, 138, 0.5));
+  }
+  50% { 
+    transform: scale(1.1); 
+    filter: drop-shadow(0 0 20px rgba(232, 115, 138, 0.8));
+  }
+}
+
+.reset-message {
+  font-family: 'Georgia', serif;
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(247, 243, 235, 0.8);
+  margin: 16px 0 24px 0;
+}
+
+.reset-actions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.reset-cancel-btn,
+.reset-confirm-btn {
+  flex: 1;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-family: 'Georgia', serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid;
+  min-height: 44px;
+  position: relative;
+  overflow: hidden;
+}
+
+.reset-cancel-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(247, 243, 235, 0.7);
+}
+
+.reset-cancel-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+}
+
+.reset-cancel-btn:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+.reset-cancel-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.reset-cancel-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.reset-confirm-btn {
+  background: linear-gradient(135deg, rgba(232, 115, 138, 0.3) 0%, rgba(232, 115, 138, 0.2) 100%);
+  border-color: rgba(232, 115, 138, 0.5);
+  color: #E8738A;
+}
+
+.reset-confirm-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(232, 115, 138, 0.15);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+}
+
+.reset-confirm-btn:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+.reset-confirm-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(232, 115, 138, 0.4) 0%, rgba(232, 115, 138, 0.3) 100%);
+  border-color: rgba(232, 115, 138, 0.7);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(232, 115, 138, 0.4);
+}
+
+.reset-confirm-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.reset-cancel-btn:disabled,
+.reset-confirm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ===== MOBILE OPTIMIZATION ===== */
 @media (max-width: 380px) {
   .profile-content {
@@ -1564,6 +1798,42 @@
   .settings-time-input {
     max-width: 100%;
   }
+
+  /* ✅ Mobile - Sign Actions */
+  .sign-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .change-sign-btn,
+  .reset-sign-btn {
+    font-size: 12px;
+    padding: 10px 14px;
+  }
+
+  /* ✅ Mobile - Reset Modal */
+  .reset-modal {
+    padding: 24px 18px;
+  }
+
+  .reset-icon {
+    font-size: 40px;
+  }
+
+  .reset-message {
+    font-size: 13px;
+    margin: 12px 0 20px 0;
+  }
+
+  .reset-actions {
+    flex-direction: column;
+  }
+
+  .reset-cancel-btn,
+  .reset-confirm-btn {
+    font-size: 13px;
+    padding: 10px 16px;
+  }
 }
 
 @media (max-height: 700px) {
@@ -1589,7 +1859,8 @@
   .hero-card,
   .avatar-ring,
   .moon-symbol,
-  .particle {
+  .particle,
+  .reset-icon {
     animation: none;
   }
   
