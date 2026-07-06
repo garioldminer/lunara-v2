@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Sparkles, Zap, Star, Moon as MoonIcon, Sun } from 'lucide-react';
+import { ArrowLeft, Sparkles, Zap, Star } from 'lucide-react';
 import { useCosmicData } from '../hooks/useCosmicData';
 import { useBirthChart } from '../hooks/useBirthChart';
 import { useUser } from '../context/UserContext';
@@ -268,7 +268,7 @@ function BirthChartPreview({ birthChart }: { birthChart: any }) {
         Your Big Three
       </h3>
       <div className="big-three-grid">
-        {signs.map((item, index) => (
+        {signs.map((item) => (
           <div key={item.label} className="big-three-item">
             <div className="big-three-icon" style={{ color: item.color }}>
               {item.icon}
@@ -293,11 +293,10 @@ function BirthChartPreview({ birthChart }: { birthChart: any }) {
 
 // ===== MAIN ASTRO SCREEN =====
 export default function AstroScreen({ onNavigate }: AstroScreenProps) {
-  const { user } = useUser(); // ✅ ახალი: User context
-  const { birthChart, loading: birthChartLoading } = useBirthChart(); // ✅ ახალი: Birth chart hook
+  const { user } = useUser();
+  const { birthChart, loading: birthChartLoading } = useBirthChart();
   const { data: cosmicData, loading } = useCosmicData();
   
-  // ✅ ახალი: User sign from context/birth chart
   const userSign = user?.sun_sign || birthChart?.sun_sign || 'aries';
   const currentSign = ZODIAC_SIGNS[userSign];
 
@@ -439,7 +438,7 @@ export default function AstroScreen({ onNavigate }: AstroScreenProps) {
           </svg>
         </div>
 
-        {/* ✅ ახალი: BIRTH CHART PREVIEW */}
+        {/* BIRTH CHART PREVIEW */}
         <BirthChartPreview birthChart={birthChart} />
 
         {/* PLANET ORBITS */}

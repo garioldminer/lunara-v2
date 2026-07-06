@@ -3,12 +3,10 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Sparkles, Zap, Star, Info } from 'lucide-react';
 import { useCosmicData } from '../hooks/useCosmicData';
 import { useBirthChart } from '../hooks/useBirthChart';
-import { useUser } from '../context/UserContext';
 import { supabase } from '../lib/supabase';
 import './AstroScreen.css';
 
 const BG_IMAGE = 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/backgrounds/space-bg.webp';
-const MOON_IMAGE = 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/planets/moon.webp';
 
 const PLANET_IMAGES: Record<string, string> = {
   'Sun': 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/planets/sun.webp',
@@ -35,7 +33,7 @@ const PLANET_CONFIG: Record<string, { color: string; orbitRadius: number }> = {
 };
 
 const ZODIAC_SYMBOLS: Record<string, string> = {
-  'Aries': '♈', 'Taurus': '', 'Gemini': '♊', 'Cancer': '♋',
+  'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊', 'Cancer': '♋',
   'Leo': '♌', 'Virgo': '♍', 'Libra': '♎', 'Scorpio': '♏',
   'Sagittarius': '♐', 'Capricorn': '♑', 'Aquarius': '♒', 'Pisces': '♓'
 };
@@ -273,7 +271,7 @@ function CosmicEnergyCards({ cosmicData, birthChart }: { cosmicData: any; birthC
       iconBg: 'rgba(255, 215, 0, 0.2)'
     },
     { 
-      icon: '', 
+      icon: '🌙', 
       label: 'Moon', 
       value: `${moonSign}`,
       bg: 'linear-gradient(135deg, rgba(100, 80, 180, 0.2), rgba(60, 40, 120, 0.1))',
@@ -315,9 +313,8 @@ function CosmicEnergyCards({ cosmicData, birthChart }: { cosmicData: any; birthC
 
 // ===== MAIN ASTRO SCREEN =====
 export default function AstroScreen({ onNavigate }: AstroScreenProps) {
-  const { user } = useUser();
-  const { birthChart, loading: birthChartLoading } = useBirthChart();
-  const { data: cosmicData, loading } = useCosmicData();
+  const { birthChart } = useBirthChart();
+  const { data: cosmicData } = useCosmicData();
   const [planets, setPlanets] = useState<any[]>([]);
   const [planetsLoading, setPlanetsLoading] = useState(true);
 
