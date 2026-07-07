@@ -100,8 +100,8 @@
   gap: 12px;
 }
 
-/* ✅ Bottom padding for scroll - 15px after CTA button */
-.bottom-padding {
+/* ✅ Bottom spacer - 15px after CTA button */
+.bottom-spacer {
   height: 15px;
   flex-shrink: 0;
 }
@@ -235,7 +235,7 @@
 }
 
 /* ============================================
-   PLANET POSITIONS - 2x ზომა, ცენტრში
+   PLANET POSITIONS - კიდევ უფრო დიდი
    ============================================ */
 .planets-section {
   padding: 14px;
@@ -272,14 +272,14 @@
   justify-content: center;
   align-items: center;
   margin-bottom: 12px;
-  min-height: 400px;
+  min-height: 500px;
 }
 
 .orbit-svg {
   width: 100%;
-  max-width: 650px;
+  max-width: 750px;
   height: auto;
-  max-height: 550px;
+  max-height: 650px;
   filter: drop-shadow(0 10px 30px rgba(217, 182, 111, 0.15));
 }
 
@@ -321,7 +321,7 @@
 
 .planet-name-text {
   font-family: 'Cinzel', serif;
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 700;
   fill: #F7F3EB;
   text-shadow: 0 0 8px rgba(0, 0, 0, 0.9);
@@ -329,14 +329,14 @@
 
 .zodiac-name-text {
   font-family: 'Cinzel', serif;
-  font-size: 12px;
+  font-size: 16px;
   font-weight: 600;
   fill: #D9B66F;
   text-shadow: 0 0 6px rgba(217, 182, 111, 0.5);
 }
 
 /* ============================================
-   PLANET DATA LIST - მარტივი
+   PLANET DATA LIST - 2 სვეტი
    ============================================ */
 .planet-simple-list {
   display: grid;
@@ -368,8 +368,8 @@
 }
 
 .planet-simple-img {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid rgba(217, 182, 111, 0.4);
@@ -378,8 +378,8 @@
 }
 
 .planet-simple-dot {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   flex-shrink: 0;
   box-shadow: 0 0 10px currentColor;
@@ -616,16 +616,16 @@
   }
 
   .orbit-svg {
-    max-width: 450px;
-    max-height: 420px;
+    max-width: 500px;
+    max-height: 480px;
   }
 
   .planet-name-text {
-    font-size: 12px;
+    font-size: 14px;
   }
 
   .zodiac-name-text {
-    font-size: 11px;
+    font-size: 13px;
   }
 
   .planet-simple-list {
@@ -638,8 +638,8 @@
   }
 
   .planet-simple-img {
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
   }
 
   .planet-simple-name {
@@ -685,7 +685,7 @@
     font-size: 12px;
   }
 
-  .bottom-padding {
+  .bottom-spacer {
     height: 15px;
   }
 }
@@ -697,8 +697,8 @@
   }
 
   .orbit-svg {
-    max-width: 380px;
-    max-height: 360px;
+    max-width: 420px;
+    max-height: 400px;
   }
 
   .big-three-container {
