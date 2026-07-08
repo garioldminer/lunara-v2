@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Zap, Star, Info, Bug } from 'lucide-react';
 import { useCosmicData } from '../hooks/useCosmicData';
@@ -21,7 +21,7 @@ const PLANET_IMAGES: Record<string, string> = {
 };
 
 const ZODIAC_SYMBOLS: Record<string, string> = {
-  'Aries': '♈', 'Taurus': '♉', 'Gemini': '', 'Cancer': '♋',
+  'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊', 'Cancer': '♋',
   'Leo': '♌', 'Virgo': '♍', 'Libra': '♎', 'Scorpio': '♏',
   'Sagittarius': '♐', 'Capricorn': '♑', 'Aquarius': '♒', 'Pisces': '♓'
 };
@@ -45,11 +45,11 @@ export interface AstroScreenProps {
 // ===== PLANET ORBIT DIAGRAM WITH DEBUG =====
 function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
   const [hoveredPlanet, setHoveredPlanet] = useState<string | null>(null);
-  const [debugMode, setDebugMode] = useState(true); // ✅ დებაგერი ჩართულია
+  const [debugMode, setDebugMode] = useState(true);
   
   const CENTER_X = 250;
   const CENTER_Y = 250;
-  const PLANET_RADIUS = 12; // 24px diameter / 2
+  const PLANET_RADIUS = 12;
 
   const getPlanetPosition = (planet: any) => {
     const config = PLANET_CONFIG[planet.planet_name];
@@ -64,7 +64,6 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
     return { x, y };
   };
 
-  // ✅ დებაგერი: ვპოულობ უკიდურეს პლანეტებს
   const getExtremePlanets = () => {
     if (planets.length === 0) return null;
 
@@ -89,7 +88,7 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
 
   return (
     <div className="orbit-diagram-container">
-      {/* ✅ Debug toggle button */}
+      {/* Debug toggle button */}
       <button 
         onClick={() => setDebugMode(!debugMode)}
         style={{
@@ -254,7 +253,7 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
           );
         })}
 
-        {/* ✅ DEBUG MODE - ვიზუალური გაზომვა */}
+        {/* DEBUG MODE */}
         {debugMode && extremes && (
           <g className="debug-overlay">
             {/* viewBox border */}
@@ -267,7 +266,7 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
               strokeDasharray="5 5"
             />
 
-            {/* TOP - Moon to top edge */}
+            {/* TOP */}
             <line 
               x1={extremes.topPlanet.x} 
               y1={extremes.topPlanet.y - PLANET_RADIUS}
@@ -275,7 +274,6 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
               y2="0"
               stroke="#ef4444" 
               strokeWidth="2"
-              markerEnd="url(#arrowRed)"
             />
             <circle cx={extremes.topPlanet.x} cy={extremes.topPlanet.y - PLANET_RADIUS} r="4" fill="#ef4444" />
             <text 
@@ -296,7 +294,7 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
               ({extremes.topPlanet.name})
             </text>
 
-            {/* BOTTOM - Uranus to bottom edge */}
+            {/* BOTTOM */}
             <line 
               x1={extremes.bottomPlanet.x} 
               y1={extremes.bottomPlanet.y + PLANET_RADIUS}
@@ -324,7 +322,7 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
               ({extremes.bottomPlanet.name})
             </text>
 
-            {/* LEFT - Jupiter to left edge */}
+            {/* LEFT */}
             <line 
               x1={extremes.leftPlanet.x - PLANET_RADIUS}
               y1={extremes.leftPlanet.y}
@@ -354,7 +352,7 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
               ({extremes.leftPlanet.name})
             </text>
 
-            {/* RIGHT - Neptune to right edge */}
+            {/* RIGHT */}
             <line 
               x1={extremes.rightPlanet.x + PLANET_RADIUS}
               y1={extremes.rightPlanet.y}
@@ -500,7 +498,7 @@ function CosmicEnergyCards({ cosmicData, birthChart }: { cosmicData: any; birthC
 
   const getElementIcon = (element: string) => {
     const icons: Record<string, string> = {
-      'Fire': '🔥', 'Earth': '🌍', 'Air': '', 'Water': '💧'
+      'Fire': '🔥', 'Earth': '🌍', 'Air': '💨', 'Water': '💧'
     };
     return icons[element] || '✨';
   };
