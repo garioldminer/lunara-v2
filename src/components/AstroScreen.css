@@ -234,7 +234,7 @@
 }
 
 /* ============================================
-   PLANET POSITIONS - განახევრებული სიმაღლე
+   PLANET POSITIONS - კვადრატი SVG
    ============================================ */
 .planets-section {
   padding: 14px;
@@ -271,15 +271,14 @@
   justify-content: center;
   align-items: center;
   margin-bottom: 12px;
-  min-height: 250px; /* ✅ განახევრებული: 400px → 250px */
 }
 
-/* ✅ განახევრებული ომები */
+/* ✅ კვადრატი SVG - aspect-ratio: 1/1 */
 .orbit-svg {
   width: 100%;
-  max-width: 600px;
+  max-width: 500px;
+  aspect-ratio: 1 / 1; /* ✅ კვადრატი! */
   height: auto;
-  max-height: 320px; /* ✅ განახევრებული: 530px → 320px */
   filter: drop-shadow(0 10px 30px rgba(217, 182, 111, 0.15));
 }
 
@@ -289,24 +288,24 @@
 
 @keyframes sunPulse {
   0%, 100% { 
-    filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.8));
+    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
   }
   50% { 
-    filter: drop-shadow(0 0 30px rgba(255, 215, 0, 1));
+    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 1));
   }
 }
 
 .planet-img {
   transition: all 0.3s ease;
-  filter: drop-shadow(0 0 10px rgba(217, 182, 111, 0.5));
+  filter: drop-shadow(0 0 6px rgba(217, 182, 111, 0.5));
 }
 
 .planet-img:hover {
-  filter: drop-shadow(0 0 25px rgba(217, 182, 111, 1));
+  filter: drop-shadow(0 0 15px rgba(217, 182, 111, 1));
 }
 
 .sun-img {
-  filter: drop-shadow(0 0 18px rgba(255, 215, 0, 0.9));
+  filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.9));
 }
 
 .planet-glow-ring {
@@ -321,18 +320,18 @@
 
 .planet-name-text {
   font-family: 'Cinzel', serif;
-  font-size: 10px;
+  font-size: 8px;
   font-weight: 700;
   fill: #F7F3EB;
-  text-shadow: 0 0 8px rgba(0, 0, 0, 0.9);
+  text-shadow: 0 0 6px rgba(0, 0, 0, 0.9);
 }
 
 .zodiac-name-text {
   font-family: 'Cinzel', serif;
-  font-size: 9px;
+  font-size: 7px;
   font-weight: 600;
   fill: #D9B66F;
-  text-shadow: 0 0 6px rgba(217, 182, 111, 0.5);
+  text-shadow: 0 0 4px rgba(217, 182, 111, 0.5);
 }
 
 /* ============================================
@@ -616,16 +615,15 @@
   }
 
   .orbit-svg {
-    max-width: 420px;
-    max-height: 224px; /* ✅ განახევრებული */
+    max-width: 400px; /* ✅ კვადრატი */
   }
 
   .planet-name-text {
-    font-size: 9px;
+    font-size: 7px;
   }
 
   .zodiac-name-text {
-    font-size: 8px;
+    font-size: 6px;
   }
 
   .planet-simple-list {
@@ -697,8 +695,7 @@
   }
 
   .orbit-svg {
-    max-width: 340px;
-    max-height: 181px; /* ✅ განახევრებული */
+    max-width: 320px; /* ✅ კვადრატი */
   }
 
   .big-three-container {
