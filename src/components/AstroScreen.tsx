@@ -21,49 +21,53 @@ const PLANET_IMAGES: Record<string, string> = {
 };
 
 const ZODIAC_SYMBOLS: Record<string, string> = {
-  'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊', 'Cancer': '♋',
+  'Aries': '♈', 'Taurus': '', 'Gemini': '♊', 'Cancer': '♋',
   'Leo': '♌', 'Virgo': '♍', 'Libra': '♎', 'Scorpio': '♏',
-  'Sagittarius': '♐', 'Capricorn': '♑', 'Aquarius': '', 'Pisces': '♓'
+  'Sagittarius': '♐', 'Capricorn': '♑', 'Aquarius': '♒', 'Pisces': '♓'
 };
 
-// ✅ კომპაქტური orbit radii (viewBox 950x950, Center 475)
+// ✅ განახევრებული orbit radii (viewBox 950x500, Center 475,250)
 const PLANET_CONFIG: Record<string, { color: string; orbitRadius: number }> = {
   'Sun': { color: '#FFD700', orbitRadius: 0 },
-  'Moon': { color: '#C0C0C0', orbitRadius: 111 },
-  'Mercury': { color: '#A0A0A0', orbitRadius: 150 },
-  'Venus': { color: '#E6B800', orbitRadius: 190 },
-  'Mars': { color: '#FF4500', orbitRadius: 230 },
-  'Jupiter': { color: '#DAA520', orbitRadius: 273 },
-  'Saturn': { color: '#F4A460', orbitRadius: 317 },
-  'Uranus': { color: '#40E0D0', orbitRadius: 360 },
-  'Neptune': { color: '#4169E1', orbitRadius: 404 }
+  'Moon': { color: '#C0C0C0', orbitRadius: 55 },
+  'Mercury': { color: '#A0A0A0', orbitRadius: 75 },
+  'Venus': { color: '#E6B800', orbitRadius: 95 },
+  'Mars': { color: '#FF4500', orbitRadius: 115 },
+  'Jupiter': { color: '#DAA520', orbitRadius: 137 },
+  'Saturn': { color: '#F4A460', orbitRadius: 158 },
+  'Uranus': { color: '#40E0D0', orbitRadius: 180 },
+  'Neptune': { color: '#4169E1', orbitRadius: 200 }
 };
 
 export interface AstroScreenProps {
   onNavigate?: (screen: string) => void;
 }
 
-// ===== PLANET ORBIT DIAGRAM - კომპაქტური =====
+// ===== PLANET ORBIT DIAGRAM - განახევრებული სიმაღლე =====
 function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
   const [hoveredPlanet, setHoveredPlanet] = useState<string | null>(null);
-  const CENTER = 475;
+  
+  // ✅ ახალი center: 475, 250 (viewBox 950x500)
+  const CENTER_X = 475;
+  const CENTER_Y = 250;
 
   const getPlanetPosition = (planet: any) => {
     const config = PLANET_CONFIG[planet.planet_name];
-    if (!config) return { x: CENTER, y: CENTER };
+    if (!config) return { x: CENTER_X, y: CENTER_Y };
 
     const signIndex = Object.keys(ZODIAC_SYMBOLS).indexOf(planet.sign);
     const signAngle = (signIndex * 30) + planet.degree;
     const angle = (signAngle * Math.PI) / 180;
-    const x = CENTER + config.orbitRadius * Math.cos(angle);
-    const y = CENTER + config.orbitRadius * Math.sin(angle);
+    const x = CENTER_X + config.orbitRadius * Math.cos(angle);
+    const y = CENTER_Y + config.orbitRadius * Math.sin(angle);
 
     return { x, y };
   };
 
   return (
     <div className="orbit-diagram-container">
-      <svg className="orbit-svg" viewBox="0 0 950 950">
+      {/* ✅ განახევრებული viewBox 950x500 */}
+      <svg className="orbit-svg" viewBox="0 0 950 500">
         <defs>
           <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="#FFD700" stopOpacity="1" />
@@ -71,8 +75,8 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
             <stop offset="100%" stopColor="#FF8C00" stopOpacity="0" />
           </radialGradient>
           <filter id="planetShadow">
-            <feGaussianBlur in="SourceAlpha" stdDeviation="4" />
-            <feOffset dx="3" dy="3" result="offsetblur" />
+            <feGaussianBlur in="SourceAlpha" stdDeviation="2" />
+            <feOffset dx="2" dy="2" result="offsetblur" />
             <feComponentTransfer>
               <feFuncA type="linear" slope="0.5" />
             </feComponentTransfer>
@@ -82,7 +86,7 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
             </feMerge>
           </filter>
           <filter id="sunGlowFilter">
-            <feGaussianBlur stdDeviation="6" result="coloredBlur" />
+            <feGaussianBlur stdDeviation="4" result="coloredBlur" />
             <feMerge>
               <feMergeNode in="coloredBlur" />
               <feMergeNode in="SourceGraphic" />
@@ -96,32 +100,32 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
           .map(([name, config]) => (
             <circle
               key={`orbit-${name}`}
-              cx={CENTER}
-              cy={CENTER}
+              cx={CENTER_X}
+              cy={CENTER_Y}
               r={config.orbitRadius}
               fill="none"
               stroke="rgba(217, 182, 111, 0.15)"
-              strokeWidth="1.5"
-              strokeDasharray="6 6"
+              strokeWidth="1"
+              strokeDasharray="4 4"
             />
           ))}
 
-        {/* Sun center - 130px */}
-        <circle cx={CENTER} cy={CENTER} r="75" fill="url(#sunGlow)" className="sun-glow" filter="url(#sunGlowFilter)" />
+        {/* Sun center - 65px (განახევრებული) */}
+        <circle cx={CENTER_X} cy={CENTER_Y} r="38" fill="url(#sunGlow)" className="sun-glow" filter="url(#sunGlowFilter)" />
         {PLANET_IMAGES['Sun'] && (
           <image
             href={PLANET_IMAGES['Sun']}
-            x={CENTER - 65}
-            y={CENTER - 65}
-            width="130"
-            height="130"
+            x={CENTER_X - 32}
+            y={CENTER_Y - 32}
+            width="65"
+            height="65"
             className="planet-img sun-img"
             preserveAspectRatio="xMidYMid slice"
-            clipPath="circle(65px at center)"
+            clipPath="circle(32px at center)"
           />
         )}
 
-        {/* Planets - 80px */}
+        {/* Planets - 40px (განახევრებული) */}
         {planets.map((planet, index) => {
           const config = PLANET_CONFIG[planet.planet_name];
           if (!config) return null;
@@ -129,7 +133,7 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
           const pos = getPlanetPosition(planet);
           const isHovered = hoveredPlanet === planet.planet_name;
           const planetImage = PLANET_IMAGES[planet.planet_name];
-          const size = isHovered ? 100 : 80;
+          const size = isHovered ? 50 : 40; // ✅ 40px / 50px
 
           return (
             <g key={planet.planet_name}>
@@ -143,13 +147,14 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
                   style={{ cursor: 'pointer' }}
                   filter="url(#planetShadow)"
                 >
+                  {/* Glow ring */}
                   <circle
                     cx={pos.x}
                     cy={pos.y}
-                    r={size / 2 + 6}
+                    r={size / 2 + 4}
                     fill="none"
                     stroke={config.color}
-                    strokeWidth="2"
+                    strokeWidth="1.5"
                     opacity={isHovered ? 0.8 : 0.4}
                     className="planet-glow-ring"
                   />
@@ -163,21 +168,23 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
                     preserveAspectRatio="xMidYMid slice"
                     clipPath={`circle(${size / 2}px at center)`}
                   />
+                  {/* Planet name */}
                   <text
                     x={pos.x}
-                    y={pos.y + size / 2 + 20}
+                    y={pos.y + size / 2 + 14}
                     textAnchor="middle"
                     className="planet-name-text"
-                    style={{ fontSize: isHovered ? '16px' : '14px' }}
+                    style={{ fontSize: isHovered ? '11px' : '10px' }}
                   >
                     {planet.planet_name}
                   </text>
+                  {/* Zodiac sign name */}
                   <text
                     x={pos.x}
-                    y={pos.y + size / 2 + 38}
+                    y={pos.y + size / 2 + 26}
                     textAnchor="middle"
                     className="zodiac-name-text"
-                    style={{ fontSize: '13px' }}
+                    style={{ fontSize: '9px' }}
                   >
                     {planet.sign}
                   </text>
@@ -186,7 +193,7 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
                 <motion.circle
                   cx={pos.x}
                   cy={pos.y}
-                  r={isHovered ? 36 : 28}
+                  r={isHovered ? 20 : 16}
                   fill={config.color}
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
@@ -334,7 +341,7 @@ function CosmicEnergyCards({ cosmicData, birthChart }: { cosmicData: any; birthC
       iconBg: 'rgba(255, 215, 0, 0.2)'
     },
     { 
-      icon: '', 
+      icon: '🌙', 
       label: 'Moon', 
       value: `${moonSign}`,
       bg: 'linear-gradient(135deg, rgba(100, 80, 180, 0.2), rgba(60, 40, 120, 0.1))',
