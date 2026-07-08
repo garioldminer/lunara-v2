@@ -21,6 +21,8 @@ import {
   Bug,
   Info
 } from 'lucide-react';
+import { useUser } from '../context/UserContext';
+import { isAdmin } from '../lib/adminService';
 import {
   getAllProviders,
   getAllApiKeys,
@@ -58,6 +60,8 @@ interface DebugLog {
 }
 
 export default function AdminAIManagement({ onNavigate }: Props) {
+  const { user } = useUser();
+  const [isUserAdmin, setIsUserAdmin] = useState<boolean | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [loading, setLoading] = useState(true);
   
@@ -91,6 +95,17 @@ export default function AdminAIManagement({ onNavigate }: Props) {
   
   const [testingKey, setTestingKey] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<{ [key: string]: { success: boolean; message: string } }>({});
+
+  // ✅ Admin check
+  useEffect(() => {
+    if (user) {
+      isAdmin(user.id).then(admin => {
+        setIsUserAdmin(admin);
+      });
+    } else {
+      setIsUserAdmin(false);
+    }
+  }, [user]);
 
   // ✅ SAFE NUMBER HELPER - NaN-ის თავიდან ასაცილებლად
   const safeNum = (value: any): number => {
@@ -442,6 +457,62 @@ export default function AdminAIManagement({ onNavigate }: Props) {
   // RENDER
   // ============================================
   
+  // ✅ ჯერ არ ვიცით admin თუ არა
+  if (isUserAdmin === null) {
+    return (
+      <div className="ai-admin-screen">
+        <div className="ai-admin-loading">
+          <RefreshCw size={32} className="spin" />
+          <p>Verifying admin access...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ✅ არ არის admin
+  if (!isUserAdmin) {
+    return (
+      <div className="ai-admin-screen">
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          textAlign: 'center',
+          gap: '12px',
+          padding: '20px'
+        }}>
+          <Shield size={64} color="#ef4444" />
+          <h2 style={{ color: '#ef4444', margin: 0, fontSize: '20px' }}>⛔ Access Denied</h2>
+          <p style={{ color: '#c87800', margin: 0, fontSize: '13px' }}>
+            You do not have permission to access this page.
+          </p>
+          <p style={{ fontSize: '11px', color: '#886600' }}>
+            This incident will be reported.
+          </p>
+          <button 
+            onClick={() => onNavigate?.('home')}
+            style={{
+              marginTop: '16px',
+              padding: '12px 24px',
+              background: 'linear-gradient(135deg, #60a5fa, #93c5fd)',
+              border: 'none',
+              borderRadius: '10px',
+              color: '#0a0600',
+              fontFamily: 'Georgia, serif',
+              fontSize: '13px',
+              fontWeight: 'bold',
+              cursor: 'pointer'
+            }}
+          >
+            Return Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="ai-admin-screen">

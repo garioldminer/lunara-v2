@@ -29,6 +29,9 @@ import { getTelegramUser } from './lib/telegramAuth';
 import { getOrCreateUser, completeOnboarding } from './lib/userService';
 import './App.css';
 
+// ✅ Admin user ID
+const ADMIN_USER_ID = 'c9dbe3be-5c02-4034-8bfd-1d693eb02754';
+
 type Screen = 
   | 'splash' 
   | 'welcome' 
@@ -192,13 +195,25 @@ function AppContent() {
       console.log('♏ Opening Sign Selection Screen');
       goTo('sign-selection');
     }
+    // ✅ გაუმჯობესებული დაცვა - მხოლოდ ადმინს შეუძლია შესვლა
     else if (screen === 'admin') {
       console.log('🔐 Opening Admin Panel');
-      goTo('admin');
+      if (user && user.id === ADMIN_USER_ID) {
+        goTo('admin');
+      } else {
+        console.warn('⛔ Unauthorized admin access attempt by user:', user?.id);
+        goTo('home');
+      }
     }
+    // ✅ აი-მენეჯმენტიც დავიცვათ
     else if (screen === 'ai-management') {
       console.log('🤖 Opening AI Management');
-      goTo('ai-management');
+      if (user && user.id === ADMIN_USER_ID) {
+        goTo('ai-management');
+      } else {
+        console.warn('⛔ Unauthorized AI management access attempt by user:', user?.id);
+        goTo('home');
+      }
     }
     else if (screen === 'subscription') {
       console.log('💎 Opening Subscription Screen');
