@@ -105,7 +105,19 @@ function calculateAspects(planets: Array<{ name: string; totalDegree: number }>)
 }
 
 serve(async (req) => {
-  const startTime = Date.now(); // ✅ დროის დაფიქსირება
+  const startTime = Date.now();
+  
+  // ✅ CORS headers - საშუალებას აძლევს Telegram Mini App-ს გამოიძახოს function
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  };
+
+  // ✅ OPTIONS request-ის დამუშავება (CORS preflight)
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
   
   try {
     const supabase = createClient(
@@ -249,7 +261,12 @@ serve(async (req) => {
         planets_count: planets.length,
         aspects_count: aspects.length
       }),
-      { headers: { "Content-Type": "application/json" } }
+      { 
+        headers: { 
+          ...corsHeaders,
+          "Content-Type": "application/json" 
+        } 
+      }
     );
 
   } catch (error: any) {
@@ -278,7 +295,13 @@ serve(async (req) => {
     
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      { 
+        status: 500, 
+        headers: { 
+          ...corsHeaders,
+          "Content-Type": "application/json" 
+        } 
+      }
     );
   }
 });

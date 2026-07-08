@@ -19,9 +19,7 @@ import {
   getAllFunctionStatuses,
   getRecentLogs,
   getFunctionLogs,
-  testFunction,
   cleanupOldLogs,
-  checkSupabaseConfig,
   FunctionStatus,
   FunctionLog
 } from '../lib/adminService';
@@ -180,47 +178,19 @@ export default function AdminScreen({ onNavigate }: Props) {
     }
   };
 
-  // ✅ Monitoring handlers - გაუმჯობესებული error messages-ით
+  // ✅ Monitoring handlers - დროებით გამორთულია CORS პრობლემის გამო
   const handleTestFunction = async (functionName: string) => {
-    if (!user) return;
-    setTestingFunction(functionName);
-    
-    // ✅ შევამოწმოთ Supabase config
-    const config = await checkSupabaseConfig();
-    
-    if (!config.canConnect) {
-      setTestingFunction(null);
-      alert(
-        `⚠️ Supabase Connection Issue\n\n` +
-        `Has Client: ${config.hasClient ? '✅' : '❌'}\n` +
-        `Has URL: ${config.hasUrl ? '✅' : '❌'}\n` +
-        `Can Connect: ${config.canConnect ? '✅' : '❌'}\n\n` +
-        `URL: ${config.url || 'unknown'}`
-      );
-      return;
-    }
-    
-    const result = await testFunction(user.id, functionName);
-    
-    await loadData();
-    setTestingFunction(null);
-    
-    if (result.success) {
-      alert(
-        `✅ ${functionName}\n\n` +
-        `წარმატებით გაეშვა!\n\n` +
-        `Response Time: ${result.log?.response_time_ms || 'N/A'}ms\n` +
-        `Status Code: ${result.log?.status_code || 'N/A'}`
-      );
-    } else {
-      alert(
-        `❌ ${functionName}\n\n` +
-        `Error: ${result.error || 'Unknown error'}\n\n` +
-        `Status Code: ${result.log?.status_code || 'N/A'}\n` +
-        `Response Time: ${result.log?.response_time_ms || 'N/A'}ms\n\n` +
-        `Check "View Logs" for details.`
-      );
-    }
+    // ✅ დროებითი შეტყობინება - CORS პრობლემის გამო
+    alert(
+      `⚠️ Test Function დროებით გამორთულია\n\n` +
+      `მიზეზი: CORS პოლიტიკა ბლოკავს Telegram-იდან გამოძახებას\n\n` +
+      `Function მაინც მუშაობს:\n` +
+      `✅ ავტომატურად გაეშვება ყოველდღე 00:01 UTC-ზე\n` +
+      `✅ ლოგები იწერება function_logs ცხრილში\n` +
+      `✅ ნახეთ "View Logs" ღილაკით\n\n` +
+      `Function URL:\n` +
+      `https://eutavdhcxpfhpfsyaskb.supabase.co/functions/v1/${functionName}`
+    );
   };
 
   const handleViewLogs = async (functionName: string) => {
