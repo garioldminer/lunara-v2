@@ -388,6 +388,40 @@ export const EDGE_FUNCTIONS = [
   { name: 'create-invoice', url: 'https://eutavdhcxpfhpfsyaskb.supabase.co/functions/v1/create-invoice' },
 ];
 
+// ✅ შევამოწმოთ Supabase client-ის კონფიგურაცია
+export async function checkSupabaseConfig(): Promise<{
+  hasClient: boolean;
+  hasUrl: boolean;
+  hasKey: boolean;
+  url?: string;
+  canConnect: boolean;
+}> {
+  const result = {
+    hasClient: !!supabase,
+    hasUrl: false,
+    hasKey: false,
+    url: undefined,
+    canConnect: false
+  };
+
+  if (!supabase) return result;
+
+  try {
+    // შევამოწმოთ URL და Key
+    result.url = (supabase as any).supabaseUrl || 'unknown';
+    result.hasUrl = !!result.url && result.url !== 'unknown';
+    
+    const { data, error } = await supabase.from('users').select('count').limit(1);
+    result.canConnect = !error;
+    
+    console.log('✅ Supabase Config:', result);
+  } catch (error) {
+    console.error('❌ Supabase Config Error:', error);
+  }
+
+  return result;
+}
+
 // მიიღეთ ყველა function-ის სტატუსი
 export async function getAllFunctionStatuses(adminId: string): Promise<FunctionStatus[]> {
   await requireAdmin(adminId);
@@ -428,7 +462,7 @@ export async function getAllFunctionStatuses(adminId: string): Promise<FunctionS
   return statuses;
 }
 
-// მიიღეთ ბოლო ლოგები
+// მიიღეთ ბოლო ოგები
 export async function getRecentLogs(adminId: string, limit: number = 50): Promise<FunctionLog[]> {
   await requireAdmin(adminId);
 
@@ -473,7 +507,7 @@ export async function getFunctionLogs(
   return data || [];
 }
 
-// ✅ ხელით გაუშვით function - supabase.functions.invoke()-ით (CORS-ის გარეშე)
+// ✅ ხელით გაუშვით function - გაუმჯობესებული fetch-ით
 export async function testFunction(adminId: string, functionName: string): Promise<{success: boolean; log?: FunctionLog; error?: string}> {
   await requireAdmin(adminId);
 
@@ -488,34 +522,84 @@ export async function testFunction(adminId: string, functionName: string): Promi
   let statusCode = 0;
   
   try {
-    console.log(`🔍 Testing function via Supabase: ${functionName}`);
+    console.log(`🔍 Testing function: ${functionName}`);
+    console.log(`📍 URL: ${func.url}`);
     
-    // ✅ ვიყენებთ supabase.functions.invoke() რომელიც არ საჭიროებს CORS-ს
-    const { data, error: invokeError } = await supabase.functions.invoke(functionName, {
-      body: JSON.stringify({})
+    // ✅ ვიღებთ Supabase-ის ავტორიზაციის token-ს
+    const { data: { session } } = await supabase.auth.getSession();
+    const authToken = session?.access_token || 
+      (await supabase.auth.getUser()).data.user?.aud || 
+      'anon';
+
+    console.log(`🔑 Auth Token: ${authToken ? 'exists' : 'missing'}`);
+    
+    // ✅ ვგზავნით request სათანადო headers-ით
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+    
+    const response = await fetch(func.url, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${authToken}`,
+        'apikey': supabase.supabaseUrl ? 
+          (supabase as any).realtime?.headers?.apikey || 
+          (supabase as any).headers?.apikey || 
+          '' : ''
+      },
+      body: JSON.stringify({}),
+      signal: controller.signal,
+      mode: 'cors',
+      credentials: 'omit'
     });
-
+    
+    clearTimeout(timeoutId);
     const responseTime = Date.now() - startTime;
+    statusCode = response.status;
 
-    if (invokeError) {
-      // Function-მა დააბრუნა error
-      statusCode = 500;
-      errorMessage = invokeError.message || 'Function invocation failed';
-      responseData = { error: errorMessage };
+    console.log(` Response Status: ${statusCode}`);
+    console.log(`⏱️ Response Time: ${responseTime}ms`);
+
+    // ვცადოთ response-ის წაკითხვა
+    try {
+      const text = await response.text();
+      console.log(`📄 Response Body (${text.length} chars):`, text.substring(0, 500));
       
-      console.error('❌ Function Error:', invokeError);
-    } else {
-      // Function-მა დააბრუნა წარმატებული პასუხი
-      statusCode = 200;
-      responseData = data;
-      
-      console.log('✅ Function Success:', data);
+      try {
+        responseData = JSON.parse(text);
+      } catch {
+        responseData = { raw: text.substring(0, 500) };
+      }
+    } catch (parseError: any) {
+      console.error('❌ Parse Error:', parseError);
+      responseData = { parse_error: parseError.message };
     }
 
-    const isSuccess = !invokeError && statusCode === 200;
+    // განვსაზღვროთ status
+    const isSuccess = response.ok && statusCode === 200;
+    
+    // ამოვიღოთ error message
+    if (!isSuccess) {
+      if (responseData?.error) {
+        errorMessage = String(responseData.error);
+      } else if (responseData?.message) {
+        errorMessage = String(responseData.message);
+      } else if (responseData?.error_description) {
+        errorMessage = String(responseData.error_description);
+      } else if (responseData?.raw) {
+        errorMessage = `HTTP ${statusCode}: ${String(responseData.raw).substring(0, 200)}`;
+      } else {
+        errorMessage = `HTTP ${statusCode} - ${response.statusText || 'Unknown error'}`;
+      }
+      console.error('❌ Error:', errorMessage);
+    } else {
+      console.log('✅ Success:', responseData);
+    }
+
     const status = isSuccess ? 'success' : 'error';
     
-    // ✅ ჩაწერეთ ლოგი
+    // ჩაწერეთ ლოგი
     const { data: log, error: logError } = await supabase
       .from('function_logs')
       .insert({
@@ -524,7 +608,12 @@ export async function testFunction(adminId: string, functionName: string): Promi
         response_time_ms: responseTime,
         status_code: statusCode,
         error_message: errorMessage,
-        request_data: { method: 'invoke', body: '{}' },
+        request_data: { 
+          method: 'POST', 
+          body: '{}',
+          url: func.url,
+          has_auth: !!authToken
+        },
         response_data: responseData,
         triggered_by: 'manual'
       })
@@ -544,26 +633,44 @@ export async function testFunction(adminId: string, functionName: string): Promi
       return { 
         success: false, 
         log: log || undefined,
-        error: errorMessage || 'Function invocation failed'
+        error: errorMessage || `HTTP ${statusCode}`
       };
     }
     
   } catch (error: any) {
     const responseTime = Date.now() - startTime;
     
-    console.error('❌ Unexpected Error:', error);
+    console.error('❌ Fetch Error:', error);
+    console.error('Error Name:', error.name);
+    console.error('Error Message:', error.message);
+    console.error('Error Stack:', error.stack);
     
     // დეტალური error message
     let detailedError = 'Unknown error';
     
     if (error.name === 'TypeError') {
-      detailedError = `Network Error: ${error.message}. 
+      if (error.message.includes('fetch') || error.message.includes('Load failed')) {
+        detailedError = `Network Error: Failed to connect to Edge Function.
+
 Possible causes:
-1. Function is not deployed
-2. Function has syntax errors
-3. Network connectivity issue`;
+1. CORS policy blocking the request
+2. Function URL is unreachable from Telegram
+3. HTTPS/SSL certificate issue
+4. Function is not deployed
+
+Function URL: ${func.url}
+
+Try:
+- Check if function is deployed
+- Check browser console for CORS errors
+- Try opening function URL directly in browser`;
+      } else {
+        detailedError = `TypeError: ${error.message}`;
+      }
     } else if (error.name === 'AbortError') {
-      detailedError = `Request Timeout: Function took too long to respond`;
+      detailedError = `Request Timeout: Function took more than 15 seconds to respond`;
+    } else if (error.name === 'NetworkError') {
+      detailedError = `Network Error: ${error.message}. Check your internet connection.`;
     } else if (error.message) {
       detailedError = `${error.name}: ${error.message}`;
     }
@@ -576,7 +683,11 @@ Possible causes:
         response_time_ms: responseTime,
         status_code: 0,
         error_message: detailedError,
-        request_data: { method: 'invoke', body: '{}' },
+        request_data: { 
+          method: 'POST', 
+          body: '{}',
+          url: func.url
+        },
         response_data: null,
         triggered_by: 'manual'
       });

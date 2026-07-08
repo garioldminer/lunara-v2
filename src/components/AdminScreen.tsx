@@ -21,6 +21,7 @@ import {
   getFunctionLogs,
   testFunction,
   cleanupOldLogs,
+  checkSupabaseConfig,
   FunctionStatus,
   FunctionLog
 } from '../lib/adminService';
@@ -184,11 +185,27 @@ export default function AdminScreen({ onNavigate }: Props) {
     if (!user) return;
     setTestingFunction(functionName);
     
+    // ✅ შევამოწმოთ Supabase config
+    const config = await checkSupabaseConfig();
+    
+    if (!config.canConnect) {
+      setTestingFunction(null);
+      alert(
+        `⚠️ Supabase Connection Issue\n\n` +
+        `Has Client: ${config.hasClient ? '✅' : '❌'}\n` +
+        `Has URL: ${config.hasUrl ? '✅' : '❌'}\n` +
+        `Can Connect: ${config.canConnect ? '✅' : '❌'}\n\n` +
+        `URL: ${config.url || 'unknown'}`
+      );
+      return;
+    }
+    
     const result = await testFunction(user.id, functionName);
     
+    await loadData();
+    setTestingFunction(null);
+    
     if (result.success) {
-      await loadData();
-      setTestingFunction(null);
       alert(
         `✅ ${functionName}\n\n` +
         `წარმატებით გაეშვა!\n\n` +
@@ -196,8 +213,6 @@ export default function AdminScreen({ onNavigate }: Props) {
         `Status Code: ${result.log?.status_code || 'N/A'}`
       );
     } else {
-      await loadData();
-      setTestingFunction(null);
       alert(
         `❌ ${functionName}\n\n` +
         `Error: ${result.error || 'Unknown error'}\n\n` +
