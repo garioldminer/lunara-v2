@@ -26,16 +26,16 @@ const ZODIAC_SYMBOLS: Record<string, string> = {
   'Sagittarius': '♐', 'Capricorn': '♑', 'Aquarius': '♒', 'Pisces': '♓'
 };
 
-// ✅ განახევრებული orbit radii (viewBox 950x500, Center 475,250)
+// ✅ რეალური გალაქტიკური პოზიციები (sqrt მასშტაბით)
 const PLANET_CONFIG: Record<string, { color: string; orbitRadius: number }> = {
   'Sun': { color: '#FFD700', orbitRadius: 0 },
-  'Moon': { color: '#C0C0C0', orbitRadius: 55 },
-  'Mercury': { color: '#A0A0A0', orbitRadius: 75 },
-  'Venus': { color: '#E6B800', orbitRadius: 95 },
-  'Mars': { color: '#FF4500', orbitRadius: 115 },
-  'Jupiter': { color: '#DAA520', orbitRadius: 137 },
-  'Saturn': { color: '#F4A460', orbitRadius: 158 },
-  'Uranus': { color: '#40E0D0', orbitRadius: 180 },
+  'Mercury': { color: '#A0A0A0', orbitRadius: 23 },
+  'Venus': { color: '#E6B800', orbitRadius: 31 },
+  'Moon': { color: '#C0C0C0', orbitRadius: 37 },
+  'Mars': { color: '#FF4500', orbitRadius: 45 },
+  'Jupiter': { color: '#DAA520', orbitRadius: 83 },
+  'Saturn': { color: '#F4A460', orbitRadius: 113 },
+  'Uranus': { color: '#40E0D0', orbitRadius: 160 },
   'Neptune': { color: '#4169E1', orbitRadius: 200 }
 };
 
@@ -43,7 +43,7 @@ export interface AstroScreenProps {
   onNavigate?: (screen: string) => void;
 }
 
-// ===== PLANET ORBIT DIAGRAM - პლანეტები 5x გადიდებული =====
+// ===== PLANET ORBIT DIAGRAM - რეალური გალაქტიკური პოზიციები =====
 function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
   const [hoveredPlanet, setHoveredPlanet] = useState<string | null>(null);
   
@@ -108,7 +108,7 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
             />
           ))}
 
-        {/* Sun center - 325px (5x გადიდებული: 65px × 5) */}
+        {/* Sun center - 325px */}
         <circle cx={CENTER_X} cy={CENTER_Y} r="190" fill="url(#sunGlow)" className="sun-glow" filter="url(#sunGlowFilter)" />
         {PLANET_IMAGES['Sun'] && (
           <image
@@ -123,7 +123,7 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
           />
         )}
 
-        {/* Planets - 200px (5x გადიდებული: 40px × 5) */}
+        {/* Planets - 200px */}
         {planets.map((planet, index) => {
           const config = PLANET_CONFIG[planet.planet_name];
           if (!config) return null;
@@ -131,7 +131,7 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
           const pos = getPlanetPosition(planet);
           const isHovered = hoveredPlanet === planet.planet_name;
           const planetImage = PLANET_IMAGES[planet.planet_name];
-          const size = isHovered ? 250 : 200; // ✅ 200px / 250px (5x)
+          const size = isHovered ? 250 : 200;
 
           return (
             <g key={planet.planet_name}>
@@ -145,7 +145,6 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
                   style={{ cursor: 'pointer' }}
                   filter="url(#planetShadow)"
                 >
-                  {/* Glow ring */}
                   <circle
                     cx={pos.x}
                     cy={pos.y}
@@ -166,7 +165,6 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
                     preserveAspectRatio="xMidYMid slice"
                     clipPath={`circle(${size / 2}px at center)`}
                   />
-                  {/* Planet name */}
                   <text
                     x={pos.x}
                     y={pos.y + size / 2 + 14}
@@ -176,7 +174,6 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
                   >
                     {planet.planet_name}
                   </text>
-                  {/* Zodiac sign name */}
                   <text
                     x={pos.x}
                     y={pos.y + size / 2 + 26}
@@ -191,7 +188,7 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
                 <motion.circle
                   cx={pos.x}
                   cy={pos.y}
-                  r={isHovered ? 100 : 80} // ✅ 5x გადიდებული
+                  r={isHovered ? 100 : 80}
                   fill={config.color}
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
