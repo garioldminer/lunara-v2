@@ -38,7 +38,7 @@
 }
 
 /* ============================================
-   HEADER
+   HEADER - 70px from top
    ============================================ */
 .astro-header {
   position: relative;
@@ -89,7 +89,7 @@
 }
 
 /* ============================================
-   CONTENT
+   CONTENT - 3px margins
    ============================================ */
 .astro-content {
   position: relative;
@@ -234,7 +234,7 @@
 }
 
 /* ============================================
-   PLANET POSITIONS - ოპტიმიზებული
+   PLANET POSITIONS - კომპაქტური
    ============================================ */
 .planets-section {
   padding: 14px;
@@ -271,15 +271,15 @@
   justify-content: center;
   align-items: center;
   margin-bottom: 12px;
-  min-height: 500px;
+  min-height: 400px;
 }
 
-/* ✅ viewBox 1150x1150 - პლანეტები 15px დაშორებული */
+/* ✅ კომპაქტური ზომები */
 .orbit-svg {
   width: 100%;
-  max-width: 800px;
+  max-width: 600px;
   height: auto;
-  max-height: 700px;
+  max-height: 530px;
   filter: drop-shadow(0 10px 30px rgba(217, 182, 111, 0.15));
 }
 
@@ -321,7 +321,7 @@
 
 .planet-name-text {
   font-family: 'Cinzel', serif;
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 700;
   fill: #F7F3EB;
   text-shadow: 0 0 8px rgba(0, 0, 0, 0.9);
@@ -329,7 +329,7 @@
 
 .zodiac-name-text {
   font-family: 'Cinzel', serif;
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 600;
   fill: #D9B66F;
   text-shadow: 0 0 6px rgba(217, 182, 111, 0.5);
@@ -340,7 +340,7 @@
    ============================================ */
 .planet-simple-list {
   display: grid;
-  grid-template-columns: 1fr 1fr; /* ✅ 2 სვეტი */
+  grid-template-columns: 1fr 1fr;
   gap: 8px 12px;
   padding-top: 10px;
   border-top: 1px solid rgba(217, 182, 111, 0.15);
@@ -616,16 +616,16 @@
   }
 
   .orbit-svg {
-    max-width: 550px;
-    max-height: 520px;
+    max-width: 420px;
+    max-height: 370px;
   }
 
   .planet-name-text {
-    font-size: 14px;
+    font-size: 12px;
   }
 
   .zodiac-name-text {
-    font-size: 13px;
+    font-size: 11px;
   }
 
   .planet-simple-list {
@@ -697,8 +697,8 @@
   }
 
   .orbit-svg {
-    max-width: 450px;
-    max-height: 430px;
+    max-width: 340px;
+    max-height: 300px;
   }
 
   .big-three-container {
@@ -709,7 +709,6 @@
     padding: 8px 4px;
   }
 
-  /* ✅ 360px-ზეც 2 სვეტი რჩება */
   .planet-simple-list {
     grid-template-columns: 1fr 1fr;
     gap: 4px 6px;
