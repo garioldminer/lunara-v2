@@ -276,7 +276,7 @@
 /* ✅ ზუსტი 534px - viewBox-თან შესაბამისი */
 .orbit-svg {
   width: 100%;
-  max-width: 534px; /* ✅ ზუსტი ზომა viewBox 534x534-სთვის */
+  max-width: 534px;
   aspect-ratio: 1 / 1;
   height: auto;
   filter: drop-shadow(0 10px 30px rgba(217, 182, 111, 0.15));
@@ -615,7 +615,7 @@
   }
 
   .orbit-svg {
-    max-width: 400px; /* ✅ პროპორციული */
+    max-width: 400px;
   }
 
   .planet-name-text {
@@ -695,7 +695,7 @@
   }
 
   .orbit-svg {
-    max-width: 320px; /* ✅ პროპორციული */
+    max-width: 320px;
   }
 
   .big-three-container {

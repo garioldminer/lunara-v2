@@ -26,18 +26,18 @@ const ZODIAC_SYMBOLS: Record<string, string> = {
   'Sagittarius': '♐', 'Capricorn': '♑', 'Aquarius': '♒', 'Pisces': '♓'
 };
 
-// ✅ ზუსტი გამოთვლილი ორბიტები (10px padding-ით)
+// ✅ ზუსტი პროპორციული ორბიტები (ყველა 10px დაშორებით)
 // viewBox: 534×534, Center: 267,267
-// Neptune: 245 + 12 (planet radius) + 10 (padding) = 267 ✅
+// Neptune (ყველაზე გარე): 245 + 12 + 10 = 267 ✅
 const PLANET_CONFIG: Record<string, { color: string; orbitRadius: number }> = {
   'Sun': { color: '#FFD700', orbitRadius: 0 },
-  'Mercury': { color: '#A0A0A0', orbitRadius: 40 },
-  'Venus': { color: '#E6B800', orbitRadius: 68 },
-  'Moon': { color: '#C0C0C0', orbitRadius: 100 },
-  'Mars': { color: '#FF4500', orbitRadius: 136 },
-  'Jupiter': { color: '#DAA520', orbitRadius: 164 },
-  'Saturn': { color: '#F4A460', orbitRadius: 191 },
-  'Uranus': { color: '#40E0D0', orbitRadius: 209 },
+  'Mercury': { color: '#A0A0A0', orbitRadius: 36 },
+  'Venus': { color: '#E6B800', orbitRadius: 60 },
+  'Moon': { color: '#C0C0C0', orbitRadius: 88 },
+  'Mars': { color: '#FF4500', orbitRadius: 120 },
+  'Jupiter': { color: '#DAA520', orbitRadius: 144 },
+  'Saturn': { color: '#F4A460', orbitRadius: 168 },
+  'Uranus': { color: '#40E0D0', orbitRadius: 184 },
   'Neptune': { color: '#4169E1', orbitRadius: 245 }
 };
 
@@ -49,7 +49,6 @@ export interface AstroScreenProps {
 function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
   const [hoveredPlanet, setHoveredPlanet] = useState<string | null>(null);
   
-  // ✅ ზუსტი ცენტრი: 267 (viewBox 534×534)
   const CENTER_X = 267;
   const CENTER_Y = 267;
 
