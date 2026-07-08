@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Zap, Star, Info, Bug } from 'lucide-react';
+import { ArrowLeft, Zap, Star, Info, Bug, CheckCircle, XCircle, Loader } from 'lucide-react';
 import { useCosmicData } from '../hooks/useCosmicData';
 import { useBirthChart } from '../hooks/useBirthChart';
 import { supabase } from '../lib/supabase';
@@ -30,39 +30,206 @@ export interface AstroScreenProps {
   onNavigate?: (screen: string) => void;
 }
 
-// ===== PLANET ORBIT DIAGRAM - 2px PADDING =====
+// ===== DEBUG PANEL COMPONENT =====
+function DebugPanel({ 
+  birthChart, 
+  birthChartLoading, 
+  birthChartError,
+  cosmicData,
+  cosmicDataLoading,
+  cosmicDataError,
+  planets,
+  planetsLoading,
+  planetsError,
+  userId
+}: {
+  birthChart: any;
+  birthChartLoading: boolean;
+  birthChartError: string | null;
+  cosmicData: any;
+  cosmicDataLoading: boolean;
+  cosmicDataError: string | null;
+  planets: any[];
+  planetsLoading: boolean;
+  planetsError: string | null;
+  userId: string | null;
+}) {
+  const [isOpen, setIsOpen] = useState(true);
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: '10px',
+      left: '10px',
+      right: '10px',
+      zIndex: 1000,
+      background: 'rgba(0, 0, 0, 0.95)',
+      border: '2px solid #10b981',
+      borderRadius: '12px',
+      padding: '12px',
+      color: '#fff',
+      fontFamily: 'monospace',
+      fontSize: '11px',
+      maxHeight: '80vh',
+      overflowY: 'auto'
+    }}>
+      {/* Header */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '10px',
+        paddingBottom: '8px',
+        borderBottom: '1px solid #10b981'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Bug size={16} color="#10b981" />
+          <span style={{ fontWeight: 'bold', color: '#10b981' }}>DEBUG PANEL</span>
+        </div>
+        <button 
+          onClick={() => setIsOpen(!isOpen)}
+          style={{
+            background: '#10b981',
+            color: '#000',
+            border: 'none',
+            borderRadius: '4px',
+            padding: '4px 8px',
+            cursor: 'pointer',
+            fontWeight: 'bold'
+          }}
+        >
+          {isOpen ? 'CLOSE' : 'OPEN'}
+        </button>
+      </div>
+
+      {isOpen && (
+        <>
+          {/* User Info */}
+          <div style={{ marginBottom: '10px' }}>
+            <div style={{ color: '#60a5fa', fontWeight: 'bold', marginBottom: '4px' }}>👤 USER:</div>
+            <div style={{ color: '#fff' }}>ID: {userId || '❌ null'}</div>
+          </div>
+
+          {/* Birth Chart Status */}
+          <div style={{ 
+            marginBottom: '10px', 
+            padding: '8px',
+            background: birthChartError ? 'rgba(239, 68, 68, 0.2)' : 
+                       birthChart ? 'rgba(16, 185, 129, 0.2)' : 'rgba(251, 191, 36, 0.2)',
+            borderRadius: '6px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+              {birthChartLoading ? <Loader size={14} className="animate-spin" /> :
+               birthChartError ? <XCircle size={14} color="#ef4444" /> :
+               birthChart ? <CheckCircle size={14} color="#10b981" /> : null}
+              <span style={{ fontWeight: 'bold', color: '#60a5fa' }}>📊 BIRTH CHART:</span>
+            </div>
+            {birthChartLoading && <div style={{ color: '#fbbf24' }}>Loading...</div>}
+            {birthChartError && <div style={{ color: '#ef4444' }}>Error: {birthChartError}</div>}
+            {birthChart && (
+              <div style={{ color: '#10b981' }}>
+                <div>☀️ Sun: {birthChart.sun_sign || '❌ null'}</div>
+                <div>🌙 Moon: {birthChart.moon_sign || '❌ null'}</div>
+                <div>⬆️ Rising: {birthChart.rising_sign || '❌ null'}</div>
+              </div>
+            )}
+          </div>
+
+          {/* Cosmic Data Status */}
+          <div style={{ 
+            marginBottom: '10px', 
+            padding: '8px',
+            background: cosmicDataError ? 'rgba(239, 68, 68, 0.2)' : 
+                       cosmicData ? 'rgba(16, 185, 129, 0.2)' : 'rgba(251, 191, 36, 0.2)',
+            borderRadius: '6px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+              {cosmicDataLoading ? <Loader size={14} className="animate-spin" /> :
+               cosmicDataError ? <XCircle size={14} color="#ef4444" /> :
+               cosmicData ? <CheckCircle size={14} color="#10b981" /> : null}
+              <span style={{ fontWeight: 'bold', color: '#60a5fa' }}>🌙 COSMIC DATA:</span>
+            </div>
+            {cosmicDataLoading && <div style={{ color: '#fbbf24' }}>Loading...</div>}
+            {cosmicDataError && <div style={{ color: '#ef4444' }}>Error: {cosmicDataError}</div>}
+            {cosmicData && (
+              <div style={{ color: '#10b981' }}>
+                <div>🌙 Moon Phase: {cosmicData.cosmic?.moon_phase || '❌'}</div>
+                <div>🌙 Moon Sign: {cosmicData.cosmic?.moon_sign || '❌'}</div>
+                <div>☀️ Sun Sign: {cosmicData.cosmic?.sun_sign || '❌'}</div>
+                <div>⚡ Energy: {cosmicData.cosmic?.energy_level || '❌'}</div>
+                <div>🌊 Element: {cosmicData.cosmic?.dominant_element || '❌'}</div>
+                <div>💡 Advice: {cosmicData.cosmic?.key_advice?.substring(0, 50) || '❌'}...</div>
+              </div>
+            )}
+          </div>
+
+          {/* Planet Positions Status */}
+          <div style={{ 
+            marginBottom: '10px', 
+            padding: '8px',
+            background: planetsError ? 'rgba(239, 68, 68, 0.2)' : 
+                       planets.length > 0 ? 'rgba(16, 185, 129, 0.2)' : 'rgba(251, 191, 36, 0.2)',
+            borderRadius: '6px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+              {planetsLoading ? <Loader size={14} className="animate-spin" /> :
+               planetsError ? <XCircle size={14} color="#ef4444" /> :
+               planets.length > 0 ? <CheckCircle size={14} color="#10b981" /> : null}
+              <span style={{ fontWeight: 'bold', color: '#60a5fa' }}>🌌 PLANETS:</span>
+            </div>
+            {planetsLoading && <div style={{ color: '#fbbf24' }}>Loading...</div>}
+            {planetsError && <div style={{ color: '#ef4444' }}>Error: {planetsError}</div>}
+            {planets.length > 0 && (
+              <div style={{ color: '#10b981' }}>
+                <div>Count: {planets.length} planets</div>
+                {planets.map((p: any, i: number) => (
+                  <div key={i} style={{ marginLeft: '8px' }}>
+                    {p.planet_name} in {p.sign} {Number(p.degree).toFixed(1)}°
+                    {p.retrograde && <span style={{ color: '#ef4444' }}> (R)</span>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Summary */}
+          <div style={{ 
+            padding: '8px',
+            background: 'rgba(96, 165, 250, 0.1)',
+            borderRadius: '6px',
+            borderTop: '1px solid #60a5fa'
+          }}>
+            <div style={{ fontWeight: 'bold', color: '#60a5fa', marginBottom: '4px' }}>📋 SUMMARY:</div>
+            <div style={{ color: '#fff' }}>
+              Birth Chart: {birthChart ? '✅' : '❌'} | 
+              Cosmic Data: {cosmicData ? '✅' : '❌'} | 
+              Planets: {planets.length > 0 ? '✅' : '❌'}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ===== PLANET ORBIT DIAGRAM =====
 function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
   const [hoveredPlanet, setHoveredPlanet] = useState<string | null>(null);
-  const [debugMode, setDebugMode] = useState(true);
-  const [svgDimensions, setSvgDimensions] = useState({ clientWidth: 440 });
-  const svgRef = useRef<SVGSVGElement>(null);
   
-  const VIEWBOX_SIZE = 800;
-  const PLANET_RADIUS = 36; // 3x
-  const TARGET_PADDING = 2; // ✅ 10px → 2px
+  const CENTER_X = 400;
+  const CENTER_Y = 400;
+  const PLANET_RADIUS = 36;
 
-  const scaleFactor = svgDimensions.clientWidth / VIEWBOX_SIZE;
-  const PADDING_IN_VIEWBOX = Math.ceil(TARGET_PADDING / scaleFactor);
-
-  // ✅ პროპორციული ორბიტები
   const getBaseOrbitRadius = (planetName: string): number => {
     const ratios: Record<string, number> = {
-      'Mercury': 0.15,
-      'Venus': 0.25,
-      'Moon': 0.36,
-      'Mars': 0.49,
-      'Jupiter': 0.59,
-      'Saturn': 0.68,
-      'Uranus': 0.74,
-      'Neptune': 1.0
+      'Mercury': 0.15, 'Venus': 0.25, 'Moon': 0.36, 'Mars': 0.49,
+      'Jupiter': 0.59, 'Saturn': 0.68, 'Uranus': 0.74, 'Neptune': 1.0
     };
     return ratios[planetName] || 0.5;
   };
 
-  // ✅ ვიპოვოთ ყველა პლანეტის პოზიციები
-  const calculatePlanetPositions = () => {
-    const positions: Record<string, { x: number; y: number }> = {};
-    positions['Sun'] = { x: 0, y: 0 };
+  const calculateSystemCenter = () => {
+    const positions: Record<string, { x: number; y: number }> = { 'Sun': { x: 0, y: 0 } };
     
     planets.forEach(planet => {
       if (planet.planet_name === 'Sun') return;
@@ -75,26 +242,18 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
         y: ratio * Math.sin(angle)
       };
     });
-    return positions;
-  };
 
-  // ✅ ვიპოვოთ bounding box და center offset
-  const calculateSystemCenter = () => {
-    const positions = calculatePlanetPositions();
     let minX = 0, maxX = 0, minY = 0, maxY = 0;
-    
     Object.values(positions).forEach(pos => {
       minX = Math.min(minX, pos.x);
       maxX = Math.max(maxX, pos.x);
       minY = Math.min(minY, pos.y);
       maxY = Math.max(maxY, pos.y);
     });
-    
-    const boxCenterX = (minX + maxX) / 2;
-    const boxCenterY = (minY + maxY) / 2;
-    const offsetX = -boxCenterX;
-    const offsetY = -boxCenterY;
-    
+
+    const offsetX = -(minX + maxX) / 2;
+    const offsetY = -(minY + maxY) / 2;
+
     let maxDistance = 0;
     Object.values(positions).forEach(pos => {
       const newX = pos.x + offsetX;
@@ -102,28 +261,16 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
       const distance = Math.sqrt(newX * newX + newY * newY);
       if (distance > maxDistance) maxDistance = distance;
     });
-    
-    console.log('📦 BOUNDING BOX:');
-    console.log(`  Center: (${boxCenterX.toFixed(3)}, ${boxCenterY.toFixed(3)})`);
-    console.log(`  Offset: (${offsetX.toFixed(3)}, ${offsetY.toFixed(3)})`);
-    console.log(`  Max distance: ${maxDistance.toFixed(3)}`);
-    
+
     return { offsetX, offsetY, maxDistance };
   };
 
   const { offsetX, offsetY, maxDistance } = calculateSystemCenter();
-
-  // ✅ გამოვთვალოთ max orbit radius (2px padding)
-  const MAX_ORBIT_RADIUS = (VIEWBOX_SIZE / 2) - PLANET_RADIUS - PADDING_IN_VIEWBOX;
+  const VIEWBOX_SIZE = 800;
+  const TARGET_PADDING = 2;
+  const MAX_ORBIT_RADIUS = (VIEWBOX_SIZE / 2) - PLANET_RADIUS - TARGET_PADDING;
   const SCALE_FACTOR_ORBITS = MAX_ORBIT_RADIUS / maxDistance;
 
-  console.log('🔧 SYSTEM CENTERING (2px PADDING):');
-  console.log(`  Scale factor: ${scaleFactor.toFixed(3)}`);
-  console.log(`  Planet radius: ${PLANET_RADIUS}px (3x)`);
-  console.log(`  Padding in viewBox: ${PADDING_IN_VIEWBOX}px`);
-  console.log(`  Max orbit radius: ${MAX_ORBIT_RADIUS}px`);
-
-  // ✅ დინამიური ორბიტები
   const PLANET_CONFIG: Record<string, { color: string; orbitRadius: number; x: number; y: number }> = {};
   
   planets.forEach(planet => {
@@ -157,22 +304,6 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
     y: sunY
   };
 
-  useEffect(() => {
-    if (svgRef.current) {
-      const rect = svgRef.current.getBoundingClientRect();
-      setSvgDimensions({ clientWidth: rect.width });
-    }
-  }, []);
-
-  useEffect(() => {
-    console.log('🪐 CENTERED PLANET POSITIONS (2px):');
-    Object.entries(PLANET_CONFIG).forEach(([name, config]) => {
-      const distanceToEdge = VIEWBOX_SIZE / 2 - config.orbitRadius - PLANET_RADIUS;
-      const realDistance = distanceToEdge * scaleFactor;
-      console.log(`  ${name}: orbit=${config.orbitRadius.toFixed(1)}px, edge=${distanceToEdge.toFixed(1)}px, real=${realDistance.toFixed(1)}px`);
-    });
-  }, [planets, svgDimensions.clientWidth]);
-
   const getPlanetPosition = (planetName: string) => {
     const config = PLANET_CONFIG[planetName];
     if (!config) return { x: VIEWBOX_SIZE / 2, y: VIEWBOX_SIZE / 2 };
@@ -182,59 +313,9 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
     };
   };
 
-  const getExtremePlanets = () => {
-    if (planets.length === 0) return null;
-
-    let topPlanet = { name: '', x: 0, y: 9999 };
-    let bottomPlanet = { name: '', x: 0, y: -1 };
-    let leftPlanet = { name: '', x: 9999, y: 0 };
-    let rightPlanet = { name: '', x: -1, y: 0 };
-
-    planets.forEach(planet => {
-      const pos = getPlanetPosition(planet.planet_name);
-      if (pos.y < topPlanet.y) topPlanet = { name: planet.planet_name, ...pos };
-      if (pos.y > bottomPlanet.y) bottomPlanet = { name: planet.planet_name, ...pos };
-      if (pos.x < leftPlanet.x) leftPlanet = { name: planet.planet_name, ...pos };
-      if (pos.x > rightPlanet.x) rightPlanet = { name: planet.planet_name, ...pos };
-    });
-
-    console.log('🎯 EXTREME PLANETS (2px PADDING):');
-    console.log(`  Top (${topPlanet.name}): ${Math.round((topPlanet.y - PLANET_RADIUS) * scaleFactor)}px actual`);
-    console.log(`  Bottom (${bottomPlanet.name}): ${Math.round((VIEWBOX_SIZE - bottomPlanet.y - PLANET_RADIUS) * scaleFactor)}px actual`);
-    console.log(`  Left (${leftPlanet.name}): ${Math.round((leftPlanet.x - PLANET_RADIUS) * scaleFactor)}px actual`);
-    console.log(`  Right (${rightPlanet.name}): ${Math.round((VIEWBOX_SIZE - rightPlanet.x - PLANET_RADIUS) * scaleFactor)}px actual`);
-
-    return { topPlanet, bottomPlanet, leftPlanet, rightPlanet };
-  };
-
-  const extremes = getExtremePlanets();
-
   return (
     <div className="orbit-diagram-container">
-      <button 
-        onClick={() => setDebugMode(!debugMode)}
-        style={{
-          position: 'absolute',
-          top: '10px',
-          right: '10px',
-          zIndex: 100,
-          background: debugMode ? '#ef4444' : '#10b981',
-          color: 'white',
-          border: 'none',
-          borderRadius: '50%',
-          width: '32px',
-          height: '32px',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}
-      >
-        <Bug size={16} />
-      </button>
-
       <svg 
-        ref={svgRef}
         className="orbit-svg" 
         viewBox={`0 0 ${VIEWBOX_SIZE} ${VIEWBOX_SIZE}`}
         preserveAspectRatio="xMidYMid meet"
@@ -265,7 +346,6 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
           </filter>
         </defs>
 
-        {/* Orbital rings */}
         {Object.entries(PLANET_CONFIG)
           .filter(([name]) => name !== 'Sun')
           .map(([name, config]) => (
@@ -281,7 +361,6 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
             />
           ))}
 
-        {/* Sun center - 150px (3x) */}
         <circle 
           cx={VIEWBOX_SIZE / 2 + PLANET_CONFIG['Sun'].x} 
           cy={VIEWBOX_SIZE / 2 + PLANET_CONFIG['Sun'].y} 
@@ -303,7 +382,6 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
           />
         )}
 
-        {/* Planets - 90px (3x) */}
         {planets.map((planet, index) => {
           const config = PLANET_CONFIG[planet.planet_name];
           if (!config) return null;
@@ -383,71 +461,6 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
             </g>
           );
         })}
-
-        {/* DEBUG MODE */}
-        {debugMode && extremes && (
-          <g className="debug-overlay">
-            <rect 
-              x="0" y="0" 
-              width={VIEWBOX_SIZE} height={VIEWBOX_SIZE} 
-              fill="none" 
-              stroke="#ef4444" 
-              strokeWidth="3"
-              strokeDasharray="8 8"
-            />
-
-            <rect x="10" y="10" width="320" height="140" fill="rgba(0,0,0,0.9)" stroke="#10b981" strokeWidth="2" rx="8" />
-            <text x="20" y="35" fill="#10b981" fontSize="14" fontWeight="bold">2px Padding System:</text>
-            <text x="20" y="55" fill="#fff" fontSize="11">Planet radius: {PLANET_RADIUS}px</text>
-            <text x="20" y="70" fill="#fff" fontSize="11">Scale: {SCALE_FACTOR_ORBITS.toFixed(3)}</text>
-            <text x="20" y="85" fill="#fff" fontSize="11">Padding: {PADDING_IN_VIEWBOX}px</text>
-            <text x="20" y="100" fill="#10b981" fontSize="11" fontWeight="bold">Expected: 2px</text>
-            <text x="20" y="115" fill="#10b981" fontSize="11" fontWeight="bold">Actual: {(PADDING_IN_VIEWBOX * scaleFactor).toFixed(1)}px</text>
-
-            {/* TOP */}
-            <line x1={extremes.topPlanet.x} y1={extremes.topPlanet.y - PLANET_RADIUS} x2={extremes.topPlanet.x} y2="0" stroke="#ef4444" strokeWidth="3" />
-            <circle cx={extremes.topPlanet.x} cy={extremes.topPlanet.y - PLANET_RADIUS} r="6" fill="#ef4444" />
-            <text x={extremes.topPlanet.x + 15} y={(extremes.topPlanet.y - PLANET_RADIUS) / 2} fill="#ef4444" fontSize="18" fontWeight="bold">
-              {Math.round((extremes.topPlanet.y - PLANET_RADIUS) * scaleFactor)}px
-            </text>
-            <text x={extremes.topPlanet.x + 15} y={(extremes.topPlanet.y - PLANET_RADIUS) / 2 + 20} fill="#ef4444" fontSize="13">
-              ({extremes.topPlanet.name})
-            </text>
-
-            {/* BOTTOM */}
-            <line x1={extremes.bottomPlanet.x} y1={extremes.bottomPlanet.y + PLANET_RADIUS} x2={extremes.bottomPlanet.x} y2={VIEWBOX_SIZE} stroke="#ef4444" strokeWidth="3" />
-            <circle cx={extremes.bottomPlanet.x} cy={extremes.bottomPlanet.y + PLANET_RADIUS} r="6" fill="#ef4444" />
-            <text x={extremes.bottomPlanet.x + 15} y={(extremes.bottomPlanet.y + PLANET_RADIUS + VIEWBOX_SIZE) / 2} fill="#ef4444" fontSize="18" fontWeight="bold">
-              {Math.round((VIEWBOX_SIZE - extremes.bottomPlanet.y - PLANET_RADIUS) * scaleFactor)}px
-            </text>
-            <text x={extremes.bottomPlanet.x + 15} y={(extremes.bottomPlanet.y + PLANET_RADIUS + VIEWBOX_SIZE) / 2 + 20} fill="#ef4444" fontSize="13">
-              ({extremes.bottomPlanet.name})
-            </text>
-
-            {/* LEFT */}
-            <line x1={extremes.leftPlanet.x - PLANET_RADIUS} y1={extremes.leftPlanet.y} x2="0" y2={extremes.leftPlanet.y} stroke="#ef4444" strokeWidth="3" />
-            <circle cx={extremes.leftPlanet.x - PLANET_RADIUS} cy={extremes.leftPlanet.y} r="6" fill="#ef4444" />
-            <text x={(extremes.leftPlanet.x - PLANET_RADIUS) / 2} y={extremes.leftPlanet.y - 15} fill="#ef4444" fontSize="18" fontWeight="bold" textAnchor="middle">
-              {Math.round((extremes.leftPlanet.x - PLANET_RADIUS) * scaleFactor)}px
-            </text>
-            <text x={(extremes.leftPlanet.x - PLANET_RADIUS) / 2} y={extremes.leftPlanet.y - 35} fill="#ef4444" fontSize="13" textAnchor="middle">
-              ({extremes.leftPlanet.name})
-            </text>
-
-            {/* RIGHT */}
-            <line x1={extremes.rightPlanet.x + PLANET_RADIUS} y1={extremes.rightPlanet.y} x2={VIEWBOX_SIZE} y2={extremes.rightPlanet.y} stroke="#ef4444" strokeWidth="3" />
-            <circle cx={extremes.rightPlanet.x + PLANET_RADIUS} cy={extremes.rightPlanet.y} r="6" fill="#ef4444" />
-            <text x={(extremes.rightPlanet.x + PLANET_RADIUS + VIEWBOX_SIZE) / 2} y={extremes.rightPlanet.y - 15} fill="#ef4444" fontSize="18" fontWeight="bold" textAnchor="middle">
-              {Math.round((VIEWBOX_SIZE - extremes.rightPlanet.x - PLANET_RADIUS) * scaleFactor)}px
-            </text>
-            <text x={(extremes.rightPlanet.x + PLANET_RADIUS + VIEWBOX_SIZE) / 2} y={extremes.rightPlanet.y - 35} fill="#ef4444" fontSize="13" textAnchor="middle">
-              ({extremes.rightPlanet.name})
-            </text>
-
-            <line x1={VIEWBOX_SIZE / 2} y1="0" x2={VIEWBOX_SIZE / 2} y2={VIEWBOX_SIZE} stroke="#10b981" strokeWidth="1.5" strokeDasharray="5 5" opacity="0.5" />
-            <line x1="0" y1={VIEWBOX_SIZE / 2} x2={VIEWBOX_SIZE} y2={VIEWBOX_SIZE / 2} stroke="#10b981" strokeWidth="1.5" strokeDasharray="5 5" opacity="0.5" />
-          </g>
-        )}
       </svg>
     </div>
   );
@@ -492,7 +505,7 @@ function BigThreeCards({ birthChart }: { birthChart: any }) {
   if (!birthChart) return null;
 
   const signs = [
-    { label: 'Sun', icon: '☀️', sign: birthChart.sun_sign || 'Unknown', color: '#FFD700', bg: 'linear-gradient(135deg, rgba(255, 215, 0, 0.18), rgba(255, 165, 0, 0.08))', borderColor: 'rgba(255, 215, 0, 0.4)' },
+    { label: 'Sun', icon: '️', sign: birthChart.sun_sign || 'Unknown', color: '#FFD700', bg: 'linear-gradient(135deg, rgba(255, 215, 0, 0.18), rgba(255, 165, 0, 0.08))', borderColor: 'rgba(255, 215, 0, 0.4)' },
     { label: 'Moon', icon: '🌙', sign: birthChart.moon_sign || 'Unknown', color: '#C0C0C0', bg: 'linear-gradient(135deg, rgba(192, 192, 192, 0.18), rgba(100, 100, 150, 0.08))', borderColor: 'rgba(192, 192, 192, 0.4)' },
     { label: 'Rising', icon: '⬆️', sign: birthChart.rising_sign || 'Unknown', color: '#D9B66F', bg: 'linear-gradient(135deg, rgba(217, 182, 111, 0.18), rgba(139, 90, 43, 0.08))', borderColor: 'rgba(217, 182, 111, 0.4)' },
   ];
@@ -558,19 +571,24 @@ function CosmicEnergyCards({ cosmicData, birthChart }: { cosmicData: any; birthC
 
 // ===== MAIN ASTRO SCREEN =====
 export default function AstroScreen({ onNavigate }: AstroScreenProps) {
-  const { birthChart } = useBirthChart();
-  const { data: cosmicData } = useCosmicData();
+  const { birthChart, loading: birthChartLoading, error: birthChartError } = useBirthChart();
+  const { data: cosmicData, loading: cosmicDataLoading, error: cosmicDataError } = useCosmicData();
   const [planets, setPlanets] = useState<any[]>([]);
   const [planetsLoading, setPlanetsLoading] = useState(true);
+  const [planetsError, setPlanetsError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPlanets = async () => {
       if (!supabase) {
         setPlanetsLoading(false);
+        setPlanetsError('Supabase not initialized');
         return;
       }
 
       try {
+        setPlanetsLoading(true);
+        setPlanetsError(null);
+        
         const today = new Date().toISOString().split('T')[0];
         const { data, error } = await supabase
           .from('planet_positions')
@@ -579,11 +597,13 @@ export default function AstroScreen({ onNavigate }: AstroScreenProps) {
         
         if (error) {
           console.error('Error fetching planets:', error);
+          setPlanetsError(error.message);
         } else if (data) {
           setPlanets(data);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching planets:', error);
+        setPlanetsError(error.message);
       } finally {
         setPlanetsLoading(false);
       }
@@ -592,8 +612,24 @@ export default function AstroScreen({ onNavigate }: AstroScreenProps) {
     fetchPlanets();
   }, []);
 
+  const userId = birthChart ? 'user-loaded' : null;
+
   return (
     <div className="astro-screen">
+      {/* DEBUG PANEL */}
+      <DebugPanel
+        birthChart={birthChart}
+        birthChartLoading={birthChartLoading}
+        birthChartError={birthChartError}
+        cosmicData={cosmicData}
+        cosmicDataLoading={cosmicDataLoading}
+        cosmicDataError={cosmicDataError}
+        planets={planets}
+        planetsLoading={planetsLoading}
+        planetsError={planetsError}
+        userId={userId}
+      />
+
       <div className="cosmic-background" style={{ backgroundImage: `url(${BG_IMAGE})` }} />
 
       <div className="astro-header">
@@ -626,6 +662,8 @@ export default function AstroScreen({ onNavigate }: AstroScreenProps) {
 
           {planetsLoading ? (
             <div className="loading-placeholder">Loading planets...</div>
+          ) : planetsError ? (
+            <div className="loading-placeholder" style={{ color: '#ef4444' }}>Error: {planetsError}</div>
           ) : (
             <>
               <PlanetOrbitDiagram planets={planets} />
