@@ -73,7 +73,6 @@ function DebugPanel({
       maxHeight: '80vh',
       overflowY: 'auto'
     }}>
-      {/* Header */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -104,13 +103,11 @@ function DebugPanel({
 
       {isOpen && (
         <>
-          {/* User Info */}
           <div style={{ marginBottom: '10px' }}>
             <div style={{ color: '#60a5fa', fontWeight: 'bold', marginBottom: '4px' }}>👤 USER:</div>
             <div style={{ color: '#fff' }}>ID: {userId || '❌ null'}</div>
           </div>
 
-          {/* Birth Chart Status */}
           <div style={{ 
             marginBottom: '10px', 
             padding: '8px',
@@ -119,7 +116,7 @@ function DebugPanel({
             borderRadius: '6px'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-              {birthChartLoading ? <Loader size={14} className="animate-spin" /> :
+              {birthChartLoading ? <Loader size={14} /> :
                birthChartError ? <XCircle size={14} color="#ef4444" /> :
                birthChart ? <CheckCircle size={14} color="#10b981" /> : null}
               <span style={{ fontWeight: 'bold', color: '#60a5fa' }}>📊 BIRTH CHART:</span>
@@ -135,7 +132,6 @@ function DebugPanel({
             )}
           </div>
 
-          {/* Cosmic Data Status */}
           <div style={{ 
             marginBottom: '10px', 
             padding: '8px',
@@ -144,7 +140,7 @@ function DebugPanel({
             borderRadius: '6px'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-              {cosmicDataLoading ? <Loader size={14} className="animate-spin" /> :
+              {cosmicDataLoading ? <Loader size={14} /> :
                cosmicDataError ? <XCircle size={14} color="#ef4444" /> :
                cosmicData ? <CheckCircle size={14} color="#10b981" /> : null}
               <span style={{ fontWeight: 'bold', color: '#60a5fa' }}>🌙 COSMIC DATA:</span>
@@ -163,7 +159,6 @@ function DebugPanel({
             )}
           </div>
 
-          {/* Planet Positions Status */}
           <div style={{ 
             marginBottom: '10px', 
             padding: '8px',
@@ -172,7 +167,7 @@ function DebugPanel({
             borderRadius: '6px'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-              {planetsLoading ? <Loader size={14} className="animate-spin" /> :
+              {planetsLoading ? <Loader size={14} /> :
                planetsError ? <XCircle size={14} color="#ef4444" /> :
                planets.length > 0 ? <CheckCircle size={14} color="#10b981" /> : null}
               <span style={{ fontWeight: 'bold', color: '#60a5fa' }}>🌌 PLANETS:</span>
@@ -192,7 +187,6 @@ function DebugPanel({
             )}
           </div>
 
-          {/* Summary */}
           <div style={{ 
             padding: '8px',
             background: 'rgba(96, 165, 250, 0.1)',
@@ -216,8 +210,6 @@ function DebugPanel({
 function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
   const [hoveredPlanet, setHoveredPlanet] = useState<string | null>(null);
   
-  const CENTER_X = 400;
-  const CENTER_Y = 400;
   const PLANET_RADIUS = 36;
 
   const getBaseOrbitRadius = (planetName: string): number => {
@@ -269,7 +261,7 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
   const VIEWBOX_SIZE = 800;
   const TARGET_PADDING = 2;
   const MAX_ORBIT_RADIUS = (VIEWBOX_SIZE / 2) - PLANET_RADIUS - TARGET_PADDING;
-  const SCALE_FACTOR_ORBITS = MAX_ORBIT_RADIUS / maxDistance;
+  const SCALE_FACTOR_ORBITS = maxDistance > 0 ? MAX_ORBIT_RADIUS / maxDistance : 1;
 
   const PLANET_CONFIG: Record<string, { color: string; orbitRadius: number; x: number; y: number }> = {};
   
@@ -302,15 +294,6 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
     orbitRadius: Math.sqrt(sunX * sunX + sunY * sunY),
     x: sunX,
     y: sunY
-  };
-
-  const getPlanetPosition = (planetName: string) => {
-    const config = PLANET_CONFIG[planetName];
-    if (!config) return { x: VIEWBOX_SIZE / 2, y: VIEWBOX_SIZE / 2 };
-    return {
-      x: VIEWBOX_SIZE / 2 + config.x,
-      y: VIEWBOX_SIZE / 2 + config.y
-    };
   };
 
   return (
@@ -505,7 +488,7 @@ function BigThreeCards({ birthChart }: { birthChart: any }) {
   if (!birthChart) return null;
 
   const signs = [
-    { label: 'Sun', icon: '️', sign: birthChart.sun_sign || 'Unknown', color: '#FFD700', bg: 'linear-gradient(135deg, rgba(255, 215, 0, 0.18), rgba(255, 165, 0, 0.08))', borderColor: 'rgba(255, 215, 0, 0.4)' },
+    { label: 'Sun', icon: '☀️', sign: birthChart.sun_sign || 'Unknown', color: '#FFD700', bg: 'linear-gradient(135deg, rgba(255, 215, 0, 0.18), rgba(255, 165, 0, 0.08))', borderColor: 'rgba(255, 215, 0, 0.4)' },
     { label: 'Moon', icon: '🌙', sign: birthChart.moon_sign || 'Unknown', color: '#C0C0C0', bg: 'linear-gradient(135deg, rgba(192, 192, 192, 0.18), rgba(100, 100, 150, 0.08))', borderColor: 'rgba(192, 192, 192, 0.4)' },
     { label: 'Rising', icon: '⬆️', sign: birthChart.rising_sign || 'Unknown', color: '#D9B66F', bg: 'linear-gradient(135deg, rgba(217, 182, 111, 0.18), rgba(139, 90, 43, 0.08))', borderColor: 'rgba(217, 182, 111, 0.4)' },
   ];
