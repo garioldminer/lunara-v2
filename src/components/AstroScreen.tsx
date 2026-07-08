@@ -22,11 +22,11 @@ const PLANET_IMAGES: Record<string, string> = {
 
 const ZODIAC_SYMBOLS: Record<string, string> = {
   'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊', 'Cancer': '♋',
-  'Leo': '♌', 'Virgo': '♍', 'Libra': '♎', 'Scorpio': '♏',
+  'Leo': '', 'Virgo': '♍', 'Libra': '♎', 'Scorpio': '♏',
   'Sagittarius': '♐', 'Capricorn': '♑', 'Aquarius': '♒', 'Pisces': '♓'
 };
 
-// ✅ კიდევ უფრო გადიდებული orbit radii (2x)
+// ✅ იგივე orbit radii
 const PLANET_CONFIG: Record<string, { color: string; orbitRadius: number }> = {
   'Sun': { color: '#FFD700', orbitRadius: 0 },
   'Moon': { color: '#C0C0C0', orbitRadius: 140 },
@@ -43,26 +43,30 @@ export interface AstroScreenProps {
   onNavigate?: (screen: string) => void;
 }
 
-// ===== PLANET ORBIT DIAGRAM - კიდევ უფრო დიდი =====
+// ===== PLANET ORBIT DIAGRAM - ოპტიმიზებული 15px padding-ით =====
 function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
   const [hoveredPlanet, setHoveredPlanet] = useState<string | null>(null);
 
+  // ✅ ახალი center: 575, 575 (viewBox 1150x1150)
+  const CENTER = 575;
+
   const getPlanetPosition = (planet: any) => {
     const config = PLANET_CONFIG[planet.planet_name];
-    if (!config) return { x: 500, y: 500 };
+    if (!config) return { x: CENTER, y: CENTER };
 
     const signIndex = Object.keys(ZODIAC_SYMBOLS).indexOf(planet.sign);
     const signAngle = (signIndex * 30) + planet.degree;
     const angle = (signAngle * Math.PI) / 180;
-    const x = 500 + config.orbitRadius * Math.cos(angle);
-    const y = 500 + config.orbitRadius * Math.sin(angle);
+    const x = CENTER + config.orbitRadius * Math.cos(angle);
+    const y = CENTER + config.orbitRadius * Math.sin(angle);
 
     return { x, y };
   };
 
   return (
     <div className="orbit-diagram-container">
-      <svg className="orbit-svg" viewBox="0 0 1000 1000">
+      {/* ✅ viewBox 1150x1150 - პლანეტები 15px დაშორებული კიდეებიდან */}
+      <svg className="orbit-svg" viewBox="0 0 1150 1150">
         <defs>
           <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="#FFD700" stopOpacity="1" />
@@ -95,8 +99,8 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
           .map(([name, config]) => (
             <circle
               key={`orbit-${name}`}
-              cx="500"
-              cy="500"
+              cx={CENTER}
+              cy={CENTER}
               r={config.orbitRadius}
               fill="none"
               stroke="rgba(217, 182, 111, 0.15)"
@@ -105,13 +109,13 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
             />
           ))}
 
-        {/* Sun center - კიდევ უფრო დიდი */}
-        <circle cx="500" cy="500" r="90" fill="url(#sunGlow)" className="sun-glow" filter="url(#sunGlowFilter)" />
+        {/* Sun center - ახალი პოზიცია */}
+        <circle cx={CENTER} cy={CENTER} r="90" fill="url(#sunGlow)" className="sun-glow" filter="url(#sunGlowFilter)" />
         {PLANET_IMAGES['Sun'] && (
           <image
             href={PLANET_IMAGES['Sun']}
-            x="420"
-            y="420"
+            x={CENTER - 80}
+            y={CENTER - 80}
             width="160"
             height="160"
             className="planet-img sun-img"
@@ -120,7 +124,7 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
           />
         )}
 
-        {/* Planets - კიდევ უფრო დიდი */}
+        {/* Planets */}
         {planets.map((planet, index) => {
           const config = PLANET_CONFIG[planet.planet_name];
           if (!config) return null;
@@ -128,7 +132,7 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
           const pos = getPlanetPosition(planet);
           const isHovered = hoveredPlanet === planet.planet_name;
           const planetImage = PLANET_IMAGES[planet.planet_name];
-          const size = isHovered ? 120 : 96; // ✅ 2x (64→96, 80→120)
+          const size = isHovered ? 120 : 96;
 
           return (
             <g key={planet.planet_name}>
@@ -497,7 +501,7 @@ export default function AstroScreen({ onNavigate }: AstroScreenProps) {
           <span className="cta-arrow">→</span>
         </motion.button>
 
-        {/* ✅ Bottom padding - 15px after CTA button */}
+        {/* Bottom padding */}
         <div className="bottom-spacer" />
 
       </div>

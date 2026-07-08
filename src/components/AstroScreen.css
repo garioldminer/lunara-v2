@@ -100,7 +100,6 @@
   gap: 12px;
 }
 
-/* ✅ Bottom spacer - 15px after CTA button */
 .bottom-spacer {
   height: 15px;
   flex-shrink: 0;
@@ -235,7 +234,7 @@
 }
 
 /* ============================================
-   PLANET POSITIONS - კიდევ უფრო დიდი
+   PLANET POSITIONS - ოპტიმიზებული
    ============================================ */
 .planets-section {
   padding: 14px;
@@ -275,11 +274,12 @@
   min-height: 500px;
 }
 
+/* ✅ viewBox 1150x1150 - პლანეტები 15px დაშორებული */
 .orbit-svg {
   width: 100%;
-  max-width: 750px;
+  max-width: 800px;
   height: auto;
-  max-height: 650px;
+  max-height: 700px;
   filter: drop-shadow(0 10px 30px rgba(217, 182, 111, 0.15));
 }
 
@@ -340,7 +340,7 @@
    ============================================ */
 .planet-simple-list {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr; /* ✅ 2 სვეტი */
   gap: 8px 12px;
   padding-top: 10px;
   border-top: 1px solid rgba(217, 182, 111, 0.15);
@@ -616,8 +616,8 @@
   }
 
   .orbit-svg {
-    max-width: 500px;
-    max-height: 480px;
+    max-width: 550px;
+    max-height: 520px;
   }
 
   .planet-name-text {
@@ -697,8 +697,8 @@
   }
 
   .orbit-svg {
-    max-width: 420px;
-    max-height: 400px;
+    max-width: 450px;
+    max-height: 430px;
   }
 
   .big-three-container {
@@ -709,8 +709,33 @@
     padding: 8px 4px;
   }
 
+  /* ✅ 360px-ზეც 2 სვეტი რჩება */
   .planet-simple-list {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 6px;
+  }
+
+  .planet-simple-row {
+    padding: 5px 6px;
+    gap: 6px;
+  }
+
+  .planet-simple-img {
+    width: 26px;
+    height: 26px;
+  }
+
+  .planet-simple-name {
+    font-size: 10px;
+  }
+
+  .planet-simple-sign {
+    font-size: 9px;
+  }
+
+  .planet-simple-degree {
+    font-size: 9px;
+    min-width: 35px;
   }
 }
 
