@@ -38,21 +38,17 @@ export function useBirthChart() {
         setLoading(true);
         setError(null);
 
-        // ვცდილობთ birth_charts table-დან წამოღებას
-        const { data: chartData, error: chartError } = await supabase
-          .from('birth_charts')
-          .select('*')
-          .eq('user_id', user.id)
+        // ✅ პირდაპირ ვიღებთ user_profiles ცხრილიდან
+        const { data: profileData, error: profileError } = await supabase
+          .from('user_profiles')
+          .select('sun_sign, moon_sign, rising_sign')
+          .eq('id', user.id)
           .single();
 
-        if (chartError && chartError.code !== 'PGRST116') {
-          console.error('Error fetching birth chart:', chartError);
-        }
-
-        if (chartData) {
-          setBirthChart(chartData);
-        } else {
-          // თუ birth_charts table-ში არ არის, ვიღებთ users table-დან
+        if (profileError) {
+          console.error('Error fetching user profile:', profileError);
+          
+          // ✅ Fallback: ვცდილობთ users ცხრილიდან
           const { data: userData, error: userError } = await supabase
             .from('users')
             .select('sun_sign, moon_sign, rising_sign')
@@ -62,6 +58,17 @@ export function useBirthChart() {
           if (userError) {
             console.error('Error fetching user signs:', userError);
             setError('Failed to load birth chart');
+            setBirthChart({
+              sun_sign: 'aries',
+              moon_sign: null,
+              rising_sign: null,
+              mercury_sign: null,
+              venus_sign: null,
+              mars_sign: null,
+              jupiter_sign: null,
+              saturn_sign: null,
+              houses: null,
+            });
           } else if (userData) {
             setBirthChart({
               sun_sign: userData.sun_sign || 'aries',
@@ -75,6 +82,18 @@ export function useBirthChart() {
               houses: null,
             });
           }
+        } else if (profileData) {
+          setBirthChart({
+            sun_sign: profileData.sun_sign || 'aries',
+            moon_sign: profileData.moon_sign,
+            rising_sign: profileData.rising_sign,
+            mercury_sign: null,
+            venus_sign: null,
+            mars_sign: null,
+            jupiter_sign: null,
+            saturn_sign: null,
+            houses: null,
+          });
         }
       } catch (err) {
         console.error('Exception in useBirthChart:', err);
