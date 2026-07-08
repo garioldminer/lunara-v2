@@ -81,7 +81,6 @@ export default function AdminScreen({ onNavigate }: Props) {
   const [recentLogs, setRecentLogs] = useState<FunctionLog[]>([]);
   const [selectedFunction, setSelectedFunction] = useState<string | null>(null);
   const [functionLogs, setFunctionLogs] = useState<FunctionLog[]>([]);
-  const [testingFunction, setTestingFunction] = useState<string | null>(null);
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -597,10 +596,9 @@ export default function AdminScreen({ onNavigate }: Props) {
                       <button
                         className="extend-btn"
                         onClick={() => handleTestFunction(func.name)}
-                        disabled={testingFunction === func.name}
                       >
                         <Play size={14} />
-                        <span>{testingFunction === func.name ? 'Testing...' : 'Test Now'}</span>
+                        <span>Test Now</span>
                       </button>
                       <button
                         className="cancel-sub-btn"
