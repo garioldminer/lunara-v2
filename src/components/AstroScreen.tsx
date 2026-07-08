@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Zap, Star, Info } from 'lucide-react';
+import { ArrowLeft, Zap, Star, Info, Bug } from 'lucide-react';
 import { useCosmicData } from '../hooks/useCosmicData';
 import { useBirthChart } from '../hooks/useBirthChart';
 import { supabase } from '../lib/supabase';
@@ -21,13 +21,11 @@ const PLANET_IMAGES: Record<string, string> = {
 };
 
 const ZODIAC_SYMBOLS: Record<string, string> = {
-  'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊', 'Cancer': '♋',
-  'Leo': '♌', 'Virgo': '', 'Libra': '♎', 'Scorpio': '♏',
+  'Aries': '♈', 'Taurus': '♉', 'Gemini': '', 'Cancer': '♋',
+  'Leo': '♌', 'Virgo': '♍', 'Libra': '♎', 'Scorpio': '♏',
   'Sagittarius': '♐', 'Capricorn': '♑', 'Aquarius': '♒', 'Pisces': '♓'
 };
 
-// ✅ viewBox 500×500, Center 250, Neptune 228px
-// 250 - 228 - 12 (planet radius) = 10px padding ✅
 const PLANET_CONFIG: Record<string, { color: string; orbitRadius: number }> = {
   'Sun': { color: '#FFD700', orbitRadius: 0 },
   'Mercury': { color: '#A0A0A0', orbitRadius: 34 },
@@ -44,12 +42,14 @@ export interface AstroScreenProps {
   onNavigate?: (screen: string) => void;
 }
 
-// ===== PLANET ORBIT DIAGRAM =====
+// ===== PLANET ORBIT DIAGRAM WITH DEBUG =====
 function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
   const [hoveredPlanet, setHoveredPlanet] = useState<string | null>(null);
+  const [debugMode, setDebugMode] = useState(true); // ✅ დებაგერი ჩართულია
   
   const CENTER_X = 250;
   const CENTER_Y = 250;
+  const PLANET_RADIUS = 12; // 24px diameter / 2
 
   const getPlanetPosition = (planet: any) => {
     const config = PLANET_CONFIG[planet.planet_name];
@@ -64,8 +64,54 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
     return { x, y };
   };
 
+  // ✅ დებაგერი: ვპოულობ უკიდურეს პლანეტებს
+  const getExtremePlanets = () => {
+    if (planets.length === 0) return null;
+
+    let topPlanet = { name: '', x: 0, y: 999 };
+    let bottomPlanet = { name: '', x: 0, y: -1 };
+    let leftPlanet = { name: '', x: 999, y: 0 };
+    let rightPlanet = { name: '', x: -1, y: 0 };
+
+    planets.forEach(planet => {
+      const pos = getPlanetPosition(planet);
+      
+      if (pos.y < topPlanet.y) topPlanet = { name: planet.planet_name, ...pos };
+      if (pos.y > bottomPlanet.y) bottomPlanet = { name: planet.planet_name, ...pos };
+      if (pos.x < leftPlanet.x) leftPlanet = { name: planet.planet_name, ...pos };
+      if (pos.x > rightPlanet.x) rightPlanet = { name: planet.planet_name, ...pos };
+    });
+
+    return { topPlanet, bottomPlanet, leftPlanet, rightPlanet };
+  };
+
+  const extremes = getExtremePlanets();
+
   return (
     <div className="orbit-diagram-container">
+      {/* ✅ Debug toggle button */}
+      <button 
+        onClick={() => setDebugMode(!debugMode)}
+        style={{
+          position: 'absolute',
+          top: '10px',
+          right: '10px',
+          zIndex: 100,
+          background: debugMode ? '#ef4444' : '#10b981',
+          color: 'white',
+          border: 'none',
+          borderRadius: '50%',
+          width: '32px',
+          height: '32px',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+      >
+        <Bug size={16} />
+      </button>
+
       <svg 
         className="orbit-svg" 
         viewBox="0 0 500 500"
@@ -113,7 +159,7 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
             />
           ))}
 
-        {/* Sun center - 36px diameter */}
+        {/* Sun center */}
         <circle cx={CENTER_X} cy={CENTER_Y} r="22" fill="url(#sunGlow)" className="sun-glow" filter="url(#sunGlowFilter)" />
         {PLANET_IMAGES['Sun'] && (
           <image
@@ -128,7 +174,7 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
           />
         )}
 
-        {/* Planets - 24px diameter (hover: 30px) */}
+        {/* Planets */}
         {planets.map((planet, index) => {
           const config = PLANET_CONFIG[planet.planet_name];
           if (!config) return null;
@@ -207,12 +253,148 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
             </g>
           );
         })}
+
+        {/* ✅ DEBUG MODE - ვიზუალური გაზომვა */}
+        {debugMode && extremes && (
+          <g className="debug-overlay">
+            {/* viewBox border */}
+            <rect 
+              x="0" y="0" 
+              width="500" height="500" 
+              fill="none" 
+              stroke="#ef4444" 
+              strokeWidth="2"
+              strokeDasharray="5 5"
+            />
+
+            {/* TOP - Moon to top edge */}
+            <line 
+              x1={extremes.topPlanet.x} 
+              y1={extremes.topPlanet.y - PLANET_RADIUS}
+              x2={extremes.topPlanet.x} 
+              y2="0"
+              stroke="#ef4444" 
+              strokeWidth="2"
+              markerEnd="url(#arrowRed)"
+            />
+            <circle cx={extremes.topPlanet.x} cy={extremes.topPlanet.y - PLANET_RADIUS} r="4" fill="#ef4444" />
+            <text 
+              x={extremes.topPlanet.x + 10} 
+              y={(extremes.topPlanet.y - PLANET_RADIUS) / 2}
+              fill="#ef4444"
+              fontSize="14"
+              fontWeight="bold"
+            >
+              {Math.round(extremes.topPlanet.y - PLANET_RADIUS)}px
+            </text>
+            <text 
+              x={extremes.topPlanet.x + 10} 
+              y={(extremes.topPlanet.y - PLANET_RADIUS) / 2 + 16}
+              fill="#ef4444"
+              fontSize="10"
+            >
+              ({extremes.topPlanet.name})
+            </text>
+
+            {/* BOTTOM - Uranus to bottom edge */}
+            <line 
+              x1={extremes.bottomPlanet.x} 
+              y1={extremes.bottomPlanet.y + PLANET_RADIUS}
+              x2={extremes.bottomPlanet.x} 
+              y2="500"
+              stroke="#ef4444" 
+              strokeWidth="2"
+            />
+            <circle cx={extremes.bottomPlanet.x} cy={extremes.bottomPlanet.y + PLANET_RADIUS} r="4" fill="#ef4444" />
+            <text 
+              x={extremes.bottomPlanet.x + 10} 
+              y={(extremes.bottomPlanet.y + PLANET_RADIUS + 500) / 2}
+              fill="#ef4444"
+              fontSize="14"
+              fontWeight="bold"
+            >
+              {Math.round(500 - (extremes.bottomPlanet.y + PLANET_RADIUS))}px
+            </text>
+            <text 
+              x={extremes.bottomPlanet.x + 10} 
+              y={(extremes.bottomPlanet.y + PLANET_RADIUS + 500) / 2 + 16}
+              fill="#ef4444"
+              fontSize="10"
+            >
+              ({extremes.bottomPlanet.name})
+            </text>
+
+            {/* LEFT - Jupiter to left edge */}
+            <line 
+              x1={extremes.leftPlanet.x - PLANET_RADIUS}
+              y1={extremes.leftPlanet.y}
+              x2="0"
+              y2={extremes.leftPlanet.y}
+              stroke="#ef4444" 
+              strokeWidth="2"
+            />
+            <circle cx={extremes.leftPlanet.x - PLANET_RADIUS} cy={extremes.leftPlanet.y} r="4" fill="#ef4444" />
+            <text 
+              x={(extremes.leftPlanet.x - PLANET_RADIUS) / 2}
+              y={extremes.leftPlanet.y - 10}
+              fill="#ef4444"
+              fontSize="14"
+              fontWeight="bold"
+              textAnchor="middle"
+            >
+              {Math.round(extremes.leftPlanet.x - PLANET_RADIUS)}px
+            </text>
+            <text 
+              x={(extremes.leftPlanet.x - PLANET_RADIUS) / 2}
+              y={extremes.leftPlanet.y - 24}
+              fill="#ef4444"
+              fontSize="10"
+              textAnchor="middle"
+            >
+              ({extremes.leftPlanet.name})
+            </text>
+
+            {/* RIGHT - Neptune to right edge */}
+            <line 
+              x1={extremes.rightPlanet.x + PLANET_RADIUS}
+              y1={extremes.rightPlanet.y}
+              x2="500"
+              y2={extremes.rightPlanet.y}
+              stroke="#ef4444" 
+              strokeWidth="2"
+            />
+            <circle cx={extremes.rightPlanet.x + PLANET_RADIUS} cy={extremes.rightPlanet.y} r="4" fill="#ef4444" />
+            <text 
+              x={(extremes.rightPlanet.x + PLANET_RADIUS + 500) / 2}
+              y={extremes.rightPlanet.y - 10}
+              fill="#ef4444"
+              fontSize="14"
+              fontWeight="bold"
+              textAnchor="middle"
+            >
+              {Math.round(500 - (extremes.rightPlanet.x + PLANET_RADIUS))}px
+            </text>
+            <text 
+              x={(extremes.rightPlanet.x + PLANET_RADIUS + 500) / 2}
+              y={extremes.rightPlanet.y - 24}
+              fill="#ef4444"
+              fontSize="10"
+              textAnchor="middle"
+            >
+              ({extremes.rightPlanet.name})
+            </text>
+
+            {/* Center crosshair */}
+            <line x1="250" y1="0" x2="250" y2="500" stroke="#10b981" strokeWidth="1" strokeDasharray="3 3" opacity="0.5" />
+            <line x1="0" y1="250" x2="500" y2="250" stroke="#10b981" strokeWidth="1" strokeDasharray="3 3" opacity="0.5" />
+          </g>
+        )}
       </svg>
     </div>
   );
 }
 
-// ===== PLANET DATA LIST - 2 სვეტი =====
+// ===== PLANET DATA LIST =====
 function PlanetDataList({ planets }: { planets: any[] }) {
   const leftPlanets = planets.slice(0, 4);
   const rightPlanets = planets.slice(4, 8);
@@ -318,7 +500,7 @@ function CosmicEnergyCards({ cosmicData, birthChart }: { cosmicData: any; birthC
 
   const getElementIcon = (element: string) => {
     const icons: Record<string, string> = {
-      'Fire': '', 'Earth': '🌍', 'Air': '💨', 'Water': '💧'
+      'Fire': '🔥', 'Earth': '🌍', 'Air': '', 'Water': '💧'
     };
     return icons[element] || '✨';
   };
