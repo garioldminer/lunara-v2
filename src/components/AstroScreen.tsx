@@ -22,35 +22,34 @@ const PLANET_IMAGES: Record<string, string> = {
 
 const ZODIAC_SYMBOLS: Record<string, string> = {
   'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊', 'Cancer': '♋',
-  'Leo': '♌', 'Virgo': '♍', 'Libra': '♎', 'Scorpio': '♏',
+  'Leo': '♌', 'Virgo': '', 'Libra': '♎', 'Scorpio': '♏',
   'Sagittarius': '♐', 'Capricorn': '♑', 'Aquarius': '♒', 'Pisces': '♓'
 };
 
-// ✅ ზუსტი პროპორციული ორბიტები (ყველა 10px დაშორებით)
-// viewBox: 534×534, Center: 267,267
-// Neptune (ყველაზე გარე): 245 + 12 + 10 = 267 ✅
+// ✅ viewBox 500×500, Center 250, Neptune 228px
+// 250 - 228 - 12 (planet radius) = 10px padding ✅
 const PLANET_CONFIG: Record<string, { color: string; orbitRadius: number }> = {
   'Sun': { color: '#FFD700', orbitRadius: 0 },
-  'Mercury': { color: '#A0A0A0', orbitRadius: 36 },
-  'Venus': { color: '#E6B800', orbitRadius: 60 },
-  'Moon': { color: '#C0C0C0', orbitRadius: 88 },
-  'Mars': { color: '#FF4500', orbitRadius: 120 },
-  'Jupiter': { color: '#DAA520', orbitRadius: 144 },
-  'Saturn': { color: '#F4A460', orbitRadius: 168 },
-  'Uranus': { color: '#40E0D0', orbitRadius: 184 },
-  'Neptune': { color: '#4169E1', orbitRadius: 245 }
+  'Mercury': { color: '#A0A0A0', orbitRadius: 34 },
+  'Venus': { color: '#E6B800', orbitRadius: 56 },
+  'Moon': { color: '#C0C0C0', orbitRadius: 82 },
+  'Mars': { color: '#FF4500', orbitRadius: 112 },
+  'Jupiter': { color: '#DAA520', orbitRadius: 134 },
+  'Saturn': { color: '#F4A460', orbitRadius: 156 },
+  'Uranus': { color: '#40E0D0', orbitRadius: 171 },
+  'Neptune': { color: '#4169E1', orbitRadius: 228 }
 };
 
 export interface AstroScreenProps {
   onNavigate?: (screen: string) => void;
 }
 
-// ===== PLANET ORBIT DIAGRAM - ზუსტი 10px padding =====
+// ===== PLANET ORBIT DIAGRAM =====
 function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
   const [hoveredPlanet, setHoveredPlanet] = useState<string | null>(null);
   
-  const CENTER_X = 267;
-  const CENTER_Y = 267;
+  const CENTER_X = 250;
+  const CENTER_Y = 250;
 
   const getPlanetPosition = (planet: any) => {
     const config = PLANET_CONFIG[planet.planet_name];
@@ -69,7 +68,7 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
     <div className="orbit-diagram-container">
       <svg 
         className="orbit-svg" 
-        viewBox="0 0 534 534"
+        viewBox="0 0 500 500"
         preserveAspectRatio="xMidYMid meet"
       >
         <defs>
@@ -319,7 +318,7 @@ function CosmicEnergyCards({ cosmicData, birthChart }: { cosmicData: any; birthC
 
   const getElementIcon = (element: string) => {
     const icons: Record<string, string> = {
-      'Fire': '🔥', 'Earth': '🌍', 'Air': '💨', 'Water': '💧'
+      'Fire': '', 'Earth': '🌍', 'Air': '💨', 'Water': '💧'
     };
     return icons[element] || '✨';
   };
