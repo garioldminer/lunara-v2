@@ -179,18 +179,33 @@ export default function AdminScreen({ onNavigate }: Props) {
     }
   };
 
-  // Monitoring handlers
+  // ✅ Monitoring handlers - გაუმჯობესებული error messages-ით
   const handleTestFunction = async (functionName: string) => {
     if (!user) return;
     setTestingFunction(functionName);
+    
     const result = await testFunction(user.id, functionName);
+    
     if (result.success) {
       await loadData();
+      setTestingFunction(null);
+      alert(
+        `✅ ${functionName}\n\n` +
+        `წარმატებით გაეშვა!\n\n` +
+        `Response Time: ${result.log?.response_time_ms || 'N/A'}ms\n` +
+        `Status Code: ${result.log?.status_code || 'N/A'}`
+      );
+    } else {
+      await loadData();
+      setTestingFunction(null);
+      alert(
+        `❌ ${functionName}\n\n` +
+        `Error: ${result.error || 'Unknown error'}\n\n` +
+        `Status Code: ${result.log?.status_code || 'N/A'}\n` +
+        `Response Time: ${result.log?.response_time_ms || 'N/A'}ms\n\n` +
+        `Check "View Logs" for details.`
+      );
     }
-    setTestingFunction(null);
-    alert(result.success 
-      ? `✅ ${functionName} გაეშვა წარმატებით!` 
-      : `❌ Error: ${result.error}`);
   };
 
   const handleViewLogs = async (functionName: string) => {
@@ -846,6 +861,11 @@ export default function AdminScreen({ onNavigate }: Props) {
                     {log.error_message && (
                       <div style={{ fontSize: '11px', color: '#ef4444', marginTop: '4px' }}>
                         ❌ {log.error_message}
+                      </div>
+                    )}
+                    {log.response_data && (
+                      <div style={{ fontSize: '10px', opacity: 0.7, marginTop: '4px', maxHeight: '80px', overflow: 'auto' }}>
+                        📦 {JSON.stringify(log.response_data).substring(0, 200)}
                       </div>
                     )}
                   </div>

@@ -473,68 +473,129 @@ export async function getFunctionLogs(
   return data || [];
 }
 
-// ხელით გაუშვით function
+// ✅ ხელით გაუშვით function - გასწორებული ვერსია
 export async function testFunction(adminId: string, functionName: string): Promise<{success: boolean; log?: FunctionLog; error?: string}> {
   await requireAdmin(adminId);
 
   if (!supabase) return { success: false, error: 'Supabase not initialized' };
 
   const func = EDGE_FUNCTIONS.find(f => f.name === functionName);
-  if (!func) return { success: false, error: 'Function not found' };
+  if (!func) return { success: false, error: `Function "${functionName}" not found` };
 
   const startTime = Date.now();
+  let responseData: any = null;
+  let errorMessage: string | null = null;
+  let statusCode = 0;
   
   try {
     const response = await fetch(func.url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
       body: '{}'
     });
 
     const responseTime = Date.now() - startTime;
-    const responseData = await response.json().catch(() => null);
+    statusCode = response.status;
 
-    const status = response.ok ? 'success' : 'error';
+    // ✅ ვცადოთ response-ის წაკითხვა
+    try {
+      const text = await response.text();
+      try {
+        responseData = JSON.parse(text);
+      } catch {
+        responseData = { raw: text.substring(0, 500) };
+      }
+    } catch (parseError: any) {
+      responseData = { parse_error: parseError.message };
+    }
+
+    // ✅ განვსაზღვროთ status
+    const isSuccess = response.ok;
     
-    // ჩაწერეთ ლოგი
+    // ✅ ამოვიღოთ error message სხვადასხვა ფორმატიდან
+    if (!isSuccess) {
+      if (responseData?.error) {
+        errorMessage = String(responseData.error);
+      } else if (responseData?.message) {
+        errorMessage = String(responseData.message);
+      } else if (responseData?.error_description) {
+        errorMessage = String(responseData.error_description);
+      } else if (responseData?.raw) {
+        errorMessage = `HTTP ${statusCode}: ${String(responseData.raw).substring(0, 200)}`;
+      } else {
+        errorMessage = `HTTP ${statusCode} - ${response.statusText || 'Unknown error'}`;
+      }
+    }
+
+    const status = isSuccess ? 'success' : 'error';
+    
+    // ✅ ჩაწერეთ ლოგი
     const { data: log, error: logError } = await supabase
       .from('function_logs')
       .insert({
         function_name: functionName,
         status,
         response_time_ms: responseTime,
-        status_code: response.status,
-        error_message: !response.ok ? responseData?.error : null,
-        request_data: {},
+        status_code: statusCode,
+        error_message: errorMessage,
+        request_data: { method: 'POST', body: '{}' },
         response_data: responseData,
         triggered_by: 'manual'
       })
       .select()
       .single();
 
-    if (logError) console.error('Error logging:', logError);
+    if (logError) {
+      console.error('Error logging function call:', logError);
+    }
 
-    return { 
-      success: response.ok, 
-      log: log || undefined,
-      error: !response.ok ? responseData?.error : undefined
-    };
+    if (isSuccess) {
+      return { 
+        success: true, 
+        log: log || undefined
+      };
+    } else {
+      return { 
+        success: false, 
+        log: log || undefined,
+        error: errorMessage || `HTTP ${statusCode}`
+      };
+    }
+    
   } catch (error: any) {
     const responseTime = Date.now() - startTime;
     
-    // ჩაწერეთ error ლოგი
-    await supabase.from('function_logs').insert({
-      function_name: functionName,
-      status: 'error',
-      response_time_ms: responseTime,
-      status_code: 0,
-      error_message: error.message,
-      request_data: {},
-      response_data: null,
-      triggered_by: 'manual'
-    });
+    // ✅ დეტალური error message
+    let detailedError = 'Unknown error';
+    
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      detailedError = `Network Error: ${error.message}. Function URL: ${func.url}`;
+    } else if (error.name === 'AbortError') {
+      detailedError = `Request Timeout: Function took too long to respond`;
+    } else if (error.message) {
+      detailedError = `${error.name}: ${error.message}`;
+    }
+    
+    // ✅ ჩაწერეთ error ლოგი
+    try {
+      await supabase.from('function_logs').insert({
+        function_name: functionName,
+        status: 'error',
+        response_time_ms: responseTime,
+        status_code: 0,
+        error_message: detailedError,
+        request_data: { method: 'POST', body: '{}' },
+        response_data: null,
+        triggered_by: 'manual'
+      });
+    } catch (logErr) {
+      console.error('Failed to log error:', logErr);
+    }
 
-    return { success: false, error: error.message };
+    return { success: false, error: detailedError };
   }
 }
 
