@@ -21,7 +21,7 @@ const PLANET_IMAGES: Record<string, string> = {
 };
 
 const ZODIAC_SYMBOLS: Record<string, string> = {
-  'Aries': '♈', 'Taurus': '', 'Gemini': '♊', 'Cancer': '♋',
+  'Aries': '♈', 'Taurus': '♉', 'Gemini': '♊', 'Cancer': '♋',
   'Leo': '♌', 'Virgo': '♍', 'Libra': '♎', 'Scorpio': '♏',
   'Sagittarius': '♐', 'Capricorn': '♑', 'Aquarius': '♒', 'Pisces': '♓'
 };
@@ -43,11 +43,10 @@ export interface AstroScreenProps {
   onNavigate?: (screen: string) => void;
 }
 
-// ===== PLANET ORBIT DIAGRAM - განახევრებული სიმაღლე =====
+// ===== PLANET ORBIT DIAGRAM - პლანეტები 5x გადიდებული =====
 function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
   const [hoveredPlanet, setHoveredPlanet] = useState<string | null>(null);
   
-  // ✅ ახალი center: 475, 250 (viewBox 950x500)
   const CENTER_X = 475;
   const CENTER_Y = 250;
 
@@ -66,7 +65,6 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
 
   return (
     <div className="orbit-diagram-container">
-      {/* ✅ განახევრებული viewBox 950x500 */}
       <svg className="orbit-svg" viewBox="0 0 950 500">
         <defs>
           <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
@@ -110,22 +108,22 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
             />
           ))}
 
-        {/* Sun center - 65px (განახევრებული) */}
-        <circle cx={CENTER_X} cy={CENTER_Y} r="38" fill="url(#sunGlow)" className="sun-glow" filter="url(#sunGlowFilter)" />
+        {/* Sun center - 325px (5x გადიდებული: 65px × 5) */}
+        <circle cx={CENTER_X} cy={CENTER_Y} r="190" fill="url(#sunGlow)" className="sun-glow" filter="url(#sunGlowFilter)" />
         {PLANET_IMAGES['Sun'] && (
           <image
             href={PLANET_IMAGES['Sun']}
-            x={CENTER_X - 32}
-            y={CENTER_Y - 32}
-            width="65"
-            height="65"
+            x={CENTER_X - 162}
+            y={CENTER_Y - 162}
+            width="325"
+            height="325"
             className="planet-img sun-img"
             preserveAspectRatio="xMidYMid slice"
-            clipPath="circle(32px at center)"
+            clipPath="circle(162px at center)"
           />
         )}
 
-        {/* Planets - 40px (განახევრებული) */}
+        {/* Planets - 200px (5x გადიდებული: 40px × 5) */}
         {planets.map((planet, index) => {
           const config = PLANET_CONFIG[planet.planet_name];
           if (!config) return null;
@@ -133,7 +131,7 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
           const pos = getPlanetPosition(planet);
           const isHovered = hoveredPlanet === planet.planet_name;
           const planetImage = PLANET_IMAGES[planet.planet_name];
-          const size = isHovered ? 50 : 40; // ✅ 40px / 50px
+          const size = isHovered ? 250 : 200; // ✅ 200px / 250px (5x)
 
           return (
             <g key={planet.planet_name}>
@@ -193,7 +191,7 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
                 <motion.circle
                   cx={pos.x}
                   cy={pos.y}
-                  r={isHovered ? 20 : 16}
+                  r={isHovered ? 100 : 80} // ✅ 5x გადიდებული
                   fill={config.color}
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
