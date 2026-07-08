@@ -1,8 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap');
 
-/* ============================================
-   MAIN CONTAINER
-   ============================================ */
 .astro-screen {
   position: relative;
   width: 100%;
@@ -37,9 +34,6 @@
   pointer-events: none;
 }
 
-/* ============================================
-   HEADER - 70px from top
-   ============================================ */
 .astro-header {
   position: relative;
   z-index: 10;
@@ -88,9 +82,6 @@
   flex-shrink: 0;
 }
 
-/* ============================================
-   CONTENT - 3px margins
-   ============================================ */
 .astro-content {
   position: relative;
   z-index: 10;
@@ -105,9 +96,6 @@
   flex-shrink: 0;
 }
 
-/* ============================================
-   SECTIONS
-   ============================================ */
 .astro-section {
   background: linear-gradient(135deg, 
     rgba(217, 182, 111, 0.08) 0%, 
@@ -140,9 +128,6 @@
   filter: drop-shadow(0 0 4px rgba(217, 182, 111, 0.6));
 }
 
-/* ============================================
-   BIG THREE
-   ============================================ */
 .big-three-container {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -233,9 +218,6 @@
   text-overflow: ellipsis;
 }
 
-/* ============================================
-   PLANET POSITIONS - SVG viewBox 800×800
-   ============================================ */
 .planets-section {
   padding: 14px;
 }
@@ -265,7 +247,6 @@
   background: rgba(217, 182, 111, 0.2);
 }
 
-/* ✅ container-ს აქვს position: relative debug button-ისთვის */
 .orbit-diagram-container {
   width: 100%;
   display: flex;
@@ -275,10 +256,9 @@
   position: relative;
 }
 
-/* ✅ SVG ზუსტი ზომით - არ შეიკუმშოს */
 .orbit-svg {
   width: 100%;
-  max-width: 600px; /* ✅ ზუსტი ზომა */
+  max-width: 600px;
   aspect-ratio: 1 / 1;
   height: auto;
   display: block;
@@ -321,10 +301,10 @@
   50% { opacity: 0.8; }
 }
 
-/* ✅ გაზრდილი ტექსტის ზომები viewBox 800×800-ისთვის */
+/* ✅ გადიდებული ტექსტის ზომები 3x პლანეტებისთვის */
 .planet-name-text {
   font-family: 'Cinzel', serif;
-  font-size: 11px;
+  font-size: 33px;
   font-weight: 700;
   fill: #F7F3EB;
   text-shadow: 0 0 6px rgba(0, 0, 0, 0.9);
@@ -332,15 +312,12 @@
 
 .zodiac-name-text {
   font-family: 'Cinzel', serif;
-  font-size: 10px;
+  font-size: 30px;
   font-weight: 600;
   fill: #D9B66F;
   text-shadow: 0 0 4px rgba(217, 182, 111, 0.5);
 }
 
-/* ============================================
-   PLANET DATA LIST - 2 სვეტი
-   ============================================ */
 .planet-simple-list {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -426,9 +403,6 @@
   font-size: 13px;
 }
 
-/* ============================================
-   COSMIC ENERGY
-   ============================================ */
 .energy-section {
   padding: 12px;
 }
@@ -515,9 +489,6 @@
   100% { background-position: 200% 0; }
 }
 
-/* ============================================
-   CTA BUTTON
-   ============================================ */
 .cta-horoscope-btn {
   display: flex;
   align-items: center;
@@ -576,9 +547,6 @@
   transform: translateX(4px);
 }
 
-/* ============================================
-   RESPONSIVE
-   ============================================ */
 @media (max-width: 480px) {
   .astro-header {
     padding: 70px 12px 10px;
@@ -618,17 +586,16 @@
     font-size: 10px;
   }
 
-  /* ✅ SVG ზუსტი ზომა tablet-ზე */
   .orbit-svg {
     max-width: 450px;
   }
 
   .planet-name-text {
-    font-size: 10px;
+    font-size: 28px;
   }
 
   .zodiac-name-text {
-    font-size: 9px;
+    font-size: 25px;
   }
 
   .planet-simple-list {
@@ -699,7 +666,6 @@
     letter-spacing: 3px;
   }
 
-  /* ✅ SVG ზუსტი ზომა mobile-ზე */
   .orbit-svg {
     max-width: 380px;
   }
