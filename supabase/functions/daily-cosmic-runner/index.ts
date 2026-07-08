@@ -137,6 +137,7 @@ serve(async (req) => {
     const dominantElement = Object.entries(elementCounts)
       .sort((a, b) => b[1] - a[1])[0][0];
 
+    // ✅ 1. Upsert cosmic_daily_data
     const { error: cosmicError } = await supabase
       .from('cosmic_daily_data')
       .upsert({
@@ -158,6 +159,7 @@ serve(async (req) => {
 
     if (cosmicError) throw cosmicError;
 
+    // ✅ 2. Upsert planet_positions
     const planetRecords = planets.map(p => ({
       date: dateStr,
       planet_name: p.name,
@@ -172,6 +174,7 @@ serve(async (req) => {
 
     if (planetsError) throw planetsError;
 
+    // ✅ 3. DELETE + INSERT aspects (გასწორებული)
     const aspectRecords = aspects.map(a => ({
       date: dateStr,
       planet1: a.planet1,
@@ -182,17 +185,38 @@ serve(async (req) => {
       influence: a.influence
     }));
 
-    const { error: aspectsError } = await supabase
+    // ჯერ წავშალოთ ძველი aspects იმავე თარიღისთვის
+    console.log(`Deleting old aspects for ${dateStr}...`);
+    const { error: deleteError, count } = await supabase
       .from('aspects')
-      .insert(aspectRecords);
+      .delete()
+      .eq('date', dateStr);
 
-    if (aspectsError) throw aspectsError;
+    if (deleteError) {
+      console.error('Error deleting old aspects:', deleteError);
+      throw deleteError;
+    }
+    console.log(`Deleted ${count} old aspects`);
 
-    console.log(`Successfully saved cosmic data for ${dateStr}`);
-    console.log(`Moon: ${moonData.phase} in ${moonData.sign} (${moonData.illumination}%)`);
-    console.log(`Sun: ${sunData?.sign} ${sunData?.degree}°`);
-    console.log(`Planets: ${planets.length}`);
-    console.log(`Aspects: ${aspects.length}`);
+    // შემდეგ ჩავსვათ ახლები
+    if (aspectRecords.length > 0) {
+      console.log(`Inserting ${aspectRecords.length} new aspects...`);
+      const { error: aspectsError } = await supabase
+        .from('aspects')
+        .insert(aspectRecords);
+
+      if (aspectsError) {
+        console.error('Error inserting aspects:', aspectsError);
+        throw aspectsError;
+      }
+      console.log(`Successfully inserted ${aspectRecords.length} aspects`);
+    }
+
+    console.log(`✅ Successfully saved cosmic data for ${dateStr}`);
+    console.log(`🌙 Moon: ${moonData.phase} in ${moonData.sign} (${moonData.illumination}%)`);
+    console.log(`☀️ Sun: ${sunData?.sign} ${sunData?.degree}°`);
+    console.log(` Planets: ${planets.length}`);
+    console.log(`🔗 Aspects: ${aspects.length}`);
 
     return new Response(
       JSON.stringify({ 
@@ -207,7 +231,7 @@ serve(async (req) => {
     );
 
   } catch (error: any) {
-    console.error('Error:', error);
+    console.error('❌ Error:', error);
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
       { status: 500, headers: { "Content-Type": "application/json" } }

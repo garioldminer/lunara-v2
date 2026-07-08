@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Users, Plus, Trash2, RefreshCw, Crown, ShieldAlert, Calendar, Clock, Zap, Key } from 'lucide-react';
+import { 
+  ArrowLeft, Users, Plus, Trash2, RefreshCw, Crown, ShieldAlert, 
+  Calendar, Clock, Zap, Key, Activity, CheckCircle, XCircle, 
+  AlertCircle, Play, Eye
+} from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { 
   isAdmin, 
@@ -11,7 +15,14 @@ import {
   getAllSubscriptions,
   createSubscriptionForUser,
   cancelSubscriptionForUser,
-  extendSubscription
+  extendSubscription,
+  getAllFunctionStatuses,
+  getRecentLogs,
+  getFunctionLogs,
+  testFunction,
+  cleanupOldLogs,
+  FunctionStatus,
+  FunctionLog
 } from '../lib/adminService';
 import './AdminScreen.css';
 
@@ -55,7 +66,7 @@ export default function AdminScreen({ onNavigate }: Props) {
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [editingFeature, setEditingFeature] = useState<string>('');
   const [newAmount, setNewAmount] = useState(0);
-  const [activeTab, setActiveTab] = useState<'credits' | 'subscriptions'>('credits');
+  const [activeTab, setActiveTab] = useState<'credits' | 'subscriptions' | 'monitoring'>('credits');
   
   // Subscription management states
   const [showAddSubscription, setShowAddSubscription] = useState(false);
@@ -65,6 +76,13 @@ export default function AdminScreen({ onNavigate }: Props) {
   const [showExtendModal, setShowExtendModal] = useState(false);
   const [extendingSubId, setExtendingSubId] = useState<string>('');
   const [extendDays, setExtendDays] = useState(30);
+
+  // Monitoring states
+  const [functionStatuses, setFunctionStatuses] = useState<FunctionStatus[]>([]);
+  const [recentLogs, setRecentLogs] = useState<FunctionLog[]>([]);
+  const [selectedFunction, setSelectedFunction] = useState<string | null>(null);
+  const [functionLogs, setFunctionLogs] = useState<FunctionLog[]>([]);
+  const [testingFunction, setTestingFunction] = useState<string | null>(null);
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -87,12 +105,16 @@ export default function AdminScreen({ onNavigate }: Props) {
   const loadData = async () => {
     if (!user) return;
     setLoading(true);
-    const [usersData, subsData] = await Promise.all([
+    const [usersData, subsData, statusesData, logsData] = await Promise.all([
       getAllUsersWithCredits(user.id),
-      getAllSubscriptions(user.id)
+      getAllSubscriptions(user.id),
+      getAllFunctionStatuses(user.id),
+      getRecentLogs(user.id, 20)
     ]);
     setUsers(usersData);
     setSubscriptions(subsData);
+    setFunctionStatuses(statusesData);
+    setRecentLogs(logsData);
     setLoading(false);
   };
 
@@ -154,6 +176,38 @@ export default function AdminScreen({ onNavigate }: Props) {
       setShowExtendModal(false);
       setExtendingSubId('');
       setExtendDays(30);
+    }
+  };
+
+  // Monitoring handlers
+  const handleTestFunction = async (functionName: string) => {
+    if (!user) return;
+    setTestingFunction(functionName);
+    const result = await testFunction(user.id, functionName);
+    if (result.success) {
+      await loadData();
+    }
+    setTestingFunction(null);
+    alert(result.success 
+      ? `✅ ${functionName} გაეშვა წარმატებით!` 
+      : `❌ Error: ${result.error}`);
+  };
+
+  const handleViewLogs = async (functionName: string) => {
+    if (!user) return;
+    setSelectedFunction(functionName);
+    const logs = await getFunctionLogs(user.id, functionName, 20);
+    setFunctionLogs(logs);
+  };
+
+  const handleCleanupLogs = async () => {
+    if (!user) return;
+    if (confirm('წავშალოთ 30 დღეზე მეტი ლოგები?')) {
+      const success = await cleanupOldLogs(user.id);
+      if (success) {
+        await loadData();
+        alert('✅ ძველი ლოგები წაიშალა');
+      }
     }
   };
 
@@ -437,6 +491,173 @@ export default function AdminScreen({ onNavigate }: Props) {
             </div>
           </>
         )}
+
+        {/* 🆕 Monitoring Tab */}
+        {activeTab === 'monitoring' && (
+          <>
+            <div className="admin-stats">
+              <div className="stat-card">
+                <span className="stat-number">{functionStatuses.length}</span>
+                <span className="stat-label">Functions</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-number">
+                  {functionStatuses.filter(s => s.lastRun?.status === 'success').length}
+                </span>
+                <span className="stat-label">✅ Healthy</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-number">
+                  {functionStatuses.filter(s => s.lastRun?.status === 'error').length}
+                </span>
+                <span className="stat-label">❌ Errors</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-number">{recentLogs.length}</span>
+                <span className="stat-label">Recent Logs</span>
+              </div>
+            </div>
+
+            <button 
+              className="add-subscription-btn"
+              onClick={handleCleanupLogs}
+              style={{ marginBottom: '16px' }}
+            >
+              <Trash2 size={16} />
+              <span>Cleanup Old Logs (30+ days)</span>
+            </button>
+
+            <div className="admin-users-list">
+              {functionStatuses.map((func) => {
+                const isHealthy = func.lastRun?.status === 'success';
+                const hasError = func.lastRun?.status === 'error';
+                const noData = !func.lastRun;
+
+                return (
+                  <motion.div
+                    key={func.name}
+                    className={`admin-user-card ${isHealthy ? 'status-success' : hasError ? 'status-error' : 'status-unknown'}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    <div className="user-info">
+                      <div className="user-avatar" style={{
+                        background: isHealthy ? '#10b981' : hasError ? '#ef4444' : '#6b7280'
+                      }}>
+                        {isHealthy ? <CheckCircle size={24} /> : 
+                         hasError ? <XCircle size={24} /> : 
+                         <AlertCircle size={24} />}
+                      </div>
+                      <div className="user-details">
+                        <h3>{func.name}</h3>
+                        <p style={{ fontSize: '11px', opacity: 0.7 }}>
+                          {func.lastRun 
+                            ? `ბოლო: ${new Date(func.lastRun.created_at).toLocaleString('ka-GE')}`
+                            : 'არასდროს გაშვებულა'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="user-credits" style={{ marginTop: '12px' }}>
+                      <div className="credit-item">
+                        <span className="credit-label">სტატუსი:</span>
+                        <span className={`credit-amount ${isHealthy ? 'text-success' : hasError ? 'text-error' : ''}`}>
+                          {isHealthy ? '✅ SUCCESS' : hasError ? '❌ ERROR' : noData ? '⚠️ NO DATA' : '???'}
+                        </span>
+                      </div>
+                      <div className="credit-item">
+                        <span className="credit-label">Success Rate:</span>
+                        <span className="credit-amount">{func.successRate.toFixed(0)}%</span>
+                      </div>
+                      <div className="credit-item">
+                        <span className="credit-label">Total Runs:</span>
+                        <span className="credit-amount">{func.totalRuns}</span>
+                      </div>
+                      <div className="credit-item">
+                        <span className="credit-label">Avg Response:</span>
+                        <span className="credit-amount">{func.avgResponseTime}ms</span>
+                      </div>
+                      {func.lastRun?.response_time_ms && (
+                        <div className="credit-item">
+                          <span className="credit-label">Last Response:</span>
+                          <span className="credit-amount">{func.lastRun.response_time_ms}ms</span>
+                        </div>
+                      )}
+                      {func.lastRun?.error_message && (
+                        <div className="credit-item">
+                          <span className="credit-label">Error:</span>
+                          <span className="credit-amount text-error" style={{ fontSize: '11px' }}>
+                            {func.lastRun.error_message.substring(0, 100)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="subscription-actions" style={{ marginTop: '12px' }}>
+                      <button
+                        className="extend-btn"
+                        onClick={() => handleTestFunction(func.name)}
+                        disabled={testingFunction === func.name}
+                      >
+                        <Play size={14} />
+                        <span>{testingFunction === func.name ? 'Testing...' : 'Test Now'}</span>
+                      </button>
+                      <button
+                        className="cancel-sub-btn"
+                        onClick={() => handleViewLogs(func.name)}
+                      >
+                        <Eye size={14} />
+                        <span>View Logs</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {/* Recent Logs Section */}
+            <div style={{ marginTop: '24px' }}>
+              <h3 style={{ color: '#D9B66F', marginBottom: '12px' }}>📝 ბოლო 20 ლოგი</h3>
+              <div className="admin-users-list">
+                {recentLogs.length === 0 ? (
+                  <p style={{ textAlign: 'center', opacity: 0.7, padding: '20px' }}>
+                    ლოგები არ არის
+                  </p>
+                ) : (
+                  recentLogs.map((log) => (
+                    <motion.div
+                      key={log.id}
+                      className={`admin-user-card ${log.status === 'success' ? 'status-success' : 'status-error'}`}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      style={{ padding: '10px' }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          {log.status === 'success' ? <CheckCircle size={16} color="#10b981" /> : <XCircle size={16} color="#ef4444" />}
+                          <strong style={{ fontSize: '13px' }}>{log.function_name}</strong>
+                        </div>
+                        <span style={{ fontSize: '11px', opacity: 0.7 }}>
+                          {new Date(log.created_at).toLocaleString('ka-GE')}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '11px', opacity: 0.8, marginTop: '4px' }}>
+                        {log.response_time_ms && <span>⏱️ {log.response_time_ms}ms</span>}
+                        {log.status_code && <span style={{ marginLeft: '8px' }}>📡 {log.status_code}</span>}
+                        {log.triggered_by && <span style={{ marginLeft: '8px' }}>🔹 {log.triggered_by}</span>}
+                      </div>
+                      {log.error_message && (
+                        <div style={{ fontSize: '11px', color: '#ef4444', marginTop: '4px' }}>
+                          ❌ {log.error_message.substring(0, 150)}
+                        </div>
+                      )}
+                    </motion.div>
+                  ))
+                )}
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* ქვედა ნავიგაციის პანელი */}
@@ -454,6 +675,13 @@ export default function AdminScreen({ onNavigate }: Props) {
         >
           <Crown size={20} />
           <span>Subs</span>
+        </button>
+        <button
+          className={`admin-nav-btn ${activeTab === 'monitoring' ? 'active' : ''}`}
+          onClick={() => setActiveTab('monitoring')}
+        >
+          <Activity size={20} />
+          <span>Monitor</span>
         </button>
         <button
           className="admin-nav-btn ai-nav-btn"
@@ -572,6 +800,65 @@ export default function AdminScreen({ onNavigate }: Props) {
                 onClick={handleExtendSubscription}
               >
                 Extend
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* 🆕 Function Logs Modal */}
+      {selectedFunction && (
+        <div className="modal-overlay" onClick={() => setSelectedFunction(null)}>
+          <motion.div
+            className="modal"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: '600px', maxHeight: '80vh', overflowY: 'auto' }}
+          >
+            <h3>📋 {selectedFunction} - ლოგები</h3>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {functionLogs.length === 0 ? (
+                <p style={{ textAlign: 'center', opacity: 0.7 }}>ლოგები არ არის</p>
+              ) : (
+                functionLogs.map((log) => (
+                  <div 
+                    key={log.id} 
+                    style={{
+                      padding: '10px',
+                      background: log.status === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                      borderRadius: '8px',
+                      border: `1px solid ${log.status === 'success' ? '#10b981' : '#ef4444'}`
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                      <strong>{log.status === 'success' ? '✅' : '❌'} {log.status.toUpperCase()}</strong>
+                      <span style={{ fontSize: '11px', opacity: 0.7 }}>
+                        {new Date(log.created_at).toLocaleString('ka-GE')}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '11px', opacity: 0.8 }}>
+                      ⏱️ {log.response_time_ms || 'N/A'}ms | 
+                      📡 {log.status_code || 'N/A'} | 
+                      🔹 {log.triggered_by}
+                    </div>
+                    {log.error_message && (
+                      <div style={{ fontSize: '11px', color: '#ef4444', marginTop: '4px' }}>
+                        ❌ {log.error_message}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="modal-buttons" style={{ marginTop: '16px' }}>
+              <button
+                className="modal-btn cancel"
+                onClick={() => setSelectedFunction(null)}
+              >
+                Close
               </button>
             </div>
           </motion.div>

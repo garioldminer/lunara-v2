@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Zap, Star, Info, Bug, CheckCircle, XCircle, Loader } from 'lucide-react';
+import { ArrowLeft, Zap, Star, Info } from 'lucide-react';
 import { useCosmicData } from '../hooks/useCosmicData';
 import { useBirthChart } from '../hooks/useBirthChart';
 import { supabase } from '../lib/supabase';
@@ -30,192 +30,23 @@ export interface AstroScreenProps {
   onNavigate?: (screen: string) => void;
 }
 
-// ===== DEBUG PANEL COMPONENT =====
-function DebugPanel({ 
-  birthChart, 
-  birthChartLoading, 
-  birthChartError,
-  cosmicData,
-  cosmicDataLoading,
-  cosmicDataError,
-  planets,
-  planetsLoading,
-  planetsError,
-  userId
-}: {
-  birthChart: any;
-  birthChartLoading: boolean;
-  birthChartError: string | null;
-  cosmicData: any;
-  cosmicDataLoading: boolean;
-  cosmicDataError: string | null;
-  planets: any[];
-  planetsLoading: boolean;
-  planetsError: string | null;
-  userId: string | null;
-}) {
-  const [isOpen, setIsOpen] = useState(true);
-
-  return (
-    <div style={{
-      position: 'fixed',
-      top: '10px',
-      left: '10px',
-      right: '10px',
-      zIndex: 1000,
-      background: 'rgba(0, 0, 0, 0.95)',
-      border: '2px solid #10b981',
-      borderRadius: '12px',
-      padding: '12px',
-      color: '#fff',
-      fontFamily: 'monospace',
-      fontSize: '11px',
-      maxHeight: '80vh',
-      overflowY: 'auto'
-    }}>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '10px',
-        paddingBottom: '8px',
-        borderBottom: '1px solid #10b981'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Bug size={16} color="#10b981" />
-          <span style={{ fontWeight: 'bold', color: '#10b981' }}>DEBUG PANEL</span>
-        </div>
-        <button 
-          onClick={() => setIsOpen(!isOpen)}
-          style={{
-            background: '#10b981',
-            color: '#000',
-            border: 'none',
-            borderRadius: '4px',
-            padding: '4px 8px',
-            cursor: 'pointer',
-            fontWeight: 'bold'
-          }}
-        >
-          {isOpen ? 'CLOSE' : 'OPEN'}
-        </button>
-      </div>
-
-      {isOpen && (
-        <>
-          <div style={{ marginBottom: '10px' }}>
-            <div style={{ color: '#60a5fa', fontWeight: 'bold', marginBottom: '4px' }}>👤 USER:</div>
-            <div style={{ color: '#fff' }}>ID: {userId || '❌ null'}</div>
-          </div>
-
-          <div style={{ 
-            marginBottom: '10px', 
-            padding: '8px',
-            background: birthChartError ? 'rgba(239, 68, 68, 0.2)' : 
-                       birthChart ? 'rgba(16, 185, 129, 0.2)' : 'rgba(251, 191, 36, 0.2)',
-            borderRadius: '6px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-              {birthChartLoading ? <Loader size={14} /> :
-               birthChartError ? <XCircle size={14} color="#ef4444" /> :
-               birthChart ? <CheckCircle size={14} color="#10b981" /> : null}
-              <span style={{ fontWeight: 'bold', color: '#60a5fa' }}>📊 BIRTH CHART:</span>
-            </div>
-            {birthChartLoading && <div style={{ color: '#fbbf24' }}>Loading...</div>}
-            {birthChartError && <div style={{ color: '#ef4444' }}>Error: {birthChartError}</div>}
-            {birthChart && (
-              <div style={{ color: '#10b981' }}>
-                <div>☀️ Sun: {birthChart.sun_sign || '❌ null'}</div>
-                <div>🌙 Moon: {birthChart.moon_sign || '❌ null'}</div>
-                <div>⬆️ Rising: {birthChart.rising_sign || '❌ null'}</div>
-              </div>
-            )}
-          </div>
-
-          <div style={{ 
-            marginBottom: '10px', 
-            padding: '8px',
-            background: cosmicDataError ? 'rgba(239, 68, 68, 0.2)' : 
-                       cosmicData ? 'rgba(16, 185, 129, 0.2)' : 'rgba(251, 191, 36, 0.2)',
-            borderRadius: '6px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-              {cosmicDataLoading ? <Loader size={14} /> :
-               cosmicDataError ? <XCircle size={14} color="#ef4444" /> :
-               cosmicData ? <CheckCircle size={14} color="#10b981" /> : null}
-              <span style={{ fontWeight: 'bold', color: '#60a5fa' }}>🌙 COSMIC DATA:</span>
-            </div>
-            {cosmicDataLoading && <div style={{ color: '#fbbf24' }}>Loading...</div>}
-            {cosmicDataError && <div style={{ color: '#ef4444' }}>Error: {cosmicDataError}</div>}
-            {cosmicData && (
-              <div style={{ color: '#10b981' }}>
-                <div>🌙 Moon Phase: {cosmicData.cosmic?.moon_phase || '❌'}</div>
-                <div>🌙 Moon Sign: {cosmicData.cosmic?.moon_sign || '❌'}</div>
-                <div>☀️ Sun Sign: {cosmicData.cosmic?.sun_sign || '❌'}</div>
-                <div>⚡ Energy: {cosmicData.cosmic?.energy_level || '❌'}</div>
-                <div>🌊 Element: {cosmicData.cosmic?.dominant_element || '❌'}</div>
-                <div>💡 Advice: {cosmicData.cosmic?.key_advice?.substring(0, 50) || '❌'}...</div>
-              </div>
-            )}
-          </div>
-
-          <div style={{ 
-            marginBottom: '10px', 
-            padding: '8px',
-            background: planetsError ? 'rgba(239, 68, 68, 0.2)' : 
-                       planets.length > 0 ? 'rgba(16, 185, 129, 0.2)' : 'rgba(251, 191, 36, 0.2)',
-            borderRadius: '6px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-              {planetsLoading ? <Loader size={14} /> :
-               planetsError ? <XCircle size={14} color="#ef4444" /> :
-               planets.length > 0 ? <CheckCircle size={14} color="#10b981" /> : null}
-              <span style={{ fontWeight: 'bold', color: '#60a5fa' }}>🌌 PLANETS:</span>
-            </div>
-            {planetsLoading && <div style={{ color: '#fbbf24' }}>Loading...</div>}
-            {planetsError && <div style={{ color: '#ef4444' }}>Error: {planetsError}</div>}
-            {planets.length > 0 && (
-              <div style={{ color: '#10b981' }}>
-                <div>Count: {planets.length} planets</div>
-                {planets.map((p: any, i: number) => (
-                  <div key={i} style={{ marginLeft: '8px' }}>
-                    {p.planet_name} in {p.sign} {Number(p.degree).toFixed(1)}°
-                    {p.retrograde && <span style={{ color: '#ef4444' }}> (R)</span>}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div style={{ 
-            padding: '8px',
-            background: 'rgba(96, 165, 250, 0.1)',
-            borderRadius: '6px',
-            borderTop: '1px solid #60a5fa'
-          }}>
-            <div style={{ fontWeight: 'bold', color: '#60a5fa', marginBottom: '4px' }}>📋 SUMMARY:</div>
-            <div style={{ color: '#fff' }}>
-              Birth Chart: {birthChart ? '✅' : '❌'} | 
-              Cosmic Data: {cosmicData ? '✅' : '❌'} | 
-              Planets: {planets.length > 0 ? '✅' : '❌'}
-            </div>
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
 // ===== PLANET ORBIT DIAGRAM =====
 function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
   const [hoveredPlanet, setHoveredPlanet] = useState<string | null>(null);
   
   const PLANET_RADIUS = 36;
 
+  // ✅ გაზრდილი ratios - მინიმუმ 4-5px დაშორება პლანეტებს შორის
   const getBaseOrbitRadius = (planetName: string): number => {
     const ratios: Record<string, number> = {
-      'Mercury': 0.15, 'Venus': 0.25, 'Moon': 0.36, 'Mars': 0.49,
-      'Jupiter': 0.59, 'Saturn': 0.68, 'Uranus': 0.74, 'Neptune': 1.0
+      'Mercury': 0.25,   // 0.15 → 0.25 (გაზრდილი)
+      'Venus': 0.38,     // 0.25 → 0.38 (გაზრდილი)
+      'Moon': 0.48,      // 0.36 → 0.48 (გაზრდილი)
+      'Mars': 0.58,      // 0.49 → 0.58 (გაზრდილი)
+      'Jupiter': 0.68,   // 0.59 → 0.68 (გაზრდილი)
+      'Saturn': 0.78,    // 0.68 → 0.78 (გაზრდილი)
+      'Uranus': 0.88,    // 0.74 → 0.88 (გაზრდილი)
+      'Neptune': 1.0     // უცვლელი
     };
     return ratios[planetName] || 0.5;
   };
@@ -554,24 +385,19 @@ function CosmicEnergyCards({ cosmicData, birthChart }: { cosmicData: any; birthC
 
 // ===== MAIN ASTRO SCREEN =====
 export default function AstroScreen({ onNavigate }: AstroScreenProps) {
-  const { birthChart, loading: birthChartLoading, error: birthChartError } = useBirthChart();
-  const { data: cosmicData, loading: cosmicDataLoading, error: cosmicDataError } = useCosmicData();
+  const { birthChart } = useBirthChart();
+  const { data: cosmicData } = useCosmicData();
   const [planets, setPlanets] = useState<any[]>([]);
   const [planetsLoading, setPlanetsLoading] = useState(true);
-  const [planetsError, setPlanetsError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPlanets = async () => {
       if (!supabase) {
         setPlanetsLoading(false);
-        setPlanetsError('Supabase not initialized');
         return;
       }
 
       try {
-        setPlanetsLoading(true);
-        setPlanetsError(null);
-        
         const today = new Date().toISOString().split('T')[0];
         const { data, error } = await supabase
           .from('planet_positions')
@@ -580,13 +406,11 @@ export default function AstroScreen({ onNavigate }: AstroScreenProps) {
         
         if (error) {
           console.error('Error fetching planets:', error);
-          setPlanetsError(error.message);
         } else if (data) {
           setPlanets(data);
         }
-      } catch (error: any) {
+      } catch (error) {
         console.error('Error fetching planets:', error);
-        setPlanetsError(error.message);
       } finally {
         setPlanetsLoading(false);
       }
@@ -595,24 +419,8 @@ export default function AstroScreen({ onNavigate }: AstroScreenProps) {
     fetchPlanets();
   }, []);
 
-  const userId = birthChart ? 'user-loaded' : null;
-
   return (
     <div className="astro-screen">
-      {/* DEBUG PANEL */}
-      <DebugPanel
-        birthChart={birthChart}
-        birthChartLoading={birthChartLoading}
-        birthChartError={birthChartError}
-        cosmicData={cosmicData}
-        cosmicDataLoading={cosmicDataLoading}
-        cosmicDataError={cosmicDataError}
-        planets={planets}
-        planetsLoading={planetsLoading}
-        planetsError={planetsError}
-        userId={userId}
-      />
-
       <div className="cosmic-background" style={{ backgroundImage: `url(${BG_IMAGE})` }} />
 
       <div className="astro-header">
@@ -645,8 +453,6 @@ export default function AstroScreen({ onNavigate }: AstroScreenProps) {
 
           {planetsLoading ? (
             <div className="loading-placeholder">Loading planets...</div>
-          ) : planetsError ? (
-            <div className="loading-placeholder" style={{ color: '#ef4444' }}>Error: {planetsError}</div>
           ) : (
             <>
               <PlanetOrbitDiagram planets={planets} />
