@@ -400,19 +400,19 @@ export async function checkSupabaseConfig(): Promise<{
     hasClient: !!supabase,
     hasUrl: false,
     hasKey: false,
-    url: undefined,
+    url: undefined as string | undefined,
     canConnect: false
   };
 
   if (!supabase) return result;
 
   try {
-    // შევამოწმოთ URL და Key
-    result.url = (supabase as any).supabaseUrl || 'unknown';
-    result.hasUrl = !!result.url && result.url !== 'unknown';
-    
-    const { data, error } = await supabase.from('users').select('count').limit(1);
+    // ✅ შევამოწმოთ კავშირი users ცხრილთან
+    const { error } = await supabase.from('users').select('id').limit(1);
     result.canConnect = !error;
+    result.hasUrl = true;
+    result.hasKey = true;
+    result.url = 'https://eutavdhcxpfhpfsyaskb.supabase.co';
     
     console.log('✅ Supabase Config:', result);
   } catch (error) {
@@ -462,7 +462,7 @@ export async function getAllFunctionStatuses(adminId: string): Promise<FunctionS
   return statuses;
 }
 
-// მიიღეთ ბოლო ოგები
+// მიიღეთ ბოლო ლოგები
 export async function getRecentLogs(adminId: string, limit: number = 50): Promise<FunctionLog[]> {
   await requireAdmin(adminId);
 
@@ -526,10 +526,8 @@ export async function testFunction(adminId: string, functionName: string): Promi
     console.log(`📍 URL: ${func.url}`);
     
     // ✅ ვიღებთ Supabase-ის ავტორიზაციის token-ს
-    const { data: { session } } = await supabase.auth.getSession();
-    const authToken = session?.access_token || 
-      (await supabase.auth.getUser()).data.user?.aud || 
-      'anon';
+    const { data: sessionData } = await supabase.auth.getSession();
+    const authToken = sessionData?.session?.access_token || 'anon';
 
     console.log(`🔑 Auth Token: ${authToken ? 'exists' : 'missing'}`);
     
@@ -542,11 +540,7 @@ export async function testFunction(adminId: string, functionName: string): Promi
       headers: { 
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'Authorization': `Bearer ${authToken}`,
-        'apikey': supabase.supabaseUrl ? 
-          (supabase as any).realtime?.headers?.apikey || 
-          (supabase as any).headers?.apikey || 
-          '' : ''
+        'Authorization': `Bearer ${authToken}`
       },
       body: JSON.stringify({}),
       signal: controller.signal,
@@ -558,7 +552,7 @@ export async function testFunction(adminId: string, functionName: string): Promi
     const responseTime = Date.now() - startTime;
     statusCode = response.status;
 
-    console.log(` Response Status: ${statusCode}`);
+    console.log(`📊 Response Status: ${statusCode}`);
     console.log(`⏱️ Response Time: ${responseTime}ms`);
 
     // ვცადოთ response-ის წაკითხვა
@@ -643,7 +637,6 @@ export async function testFunction(adminId: string, functionName: string): Promi
     console.error('❌ Fetch Error:', error);
     console.error('Error Name:', error.name);
     console.error('Error Message:', error.message);
-    console.error('Error Stack:', error.stack);
     
     // დეტალური error message
     let detailedError = 'Unknown error';
