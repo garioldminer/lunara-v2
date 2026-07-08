@@ -26,16 +26,18 @@ const ZODIAC_SYMBOLS: Record<string, string> = {
   'Sagittarius': '♐', 'Capricorn': '♑', 'Aquarius': '♒', 'Pisces': '♓'
 };
 
-// ✅ სწორი პროპორციული ორბიტები (კვადრატი viewBox)
+// ✅ ზუსტი გამოთვლილი ორბიტები (10px padding-ით)
+// viewBox: 534×534, Center: 267,267
+// Neptune: 245 + 12 (planet radius) + 10 (padding) = 267 ✅
 const PLANET_CONFIG: Record<string, { color: string; orbitRadius: number }> = {
   'Sun': { color: '#FFD700', orbitRadius: 0 },
-  'Mercury': { color: '#A0A0A0', orbitRadius: 45 },
-  'Venus': { color: '#E6B800', orbitRadius: 75 },
-  'Moon': { color: '#C0C0C0', orbitRadius: 110 },
-  'Mars': { color: '#FF4500', orbitRadius: 150 },
-  'Jupiter': { color: '#DAA520', orbitRadius: 180 },
-  'Saturn': { color: '#F4A460', orbitRadius: 210 },
-  'Uranus': { color: '#40E0D0', orbitRadius: 230 },
+  'Mercury': { color: '#A0A0A0', orbitRadius: 40 },
+  'Venus': { color: '#E6B800', orbitRadius: 68 },
+  'Moon': { color: '#C0C0C0', orbitRadius: 100 },
+  'Mars': { color: '#FF4500', orbitRadius: 136 },
+  'Jupiter': { color: '#DAA520', orbitRadius: 164 },
+  'Saturn': { color: '#F4A460', orbitRadius: 191 },
+  'Uranus': { color: '#40E0D0', orbitRadius: 209 },
   'Neptune': { color: '#4169E1', orbitRadius: 245 }
 };
 
@@ -43,12 +45,13 @@ export interface AstroScreenProps {
   onNavigate?: (screen: string) => void;
 }
 
-// ===== PLANET ORBIT DIAGRAM - კვადრატი viewBox =====
+// ===== PLANET ORBIT DIAGRAM - ზუსტი 10px padding =====
 function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
   const [hoveredPlanet, setHoveredPlanet] = useState<string | null>(null);
   
-  const CENTER_X = 250;
-  const CENTER_Y = 250;
+  // ✅ ზუსტი ცენტრი: 267 (viewBox 534×534)
+  const CENTER_X = 267;
+  const CENTER_Y = 267;
 
   const getPlanetPosition = (planet: any) => {
     const config = PLANET_CONFIG[planet.planet_name];
@@ -67,7 +70,7 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
     <div className="orbit-diagram-container">
       <svg 
         className="orbit-svg" 
-        viewBox="0 0 500 500"
+        viewBox="0 0 534 534"
         preserveAspectRatio="xMidYMid meet"
       >
         <defs>
@@ -112,18 +115,18 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
             />
           ))}
 
-        {/* Sun center - 40px diameter */}
-        <circle cx={CENTER_X} cy={CENTER_Y} r="25" fill="url(#sunGlow)" className="sun-glow" filter="url(#sunGlowFilter)" />
+        {/* Sun center - 36px diameter */}
+        <circle cx={CENTER_X} cy={CENTER_Y} r="22" fill="url(#sunGlow)" className="sun-glow" filter="url(#sunGlowFilter)" />
         {PLANET_IMAGES['Sun'] && (
           <image
             href={PLANET_IMAGES['Sun']}
-            x={CENTER_X - 20}
-            y={CENTER_Y - 20}
-            width="40"
-            height="40"
+            x={CENTER_X - 18}
+            y={CENTER_Y - 18}
+            width="36"
+            height="36"
             className="planet-img sun-img"
             preserveAspectRatio="xMidYMid slice"
-            clipPath="circle(20px at center)"
+            clipPath="circle(18px at center)"
           />
         )}
 

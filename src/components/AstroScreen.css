@@ -234,7 +234,7 @@
 }
 
 /* ============================================
-   PLANET POSITIONS - კვადრატი SVG
+   PLANET POSITIONS - კვადრატი SVG (534px)
    ============================================ */
 .planets-section {
   padding: 14px;
@@ -273,11 +273,11 @@
   margin-bottom: 12px;
 }
 
-/* ✅ კვადრატი SVG - aspect-ratio: 1/1 */
+/* ✅ ზუსტი 534px - viewBox-თან შესაბამისი */
 .orbit-svg {
   width: 100%;
-  max-width: 500px;
-  aspect-ratio: 1 / 1; /* ✅ კვადრატი! */
+  max-width: 534px; /* ✅ ზუსტი ზომა viewBox 534x534-სთვის */
+  aspect-ratio: 1 / 1;
   height: auto;
   filter: drop-shadow(0 10px 30px rgba(217, 182, 111, 0.15));
 }
@@ -615,7 +615,7 @@
   }
 
   .orbit-svg {
-    max-width: 400px; /* ✅ კვადრატი */
+    max-width: 400px; /* ✅ პროპორციული */
   }
 
   .planet-name-text {
@@ -695,7 +695,7 @@
   }
 
   .orbit-svg {
-    max-width: 320px; /* ✅ კვადრატი */
+    max-width: 320px; /* ✅ პროპორციული */
   }
 
   .big-three-container {
