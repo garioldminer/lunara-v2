@@ -473,7 +473,7 @@ export async function getFunctionLogs(
   return data || [];
 }
 
-// ✅ ხელით გაუშვით function - გასწორებული ვერსია
+// ✅ ხელით გაუშვით function - supabase.functions.invoke()-ით (CORS-ის გარეშე)
 export async function testFunction(adminId: string, functionName: string): Promise<{success: boolean; log?: FunctionLog; error?: string}> {
   await requireAdmin(adminId);
 
@@ -488,48 +488,31 @@ export async function testFunction(adminId: string, functionName: string): Promi
   let statusCode = 0;
   
   try {
-    const response = await fetch(func.url, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: '{}'
+    console.log(`🔍 Testing function via Supabase: ${functionName}`);
+    
+    // ✅ ვიყენებთ supabase.functions.invoke() რომელიც არ საჭიროებს CORS-ს
+    const { data, error: invokeError } = await supabase.functions.invoke(functionName, {
+      body: JSON.stringify({})
     });
 
     const responseTime = Date.now() - startTime;
-    statusCode = response.status;
 
-    // ✅ ვცადოთ response-ის წაკითხვა
-    try {
-      const text = await response.text();
-      try {
-        responseData = JSON.parse(text);
-      } catch {
-        responseData = { raw: text.substring(0, 500) };
-      }
-    } catch (parseError: any) {
-      responseData = { parse_error: parseError.message };
+    if (invokeError) {
+      // Function-მა დააბრუნა error
+      statusCode = 500;
+      errorMessage = invokeError.message || 'Function invocation failed';
+      responseData = { error: errorMessage };
+      
+      console.error('❌ Function Error:', invokeError);
+    } else {
+      // Function-მა დააბრუნა წარმატებული პასუხი
+      statusCode = 200;
+      responseData = data;
+      
+      console.log('✅ Function Success:', data);
     }
 
-    // ✅ განვსაზღვროთ status
-    const isSuccess = response.ok;
-    
-    // ✅ ამოვიღოთ error message სხვადასხვა ფორმატიდან
-    if (!isSuccess) {
-      if (responseData?.error) {
-        errorMessage = String(responseData.error);
-      } else if (responseData?.message) {
-        errorMessage = String(responseData.message);
-      } else if (responseData?.error_description) {
-        errorMessage = String(responseData.error_description);
-      } else if (responseData?.raw) {
-        errorMessage = `HTTP ${statusCode}: ${String(responseData.raw).substring(0, 200)}`;
-      } else {
-        errorMessage = `HTTP ${statusCode} - ${response.statusText || 'Unknown error'}`;
-      }
-    }
-
+    const isSuccess = !invokeError && statusCode === 200;
     const status = isSuccess ? 'success' : 'error';
     
     // ✅ ჩაწერეთ ლოგი
@@ -541,7 +524,7 @@ export async function testFunction(adminId: string, functionName: string): Promi
         response_time_ms: responseTime,
         status_code: statusCode,
         error_message: errorMessage,
-        request_data: { method: 'POST', body: '{}' },
+        request_data: { method: 'invoke', body: '{}' },
         response_data: responseData,
         triggered_by: 'manual'
       })
@@ -561,25 +544,31 @@ export async function testFunction(adminId: string, functionName: string): Promi
       return { 
         success: false, 
         log: log || undefined,
-        error: errorMessage || `HTTP ${statusCode}`
+        error: errorMessage || 'Function invocation failed'
       };
     }
     
   } catch (error: any) {
     const responseTime = Date.now() - startTime;
     
-    // ✅ დეტალური error message
+    console.error('❌ Unexpected Error:', error);
+    
+    // დეტალური error message
     let detailedError = 'Unknown error';
     
-    if (error.name === 'TypeError' && error.message.includes('fetch')) {
-      detailedError = `Network Error: ${error.message}. Function URL: ${func.url}`;
+    if (error.name === 'TypeError') {
+      detailedError = `Network Error: ${error.message}. 
+Possible causes:
+1. Function is not deployed
+2. Function has syntax errors
+3. Network connectivity issue`;
     } else if (error.name === 'AbortError') {
       detailedError = `Request Timeout: Function took too long to respond`;
     } else if (error.message) {
       detailedError = `${error.name}: ${error.message}`;
     }
     
-    // ✅ ჩაწერეთ error ლოგი
+    // ჩაწერეთ error ლოგი
     try {
       await supabase.from('function_logs').insert({
         function_name: functionName,
@@ -587,7 +576,7 @@ export async function testFunction(adminId: string, functionName: string): Promi
         response_time_ms: responseTime,
         status_code: 0,
         error_message: detailedError,
-        request_data: { method: 'POST', body: '{}' },
+        request_data: { method: 'invoke', body: '{}' },
         response_data: null,
         triggered_by: 'manual'
       });

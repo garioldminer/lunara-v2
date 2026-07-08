@@ -105,6 +105,8 @@ function calculateAspects(planets: Array<{ name: string; totalDegree: number }>)
 }
 
 serve(async (req) => {
+  const startTime = Date.now(); // ✅ დროის დაფიქსირება
+  
   try {
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
@@ -174,7 +176,7 @@ serve(async (req) => {
 
     if (planetsError) throw planetsError;
 
-    // ✅ 3. DELETE + INSERT aspects (გასწორებული)
+    // ✅ 3. DELETE + INSERT aspects
     const aspectRecords = aspects.map(a => ({
       date: dateStr,
       planet1: a.planet1,
@@ -185,7 +187,6 @@ serve(async (req) => {
       influence: a.influence
     }));
 
-    // ჯერ წავშალოთ ძველი aspects იმავე თარიღისთვის
     console.log(`Deleting old aspects for ${dateStr}...`);
     const { error: deleteError, count } = await supabase
       .from('aspects')
@@ -198,7 +199,6 @@ serve(async (req) => {
     }
     console.log(`Deleted ${count} old aspects`);
 
-    // შემდეგ ჩავსვათ ახლები
     if (aspectRecords.length > 0) {
       console.log(`Inserting ${aspectRecords.length} new aspects...`);
       const { error: aspectsError } = await supabase
@@ -215,8 +215,30 @@ serve(async (req) => {
     console.log(`✅ Successfully saved cosmic data for ${dateStr}`);
     console.log(`🌙 Moon: ${moonData.phase} in ${moonData.sign} (${moonData.illumination}%)`);
     console.log(`☀️ Sun: ${sunData?.sign} ${sunData?.degree}°`);
-    console.log(` Planets: ${planets.length}`);
+    console.log(`🪐 Planets: ${planets.length}`);
     console.log(`🔗 Aspects: ${aspects.length}`);
+
+    // ✅ 4. ჩაწერეთ ლოგი function_logs ცხრილში
+    try {
+      await supabase.from('function_logs').insert({
+        function_name: 'daily-cosmic-runner',
+        status: 'success',
+        response_time_ms: Date.now() - startTime,
+        status_code: 200,
+        error_message: null,
+        request_data: { method: req.method, triggered_by: 'cron_or_manual' },
+        response_data: { 
+          date: dateStr,
+          moon: moonData.phase,
+          sun: sunData?.sign,
+          planets_count: planets.length,
+          aspects_count: aspects.length
+        },
+        triggered_by: 'cron'
+      });
+    } catch (logErr) {
+      console.error('Failed to log success:', logErr);
+    }
 
     return new Response(
       JSON.stringify({ 
@@ -232,6 +254,28 @@ serve(async (req) => {
 
   } catch (error: any) {
     console.error('❌ Error:', error);
+    
+    // ✅ ჩაწერეთ error ლოგი
+    try {
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+      );
+      
+      await supabase.from('function_logs').insert({
+        function_name: 'daily-cosmic-runner',
+        status: 'error',
+        response_time_ms: Date.now() - startTime,
+        status_code: 500,
+        error_message: error.message,
+        request_data: { method: req.method },
+        response_data: null,
+        triggered_by: 'cron'
+      });
+    } catch (logErr) {
+      console.error('Failed to log error:', logErr);
+    }
+    
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
       { status: 500, headers: { "Content-Type": "application/json" } }
