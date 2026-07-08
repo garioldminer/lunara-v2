@@ -26,16 +26,18 @@ const ZODIAC_SYMBOLS: Record<string, string> = {
   'Sagittarius': '♐', 'Capricorn': '♑', 'Aquarius': '♒', 'Pisces': '♓'
 };
 
+// ✅ გაზრდილი ორბიტები (viewBox 800×800, Center 400,400)
+// Neptune: 400 - 12 - 10 = 378px (ზუსტი 10px padding)
 const PLANET_CONFIG: Record<string, { color: string; orbitRadius: number }> = {
   'Sun': { color: '#FFD700', orbitRadius: 0 },
-  'Mercury': { color: '#A0A0A0', orbitRadius: 34 },
-  'Venus': { color: '#E6B800', orbitRadius: 56 },
-  'Moon': { color: '#C0C0C0', orbitRadius: 82 },
-  'Mars': { color: '#FF4500', orbitRadius: 112 },
-  'Jupiter': { color: '#DAA520', orbitRadius: 134 },
-  'Saturn': { color: '#F4A460', orbitRadius: 156 },
-  'Uranus': { color: '#40E0D0', orbitRadius: 171 },
-  'Neptune': { color: '#4169E1', orbitRadius: 228 }
+  'Mercury': { color: '#A0A0A0', orbitRadius: 56 },
+  'Venus': { color: '#E6B800', orbitRadius: 93 },
+  'Moon': { color: '#C0C0C0', orbitRadius: 136 },
+  'Mars': { color: '#FF4500', orbitRadius: 186 },
+  'Jupiter': { color: '#DAA520', orbitRadius: 222 },
+  'Saturn': { color: '#F4A460', orbitRadius: 259 },
+  'Uranus': { color: '#40E0D0', orbitRadius: 283 },
+  'Neptune': { color: '#4169E1', orbitRadius: 378 }
 };
 
 export interface AstroScreenProps {
@@ -47,8 +49,8 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
   const [hoveredPlanet, setHoveredPlanet] = useState<string | null>(null);
   const [debugMode, setDebugMode] = useState(true);
   
-  const CENTER_X = 250;
-  const CENTER_Y = 250;
+  const CENTER_X = 400;
+  const CENTER_Y = 400;
   const PLANET_RADIUS = 12;
 
   const getPlanetPosition = (planet: any) => {
@@ -67,9 +69,9 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
   const getExtremePlanets = () => {
     if (planets.length === 0) return null;
 
-    let topPlanet = { name: '', x: 0, y: 999 };
+    let topPlanet = { name: '', x: 0, y: 9999 };
     let bottomPlanet = { name: '', x: 0, y: -1 };
-    let leftPlanet = { name: '', x: 999, y: 0 };
+    let leftPlanet = { name: '', x: 9999, y: 0 };
     let rightPlanet = { name: '', x: -1, y: 0 };
 
     planets.forEach(planet => {
@@ -113,7 +115,7 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
 
       <svg 
         className="orbit-svg" 
-        viewBox="0 0 500 500"
+        viewBox="0 0 800 800"
         preserveAspectRatio="xMidYMid meet"
       >
         <defs>
@@ -123,8 +125,8 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
             <stop offset="100%" stopColor="#FF8C00" stopOpacity="0" />
           </radialGradient>
           <filter id="planetShadow">
-            <feGaussianBlur in="SourceAlpha" stdDeviation="1" />
-            <feOffset dx="1" dy="1" result="offsetblur" />
+            <feGaussianBlur in="SourceAlpha" stdDeviation="2" />
+            <feOffset dx="2" dy="2" result="offsetblur" />
             <feComponentTransfer>
               <feFuncA type="linear" slope="0.5" />
             </feComponentTransfer>
@@ -134,7 +136,7 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
             </feMerge>
           </filter>
           <filter id="sunGlowFilter">
-            <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
             <feMerge>
               <feMergeNode in="coloredBlur" />
               <feMergeNode in="SourceGraphic" />
@@ -153,27 +155,27 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
               r={config.orbitRadius}
               fill="none"
               stroke="rgba(217, 182, 111, 0.15)"
-              strokeWidth="0.8"
-              strokeDasharray="3 3"
+              strokeWidth="1"
+              strokeDasharray="4 4"
             />
           ))}
 
-        {/* Sun center */}
-        <circle cx={CENTER_X} cy={CENTER_Y} r="22" fill="url(#sunGlow)" className="sun-glow" filter="url(#sunGlowFilter)" />
+        {/* Sun center - 50px diameter */}
+        <circle cx={CENTER_X} cy={CENTER_Y} r="30" fill="url(#sunGlow)" className="sun-glow" filter="url(#sunGlowFilter)" />
         {PLANET_IMAGES['Sun'] && (
           <image
             href={PLANET_IMAGES['Sun']}
-            x={CENTER_X - 18}
-            y={CENTER_Y - 18}
-            width="36"
-            height="36"
+            x={CENTER_X - 25}
+            y={CENTER_Y - 25}
+            width="50"
+            height="50"
             className="planet-img sun-img"
             preserveAspectRatio="xMidYMid slice"
-            clipPath="circle(18px at center)"
+            clipPath="circle(25px at center)"
           />
         )}
 
-        {/* Planets */}
+        {/* Planets - 30px diameter (hover: 38px) */}
         {planets.map((planet, index) => {
           const config = PLANET_CONFIG[planet.planet_name];
           if (!config) return null;
@@ -181,7 +183,7 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
           const pos = getPlanetPosition(planet);
           const isHovered = hoveredPlanet === planet.planet_name;
           const planetImage = PLANET_IMAGES[planet.planet_name];
-          const size = isHovered ? 30 : 24;
+          const size = isHovered ? 38 : 30;
 
           return (
             <g key={planet.planet_name}>
@@ -198,10 +200,10 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
                   <circle
                     cx={pos.x}
                     cy={pos.y}
-                    r={size / 2 + 2}
+                    r={size / 2 + 3}
                     fill="none"
                     stroke={config.color}
-                    strokeWidth="1"
+                    strokeWidth="1.5"
                     opacity={isHovered ? 0.8 : 0.4}
                     className="planet-glow-ring"
                   />
@@ -217,19 +219,19 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
                   />
                   <text
                     x={pos.x}
-                    y={pos.y + size / 2 + 10}
+                    y={pos.y + size / 2 + 14}
                     textAnchor="middle"
                     className="planet-name-text"
-                    style={{ fontSize: isHovered ? '9px' : '8px' }}
+                    style={{ fontSize: isHovered ? '12px' : '11px' }}
                   >
                     {planet.planet_name}
                   </text>
                   <text
                     x={pos.x}
-                    y={pos.y + size / 2 + 18}
+                    y={pos.y + size / 2 + 26}
                     textAnchor="middle"
                     className="zodiac-name-text"
-                    style={{ fontSize: '7px' }}
+                    style={{ fontSize: '10px' }}
                   >
                     {planet.sign}
                   </text>
@@ -238,7 +240,7 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
                 <motion.circle
                   cx={pos.x}
                   cy={pos.y}
-                  r={isHovered ? 15 : 12}
+                  r={isHovered ? 19 : 15}
                   fill={config.color}
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
@@ -259,11 +261,11 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
             {/* viewBox border */}
             <rect 
               x="0" y="0" 
-              width="500" height="500" 
+              width="800" height="800" 
               fill="none" 
               stroke="#ef4444" 
-              strokeWidth="2"
-              strokeDasharray="5 5"
+              strokeWidth="3"
+              strokeDasharray="8 8"
             />
 
             {/* TOP */}
@@ -273,23 +275,23 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
               x2={extremes.topPlanet.x} 
               y2="0"
               stroke="#ef4444" 
-              strokeWidth="2"
+              strokeWidth="3"
             />
-            <circle cx={extremes.topPlanet.x} cy={extremes.topPlanet.y - PLANET_RADIUS} r="4" fill="#ef4444" />
+            <circle cx={extremes.topPlanet.x} cy={extremes.topPlanet.y - PLANET_RADIUS} r="6" fill="#ef4444" />
             <text 
-              x={extremes.topPlanet.x + 10} 
+              x={extremes.topPlanet.x + 15} 
               y={(extremes.topPlanet.y - PLANET_RADIUS) / 2}
               fill="#ef4444"
-              fontSize="14"
+              fontSize="18"
               fontWeight="bold"
             >
               {Math.round(extremes.topPlanet.y - PLANET_RADIUS)}px
             </text>
             <text 
-              x={extremes.topPlanet.x + 10} 
-              y={(extremes.topPlanet.y - PLANET_RADIUS) / 2 + 16}
+              x={extremes.topPlanet.x + 15} 
+              y={(extremes.topPlanet.y - PLANET_RADIUS) / 2 + 20}
               fill="#ef4444"
-              fontSize="10"
+              fontSize="13"
             >
               ({extremes.topPlanet.name})
             </text>
@@ -299,25 +301,25 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
               x1={extremes.bottomPlanet.x} 
               y1={extremes.bottomPlanet.y + PLANET_RADIUS}
               x2={extremes.bottomPlanet.x} 
-              y2="500"
+              y2="800"
               stroke="#ef4444" 
-              strokeWidth="2"
+              strokeWidth="3"
             />
-            <circle cx={extremes.bottomPlanet.x} cy={extremes.bottomPlanet.y + PLANET_RADIUS} r="4" fill="#ef4444" />
+            <circle cx={extremes.bottomPlanet.x} cy={extremes.bottomPlanet.y + PLANET_RADIUS} r="6" fill="#ef4444" />
             <text 
-              x={extremes.bottomPlanet.x + 10} 
-              y={(extremes.bottomPlanet.y + PLANET_RADIUS + 500) / 2}
+              x={extremes.bottomPlanet.x + 15} 
+              y={(extremes.bottomPlanet.y + PLANET_RADIUS + 800) / 2}
               fill="#ef4444"
-              fontSize="14"
+              fontSize="18"
               fontWeight="bold"
             >
-              {Math.round(500 - (extremes.bottomPlanet.y + PLANET_RADIUS))}px
+              {Math.round(800 - (extremes.bottomPlanet.y + PLANET_RADIUS))}px
             </text>
             <text 
-              x={extremes.bottomPlanet.x + 10} 
-              y={(extremes.bottomPlanet.y + PLANET_RADIUS + 500) / 2 + 16}
+              x={extremes.bottomPlanet.x + 15} 
+              y={(extremes.bottomPlanet.y + PLANET_RADIUS + 800) / 2 + 20}
               fill="#ef4444"
-              fontSize="10"
+              fontSize="13"
             >
               ({extremes.bottomPlanet.name})
             </text>
@@ -329,14 +331,14 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
               x2="0"
               y2={extremes.leftPlanet.y}
               stroke="#ef4444" 
-              strokeWidth="2"
+              strokeWidth="3"
             />
-            <circle cx={extremes.leftPlanet.x - PLANET_RADIUS} cy={extremes.leftPlanet.y} r="4" fill="#ef4444" />
+            <circle cx={extremes.leftPlanet.x - PLANET_RADIUS} cy={extremes.leftPlanet.y} r="6" fill="#ef4444" />
             <text 
               x={(extremes.leftPlanet.x - PLANET_RADIUS) / 2}
-              y={extremes.leftPlanet.y - 10}
+              y={extremes.leftPlanet.y - 15}
               fill="#ef4444"
-              fontSize="14"
+              fontSize="18"
               fontWeight="bold"
               textAnchor="middle"
             >
@@ -344,9 +346,9 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
             </text>
             <text 
               x={(extremes.leftPlanet.x - PLANET_RADIUS) / 2}
-              y={extremes.leftPlanet.y - 24}
+              y={extremes.leftPlanet.y - 35}
               fill="#ef4444"
-              fontSize="10"
+              fontSize="13"
               textAnchor="middle"
             >
               ({extremes.leftPlanet.name})
@@ -356,35 +358,35 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
             <line 
               x1={extremes.rightPlanet.x + PLANET_RADIUS}
               y1={extremes.rightPlanet.y}
-              x2="500"
+              x2="800"
               y2={extremes.rightPlanet.y}
               stroke="#ef4444" 
-              strokeWidth="2"
+              strokeWidth="3"
             />
-            <circle cx={extremes.rightPlanet.x + PLANET_RADIUS} cy={extremes.rightPlanet.y} r="4" fill="#ef4444" />
+            <circle cx={extremes.rightPlanet.x + PLANET_RADIUS} cy={extremes.rightPlanet.y} r="6" fill="#ef4444" />
             <text 
-              x={(extremes.rightPlanet.x + PLANET_RADIUS + 500) / 2}
-              y={extremes.rightPlanet.y - 10}
+              x={(extremes.rightPlanet.x + PLANET_RADIUS + 800) / 2}
+              y={extremes.rightPlanet.y - 15}
               fill="#ef4444"
-              fontSize="14"
+              fontSize="18"
               fontWeight="bold"
               textAnchor="middle"
             >
-              {Math.round(500 - (extremes.rightPlanet.x + PLANET_RADIUS))}px
+              {Math.round(800 - (extremes.rightPlanet.x + PLANET_RADIUS))}px
             </text>
             <text 
-              x={(extremes.rightPlanet.x + PLANET_RADIUS + 500) / 2}
-              y={extremes.rightPlanet.y - 24}
+              x={(extremes.rightPlanet.x + PLANET_RADIUS + 800) / 2}
+              y={extremes.rightPlanet.y - 35}
               fill="#ef4444"
-              fontSize="10"
+              fontSize="13"
               textAnchor="middle"
             >
               ({extremes.rightPlanet.name})
             </text>
 
             {/* Center crosshair */}
-            <line x1="250" y1="0" x2="250" y2="500" stroke="#10b981" strokeWidth="1" strokeDasharray="3 3" opacity="0.5" />
-            <line x1="0" y1="250" x2="500" y2="250" stroke="#10b981" strokeWidth="1" strokeDasharray="3 3" opacity="0.5" />
+            <line x1="400" y1="0" x2="400" y2="800" stroke="#10b981" strokeWidth="1.5" strokeDasharray="5 5" opacity="0.5" />
+            <line x1="0" y1="400" x2="800" y2="400" stroke="#10b981" strokeWidth="1.5" strokeDasharray="5 5" opacity="0.5" />
           </g>
         )}
       </svg>
