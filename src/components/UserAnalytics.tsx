@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Users, UserCheck, Crown, Flame, BarChart3, DollarSign,
-  Search, Filter, ArrowUpDown, X, Eye, Clock, Calendar,
-  Gem, Sparkles, Moon as MoonIcon, Sun, TrendingUp,
-  Activity, Zap, Shield, Star, Heart, BookOpen, ChevronRight
+  Users, UserCheck, Crown, Flame, DollarSign,
+  Search, X, Eye, Clock, Calendar,
+  Gem, Moon as MoonIcon, Sun, TrendingUp,
+  Activity, Zap, Star, BookOpen, ChevronRight
 } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { 
