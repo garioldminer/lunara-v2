@@ -66,7 +66,7 @@ function UserLoader({ onReady }: { onReady: () => void }) {
 
   useEffect(() => {
     async function loadUser() {
-      console.log(' [UserLoader] Starting user load...');
+      console.log('🔵 [UserLoader] Starting user load...');
       
       try {
         const tgUser = getTelegramUser();
@@ -124,7 +124,7 @@ function AppContent() {
         tg.expand();
       }
     } else {
-      console.warn('️ Telegram WebApp NOT detected');
+      console.warn('⚠️ Telegram WebApp NOT detected');
     }
   }, []);
 
@@ -147,7 +147,7 @@ function AppContent() {
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        console.log('️ [LastActive] Tab became visible - updating...');
+        console.log('👁️ [LastActive] Tab became visible - updating...');
         updateLastActive();
       }
     };
@@ -162,7 +162,7 @@ function AppContent() {
 
   // 🆕 ეტაპი 2: Session Tracking
   useEffect(() => {
-    if (!user) return;
+    if (!user || !supabase) return;
 
     let sessionStartTime = Date.now();
     let totalActiveTime = 0;
@@ -205,6 +205,8 @@ function AppContent() {
     };
 
     const startSession = async () => {
+      if (!supabase) return;
+      
       sessionStartTime = Date.now();
       lastActiveTime = Date.now();
       totalActiveTime = 0;
@@ -224,10 +226,10 @@ function AppContent() {
           .single();
 
         if (error) {
-          console.error(' [Session] Error starting session:', error);
+          console.error('❌ [Session] Error starting session:', error);
         } else {
-          console.log('✅ [Session] Started:', session.id);
-          console.log(' [Session] Device:', deviceInfo);
+          console.log('✅ [Session] Started:', session?.id);
+          console.log('📱 [Session] Device:', deviceInfo);
         }
       } catch (error) {
         console.error('❌ [Session] Exception:', error);
@@ -235,7 +237,7 @@ function AppContent() {
     };
 
     const endSession = async () => {
-      if (!isTabActive) return;
+      if (!supabase || !isTabActive) return;
       isTabActive = false;
 
       const sessionEndTime = Date.now();
@@ -259,7 +261,7 @@ function AppContent() {
           .limit(1);
 
         if (error) {
-          console.error(' [Session] Error ending session:', error);
+          console.error('❌ [Session] Error ending session:', error);
         } else {
           console.log('✅ [Session] Ended. Duration:', duration, 'seconds');
         }
@@ -338,7 +340,7 @@ function AppContent() {
     
     if (screen === 'horoscope') {
       if (!user?.sun_sign) {
-        console.log('️ User has no sun_sign → redirecting to sign-selection');
+        console.log('⚠️ User has no sun_sign → redirecting to sign-selection');
         goTo('sign-selection');
         return;
       }
@@ -407,7 +409,7 @@ function AppContent() {
       if (user && user.id === ADMIN_USER_ID) {
         goTo('user-analytics');
       } else {
-        console.warn(' Unauthorized user analytics access attempt by user:', user?.id);
+        console.warn('⛔ Unauthorized user analytics access attempt by user:', user?.id);
         goTo('home');
       }
     }
@@ -425,7 +427,7 @@ function AppContent() {
       goTo('subscription');
     }
     else if (screen === 'services') {
-      console.log('️ Opening Services Screen');
+      console.log('🛍️ Opening Services Screen');
       goTo('services');
     }
     else if (screen === 'draw' || screen === 'card-fan') {
