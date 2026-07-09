@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { supabase } from './lib/supabase';
 import SplashScreen from './components/SplashScreen';
 import OnboardingWelcome from './components/OnboardingWelcome';
 import OnboardingZodiac from './components/OnboardingZodiac';
@@ -28,6 +29,7 @@ import { UserProvider, useUser } from './context/UserContext';
 import { SettingsProvider } from './context/SettingsContext';
 import { getTelegramUser } from './lib/telegramAuth';
 import { getOrCreateUser, completeOnboarding } from './lib/userService';
+import { updateUserLastActive } from './lib/adminService';
 import './App.css';
 
 // ✅ Admin user ID
@@ -64,7 +66,7 @@ function UserLoader({ onReady }: { onReady: () => void }) {
 
   useEffect(() => {
     async function loadUser() {
-      console.log('🔵 [UserLoader] Starting user load...');
+      console.log(' [UserLoader] Starting user load...');
       
       try {
         const tgUser = getTelegramUser();
@@ -122,9 +124,203 @@ function AppContent() {
         tg.expand();
       }
     } else {
-      console.warn('⚠️ Telegram WebApp NOT detected');
+      console.warn('️ Telegram WebApp NOT detected');
     }
   }, []);
+
+  // 🆕 ეტაპი 1: Last Active Update
+  useEffect(() => {
+    if (!user) return;
+
+    const updateLastActive = async () => {
+      try {
+        await updateUserLastActive(user.id);
+        console.log('✅ [LastActive] Updated at:', new Date().toLocaleTimeString());
+      } catch (error) {
+        console.error('❌ [LastActive] Error:', error);
+      }
+    };
+
+    updateLastActive();
+
+    const interval = setInterval(updateLastActive, 5 * 60 * 1000);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('️ [LastActive] Tab became visible - updating...');
+        updateLastActive();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [user]);
+
+  // 🆕 ეტაპი 2: Session Tracking
+  useEffect(() => {
+    if (!user) return;
+
+    let sessionStartTime = Date.now();
+    let totalActiveTime = 0;
+    let lastActiveTime = Date.now();
+    let isTabActive = true;
+
+    const getDeviceInfo = () => {
+      const ua = navigator.userAgent;
+      let deviceType = 'unknown';
+      let os = 'unknown';
+      let browser = 'unknown';
+
+      if (/Mobile|Android|iPhone|iPad/i.test(ua)) {
+        deviceType = /iPad/i.test(ua) ? 'tablet' : 'mobile';
+      } else {
+        deviceType = 'desktop';
+      }
+
+      if (/Windows/i.test(ua)) os = 'Windows';
+      else if (/Mac/i.test(ua)) os = 'macOS';
+      else if (/Android/i.test(ua)) os = 'Android';
+      else if (/iPhone|iPad/i.test(ua)) os = 'iOS';
+      else if (/Linux/i.test(ua)) os = 'Linux';
+
+      if (/Chrome/i.test(ua) && !/Edge/i.test(ua)) browser = 'Chrome';
+      else if (/Firefox/i.test(ua)) browser = 'Firefox';
+      else if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) browser = 'Safari';
+      else if (/Edge/i.test(ua)) browser = 'Edge';
+      else browser = 'Other';
+
+      return {
+        device_type: deviceType,
+        os: os,
+        browser: browser,
+        user_agent: ua.substring(0, 200),
+        screen_width: window.screen.width,
+        screen_height: window.screen.height,
+        language: navigator.language
+      };
+    };
+
+    const startSession = async () => {
+      sessionStartTime = Date.now();
+      lastActiveTime = Date.now();
+      totalActiveTime = 0;
+      isTabActive = true;
+
+      const deviceInfo = getDeviceInfo();
+
+      try {
+        const { data: session, error } = await supabase
+          .from('user_sessions')
+          .insert({
+            user_id: user.id,
+            started_at: new Date(sessionStartTime).toISOString(),
+            device_info: deviceInfo
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error(' [Session] Error starting session:', error);
+        } else {
+          console.log('✅ [Session] Started:', session.id);
+          console.log(' [Session] Device:', deviceInfo);
+        }
+      } catch (error) {
+        console.error('❌ [Session] Exception:', error);
+      }
+    };
+
+    const endSession = async () => {
+      if (!isTabActive) return;
+      isTabActive = false;
+
+      const sessionEndTime = Date.now();
+      const duration = Math.floor((sessionEndTime - sessionStartTime) / 1000);
+
+      if (duration < 5) {
+        console.log('⚠️ [Session] Too short (< 5s), skipping:', duration, 'seconds');
+        return;
+      }
+
+      try {
+        const { error } = await supabase
+          .from('user_sessions')
+          .update({
+            ended_at: new Date(sessionEndTime).toISOString(),
+            duration_seconds: duration
+          })
+          .eq('user_id', user.id)
+          .is('ended_at', null)
+          .order('started_at', { ascending: false })
+          .limit(1);
+
+        if (error) {
+          console.error(' [Session] Error ending session:', error);
+        } else {
+          console.log('✅ [Session] Ended. Duration:', duration, 'seconds');
+        }
+      } catch (error) {
+        console.error('❌ [Session] Exception:', error);
+      }
+    };
+
+    const trackActiveTime = () => {
+      if (!isTabActive) return;
+      
+      const now = Date.now();
+      const timeSinceLastActive = now - lastActiveTime;
+      
+      if (timeSinceLastActive > 60000) {
+        totalActiveTime += timeSinceLastActive;
+        lastActiveTime = now;
+        
+        console.log('⏱️ [Session] Active time tracked:', Math.floor(totalActiveTime / 1000), 'seconds');
+      }
+    };
+
+    startSession();
+
+    const trackInterval = setInterval(trackActiveTime, 30000);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        console.log('👁️ [Session] Tab hidden - pausing...');
+        isTabActive = false;
+        const now = Date.now();
+        totalActiveTime += now - lastActiveTime;
+      } else if (document.visibilityState === 'visible') {
+        console.log('👁️ [Session] Tab visible - resuming...');
+        isTabActive = true;
+        lastActiveTime = Date.now();
+      }
+    };
+
+    const handleBeforeUnload = () => {
+      console.log('🚪 [Session] Page unloading - ending session...');
+      endSession();
+    };
+
+    const handlePageHide = () => {
+      console.log('📄 [Session] Page hidden - ending session...');
+      endSession();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pagehide', handlePageHide);
+
+    return () => {
+      clearInterval(trackInterval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', handlePageHide);
+      endSession();
+    };
+  }, [user]);
 
   const goTo = (screen: Screen) => {
     console.log('🔄 Navigating to:', screen);
@@ -142,7 +338,7 @@ function AppContent() {
     
     if (screen === 'horoscope') {
       if (!user?.sun_sign) {
-        console.log('⚠️ User has no sun_sign → redirecting to sign-selection');
+        console.log('️ User has no sun_sign → redirecting to sign-selection');
         goTo('sign-selection');
         return;
       }
@@ -197,7 +393,6 @@ function AppContent() {
       console.log('♏ Opening Sign Selection Screen');
       goTo('sign-selection');
     }
-    // ✅ გაუმჯობესებული დაცვა - მხოლოდ ადმინს შეუძლია შესვლა
     else if (screen === 'admin') {
       console.log('🔐 Opening Admin Panel');
       if (user && user.id === ADMIN_USER_ID) {
@@ -207,17 +402,15 @@ function AppContent() {
         goTo('home');
       }
     }
-    // 🆕 User Analytics - მხოლოდ ადმინს
     else if (screen === 'user-analytics') {
       console.log('📊 Opening User Analytics');
       if (user && user.id === ADMIN_USER_ID) {
         goTo('user-analytics');
       } else {
-        console.warn('⛔ Unauthorized user analytics access attempt by user:', user?.id);
+        console.warn(' Unauthorized user analytics access attempt by user:', user?.id);
         goTo('home');
       }
     }
-    // ✅ აი-მენეჯმენტიც დავიცვათ
     else if (screen === 'ai-management') {
       console.log('🤖 Opening AI Management');
       if (user && user.id === ADMIN_USER_ID) {
@@ -232,7 +425,7 @@ function AppContent() {
       goTo('subscription');
     }
     else if (screen === 'services') {
-      console.log('🛍️ Opening Services Screen');
+      console.log('️ Opening Services Screen');
       goTo('services');
     }
     else if (screen === 'draw' || screen === 'card-fan') {
