@@ -4,6 +4,7 @@ import { ArrowLeft, Zap, Star, Info } from 'lucide-react';
 import { useCosmicData } from '../hooks/useCosmicData';
 import { useBirthChart } from '../hooks/useBirthChart';
 import { supabase } from '../lib/supabase';
+import LoadingScreen from './LoadingScreen';
 import './AstroScreen.css';
 
 const BG_IMAGE = 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/backgrounds/space-bg.webp';
@@ -417,6 +418,11 @@ export default function AstroScreen({ onNavigate }: AstroScreenProps) {
 
     fetchPlanets();
   }, []);
+
+  // 🆕 LoadingScreen ჩვენება
+  if (planetsLoading || !birthChart) {
+    return <LoadingScreen message="Consulting the cosmos" />;
+  }
 
   return (
     <div className="astro-screen">
