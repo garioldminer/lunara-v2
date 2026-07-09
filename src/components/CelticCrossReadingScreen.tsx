@@ -6,6 +6,7 @@ import QuestionInput from './QuestionInput';
 import PremiumPaywall from './PremiumPaywall';
 import { isPremium, PremiumFeatureId, getAvailableCredits, decrementCredit } from '../lib/premiumService';
 import { saveReading } from '../lib/readingService';
+import { logReading } from '../lib/adminService';
 import { useUser } from '../context/UserContext';
 import './CelticCrossReadingScreen.css';
 
@@ -136,6 +137,22 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
             position: rc.position
           }))
         });
+
+        // 🆕 ეტაპი 3: ჩაწერა reading_history ცხრილში
+        try {
+          logReading(
+            user.id,
+            'celtic_cross',
+            newReading.map(rc => rc.card.id),
+            newReading.map(rc => `${rc.card.name}${rc.isReversed ? ' (R)' : ''}`).join(', ')
+          ).then(() => {
+            console.log('✅ [Reading] Celtic Cross logged:', newReading.map(rc => rc.card.name).join(', '));
+          }).catch(err => {
+            console.error('❌ [Reading] Error logging celtic cross:', err);
+          });
+        } catch (error) {
+          console.error('❌ [Reading] Error:', error);
+        }
       }
     }, 600 + 10 * 400 + 500);
   };
@@ -264,7 +281,7 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
           {/* Celtic Cross Layout */}
           <div className="cc-cards-layout">
             {reading.map((readingCard, idx) => {
-              const isBottomRow = idx >= 5; // კარტები 6-10 (index 5-9)
+              const isBottomRow = idx >= 5;
               
               return (
                 <motion.div
@@ -275,12 +292,10 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
                   transition={{ delay: idx * 0.1, duration: 0.4 }}
                   onClick={() => phase === 'complete' && setActiveCard(activeCard === idx ? null : idx)}
                 >
-                  {/* ✅ ნუმერაცია: 1-5 ზემოთ, 6-10 ქვემოთ */}
                   {!isBottomRow && (
                     <div className="cc-position-label">{CELTIC_CROSS_POSITIONS[idx].short}</div>
                   )}
                   
-                  {/* ✅ ახალი 3D Flip ანიმაცია */}
                   <motion.div
                     className="cc-card-wrapper"
                     initial={{ 
@@ -303,7 +318,6 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
                       scale: { duration: 0.8, ease: "easeInOut" }
                     }}
                   >
-                    {/* Back Face */}
                     <div className="cc-card-back">
                       <img 
                         src={CARD_BACK_URL} 
@@ -313,7 +327,6 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
                       />
                     </div>
                     
-                    {/* Front Face - შიგთავსი counter-rotated */}
                     <div className="cc-card-front">
                       <div className="cc-card-front-content">
                         {readingCard.card.image_url ? (
@@ -334,7 +347,6 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
                     </div>
                   </motion.div>
 
-                  {/* ✅ ნუმერაცია: 6-10 ქვემოთ */}
                   {isBottomRow && (
                     <div className="cc-position-label">{CELTIC_CROSS_POSITIONS[idx].short}</div>
                   )}
@@ -405,7 +417,6 @@ export default function CelticCrossReadingScreen({ onNavigate }: Props) {
                   </div>
                 )}
 
-                {/* Credits Remaining Banner */}
                 {creditsRemaining !== null && creditsRemaining > 0 && (
                   <motion.div 
                     className="cc-credits-banner"

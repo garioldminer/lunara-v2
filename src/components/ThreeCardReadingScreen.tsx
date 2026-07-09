@@ -4,6 +4,7 @@ import { ArrowLeft, RotateCcw } from 'lucide-react';
 import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards';
 import QuestionInput from './QuestionInput';
 import { saveReading } from '../lib/readingService';
+import { logReading } from '../lib/adminService';
 import { useUser } from '../context/UserContext';
 import './ThreeCardReadingScreen.css';
 
@@ -71,6 +72,22 @@ export default function ThreeCardReadingScreen({ onNavigate }: Props) {
             position: rc.position
           }))
         });
+
+        // 🆕 ეტაპი 3: ჩაწერა reading_history ცხრილში
+        try {
+          logReading(
+            user.id,
+            'three_cards',
+            newReading.map(rc => rc.card.id),
+            newReading.map(rc => `${rc.card.name}${rc.isReversed ? ' (R)' : ''}`).join(', ')
+          ).then(() => {
+            console.log('✅ [Reading] Three cards logged:', newReading.map(rc => rc.card.name).join(', '));
+          }).catch(err => {
+            console.error('❌ [Reading] Error logging three cards:', err);
+          });
+        } catch (error) {
+          console.error('❌ [Reading] Error:', error);
+        }
       }
     }, 3800);
   };

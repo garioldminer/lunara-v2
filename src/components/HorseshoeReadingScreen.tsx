@@ -6,6 +6,7 @@ import QuestionInput from './QuestionInput';
 import PremiumPaywall from './PremiumPaywall';
 import { isPremium, PremiumFeatureId, getAvailableCredits, decrementCredit } from '../lib/premiumService';
 import { saveReading } from '../lib/readingService';
+import { logReading } from '../lib/adminService';
 import { useUser } from '../context/UserContext';
 import './HorseshoeReadingScreen.css';
 
@@ -126,6 +127,22 @@ export default function HorseshoeReadingScreen({ onNavigate }: Props) {
             position: rc.position
           }))
         });
+
+        // 🆕 ეტაპი 3: ჩაწერა reading_history ცხრილში
+        try {
+          logReading(
+            user.id,
+            'horseshoe',
+            newReading.map(rc => rc.card.id),
+            newReading.map(rc => `${rc.card.name}${rc.isReversed ? ' (R)' : ''}`).join(', ')
+          ).then(() => {
+            console.log('✅ [Reading] Horseshoe logged:', newReading.map(rc => rc.card.name).join(', '));
+          }).catch(err => {
+            console.error('❌ [Reading] Error logging horseshoe:', err);
+          });
+        } catch (error) {
+          console.error('❌ [Reading] Error:', error);
+        }
       }
     }, 600 + 7 * 400 + 500);
   };
@@ -170,9 +187,8 @@ export default function HorseshoeReadingScreen({ onNavigate }: Props) {
     return interpretations[position] || meaning;
   };
 
-  // ✅ ორი რიგი: პირველი 4 კარტი, მეორე 3 კარტი (ცენტრში)
-  const topRow = reading.slice(0, 4);   // კარტები 1-4
-  const bottomRow = reading.slice(4, 7); // კარტები 5-7
+  const topRow = reading.slice(0, 4);
+  const bottomRow = reading.slice(4, 7);
 
   return (
     <div className="horseshoe-reading-screen">
@@ -241,12 +257,10 @@ export default function HorseshoeReadingScreen({ onNavigate }: Props) {
             </div>
           )}
 
-          {/* ✅ Horseshoe Layout - 2 რიგი: 4 + 3 (ცენტრში) */}
           <div className="hr-cards-container">
-            {/* პირველი რიგი: კარტები 1-4, ნუმერაცია ზემოთ */}
             <div className="hr-cards-row">
               {topRow.map((readingCard, idx) => {
-                const realIndex = idx; // 0-3
+                const realIndex = idx;
                 return (
                   <motion.div
                     key={realIndex}
@@ -256,10 +270,8 @@ export default function HorseshoeReadingScreen({ onNavigate }: Props) {
                     transition={{ delay: realIndex * 0.1, duration: 0.4 }}
                     onClick={() => phase === 'complete' && setActiveCard(activeCard === realIndex ? null : realIndex)}
                   >
-                    {/* ნუმერაცია ზემოთ */}
                     <div className="hr-position-label">{HORSESHOE_POSITIONS[realIndex].short}</div>
                     
-                    {/* 3D Flip ანიმაცია */}
                     <motion.div
                       className="hr-card-wrapper"
                       initial={{ rotateY: 0, translateY: 0, scale: 1 }}
@@ -305,10 +317,9 @@ export default function HorseshoeReadingScreen({ onNavigate }: Props) {
               })}
             </div>
 
-            {/* მეორე რიგი: კარტები 5-7, ნუმერაცია ქვემოთ, ცენტრში */}
             <div className="hr-cards-row hr-cards-row-bottom">
               {bottomRow.map((readingCard, idx) => {
-                const realIndex = idx + 4; // 4-6
+                const realIndex = idx + 4;
                 return (
                   <motion.div
                     key={realIndex}
@@ -318,7 +329,6 @@ export default function HorseshoeReadingScreen({ onNavigate }: Props) {
                     transition={{ delay: realIndex * 0.1, duration: 0.4 }}
                     onClick={() => phase === 'complete' && setActiveCard(activeCard === realIndex ? null : realIndex)}
                   >
-                    {/* 3D Flip ანიმაცია */}
                     <motion.div
                       className="hr-card-wrapper"
                       initial={{ rotateY: 0, translateY: 0, scale: 1 }}
@@ -360,7 +370,6 @@ export default function HorseshoeReadingScreen({ onNavigate }: Props) {
                       </div>
                     </motion.div>
 
-                    {/* ნუმერაცია ქვემოთ */}
                     <div className="hr-position-label">{HORSESHOE_POSITIONS[realIndex].short}</div>
                   </motion.div>
                 );

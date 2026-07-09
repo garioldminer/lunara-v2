@@ -6,6 +6,7 @@ import QuestionInput from './QuestionInput';
 import PremiumPaywall from './PremiumPaywall';
 import { isPremium, PremiumFeatureId, getAvailableCredits, decrementCredit } from '../lib/premiumService';
 import { saveReading } from '../lib/readingService';
+import { logReading } from '../lib/adminService';
 import { useUser } from '../context/UserContext';
 import './RelationshipReadingScreen.css';
 
@@ -125,6 +126,22 @@ export default function RelationshipReadingScreen({ onNavigate }: Props) {
             position: rc.position
           }))
         });
+
+        // 🆕 ეტაპი 3: ჩაწერა reading_history ცხრილში
+        try {
+          logReading(
+            user.id,
+            'relationship',
+            newReading.map(rc => rc.card.id),
+            newReading.map(rc => `${rc.card.name}${rc.isReversed ? ' (R)' : ''}`).join(', ')
+          ).then(() => {
+            console.log('✅ [Reading] Relationship logged:', newReading.map(rc => rc.card.name).join(', '));
+          }).catch(err => {
+            console.error('❌ [Reading] Error logging relationship:', err);
+          });
+        } catch (error) {
+          console.error('❌ [Reading] Error:', error);
+        }
       }
     }, 600 + 6 * 400 + 500);
   };
@@ -168,9 +185,8 @@ export default function RelationshipReadingScreen({ onNavigate }: Props) {
     return interpretations[position] || meaning;
   };
 
-  // ✅ რი რიგი: პირველი 3 კარტი, მეორე 3 კარტი (ცენტრში)
-  const topRow = reading.slice(0, 3);    // კარტები 1-3
-  const bottomRow = reading.slice(3, 6); // კარტები 4-6
+  const topRow = reading.slice(0, 3);
+  const bottomRow = reading.slice(3, 6);
 
   return (
     <div className="relationship-reading-screen">
@@ -239,12 +255,10 @@ export default function RelationshipReadingScreen({ onNavigate }: Props) {
             </div>
           )}
 
-          {/* ✅ Relationship Layout - 2 რიგი: 3 + 3 (ცენტრში) */}
           <div className="rr-cards-container">
-            {/* პირველი რიგი: კარტები 1-3, ნუმერაცია ზემოთ */}
             <div className="rr-cards-row">
               {topRow.map((readingCard, idx) => {
-                const realIndex = idx; // 0-2
+                const realIndex = idx;
                 return (
                   <motion.div
                     key={realIndex}
@@ -254,10 +268,8 @@ export default function RelationshipReadingScreen({ onNavigate }: Props) {
                     transition={{ delay: realIndex * 0.1, duration: 0.4 }}
                     onClick={() => phase === 'complete' && setActiveCard(activeCard === realIndex ? null : realIndex)}
                   >
-                    {/* ნუმერაცია ემოთ */}
                     <div className="rr-position-label">{RELATIONSHIP_POSITIONS[realIndex].short}</div>
                     
-                    {/* 3D Flip ანიმაცია */}
                     <motion.div
                       className="rr-card-wrapper"
                       initial={{ rotateY: 0, translateY: 0, scale: 1 }}
@@ -303,10 +315,9 @@ export default function RelationshipReadingScreen({ onNavigate }: Props) {
               })}
             </div>
 
-            {/* მეორე რიგი: კარტები 4-6, ნუმერაცია ქვემოთ, ცენტრში */}
             <div className="rr-cards-row rr-cards-row-bottom">
               {bottomRow.map((readingCard, idx) => {
-                const realIndex = idx + 3; // 3-5
+                const realIndex = idx + 3;
                 return (
                   <motion.div
                     key={realIndex}
@@ -316,7 +327,6 @@ export default function RelationshipReadingScreen({ onNavigate }: Props) {
                     transition={{ delay: realIndex * 0.1, duration: 0.4 }}
                     onClick={() => phase === 'complete' && setActiveCard(activeCard === realIndex ? null : realIndex)}
                   >
-                    {/* 3D Flip ანიმაცია */}
                     <motion.div
                       className="rr-card-wrapper"
                       initial={{ rotateY: 0, translateY: 0, scale: 1 }}
@@ -358,7 +368,6 @@ export default function RelationshipReadingScreen({ onNavigate }: Props) {
                       </div>
                     </motion.div>
 
-                    {/* ნუმერაცია ქვემოთ */}
                     <div className="rr-position-label">{RELATIONSHIP_POSITIONS[realIndex].short}</div>
                   </motion.div>
                 );
