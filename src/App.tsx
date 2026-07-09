@@ -20,6 +20,7 @@ import HoroscopeScreen from './components/HoroscopeScreen';
 import SignSelectionScreen from './components/SignSelectionScreen';
 import AdminScreen from './components/AdminScreen';
 import AdminAIManagement from './components/AdminAIManagement';
+import UserAnalytics from './components/UserAnalytics';
 import SubscriptionScreen from './components/SubscriptionScreen';
 import ServicesScreen from './components/ServicesScreen';
 import BottomNav from './components/BottomNav';
@@ -53,6 +54,7 @@ type Screen =
   | 'horseshoe'
   | 'relationship'
   | 'admin'
+  | 'user-analytics'
   | 'ai-management'
   | 'subscription'
   | 'services';
@@ -202,6 +204,16 @@ function AppContent() {
         goTo('admin');
       } else {
         console.warn('⛔ Unauthorized admin access attempt by user:', user?.id);
+        goTo('home');
+      }
+    }
+    // 🆕 User Analytics - მხოლოდ ადმინს
+    else if (screen === 'user-analytics') {
+      console.log('📊 Opening User Analytics');
+      if (user && user.id === ADMIN_USER_ID) {
+        goTo('user-analytics');
+      } else {
+        console.warn('⛔ Unauthorized user analytics access attempt by user:', user?.id);
         goTo('home');
       }
     }
@@ -366,6 +378,9 @@ function AppContent() {
       )}
       {currentScreen === 'admin' && (
         <AdminScreen onNavigate={handleNavigate} />
+      )}
+      {currentScreen === 'user-analytics' && (
+        <UserAnalytics onNavigate={handleNavigate} />
       )}
       {currentScreen === 'ai-management' && (
         <AdminAIManagement onNavigate={handleNavigate} />

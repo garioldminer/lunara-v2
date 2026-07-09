@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { 
   ArrowLeft, Users, Plus, Trash2, RefreshCw, Crown, ShieldAlert, 
   Calendar, Clock, Zap, Key, Activity, CheckCircle, XCircle, 
-  AlertCircle, Play, Eye
+  AlertCircle, Play, Eye, BarChart3, TrendingUp, DollarSign, Flame
 } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { 
@@ -20,8 +20,10 @@ import {
   getRecentLogs,
   getFunctionLogs,
   cleanupOldLogs,
+  getUserAnalyticsOverview,
   FunctionStatus,
-  FunctionLog
+  FunctionLog,
+  UserAnalyticsOverview
 } from '../lib/adminService';
 import './AdminScreen.css';
 
@@ -65,7 +67,7 @@ export default function AdminScreen({ onNavigate }: Props) {
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [editingFeature, setEditingFeature] = useState<string>('');
   const [newAmount, setNewAmount] = useState(0);
-  const [activeTab, setActiveTab] = useState<'credits' | 'subscriptions' | 'monitoring'>('credits');
+  const [activeTab, setActiveTab] = useState<'credits' | 'subscriptions' | 'monitoring' | 'analytics'>('credits');
   
   // Subscription management states
   const [showAddSubscription, setShowAddSubscription] = useState(false);
@@ -81,6 +83,9 @@ export default function AdminScreen({ onNavigate }: Props) {
   const [recentLogs, setRecentLogs] = useState<FunctionLog[]>([]);
   const [selectedFunction, setSelectedFunction] = useState<string | null>(null);
   const [functionLogs, setFunctionLogs] = useState<FunctionLog[]>([]);
+
+  // 🆕 Analytics states
+  const [analyticsOverview, setAnalyticsOverview] = useState<UserAnalyticsOverview | null>(null);
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -103,16 +108,18 @@ export default function AdminScreen({ onNavigate }: Props) {
   const loadData = async () => {
     if (!user) return;
     setLoading(true);
-    const [usersData, subsData, statusesData, logsData] = await Promise.all([
+    const [usersData, subsData, statusesData, logsData, analyticsData] = await Promise.all([
       getAllUsersWithCredits(user.id),
       getAllSubscriptions(user.id),
       getAllFunctionStatuses(user.id),
-      getRecentLogs(user.id, 20)
+      getRecentLogs(user.id, 20),
+      getUserAnalyticsOverview(user.id)
     ]);
     setUsers(usersData);
     setSubscriptions(subsData);
     setFunctionStatuses(statusesData);
     setRecentLogs(logsData);
+    setAnalyticsOverview(analyticsData);
     setLoading(false);
   };
 
@@ -179,7 +186,6 @@ export default function AdminScreen({ onNavigate }: Props) {
 
   // ✅ Monitoring handlers - დროებით გამორთულია CORS პრობლემის გამო
   const handleTestFunction = async (functionName: string) => {
-    // ✅ დროებითი შეტყობინება - CORS პრობლემის გამო
     alert(
       `⚠️ Test Function დროებით გამორთულია\n\n` +
       `მიზეზი: CORS პოლიტიკა ბლოკავს Telegram-იდან გამოძახებას\n\n` +
@@ -656,6 +662,122 @@ export default function AdminScreen({ onNavigate }: Props) {
             </div>
           </>
         )}
+
+        {/* 🆕 Analytics Tab */}
+        {activeTab === 'analytics' && (
+          <>
+            {/* Overview Cards */}
+            <div className="analytics-overview-grid">
+              <motion.div 
+                className="analytics-overview-card blue"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <Users size={20} />
+                <div className="analytics-info">
+                  <span className="analytics-number">{analyticsOverview?.total_users || 0}</span>
+                  <span className="analytics-label">Total Users</span>
+                </div>
+              </motion.div>
+
+              <motion.div 
+                className="analytics-overview-card green"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <Activity size={20} />
+                <div className="analytics-info">
+                  <span className="analytics-number">{analyticsOverview?.active_today || 0}</span>
+                  <span className="analytics-label">Active Today</span>
+                </div>
+              </motion.div>
+
+              <motion.div 
+                className="analytics-overview-card gold"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <Crown size={20} />
+                <div className="analytics-info">
+                  <span className="analytics-number">{analyticsOverview?.premium_users || 0}</span>
+                  <span className="analytics-label">Premium</span>
+                </div>
+              </motion.div>
+
+              <motion.div 
+                className="analytics-overview-card orange"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <Flame size={20} />
+                <div className="analytics-info">
+                  <span className="analytics-number">{analyticsOverview?.avg_streak || 0}</span>
+                  <span className="analytics-label">Avg Streak</span>
+                </div>
+              </motion.div>
+
+              <motion.div 
+                className="analytics-overview-card purple"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <BarChart3 size={20} />
+                <div className="analytics-info">
+                  <span className="analytics-number">{analyticsOverview?.total_readings || 0}</span>
+                  <span className="analytics-label">Readings</span>
+                </div>
+              </motion.div>
+
+              <motion.div 
+                className="analytics-overview-card emerald"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                <DollarSign size={20} />
+                <div className="analytics-info">
+                  <span className="analytics-number">${(analyticsOverview?.total_revenue || 0).toFixed(2)}</span>
+                  <span className="analytics-label">Revenue</span>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* View Full Analytics Button */}
+            <motion.button 
+              className="view-full-analytics-btn"
+              onClick={() => onNavigate?.('user-analytics')}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+            >
+              <TrendingUp size={20} />
+              <div className="btn-content">
+                <span className="btn-title">View Full Analytics</span>
+                <span className="btn-subtitle">Detailed user statistics, sessions & reading history</span>
+              </div>
+              <ArrowLeft size={20} style={{ transform: 'rotate(180deg)' }} />
+            </motion.button>
+
+            {/* Quick Stats Info */}
+            <div className="analytics-info-card">
+              <h3>📊 What you'll see in Full Analytics</h3>
+              <ul>
+                <li>👤 <strong>Complete user list</strong> with search & filters</li>
+                <li>♈ <strong>Big Three</strong> (Sun/Moon/Rising signs)</li>
+                <li>💎 <strong>Gems balance</strong> & subscription status</li>
+                <li>🔥 <strong>Streak tracking</strong> (current & longest)</li>
+                <li>📚 <strong>Reading history</strong> for each user</li>
+                <li>⏱️ <strong>Session duration</strong> & last active time</li>
+                <li>🎫 <strong>Credits breakdown</strong> per user</li>
+                <li>🔍 <strong>Advanced filters</strong> (Premium/Free/Active)</li>
+              </ul>
+            </div>
+          </>
+        )}
       </div>
 
       {/* ქვედა ნავიგაციის პანელი */}
@@ -680,6 +802,13 @@ export default function AdminScreen({ onNavigate }: Props) {
         >
           <Activity size={20} />
           <span>Monitor</span>
+        </button>
+        <button
+          className={`admin-nav-btn ${activeTab === 'analytics' ? 'active' : ''}`}
+          onClick={() => setActiveTab('analytics')}
+        >
+          <BarChart3 size={20} />
+          <span>Analytics</span>
         </button>
         <button
           className="admin-nav-btn ai-nav-btn"
@@ -804,7 +933,7 @@ export default function AdminScreen({ onNavigate }: Props) {
         </div>
       )}
 
-      {/* 🆕 Function Logs Modal */}
+      {/* Function Logs Modal */}
       {selectedFunction && (
         <div className="modal-overlay" onClick={() => setSelectedFunction(null)}>
           <motion.div

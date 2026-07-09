@@ -713,3 +713,370 @@ export async function cleanupOldLogs(adminId: string): Promise<boolean> {
 
   return true;
 }
+
+// ============================================
+// 👥 USER ANALYTICS
+// ============================================
+
+export interface UserAnalytics {
+  id: string;
+  display_name: string;
+  username: string | null;
+  telegram_id: number;
+  sun_sign: string | null;
+  moon_sign: string | null;
+  rising_sign: string | null;
+  gems: number;
+  onboarding_completed: boolean;
+  created_at: string;
+  last_active_at: string | null;
+  subscription_status: string | null;
+  subscription_plan: string | null;
+  subscription_expires_at: string | null;
+  celtic_cross_credits: number;
+  horseshoe_credits: number;
+  relationship_credits: number;
+  current_streak: number;
+  longest_streak: number;
+  total_readings: number;
+  today_readings: number;
+  last_reading_at: string | null;
+  total_session_time: number; // წამებში
+  last_session_duration: number | null; // წამებში
+}
+
+export interface UserAnalyticsOverview {
+  total_users: number;
+  active_today: number;
+  premium_users: number;
+  avg_streak: number;
+  total_readings: number;
+  total_revenue: number;
+}
+
+// მიიღეთ ყველა მომხმარებლის ანალიტიკა
+export async function getAllUserAnalytics(adminId: string): Promise<UserAnalytics[]> {
+  await requireAdmin(adminId);
+
+  if (!supabase) return [];
+
+  try {
+    console.log('🔍 [UserAnalytics] Fetching all user data...');
+
+    // 1. მიიღეთ ყველა user
+    const { data: users, error: usersError } = await supabase
+      .from('users')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (usersError) {
+      console.error('❌ Error fetching users:', usersError);
+      return [];
+    }
+
+    console.log(`✅ Loaded ${users.length} users`);
+
+    // 2. მიიღეთ subscriptions
+    const { data: subscriptions } = await supabase
+      .from('subscriptions')
+      .select('user_id, status, plan_type, expires_at')
+      .eq('status', 'active');
+
+    console.log(`✅ Loaded ${subscriptions?.length || 0} active subscriptions`);
+
+    // 3. მიიღეთ credits
+    const { data: credits } = await supabase
+      .from('available_credits')
+      .select('user_id, feature_id, credits');
+
+    console.log(`✅ Loaded ${credits?.length || 0} credits`);
+
+    // 4. მიიღეთ streaks
+    const { data: streaks } = await supabase
+      .from('user_streaks')
+      .select('user_id, current_streak, longest_streak');
+
+    console.log(`✅ Loaded ${streaks?.length || 0} streaks`);
+
+    // 5. მიიღეთ reading stats
+    const { data: readings } = await supabase
+      .from('reading_history')
+      .select('user_id, created_at')
+      .order('created_at', { ascending: false });
+
+    console.log(`✅ Loaded ${readings?.length || 0} readings`);
+
+    // 6. მიიღეთ session stats
+    const { data: sessions } = await supabase
+      .from('user_sessions')
+      .select('user_id, duration_seconds, ended_at')
+      .order('ended_at', { ascending: false });
+
+    console.log(`✅ Loaded ${sessions?.length || 0} sessions`);
+
+    // Helper functions
+    const getSubscription = (userId: string) => {
+      const sub = subscriptions?.find(s => s.user_id === userId);
+      return sub || null;
+    };
+
+    const getCredits = (userId: string, featureId: string) => {
+      const credit = credits?.find(c => c.user_id === userId && c.feature_id === featureId);
+      return credit?.credits || 0;
+    };
+
+    const getStreak = (userId: string) => {
+      const streak = streaks?.find(s => s.user_id === userId);
+      return streak || { current_streak: 0, longest_streak: 0 };
+    };
+
+    const getReadingStats = (userId: string) => {
+      const userReadings = readings?.filter(r => r.user_id === userId) || [];
+      const today = new Date().toISOString().split('T')[0];
+      const todayReadings = userReadings.filter(r => r.created_at.startsWith(today)).length;
+      const lastReading = userReadings.length > 0 ? userReadings[0].created_at : null;
+      return {
+        total: userReadings.length,
+        today: todayReadings,
+        last_at: lastReading
+      };
+    };
+
+    const getSessionStats = (userId: string) => {
+      const userSessions = sessions?.filter(s => s.user_id === userId) || [];
+      const total = userSessions.reduce((sum, s) => sum + (s.duration_seconds || 0), 0);
+      const last = userSessions.length > 0 ? userSessions[0].duration_seconds : null;
+      return { total, last };
+    };
+
+    // ავაწყოთ analytics array
+    const analytics: UserAnalytics[] = users.map(user => {
+      const sub = getSubscription(user.id);
+      const streak = getStreak(user.id);
+      const readingStats = getReadingStats(user.id);
+      const sessionStats = getSessionStats(user.id);
+
+      return {
+        ...user,
+        subscription_status: sub?.status || null,
+        subscription_plan: sub?.plan_type || null,
+        subscription_expires_at: sub?.expires_at || null,
+        celtic_cross_credits: getCredits(user.id, 'celtic_cross'),
+        horseshoe_credits: getCredits(user.id, 'horseshoe'),
+        relationship_credits: getCredits(user.id, 'relationship'),
+        current_streak: streak.current_streak || 0,
+        longest_streak: streak.longest_streak || 0,
+        total_readings: readingStats.total,
+        today_readings: readingStats.today,
+        last_reading_at: readingStats.last_at,
+        total_session_time: sessionStats.total,
+        last_session_duration: sessionStats.last
+      };
+    });
+
+    console.log(`✅ Successfully built analytics for ${analytics.length} users`);
+    return analytics;
+  } catch (error) {
+    console.error('❌ Error in getAllUserAnalytics:', error);
+    return [];
+  }
+}
+
+// მიიღეთ overview სტატისტიკა
+export async function getUserAnalyticsOverview(adminId: string): Promise<UserAnalyticsOverview> {
+  await requireAdmin(adminId);
+
+  if (!supabase) {
+    return {
+      total_users: 0,
+      active_today: 0,
+      premium_users: 0,
+      avg_streak: 0,
+      total_readings: 0,
+      total_revenue: 0
+    };
+  }
+
+  try {
+    console.log('🔍 [UserAnalytics] Fetching overview stats...');
+    const today = new Date().toISOString().split('T')[0];
+
+    // Total users
+    const { count: totalUsers } = await supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true });
+
+    // Active today (last_active_at today)
+    const { count: activeToday } = await supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true })
+      .gte('last_active_at', `${today}T00:00:00`);
+
+    // Premium users
+    const { count: premiumUsers } = await supabase
+      .from('subscriptions')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'active');
+
+    // Avg streak
+    const { data: streaks } = await supabase
+      .from('user_streaks')
+      .select('current_streak');
+    
+    const avgStreak = streaks && streaks.length > 0
+      ? streaks.reduce((sum, s) => sum + (s.current_streak || 0), 0) / streaks.length
+      : 0;
+
+    // Total readings
+    const { count: totalReadings } = await supabase
+      .from('reading_history')
+      .select('*', { count: 'exact', head: true });
+
+    // Total revenue (from subscriptions)
+    const { data: activeSubs } = await supabase
+      .from('subscriptions')
+      .select('plan_type, created_at')
+      .eq('status', 'active');
+    
+    // მარტივი revenue calculation (Monthly: $9.99, Yearly: $99.99)
+    const totalRevenue = (activeSubs || []).reduce((sum, sub) => {
+      return sum + (sub.plan_type === 'yearly' ? 99.99 : 9.99);
+    }, 0);
+
+    console.log('✅ Overview stats loaded:', {
+      total_users: totalUsers || 0,
+      active_today: activeToday || 0,
+      premium_users: premiumUsers || 0,
+      avg_streak: Math.round(avgStreak * 10) / 10,
+      total_readings: totalReadings || 0,
+      total_revenue: totalRevenue
+    });
+
+    return {
+      total_users: totalUsers || 0,
+      active_today: activeToday || 0,
+      premium_users: premiumUsers || 0,
+      avg_streak: Math.round(avgStreak * 10) / 10,
+      total_readings: totalReadings || 0,
+      total_revenue: totalRevenue
+    };
+  } catch (error) {
+    console.error('❌ Error in getUserAnalyticsOverview:', error);
+    return {
+      total_users: 0,
+      active_today: 0,
+      premium_users: 0,
+      avg_streak: 0,
+      total_readings: 0,
+      total_revenue: 0
+    };
+  }
+}
+
+// მიიღეთ კონკრეტული მომხმარებლის reading history
+export async function getUserReadingHistory(
+  adminId: string,
+  userId: string,
+  limit: number = 20
+): Promise<any[]> {
+  await requireAdmin(adminId);
+
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from('reading_history')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching reading history:', error);
+    return [];
+  }
+
+  return data || [];
+}
+
+// მიიღეთ კონკრეტული მომხმარებლის session history
+export async function getUserSessionHistory(
+  adminId: string,
+  userId: string,
+  limit: number = 20
+): Promise<any[]> {
+  await requireAdmin(adminId);
+
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from('user_sessions')
+    .select('*')
+    .eq('user_id', userId)
+    .order('started_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching session history:', error);
+    return [];
+  }
+
+  return data || [];
+}
+
+// განაახლეთ user-ის last_active_at
+export async function updateUserLastActive(userId: string): Promise<void> {
+  if (!supabase) return;
+
+  try {
+    await supabase
+      .from('users')
+      .update({ last_active_at: new Date().toISOString() })
+      .eq('id', userId);
+  } catch (error) {
+    console.error('Error updating last_active_at:', error);
+  }
+}
+
+// ჩაწერეთ session
+export async function logUserSession(
+  userId: string,
+  startedAt: string,
+  endedAt: string,
+  durationSeconds: number,
+  deviceInfo?: any
+): Promise<void> {
+  if (!supabase) return;
+
+  try {
+    await supabase.from('user_sessions').insert({
+      user_id: userId,
+      started_at: startedAt,
+      ended_at: endedAt,
+      duration_seconds: durationSeconds,
+      device_info: deviceInfo || {}
+    });
+  } catch (error) {
+    console.error('Error logging session:', error);
+  }
+}
+
+// ჩაწერეთ reading
+export async function logReading(
+  userId: string,
+  readingType: string,
+  cardIds?: number[],
+  resultSummary?: string
+): Promise<void> {
+  if (!supabase) return;
+
+  try {
+    await supabase.from('reading_history').insert({
+      user_id: userId,
+      reading_type: readingType,
+      card_ids: cardIds || [],
+      result_summary: resultSummary || ''
+    });
+  } catch (error) {
+    console.error('Error logging reading:', error);
+  }
+}
