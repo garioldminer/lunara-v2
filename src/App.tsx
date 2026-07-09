@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from './lib/supabase';
 import SplashScreen from './components/SplashScreen';
-import LoadingScreen from './components/LoadingScreen';
 import OnboardingWelcome from './components/OnboardingWelcome';
 import OnboardingZodiac from './components/OnboardingZodiac';
 import OnboardingFirstReading from './components/OnboardingFirstReading';
@@ -62,70 +61,46 @@ type Screen =
   | 'subscription'
   | 'services';
 
-// 🆕 LoadingScreen-ის messages
-const LOADING_MESSAGES = [
-  "Connecting to the cosmos",
-  "Reading the stars",
-  "Consulting the universe",
-  "Awakening mystical energies",
-  "Aligning celestial forces"
-];
-
 function UserLoader({ onReady }: { onReady: () => void }) {
   const { setUser, setLoading } = useUser();
-  const [loadingProgress, setLoadingProgress] = useState(0);
-  const [loadingMessage, setLoadingMessage] = useState(LOADING_MESSAGES[0]);
 
   useEffect(() => {
-    // შემთხვევითი message
-    const randomMessage = LOADING_MESSAGES[Math.floor(Math.random() * LOADING_MESSAGES.length)];
-    setLoadingMessage(randomMessage);
-
     async function loadUser() {
       console.log('🔵 [UserLoader] Starting user load...');
-      setLoadingProgress(10);
       
       try {
         const tgUser = getTelegramUser();
         console.log('🔵 [UserLoader] Telegram user:', tgUser);
-        setLoadingProgress(30);
         
         if (!tgUser) {
           console.warn('⚠️ [UserLoader] No Telegram user found');
-          setLoadingProgress(100);
           setLoading(false);
           onReady();
           return;
         }
 
         console.log('🔵 [UserLoader] Loading from Supabase...');
-        setLoadingProgress(50);
-        
         const user = await getOrCreateUser(tgUser);
         console.log('🔵 [UserLoader] User from Supabase:', user);
-        setLoadingProgress(80);
         
         if (user) {
           setUser(user);
           console.log('✅ [UserLoader] User saved to context!');
           console.log('📊 Onboarding completed:', user.onboarding_completed);
           console.log('♏ Sun sign:', user.sun_sign);
-          setLoadingProgress(100);
         }
       } catch (error) {
         console.error('❌ [UserLoader] Error:', error);
-        setLoadingProgress(100);
       } finally {
         setLoading(false);
-        setTimeout(() => onReady(), 500);
+        onReady();
       }
     }
 
     loadUser();
   }, [setUser, setLoading, onReady]);
 
-  // 🆕 ვაჩვენოთ LoadingScreen
-  return <LoadingScreen message={loadingMessage} progress={loadingProgress} />;
+  return null; // ❌ აღარ ვაჩვენებთ LoadingScreen-ს აქ
 }
 
 function AppContent() {

@@ -36,17 +36,16 @@ function PlanetOrbitDiagram({ planets }: { planets: any[] }) {
   
   const PLANET_RADIUS = 36;
 
-  // ✅ გაზრდილი ratios - მინიმუმ 4-5px დაშორება პლანეტებს შორის
   const getBaseOrbitRadius = (planetName: string): number => {
     const ratios: Record<string, number> = {
-      'Mercury': 0.25,   // 0.15 → 0.25 (გაზრდილი)
-      'Venus': 0.38,     // 0.25 → 0.38 (გაზრდილი)
-      'Moon': 0.48,      // 0.36 → 0.48 (გაზრდილი)
-      'Mars': 0.58,      // 0.49 → 0.58 (გაზრდილი)
-      'Jupiter': 0.68,   // 0.59 → 0.68 (გაზრდილი)
-      'Saturn': 0.78,    // 0.68 → 0.78 (გაზრდილი)
-      'Uranus': 0.88,    // 0.74 → 0.88 (გაზრდილი)
-      'Neptune': 1.0     // უცვლელი
+      'Mercury': 0.25,
+      'Venus': 0.38,
+      'Moon': 0.48,
+      'Mars': 0.58,
+      'Jupiter': 0.68,
+      'Saturn': 0.78,
+      'Uranus': 0.88,
+      'Neptune': 1.0
     };
     return ratios[planetName] || 0.5;
   };
