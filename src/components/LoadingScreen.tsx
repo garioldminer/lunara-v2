@@ -4,7 +4,6 @@ import './LoadingScreen.css';
 
 interface Props {
   message?: string;
-  progress?: number;
 }
 
 const LOADING_QUOTES = [
@@ -15,7 +14,7 @@ const LOADING_QUOTES = [
   "Mystical forces at work..."
 ];
 
-export default function LoadingScreen({ message, progress }: Props) {
+export default function LoadingScreen({ message }: Props) {
   const [randomQuote, setRandomQuote] = useState(LOADING_QUOTES[0]);
 
   useEffect(() => {
