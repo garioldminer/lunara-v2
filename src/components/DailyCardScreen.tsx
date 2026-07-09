@@ -4,6 +4,7 @@ import { ArrowLeft, RotateCcw } from 'lucide-react';
 import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards';
 import QuestionInput from './QuestionInput';
 import { saveReading } from '../lib/readingService';
+import { logReading } from '../lib/adminService';
 import { useUser } from '../context/UserContext';
 import './DailyCardScreen.css';
 
@@ -98,6 +99,19 @@ export default function DailyCardScreen({ onNavigate }: Props) {
           is_reversed: dailyReading.isReversed
         }]
       });
+
+      // 🆕 ეტაპი 3: ჩაწერა reading_history ცხრილში
+      try {
+        await logReading(
+          user.id,
+          'daily_card',
+          [dailyReading.card.id],
+          `${dailyReading.card.name}${dailyReading.isReversed ? ' (Reversed)' : ''}`
+        );
+        console.log('✅ [Reading] Daily card logged:', dailyReading.card.name);
+      } catch (error) {
+        console.error('❌ [Reading] Error logging daily card:', error);
+      }
     }
   };
 
