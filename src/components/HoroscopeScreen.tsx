@@ -7,7 +7,7 @@ import {
   ArrowLeft, Moon, Star, Activity,
   Sparkles, RotateCcw, Share2, Sun, ChevronRight,
   X, Download, Heart, Briefcase, Palette, Hash, DollarSign, Zap, Briefcase as BriefcaseIcon,
-  ChevronDown, Bug, CheckCircle, AlertCircle, Clock, TrendingUp
+  ChevronDown, Bug, CheckCircle, AlertCircle, Clock, TrendingUp, Copy, Shield
 } from 'lucide-react';
 import ShareCardPreview from './ShareCardPreview';
 import LoadingScreen from './LoadingScreen';
@@ -47,6 +47,13 @@ interface PerformanceMetrics {
   }[];
 }
 
+interface SignValidation {
+  userSign: string;
+  foundWrongSigns: string[];
+  replacementsMade: number;
+  originalSigns: { [key: string]: number };
+}
+
 const ERROR_MESSAGES = [
   "The stars are clouded today. Please try again.",
   "Cosmic connection interrupted. Mercury might be in retrograde.",
@@ -83,6 +90,12 @@ const PREDICTION_SUBTITLES = {
   finance: ["Prosperity", "Abundance", "Wealth", "Fortune", "Gains"]
 };
 
+const ALL_SIGNS = [
+  'aries', 'taurus', 'gemini', 'cancer', 'leo', 
+  'virgo', 'libra', 'scorpio', 'sagittarius', 
+  'capricorn', 'aquarius', 'pisces'
+];
+
 const getEnergyEmojis = (level: string | undefined, emoji: string): string => {
   const normalized = level?.toLowerCase() || 'medium';
   if (normalized.includes('very')) return `${emoji}${emoji}${emoji}${emoji}`;
@@ -114,6 +127,51 @@ const getMoonDescription = (moonPhase?: string): string => {
   };
   
   return phaseDescriptions[moonPhase] || "The moon guides your path through the cosmic landscape.";
+};
+
+// 🆕 CLIENT-SIDE SIGN REPLACEMENT FUNCTION
+const fixHoroscopeText = (
+  text: string, 
+  userSign: string,
+  onDetect?: (wrongSign: string) => void
+): string => {
+  if (!text || !userSign) return text;
+  
+  const userSignCapitalized = userSign.charAt(0).toUpperCase() + userSign.slice(1).toLowerCase();
+  let result = text;
+  
+  ALL_SIGNS.forEach(sign => {
+    if (sign === userSign) return;
+    
+    const signCap = sign.charAt(0).toUpperCase() + sign.slice(1).toLowerCase();
+    
+    // Detect wrong sign
+    const wrongPattern = new RegExp(`\\b${signCap}\\b`, 'gi');
+    const matches = result.match(wrongPattern);
+    if (matches && matches.length > 0 && onDetect) {
+      onDetect(sign);
+    }
+    
+    // Replace "As an Aries" / "As a Virgo" patterns
+    result = result.replace(
+      new RegExp(`\\bAs\\s+an?\\s+${signCap}\\b`, 'gi'),
+      `As a ${userSignCapitalized}`
+    );
+    
+    // Replace "Dear Aries" / "Hello Virgo" patterns
+    result = result.replace(
+      new RegExp(`\\b(Dear|Hello)\\s+${signCap}\\b`, 'gi'),
+      `$1 ${userSignCapitalized}`
+    );
+    
+    // Replace standalone sign names (e.g., "Aries" → "Virgo")
+    result = result.replace(
+      new RegExp(`\\b${signCap}\\b`, 'g'),
+      userSignCapitalized
+    );
+  });
+  
+  return result;
 };
 
 function ToastNotification({ toast, onClose }: { toast: Toast; onClose: () => void }) {
@@ -151,13 +209,17 @@ function DebugPanel({
   metrics, 
   diagnostics, 
   isVisible, 
-  onToggle 
+  onToggle,
+  onCopy,
+  signValidation
 }: { 
   logs: DebugLog[];
   metrics: PerformanceMetrics;
   diagnostics: { type: 'success' | 'error' | 'warn'; message: string }[];
   isVisible: boolean;
   onToggle: () => void;
+  onCopy: () => void;
+  signValidation: SignValidation;
 }) {
   return (
     <>
@@ -215,6 +277,7 @@ function DebugPanel({
               boxShadow: '0 8px 24px rgba(0, 0, 0, 0.8)',
             }}
           >
+            {/* Header with Copy Button */}
             <div style={{ 
               display: 'flex', 
               justifyContent: 'space-between', 
@@ -225,19 +288,41 @@ function DebugPanel({
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Bug size={16} color="#ffe566" />
-                <strong style={{ fontSize: '13px' }}>DEBUG PANEL</strong>
+                <strong style={{ fontSize: '13px' }}>DEBUG</strong>
+                <span style={{ fontSize: '10px', color: '#c87800' }}>
+                  ({logs.length})
+                </span>
               </div>
-              <span style={{ fontSize: '10px', color: '#c87800' }}>
-                {logs.length} logs
-              </span>
+              <motion.button
+                onClick={onCopy}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                style={{
+                  background: 'rgba(96, 165, 250, 0.2)',
+                  border: '1px solid rgba(96, 165, 250, 0.5)',
+                  borderRadius: '6px',
+                  padding: '4px 8px',
+                  color: '#60a5fa',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  fontSize: '10px',
+                  fontWeight: 'bold'
+                }}
+              >
+                <Copy size={12} />
+                COPY
+              </motion.button>
             </div>
 
+            {/* Performance Metrics */}
             <div style={{ 
               background: 'rgba(96, 165, 250, 0.1)',
               border: '1px solid rgba(96, 165, 250, 0.3)',
               borderRadius: '8px',
               padding: '8px',
-              marginBottom: '12px'
+              marginBottom: '8px'
             }}>
               <div style={{ 
                 display: 'flex', 
@@ -273,13 +358,83 @@ function DebugPanel({
               </div>
             </div>
 
+            {/* 🆕 SIGN VALIDATION Section */}
+            <div style={{ 
+              background: signValidation.foundWrongSigns.length > 0 
+                ? 'rgba(239, 68, 68, 0.1)' 
+                : 'rgba(16, 185, 129, 0.1)',
+              border: `1px solid ${signValidation.foundWrongSigns.length > 0 
+                ? 'rgba(239, 68, 68, 0.3)' 
+                : 'rgba(16, 185, 129, 0.3)'}`,
+              borderRadius: '8px',
+              padding: '8px',
+              marginBottom: '8px'
+            }}>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '6px',
+                marginBottom: '6px',
+                color: signValidation.foundWrongSigns.length > 0 ? '#ef4444' : '#10b981',
+                fontWeight: 'bold'
+              }}>
+                <Shield size={14} />
+                SIGN VALIDATION
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#c87800' }}>User Sign:</span>
+                  <span style={{ color: '#ffe566', fontWeight: 'bold', textTransform: 'capitalize' }}>
+                    {signValidation.userSign || '...'}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#c87800' }}>Wrong Signs Found:</span>
+                  <span style={{ 
+                    color: signValidation.foundWrongSigns.length > 0 ? '#ef4444' : '#10b981', 
+                    fontWeight: 'bold' 
+                  }}>
+                    {signValidation.foundWrongSigns.length > 0 
+                      ? signValidation.foundWrongSigns.join(', ')
+                      : 'None ✅'}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#c87800' }}>Replacements Made:</span>
+                  <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>
+                    {signValidation.replacementsMade}
+                  </span>
+                </div>
+                {signValidation.foundWrongSigns.length > 0 && (
+                  <div style={{ 
+                    marginTop: '4px',
+                    padding: '4px',
+                    background: 'rgba(0, 0, 0, 0.3)',
+                    borderRadius: '4px',
+                    fontSize: '9px',
+                    color: '#94a3b8'
+                  }}>
+                    <div style={{ color: '#ef4444', fontWeight: 'bold', marginBottom: '2px' }}>
+                      ⚠️ Original signs in text:
+                    </div>
+                    {Object.entries(signValidation.originalSigns).map(([sign, count]) => (
+                      <div key={sign} style={{ paddingLeft: '8px' }}>
+                        • {sign}: {count}x
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Diagnostics */}
             {diagnostics.length > 0 && (
               <div style={{ 
                 background: 'rgba(251, 191, 36, 0.1)',
                 border: '1px solid rgba(251, 191, 36, 0.3)',
                 borderRadius: '8px',
                 padding: '8px',
-                marginBottom: '12px'
+                marginBottom: '8px'
               }}>
                 <div style={{ 
                   display: 'flex', 
@@ -293,7 +448,7 @@ function DebugPanel({
                   DIAGNOSTICS
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  {diagnostics.map((diag, i) => (
+                  {diagnostics.slice(0, 8).map((diag, i) => (
                     <div key={i} style={{ 
                       display: 'flex', 
                       alignItems: 'center', 
@@ -315,6 +470,7 @@ function DebugPanel({
               </div>
             )}
 
+            {/* Logs */}
             <div style={{ 
               background: 'rgba(20, 12, 5, 0.8)',
               border: '1px solid rgba(200, 120, 0, 0.3)',
@@ -415,12 +571,12 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
 
-  // 🆕 ADMIN CHECK
+  // ADMIN CHECK
   const ADMIN_USER_ID = 'c9dbe3be-5c02-4034-8bfd-1d693eb02754';
   const isAdmin = user?.id === ADMIN_USER_ID;
 
   // DEBUG STATES
-  const [debugVisible, setDebugVisible] = useState(false); // default OFF
+  const [debugVisible, setDebugVisible] = useState(false);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
   const [performanceMetrics, setPerformanceMetrics] = useState<PerformanceMetrics>({
     startTime: Date.now(),
@@ -430,7 +586,15 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const prevLoadingRef = useRef<boolean | null>(null);
   const prevHoroscopeRef = useRef<any>(null);
 
-  // 🆕 READING DEDUPLICATION
+  // 🆕 SIGN VALIDATION STATE
+  const [signValidation, setSignValidation] = useState<SignValidation>({
+    userSign: '',
+    foundWrongSigns: [],
+    replacementsMade: 0,
+    originalSigns: {}
+  });
+
+  // READING DEDUPLICATION
   const loggedReadingsRef = useRef<Set<string>>(new Set());
   const isInitialLoadRef = useRef(true);
 
@@ -441,7 +605,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     message: string,
     data?: any
   ) => {
-    // მხოლოდ admin-ისთვის log
     if (!isAdmin) return;
 
     const log: DebugLog = {
@@ -507,6 +670,71 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     }
   };
 
+  // 🆕 COPY DEBUG DATA FUNCTION
+  const handleCopyDebug = () => {
+    const debugData = {
+      timestamp: new Date().toISOString(),
+      app: 'Lunara v2',
+      page: 'HoroscopeScreen',
+      user: user ? {
+        id: user.id,
+        name: user.display_name,
+        sun_sign: user.sun_sign,
+        moon_sign: user.moon_sign,
+        rising_sign: user.rising_sign
+      } : null,
+      performance: performanceMetrics,
+      diagnostics: diagnostics,
+      signValidation: signValidation,
+      logs: debugLogs.map(log => ({
+        time: log.timestamp,
+        type: log.type,
+        category: log.category,
+        message: log.message,
+        data: log.data
+      })),
+      horoscope: horoscope ? {
+        id: horoscope.id,
+        date: horoscope.date,
+        reading_type: horoscope.reading_type,
+        ai_model: horoscope.ai_model_used,
+        generation_time_ms: horoscope.generation_time_ms,
+        tokens_used: horoscope.tokens_used,
+        cached: (horoscope as any).cached,
+        moon_phase: horoscope.moon_phase,
+        moon_sign: horoscope.moon_sign,
+        cosmic_energy_level: horoscope.cosmic_energy_level,
+        love_energy_level: horoscope.love_energy_level,
+        career_energy_level: horoscope.career_energy_level,
+        lucky_color: horoscope.lucky_color,
+        lucky_number: horoscope.lucky_number,
+        lucky_planet: horoscope.lucky_planet,
+        lucky_crystal: horoscope.lucky_crystal,
+        hero_description: horoscope.hero_description,
+        affirmation: horoscope.affirmation,
+        predictions: {
+          general: horoscope.general_prediction,
+          love: horoscope.love_prediction,
+          career: horoscope.career_prediction,
+          health: horoscope.health_prediction,
+          finance: horoscope.finance_prediction
+        }
+      } : null,
+      activeTab: activeTab,
+      url: window.location.href
+    };
+    
+    navigator.clipboard.writeText(JSON.stringify(debugData, null, 2))
+      .then(() => {
+        showToast('Debug data copied! 📋', 'success');
+        addLog('success', 'DEBUG', '📋 Debug data copied to clipboard');
+      })
+      .catch(err => {
+        showToast('Copy failed', 'error');
+        addLog('error', 'DEBUG', '❌ Copy failed', err);
+      });
+  };
+
   // DEBUG: Component Mount
   useEffect(() => {
     if (!isAdmin) return;
@@ -515,7 +743,9 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     addLog('info', 'USER', '👤 User:', user ? { 
       id: user.id, 
       name: user.display_name, 
-      sun_sign: user.sun_sign 
+      sun_sign: user.sun_sign,
+      moon_sign: user.moon_sign,
+      rising_sign: user.rising_sign
     } : null);
     
     setPerformanceMetrics({
@@ -564,14 +794,71 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     }
   }, [loading]);
 
-  // DEBUG: Track horoscope data changes
+  // 🆕 DEBUG: Track horoscope data changes WITH SIGN VALIDATION
   useEffect(() => {
     if (!isAdmin) return;
     
     if (horoscope !== prevHoroscopeRef.current) {
-      addLog('info', 'DATA', '📦 Horoscope data updated', horoscope);
+      addLog('info', 'DATA', '📦 Horoscope data updated', {
+        id: horoscope?.id,
+        date: horoscope?.date,
+        reading_type: horoscope?.reading_type,
+        ai_model: horoscope?.ai_model_used,
+        generation_time_ms: horoscope?.generation_time_ms
+      });
       
-      if (horoscope) {
+      if (horoscope && userSign) {
+        // 🆕 SIGN VALIDATION - ამოწმებს რომელი sign-ებია ტექსტში
+        const foundWrongSigns: string[] = [];
+        const originalSigns: { [key: string]: number } = {};
+        let replacementsMade = 0;
+        
+        const allTexts = [
+          horoscope.general_prediction,
+          horoscope.love_prediction,
+          horoscope.career_prediction,
+          horoscope.health_prediction,
+          horoscope.finance_prediction,
+          horoscope.affirmation,
+          horoscope.hero_description
+        ].filter(Boolean).join(' ');
+        
+        ALL_SIGNS.forEach(sign => {
+          if (sign === userSign) return;
+          
+          const signCap = sign.charAt(0).toUpperCase() + sign.slice(1).toLowerCase();
+          const pattern = new RegExp(`\\b${signCap}\\b`, 'gi');
+          const matches = allTexts.match(pattern);
+          
+          if (matches && matches.length > 0) {
+            foundWrongSigns.push(signCap);
+            originalSigns[signCap] = matches.length;
+            replacementsMade += matches.length;
+          }
+        });
+        
+        setSignValidation({
+          userSign,
+          foundWrongSigns,
+          replacementsMade,
+          originalSigns
+        });
+        
+        if (foundWrongSigns.length > 0) {
+          addDiagnostic('warn', `Wrong signs detected: ${foundWrongSigns.join(', ')}`);
+          addLog('warn', 'SIGN', `⚠️ Wrong signs in text: ${foundWrongSigns.join(', ')}`, {
+            userSign,
+            foundWrongSigns,
+            replacementsMade,
+            originalSigns
+          });
+          addLog('info', 'FIX', `🔧 Client-side fix applied: ${replacementsMade} replacements`);
+        } else {
+          addDiagnostic('success', 'Sign validation passed ✅');
+          addLog('success', 'SIGN', `✅ Text contains correct sign: ${userSign}`);
+        }
+        
+        // Required fields validation
         const requiredFields = [
           'date', 'general_prediction', 'love_prediction', 
           'career_prediction', 'health_prediction', 'finance_prediction'
@@ -623,7 +910,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
       
       prevHoroscopeRef.current = horoscope;
     }
-  }, [horoscope]);
+  }, [horoscope, userSign]);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -637,7 +924,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   useEffect(() => {
     if (!isAdmin) return;
     addLog('info', 'TAB', `📑 Active tab: ${activeTab}`);
-    // 🆕 Reset initial load flag on tab change
     isInitialLoadRef.current = true;
   }, [activeTab]);
 
@@ -668,11 +954,10 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     }
   }, [loading, horoscope]);
 
-  // 🆕 READING HISTORY LOGGING - მხოლოდ initial load-ზე, deduplication-ით
+  // READING HISTORY LOGGING
   useEffect(() => {
     if (!user || !horoscope || loading || !userSign) return;
     
-    // 🆕 Skip if not initial load (refresh-ზე არ ჩაიწეროს)
     if (!isInitialLoadRef.current) {
       if (isAdmin) {
         addLog('info', 'READING', '️ Skip reading log (refresh)', { tab: activeTab });
@@ -680,7 +965,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
       return;
     }
     
-    // 🆕 Deduplication check
     const readingKey = `${user.id}-${activeTab}-${horoscope.date}`;
     if (loggedReadingsRef.current.has(readingKey)) {
       if (isAdmin) {
@@ -697,7 +981,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         `${activeTab} - ${userSign} - ${horoscope.date}`
       ).then(() => {
         loggedReadingsRef.current.add(readingKey);
-        isInitialLoadRef.current = false; // 🆕 Mark as logged
+        isInitialLoadRef.current = false;
         if (isAdmin) {
           addLog('success', 'READING', '✅ Horoscope reading logged', { 
             tab: activeTab, 
@@ -851,6 +1135,8 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
             diagnostics={diagnostics}
             isVisible={debugVisible}
             onToggle={() => setDebugVisible(!debugVisible)}
+            onCopy={handleCopyDebug}
+            signValidation={signValidation}
           />
         )}
       </>
@@ -883,6 +1169,8 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
             diagnostics={diagnostics}
             isVisible={debugVisible}
             onToggle={() => setDebugVisible(!debugVisible)}
+            onCopy={handleCopyDebug}
+            signValidation={signValidation}
           />
         )}
       </>
@@ -910,27 +1198,48 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
             diagnostics={diagnostics}
             isVisible={debugVisible}
             onToggle={() => setDebugVisible(!debugVisible)}
+            onCopy={handleCopyDebug}
+            signValidation={signValidation}
           />
         )}
       </>
     );
   }
 
-  const formattedDate = new Date(horoscope.date).toLocaleDateString('en-US', {
+  // 🆕 CLIENT-SIDE POST-PROCESSING: Sign Replacement
+  const wrongSignsDetected: string[] = [];
+  const detectWrongSign = (sign: string) => {
+    if (!wrongSignsDetected.includes(sign)) {
+      wrongSignsDetected.push(sign);
+    }
+  };
+
+  const fixedHoroscope = {
+    ...horoscope,
+    general_prediction: fixHoroscopeText(horoscope.general_prediction, userSign, detectWrongSign),
+    love_prediction: fixHoroscopeText(horoscope.love_prediction, userSign, detectWrongSign),
+    career_prediction: fixHoroscopeText(horoscope.career_prediction, userSign, detectWrongSign),
+    health_prediction: fixHoroscopeText(horoscope.health_prediction, userSign, detectWrongSign),
+    finance_prediction: fixHoroscopeText(horoscope.finance_prediction, userSign, detectWrongSign),
+    affirmation: fixHoroscopeText(horoscope.affirmation, userSign, detectWrongSign),
+    hero_description: fixHoroscopeText(horoscope.hero_description, userSign, detectWrongSign)
+  };
+
+  const formattedDate = new Date(fixedHoroscope.date).toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
     year: 'numeric'
   });
 
-  const heroTitle = horoscope.hero_description 
-    ? horoscope.hero_description.split(' ').slice(0, 2).join(' ').toUpperCase()
+  const heroTitle = fixedHoroscope.hero_description 
+    ? fixedHoroscope.hero_description.split(' ').slice(0, 2).join(' ').toUpperCase()
     : TAB_HERO_FALLBACK[activeTab].split(' ').slice(0, 2).join(' ').toUpperCase();
 
-  const heroDescription = horoscope.hero_description 
-    ? horoscope.hero_description
+  const heroDescription = fixedHoroscope.hero_description 
+    ? fixedHoroscope.hero_description
     : TAB_HERO_FALLBACK[activeTab];
 
-  const moonDescription = getMoonDescription(horoscope.moon_phase);
+  const moonDescription = getMoonDescription(fixedHoroscope.moon_phase);
 
   return (
     <>
@@ -1088,11 +1397,11 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                 <div className="premium-energy-icon">
                   <Zap size={32} />
                 </div>
-                <p className="premium-energy-level">{horoscope.cosmic_energy_level?.toUpperCase() || 'MEDIUM'}</p>
+                <p className="premium-energy-level">{fixedHoroscope.cosmic_energy_level?.toUpperCase() || 'MEDIUM'}</p>
                 <p className="premium-energy-subtitle">Energy</p>
                 <div className="premium-energy-dots">
                   {[...Array(5)].map((_, i) => (
-                    <div key={i} className={`dot ${i < (horoscope.cosmic_energy_level?.includes('very') ? 5 : horoscope.cosmic_energy_level?.includes('high') ? 4 : horoscope.cosmic_energy_level?.includes('medium') ? 3 : 2) ? 'active' : ''}`} />
+                    <div key={i} className={`dot ${i < (fixedHoroscope.cosmic_energy_level?.includes('very') ? 5 : fixedHoroscope.cosmic_energy_level?.includes('high') ? 4 : fixedHoroscope.cosmic_energy_level?.includes('medium') ? 3 : 2) ? 'active' : ''}`} />
                   ))}
                 </div>
               </motion.div>
@@ -1106,11 +1415,11 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                 <div className="premium-energy-icon">
                   <Heart size={32} />
                 </div>
-                <p className="premium-energy-level">{horoscope.love_energy_level?.toUpperCase() || 'MEDIUM'}</p>
+                <p className="premium-energy-level">{fixedHoroscope.love_energy_level?.toUpperCase() || 'MEDIUM'}</p>
                 <p className="premium-energy-subtitle">Emotions</p>
                 <div className="premium-energy-dots">
                   {[...Array(5)].map((_, i) => (
-                    <div key={i} className={`dot ${i < (horoscope.love_energy_level?.includes('very') ? 5 : horoscope.love_energy_level?.includes('high') ? 4 : horoscope.love_energy_level?.includes('medium') ? 3 : 2) ? 'active' : ''}`} />
+                    <div key={i} className={`dot ${i < (fixedHoroscope.love_energy_level?.includes('very') ? 5 : fixedHoroscope.love_energy_level?.includes('high') ? 4 : fixedHoroscope.love_energy_level?.includes('medium') ? 3 : 2) ? 'active' : ''}`} />
                   ))}
                 </div>
               </motion.div>
@@ -1124,11 +1433,11 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                 <div className="premium-energy-icon">
                   <BriefcaseIcon size={32} />
                 </div>
-                <p className="premium-energy-level">{horoscope.career_energy_level?.toUpperCase() || 'MEDIUM'}</p>
+                <p className="premium-energy-level">{fixedHoroscope.career_energy_level?.toUpperCase() || 'MEDIUM'}</p>
                 <p className="premium-energy-subtitle">Opportunities</p>
                 <div className="premium-energy-dots">
                   {[...Array(5)].map((_, i) => (
-                    <div key={i} className={`dot ${i < (horoscope.career_energy_level?.includes('very') ? 5 : horoscope.career_energy_level?.includes('high') ? 4 : horoscope.career_energy_level?.includes('medium') ? 3 : 2) ? 'active' : ''}`} />
+                    <div key={i} className={`dot ${i < (fixedHoroscope.career_energy_level?.includes('very') ? 5 : fixedHoroscope.career_energy_level?.includes('high') ? 4 : fixedHoroscope.career_energy_level?.includes('medium') ? 3 : 2) ? 'active' : ''}`} />
                   ))}
                 </div>
               </motion.div>
@@ -1147,8 +1456,8 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
             
             <div className="premium-moon-content">
               <h4 className="premium-moon-label">MOON INFO</h4>
-              <h3 className="premium-moon-phase">{horoscope.moon_phase}</h3>
-              <p className="premium-moon-sign">IN {horoscope.moon_sign?.toUpperCase()}</p>
+              <h3 className="premium-moon-phase">{fixedHoroscope.moon_phase}</h3>
+              <p className="premium-moon-sign">IN {fixedHoroscope.moon_sign?.toUpperCase()}</p>
               <p className="premium-moon-desc">{moonDescription}</p>
             </div>
 
@@ -1180,7 +1489,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                   <Sparkles size={28} />
                 </div>
                 <h4>GENERAL</h4>
-                <p>{getPredictionSubtitle('general', horoscope.date)}</p>
+                <p>{getPredictionSubtitle('general', fixedHoroscope.date)}</p>
               </motion.div>
 
               <motion.div 
@@ -1196,7 +1505,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                   <Heart size={28} />
                 </div>
                 <h4>LOVE</h4>
-                <p>{getPredictionSubtitle('love', horoscope.date)}</p>
+                <p>{getPredictionSubtitle('love', fixedHoroscope.date)}</p>
               </motion.div>
 
               <motion.div 
@@ -1212,7 +1521,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                   <BriefcaseIcon size={28} />
                 </div>
                 <h4>CAREER</h4>
-                <p>{getPredictionSubtitle('career', horoscope.date)}</p>
+                <p>{getPredictionSubtitle('career', fixedHoroscope.date)}</p>
               </motion.div>
 
               <motion.div 
@@ -1228,7 +1537,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                   <Activity size={28} />
                 </div>
                 <h4>HEALTH</h4>
-                <p>{getPredictionSubtitle('health', horoscope.date)}</p>
+                <p>{getPredictionSubtitle('health', fixedHoroscope.date)}</p>
               </motion.div>
 
               <motion.div 
@@ -1244,7 +1553,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                   <DollarSign size={28} />
                 </div>
                 <h4>FINANCE</h4>
-                <p>{getPredictionSubtitle('finance', horoscope.date)}</p>
+                <p>{getPredictionSubtitle('finance', fixedHoroscope.date)}</p>
               </motion.div>
             </div>
           </div>
@@ -1259,35 +1568,35 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                   <>
                     <div className="modal-icon"><Sparkles size={28} /></div>
                     <h2 className="modal-title">General Energy</h2>
-                    <p className="modal-text">{horoscope.general_prediction}</p>
+                    <p className="modal-text">{fixedHoroscope.general_prediction}</p>
                   </>
                 )}
                 {openModal === 'love' && (
                   <>
                     <div className="modal-icon" style={{ color: '#E8738A' }}><Heart size={28} /></div>
                     <h2 className="modal-title">Love & Relationships</h2>
-                    <p className="modal-text">{horoscope.love_prediction}</p>
+                    <p className="modal-text">{fixedHoroscope.love_prediction}</p>
                   </>
                 )}
                 {openModal === 'career' && (
                   <>
                     <div className="modal-icon" style={{ color: '#7CB3E8' }}><Briefcase size={28} /></div>
                     <h2 className="modal-title">Career & Work</h2>
-                    <p className="modal-text">{horoscope.career_prediction}</p>
+                    <p className="modal-text">{fixedHoroscope.career_prediction}</p>
                   </>
                 )}
                 {openModal === 'health' && (
                   <>
                     <div className="modal-icon"><Activity size={28} /></div>
                     <h2 className="modal-title">Health & Wellness</h2>
-                    <p className="modal-text">{horoscope.health_prediction}</p>
+                    <p className="modal-text">{fixedHoroscope.health_prediction}</p>
                   </>
                 )}
                 {openModal === 'finance' && (
                   <>
                     <div className="modal-icon" style={{ color: '#7CE8A6' }}><DollarSign size={28} /></div>
                     <h2 className="modal-title">Finance & Money</h2>
-                    <p className="modal-text">{horoscope.finance_prediction}</p>
+                    <p className="modal-text">{fixedHoroscope.finance_prediction}</p>
                   </>
                 )}
               </motion.div>
@@ -1304,14 +1613,14 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                 <div className="share-preview-container">
                   <ShareCardPreview 
                     userSign={userSign} 
-                    date={horoscope.date} 
-                    affirmation={horoscope.affirmation} 
-                    moonPhase={horoscope.moon_phase} 
-                    luckyNumber={horoscope.lucky_number} 
-                    luckyColor={horoscope.lucky_color}
-                    luckyCrystal={horoscope.lucky_crystal}
-                    luckyPlanet={horoscope.lucky_planet || zodiacData.planet}
-                    keyTransits={horoscope.key_transits?.slice(0, 2) || []}
+                    date={fixedHoroscope.date} 
+                    affirmation={fixedHoroscope.affirmation} 
+                    moonPhase={fixedHoroscope.moon_phase} 
+                    luckyNumber={fixedHoroscope.lucky_number} 
+                    luckyColor={fixedHoroscope.lucky_color}
+                    luckyCrystal={fixedHoroscope.lucky_crystal}
+                    luckyPlanet={fixedHoroscope.lucky_planet || zodiacData.planet}
+                    keyTransits={fixedHoroscope.key_transits?.slice(0, 2) || []}
                   />
                 </div>
                 <div className="share-actions">
@@ -1351,94 +1660,94 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                     <h1 className="rf-sign-name">{userSign.toUpperCase()}</h1>
                     <div className="rf-date-row">
                       <span className="rf-divider-line" />
-                      <span className="rf-date">{horoscope.date}</span>
+                      <span className="rf-date">{fixedHoroscope.date}</span>
                       <span className="rf-divider-line" />
                     </div>
                   </div>
 
                   <div className="rf-energy-overview">
                     <div className="rf-energy-item">
-                      <span className="rf-energy-emoji">{getEnergyEmojis(horoscope.cosmic_energy_level, '⚡')}</span>
-                      <span className="rf-energy-level">{horoscope.cosmic_energy_level?.toUpperCase() || 'MEDIUM'}</span>
+                      <span className="rf-energy-emoji">{getEnergyEmojis(fixedHoroscope.cosmic_energy_level, '⚡')}</span>
+                      <span className="rf-energy-level">{fixedHoroscope.cosmic_energy_level?.toUpperCase() || 'MEDIUM'}</span>
                       <span className="rf-energy-cat">Energy</span>
                     </div>
                     <div className="rf-energy-divider" />
                     <div className="rf-energy-item">
-                      <span className="rf-energy-emoji">{getEnergyEmojis(horoscope.love_energy_level, '💕')}</span>
-                      <span className="rf-energy-level">{horoscope.love_energy_level?.toUpperCase() || 'MEDIUM'}</span>
+                      <span className="rf-energy-emoji">{getEnergyEmojis(fixedHoroscope.love_energy_level, '💕')}</span>
+                      <span className="rf-energy-level">{fixedHoroscope.love_energy_level?.toUpperCase() || 'MEDIUM'}</span>
                       <span className="rf-energy-cat">Love</span>
                     </div>
                     <div className="rf-energy-divider" />
                     <div className="rf-energy-item">
-                      <span className="rf-energy-emoji">{getEnergyEmojis(horoscope.career_energy_level, '💼')}</span>
-                      <span className="rf-energy-level">{horoscope.career_energy_level?.toUpperCase() || 'MEDIUM'}</span>
+                      <span className="rf-energy-emoji">{getEnergyEmojis(fixedHoroscope.career_energy_level, '💼')}</span>
+                      <span className="rf-energy-level">{fixedHoroscope.career_energy_level?.toUpperCase() || 'MEDIUM'}</span>
                       <span className="rf-energy-cat">Career</span>
                     </div>
                   </div>
 
                   <div className="rf-sections">
-                    {horoscope.general_prediction && (
+                    {fixedHoroscope.general_prediction && (
                       <div className="rf-section">
                         <div className="rf-section-header">
                           <Sparkles size={18} className="rf-section-icon" />
                           <h3>General Energy</h3>
                         </div>
-                        <p className="rf-section-text">{horoscope.general_prediction}</p>
+                        <p className="rf-section-text">{fixedHoroscope.general_prediction}</p>
                       </div>
                     )}
 
-                    {horoscope.love_prediction && (
+                    {fixedHoroscope.love_prediction && (
                       <div className="rf-section">
                         <div className="rf-section-header love">
                           <Heart size={18} className="rf-section-icon" />
                           <h3>Love & Relationships</h3>
                         </div>
-                        <p className="rf-section-text">{horoscope.love_prediction}</p>
+                        <p className="rf-section-text">{fixedHoroscope.love_prediction}</p>
                       </div>
                     )}
 
-                    {horoscope.career_prediction && (
+                    {fixedHoroscope.career_prediction && (
                       <div className="rf-section">
                         <div className="rf-section-header career">
                           <Briefcase size={18} className="rf-section-icon" />
                           <h3>Career & Work</h3>
                         </div>
-                        <p className="rf-section-text">{horoscope.career_prediction}</p>
+                        <p className="rf-section-text">{fixedHoroscope.career_prediction}</p>
                       </div>
                     )}
 
-                    {horoscope.health_prediction && (
+                    {fixedHoroscope.health_prediction && (
                       <div className="rf-section">
                         <div className="rf-section-header health">
                           <Activity size={18} className="rf-section-icon" />
                           <h3>Health & Wellness</h3>
                         </div>
-                        <p className="rf-section-text">{horoscope.health_prediction}</p>
+                        <p className="rf-section-text">{fixedHoroscope.health_prediction}</p>
                       </div>
                     )}
 
-                    {horoscope.finance_prediction && (
+                    {fixedHoroscope.finance_prediction && (
                       <div className="rf-section">
                         <div className="rf-section-header finance">
                           <DollarSign size={18} className="rf-section-icon" />
                           <h3>Finance & Money</h3>
                         </div>
-                        <p className="rf-section-text">{horoscope.finance_prediction}</p>
+                        <p className="rf-section-text">{fixedHoroscope.finance_prediction}</p>
                       </div>
                     )}
                   </div>
 
-                  {horoscope.affirmation && (
+                  {fixedHoroscope.affirmation && (
                     <div className="rf-affirmation">
                       <div className="rf-aff-glow" />
                       <div className="rf-aff-icon">✨</div>
                       <h3 className="rf-aff-title">{activeTab === 'weekly' ? 'Weekly' : activeTab === 'monthly' ? 'Monthly' : 'Daily'} Affirmation</h3>
-                      <p className="rf-aff-text">"{horoscope.affirmation}"</p>
+                      <p className="rf-aff-text">"{fixedHoroscope.affirmation}"</p>
                     </div>
                   )}
 
                   <div className="rf-accordion-container">
-                    {horoscope.key_transits && horoscope.key_transits.length > 0 && (
+                    {fixedHoroscope.key_transits && fixedHoroscope.key_transits.length > 0 && (
                       <div className="rf-accordion">
                         <button 
                           className="rf-accordion-header"
@@ -1467,7 +1776,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                               transition={{ duration: 0.3 }}
                             >
                               <div className="rf-transits-list">
-                                {horoscope.key_transits.slice(0, 5).map((transit, index) => (
+                                {fixedHoroscope.key_transits.slice(0, 5).map((transit, index) => (
                                   <div key={index} className={`rf-transit-item ${transit.influence}`}>
                                     <div className="rf-transit-main">
                                       <span className="rf-transit-planets">
@@ -1520,23 +1829,23 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                               <div className="rf-lucky-item">
                                 <Palette size={20} className="rf-lucky-icon" />
                                 <span className="rf-lucky-label">Color</span>
-                                <span className="rf-lucky-value">{horoscope.lucky_color || 'Gold'}</span>
+                                <span className="rf-lucky-value">{fixedHoroscope.lucky_color || 'Gold'}</span>
                               </div>
                               <div className="rf-lucky-item">
                                 <Hash size={20} className="rf-lucky-icon" />
                                 <span className="rf-lucky-label">Number</span>
-                                <span className="rf-lucky-value">{horoscope.lucky_number || 7}</span>
+                                <span className="rf-lucky-value">{fixedHoroscope.lucky_number || 7}</span>
                               </div>
                               <div className="rf-lucky-item">
                                 <Sun size={20} className="rf-lucky-icon" />
                                 <span className="rf-lucky-label">Planet</span>
-                                <span className="rf-lucky-value">{horoscope.lucky_planet || zodiacData.planet}</span>
+                                <span className="rf-lucky-value">{fixedHoroscope.lucky_planet || zodiacData.planet}</span>
                               </div>
-                              {horoscope.lucky_crystal && (
+                              {fixedHoroscope.lucky_crystal && (
                                 <div className="rf-lucky-item">
                                   <Star size={20} className="rf-lucky-icon" />
                                   <span className="rf-lucky-label">Crystal</span>
-                                  <span className="rf-lucky-value">{horoscope.lucky_crystal}</span>
+                                  <span className="rf-lucky-value">{fixedHoroscope.lucky_crystal}</span>
                                 </div>
                               )}
                             </div>
@@ -1575,8 +1884,8 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                             <div className="rf-moon-info-expanded">
                               <Moon size={24} className="rf-moon-icon-large" />
                               <div className="rf-moon-details-expanded">
-                                <span className="rf-moon-phase-large">{horoscope.moon_phase}</span>
-                                <span className="rf-moon-sign-large">Moon in {horoscope.moon_sign}</span>
+                                <span className="rf-moon-phase-large">{fixedHoroscope.moon_phase}</span>
+                                <span className="rf-moon-sign-large">Moon in {fixedHoroscope.moon_sign}</span>
                                 <p className="rf-moon-desc-expanded">{moonDescription}</p>
                               </div>
                             </div>
@@ -1586,7 +1895,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                     </div>
                   </div>
 
-                  {horoscope.affirmation && (
+                  {fixedHoroscope.affirmation && (
                     <div className="rf-share-bottom">
                       <button 
                         className="share-affirmation-btn" 
@@ -1614,7 +1923,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         </AnimatePresence>
       </div>
 
-      {/* 🆕 DEBUG PANEL - მხოლოდ admin-ისთვის */}
+      {/* DEBUG PANEL - მხოლოდ admin-ისთვის */}
       {isAdmin && (
         <DebugPanel 
           logs={debugLogs}
@@ -1622,6 +1931,8 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           diagnostics={diagnostics}
           isVisible={debugVisible}
           onToggle={() => setDebugVisible(!debugVisible)}
+          onCopy={handleCopyDebug}
+          signValidation={signValidation}
         />
       )}
     </>
