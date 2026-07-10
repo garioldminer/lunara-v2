@@ -10,7 +10,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import ShareCardPreview from './ShareCardPreview';
-import CosmicSkeleton from './CosmicSkeleton';
+import LoadingScreen from './LoadingScreen';
 import SignSelectionScreen from './SignSelectionScreen';
 import { logReading } from '../lib/adminService';
 import './HoroscopeScreen.css';
@@ -133,13 +133,13 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
 
-  // ✅ ყველა hooks უნდა იყოს აქ (React-ის წესი)
+  // ყველა hooks უნდა იყოს აქ (React-ის წესი)
   const { horoscope, loading, refreshing, error, refetch } = useHoroscope(user?.id || '', activeTab);
 
-  // ✅ userSign-ის გამოთვლა useEffect-მდე (React hooks წესი)
+  // userSign-ის გამოთვლა useEffect-მდე (React hooks წესი)
   const userSign = user?.sun_sign?.toLowerCase() || '';
 
-  // 🆕 ეტაპი 3: ჩაწერა reading_history ცხრილში
+  // ეტაპი 3: ჩაწერა reading_history ცხრილში
   useEffect(() => {
     if (!user || !horoscope || loading || !userSign) return;
     
@@ -159,7 +159,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     }
   }, [horoscope, loading, user, activeTab, userSign]);
 
-  // ✅ ახალი: Check if user has sun_sign
+  // Check if user has sun_sign
   if (!user?.sun_sign) {
     console.log('⚠️ [HoroscopeScreen] No sun_sign found → showing SignSelectionScreen');
     return <SignSelectionScreen onNavigate={onNavigate} />;
@@ -246,8 +246,9 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     showToast('Opening Telegram...', 'info');
   };
 
+  // 🆕 LoadingScreen ჩვენება loading-ის დროს
   if (loading && !horoscope) {
-    return <CosmicSkeleton />;
+    return <LoadingScreen message="Reading the stars" />;
   }
 
   if (error && !horoscope) {
