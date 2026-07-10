@@ -161,7 +161,6 @@ function DebugPanel({
 }) {
   return (
     <>
-      {/* Debug Toggle Button */}
       <motion.button
         className="debug-toggle-btn"
         onClick={onToggle}
@@ -190,7 +189,6 @@ function DebugPanel({
         <Bug size={24} />
       </motion.button>
 
-      {/* Debug Panel */}
       <AnimatePresence>
         {isVisible && (
           <motion.div
@@ -217,7 +215,6 @@ function DebugPanel({
               boxShadow: '0 8px 24px rgba(0, 0, 0, 0.8)',
             }}
           >
-            {/* Header */}
             <div style={{ 
               display: 'flex', 
               justifyContent: 'space-between', 
@@ -235,7 +232,6 @@ function DebugPanel({
               </span>
             </div>
 
-            {/* Performance Metrics */}
             <div style={{ 
               background: 'rgba(96, 165, 250, 0.1)',
               border: '1px solid rgba(96, 165, 250, 0.3)',
@@ -277,7 +273,6 @@ function DebugPanel({
               </div>
             </div>
 
-            {/* Diagnostics */}
             {diagnostics.length > 0 && (
               <div style={{ 
                 background: 'rgba(251, 191, 36, 0.1)',
@@ -320,7 +315,6 @@ function DebugPanel({
               </div>
             )}
 
-            {/* Logs */}
             <div style={{ 
               background: 'rgba(20, 12, 5, 0.8)',
               border: '1px solid rgba(200, 120, 0, 0.3)',
@@ -421,8 +415,12 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
 
+  // 🆕 ADMIN CHECK
+  const ADMIN_USER_ID = 'c9dbe3be-5c02-4034-8bfd-1d693eb02754';
+  const isAdmin = user?.id === ADMIN_USER_ID;
+
   // DEBUG STATES
-  const [debugVisible, setDebugVisible] = useState(true);
+  const [debugVisible, setDebugVisible] = useState(false); // default OFF
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
   const [performanceMetrics, setPerformanceMetrics] = useState<PerformanceMetrics>({
     startTime: Date.now(),
@@ -432,6 +430,10 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const prevLoadingRef = useRef<boolean | null>(null);
   const prevHoroscopeRef = useRef<any>(null);
 
+  // 🆕 READING DEDUPLICATION
+  const loggedReadingsRef = useRef<Set<string>>(new Set());
+  const isInitialLoadRef = useRef(true);
+
   // DEBUG HELPER FUNCTIONS
   const addLog = (
     type: DebugLog['type'],
@@ -439,6 +441,9 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     message: string,
     data?: any
   ) => {
+    // მხოლოდ admin-ისთვის log
+    if (!isAdmin) return;
+
     const log: DebugLog = {
       timestamp: new Date().toLocaleTimeString('en-US', { 
         hour12: false, 
@@ -469,10 +474,12 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   };
 
   const addDiagnostic = (type: 'success' | 'error' | 'warn', message: string) => {
+    if (!isAdmin) return;
     setDiagnostics(prev => [{ type, message }, ...prev].slice(0, 10));
   };
 
   const startPhase = (name: string) => {
+    if (!isAdmin) return;
     const startTime = Date.now();
     setPerformanceMetrics(prev => ({
       ...prev,
@@ -482,6 +489,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   };
 
   const endPhase = (name: string) => {
+    if (!isAdmin) return;
     const endTime = Date.now();
     setPerformanceMetrics(prev => {
       const phases = prev.phases.map(p => 
@@ -501,6 +509,8 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
   // DEBUG: Component Mount
   useEffect(() => {
+    if (!isAdmin) return;
+    
     addLog('info', 'MOUNT', '🚀 HoroscopeScreen mounted');
     addLog('info', 'USER', '👤 User:', user ? { 
       id: user.id, 
@@ -526,6 +536,8 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
   // DEBUG: Track loading state changes
   useEffect(() => {
+    if (!isAdmin) return;
+    
     if (prevLoadingRef.current !== loading) {
       addLog('info', 'STATE', `📊 Loading changed: ${prevLoadingRef.current} → ${loading}`);
       
@@ -554,17 +566,17 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
   // DEBUG: Track horoscope data changes
   useEffect(() => {
+    if (!isAdmin) return;
+    
     if (horoscope !== prevHoroscopeRef.current) {
       addLog('info', 'DATA', '📦 Horoscope data updated', horoscope);
       
       if (horoscope) {
-        // Data validation
         const requiredFields = [
           'date', 'general_prediction', 'love_prediction', 
           'career_prediction', 'health_prediction', 'finance_prediction'
         ];
         
-        // ✅ FIX 1: horoscope as any
         const missingFields = requiredFields.filter(f => !(horoscope as any)[f]);
         
         if (missingFields.length === 0) {
@@ -575,7 +587,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           addLog('warn', 'VALIDATE', `⚠️ Missing fields: ${missingFields.join(', ')}`, missingFields);
         }
         
-        // Check predictions length
         const predictions = [
           horoscope.general_prediction,
           horoscope.love_prediction,
@@ -592,7 +603,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           addDiagnostic('success', 'All predictions have content');
         }
         
-        // Energy levels check
         const energyLevels = [
           horoscope.cosmic_energy_level,
           horoscope.love_energy_level,
@@ -615,21 +625,25 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     }
   }, [horoscope]);
 
-  // ✅ FIX 2: error as String
   useEffect(() => {
+    if (!isAdmin) return;
+    
     if (error) {
       addLog('error', 'ERROR', '❌ Error occurred', error);
       addDiagnostic('error', `Error: ${String(error)}`);
     }
   }, [error]);
 
-  // DEBUG: Track tab changes
   useEffect(() => {
+    if (!isAdmin) return;
     addLog('info', 'TAB', `📑 Active tab: ${activeTab}`);
+    // 🆕 Reset initial load flag on tab change
+    isInitialLoadRef.current = true;
   }, [activeTab]);
 
-  // DEBUG: Track refreshing state
   useEffect(() => {
+    if (!isAdmin) return;
+    
     if (refreshing) {
       addLog('info', 'REFRESH', '🔄 Refreshing data...');
       startPhase('refresh');
@@ -639,8 +653,9 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     }
   }, [refreshing]);
 
-  // DEBUG: Overall performance tracking
   useEffect(() => {
+    if (!isAdmin) return;
+    
     if (!loading && horoscope && performanceMetrics.duration === undefined) {
       const endTime = Date.now();
       setPerformanceMetrics(prev => ({
@@ -653,9 +668,26 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     }
   }, [loading, horoscope]);
 
-  // Reading history logging
+  // 🆕 READING HISTORY LOGGING - მხოლოდ initial load-ზე, deduplication-ით
   useEffect(() => {
     if (!user || !horoscope || loading || !userSign) return;
+    
+    // 🆕 Skip if not initial load (refresh-ზე არ ჩაიწეროს)
+    if (!isInitialLoadRef.current) {
+      if (isAdmin) {
+        addLog('info', 'READING', '️ Skip reading log (refresh)', { tab: activeTab });
+      }
+      return;
+    }
+    
+    // 🆕 Deduplication check
+    const readingKey = `${user.id}-${activeTab}-${horoscope.date}`;
+    if (loggedReadingsRef.current.has(readingKey)) {
+      if (isAdmin) {
+        addLog('info', 'READING', '️ Reading already logged, skipping', { key: readingKey });
+      }
+      return;
+    }
     
     try {
       logReading(
@@ -664,22 +696,31 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         [],
         `${activeTab} - ${userSign} - ${horoscope.date}`
       ).then(() => {
-        addLog('success', 'READING', '✅ Horoscope reading logged', { 
-          tab: activeTab, 
-          sign: userSign, 
-          date: horoscope.date 
-        });
+        loggedReadingsRef.current.add(readingKey);
+        isInitialLoadRef.current = false; // 🆕 Mark as logged
+        if (isAdmin) {
+          addLog('success', 'READING', '✅ Horoscope reading logged', { 
+            tab: activeTab, 
+            sign: userSign, 
+            date: horoscope.date 
+          });
+        }
       }).catch(err => {
-        addLog('error', 'READING', '❌ Failed to log reading', err);
+        if (isAdmin) {
+          addLog('error', 'READING', '❌ Failed to log reading', err);
+        }
       });
     } catch (error) {
-      addLog('error', 'READING', '❌ Error logging reading', error);
+      if (isAdmin) {
+        addLog('error', 'READING', '❌ Error logging reading', error);
+      }
     }
   }, [horoscope, loading, user, activeTab, userSign]);
 
-  // Check if user has sun_sign
   if (!user?.sun_sign) {
-    addLog('warn', 'USER', '⚠️ No sun_sign found → redirecting to SignSelection');
+    if (isAdmin) {
+      addLog('warn', 'USER', '⚠️ No sun_sign found → redirecting to SignSelection');
+    }
     return <SignSelectionScreen onNavigate={onNavigate} />;
   }
 
@@ -689,12 +730,16 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     setToast({ message, type });
-    addLog('info', 'TOAST', `🔔 Toast: ${message}`, { type });
+    if (isAdmin) {
+      addLog('info', 'TOAST', `🔔 Toast: ${message}`, { type });
+    }
   };
 
   const toggleAccordion = (section: string) => {
     setOpenAccordion(openAccordion === section ? null : section);
-    addLog('info', 'UI', `📂 Accordion toggled: ${section}`);
+    if (isAdmin) {
+      addLog('info', 'UI', `📂 Accordion toggled: ${section}`);
+    }
   };
 
   const tabs = [
@@ -705,19 +750,25 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   ];
 
   const handleDownloadCard = async () => {
-    addLog('info', 'ACTION', '📥 Download card requested');
+    if (isAdmin) {
+      addLog('info', 'ACTION', '📥 Download card requested');
+    }
     try {
       const html2canvas = (await import('html2canvas')).default;
       
       const element = document.getElementById('share-card');
       if (!element) {
         showToast('Card not found!', 'error');
-        addLog('error', 'DOWNLOAD', '❌ Card element not found');
+        if (isAdmin) {
+          addLog('error', 'DOWNLOAD', '❌ Card element not found');
+        }
         return;
       }
 
       showToast('Generating image...', 'info');
-      startPhase('download');
+      if (isAdmin) {
+        startPhase('download');
+      }
 
       const canvas = await html2canvas(element, {
         scale: 2,
@@ -730,7 +781,9 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
       canvas.toBlob((blob) => {
         if (!blob) {
           showToast('Failed to generate image!', 'error');
-          addLog('error', 'DOWNLOAD', '❌ Blob creation failed');
+          if (isAdmin) {
+            addLog('error', 'DOWNLOAD', '❌ Blob creation failed');
+          }
           return;
         }
 
@@ -743,20 +796,26 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         URL.revokeObjectURL(url);
         
         showToast('Horoscope card downloaded! 🌟', 'success');
-        endPhase('download');
-        addLog('success', 'DOWNLOAD', '✅ Card downloaded successfully');
+        if (isAdmin) {
+          endPhase('download');
+          addLog('success', 'DOWNLOAD', '✅ Card downloaded successfully');
+        }
       }, 'image/png', 1.0);
 
     } catch (error) {
       console.error('Download error:', error);
       showToast('Failed to download card', 'error');
-      addLog('error', 'DOWNLOAD', '❌ Download failed', error);
-      endPhase('download');
+      if (isAdmin) {
+        addLog('error', 'DOWNLOAD', '❌ Download failed', error);
+        endPhase('download');
+      }
     }
   };
 
   const handleShareToTelegram = async () => {
-    addLog('info', 'ACTION', '📤 Share to Telegram requested');
+    if (isAdmin) {
+      addLog('info', 'ACTION', '📤 Share to Telegram requested');
+    }
     const shareText = `Check out my ${userSign} horoscope on Lunara! 🔮✨`;
     const shareUrl = `https://lunara.app/horoscope?sign=${userSign}&date=${horoscope?.date}`;
     
@@ -766,35 +825,42 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
       telegram.openTelegramLink(
         `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`
       );
-      addLog('success', 'SHARE', '✅ Opened Telegram share');
+      if (isAdmin) {
+        addLog('success', 'SHARE', '✅ Opened Telegram share');
+      }
     } else {
       window.open(
         `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
         '_blank'
       );
-      addLog('info', 'SHARE', '🌐 Opened in new window');
+      if (isAdmin) {
+        addLog('info', 'SHARE', '🌐 Opened in new window');
+      }
     }
     showToast('Opening Telegram...', 'info');
   };
 
-  // LoadingScreen ჩვენება loading-ის დროს
   if (loading && !horoscope) {
     return (
       <>
         <LoadingScreen message="Reading the stars" />
-        <DebugPanel 
-          logs={debugLogs}
-          metrics={performanceMetrics}
-          diagnostics={diagnostics}
-          isVisible={debugVisible}
-          onToggle={() => setDebugVisible(!debugVisible)}
-        />
+        {isAdmin && (
+          <DebugPanel 
+            logs={debugLogs}
+            metrics={performanceMetrics}
+            diagnostics={diagnostics}
+            isVisible={debugVisible}
+            onToggle={() => setDebugVisible(!debugVisible)}
+          />
+        )}
       </>
     );
   }
 
   if (error && !horoscope) {
-    addLog('error', 'RENDER', '❌ Rendering error screen');
+    if (isAdmin) {
+      addLog('error', 'RENDER', '❌ Rendering error screen');
+    }
     return (
       <>
         <div className="horoscope-screen">
@@ -810,19 +876,23 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
             </motion.button>
           </div>
         </div>
-        <DebugPanel 
-          logs={debugLogs}
-          metrics={performanceMetrics}
-          diagnostics={diagnostics}
-          isVisible={debugVisible}
-          onToggle={() => setDebugVisible(!debugVisible)}
-        />
+        {isAdmin && (
+          <DebugPanel 
+            logs={debugLogs}
+            metrics={performanceMetrics}
+            diagnostics={diagnostics}
+            isVisible={debugVisible}
+            onToggle={() => setDebugVisible(!debugVisible)}
+          />
+        )}
       </>
     );
   }
 
   if (!horoscope) {
-    addLog('warn', 'RENDER', '⚠️ Rendering empty state');
+    if (isAdmin) {
+      addLog('warn', 'RENDER', '⚠️ Rendering empty state');
+    }
     return (
       <>
         <div className="horoscope-screen">
@@ -833,13 +903,15 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
             <p>The cosmos has no message for you today.</p>
           </div>
         </div>
-        <DebugPanel 
-          logs={debugLogs}
-          metrics={performanceMetrics}
-          diagnostics={diagnostics}
-          isVisible={debugVisible}
-          onToggle={() => setDebugVisible(!debugVisible)}
-        />
+        {isAdmin && (
+          <DebugPanel 
+            logs={debugLogs}
+            metrics={performanceMetrics}
+            diagnostics={diagnostics}
+            isVisible={debugVisible}
+            onToggle={() => setDebugVisible(!debugVisible)}
+          />
+        )}
       </>
     );
   }
@@ -875,14 +947,12 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           ))}
         </div>
 
-        {/* Toast Notifications */}
         <AnimatePresence>
           {toast && (
             <ToastNotification toast={toast} onClose={() => setToast(null)} />
           )}
         </AnimatePresence>
 
-        {/* Refreshing Indicator */}
         <AnimatePresence>
           {refreshing && (
             <motion.div 
@@ -904,7 +974,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           )}
         </AnimatePresence>
 
-        {/* Premium Header */}
         <div className="premium-header">
           <button className="premium-back-btn" onClick={() => onNavigate?.('home')}>
             <ArrowLeft size={24} />
@@ -919,7 +988,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         </div>
 
         <div className="horoscope-content premium-content">
-          {/* Premium Hero Banner */}
           <motion.div
             className="premium-hero-banner"
             initial={{ opacity: 0, y: 20 }}
@@ -984,7 +1052,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
             </div>
           </motion.div>
 
-          {/* Premium Tab Navigation */}
           <div className="premium-tab-nav">
             {tabs.map((tab) => (
               <button 
@@ -1004,7 +1071,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
             ))}
           </div>
 
-          {/* Cosmic Energy Levels */}
           <div className="premium-section">
             <h3 className="premium-section-title">
               <Sparkles size={12} />
@@ -1069,7 +1135,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
             </div>
           </div>
 
-          {/* Premium Moon Info */}
           <motion.div 
             className="premium-moon-card"
             initial={{ opacity: 0, y: 20 }}
@@ -1094,7 +1159,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
             </div>
           </motion.div>
 
-          {/* Premium Predictions Grid */}
           <div className="premium-section">
             <h3 className="premium-section-title">
               <Sparkles size={12} />
@@ -1186,7 +1250,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           </div>
         </div>
 
-        {/* MODAL - Predictions */}
         <AnimatePresence>
           {openModal && (
             <motion.div className="modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpenModal(null)}>
@@ -1232,7 +1295,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           )}
         </AnimatePresence>
 
-        {/* SHARE MODAL */}
         <AnimatePresence>
           {isShareModalOpen && (
             <motion.div className="modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsShareModalOpen(false)}>
@@ -1261,7 +1323,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           )}
         </AnimatePresence>
 
-        {/* READ FULL MODAL */}
         <AnimatePresence>
           {isReadFullOpen && (
             <motion.div 
@@ -1553,14 +1614,16 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         </AnimatePresence>
       </div>
 
-      {/* DEBUG PANEL */}
-      <DebugPanel 
-        logs={debugLogs}
-        metrics={performanceMetrics}
-        diagnostics={diagnostics}
-        isVisible={debugVisible}
-        onToggle={() => setDebugVisible(!debugVisible)}
-      />
+      {/* 🆕 DEBUG PANEL - მხოლოდ admin-ისთვის */}
+      {isAdmin && (
+        <DebugPanel 
+          logs={debugLogs}
+          metrics={performanceMetrics}
+          diagnostics={diagnostics}
+          isVisible={debugVisible}
+          onToggle={() => setDebugVisible(!debugVisible)}
+        />
+      )}
     </>
   );
 }
