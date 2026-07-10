@@ -18,8 +18,9 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
+    // 1. მიიღე request body
     const { user_id, reading_type = 'daily', date } = await req.json();
-    
+
     if (!user_id) {
       throw new Error('user_id is required');
     }
@@ -28,7 +29,7 @@ serve(async (req) => {
     console.log(`Generating horoscope for user ${user_id} on ${targetDate} (type: ${reading_type})`);
 
     // 2. შეამოწე არსებობს თუ არა უკვე horoscope
-    const { data: existing, error: existingError } = await supabase
+    const { data: existing } = await supabase
       .from('horoscopes')
       .select('*')
       .eq('user_id', user_id)
@@ -75,7 +76,7 @@ serve(async (req) => {
     }
 
     // 5. მიიღე ასპექტები
-    const { data: aspects, error: aspectsError } = await supabase
+    const { data: aspects } = await supabase
       .from('aspects')
       .select('*')
       .eq('date', today);
@@ -138,7 +139,7 @@ serve(async (req) => {
       tokensUsed = aiResponse.tokensUsed || 0;
     } catch (geminiError) {
       console.error('Gemini failed, trying Groq:', geminiError);
-      
+
       try {
         const groqKey = await getApiKey(supabase, 'groq');
         aiResponse = await callGroq(groqKey, prompt.system_prompt, userPrompt);
@@ -155,45 +156,55 @@ serve(async (req) => {
     // 10. პარსე AI პასუხი
     let parsed = parseHoroscopeResponse(aiResponse.text);
 
-    // 🆕 VALIDATION: შევამოწმოთ რომ AI-მ სწორი sign-ის horoscope დააბრუნა
+    // ============================================
+    // 🆕 10.5 POST-PROCESSING: Sign Replacement
+    // ============================================
     const userSign = profile.sun_sign.toLowerCase();
-    const responseText = aiResponse.text.toLowerCase();
+    const userSignCapitalized = profile.sun_sign.charAt(0).toUpperCase() + profile.sun_sign.slice(1).toLowerCase();
+    
+    console.log(`🔧 Post-processing: replacing wrong signs with ${userSignCapitalized}`);
 
-    const wrongSigns = ['aries', 'taurus', 'gemini', 'cancer', 'leo', 
-                        'virgo', 'libra', 'scorpio', 'sagittarius', 
-                        'capricorn', 'aquarius', 'pisces']
-      .filter(sign => sign !== userSign);
+    const allSigns = [
+      'aries', 'taurus', 'gemini', 'cancer', 'leo', 
+      'virgo', 'libra', 'scorpio', 'sagittarius', 
+      'capricorn', 'aquarius', 'pisces'
+    ];
 
-    const hasWrongSign = wrongSigns.some(wrongSign => {
-      const patterns = [
-        new RegExp(`as an?\\s+${wrongSign}\\b`, 'i'),
-        new RegExp(`dear\\s+${wrongSign}\\b`, 'i'),
-        new RegExp(`hello\\s+${wrongSign}\\b`, 'i'),
-      ];
-      return patterns.some(pattern => pattern.test(responseText));
-    });
-
-    if (hasWrongSign) {
-      console.error(`❌ AI generated wrong sign! Expected: ${userSign}`);
-      console.log('🔄 Retrying with stronger instruction...');
+    // ფუნქცია sign-ის ჩასანაცვლებლად ტექსტში
+    const replaceSignInText = (text: string): string => {
+      let result = text;
       
-      try {
-        const retryPrompt = `${userPrompt}\n\nCRITICAL REMINDER: Generate horoscope ONLY for ${profile.sun_sign.toUpperCase()} sign. Do NOT mention any other zodiac sign.`;
+      allSigns.forEach(sign => {
+        if (sign === userSign) return;
         
-        if (aiModel === 'gemini') {
-          const geminiKey = await getApiKey(supabase, 'gemini');
-          aiResponse = await callGemini(geminiKey, prompt.system_prompt, retryPrompt);
-        } else {
-          const groqKey = await getApiKey(supabase, 'groq');
-          aiResponse = await callGroq(groqKey, prompt.system_prompt, retryPrompt);
-        }
+        const signCap = sign.charAt(0).toUpperCase() + sign.slice(1).toLowerCase();
         
-        parsed = parseHoroscopeResponse(aiResponse.text);
-        console.log('✅ Retry successful');
-      } catch (retryError) {
-        console.error('Retry failed:', retryError);
-      }
-    }
+        // Replace "As an Aries" / "As a Virgo" patterns
+        result = result.replace(
+          new RegExp(`\\bAs\\s+an?\\s+${signCap}\\b`, 'gi'),
+          `As a ${userSignCapitalized}`
+        );
+        
+        // Replace standalone sign names (e.g., "Aries" → "Virgo")
+        result = result.replace(
+          new RegExp(`\\b${signCap}\\b`, 'g'),
+          userSignCapitalized
+        );
+      });
+      
+      return result;
+    };
+
+    // ჩავანაცვლოთ ყველა prediction-ში
+    parsed.general = replaceSignInText(parsed.general);
+    parsed.love = replaceSignInText(parsed.love);
+    parsed.career = replaceSignInText(parsed.career);
+    parsed.health = replaceSignInText(parsed.health);
+    parsed.finance = replaceSignInText(parsed.finance);
+    parsed.affirmation = replaceSignInText(parsed.affirmation);
+    parsed.hero_description = replaceSignInText(parsed.hero_description);
+
+    console.log(`✅ Post-processing complete: all signs replaced with ${userSignCapitalized}`);
 
     // 11. შეინახე horoscopes ცხრილში
     let newHoroscope;
@@ -229,8 +240,9 @@ serve(async (req) => {
       .single();
 
     if (insertError) {
+      // Duplicate key error handling (race condition)
       if (insertError.code === '23505') {
-        console.log('⚠️ Duplicate key detected, fetching existing...');
+        console.log('⚠️ Duplicate key detected, fetching existing horoscope...');
         const { data: existingHoroscope, error: fetchError } = await supabase
           .from('horoscopes')
           .select('*')
@@ -239,7 +251,9 @@ serve(async (req) => {
           .eq('date', targetDate)
           .single();
         
-        if (fetchError) throw fetchError;
+        if (fetchError) {
+          throw fetchError;
+        }
         newHoroscope = existingHoroscope;
       } else {
         throw insertError;
@@ -248,7 +262,7 @@ serve(async (req) => {
       newHoroscope = data;
     }
 
-    // 12. განაახლე user statistics
+    // 12. განაახლე მომხმარებლის სტატისტიკა
     if (data) {
       await supabase
         .from('user_profiles')
@@ -258,6 +272,7 @@ serve(async (req) => {
         })
         .eq('id', user_id);
 
+      // 13. განაახლე API key usage
       await supabase
         .from('ai_api_keys')
         .update({
@@ -302,7 +317,10 @@ async function getApiKey(supabase: any, provider: string): Promise<string> {
     .eq('is_active', true)
     .single();
 
-  if (!data) throw new Error(`${provider} API key not found`);
+  if (!data) {
+    throw new Error(`${provider} API key not found`);
+  }
+
   return data.api_key;
 }
 
@@ -333,7 +351,9 @@ async function callGemini(apiKey: string, systemPrompt: string, userPrompt: stri
     })
   });
 
-  if (!response.ok) throw new Error(`Gemini API error: ${response.status}`);
+  if (!response.ok) {
+    throw new Error(`Gemini API error: ${response.status}`);
+  }
 
   const data = await response.json();
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
@@ -364,7 +384,9 @@ async function callGroq(apiKey: string, systemPrompt: string, userPrompt: string
     })
   });
 
-  if (!response.ok) throw new Error(`Groq API error: ${response.status}`);
+  if (!response.ok) {
+    throw new Error(`Groq API error: ${response.status}`);
+  }
 
   const data = await response.json();
   const text = data.choices?.[0]?.message?.content || '';
@@ -393,12 +415,13 @@ function parseHoroscopeResponse(text: string) {
     affirmation: ''
   };
 
+  // 1. JSON parsing
   try {
     const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/) || text.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       const jsonText = jsonMatch[1] || jsonMatch[0];
       const parsed = JSON.parse(jsonText);
-      
+
       sections.general = parsed.general_prediction || '';
       sections.love = parsed.love_prediction || '';
       sections.career = parsed.career_prediction || '';
@@ -410,7 +433,7 @@ function parseHoroscopeResponse(text: string) {
       sections.lucky_crystal = parsed.lucky_crystal || '';
       sections.hero_description = parsed.hero_description || '';
       sections.affirmation = parsed.affirmation || '';
-      
+
       const normalizeLevel = (level: string) => {
         if (!level) return 'Medium';
         const lower = level.toLowerCase();
@@ -420,17 +443,18 @@ function parseHoroscopeResponse(text: string) {
         if (lower.includes('low')) return 'Low';
         return 'Medium';
       };
-      
+
       sections.cosmic_energy_level = normalizeLevel(parsed.cosmic_energy_level);
       sections.love_energy_level = normalizeLevel(parsed.love_energy_level);
       sections.career_energy_level = normalizeLevel(parsed.career_energy_level);
-      
+
       return sections;
     }
   } catch (e) {
     console.log('JSON parsing failed, trying markdown format');
   }
 
+  // 2. Markdown fallback
   const generalMatch = text.match(/## General Energy\n([\s\S]*?)(?=##|$)/i);
   if (generalMatch) sections.general = generalMatch[1].trim();
 
@@ -445,6 +469,30 @@ function parseHoroscopeResponse(text: string) {
 
   const healthMatch = text.match(/## Health & Wellness\n([\s\S]*?)(?=##|$)/i);
   if (healthMatch) sections.health = healthMatch[1].trim();
+
+  const cosmicMatch = text.match(/"cosmic_energy_level":\s*"([^"]+)"/i);
+  if (cosmicMatch) {
+    const level = cosmicMatch[1].trim().toLowerCase();
+    if (['low', 'medium', 'high', 'very high'].includes(level)) {
+      sections.cosmic_energy_level = level.charAt(0).toUpperCase() + level.slice(1);
+    }
+  }
+
+  const loveEnergyMatch = text.match(/"love_energy_level":\s*"([^"]+)"/i);
+  if (loveEnergyMatch) {
+    const level = loveEnergyMatch[1].trim().toLowerCase();
+    if (['low', 'medium', 'high', 'very high'].includes(level)) {
+      sections.love_energy_level = level.charAt(0).toUpperCase() + level.slice(1);
+    }
+  }
+
+  const careerEnergyMatch = text.match(/"career_energy_level":\s*"([^"]+)"/i);
+  if (careerEnergyMatch) {
+    const level = careerEnergyMatch[1].trim().toLowerCase();
+    if (['low', 'medium', 'high', 'very high'].includes(level)) {
+      sections.career_energy_level = level.charAt(0).toUpperCase() + level.slice(1);
+    }
+  }
 
   const colorMatch = text.match(/Color:\s*([^\n]+)/i) || text.match(/"lucky_color":\s*"([^"]+)"/i);
   if (colorMatch) sections.lucky_color = colorMatch[1].trim();
@@ -465,7 +513,7 @@ function parseHoroscopeResponse(text: string) {
     || text.match(/Affirmation:\s*"([^"]+)"/i)
     || text.match(/"affirmation":\s*"([^"]+)"/i)
     || text.match(/"([^"]{20,})"/);
-  
+
   if (affirmationMatch) sections.affirmation = affirmationMatch[1].trim();
 
   return sections;
