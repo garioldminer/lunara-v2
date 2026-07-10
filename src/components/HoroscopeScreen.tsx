@@ -129,13 +129,13 @@ const getMoonDescription = (moonPhase?: string): string => {
   return phaseDescriptions[moonPhase] || "The moon guides your path through the cosmic landscape.";
 };
 
-// 🆕 CLIENT-SIDE SIGN REPLACEMENT FUNCTION
+// 🆕 CLIENT-SIDE SIGN REPLACEMENT FUNCTION - ✅ FIXED: string | undefined
 const fixHoroscopeText = (
-  text: string, 
+  text: string | undefined, 
   userSign: string,
   onDetect?: (wrongSign: string) => void
 ): string => {
-  if (!text || !userSign) return text;
+  if (!text || !userSign) return text || '';
   
   const userSignCapitalized = userSign.charAt(0).toUpperCase() + userSign.slice(1).toLowerCase();
   let result = text;
@@ -358,7 +358,7 @@ function DebugPanel({
               </div>
             </div>
 
-            {/* 🆕 SIGN VALIDATION Section */}
+            {/* SIGN VALIDATION Section */}
             <div style={{ 
               background: signValidation.foundWrongSigns.length > 0 
                 ? 'rgba(239, 68, 68, 0.1)' 
@@ -586,7 +586,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const prevLoadingRef = useRef<boolean | null>(null);
   const prevHoroscopeRef = useRef<any>(null);
 
-  // 🆕 SIGN VALIDATION STATE
+  // SIGN VALIDATION STATE
   const [signValidation, setSignValidation] = useState<SignValidation>({
     userSign: '',
     foundWrongSigns: [],
@@ -670,7 +670,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     }
   };
 
-  // 🆕 COPY DEBUG DATA FUNCTION
+  // COPY DEBUG DATA FUNCTION
   const handleCopyDebug = () => {
     const debugData = {
       timestamp: new Date().toISOString(),
@@ -700,7 +700,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         ai_model: horoscope.ai_model_used,
         generation_time_ms: horoscope.generation_time_ms,
         tokens_used: horoscope.tokens_used,
-        cached: (horoscope as any).cached,
         moon_phase: horoscope.moon_phase,
         moon_sign: horoscope.moon_sign,
         cosmic_energy_level: horoscope.cosmic_energy_level,
@@ -794,7 +793,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     }
   }, [loading]);
 
-  // 🆕 DEBUG: Track horoscope data changes WITH SIGN VALIDATION
+  // DEBUG: Track horoscope data changes WITH SIGN VALIDATION
   useEffect(() => {
     if (!isAdmin) return;
     
@@ -808,7 +807,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
       });
       
       if (horoscope && userSign) {
-        // 🆕 SIGN VALIDATION - ამოწმებს რომელი sign-ებია ტექსტში
+        // SIGN VALIDATION
         const foundWrongSigns: string[] = [];
         const originalSigns: { [key: string]: number } = {};
         let replacementsMade = 0;
