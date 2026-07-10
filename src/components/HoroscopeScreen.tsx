@@ -26,7 +26,7 @@ interface Toast {
   type: 'success' | 'error' | 'info';
 }
 
-// 🆕 DEBUG TYPES
+// DEBUG TYPES
 interface DebugLog {
   timestamp: string;
   type: 'info' | 'success' | 'error' | 'warn' | 'perf';
@@ -145,7 +145,7 @@ function ToastNotification({ toast, onClose }: { toast: Toast; onClose: () => vo
   );
 }
 
-// 🆕 DEBUG PANEL COMPONENT
+// DEBUG PANEL COMPONENT
 function DebugPanel({ 
   logs, 
   metrics, 
@@ -421,8 +421,8 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
 
-  // 🆕 DEBUG STATES
-  const [debugVisible, setDebugVisible] = useState(true); // default ON
+  // DEBUG STATES
+  const [debugVisible, setDebugVisible] = useState(true);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
   const [performanceMetrics, setPerformanceMetrics] = useState<PerformanceMetrics>({
     startTime: Date.now(),
@@ -432,7 +432,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const prevLoadingRef = useRef<boolean | null>(null);
   const prevHoroscopeRef = useRef<any>(null);
 
-  // 🆕 DEBUG HELPER FUNCTIONS
+  // DEBUG HELPER FUNCTIONS
   const addLog = (
     type: DebugLog['type'],
     category: string,
@@ -444,9 +444,8 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         hour12: false, 
         hour: '2-digit', 
         minute: '2-digit', 
-        second: '2-digit',
-        fractionalSecondDigits: 3
-      } as any),
+        second: '2-digit'
+      }),
       type,
       category,
       message,
@@ -455,7 +454,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     
     setDebugLogs(prev => [log, ...prev].slice(0, 100));
     
-    // Console log with colors
     const colors = {
       info: '🔵',
       success: '✅',
@@ -465,14 +463,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     };
     
     console.log(
-      `%c${colors[type]} [${category}] ${message}`,
-      `color: ${
-        type === 'success' ? '#10b981' :
-        type === 'error' ? '#ef4444' :
-        type === 'warn' ? '#fbbf24' :
-        type === 'perf' ? '#60a5fa' :
-        '#ffe566'
-      }; font-weight: bold;`,
+      `${colors[type]} [${category}] ${message}`,
       data || ''
     );
   };
@@ -508,7 +499,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     }
   };
 
-  // 🆕 DEBUG: Component Mount
+  // DEBUG: Component Mount
   useEffect(() => {
     addLog('info', 'MOUNT', '🚀 HoroscopeScreen mounted');
     addLog('info', 'USER', '👤 User:', user ? { 
@@ -529,12 +520,11 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     };
   }, []);
 
-  // ყველა hooks უნდა იყოს აქ (React-ის წესი)
   const { horoscope, loading, refreshing, error, refetch } = useHoroscope(user?.id || '', activeTab);
 
   const userSign = user?.sun_sign?.toLowerCase() || '';
 
-  // 🆕 DEBUG: Track loading state changes
+  // DEBUG: Track loading state changes
   useEffect(() => {
     if (prevLoadingRef.current !== loading) {
       addLog('info', 'STATE', `📊 Loading changed: ${prevLoadingRef.current} → ${loading}`);
@@ -562,7 +552,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     }
   }, [loading]);
 
-  // 🆕 DEBUG: Track horoscope data changes
+  // DEBUG: Track horoscope data changes
   useEffect(() => {
     if (horoscope !== prevHoroscopeRef.current) {
       addLog('info', 'DATA', '📦 Horoscope data updated', horoscope);
@@ -574,7 +564,8 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           'career_prediction', 'health_prediction', 'finance_prediction'
         ];
         
-        const missingFields = requiredFields.filter(f => !horoscope[f]);
+        // ✅ FIX 1: horoscope as any
+        const missingFields = requiredFields.filter(f => !(horoscope as any)[f]);
         
         if (missingFields.length === 0) {
           addDiagnostic('success', 'All required fields present');
@@ -624,20 +615,20 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     }
   }, [horoscope]);
 
-  // 🆕 DEBUG: Track error state
+  // ✅ FIX 2: error as String
   useEffect(() => {
     if (error) {
       addLog('error', 'ERROR', '❌ Error occurred', error);
-      addDiagnostic('error', `Error: ${error.message || 'Unknown error'}`);
+      addDiagnostic('error', `Error: ${String(error)}`);
     }
   }, [error]);
 
-  // 🆕 DEBUG: Track tab changes
+  // DEBUG: Track tab changes
   useEffect(() => {
     addLog('info', 'TAB', `📑 Active tab: ${activeTab}`);
   }, [activeTab]);
 
-  // 🆕 DEBUG: Track refreshing state
+  // DEBUG: Track refreshing state
   useEffect(() => {
     if (refreshing) {
       addLog('info', 'REFRESH', '🔄 Refreshing data...');
@@ -648,7 +639,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     }
   }, [refreshing]);
 
-  // 🆕 DEBUG: Overall performance tracking
+  // DEBUG: Overall performance tracking
   useEffect(() => {
     if (!loading && horoscope && performanceMetrics.duration === undefined) {
       const endTime = Date.now();
@@ -662,7 +653,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     }
   }, [loading, horoscope]);
 
-  // ეტაპი 3: ჩაწერა reading_history ცხრილში
+  // Reading history logging
   useEffect(() => {
     if (!user || !horoscope || loading || !userSign) return;
     
@@ -1294,7 +1285,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                 </button>
 
                 <div className="rf-scroll">
-                  {/* HEADER */}
                   <div className="rf-header">
                     <div className="rf-sign-icon">{zodiacData.symbol}</div>
                     <h1 className="rf-sign-name">{userSign.toUpperCase()}</h1>
@@ -1305,7 +1295,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                     </div>
                   </div>
 
-                  {/* ENERGY OVERVIEW */}
                   <div className="rf-energy-overview">
                     <div className="rf-energy-item">
                       <span className="rf-energy-emoji">{getEnergyEmojis(horoscope.cosmic_energy_level, '⚡')}</span>
@@ -1326,7 +1315,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                     </div>
                   </div>
 
-                  {/* PREDICTIONS */}
                   <div className="rf-sections">
                     {horoscope.general_prediction && (
                       <div className="rf-section">
@@ -1379,7 +1367,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                     )}
                   </div>
 
-                  {/* AFFIRMATION */}
                   {horoscope.affirmation && (
                     <div className="rf-affirmation">
                       <div className="rf-aff-glow" />
@@ -1389,9 +1376,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                     </div>
                   )}
 
-                  {/* ACCORDION SECTIONS */}
                   <div className="rf-accordion-container">
-                    {/* KEY TRANSITS */}
                     {horoscope.key_transits && horoscope.key_transits.length > 0 && (
                       <div className="rf-accordion">
                         <button 
@@ -1443,7 +1428,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                       </div>
                     )}
 
-                    {/* LUCKY ELEMENTS */}
                     <div className="rf-accordion">
                       <button 
                         className="rf-accordion-header"
@@ -1500,7 +1484,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                       </AnimatePresence>
                     </div>
 
-                    {/* MOON INFO */}
                     <div className="rf-accordion">
                       <button 
                         className="rf-accordion-header"
@@ -1542,7 +1525,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                     </div>
                   </div>
 
-                  {/* SHARE ღილაკი ბოლოში */}
                   {horoscope.affirmation && (
                     <div className="rf-share-bottom">
                       <button 
@@ -1558,7 +1540,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                     </div>
                   )}
 
-                  {/* FOOTER */}
                   <div className="rf-footer">
                     <div className="rf-footer-divider">
                       <span className="rf-fd-star">✦</span>
@@ -1572,7 +1553,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         </AnimatePresence>
       </div>
 
-      {/* 🆕 DEBUG PANEL */}
+      {/* DEBUG PANEL */}
       <DebugPanel 
         logs={debugLogs}
         metrics={performanceMetrics}
