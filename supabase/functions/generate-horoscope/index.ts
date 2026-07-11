@@ -147,12 +147,12 @@ serve(async (req) => {
     let parsed = parseHoroscopeResponse(aiResponse.text);
 
     // ============================================
-    // 🆕 POST-PROCESSING: Sign Replacement
+    // POST-PROCESSING: Sign Replacement
     // ============================================
     const userSign = profile.sun_sign.toLowerCase();
     const userSignCapitalized = profile.sun_sign.charAt(0).toUpperCase() + profile.sun_sign.slice(1).toLowerCase();
     
-    console.log(`🔧 Post-processing: replacing wrong signs with ${userSignCapitalized}`);
+    console.log(`Post-processing: replacing wrong signs with ${userSignCapitalized}`);
 
     const allSigns = [
       'aries', 'taurus', 'gemini', 'cancer', 'leo', 
@@ -190,7 +190,7 @@ serve(async (req) => {
     parsed.affirmation = replaceSignInText(parsed.affirmation);
     parsed.hero_description = replaceSignInText(parsed.hero_description);
 
-    console.log(`✅ Post-processing complete: all signs replaced with ${userSignCapitalized}`);
+    console.log(`Post-processing complete: all signs replaced with ${userSignCapitalized}`);
 
     let newHoroscope;
     
@@ -226,7 +226,7 @@ serve(async (req) => {
 
     if (insertError) {
       if (insertError.code === '23505') {
-        console.log('⚠️ Duplicate key detected, fetching existing horoscope...');
+        console.log('Duplicate key detected, fetching existing horoscope...');
         const { data: existingHoroscope, error: fetchError } = await supabase
           .from('horoscopes')
           .select('*')
@@ -264,7 +264,7 @@ serve(async (req) => {
         .eq('provider_name', aiModel);
     }
 
-    console.log(`✅ Horoscope saved successfully for ${targetDate} (${reading_type})`);
+    console.log(`Horoscope saved successfully for ${targetDate} (${reading_type})`);
 
     return new Response(
       JSON.stringify({ 
@@ -316,7 +316,7 @@ async function getCurrentUsage(supabase: any, provider: string): Promise<number>
   return data?.current_usage || 0;
 }
 
-// ✅ განახლებული Gemini API - temperature 0.5
+// ✅ Gemini API - temperature 0.5
 async function callGemini(apiKey: string, systemPrompt: string, userPrompt: string) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
@@ -328,7 +328,7 @@ async function callGemini(apiKey: string, systemPrompt: string, userPrompt: stri
         parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }]
       }],
       generationConfig: {
-        temperature: 0.5,  // ✅ 0.7 → 0.5
+        temperature: 0.5,
         maxOutputTokens: 800
       }
     })
@@ -347,7 +347,7 @@ async function callGemini(apiKey: string, systemPrompt: string, userPrompt: stri
   };
 }
 
-// ✅ განახლებული Groq API - temperature 0.5
+// ✅ Groq API - temperature 0.5
 async function callGroq(apiKey: string, systemPrompt: string, userPrompt: string) {
   const url = 'https://api.groq.com/openai/v1/chat/completions';
 
@@ -363,7 +363,7 @@ async function callGroq(apiKey: string, systemPrompt: string, userPrompt: string
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
       ],
-      temperature: 0.5,  // ✅ 0.7 → 0.5
+      temperature: 0.5,
       max_tokens: 800
     })
   });
