@@ -25,7 +25,7 @@ serve(async (req) => {
     }
 
     const targetDate = date || new Date().toISOString().split('T')[0];
-    console.log(`Generating horoscope for user ${user_id} on ${targetDate} (type: ${reading_type})`);
+    console.log(`🔮 Generating horoscope for user ${user_id} on ${targetDate} (type: ${reading_type})`);
 
     // Check cache
     const { data: existing } = await supabase
@@ -37,7 +37,7 @@ serve(async (req) => {
       .single();
 
     if (existing) {
-      console.log('Horoscope already exists, returning cached');
+      console.log('✅ Horoscope already exists, returning cached');
       return new Response(
         JSON.stringify({ 
           success: true, 
@@ -59,7 +59,7 @@ serve(async (req) => {
       throw new Error('User profile not found');
     }
 
-    console.log(`User sign: ${profile.sun_sign}, Moon: ${profile.moon_sign}`);
+    console.log(`👤 User sign: ${profile.sun_sign}, Moon: ${profile.moon_sign}`);
 
     // Get cosmic data
     const today = new Date().toISOString().split('T')[0];
@@ -89,7 +89,7 @@ serve(async (req) => {
     };
 
     const promptName = promptNames[reading_type] || 'daily_horoscope_base';
-    console.log(`Using prompt template: ${promptName}`);
+    console.log(`📝 Using prompt template: ${promptName}`);
 
     const { data: prompt, error: promptError } = await supabase
       .from('ai_prompts')
@@ -99,7 +99,7 @@ serve(async (req) => {
       .single();
 
     if (promptError || !prompt) {
-      console.error('Prompt error:', promptError);
+      console.error('❌ Prompt error:', promptError);
       throw new Error(`Prompt template not found: ${promptName}`);
     }
 
@@ -123,9 +123,11 @@ serve(async (req) => {
       .replace(/\{\{dominant_element\}\}/g, cosmicData.dominant_element)
       .replace(/\{\{energy_level\}\}/g, String(cosmicData.energy_level));
 
-    console.log('Prompt prepared, calling AI...');
+    console.log('✅ Prompt prepared, calling AI...');
 
-    // Call AI with retry logic
+    // ============================================
+    // AI CALL WITH VALIDATION & RETRY
+    // ============================================
     const startTime = Date.now();
     let aiResponse: any;
     let aiModel = 'gemini';
@@ -137,28 +139,34 @@ serve(async (req) => {
 
     while (!validationPassed && retryCount <= maxRetries) {
       if (retryCount > 0) {
-        console.log(` Retry attempt ${retryCount}/${maxRetries}...`);
+        console.log(`🔄 Retry attempt ${retryCount}/${maxRetries}...`);
       }
 
+      // 🤖 GEMINI FIRST (better for horoscopes)
       try {
+        console.log('🤖 Trying Gemini first (better for horoscopes)...');
         const geminiKey = await getApiKey(supabase, 'gemini');
         aiResponse = await callGemini(geminiKey, prompt.system_prompt, userPrompt);
+        aiModel = 'gemini';
         tokensUsed = aiResponse.tokensUsed || 0;
+        console.log('✅ Gemini response received');
       } catch (geminiError) {
-        console.error('Gemini failed, trying Groq:', geminiError);
-
+        console.error('❌ Gemini failed, trying Groq:', geminiError);
+        
         try {
+          console.log('🤖 Trying Groq as fallback...');
           const groqKey = await getApiKey(supabase, 'groq');
           aiResponse = await callGroq(groqKey, prompt.system_prompt, userPrompt);
           aiModel = 'groq';
           tokensUsed = aiResponse.tokensUsed || 0;
+          console.log('✅ Groq response received');
         } catch (groqError) {
           throw new Error(`Both AI APIs failed: ${groqError}`);
         }
       }
 
       const generationTime = Date.now() - startTime;
-      console.log(`AI response received in ${generationTime}ms`);
+      console.log(`⏱️ AI response received in ${generationTime}ms`);
 
       parsed = parseHoroscopeResponse(aiResponse.text);
 
@@ -168,11 +176,13 @@ serve(async (req) => {
       const targetSign = profile.sun_sign.toLowerCase();
       const signUsed = parsed.sign_used?.toLowerCase() || '';
       
-      console.log(`Validation: targetSign=${targetSign}, signUsed=${signUsed}`);
+      console.log(`🔍 Validation Check:`);
+      console.log(`  Target Sign: ${targetSign}`);
+      console.log(`  Sign Used: ${signUsed}`);
 
       // Check 1: sign_used field
-      if (signUsed !== targetSign) {
-        console.warn(`️ sign_used mismatch: expected ${targetSign}, got ${signUsed}`);
+      if (signUsed && signUsed !== targetSign) {
+        console.warn(`❌ sign_used mismatch: expected ${targetSign}, got ${signUsed}`);
         retryCount++;
         continue;
       }
@@ -181,30 +191,39 @@ serve(async (req) => {
       const allSigns = ['aries', 'taurus', 'gemini', 'cancer', 'leo', 
                         'virgo', 'libra', 'scorpio', 'sagittarius', 
                         'capricorn', 'aquarius', 'pisces'];
-      
+
       const allText = [
         parsed.general, parsed.love, parsed.career, 
         parsed.health, parsed.finance, parsed.affirmation,
         parsed.hero_description
       ].join(' ').toLowerCase();
 
+      console.log(`🔍 Scanning text for wrong signs...`);
+
       const wrongSigns = allSigns.filter(sign => {
         if (sign === targetSign) return false;
-        return new RegExp(`\\b${sign}\\b`, 'i').test(allText);
+        const pattern = new RegExp(`\\b${sign}\\b`, 'i');
+        const found = pattern.test(allText);
+        if (found) {
+          console.warn(`  ❌ Found wrong sign: ${sign}`);
+        }
+        return found;
       });
 
       if (wrongSigns.length > 0) {
-        console.warn(`️ Wrong signs found in text: ${wrongSigns.join(', ')}`);
+        console.warn(`❌ Wrong signs found: ${wrongSigns.join(', ')}`);
         retryCount++;
         continue;
       }
 
       // Check 3: general_prediction starts with correct sign
-      const generalStartsCorrectly = parsed.general?.toLowerCase().startsWith(`as a ${targetSign}`) ||
-                                     parsed.general?.toLowerCase().startsWith(`as an ${targetSign}`);
-      
+      const generalStartsCorrectly = 
+        parsed.general?.toLowerCase().startsWith(`as a ${targetSign}`) ||
+        parsed.general?.toLowerCase().startsWith(`as an ${targetSign}`);
+
       if (!generalStartsCorrectly) {
-        console.warn(`⚠️ general_prediction does not start with "As a ${targetSign}"`);
+        console.warn(`❌ general_prediction does not start with "As a ${targetSign}"`);
+        console.log(`  Actual start: "${parsed.general?.substring(0, 30)}..."`);
         retryCount++;
         continue;
       }
@@ -296,7 +315,7 @@ serve(async (req) => {
 
     if (insertError) {
       if (insertError.code === '23505') {
-        console.log('Duplicate key detected, fetching existing horoscope...');
+        console.log('⚠️ Duplicate key detected, fetching existing horoscope...');
         const { data: existingHoroscope, error: fetchError } = await supabase
           .from('horoscopes')
           .select('*')
@@ -352,7 +371,7 @@ serve(async (req) => {
     );
 
   } catch (error: any) {
-    console.error('Error:', error);
+    console.error('❌ Error:', error);
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -401,7 +420,7 @@ async function callGemini(apiKey: string, systemPrompt: string, userPrompt: stri
         parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }]
       }],
       generationConfig: {
-        temperature: 0.3,  // ✅ 0.7 → 0.3 (more consistent)
+        temperature: 0.3,
         maxOutputTokens: 800
       }
     })
@@ -436,7 +455,7 @@ async function callGroq(apiKey: string, systemPrompt: string, userPrompt: string
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
       ],
-      temperature: 0.3,  // ✅ 0.7 → 0.3 (more consistent)
+      temperature: 0.3,
       max_tokens: 800
     })
   });
@@ -514,7 +533,6 @@ function parseHoroscopeResponse(text: string) {
     console.log('JSON parsing failed, trying markdown format');
   }
 
-  // Markdown fallback (same as before)
   const generalMatch = text.match(/## General Energy\n([\s\S]*?)(?=##|$)/i);
   if (generalMatch) sections.general = generalMatch[1].trim();
 
