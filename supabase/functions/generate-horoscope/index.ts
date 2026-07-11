@@ -18,7 +18,6 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // 1. მიიღე request body
     const { user_id, reading_type = 'daily', date } = await req.json();
 
     if (!user_id) {
@@ -28,7 +27,6 @@ serve(async (req) => {
     const targetDate = date || new Date().toISOString().split('T')[0];
     console.log(`Generating horoscope for user ${user_id} on ${targetDate} (type: ${reading_type})`);
 
-    // 2. შეამოწე არსებობს თუ არა უკვე horoscope
     const { data: existing } = await supabase
       .from('horoscopes')
       .select('*')
@@ -49,7 +47,6 @@ serve(async (req) => {
       );
     }
 
-    // 3. მიიღე მომხმარებლის პროფილი
     const { data: profile, error: profileError } = await supabase
       .from('user_profiles')
       .select('*')
@@ -62,7 +59,6 @@ serve(async (req) => {
 
     console.log(`User sign: ${profile.sun_sign}, Moon: ${profile.moon_sign}`);
 
-    // 4. მიიღე კოსმოსური მონაცემები
     const today = new Date().toISOString().split('T')[0];
 
     const { data: cosmicData, error: cosmicError } = await supabase
@@ -75,13 +71,11 @@ serve(async (req) => {
       throw new Error('Cosmic data not found for today');
     }
 
-    // 5. მიიღე ასპექტები
     const { data: aspects } = await supabase
       .from('aspects')
       .select('*')
       .eq('date', today);
 
-    // 6. აიღე prompt template
     const promptNames: Record<string, string> = {
       daily: 'daily_horoscope_base',
       today: 'daily_horoscope_base',
@@ -105,13 +99,11 @@ serve(async (req) => {
       throw new Error(`Prompt template not found: ${promptName}`);
     }
 
-    // 7. მოამზადე ტრანზიტების ტექსტი
     const transitsText = (aspects || [])
       .slice(0, 5)
       .map(a => `${a.planet1} ${a.aspect_type} ${a.planet2} (${a.influence})`)
       .join('\n');
 
-    // 8. ჩაასვი ცვლადები prompt-ში
     const userPrompt = prompt.user_prompt_template
       .replace(/\{\{sun_sign\}\}/g, profile.sun_sign)
       .replace(/\{\{moon_sign\}\}/g, profile.moon_sign || 'Unknown')
@@ -127,7 +119,6 @@ serve(async (req) => {
 
     console.log('Prompt prepared, calling AI...');
 
-    // 9. გამოიძახე AI API
     const startTime = Date.now();
     let aiResponse: any;
     let aiModel = 'gemini';
@@ -153,11 +144,10 @@ serve(async (req) => {
     const generationTime = Date.now() - startTime;
     console.log(`AI response received in ${generationTime}ms`);
 
-    // 10. პარსე AI პასუხი
     let parsed = parseHoroscopeResponse(aiResponse.text);
 
     // ============================================
-    // 🆕 10.5 POST-PROCESSING: Sign Replacement
+    // 🆕 POST-PROCESSING: Sign Replacement
     // ============================================
     const userSign = profile.sun_sign.toLowerCase();
     const userSignCapitalized = profile.sun_sign.charAt(0).toUpperCase() + profile.sun_sign.slice(1).toLowerCase();
@@ -170,7 +160,6 @@ serve(async (req) => {
       'capricorn', 'aquarius', 'pisces'
     ];
 
-    // ფუნქცია sign-ის ჩასანაცვლებლად ტექსტში
     const replaceSignInText = (text: string): string => {
       let result = text;
       
@@ -179,13 +168,11 @@ serve(async (req) => {
         
         const signCap = sign.charAt(0).toUpperCase() + sign.slice(1).toLowerCase();
         
-        // Replace "As an Aries" / "As a Virgo" patterns
         result = result.replace(
           new RegExp(`\\bAs\\s+an?\\s+${signCap}\\b`, 'gi'),
           `As a ${userSignCapitalized}`
         );
         
-        // Replace standalone sign names (e.g., "Aries" → "Virgo")
         result = result.replace(
           new RegExp(`\\b${signCap}\\b`, 'g'),
           userSignCapitalized
@@ -195,7 +182,6 @@ serve(async (req) => {
       return result;
     };
 
-    // ჩავანაცვლოთ ყველა prediction-ში
     parsed.general = replaceSignInText(parsed.general);
     parsed.love = replaceSignInText(parsed.love);
     parsed.career = replaceSignInText(parsed.career);
@@ -206,7 +192,6 @@ serve(async (req) => {
 
     console.log(`✅ Post-processing complete: all signs replaced with ${userSignCapitalized}`);
 
-    // 11. შეინახე horoscopes ცხრილში
     let newHoroscope;
     
     const { data, error: insertError } = await supabase
@@ -240,7 +225,6 @@ serve(async (req) => {
       .single();
 
     if (insertError) {
-      // Duplicate key error handling (race condition)
       if (insertError.code === '23505') {
         console.log('⚠️ Duplicate key detected, fetching existing horoscope...');
         const { data: existingHoroscope, error: fetchError } = await supabase
@@ -262,7 +246,6 @@ serve(async (req) => {
       newHoroscope = data;
     }
 
-    // 12. განაახლე მომხმარებლის სტატისტიკა
     if (data) {
       await supabase
         .from('user_profiles')
@@ -272,7 +255,6 @@ serve(async (req) => {
         })
         .eq('id', user_id);
 
-      // 13. განაახლე API key usage
       await supabase
         .from('ai_api_keys')
         .update({
@@ -334,6 +316,7 @@ async function getCurrentUsage(supabase: any, provider: string): Promise<number>
   return data?.current_usage || 0;
 }
 
+// ✅ განახლებული Gemini API - temperature 0.5
 async function callGemini(apiKey: string, systemPrompt: string, userPrompt: string) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
@@ -345,7 +328,7 @@ async function callGemini(apiKey: string, systemPrompt: string, userPrompt: stri
         parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }]
       }],
       generationConfig: {
-        temperature: 0.7,
+        temperature: 0.5,  // ✅ 0.7 → 0.5
         maxOutputTokens: 800
       }
     })
@@ -364,6 +347,7 @@ async function callGemini(apiKey: string, systemPrompt: string, userPrompt: stri
   };
 }
 
+// ✅ განახლებული Groq API - temperature 0.5
 async function callGroq(apiKey: string, systemPrompt: string, userPrompt: string) {
   const url = 'https://api.groq.com/openai/v1/chat/completions';
 
@@ -379,7 +363,7 @@ async function callGroq(apiKey: string, systemPrompt: string, userPrompt: string
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
       ],
-      temperature: 0.7,
+      temperature: 0.5,  // ✅ 0.7 → 0.5
       max_tokens: 800
     })
   });
@@ -415,7 +399,6 @@ function parseHoroscopeResponse(text: string) {
     affirmation: ''
   };
 
-  // 1. JSON parsing
   try {
     const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/) || text.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
@@ -454,7 +437,6 @@ function parseHoroscopeResponse(text: string) {
     console.log('JSON parsing failed, trying markdown format');
   }
 
-  // 2. Markdown fallback
   const generalMatch = text.match(/## General Energy\n([\s\S]*?)(?=##|$)/i);
   if (generalMatch) sections.general = generalMatch[1].trim();
 
