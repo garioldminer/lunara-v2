@@ -84,34 +84,38 @@ export function useHoroscope(
 
       console.log(`🔍 Fetching horoscope for ${capitalizedSign} on ${today}`);
 
-      // 🆕 ვცდილობთ დღევანდელ horoscope-ს
+      // 🆕 ვცდილობთ დღევანდელ horoscope-ს (ilike - case-insensitive)
       let { data, error: fetchError } = await supabase
         .from('daily_horoscopes')
         .select('*')
-        .eq('zodiac_sign', capitalizedSign)  // ✅ Capitalized
+        .ilike('zodiac_sign', capitalizedSign)  // 🆕 ilike instead of eq
         .eq('date', today)
-        .single();
+        .maybeSingle();  // 🆕 maybeSingle instead of single
+
+      console.log(`📊 Today's query result:`, { data, error: fetchError });
 
       // 🆕 Fallback: თუ დღევანდელი არ არის, ვცდილობთ გუშინდელს
-      if (fetchError || !data) {
+      if (!data) {
         console.warn(`⚠️ No horoscope for ${today}, trying yesterday...`);
         
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
         const yesterdayStr = yesterday.toISOString().split('T')[0];
         
-        const yesterdayResult = await supabase
+        const { data: yesterdayData, error: yesterdayError } = await supabase
           .from('daily_horoscopes')
           .select('*')
-          .eq('zodiac_sign', capitalizedSign)  // ✅ Capitalized
+          .ilike('zodiac_sign', capitalizedSign)  // 🆕 ilike
           .eq('date', yesterdayStr)
-          .single();
+          .maybeSingle();  // 🆕 maybeSingle
         
-        if (yesterdayResult.error || !yesterdayResult.data) {
-          throw new Error('Horoscope not found. Please try again later.');
+        console.log(`📊 Yesterday's query result:`, { data: yesterdayData, error: yesterdayError });
+        
+        if (yesterdayError || !yesterdayData) {
+          throw new Error(`Horoscope not found for ${capitalizedSign} on ${today} or ${yesterdayStr}`);
         }
         
-        data = yesterdayResult.data;
+        data = yesterdayData;
         console.log(`✅ Using yesterday's horoscope (${yesterdayStr})`);
       }
 
