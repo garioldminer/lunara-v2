@@ -696,7 +696,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
       horoscope: horoscope ? {
         id: horoscope.id,
         date: horoscope.date,
-        reading_type: horoscope.reading_type,
+        reading_type: activeTab,  // ✅ FIXED: activeTab instead of horoscope.reading_type
         ai_model: horoscope.ai_model_used,
         generation_time_ms: horoscope.generation_time_ms,
         tokens_used: horoscope.tokens_used,
@@ -801,7 +801,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
       addLog('info', 'DATA', '📦 Horoscope data updated', {
         id: horoscope?.id,
         date: horoscope?.date,
-        reading_type: horoscope?.reading_type,
+        reading_type: activeTab,  // ✅ FIXED: activeTab instead of horoscope.reading_type
         ai_model: horoscope?.ai_model_used,
         generation_time_ms: horoscope?.generation_time_ms
       });

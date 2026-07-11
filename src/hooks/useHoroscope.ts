@@ -5,6 +5,7 @@ export interface Horoscope {
   id: string;
   zodiac_sign: string;
   date: string;
+  reading_type?: string;  // 🆕 დამატებულია (optional)
   general_prediction: string;
   love_prediction: string;
   career_prediction: string;
@@ -52,6 +53,13 @@ export function useHoroscope(userId: string, readingType: string = 'today'): Use
       return;
     }
 
+    // 🆕 Null check
+    if (!supabase) {
+      setError('Supabase client not initialized');
+      setLoading(false);
+      return;
+    }
+
     try {
       if (isBackgroundRefresh) {
         setRefreshing(true);
@@ -85,7 +93,13 @@ export function useHoroscope(userId: string, readingType: string = 'today'): Use
         throw new Error('Horoscope not found for today. Please try again later.');
       }
 
-      setHoroscope(data);
+      // 🆕 Add reading_type to data
+      const horoscopeData = {
+        ...data,
+        reading_type: readingType
+      };
+
+      setHoroscope(horoscopeData);
       hasFetched.current = true;
 
       console.log(`✅ Horoscope loaded for ${profile.sun_sign} (${today})`);
