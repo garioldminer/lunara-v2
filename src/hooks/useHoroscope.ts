@@ -77,15 +77,18 @@ export function useHoroscope(
       }
       setError(null);
 
+      // 🆕 Capitalize sunSign (Virgo, Aries, etc.)
+      const capitalizedSign = sunSign.charAt(0).toUpperCase() + sunSign.slice(1).toLowerCase();
+      
       const today = new Date().toISOString().split('T')[0];
 
-      console.log(`🔍 Fetching horoscope for ${sunSign} on ${today}`);
+      console.log(`🔍 Fetching horoscope for ${capitalizedSign} on ${today}`);
 
       // 🆕 ვცდილობთ დღევანდელ horoscope-ს
       let { data, error: fetchError } = await supabase
         .from('daily_horoscopes')
         .select('*')
-        .eq('zodiac_sign', sunSign)
+        .eq('zodiac_sign', capitalizedSign)  // ✅ Capitalized
         .eq('date', today)
         .single();
 
@@ -100,7 +103,7 @@ export function useHoroscope(
         const yesterdayResult = await supabase
           .from('daily_horoscopes')
           .select('*')
-          .eq('zodiac_sign', sunSign)
+          .eq('zodiac_sign', capitalizedSign)  // ✅ Capitalized
           .eq('date', yesterdayStr)
           .single();
         
@@ -116,7 +119,7 @@ export function useHoroscope(
         throw new Error('No horoscope data available');
       }
 
-      console.log(`✅ Horoscope loaded for ${sunSign}`);
+      console.log(`✅ Horoscope loaded for ${capitalizedSign}`);
 
       const horoscopeData = {
         ...data,
