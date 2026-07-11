@@ -27,6 +27,7 @@ serve(async (req) => {
     const targetDate = date || new Date().toISOString().split('T')[0];
     console.log(`Generating horoscope for user ${user_id} on ${targetDate} (type: ${reading_type})`);
 
+    // Check cache
     const { data: existing } = await supabase
       .from('horoscopes')
       .select('*')
@@ -47,6 +48,7 @@ serve(async (req) => {
       );
     }
 
+    // Get user profile
     const { data: profile, error: profileError } = await supabase
       .from('user_profiles')
       .select('*')
@@ -59,6 +61,7 @@ serve(async (req) => {
 
     console.log(`User sign: ${profile.sun_sign}, Moon: ${profile.moon_sign}`);
 
+    // Get cosmic data
     const today = new Date().toISOString().split('T')[0];
 
     const { data: cosmicData, error: cosmicError } = await supabase
@@ -76,6 +79,7 @@ serve(async (req) => {
       .select('*')
       .eq('date', today);
 
+    // Get prompt template
     const promptNames: Record<string, string> = {
       daily: 'daily_horoscope_base',
       today: 'daily_horoscope_base',
@@ -99,11 +103,13 @@ serve(async (req) => {
       throw new Error(`Prompt template not found: ${promptName}`);
     }
 
+    // Prepare transits text
     const transitsText = (aspects || [])
       .slice(0, 5)
       .map(a => `${a.planet1} ${a.aspect_type} ${a.planet2} (${a.influence})`)
       .join('\n');
 
+    // Replace variables in prompt
     const userPrompt = prompt.user_prompt_template
       .replace(/\{\{sun_sign\}\}/g, profile.sun_sign)
       .replace(/\{\{moon_sign\}\}/g, profile.moon_sign || 'Unknown')
@@ -119,46 +125,109 @@ serve(async (req) => {
 
     console.log('Prompt prepared, calling AI...');
 
+    // Call AI with retry logic
     const startTime = Date.now();
     let aiResponse: any;
     let aiModel = 'gemini';
     let tokensUsed = 0;
+    let parsed: any;
+    let validationPassed = false;
+    let retryCount = 0;
+    const maxRetries = 2;
 
-    try {
-      const geminiKey = await getApiKey(supabase, 'gemini');
-      aiResponse = await callGemini(geminiKey, prompt.system_prompt, userPrompt);
-      tokensUsed = aiResponse.tokensUsed || 0;
-    } catch (geminiError) {
-      console.error('Gemini failed, trying Groq:', geminiError);
+    while (!validationPassed && retryCount <= maxRetries) {
+      if (retryCount > 0) {
+        console.log(` Retry attempt ${retryCount}/${maxRetries}...`);
+      }
 
       try {
-        const groqKey = await getApiKey(supabase, 'groq');
-        aiResponse = await callGroq(groqKey, prompt.system_prompt, userPrompt);
-        aiModel = 'groq';
+        const geminiKey = await getApiKey(supabase, 'gemini');
+        aiResponse = await callGemini(geminiKey, prompt.system_prompt, userPrompt);
         tokensUsed = aiResponse.tokensUsed || 0;
-      } catch (groqError) {
-        throw new Error(`Both AI APIs failed: ${groqError}`);
+      } catch (geminiError) {
+        console.error('Gemini failed, trying Groq:', geminiError);
+
+        try {
+          const groqKey = await getApiKey(supabase, 'groq');
+          aiResponse = await callGroq(groqKey, prompt.system_prompt, userPrompt);
+          aiModel = 'groq';
+          tokensUsed = aiResponse.tokensUsed || 0;
+        } catch (groqError) {
+          throw new Error(`Both AI APIs failed: ${groqError}`);
+        }
       }
+
+      const generationTime = Date.now() - startTime;
+      console.log(`AI response received in ${generationTime}ms`);
+
+      parsed = parseHoroscopeResponse(aiResponse.text);
+
+      // ============================================
+      // VALIDATION LAYER
+      // ============================================
+      const targetSign = profile.sun_sign.toLowerCase();
+      const signUsed = parsed.sign_used?.toLowerCase() || '';
+      
+      console.log(`Validation: targetSign=${targetSign}, signUsed=${signUsed}`);
+
+      // Check 1: sign_used field
+      if (signUsed !== targetSign) {
+        console.warn(`️ sign_used mismatch: expected ${targetSign}, got ${signUsed}`);
+        retryCount++;
+        continue;
+      }
+
+      // Check 2: Text scan for wrong signs
+      const allSigns = ['aries', 'taurus', 'gemini', 'cancer', 'leo', 
+                        'virgo', 'libra', 'scorpio', 'sagittarius', 
+                        'capricorn', 'aquarius', 'pisces'];
+      
+      const allText = [
+        parsed.general, parsed.love, parsed.career, 
+        parsed.health, parsed.finance, parsed.affirmation,
+        parsed.hero_description
+      ].join(' ').toLowerCase();
+
+      const wrongSigns = allSigns.filter(sign => {
+        if (sign === targetSign) return false;
+        return new RegExp(`\\b${sign}\\b`, 'i').test(allText);
+      });
+
+      if (wrongSigns.length > 0) {
+        console.warn(`️ Wrong signs found in text: ${wrongSigns.join(', ')}`);
+        retryCount++;
+        continue;
+      }
+
+      // Check 3: general_prediction starts with correct sign
+      const generalStartsCorrectly = parsed.general?.toLowerCase().startsWith(`as a ${targetSign}`) ||
+                                     parsed.general?.toLowerCase().startsWith(`as an ${targetSign}`);
+      
+      if (!generalStartsCorrectly) {
+        console.warn(`⚠️ general_prediction does not start with "As a ${targetSign}"`);
+        retryCount++;
+        continue;
+      }
+
+      validationPassed = true;
+      console.log(`✅ Validation passed after ${retryCount + 1} attempt(s)`);
     }
 
-    const generationTime = Date.now() - startTime;
-    console.log(`AI response received in ${generationTime}ms`);
-
-    let parsed = parseHoroscopeResponse(aiResponse.text);
+    if (!validationPassed) {
+      console.warn(`⚠️ Validation failed after ${maxRetries} retries, using last response`);
+    }
 
     // ============================================
-    // POST-PROCESSING: Sign Replacement
+    // POST-PROCESSING: Sign Replacement (fallback)
     // ============================================
     const userSign = profile.sun_sign.toLowerCase();
     const userSignCapitalized = profile.sun_sign.charAt(0).toUpperCase() + profile.sun_sign.slice(1).toLowerCase();
     
-    console.log(`Post-processing: replacing wrong signs with ${userSignCapitalized}`);
+    console.log(`🔧 Post-processing: replacing wrong signs with ${userSignCapitalized}`);
 
-    const allSigns = [
-      'aries', 'taurus', 'gemini', 'cancer', 'leo', 
-      'virgo', 'libra', 'scorpio', 'sagittarius', 
-      'capricorn', 'aquarius', 'pisces'
-    ];
+    const allSigns = ['aries', 'taurus', 'gemini', 'cancer', 'leo', 
+                      'virgo', 'libra', 'scorpio', 'sagittarius', 
+                      'capricorn', 'aquarius', 'pisces'];
 
     const replaceSignInText = (text: string): string => {
       let result = text;
@@ -190,8 +259,9 @@ serve(async (req) => {
     parsed.affirmation = replaceSignInText(parsed.affirmation);
     parsed.hero_description = replaceSignInText(parsed.hero_description);
 
-    console.log(`Post-processing complete: all signs replaced with ${userSignCapitalized}`);
+    console.log(`✅ Post-processing complete`);
 
+    // Save to database
     let newHoroscope;
     
     const { data, error: insertError } = await supabase
@@ -219,7 +289,7 @@ serve(async (req) => {
         affirmation: parsed.affirmation,
         ai_model_used: aiModel,
         tokens_used: tokensUsed,
-        generation_time_ms: generationTime
+        generation_time_ms: Date.now() - startTime
       })
       .select()
       .single();
@@ -246,6 +316,7 @@ serve(async (req) => {
       newHoroscope = data;
     }
 
+    // Update user stats
     if (data) {
       await supabase
         .from('user_profiles')
@@ -264,7 +335,7 @@ serve(async (req) => {
         .eq('provider_name', aiModel);
     }
 
-    console.log(`Horoscope saved successfully for ${targetDate} (${reading_type})`);
+    console.log(`✅ Horoscope saved successfully for ${targetDate} (${reading_type})`);
 
     return new Response(
       JSON.stringify({ 
@@ -273,7 +344,9 @@ serve(async (req) => {
         data: newHoroscope,
         ai_model: aiModel,
         tokens_used: tokensUsed,
-        generation_time_ms: generationTime
+        generation_time_ms: Date.now() - startTime,
+        validation_passed: validationPassed,
+        retry_count: retryCount
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
@@ -316,7 +389,7 @@ async function getCurrentUsage(supabase: any, provider: string): Promise<number>
   return data?.current_usage || 0;
 }
 
-// ✅ Gemini API - temperature 0.5
+// ✅ Gemini API - temperature 0.3
 async function callGemini(apiKey: string, systemPrompt: string, userPrompt: string) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
@@ -328,7 +401,7 @@ async function callGemini(apiKey: string, systemPrompt: string, userPrompt: stri
         parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }]
       }],
       generationConfig: {
-        temperature: 0.5,
+        temperature: 0.3,  // ✅ 0.7 → 0.3 (more consistent)
         maxOutputTokens: 800
       }
     })
@@ -347,7 +420,7 @@ async function callGemini(apiKey: string, systemPrompt: string, userPrompt: stri
   };
 }
 
-// ✅ Groq API - temperature 0.5
+// ✅ Groq API - temperature 0.3
 async function callGroq(apiKey: string, systemPrompt: string, userPrompt: string) {
   const url = 'https://api.groq.com/openai/v1/chat/completions';
 
@@ -363,7 +436,7 @@ async function callGroq(apiKey: string, systemPrompt: string, userPrompt: string
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
       ],
-      temperature: 0.5,
+      temperature: 0.3,  // ✅ 0.7 → 0.3 (more consistent)
       max_tokens: 800
     })
   });
@@ -396,7 +469,9 @@ function parseHoroscopeResponse(text: string) {
     lucky_planet: '',
     lucky_crystal: '',
     hero_description: '',
-    affirmation: ''
+    affirmation: '',
+    sign_used: '',
+    reasoning: ''
   };
 
   try {
@@ -416,6 +491,8 @@ function parseHoroscopeResponse(text: string) {
       sections.lucky_crystal = parsed.lucky_crystal || '';
       sections.hero_description = parsed.hero_description || '';
       sections.affirmation = parsed.affirmation || '';
+      sections.sign_used = parsed.sign_used || '';
+      sections.reasoning = parsed.reasoning || '';
 
       const normalizeLevel = (level: string) => {
         if (!level) return 'Medium';
@@ -437,6 +514,7 @@ function parseHoroscopeResponse(text: string) {
     console.log('JSON parsing failed, trying markdown format');
   }
 
+  // Markdown fallback (same as before)
   const generalMatch = text.match(/## General Energy\n([\s\S]*?)(?=##|$)/i);
   if (generalMatch) sections.general = generalMatch[1].trim();
 
@@ -497,6 +575,12 @@ function parseHoroscopeResponse(text: string) {
     || text.match(/"([^"]{20,})"/);
 
   if (affirmationMatch) sections.affirmation = affirmationMatch[1].trim();
+
+  const signMatch = text.match(/"sign_used":\s*"([^"]+)"/i);
+  if (signMatch) sections.sign_used = signMatch[1].trim();
+
+  const reasoningMatch = text.match(/"reasoning":\s*"([^"]+)"/i);
+  if (reasoningMatch) sections.reasoning = reasoningMatch[1].trim();
 
   return sections;
 }
