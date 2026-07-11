@@ -5,7 +5,7 @@ export interface Horoscope {
   id: string;
   zodiac_sign: string;
   date: string;
-  reading_type?: string;  // 🆕 დამატებულია (optional)
+  reading_type?: string;
   general_prediction: string;
   love_prediction: string;
   career_prediction: string;
@@ -39,7 +39,12 @@ export interface UseHoroscopeResult {
   refetch: () => void;
 }
 
-export function useHoroscope(userId: string, readingType: string = 'today'): UseHoroscopeResult {
+// 🆕 დავამატეთ sunSign parameter
+export function useHoroscope(
+  userId: string, 
+  sunSign: string,  // 🆕 ახალი parameter
+  readingType: string = 'today'
+): UseHoroscopeResult {
   const [horoscope, setHoroscope] = useState<Horoscope | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -53,7 +58,13 @@ export function useHoroscope(userId: string, readingType: string = 'today'): Use
       return;
     }
 
-    // 🆕 Null check
+    // 🆕 ვიყენებთ sunSign-ს რომელიც უკვე გვაქვს UserContext-დან
+    if (!sunSign) {
+      setError('User sun_sign not provided');
+      setLoading(false);
+      return;
+    }
+
     if (!supabase) {
       setError('Supabase client not initialized');
       setLoading(false);
@@ -68,32 +79,30 @@ export function useHoroscope(userId: string, readingType: string = 'today'): Use
       }
       setError(null);
 
-      // Get user's sun_sign
-      const { data: profile, error: profileError } = await supabase
-        .from('user_profiles')
-        .select('sun_sign')
-        .eq('id', userId)
-        .single();
-
-      if (profileError || !profile?.sun_sign) {
-        throw new Error('User sun_sign not found');
-      }
-
       const today = new Date().toISOString().split('T')[0];
 
-      // 🆕 Fetch from daily_horoscopes (pre-generated)
+      console.log(`🔍 Fetching horoscope for ${sunSign} on ${today}`);
+
+      // 🆕 ვიყენებთ sunSign-ს პირდაპირ (არა profile-დან)
       const { data, error: fetchError } = await supabase
         .from('daily_horoscopes')
         .select('*')
-        .eq('zodiac_sign', profile.sun_sign)
+        .eq('zodiac_sign', sunSign)  // 🆕 sunSign parameter-დან
         .eq('date', today)
         .single();
 
       if (fetchError) {
+        console.error('❌ Fetch error:', fetchError);
         throw new Error('Horoscope not found for today. Please try again later.');
       }
 
-      // 🆕 Add reading_type to data
+      if (!data) {
+        throw new Error('No horoscope data available');
+      }
+
+      console.log(`✅ Horoscope loaded for ${sunSign}`);
+
+      // 🆕 დავამატოთ reading_type data-ში
       const horoscopeData = {
         ...data,
         reading_type: readingType
@@ -102,11 +111,9 @@ export function useHoroscope(userId: string, readingType: string = 'today'): Use
       setHoroscope(horoscopeData);
       hasFetched.current = true;
 
-      console.log(`✅ Horoscope loaded for ${profile.sun_sign} (${today})`);
-
     } catch (err: any) {
       console.error('🌑 Error fetching horoscope:', err);
-      setError(err.message);
+      setError(err.message || 'Failed to load horoscope');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -114,9 +121,9 @@ export function useHoroscope(userId: string, readingType: string = 'today'): Use
   };
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || !sunSign) return;
     fetchHoroscope();
-  }, [userId, readingType]);
+  }, [userId, sunSign, readingType]);
 
   const refetch = () => {
     fetchHoroscope();

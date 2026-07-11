@@ -692,8 +692,12 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     startPhase('component_init');
   }, []);
 
-  const { horoscope, loading, refreshing, error, refetch } = useHoroscope(user?.id || '', activeTab);
-
+  const { horoscope, loading, refreshing, error, refetch } = useHoroscope(
+    user?.id || '', 
+    user?.sun_sign || '',  // 🆕 დავამატეთ sun_sign
+    activeTab
+  );
+  
   const userSign = user?.sun_sign?.toLowerCase() || '';
 
   useEffect(() => {
