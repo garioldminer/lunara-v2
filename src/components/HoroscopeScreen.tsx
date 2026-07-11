@@ -328,7 +328,7 @@ function DebugPanel({
               </motion.button>
             </div>
 
-            {/* 🆕 HOROSCOPE DATA INSPECTOR */}
+            {/* HOROSCOPE DATA INSPECTOR */}
             <div style={{ 
               background: 'rgba(139, 92, 246, 0.1)',
               border: '1px solid rgba(139, 92, 246, 0.3)',
@@ -667,7 +667,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
       .then(() => {
         showToast('Debug data copied! 📋', 'success');
       })
-      .catch(err => {
+      .catch(() => {
         showToast('Copy failed', 'error');
       });
   };
@@ -823,10 +823,14 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         if (isAdmin) {
           addLog('success', 'READING', '✅ Horoscope reading logged');
         }
+      }).catch((readingError: any) => {
+        if (isAdmin) {
+          addLog('error', 'READING', '❌ Failed to log reading', readingError);
+        }
       });
-    } catch (error) {
+    } catch (readingError: any) {
       if (isAdmin) {
-        addLog('error', 'READING', '❌ Error logging reading', error);
+        addLog('error', 'READING', '❌ Error logging reading', readingError);
       }
     }
   }, [horoscope, loading, user, activeTab, userSign]);
@@ -886,7 +890,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         showToast('Horoscope card downloaded! 🌟', 'success');
       }, 'image/png', 1.0);
 
-    } catch (error) {
+    } catch (downloadError) {
       showToast('Failed to download card', 'error');
     }
   };
@@ -1012,7 +1016,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     ? fixedHoroscope.key_transits.map(safeExtractTransit)
     : [];
 
-  // 🆕 SAFE DATE - convert to string
+  // 🆕 SAFE DATE
   const safeDate = safeString(fixedHoroscope.date);
   
   const formattedDate = new Date(safeDate).toLocaleDateString('en-US', {
@@ -1049,6 +1053,27 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           )}
         </AnimatePresence>
 
+        <AnimatePresence>
+          {refreshing && (
+            <motion.div 
+              className="refreshing-indicator"
+              initial={{ opacity: 0, y: -50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -50 }}
+              transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+            >
+              <motion.div 
+                className="refreshing-icon"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              >
+                <RotateCcw size={14} />
+              </motion.div>
+              <span>Updating cosmic energies...</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div className="premium-header">
           <button className="premium-back-btn" onClick={() => onNavigate?.('home')}>
             <ArrowLeft size={24} />
@@ -1068,6 +1093,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
+            style={{ opacity: refreshing ? 0.7 : 1 }}
           >
             <div className="premium-hero-cosmic-bg">
               <div className="cosmic-nebula nebula-1" />
@@ -1140,18 +1166,39 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                 <div className="premium-energy-icon"><Zap size={32} /></div>
                 <p className="premium-energy-level">{safeString(fixedHoroscope.cosmic_energy_level || 'MEDIUM').toUpperCase()}</p>
                 <p className="premium-energy-subtitle">Energy</p>
+                <div className="premium-energy-dots">
+                  {[...Array(5)].map((_, i) => {
+                    const level = safeString(fixedHoroscope.cosmic_energy_level).toLowerCase();
+                    const active = i < (level.includes('very') ? 5 : level.includes('high') ? 4 : level.includes('medium') ? 3 : 2);
+                    return <div key={i} className={`dot ${active ? 'active' : ''}`} />;
+                  })}
+                </div>
               </motion.div>
 
               <motion.div className="premium-energy-card love" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
                 <div className="premium-energy-icon"><Heart size={32} /></div>
                 <p className="premium-energy-level">{safeString(fixedHoroscope.love_energy_level || 'MEDIUM').toUpperCase()}</p>
                 <p className="premium-energy-subtitle">Emotions</p>
+                <div className="premium-energy-dots">
+                  {[...Array(5)].map((_, i) => {
+                    const level = safeString(fixedHoroscope.love_energy_level).toLowerCase();
+                    const active = i < (level.includes('very') ? 5 : level.includes('high') ? 4 : level.includes('medium') ? 3 : 2);
+                    return <div key={i} className={`dot ${active ? 'active' : ''}`} />;
+                  })}
+                </div>
               </motion.div>
 
               <motion.div className="premium-energy-card career" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
                 <div className="premium-energy-icon"><BriefcaseIcon size={32} /></div>
                 <p className="premium-energy-level">{safeString(fixedHoroscope.career_energy_level || 'MEDIUM').toUpperCase()}</p>
                 <p className="premium-energy-subtitle">Opportunities</p>
+                <div className="premium-energy-dots">
+                  {[...Array(5)].map((_, i) => {
+                    const level = safeString(fixedHoroscope.career_energy_level).toLowerCase();
+                    const active = i < (level.includes('very') ? 5 : level.includes('high') ? 4 : level.includes('medium') ? 3 : 2);
+                    return <div key={i} className={`dot ${active ? 'active' : ''}`} />;
+                  })}
+                </div>
               </motion.div>
             </div>
           </div>
@@ -1209,7 +1256,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           </div>
         </div>
 
-        {/* Modals */}
         <AnimatePresence>
           {openModal && (
             <motion.div className="modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpenModal(null)}>
