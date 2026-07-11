@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { supabase } from './lib/supabase';
 import SplashScreen from './components/SplashScreen';
 import OnboardingWelcome from './components/OnboardingWelcome';
@@ -34,6 +34,103 @@ import './App.css';
 
 // ✅ Admin user ID
 const ADMIN_USER_ID = 'c9dbe3be-5c02-4034-8bfd-1d693eb02754';
+
+// 🆕 ERROR BOUNDARY COMPONENT
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; errorMessage: string; errorStack: string }
+> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, errorMessage: '', errorStack: '' };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { 
+      hasError: true, 
+      errorMessage: error.message,
+      errorStack: error.stack || ''
+    };
+  }
+
+  componentDidCatch(error: Error, errorInfo: any) {
+    console.error('🚨 ERROR BOUNDARY:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ 
+          padding: '20px', 
+          background: '#1a0a0a', 
+          color: '#ff6b6b',
+          margin: '10px',
+          borderRadius: '12px',
+          fontFamily: 'monospace',
+          fontSize: '11px',
+          maxHeight: '80vh',
+          overflowY: 'auto'
+        }}>
+          <h2 style={{ color: '#ff4444', marginBottom: '10px' }}>🚨 React Error</h2>
+          <div style={{ 
+            background: '#000', 
+            padding: '10px', 
+            borderRadius: '6px',
+            border: '1px solid #ff4444',
+            marginBottom: '10px'
+          }}>
+            <strong style={{ color: '#ffaa00' }}>Error Message:</strong>
+            <pre style={{ 
+              color: '#ff6b6b',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+              marginTop: '5px',
+              fontSize: '10px'
+            }}>
+              {this.state.errorMessage}
+            </pre>
+          </div>
+          <div style={{ 
+            background: '#000', 
+            padding: '10px', 
+            borderRadius: '6px',
+            border: '1px solid #666',
+            marginBottom: '10px'
+          }}>
+            <strong style={{ color: '#ffaa00' }}>Stack Trace:</strong>
+            <pre style={{ 
+              color: '#aaa',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+              marginTop: '5px',
+              fontSize: '9px'
+            }}>
+              {this.state.errorStack}
+            </pre>
+          </div>
+          <button 
+            onClick={() => window.location.reload()}
+            style={{
+              marginTop: '15px',
+              padding: '10px 20px',
+              background: '#ff4444',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              width: '100%'
+            }}
+          >
+            🔄 Reload App
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 type Screen = 
   | 'splash' 
@@ -100,7 +197,7 @@ function UserLoader({ onReady }: { onReady: () => void }) {
     loadUser();
   }, [setUser, setLoading, onReady]);
 
-  return null; // ❌ აღარ ვაჩვენებთ LoadingScreen-ს აქ
+  return null;
 }
 
 function AppContent() {
@@ -128,7 +225,6 @@ function AppContent() {
     }
   }, []);
 
-  // ეტაპი 1: Last Active Update
   useEffect(() => {
     if (!user) return;
 
@@ -160,7 +256,6 @@ function AppContent() {
     };
   }, [user]);
 
-  // ეტაპი 2: Session Tracking
   useEffect(() => {
     if (!user || !supabase) return;
 
@@ -530,10 +625,9 @@ function AppContent() {
         </>
       )}
       {currentScreen === 'horoscope' && (
-        <>
+        <ErrorBoundary>
           <HoroscopeScreen onNavigate={handleNavigate} />
-          <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
-        </>
+        </ErrorBoundary>
       )}
       {currentScreen === 'sign-selection' && (
         <SignSelectionScreen onNavigate={handleNavigate} />
