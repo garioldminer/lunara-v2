@@ -96,6 +96,14 @@ const ALL_SIGNS = [
   'capricorn', 'aquarius', 'pisces'
 ];
 
+// 🆕 SAFE TRANSIT EXTRACTION FUNCTION
+const safeExtractTransit = (transit: any) => ({
+  planet1: String(transit?.planet1 || ''),
+  aspect_type: String(transit?.aspect_type || ''),
+  planet2: String(transit?.planet2 || ''),
+  influence: String(transit?.influence || 'neutral')
+});
+
 const getEnergyEmojis = (level: string | undefined, emoji: string): string => {
   const normalized = level?.toLowerCase() || 'medium';
   if (normalized.includes('very')) return `${emoji}${emoji}${emoji}${emoji}`;
@@ -129,7 +137,6 @@ const getMoonDescription = (moonPhase?: string): string => {
   return phaseDescriptions[moonPhase] || "The moon guides your path through the cosmic landscape.";
 };
 
-// 🆕 CLIENT-SIDE SIGN REPLACEMENT FUNCTION - ✅ FIXED: string | undefined
 const fixHoroscopeText = (
   text: string | undefined, 
   userSign: string,
@@ -145,26 +152,22 @@ const fixHoroscopeText = (
     
     const signCap = sign.charAt(0).toUpperCase() + sign.slice(1).toLowerCase();
     
-    // Detect wrong sign
     const wrongPattern = new RegExp(`\\b${signCap}\\b`, 'gi');
     const matches = result.match(wrongPattern);
     if (matches && matches.length > 0 && onDetect) {
       onDetect(sign);
     }
     
-    // Replace "As an Aries" / "As a Virgo" patterns
     result = result.replace(
       new RegExp(`\\bAs\\s+an?\\s+${signCap}\\b`, 'gi'),
       `As a ${userSignCapitalized}`
     );
     
-    // Replace "Dear Aries" / "Hello Virgo" patterns
     result = result.replace(
       new RegExp(`\\b(Dear|Hello)\\s+${signCap}\\b`, 'gi'),
       `$1 ${userSignCapitalized}`
     );
     
-    // Replace standalone sign names (e.g., "Aries" → "Virgo")
     result = result.replace(
       new RegExp(`\\b${signCap}\\b`, 'g'),
       userSignCapitalized
@@ -203,7 +206,6 @@ function ToastNotification({ toast, onClose }: { toast: Toast; onClose: () => vo
   );
 }
 
-// DEBUG PANEL COMPONENT
 function DebugPanel({ 
   logs, 
   metrics, 
@@ -277,7 +279,6 @@ function DebugPanel({
               boxShadow: '0 8px 24px rgba(0, 0, 0, 0.8)',
             }}
           >
-            {/* Header with Copy Button */}
             <div style={{ 
               display: 'flex', 
               justifyContent: 'space-between', 
@@ -316,7 +317,6 @@ function DebugPanel({
               </motion.button>
             </div>
 
-            {/* Performance Metrics */}
             <div style={{ 
               background: 'rgba(96, 165, 250, 0.1)',
               border: '1px solid rgba(96, 165, 250, 0.3)',
@@ -358,7 +358,6 @@ function DebugPanel({
               </div>
             </div>
 
-            {/* SIGN VALIDATION Section */}
             <div style={{ 
               background: signValidation.foundWrongSigns.length > 0 
                 ? 'rgba(239, 68, 68, 0.1)' 
@@ -427,7 +426,6 @@ function DebugPanel({
               </div>
             </div>
 
-            {/* Diagnostics */}
             {diagnostics.length > 0 && (
               <div style={{ 
                 background: 'rgba(251, 191, 36, 0.1)',
@@ -470,7 +468,6 @@ function DebugPanel({
               </div>
             )}
 
-            {/* Logs */}
             <div style={{ 
               background: 'rgba(20, 12, 5, 0.8)',
               border: '1px solid rgba(200, 120, 0, 0.3)',
@@ -571,11 +568,9 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
 
-  // ADMIN CHECK
   const ADMIN_USER_ID = 'c9dbe3be-5c02-4034-8bfd-1d693eb02754';
   const isAdmin = user?.id === ADMIN_USER_ID;
 
-  // DEBUG STATES
   const [debugVisible, setDebugVisible] = useState(false);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
   const [performanceMetrics, setPerformanceMetrics] = useState<PerformanceMetrics>({
@@ -586,7 +581,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const prevLoadingRef = useRef<boolean | null>(null);
   const prevHoroscopeRef = useRef<any>(null);
 
-  // SIGN VALIDATION STATE
   const [signValidation, setSignValidation] = useState<SignValidation>({
     userSign: '',
     foundWrongSigns: [],
@@ -594,11 +588,9 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     originalSigns: {}
   });
 
-  // READING DEDUPLICATION
   const loggedReadingsRef = useRef<Set<string>>(new Set());
   const isInitialLoadRef = useRef(true);
 
-  // DEBUG HELPER FUNCTIONS
   const addLog = (
     type: DebugLog['type'],
     category: string,
@@ -670,7 +662,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     }
   };
 
-  // COPY DEBUG DATA FUNCTION
   const handleCopyDebug = () => {
     const debugData = {
       timestamp: new Date().toISOString(),
@@ -696,7 +687,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
       horoscope: horoscope ? {
         id: horoscope.id,
         date: horoscope.date,
-        reading_type: activeTab,  // ✅ FIXED: activeTab instead of horoscope.reading_type
+        reading_type: activeTab,
         ai_model: horoscope.ai_model_used,
         generation_time_ms: horoscope.generation_time_ms,
         tokens_used: horoscope.tokens_used,
@@ -734,7 +725,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
       });
   };
 
-  // DEBUG: Component Mount
   useEffect(() => {
     if (!isAdmin) return;
     
@@ -763,7 +753,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
   const userSign = user?.sun_sign?.toLowerCase() || '';
 
-  // DEBUG: Track loading state changes
   useEffect(() => {
     if (!isAdmin) return;
     
@@ -793,7 +782,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     }
   }, [loading]);
 
-  // DEBUG: Track horoscope data changes WITH SIGN VALIDATION
   useEffect(() => {
     if (!isAdmin) return;
     
@@ -801,13 +789,12 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
       addLog('info', 'DATA', '📦 Horoscope data updated', {
         id: horoscope?.id,
         date: horoscope?.date,
-        reading_type: activeTab,  // ✅ FIXED: activeTab instead of horoscope.reading_type
+        reading_type: activeTab,
         ai_model: horoscope?.ai_model_used,
         generation_time_ms: horoscope?.generation_time_ms
       });
       
       if (horoscope && userSign) {
-        // SIGN VALIDATION
         const foundWrongSigns: string[] = [];
         const originalSigns: { [key: string]: number } = {};
         let replacementsMade = 0;
@@ -857,7 +844,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           addLog('success', 'SIGN', `✅ Text contains correct sign: ${userSign}`);
         }
         
-        // Required fields validation
         const requiredFields = [
           'date', 'general_prediction', 'love_prediction', 
           'career_prediction', 'health_prediction', 'finance_prediction'
@@ -953,7 +939,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     }
   }, [loading, horoscope]);
 
-  // READING HISTORY LOGGING
   useEffect(() => {
     if (!user || !horoscope || loading || !userSign) return;
     
@@ -1205,7 +1190,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     );
   }
 
-  // 🆕 CLIENT-SIDE POST-PROCESSING: Sign Replacement
   const wrongSignsDetected: string[] = [];
   const detectWrongSign = (sign: string) => {
     if (!wrongSignsDetected.includes(sign)) {
@@ -1223,6 +1207,11 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     affirmation: fixHoroscopeText(horoscope.affirmation, userSign, detectWrongSign),
     hero_description: fixHoroscopeText(horoscope.hero_description, userSign, detectWrongSign)
   };
+
+  // 🆕 SAFE TRANSITS ARRAY - გასწორებული React Error #301-ისთვის
+  const safeTransits = Array.isArray(fixedHoroscope.key_transits) 
+    ? fixedHoroscope.key_transits.map(safeExtractTransit)
+    : [];
 
   const formattedDate = new Date(fixedHoroscope.date).toLocaleDateString('en-US', {
     month: 'long',
@@ -1610,16 +1599,17 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                 <button className="modal-close" onClick={() => setIsShareModalOpen(false)}><X size={20} /></button>
                 <h2 className="modal-title">Share Your Horoscope</h2>
                 <div className="share-preview-container">
+                  {/* ✅ FIXED: Safe keyTransits prop */}
                   <ShareCardPreview 
-                    userSign={userSign} 
-                    date={fixedHoroscope.date} 
-                    affirmation={fixedHoroscope.affirmation} 
-                    moonPhase={fixedHoroscope.moon_phase} 
-                    luckyNumber={fixedHoroscope.lucky_number} 
-                    luckyColor={fixedHoroscope.lucky_color}
-                    luckyCrystal={fixedHoroscope.lucky_crystal}
-                    luckyPlanet={fixedHoroscope.lucky_planet || zodiacData.planet}
-                    keyTransits={fixedHoroscope.key_transits?.slice(0, 2) || []}
+                    userSign={String(userSign)} 
+                    date={String(fixedHoroscope.date || '')} 
+                    affirmation={String(fixedHoroscope.affirmation || '')} 
+                    moonPhase={String(fixedHoroscope.moon_phase || '')} 
+                    luckyNumber={Number(fixedHoroscope.lucky_number || 7)} 
+                    luckyColor={String(fixedHoroscope.lucky_color || 'Gold')}
+                    luckyCrystal={String(fixedHoroscope.lucky_crystal || '')}
+                    luckyPlanet={String(fixedHoroscope.lucky_planet || zodiacData.planet || '')}
+                    keyTransits={safeTransits.slice(0, 2)}
                   />
                 </div>
                 <div className="share-actions">
@@ -1746,7 +1736,8 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                   )}
 
                   <div className="rf-accordion-container">
-                    {fixedHoroscope.key_transits && fixedHoroscope.key_transits.length > 0 && (
+                    {/* ✅ FIXED: Safe transits rendering */}
+                    {safeTransits.length > 0 && (
                       <div className="rf-accordion">
                         <button 
                           className="rf-accordion-header"
@@ -1775,7 +1766,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                               transition={{ duration: 0.3 }}
                             >
                               <div className="rf-transits-list">
-                                {fixedHoroscope.key_transits.slice(0, 5).map((transit, index) => (
+                                {safeTransits.slice(0, 5).map((transit, index) => (
                                   <div key={index} className={`rf-transit-item ${transit.influence}`}>
                                     <div className="rf-transit-main">
                                       <span className="rf-transit-planets">
@@ -1922,7 +1913,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         </AnimatePresence>
       </div>
 
-      {/* DEBUG PANEL - მხოლოდ admin-ისთვის */}
       {isAdmin && (
         <DebugPanel 
           logs={debugLogs}

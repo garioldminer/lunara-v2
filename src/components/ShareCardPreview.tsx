@@ -19,7 +19,7 @@ interface ShareCardPreviewProps {
   luckyColor: string;
   luckyCrystal?: string;
   luckyPlanet?: string;
-  keyTransits?: Transit[];
+  keyTransits?: Transit[] | any[];
 }
 
 const ShareCardPreview = forwardRef<HTMLDivElement, ShareCardPreviewProps>(
@@ -37,7 +37,7 @@ const ShareCardPreview = forwardRef<HTMLDivElement, ShareCardPreviewProps>(
     const zodiacData = ZODIAC_SIGNS[userSign] || ZODIAC_SIGNS['leo'];
     const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
     
-    const formattedDate = new Date(date).toLocaleDateString('en-US', {
+    const formattedDate = new Date(date || new Date()).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric'
@@ -56,6 +56,17 @@ const ShareCardPreview = forwardRef<HTMLDivElement, ShareCardPreviewProps>(
       }).then(setQrCodeUrl)
       .catch(console.error);
     }, [userSign, date]);
+
+    // 🆕 Safe transit data extraction
+    const safeTransits = (keyTransits || [])
+      .filter((t: any) => t && typeof t === 'object')
+      .slice(0, 2)
+      .map((t: any) => ({
+        planet1: String(t?.planet1 || ''),
+        aspect_type: String(t?.aspect_type || ''),
+        planet2: String(t?.planet2 || ''),
+        influence: String(t?.influence || 'neutral')
+      }));
 
     return (
       <div ref={ref} className="share-card" id="share-card">
@@ -102,12 +113,12 @@ const ShareCardPreview = forwardRef<HTMLDivElement, ShareCardPreviewProps>(
                 <span className="c-star c-star-4">✦</span>
               </div>
             </div>
-            <h1 className="zodiac-name">{userSign.toUpperCase()}</h1>
+            <h1 className="zodiac-name">{String(userSign || '').toUpperCase()}</h1>
           </div>
 
           {/* Affirmation */}
           <div className="affirmation-section">
-            <p className="affirmation-text">{affirmation}</p>
+            <p className="affirmation-text">{String(affirmation || '')}</p>
           </div>
 
           {/* ✅ ახალი: Lucky Elements - 5 ელემენტი (2 rows) */}
@@ -116,17 +127,17 @@ const ShareCardPreview = forwardRef<HTMLDivElement, ShareCardPreviewProps>(
             <div className="lucky-row">
               <div className="lucky-item">
                 <div className="lucky-icon lucky-moon">🌕</div>
-                <div className="lucky-label">{moonPhase}</div>
+                <div className="lucky-label">{String(moonPhase || '')}</div>
               </div>
               <div className="lucky-item">
                 <div className="lucky-icon lucky-number">
-                  <div className="number-circle">{luckyNumber}</div>
+                  <div className="number-circle">{Number(luckyNumber) || 7}</div>
                 </div>
-                <div className="lucky-label">Lucky: {luckyNumber}</div>
+                <div className="lucky-label">Lucky: {Number(luckyNumber) || 7}</div>
               </div>
               <div className="lucky-item">
                 <div className="lucky-icon lucky-color">🍀</div>
-                <div className="lucky-label">Color: {luckyColor}</div>
+                <div className="lucky-label">Color: {String(luckyColor || '')}</div>
               </div>
             </div>
 
@@ -134,23 +145,23 @@ const ShareCardPreview = forwardRef<HTMLDivElement, ShareCardPreviewProps>(
             <div className="lucky-row">
               <div className="lucky-item">
                 <div className="lucky-icon lucky-crystal">💎</div>
-                <div className="lucky-label">Crystal: {luckyCrystal}</div>
+                <div className="lucky-label">Crystal: {String(luckyCrystal || 'Quartz')}</div>
               </div>
               <div className="lucky-item">
                 <div className="lucky-icon lucky-planet">☀️</div>
-                <div className="lucky-label">Planet: {luckyPlanet}</div>
+                <div className="lucky-label">Planet: {String(luckyPlanet || 'Sun')}</div>
               </div>
               {/* Empty space for balance */}
               <div className="lucky-item lucky-spacer" />
             </div>
           </div>
 
-          {/* ✅ ახალი: Key Transits (top 2) */}
-          {keyTransits.length > 0 && (
+          {/* ✅ ახალი: Key Transits (top 2) - SAFE RENDERING */}
+          {safeTransits.length > 0 && (
             <div className="share-transits">
               <h4 className="share-transits-title">✦ Key Transits ✦</h4>
               <div className="share-transits-list">
-                {keyTransits.slice(0, 2).map((transit, index) => (
+                {safeTransits.map((transit, index) => (
                   <div key={index} className={`share-transit-item ${transit.influence}`}>
                     <span className="share-transit-text">
                       {transit.planet1} {transit.aspect_type} {transit.planet2}
