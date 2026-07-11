@@ -39,10 +39,9 @@ export interface UseHoroscopeResult {
   refetch: () => void;
 }
 
-// 🆕 დავამატეთ sunSign parameter
 export function useHoroscope(
   userId: string, 
-  sunSign: string,  // 🆕 ახალი parameter
+  sunSign: string,
   readingType: string = 'today'
 ): UseHoroscopeResult {
   const [horoscope, setHoroscope] = useState<Horoscope | null>(null);
@@ -58,7 +57,6 @@ export function useHoroscope(
       return;
     }
 
-    // 🆕 ვიყენებთ sunSign-ს რომელიც უკვე გვაქვს UserContext-დან
     if (!sunSign) {
       setError('User sun_sign not provided');
       setLoading(false);
@@ -83,17 +81,35 @@ export function useHoroscope(
 
       console.log(`🔍 Fetching horoscope for ${sunSign} on ${today}`);
 
-      // 🆕 ვიყენებთ sunSign-ს პირდაპირ (არა profile-დან)
-      const { data, error: fetchError } = await supabase
+      // 🆕 ვცდილობთ დღევანდელ horoscope-ს
+      let { data, error: fetchError } = await supabase
         .from('daily_horoscopes')
         .select('*')
-        .eq('zodiac_sign', sunSign)  // 🆕 sunSign parameter-დან
+        .eq('zodiac_sign', sunSign)
         .eq('date', today)
         .single();
 
-      if (fetchError) {
-        console.error('❌ Fetch error:', fetchError);
-        throw new Error('Horoscope not found for today. Please try again later.');
+      // 🆕 Fallback: თუ დღევანდელი არ არის, ვცდილობთ გუშინდელს
+      if (fetchError || !data) {
+        console.warn(`⚠️ No horoscope for ${today}, trying yesterday...`);
+        
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        
+        const yesterdayResult = await supabase
+          .from('daily_horoscopes')
+          .select('*')
+          .eq('zodiac_sign', sunSign)
+          .eq('date', yesterdayStr)
+          .single();
+        
+        if (yesterdayResult.error || !yesterdayResult.data) {
+          throw new Error('Horoscope not found. Please try again later.');
+        }
+        
+        data = yesterdayResult.data;
+        console.log(`✅ Using yesterday's horoscope (${yesterdayStr})`);
       }
 
       if (!data) {
@@ -102,7 +118,6 @@ export function useHoroscope(
 
       console.log(`✅ Horoscope loaded for ${sunSign}`);
 
-      // 🆕 დავამატოთ reading_type data-ში
       const horoscopeData = {
         ...data,
         reading_type: readingType
