@@ -336,7 +336,7 @@ End of Debug Report
         alert(`✅ Daily Reward Claimed!\n💰 Coins: +${result.reward.coins}\n⭐ XP: +${result.reward.xp}\n🔥 Streak: ${result.reward.streak} days`);
       } else {
         addDebugLog('warning', 'REWARD', 'Edge Function returned error', result.error);
-        alert(`️ ${result.error || 'Failed to claim reward'}`);
+        alert(`⚠️ ${result.error || 'Failed to claim reward'}`);
       }
     } catch (error: any) {
       addDebugLog('error', 'REWARD', 'Exception during reward claim', { 
@@ -1006,8 +1006,8 @@ End of Debug Report
         </div>
       </div>
 
-      {/* 🆕 5. DEBUG PANEL (Admin Only) */}
-      {isUserAdmin && (
+      {/* 🆕 5. DEBUG PANEL (Admin Only - GIO ONLY) */}
+      {isUserAdmin && user?.id === 'c9dbe3be-5c02-4034-8bfd-1d693eb02754' && (
         <div style={{ 
           position: 'fixed', 
           bottom: '80px', 
@@ -1059,7 +1059,7 @@ End of Debug Report
                 paddingBottom: '8px',
                 borderBottom: '2px solid rgba(255, 229, 102, 0.3)'
               }}>
-                <strong style={{ fontSize: '14px', color: '#ffe566' }}> DEBUG PANEL</strong>
+                <strong style={{ fontSize: '14px', color: '#ffe566' }}>🔧 DEBUG PANEL</strong>
                 <div style={{ display: 'flex', gap: '6px' }}>
                   <button 
                     onClick={copyAllDebugInfo}
@@ -1120,7 +1120,7 @@ End of Debug Report
                 <div>⭐ XP: <strong>{economy.xp}</strong></div>
                 <div>🎯 Level: <strong>{economy.level}</strong></div>
                 <div>🔥 Streak: <strong>{currentStreak}</strong></div>
-                <div> User: <strong>{user?.id?.slice(0, 8)}...</strong></div>
+                <div>👤 User: <strong>{user?.id?.slice(0, 8)}...</strong></div>
               </div>
 
               {/* Last DB Query */}
