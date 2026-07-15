@@ -4,7 +4,7 @@ import { useUser } from '../context/UserContext';
 import { useSettings } from '../context/SettingsContext';
 import { updateUser, resetZodiacSign } from '../lib/userService';
 import { getActiveSubscription } from '../lib/subscriptionService';
-import { supabase } from '../lib/supabase'; // 🆕 დამატებულია
+import { supabase } from '../lib/supabase';
 
 interface Props {
   onNavigate?: (screen: string) => void;
@@ -175,7 +175,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
     { id: '8', icon: '💰', title: 'High Roller', description: 'Spin the wheel 100 times', unlocked: false, progress: 23, total: 100 },
   ];
 
-  // 🆕 განახლებული: დაემატა 'logout' ლოგიკა
+  // 🆕 განახლებული: დამატებულია supabase null check
   const handleSettingClick = async (setting: string) => {
     console.log(`Setting clicked: ${setting}`);
     
@@ -189,13 +189,15 @@ export default function ProfileScreen({ onNavigate }: Props) {
       try {
         console.log('🚪 Logging out user...');
         
-        // 1. სრულად ვშლით ლოკალურ მეხსიერებას (მაგ. დღიური ბარათი, სეტინგები)
+        // 1. სრულად ვშლით ლოკალურ მეხსიერებას
         localStorage.clear();
         
-        // 2. ვშლით Supabase-ის ავტორიზაციის სესიას
-        await supabase.auth.signOut();
+        // 2. ვშლით Supabase-ის ავტორიზაციის სესიას (null check-ით)
+        if (supabase) {
+          await supabase.auth.signOut();
+        }
         
-        // 3. ვტვირთავთ გვერდს თავიდან, რათა აპლიკაცია დაიწყოს ნულიდან (SplashScreen-ით)
+        // 3. ვტვირთავთ გვერდს თავიდან
         window.location.reload();
         
       } catch (error) {
@@ -749,7 +751,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
                 <span className="setting-arrow">→</span>
               </div>
 
-              {/* 🚪 ეს არის ის ღილაკი, რომელიც ახლა სრულად მუშაობს */}
               <div className="setting-item danger animate-fade-in stagger-12" onClick={() => handleSettingClick('logout')}>
                 <span className="setting-icon">🚪</span>
                 <span className="setting-label">Logout</span>
