@@ -116,6 +116,59 @@ End of Debug Report
     }
   };
 
+  // 🆕 ტესტის ფუნქცია: აიძულებს სისტემას შეამოწმოს და შექმნას ჩანაწერი (Splash Screen-ის ლოგიკა)
+  const testEconomyInitialization = async () => {
+    if (!user) {
+      addDebugLog('error', 'TEST', 'No user available for test');
+      return;
+    }
+    addDebugLog('info', 'TEST', 'Starting manual economy initialization test...');
+    
+    try {
+      // 1. ჯერ ვშლით არსებულ ჩანაწერს (ტესტისთვის, რომ სიმულაცია იყოს)
+      await supabase.from('user_economy').delete().eq('user_id', user.id);
+      addDebugLog('info', 'TEST', 'Existing record deleted for testing.');
+
+      // 2. ვამოწმებთ (მივიღებთ 0 rows შეცდომას PGRST116)
+      const { data, error: fetchError } = await supabase
+        .from('user_economy')
+        .select('user_id')
+        .eq('user_id', user.id)
+        .single();
+
+      // 3. თუ 0 rows-ია, ვქმნით ახალს (ზუსტად ისე, როგორც Splash Screen-ზე)
+      if (fetchError && fetchError.code === 'PGRST116') {
+        addDebugLog('warning', 'TEST', 'No record found (PGRST116). Creating new one...');
+        
+        const { error: insertError } = await supabase
+          .from('user_economy')
+          .insert({
+            user_id: user.id,
+            cosmic_coins: 0,
+            xp: 0,
+            level: 1,
+            cosmic_focus: 3,
+            max_focus: 3,
+            current_streak: 0,
+            longest_streak: 0,
+            last_active_date: new Date().toISOString().split('T')[0],
+            last_daily_claim: null
+          });
+
+        if (insertError) throw new Error(insertError.message);
+        
+        addDebugLog('success', 'TEST', '✅ SUCCESS: New economy record created automatically!');
+        
+        // განვაახლოთ სტეიტი ეკრანზე მყისიერად
+        setEconomy({ cosmic_coins: 0, xp: 0, level: 1, current_streak: 0 });
+        setDbStatus('connected');
+        setEconomyLoadStatus('success');
+      }
+    } catch (err: any) {
+      addDebugLog('error', 'TEST', `❌ FAILED: ${err.message}`);
+    }
+  };
+
   useEffect(() => {
     if (user) {
       addDebugLog('info', 'USER', 'User loaded', { userId: user.id, displayName: user.display_name });
@@ -1060,7 +1113,27 @@ End of Debug Report
                 borderBottom: '2px solid rgba(255, 229, 102, 0.3)'
               }}>
                 <strong style={{ fontSize: '14px', color: '#ffe566' }}>🔧 DEBUG PANEL</strong>
-                <div style={{ display: 'flex', gap: '6px' }}>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  
+                  {/* 🆕 ახალი ტესტის ღილაკი */}
+                  <button 
+                    onClick={testEconomyInitialization}
+                    style={{
+                      background: 'rgba(168, 85, 247, 0.3)',
+                      border: '1px solid #a855f7',
+                      borderRadius: '6px',
+                      padding: '4px 8px',
+                      color: '#a855f7',
+                      cursor: 'pointer',
+                      fontSize: '9px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    🔄 TEST INIT
+                  </button>
+
                   <button 
                     onClick={copyAllDebugInfo}
                     style={{
