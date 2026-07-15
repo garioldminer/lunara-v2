@@ -4,6 +4,8 @@ import { tarotCards, SUITS } from '../data/tarotCards';
 import { isAdmin } from '../lib/adminService';
 import { getActiveSubscription } from '../lib/subscriptionService';
 import { supabase } from '../lib/supabase';
+import { getTelegramUser } from '../lib/telegramAuth'; // 🆕 დამატებულია
+import { getOrCreateUser } from '../lib/userService'; // 🆕 დამატებულია
 import { 
   Gem, Zap, Trophy, Flame, Bug, CheckCircle, XCircle,
   Sparkles, LayoutGrid, Moon, Hash, 
@@ -33,7 +35,7 @@ interface DebugLog {
 }
 
 export default function HomeScreen({ onNavigate }: Props) {
-  const { user } = useUser();
+  const { user, setUser } = useUser(); // 🆕 დამატებულია setUser
   const [rewardClaimed, setRewardClaimed] = useState(false);
   const [isClaiming, setIsClaiming] = useState(false);
   const [timeLeft, setTimeLeft] = useState('14:32:18');
@@ -113,6 +115,46 @@ End of Debug Report
     } catch (err) {
       console.error('Failed to copy:', err);
       alert('Failed to copy to clipboard');
+    }
+  };
+
+  // 🆕 ფუნქცია: ზუსტად გვაჩვენებს რა ხდება ავტორიზაციის დროს
+  const refreshUserDataDebug = async () => {
+    addDebugLog('info', 'AUTH_DEBUG', '🔄 Starting manual user data refresh...');
+    
+    // 1. რას გვაძლევს ტელეგრამი?
+    const tgUser = getTelegramUser();
+    addDebugLog('info', 'AUTH_DEBUG', '1. Data from Telegram (getTelegramUser):', tgUser);
+    
+    if (!tgUser) {
+      addDebugLog('error', 'AUTH_DEBUG', '❌ CRITICAL: getTelegramUser() returned null/undefined!');
+      return;
+    }
+
+    if (!supabase) {
+      addDebugLog('error', 'AUTH_DEBUG', '❌ CRITICAL: Supabase client is null!');
+      return;
+    }
+
+    // 2. რას აბრუნებს ბაზა?
+    addDebugLog('info', 'AUTH_DEBUG', '2. Querying Supabase with telegram_id: ' + tgUser.id);
+    const freshUser = await getOrCreateUser(tgUser);
+    
+    addDebugLog('info', 'AUTH_DEBUG', '3. Response from getOrCreateUser:', freshUser);
+
+    if (freshUser) {
+      addDebugLog('success', 'AUTH_DEBUG', '✅ SUCCESS: Updating User Context with fresh data');
+      setUser(freshUser);
+      
+      // განვაახლოთ ეკონომიკის მონაცემებიც ახალი user.id-ით (დროებით 0, სანამ loadEconomy არ გაეშვება)
+      setEconomy({
+        cosmic_coins: 0,
+        xp: 0,
+        level: 1,
+        current_streak: 0
+      });
+    } else {
+      addDebugLog('error', 'AUTH_DEBUG', '❌ FAILED: getOrCreateUser returned null. Check DB logs.');
     }
   };
 
@@ -1135,7 +1177,25 @@ End of Debug Report
                 <strong style={{ fontSize: '14px', color: '#ffe566' }}>🔧 DEBUG PANEL</strong>
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   
-                  {/* 🆕 ახალი Logout ღილაკი */}
+                  {/* 🆕 ახალი Refresh User Data ღილაკი */}
+                  <button 
+                    onClick={refreshUserDataDebug}
+                    style={{
+                      background: 'rgba(59, 130, 246, 0.3)',
+                      border: '1px solid #3b82f6',
+                      borderRadius: '6px',
+                      padding: '4px 8px',
+                      color: '#3b82f6',
+                      cursor: 'pointer',
+                      fontSize: '9px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    🔄 REFRESH USER DATA
+                  </button>
+
                   <button 
                     onClick={handleLogoutAndReset}
                     style={{

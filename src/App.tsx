@@ -565,14 +565,27 @@ function AppContent() {
     }
   };
 
+  // 🆕 განახლებული: ონბორდინგის დასრულებისას პირდაპირ ბაზიდან ვიღებთ რეალურ მონაცემებს
   const handleOnboardingComplete = async () => {
     console.log('🎉 Onboarding completed!');
     
-    if (user) {
-      const updatedUser = await completeOnboarding(user.id);
-      if (updatedUser) {
-        setUser(updatedUser);
-        console.log('✅ Onboarding status updated in database');
+    if (user && supabase) {
+      // 1. ვანახლებთ onboarding_completed სტატუსს
+      await completeOnboarding(user.id);
+      
+      // 2. პირდაპირ ბაზიდან ვიღებთ მომხმარებლის განახლებულ, რეალურ მონაცემებს
+      const { data: freshUser, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      
+      if (error) {
+        console.error('❌ Error fetching fresh user data:', error);
+      } else if (freshUser) {
+        setUser(freshUser);
+        console.log('✅ User data refreshed from database:', freshUser.display_name);
+        console.log('💰 Gems:', freshUser.gems, 'XP:', freshUser.xp, 'Level:', freshUser.level);
       }
     }
     
