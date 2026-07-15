@@ -34,7 +34,6 @@ interface DebugLog {
   data?: any;
 }
 
-// 🆕 ახალი interface ბაზის მონაცემების დეტალური თვალყურის დევნებისთვის
 interface DatabaseDebugInfo {
   lastQuery: any;
   lastResponse: any;
@@ -67,7 +66,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     current_streak: 0
   });
 
-  // 🆕 Debug States
   const [showDebug, setShowDebug] = useState(false);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
   const [dbStatus, setDbStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
@@ -75,7 +73,6 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [lastDbQuery, setLastDbQuery] = useState<any>(null);
   const [copySuccess, setCopySuccess] = useState(false);
   
-  // 🆕 ბაზის დებაგის სრული ინფორმაცია
   const [dbDebugInfo, setDbDebugInfo] = useState<DatabaseDebugInfo>({
     lastQuery: null,
     lastResponse: null,
@@ -83,7 +80,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     queryHistory: []
   });
 
-  // Debug Log Helper
   const addDebugLog = (type: DebugLog['type'], category: string, message: string, data?: any) => {
     const log: DebugLog = {
       id: Date.now(),
@@ -96,7 +92,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     setDebugLogs(prev => [log, ...prev].slice(0, 50));
   };
 
-  // 🆕 ფუნქცია: ბაზის მონაცემების ჩაწერა debug ისტორიაში
   const addToDbDebugHistory = (table: string, operation: string, params: any, result: any, error?: any) => {
     const historyEntry = {
       timestamp: new Date().toLocaleTimeString('en-US', { hour12: false }),
@@ -106,7 +101,6 @@ export default function HomeScreen({ onNavigate }: Props) {
       result,
       error
     };
-    
     setDbDebugInfo(prev => ({
       ...prev,
       lastQuery: { table, operation, params },
@@ -115,7 +109,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     }));
   };
 
-  // 🆕 Copy All Debug Info
   const copyAllDebugInfo = async () => {
     const debugText = `
 🔧 LUNARA DEBUG REPORT
@@ -160,7 +153,6 @@ End of Debug Report
     }
   };
 
-  // 🆕 ფუნქცია: ზუსტად გვაჩვენებს რა ხდება ავტორიზაციის დროს
   const refreshUserDataDebug = async () => {
     addDebugLog('info', 'AUTH_DEBUG', '🔄 Starting manual user data refresh...');
     const tgUser = getTelegramUser();
@@ -184,7 +176,6 @@ End of Debug Report
     }
   };
 
-  // 🆕 Logout და სრული გასუფთავების ფუნქცია
   const handleLogoutAndReset = async () => {
     if (!supabase) return;
     addDebugLog('info', 'AUTH', 'Logging out and clearing local storage...');
@@ -197,7 +188,6 @@ End of Debug Report
     }
   };
 
-  // 🆕 ტესტის ფუნქცია: აიძულებს სისტემას შეამოწმოს და შექმნას ჩანაწერი
   const testEconomyInitialization = async () => {
     if (!user || !supabase) {
       addDebugLog('error', 'TEST', 'No user or supabase available for test');
@@ -228,7 +218,6 @@ End of Debug Report
     }
   };
 
-  // 🆕 ტესტის ფუნქცია: ქოინების დამატება
   const testAddCoins = async (amount: number) => {
     if (!user || !supabase) return;
     addDebugLog('info', 'TEST', `🪙 Adding ${amount} coins...`);
@@ -247,7 +236,6 @@ End of Debug Report
     }
   };
 
-  // 🆕 ტესტის ფუნქცია: XP-ს დამატება
   const testAddXP = async (amount: number) => {
     if (!user || !supabase) return;
     addDebugLog('info', 'TEST', `⭐ Adding ${amount} XP...`);
@@ -267,7 +255,6 @@ End of Debug Report
     }
   };
 
-  // 🆕 ფუნქცია: ბაზის მონაცემების ხელახალი ჩატვირთვა
   const reloadFromDatabase = async () => {
     addDebugLog('info', 'DB', '🔄 Reloading all data from database...');
     setEconomyLoadStatus('pending');
@@ -304,7 +291,6 @@ End of Debug Report
     }
   }, [user]);
 
-  // 🆕 ეკონომიკის მონაცემების წამოღება დეტალური დებაგით
   useEffect(() => {
     const loadEconomy = async () => {
       if (!user) {
@@ -505,7 +491,6 @@ End of Debug Report
 
   return (
     <div className="home-screen">
-      {/* 1. USER HEADER */}
       <div className="user-header">
         <div className="user-main-row">
           <div className="avatar-section clickable-avatar" onClick={() => onNavigate?.('profile')}>
@@ -547,7 +532,6 @@ End of Debug Report
         </div>
       </div>
 
-      {/* 2. DAILY QUESTS (60%) + ACTION BUTTONS (40%) */}
       <div className="quests-and-actions-split" style={{ display: 'flex', flexDirection: 'row', gap: '2px', marginBottom: '2px', width: '100%', alignItems: 'stretch' }}>
         <div className="daily-quests-compact" style={{ flex: '0 0 60%', minWidth: 0, background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)', border: '1px solid #332a1a', borderRadius: '14px', padding: '8px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)', display: 'flex', flexDirection: 'column' }}>
           <div className="quests-header-compact" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', padding: '0 2px' }}>
@@ -608,7 +592,6 @@ End of Debug Report
         </div>
       </div>
 
-      {/* 3. CARD OF THE DAY */}
       <div className="card-of-day-banner clickable-card" onClick={() => onNavigate && onNavigate('daily-card')} style={{ background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)', border: '1px solid #332a1a', borderRadius: '16px', padding: '12px', marginBottom: '2px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)', position: 'relative', overflow: 'visible', cursor: 'pointer' }}>
         <div className="card-of-day-content" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '0' }}>
           <div className="card-half-left" style={{ flex: '0 0 45%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px 0' }}>
@@ -647,7 +630,6 @@ End of Debug Report
         </div>
       </div>
 
-      {/* 4. QUICK ACCESS GRID */}
       <div className="quick-access" style={{ marginBottom: '8px', width: '100%' }}>
         <div className="quick-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
           {quickActions.map((action, index) => (
@@ -662,7 +644,6 @@ End of Debug Report
         </div>
       </div>
 
-      {/* 🆕 5. DEBUG PANEL (Admin Only - GIO ONLY) */}
       {isUserAdmin && user?.id === 'c9dbe3be-5c02-4034-8bfd-1d693eb02754' && (
         <div style={{ position: 'fixed', bottom: '80px', right: '16px', zIndex: 10000, maxWidth: '450px', maxHeight: '70vh', overflow: 'auto' }}>
           <button onClick={() => setShowDebug(!showDebug)} style={{ width: '56px', height: '56px', borderRadius: '50%', background: showDebug ? '#10b981' : '#ef4444', border: '3px solid rgba(255,255,255,0.3)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 16px rgba(0,0,0,0.6)', marginBottom: '12px' }}>
@@ -676,7 +657,6 @@ End of Debug Report
                 <button onClick={() => setShowDebug(false)} style={{ padding: '2px 6px', background: '#ef4444', border: 'none', borderRadius: '4px', color: '#fff', cursor: 'pointer', fontSize: '8px' }}>✕</button>
               </div>
 
-              {/* DATABASE CONNECTION INFO */}
               <div style={{ marginBottom: '12px', padding: '8px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
                 <div style={{ marginBottom: '6px', color: '#3b82f6', fontWeight: 'bold' }}>🗄️ DATABASE CONNECTION</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
@@ -686,7 +666,6 @@ End of Debug Report
                 <div style={{ fontSize: '9px', color: '#94a3b8' }}>User ID: {user?.id?.slice(0, 8)}...</div>
               </div>
 
-              {/* ECONOMY DATA FROM DB */}
               <div style={{ marginBottom: '12px', padding: '8px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
                 <div style={{ marginBottom: '6px', color: '#10b981', fontWeight: 'bold' }}>💰 ECONOMY (FROM DB)</div>
                 {dbDebugInfo.economyData ? (
@@ -702,7 +681,6 @@ End of Debug Report
                 )}
               </div>
 
-              {/* LAST DB QUERY */}
               {dbDebugInfo.lastQuery && (
                 <div style={{ marginBottom: '12px', padding: '8px', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
                   <div style={{ marginBottom: '6px', color: '#8b5cf6', fontWeight: 'bold' }}>📡 LAST QUERY</div>
@@ -717,7 +695,6 @@ End of Debug Report
                 </div>
               )}
 
-              {/* QUICK TEST BUTTONS */}
               <div style={{ marginBottom: '12px', padding: '8px', background: 'rgba(245, 158, 11, 0.1)', borderRadius: '8px', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
                 <div style={{ marginBottom: '6px', color: '#f59e0b', fontWeight: 'bold' }}>🧪 QUICK TESTS</div>
                 <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '6px' }}>
@@ -732,22 +709,19 @@ End of Debug Report
                 <button onClick={reloadFromDatabase} style={{ width: '100%', padding: '6px', background: '#3b82f6', border: 'none', borderRadius: '4px', color: '#fff', cursor: 'pointer', fontSize: '9px', fontWeight: 'bold' }}>🔄 RELOAD FROM DB</button>
               </div>
 
-              {/* ACTION BUTTONS */}
               <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '12px' }}>
-                <button onClick={handleLogoutAndReset} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(239, 68, 68, 0.3)', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontSize: '9px' }}>🚪 LOGOUT</button>
+                <button onClick={handleLogoutAndReset} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(239, 68, 68, 0.3)', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontSize: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}><LogOut size={12} /> LOGOUT</button>
                 <button onClick={refreshUserDataDebug} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(59, 130, 246, 0.3)', border: '1px solid #3b82f6', borderRadius: '6px', color: '#3b82f6', cursor: 'pointer', fontSize: '9px' }}>🔄 REFRESH USER</button>
                 <button onClick={testEconomyInitialization} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(168, 85, 247, 0.3)', border: '1px solid #a855f7', borderRadius: '6px', color: '#a855f7', cursor: 'pointer', fontSize: '9px' }}>🔄 TEST INIT</button>
               </div>
 
-              {/* COPY & CLEAR */}
               <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
-                <button onClick={copyAllDebugInfo} style={{ flex: 1, padding: '6px', background: copySuccess ? 'rgba(16, 185, 129, 0.3)' : 'rgba(96, 165, 250, 0.3)', border: `1px solid ${copySuccess ? '#10b981' : '#60a5fa'}`, borderRadius: '6px', color: copySuccess ? '#10b981' : '#60a5fa', cursor: 'pointer', fontSize: '9px' }}>
-                  {copySuccess ? '✅ COPIED!' : '📋 COPY ALL'}
+                <button onClick={copyAllDebugInfo} style={{ flex: 1, padding: '6px', background: copySuccess ? 'rgba(16, 185, 129, 0.3)' : 'rgba(96, 165, 250, 0.3)', border: `1px solid ${copySuccess ? '#10b981' : '#60a5fa'}`, borderRadius: '6px', color: copySuccess ? '#10b981' : '#60a5fa', cursor: 'pointer', fontSize: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                  <Copy size={12} /> {copySuccess ? 'COPIED!' : 'COPY ALL'}
                 </button>
                 <button onClick={() => setDebugLogs([])} style={{ flex: 1, padding: '6px', background: 'rgba(239, 68, 68, 0.3)', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontSize: '9px' }}>🗑️ CLEAR LOGS</button>
               </div>
 
-              {/* QUERY HISTORY */}
               {dbDebugInfo.queryHistory.length > 0 && (
                 <div style={{ marginBottom: '12px' }}>
                   <div style={{ marginBottom: '6px', color: '#f472b6', fontWeight: 'bold' }}>📜 QUERY HISTORY ({dbDebugInfo.queryHistory.length})</div>
@@ -763,7 +737,6 @@ End of Debug Report
                 </div>
               )}
 
-              {/* LOGS */}
               <div>
                 <div style={{ marginBottom: '6px', color: '#f472b6', fontWeight: 'bold' }}>📝 LOGS ({debugLogs.length})</div>
                 <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
