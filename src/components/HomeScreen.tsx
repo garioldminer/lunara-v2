@@ -4,6 +4,7 @@ import { tarotCards, SUITS } from '../data/tarotCards';
 import { getUserStreak } from '../lib/readingService';
 import { isAdmin } from '../lib/adminService';
 import { getActiveSubscription } from '../lib/subscriptionService';
+import { supabase } from '../lib/supabase';
 import { 
   Gem, Zap, Trophy, Flame,
   Sparkles, LayoutGrid, Moon, Hash, 
@@ -13,6 +14,13 @@ import './HomeScreen.css';
 
 interface Props {
   onNavigate?: (screen: string) => void;
+}
+
+interface EconomyData {
+  cosmic_coins: number;
+  xp: number;
+  level: number;
+  current_streak: number;
 }
 
 export default function HomeScreen({ onNavigate }: Props) {
@@ -25,6 +33,14 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [currentStreak, setCurrentStreak] = useState(0);
   const [isUserAdmin, setIsUserAdmin] = useState(false);
   const [activeSubscription, setActiveSubscription] = useState<any>(null);
+  
+  // 🆕 ეკონომიკის მონაცემები
+  const [economy, setEconomy] = useState<EconomyData>({
+    cosmic_coins: 0,
+    xp: 0,
+    level: 1,
+    current_streak: 0
+  });
 
   useEffect(() => {
     if (user) {
@@ -41,6 +57,37 @@ export default function HomeScreen({ onNavigate }: Props) {
       });
     }
   }, [user]);
+
+  // 🆕 ეკონომიკის მონაცემების წამოღება
+  useEffect(() => {
+    if (user) {
+      loadEconomyData();
+    }
+  }, [user]);
+
+  const loadEconomyData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('user_economy')
+        .select('cosmic_coins, xp, level, current_streak')
+        .eq('user_id', user!.id)
+        .single();
+
+      if (error) {
+        console.error('Error loading economy:', error);
+      } else if (data) {
+        setEconomy({
+          cosmic_coins: data.cosmic_coins || 0,
+          xp: data.xp || 0,
+          level: data.level || 1,
+          current_streak: data.current_streak || 0
+        });
+        setCurrentStreak(data.current_streak || 0);
+      }
+    } catch (error) {
+      console.error('Error loading economy data:', error);
+    }
+  };
 
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
@@ -65,14 +112,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     setDailyCard(card);
     setIsDailyReversed(isReversed);
   }, []);
-
-  useEffect(() => {
-    if (user) {
-      getUserStreak(user.id).then(streakData => {
-        setCurrentStreak(streakData.current_streak || 0);
-      });
-    }
-  }, [user]);
 
   const getDayOfYear = (date: Date): number => {
     const start = new Date(date.getFullYear(), 0, 0);
@@ -105,7 +144,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     return () => clearInterval(timer);
   }, []);
 
-  // 🆕 გამარტივებული Edge Function-ის გამოძახება (X-User-Id header-ით)
   const handleClaimReward = async () => {
     if (rewardClaimed || isClaiming) return;
     
@@ -131,6 +169,13 @@ export default function HomeScreen({ onNavigate }: Props) {
       if (result.success) {
         setRewardClaimed(true);
         setCurrentStreak(result.reward.streak);
+        //  განვაახლოთ ეკონომიკის მონაცემები
+        setEconomy(prev => ({
+          ...prev,
+          cosmic_coins: prev.cosmic_coins + result.reward.coins,
+          xp: prev.xp + result.reward.xp,
+          current_streak: result.reward.streak
+        }));
         alert(`✅ Daily Reward Claimed!\n💰 Coins: +${result.reward.coins}\n⭐ XP: +${result.reward.xp}\n🔥 Streak: ${result.reward.streak} days`);
       } else {
         alert(`⚠️ ${result.error || 'Failed to claim reward'}`);
@@ -280,11 +325,13 @@ export default function HomeScreen({ onNavigate }: Props) {
           </div>
           
           <div className="user-resources">
+            {/* 🆕 რეალური Coins */}
             <div className="resource gems">
               <Gem size={14} className="resource-icon gem-icon" />
-              <span className="value">{user?.gems?.toLocaleString() || '3,450'}</span>
+              <span className="value">{economy.cosmic_coins.toLocaleString()}</span>
               <button className="add-btn">+</button>
             </div>
+            {/* 🆕 რეალური Energy (ჯერჯერობით hardcoded) */}
             <div className="resource energy">
               <Zap size={14} className="resource-icon energy-icon" />
               <span className="value">18/20</span>
