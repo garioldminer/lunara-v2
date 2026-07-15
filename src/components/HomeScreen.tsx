@@ -8,7 +8,7 @@ import {
   Gem, Zap, Trophy, Flame, Bug, CheckCircle, XCircle,
   Sparkles, LayoutGrid, Moon, Hash, 
   Crown, Scroll, ChevronRight, Gift, Shield, Infinity,
-  Database, RefreshCw, AlertTriangle
+  RefreshCw
 } from 'lucide-react';
 import './HomeScreen.css';
 
@@ -1051,7 +1051,7 @@ export default function HomeScreen({ onNavigate }: Props) {
                 <div style={{ marginBottom: '6px', color: '#60a5fa' }}>📊 CURRENT STATE:</div>
                 <div>💰 Coins: <strong>{economy.cosmic_coins}</strong></div>
                 <div>⭐ XP: <strong>{economy.xp}</strong></div>
-                <div> Level: <strong>{economy.level}</strong></div>
+                <div>🎯 Level: <strong>{economy.level}</strong></div>
                 <div>🔥 Streak: <strong>{currentStreak}</strong></div>
                 <div>👤 User: <strong>{user?.id?.slice(0, 8)}...</strong></div>
               </div>
