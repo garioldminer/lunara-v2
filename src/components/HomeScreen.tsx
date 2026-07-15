@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '../context/UserContext';
-import { supabase } from '../lib/supabase'; // 🆕 დამატებულია
+import { supabase } from '../lib/supabase';
 import { tarotCards, SUITS } from '../data/tarotCards';
 import { getUserStreak } from '../lib/readingService';
 import { isAdmin } from '../lib/adminService';
@@ -19,7 +19,7 @@ interface Props {
 export default function HomeScreen({ onNavigate }: Props) {
   const { user } = useUser();
   const [rewardClaimed, setRewardClaimed] = useState(false);
-  const [isClaiming, setIsClaiming] = useState(false); // 🆕 Loading state
+  const [isClaiming, setIsClaiming] = useState(false);
   const [timeLeft, setTimeLeft] = useState('14:32:18');
   const [dailyCard, setDailyCard] = useState<typeof tarotCards[0] | null>(null);
   const [isDailyReversed, setIsDailyReversed] = useState(false);
@@ -106,15 +106,20 @@ export default function HomeScreen({ onNavigate }: Props) {
     return () => clearInterval(timer);
   }, []);
 
-  // 🆕 რეალური Edge Function-ის გამოძახება
+  // 🆕 რეალური Edge Function-ის გამოძახება (გასწორებული null check-ით)
   const handleClaimReward = async () => {
     if (rewardClaimed || isClaiming) return;
     
     setIsClaiming(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      // 🆕 TypeScript-ისთვის null check
+      if (!supabase) {
+        throw new Error('Supabase client not initialized');
+      }
+
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
-      if (!session?.access_token) {
+      if (sessionError || !session?.access_token) {
         alert('❌ არ ხარ ავტორიზებული. გთხოვთ თავიდან შეხვიდეთ აპლიკაციაში.');
         setIsClaiming(false);
         return;
@@ -460,7 +465,6 @@ export default function HomeScreen({ onNavigate }: Props) {
               height: '100%'
             }}
           >
-            {/* 🆕 განახლებული ღილაკი Loading სტატუსით */}
             <button 
               className={`action-btn-vertical ${rewardClaimed ? 'claimed' : ''}`}
               onClick={handleClaimReward}
@@ -597,7 +601,6 @@ export default function HomeScreen({ onNavigate }: Props) {
             gap: '0'
           }}
         >
-          {/* LEFT - Card Image (45%) */}
           <div 
             className="card-half-left"
             style={{
@@ -711,7 +714,6 @@ export default function HomeScreen({ onNavigate }: Props) {
             </div>
           </div>
 
-          {/* RIGHT - Card Info (55%) */}
           <div 
             className="card-half-right"
             style={{
