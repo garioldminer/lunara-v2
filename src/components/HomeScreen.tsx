@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '../context/UserContext';
+import { supabase } from '../lib/supabase'; // 🆕 დამატებულია
 import { tarotCards, SUITS } from '../data/tarotCards';
 import { getUserStreak } from '../lib/readingService';
 import { isAdmin } from '../lib/adminService';
@@ -7,8 +8,7 @@ import { getActiveSubscription } from '../lib/subscriptionService';
 import { 
   Gem, Zap, Trophy, Flame,
   Sparkles, LayoutGrid, Moon, Hash, 
-  Crown,
-  Scroll, ChevronRight, Gift, Shield, Infinity
+  Crown, Scroll, ChevronRight, Gift, Shield, Infinity
 } from 'lucide-react';
 import './HomeScreen.css';
 
@@ -19,6 +19,7 @@ interface Props {
 export default function HomeScreen({ onNavigate }: Props) {
   const { user } = useUser();
   const [rewardClaimed, setRewardClaimed] = useState(false);
+  const [isClaiming, setIsClaiming] = useState(false); // 🆕 Loading state
   const [timeLeft, setTimeLeft] = useState('14:32:18');
   const [dailyCard, setDailyCard] = useState<typeof tarotCards[0] | null>(null);
   const [isDailyReversed, setIsDailyReversed] = useState(false);
@@ -105,9 +106,43 @@ export default function HomeScreen({ onNavigate }: Props) {
     return () => clearInterval(timer);
   }, []);
 
-  const handleClaimReward = () => {
-    if (!rewardClaimed) {
-      setRewardClaimed(true);
+  // 🆕 რეალური Edge Function-ის გამოძახება
+  const handleClaimReward = async () => {
+    if (rewardClaimed || isClaiming) return;
+    
+    setIsClaiming(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        alert('❌ არ ხარ ავტორიზებული. გთხოვთ თავიდან შეხვიდეთ აპლიკაციაში.');
+        setIsClaiming(false);
+        return;
+      }
+
+      const response = await fetch('https://eutavdhcxpfhpfsyaskb.supabase.co/functions/v1/claim-daily-reward', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({})
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        setRewardClaimed(true);
+        setCurrentStreak(result.reward.streak);
+        alert(`✅ Daily Reward Claimed!\n💰 Coins: +${result.reward.coins}\n⭐ XP: +${result.reward.xp}\n🔥 Streak: ${result.reward.streak} days`);
+      } else {
+        alert(`⚠️ ${result.error || 'Failed to claim reward'}`);
+      }
+    } catch (error) {
+      console.error('Error claiming reward:', error);
+      alert('❌ Failed to connect to server. Check console for details.');
+    } finally {
+      setIsClaiming(false);
     }
   };
 
@@ -144,7 +179,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     }
   };
 
-  // ✅ განახლებული - Crystals → Horoscope
   const quickActions = [
     { icon: <Sparkles size={28} />, label: 'Daily', sublabel: 'Card', color: '#C5A059', action: 'Daily' },
     { icon: <LayoutGrid size={28} />, label: '3 Cards', sublabel: 'Reading', color: '#a78bfa', action: '3Cards' },
@@ -426,10 +460,11 @@ export default function HomeScreen({ onNavigate }: Props) {
               height: '100%'
             }}
           >
+            {/* 🆕 განახლებული ღილაკი Loading სტატუსით */}
             <button 
               className={`action-btn-vertical ${rewardClaimed ? 'claimed' : ''}`}
               onClick={handleClaimReward}
-              disabled={rewardClaimed}
+              disabled={rewardClaimed || isClaiming}
               style={{
                 background: 'rgba(255, 255, 255, 0.03)',
                 border: '1px solid rgba(197, 160, 89, 0.15)',
@@ -438,16 +473,24 @@ export default function HomeScreen({ onNavigate }: Props) {
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                cursor: 'pointer',
+                cursor: (rewardClaimed || isClaiming) ? 'not-allowed' : 'pointer',
                 position: 'relative',
                 overflow: 'hidden',
                 padding: '4px',
                 width: '100%',
-                height: '100%'
+                height: '100%',
+                opacity: (rewardClaimed || isClaiming) ? 0.7 : 1
               }}
             >
-              <Gift size={22} style={{ filter: 'drop-shadow(0 0 6px #C5A059)', color: '#C5A059', width: '20px', height: '20px' }} />
-              {!rewardClaimed && <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>50</div>}
+              {isClaiming ? (
+                <svg className="animate-spin" style={{ width: '20px', height: '20px', color: '#C5A059' }} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              ) : (
+                <Gift size={22} style={{ filter: 'drop-shadow(0 0 6px #C5A059)', color: '#C5A059', width: '20px', height: '20px' }} />
+              )}
+              {!rewardClaimed && !isClaiming && <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>50</div>}
             </button>
 
             <button 
