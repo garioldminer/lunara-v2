@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '../context/UserContext';
-import { supabase } from '../lib/supabase';
 import { tarotCards, SUITS } from '../data/tarotCards';
 import { getUserStreak } from '../lib/readingService';
 import { isAdmin } from '../lib/adminService';
@@ -106,21 +105,18 @@ export default function HomeScreen({ onNavigate }: Props) {
     return () => clearInterval(timer);
   }, []);
 
-  // 🆕 რეალური Edge Function-ის გამოძახება (გასწორებული null check-ით)
+  // 🆕 რეალური Edge Function-ის გამოძახება (Telegram initData-თი)
   const handleClaimReward = async () => {
     if (rewardClaimed || isClaiming) return;
     
     setIsClaiming(true);
     try {
-      // 🆕 TypeScript-ისთვის null check
-      if (!supabase) {
-        throw new Error('Supabase client not initialized');
-      }
-
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      // 🆕 მივიღოთ Telegram-ის initData
+      const tg = (window as any).Telegram?.WebApp;
+      const initData = tg?.initData || '';
       
-      if (sessionError || !session?.access_token) {
-        alert('❌ არ ხარ ავტორიზებული. გთხოვთ თავიდან შეხვიდეთ აპლიკაციაში.');
+      if (!initData) {
+        alert('❌ Telegram-ის ავტორიზაცია ვერ მოიძებნა. გთხოვთ გადატვირთოთ აპლიკაცია.');
         setIsClaiming(false);
         return;
       }
@@ -129,9 +125,11 @@ export default function HomeScreen({ onNavigate }: Props) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
+          'X-Telegram-Init-Data': initData
         },
-        body: JSON.stringify({})
+        body: JSON.stringify({
+          userId: user?.id || ''
+        })
       });
       
       const result = await response.json();
