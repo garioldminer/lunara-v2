@@ -105,18 +105,14 @@ export default function HomeScreen({ onNavigate }: Props) {
     return () => clearInterval(timer);
   }, []);
 
-  // 🆕 რეალური Edge Function-ის გამოძახება (Telegram initData-თი)
+  // 🆕 გამარტივებული Edge Function-ის გამოძახება (X-User-Id header-ით)
   const handleClaimReward = async () => {
     if (rewardClaimed || isClaiming) return;
     
     setIsClaiming(true);
     try {
-      // 🆕 მივიღოთ Telegram-ის initData
-      const tg = (window as any).Telegram?.WebApp;
-      const initData = tg?.initData || '';
-      
-      if (!initData) {
-        alert('❌ Telegram-ის ავტორიზაცია ვერ მოიძებნა. გთხოვთ გადატვირთოთ აპლიკაცია.');
+      if (!user?.id) {
+        alert('❌ მომხმარებლის ID ვერ მოიძებნა.');
         setIsClaiming(false);
         return;
       }
@@ -125,11 +121,9 @@ export default function HomeScreen({ onNavigate }: Props) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Telegram-Init-Data': initData
+          'X-User-Id': user.id
         },
-        body: JSON.stringify({
-          userId: user?.id || ''
-        })
+        body: JSON.stringify({})
       });
       
       const result = await response.json();
@@ -143,7 +137,7 @@ export default function HomeScreen({ onNavigate }: Props) {
       }
     } catch (error) {
       console.error('Error claiming reward:', error);
-      alert('❌ Failed to connect to server. Check console for details.');
+      alert('❌ Failed to connect to server.');
     } finally {
       setIsClaiming(false);
     }
