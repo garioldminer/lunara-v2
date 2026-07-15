@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '../context/UserContext';
 import { tarotCards, SUITS } from '../data/tarotCards';
-import { getUserStreak } from '../lib/readingService';
 import { isAdmin } from '../lib/adminService';
 import { getActiveSubscription } from '../lib/subscriptionService';
 import { supabase } from '../lib/supabase';
@@ -60,17 +59,18 @@ export default function HomeScreen({ onNavigate }: Props) {
 
   // 🆕 ეკონომიკის მონაცემების წამოღება
   useEffect(() => {
-    if (user) {
+    if (user && supabase) {
       loadEconomyData();
     }
   }, [user]);
 
   const loadEconomyData = async () => {
+    if (!supabase || !user) return;
     try {
       const { data, error } = await supabase
         .from('user_economy')
         .select('cosmic_coins, xp, level, current_streak')
-        .eq('user_id', user!.id)
+        .eq('user_id', user.id)
         .single();
 
       if (error) {
@@ -169,7 +169,7 @@ export default function HomeScreen({ onNavigate }: Props) {
       if (result.success) {
         setRewardClaimed(true);
         setCurrentStreak(result.reward.streak);
-        //  განვაახლოთ ეკონომიკის მონაცემები
+        // 🆕 განვაახლოთ ეკონომიკის მონაცემები ლოკალურადაც
         setEconomy(prev => ({
           ...prev,
           cosmic_coins: prev.cosmic_coins + result.reward.coins,
@@ -325,7 +325,7 @@ export default function HomeScreen({ onNavigate }: Props) {
           </div>
           
           <div className="user-resources">
-            {/* 🆕 რეალური Coins */}
+            {/* 🆕 რეალური Coins ბაზიდან */}
             <div className="resource gems">
               <Gem size={14} className="resource-icon gem-icon" />
               <span className="value">{economy.cosmic_coins.toLocaleString()}</span>
