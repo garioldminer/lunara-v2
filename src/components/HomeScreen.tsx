@@ -8,7 +8,7 @@ import {
   Gem, Zap, Trophy, Flame, Bug, CheckCircle, XCircle,
   Sparkles, LayoutGrid, Moon, Hash, 
   Crown, Scroll, ChevronRight, Gift, Shield, Infinity,
-  RefreshCw, Copy
+  RefreshCw, Copy, LogOut
 } from 'lucide-react';
 import './HomeScreen.css';
 
@@ -116,6 +116,26 @@ End of Debug Report
     }
   };
 
+  // 🆕 Logout და სრული გასუფთავების ფუნქცია
+  const handleLogoutAndReset = async () => {
+    if (!supabase) return;
+    
+    addDebugLog('info', 'AUTH', 'Logging out and clearing local storage...');
+    
+    try {
+      // 1. სუფთა ვშლით ლოკალურ მეხსიერებას (მაგ. დღიური ბარათი)
+      localStorage.clear();
+      
+      // 2. ვშლით Supabase სესიას
+      await supabase.auth.signOut();
+      
+      // 3. ვტვირთავთ გვერდს თავიდან (რათა SplashScreen-მა იმუშაოს თავიდან)
+      window.location.reload();
+    } catch (err: any) {
+      addDebugLog('error', 'AUTH', `Logout failed: ${err.message}`);
+    }
+  };
+
   // 🆕 ტესტის ფუნქცია: აიძულებს სისტემას შეამოწმოს და შექმნას ჩანაწერი (Splash Screen-ის ლოგიკა)
   const testEconomyInitialization = async () => {
     if (!user || !supabase) {
@@ -130,7 +150,6 @@ End of Debug Report
       addDebugLog('info', 'TEST', 'Existing record deleted for testing.');
 
       // 2. ვამოწმებთ (მივიღებთ 0 rows შეცდომას PGRST116)
-      // 🆕 წაშლილია გამოუყენებელი 'data' ცვლადი დესტრუქტურიზაციიდან
       const { error: fetchError } = await supabase
         .from('user_economy')
         .select('user_id')
@@ -1116,7 +1135,25 @@ End of Debug Report
                 <strong style={{ fontSize: '14px', color: '#ffe566' }}>🔧 DEBUG PANEL</strong>
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   
-                  {/* 🆕 ახალი ტესტის ღილაკი */}
+                  {/* 🆕 ახალი Logout ღილაკი */}
+                  <button 
+                    onClick={handleLogoutAndReset}
+                    style={{
+                      background: 'rgba(239, 68, 68, 0.3)',
+                      border: '1px solid #ef4444',
+                      borderRadius: '6px',
+                      padding: '4px 8px',
+                      color: '#ef4444',
+                      cursor: 'pointer',
+                      fontSize: '9px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    <LogOut size={12} /> LOGOUT & RESET
+                  </button>
+
                   <button 
                     onClick={testEconomyInitialization}
                     style={{
