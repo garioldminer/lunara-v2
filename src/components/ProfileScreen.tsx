@@ -175,7 +175,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
     { id: '8', icon: '💰', title: 'High Roller', description: 'Spin the wheel 100 times', unlocked: false, progress: 23, total: 100 },
   ];
 
-  // 🆕 განახლებული: სრული რესეტი, ბაზაში onboarding_completed-ის განულებით
+  // 🆕 იდეალური ლოგაუთის ლოგიკა: მონაცემების შენარჩუნებით და ონბორდინგის თავიდან ჩვენებით
   const handleSettingClick = async (setting: string) => {
     console.log(`Setting clicked: ${setting}`);
     
@@ -187,27 +187,28 @@ export default function ProfileScreen({ onNavigate }: Props) {
       }
     } else if (setting === 'logout') {
       try {
-        console.log('🚪 Initiating full app reset and logout...');
+        console.log('🚪 Initiating safe logout with onboarding reset...');
         
-        // 1. ვანულებთ onboarding_completed-ს ბაზაში, რომ აპლიკაციამ ისევ აჩვენოს ონბორდინგის გვერდები
+        // 1. ვანულებთ მხოლოდ onboarding_completed ფლაგს. 
+        // ეს არ შლის მომხმარებელს, ქოინებს, XP-ს ან სხვა მონაცემებს!
         if (user && supabase) {
           await supabase
             .from('users')
             .update({ onboarding_completed: false })
             .eq('id', user.id);
-          console.log('✅ Onboarding status reset in database');
+          console.log('✅ Onboarding flag reset in database (Data preserved)');
         }
 
-        // 2. სრულად ვშლით ლოკალურ და სესიურ მეხსიერებას
+        // 2. ვწმენდთ ლოკალურ მეხსიერებას (დროებითი ფლაგების წასაშლელად)
         localStorage.clear();
         sessionStorage.clear();
         
-        // 3. ვშლით Supabase-ის ავტორიზაციის სესიას
+        // 3. ვწყვეტთ მიმდინარე ავტორიზაციის სესიას
         if (supabase) {
           await supabase.auth.signOut();
         }
         
-        // 4. ვაკეთებთ იძულებით გადამისამართებას მთავარ გვერდზე ('/')
+        // 4. ვაკეთებთ აპლიკაციის სრულ გადატვირთვას ნულიდან
         window.location.href = '/';
         
       } catch (error) {
