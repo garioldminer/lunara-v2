@@ -175,7 +175,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
     { id: '8', icon: '💰', title: 'High Roller', description: 'Spin the wheel 100 times', unlocked: false, progress: 23, total: 100 },
   ];
 
-  // 🆕 განახლებული: დამატებულია supabase null check
+  // 🆕 განახლებული: სრული რესეტი და თავიდან დაწყება
   const handleSettingClick = async (setting: string) => {
     console.log(`Setting clicked: ${setting}`);
     
@@ -187,18 +187,20 @@ export default function ProfileScreen({ onNavigate }: Props) {
       }
     } else if (setting === 'logout') {
       try {
-        console.log('🚪 Logging out user...');
+        console.log('🚪 Initiating full app reset and logout...');
         
-        // 1. სრულად ვშლით ლოკალურ მეხსიერებას
+        // 1. სრულად ვშლით ლოკალურ და სესიურ მეხსიერებას
         localStorage.clear();
+        sessionStorage.clear();
         
-        // 2. ვშლით Supabase-ის ავტორიზაციის სესიას (null check-ით)
+        // 2. ვშლით Supabase-ის ავტორიზაციის სესიას
         if (supabase) {
           await supabase.auth.signOut();
         }
         
-        // 3. ვტვირთავთ გვერდს თავიდან
-        window.location.reload();
+        // 3. ვაკეთებთ იძულებით გადამისამართებას მთავარ გვერდზე ('/')
+        // ეს აიძულებს აპლიკაციას, ნულიდან დაიწყოს რენდერი და ამოქმედდეს SplashScreen-ის სრული ლოგიკა
+        window.location.href = '/';
         
       } catch (error) {
         console.error('❌ Error logging out:', error);
