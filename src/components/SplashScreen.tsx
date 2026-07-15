@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useUser } from '../context/UserContext';
 import { supabase } from '../lib/supabase';
 import './SplashScreen.css';
@@ -9,21 +9,12 @@ interface Props {
 
 export default function SplashScreen({ onFinish }: Props) {
   const { user } = useUser();
-  const [showButton, setShowButton] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowButton(true);
-    }, 3500);
-    
-    return () => clearTimeout(timer);
-  }, []);
-
   const handleEnterApp = async () => {
     if (!user || !supabase) {
-      setError('მომხმარებელი ან სისტემა ვერ მოიძებნა. გთხოვთ, თავიდან შეხვიდეთ აპლიკაციაში.');
+      setError('სისტემური შეცდომა. გთხოვთ, თავიდან შეხვიდეთ აპლიკაციაში.');
       return;
     }
 
@@ -76,6 +67,7 @@ export default function SplashScreen({ onFinish }: Props) {
 
   return (
     <div className="screen-container splash">
+      {/* ვიდეო ფონი */}
       <video 
         className="background-video"
         autoPlay 
@@ -86,6 +78,7 @@ export default function SplashScreen({ onFinish }: Props) {
         <source src="/videos/splash.mp4" type="video/mp4" />
       </video>
 
+      {/* ღილაკების კონტეინერი */}
       <div style={{ 
         position: 'absolute', 
         bottom: '15%', 
@@ -98,65 +91,100 @@ export default function SplashScreen({ onFinish }: Props) {
         padding: '20px',
         zIndex: 10
       }}>
-        {!showButton ? (
-          <div className="loader-container">
-            <div className="loader-track">
-              <div className="loader-fill" />
-            </div>
-            <div className="loader-text">LOADING</div>
-          </div>
-        ) : (
-          error ? (
-            <div style={{ textAlign: 'center', color: '#ef4444', background: 'rgba(0,0,0,0.7)', padding: '16px', borderRadius: '12px' }}>
-              <p style={{ marginBottom: '12px', fontSize: '14px' }}>{error}</p>
-              <button 
-                onClick={handleEnterApp}
-                style={{
-                  background: '#C5A059',
-                  color: '#0a0600',
-                  border: 'none',
-                  padding: '12px 24px',
-                  borderRadius: '8px',
-                  fontWeight: 'bold',
-                  cursor: 'pointer'
-                }}
-              >
-                თავიდან ცდა
-              </button>
-            </div>
-          ) : (
+        {error ? (
+          <div style={{ textAlign: 'center', color: '#ef4444', background: 'rgba(0,0,0,0.7)', padding: '16px', borderRadius: '12px', width: '100%', maxWidth: '300px' }}>
+            <p style={{ marginBottom: '12px', fontSize: '14px' }}>{error}</p>
             <button 
-              onClick={handleEnterApp}
-              disabled={isInitializing}
+              onClick={() => window.location.reload()}
               style={{
-                background: isInitializing ? '#555' : 'linear-gradient(135deg, #C5A059 0%, #ffe566 100%)',
+                background: '#C5A059',
                 color: '#0a0600',
                 border: 'none',
-                padding: '16px 32px',
-                borderRadius: '12px',
-                fontSize: '18px',
+                padding: '12px 24px',
+                borderRadius: '8px',
                 fontWeight: 'bold',
-                cursor: isInitializing ? 'not-allowed' : 'pointer',
-                boxShadow: '0 4px 15px rgba(197, 160, 89, 0.4)',
-                transition: 'transform 0.2s, box-shadow 0.2s',
-                minWidth: '250px'
-              }}
-              onMouseEnter={(e) => {
-                if (!isInitializing) {
-                  (e.target as HTMLElement).style.transform = 'scale(1.05)';
-                  (e.target as HTMLElement).style.boxShadow = '0 6px 20px rgba(197, 160, 89, 0.6)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isInitializing) {
-                  (e.target as HTMLElement).style.transform = 'scale(1)';
-                  (e.target as HTMLElement).style.boxShadow = '0 4px 15px rgba(197, 160, 89, 0.4)';
-                }
+                cursor: 'pointer'
               }}
             >
-              {isInitializing ? 'მონაცემების ინიციალიზაცია...' : 'დაიწყე მოგზაურობა ✨'}
+              თავიდან ცდა
             </button>
-          )
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', maxWidth: '280px' }}>
+            {isInitializing ? (
+              <div className="loader-container" style={{ width: '100%' }}>
+                <div className="loader-track">
+                  <div className="loader-fill" />
+                </div>
+                <div className="loader-text">მონაცემების ინიციალიზაცია...</div>
+              </div>
+            ) : (
+              <>
+                <button 
+                  onClick={handleEnterApp}
+                  style={{
+                    background: 'linear-gradient(135deg, #C5A059 0%, #ffe566 100%)',
+                    color: '#0a0600',
+                    border: 'none',
+                    padding: '16px',
+                    borderRadius: '12px',
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 15px rgba(197, 160, 89, 0.4)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
+                  }}
+                >
+                  🔮 ტარო
+                </button>
+                
+                <button 
+                  onClick={handleEnterApp}
+                  style={{
+                    background: 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '16px',
+                    borderRadius: '12px',
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 15px rgba(96, 165, 250, 0.4)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
+                  }}
+                >
+                  ✨ ჰოროსკოპი
+                </button>
+                
+                <button 
+                  onClick={handleEnterApp}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    color: '#fff',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    padding: '16px',
+                    borderRadius: '12px',
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    backdropFilter: 'blur(10px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
+                  }}
+                >
+                  🚀 დაწყება
+                </button>
+              </>
+            )}
+          </div>
         )}
       </div>
     </div>
