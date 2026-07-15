@@ -8,7 +8,7 @@ import {
   Gem, Zap, Trophy, Flame, Bug, CheckCircle, XCircle,
   Sparkles, LayoutGrid, Moon, Hash, 
   Crown, Scroll, ChevronRight, Gift, Shield, Infinity,
-  RefreshCw
+  RefreshCw, Copy
 } from 'lucide-react';
 import './HomeScreen.css';
 
@@ -56,6 +56,7 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [dbStatus, setDbStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
   const [economyLoadStatus, setEconomyLoadStatus] = useState<'pending' | 'loading' | 'success' | 'error'>('pending');
   const [lastDbQuery, setLastDbQuery] = useState<any>(null);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   // Debug Log Helper
   const addDebugLog = (type: DebugLog['type'], category: string, message: string, data?: any) => {
@@ -68,6 +69,51 @@ export default function HomeScreen({ onNavigate }: Props) {
       data
     };
     setDebugLogs(prev => [log, ...prev].slice(0, 50));
+  };
+
+  // 🆕 Copy All Debug Info
+  const copyAllDebugInfo = async () => {
+    const debugText = `
+🔧 LUNARA DEBUG REPORT
+📅 ${new Date().toLocaleString()}
+
+👤 USER INFO:
+   ID: ${user?.id || 'N/A'}
+   Name: ${user?.display_name || 'N/A'}
+
+💰 ECONOMY STATE:
+   Coins: ${economy.cosmic_coins}
+   XP: ${economy.xp}
+   Level: ${economy.level}
+   Streak: ${currentStreak}
+
+📊 STATUS:
+   Database: ${dbStatus.toUpperCase()}
+   Economy Load: ${economyLoadStatus.toUpperCase()}
+
+🗄️ LAST DB QUERY:
+   Table: ${lastDbQuery?.table || 'N/A'}
+   User ID: ${lastDbQuery?.userId || 'N/A'}
+
+📝 LOGS (${debugLogs.length} total):
+${debugLogs.slice(0, 20).map(log => `
+[${log.timestamp}] ${log.category.toUpperCase()} (${log.type})
+   ${log.message}
+   ${log.data ? JSON.stringify(log.data, null, 2) : ''}
+`).join('\n')}
+
+---
+End of Debug Report
+`.trim();
+
+    try {
+      await navigator.clipboard.writeText(debugText);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+      alert('Failed to copy to clipboard');
+    }
   };
 
   useEffect(() => {
@@ -290,7 +336,7 @@ export default function HomeScreen({ onNavigate }: Props) {
         alert(`✅ Daily Reward Claimed!\n💰 Coins: +${result.reward.coins}\n⭐ XP: +${result.reward.xp}\n🔥 Streak: ${result.reward.streak} days`);
       } else {
         addDebugLog('warning', 'REWARD', 'Edge Function returned error', result.error);
-        alert(`⚠️ ${result.error || 'Failed to claim reward'}`);
+        alert(`️ ${result.error || 'Failed to claim reward'}`);
       }
     } catch (error: any) {
       addDebugLog('error', 'REWARD', 'Exception during reward claim', { 
@@ -1004,7 +1050,7 @@ export default function HomeScreen({ onNavigate }: Props) {
               fontSize: '11px',
               boxShadow: '0 8px 32px rgba(0,0,0,0.8)'
             }}>
-              {/* Header */}
+              {/* Header with COPY ALL button */}
               <div style={{ 
                 display: 'flex', 
                 justifyContent: 'space-between', 
@@ -1013,21 +1059,42 @@ export default function HomeScreen({ onNavigate }: Props) {
                 paddingBottom: '8px',
                 borderBottom: '2px solid rgba(255, 229, 102, 0.3)'
               }}>
-                <strong style={{ fontSize: '14px', color: '#ffe566' }}>🔧 DEBUG PANEL</strong>
-                <button 
-                  onClick={() => setDebugLogs([])}
-                  style={{
-                    background: 'rgba(239, 68, 68, 0.3)',
-                    border: '1px solid #ef4444',
-                    borderRadius: '6px',
-                    padding: '4px 8px',
-                    color: '#ef4444',
-                    cursor: 'pointer',
-                    fontSize: '9px'
-                  }}
-                >
-                  CLEAR
-                </button>
+                <strong style={{ fontSize: '14px', color: '#ffe566' }}> DEBUG PANEL</strong>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <button 
+                    onClick={copyAllDebugInfo}
+                    style={{
+                      background: copySuccess ? 'rgba(16, 185, 129, 0.3)' : 'rgba(96, 165, 250, 0.3)',
+                      border: `1px solid ${copySuccess ? '#10b981' : '#60a5fa'}`,
+                      borderRadius: '6px',
+                      padding: '4px 8px',
+                      color: copySuccess ? '#10b981' : '#60a5fa',
+                      cursor: 'pointer',
+                      fontSize: '9px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <Copy size={12} />
+                    {copySuccess ? 'COPIED!' : 'COPY ALL'}
+                  </button>
+                  <button 
+                    onClick={() => setDebugLogs([])}
+                    style={{
+                      background: 'rgba(239, 68, 68, 0.3)',
+                      border: '1px solid #ef4444',
+                      borderRadius: '6px',
+                      padding: '4px 8px',
+                      color: '#ef4444',
+                      cursor: 'pointer',
+                      fontSize: '9px'
+                    }}
+                  >
+                    CLEAR
+                  </button>
+                </div>
               </div>
 
               {/* Status Indicators */}
@@ -1053,7 +1120,7 @@ export default function HomeScreen({ onNavigate }: Props) {
                 <div>⭐ XP: <strong>{economy.xp}</strong></div>
                 <div>🎯 Level: <strong>{economy.level}</strong></div>
                 <div>🔥 Streak: <strong>{currentStreak}</strong></div>
-                <div>👤 User: <strong>{user?.id?.slice(0, 8)}...</strong></div>
+                <div> User: <strong>{user?.id?.slice(0, 8)}...</strong></div>
               </div>
 
               {/* Last DB Query */}
