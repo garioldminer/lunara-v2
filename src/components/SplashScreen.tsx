@@ -14,7 +14,6 @@ export default function SplashScreen({ onFinish }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // ვიდეოს ჩვენება 3.5 წამის განმავლობაში, შემდეგ ღილაკის გამოჩენა
     const timer = setTimeout(() => {
       setShowButton(true);
     }, 3500);
@@ -23,8 +22,8 @@ export default function SplashScreen({ onFinish }: Props) {
   }, []);
 
   const handleEnterApp = async () => {
-    if (!user) {
-      setError('მომხმარებელი ვერ მოიძებნა. გთხოვთ, თავიდან შეხვიდეთ აპლიკაციაში.');
+    if (!user || !supabase) {
+      setError('მომხმარებელი ან სისტემა ვერ მოიძებნა. გთხოვთ, თავიდან შეხვიდეთ აპლიკაციაში.');
       return;
     }
 
@@ -33,7 +32,7 @@ export default function SplashScreen({ onFinish }: Props) {
 
     try {
       // 1. ვამოწმებთ, არსებობს თუ არა უკვე ეკონომიკის ჩანაწერი
-      const { data: existingData, error: fetchError } = await supabase
+      const { error: fetchError } = await supabase
         .from('user_economy')
         .select('user_id')
         .eq('user_id', user.id)
@@ -62,11 +61,9 @@ export default function SplashScreen({ onFinish }: Props) {
           throw new Error(`ჩანაწერის შექმნა ვერ მოხერხდა: ${insertError.message}`);
         }
       } else if (fetchError) {
-        // სხვა ტიპის შეცდომა (მაგ. ქსელის პრობლემა)
         throw new Error(`მონაცემების შემოწმება ვერ მოხერხდა: ${fetchError.message}`);
       }
 
-      // 3. ყველაფერი წარმატებით დასრულდა (ან უკვე არსებობდა, ან ახლა შეიქმნა)
       console.log('Economy initialized successfully. Transitioning to app.');
       onFinish();
 
@@ -79,7 +76,6 @@ export default function SplashScreen({ onFinish }: Props) {
 
   return (
     <div className="screen-container splash">
-      {/* ვიდეო ფონი */}
       <video 
         className="background-video"
         autoPlay 
@@ -90,7 +86,6 @@ export default function SplashScreen({ onFinish }: Props) {
         <source src="/videos/splash.mp4" type="video/mp4" />
       </video>
 
-      {/* შიგთავსი */}
       <div style={{ 
         position: 'absolute', 
         bottom: '15%', 
@@ -104,7 +99,6 @@ export default function SplashScreen({ onFinish }: Props) {
         zIndex: 10
       }}>
         {!showButton ? (
-          // Loading bar (ვიდეოს დროს)
           <div className="loader-container">
             <div className="loader-track">
               <div className="loader-fill" />
@@ -112,7 +106,6 @@ export default function SplashScreen({ onFinish }: Props) {
             <div className="loader-text">LOADING</div>
           </div>
         ) : (
-          // ღილაკი ან შეცდომა (ვიდეოს შემდეგ)
           error ? (
             <div style={{ textAlign: 'center', color: '#ef4444', background: 'rgba(0,0,0,0.7)', padding: '16px', borderRadius: '12px' }}>
               <p style={{ marginBottom: '12px', fontSize: '14px' }}>{error}</p>

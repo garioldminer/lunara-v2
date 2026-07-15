@@ -118,8 +118,8 @@ End of Debug Report
 
   // 🆕 ტესტის ფუნქცია: აიძულებს სისტემას შეამოწმოს და შექმნას ჩანაწერი (Splash Screen-ის ლოგიკა)
   const testEconomyInitialization = async () => {
-    if (!user) {
-      addDebugLog('error', 'TEST', 'No user available for test');
+    if (!user || !supabase) {
+      addDebugLog('error', 'TEST', 'No user or supabase available for test');
       return;
     }
     addDebugLog('info', 'TEST', 'Starting manual economy initialization test...');
@@ -130,7 +130,8 @@ End of Debug Report
       addDebugLog('info', 'TEST', 'Existing record deleted for testing.');
 
       // 2. ვამოწმებთ (მივიღებთ 0 rows შეცდომას PGRST116)
-      const { data, error: fetchError } = await supabase
+      // 🆕 წაშლილია გამოუყენებელი 'data' ცვლადი დესტრუქტურიზაციიდან
+      const { error: fetchError } = await supabase
         .from('user_economy')
         .select('user_id')
         .eq('user_id', user.id)
