@@ -4,8 +4,8 @@ import { tarotCards, SUITS } from '../data/tarotCards';
 import { isAdmin } from '../lib/adminService';
 import { getActiveSubscription } from '../lib/subscriptionService';
 import { supabase } from '../lib/supabase';
-import { getTelegramUser } from '../lib/telegramAuth'; // 🆕 დამატებულია
-import { getOrCreateUser } from '../lib/userService'; // 🆕 დამატებულია
+import { getTelegramUser } from '../lib/telegramAuth';
+import { getOrCreateUser } from '../lib/userService';
 import { 
   Gem, Zap, Trophy, Flame, Bug, CheckCircle, XCircle,
   Sparkles, LayoutGrid, Moon, Hash, 
@@ -34,8 +34,23 @@ interface DebugLog {
   data?: any;
 }
 
+// 🆕 ახალი interface ბაზის მონაცემების დეტალური თვალყურის დევნებისთვის
+interface DatabaseDebugInfo {
+  lastQuery: any;
+  lastResponse: any;
+  economyData: any;
+  queryHistory: Array<{
+    timestamp: string;
+    table: string;
+    operation: string;
+    params: any;
+    result: any;
+    error?: any;
+  }>;
+}
+
 export default function HomeScreen({ onNavigate }: Props) {
-  const { user, setUser } = useUser(); // 🆕 დამატებულია setUser
+  const { user, setUser } = useUser();
   const [rewardClaimed, setRewardClaimed] = useState(false);
   const [isClaiming, setIsClaiming] = useState(false);
   const [timeLeft, setTimeLeft] = useState('14:32:18');
@@ -59,6 +74,14 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [economyLoadStatus, setEconomyLoadStatus] = useState<'pending' | 'loading' | 'success' | 'error'>('pending');
   const [lastDbQuery, setLastDbQuery] = useState<any>(null);
   const [copySuccess, setCopySuccess] = useState(false);
+  
+  // 🆕 ბაზის დებაგის სრული ინფორმაცია
+  const [dbDebugInfo, setDbDebugInfo] = useState<DatabaseDebugInfo>({
+    lastQuery: null,
+    lastResponse: null,
+    economyData: null,
+    queryHistory: []
+  });
 
   // Debug Log Helper
   const addDebugLog = (type: DebugLog['type'], category: string, message: string, data?: any) => {
@@ -71,6 +94,25 @@ export default function HomeScreen({ onNavigate }: Props) {
       data
     };
     setDebugLogs(prev => [log, ...prev].slice(0, 50));
+  };
+
+  // 🆕 ფუნქცია: ბაზის მონაცემების ჩაწერა debug ისტორიაში
+  const addToDbDebugHistory = (table: string, operation: string, params: any, result: any, error?: any) => {
+    const historyEntry = {
+      timestamp: new Date().toLocaleTimeString('en-US', { hour12: false }),
+      table,
+      operation,
+      params,
+      result,
+      error
+    };
+    
+    setDbDebugInfo(prev => ({
+      ...prev,
+      lastQuery: { table, operation, params },
+      lastResponse: result || error,
+      queryHistory: [historyEntry, ...prev.queryHistory].slice(0, 20)
+    }));
   };
 
   // 🆕 Copy All Debug Info
@@ -121,107 +163,62 @@ End of Debug Report
   // 🆕 ფუნქცია: ზუსტად გვაჩვენებს რა ხდება ავტორიზაციის დროს
   const refreshUserDataDebug = async () => {
     addDebugLog('info', 'AUTH_DEBUG', '🔄 Starting manual user data refresh...');
-    
-    // 1. რას გვაძლევს ტელეგრამი?
     const tgUser = getTelegramUser();
-    addDebugLog('info', 'AUTH_DEBUG', '1. Data from Telegram (getTelegramUser):', tgUser);
+    addDebugLog('info', 'AUTH_DEBUG', '1. Data from Telegram:', tgUser);
     
-    if (!tgUser) {
-      addDebugLog('error', 'AUTH_DEBUG', '❌ CRITICAL: getTelegramUser() returned null/undefined!');
+    if (!tgUser || !supabase) {
+      addDebugLog('error', 'AUTH_DEBUG', '❌ CRITICAL: Missing Telegram user or Supabase!');
       return;
     }
 
-    if (!supabase) {
-      addDebugLog('error', 'AUTH_DEBUG', '❌ CRITICAL: Supabase client is null!');
-      return;
-    }
-
-    // 2. რას აბრუნებს ბაზა?
-    addDebugLog('info', 'AUTH_DEBUG', '2. Querying Supabase with telegram_id: ' + tgUser.id);
+    addDebugLog('info', 'AUTH_DEBUG', `2. Querying Supabase with telegram_id: ${tgUser.id}`);
     const freshUser = await getOrCreateUser(tgUser);
-    
     addDebugLog('info', 'AUTH_DEBUG', '3. Response from getOrCreateUser:', freshUser);
 
     if (freshUser) {
       addDebugLog('success', 'AUTH_DEBUG', '✅ SUCCESS: Updating User Context with fresh data');
       setUser(freshUser);
-      
-      // განვაახლოთ ეკონომიკის მონაცემებიც ახალი user.id-ით (დროებით 0, სანამ loadEconomy არ გაეშვება)
-      setEconomy({
-        cosmic_coins: 0,
-        xp: 0,
-        level: 1,
-        current_streak: 0
-      });
+      setEconomy({ cosmic_coins: 0, xp: 0, level: 1, current_streak: 0 });
     } else {
-      addDebugLog('error', 'AUTH_DEBUG', '❌ FAILED: getOrCreateUser returned null. Check DB logs.');
+      addDebugLog('error', 'AUTH_DEBUG', '❌ FAILED: getOrCreateUser returned null.');
     }
   };
 
   // 🆕 Logout და სრული გასუფთავების ფუნქცია
   const handleLogoutAndReset = async () => {
     if (!supabase) return;
-    
     addDebugLog('info', 'AUTH', 'Logging out and clearing local storage...');
-    
     try {
-      // 1. სუფთა ვშლით ლოკალურ მეხსიერებას (მაგ. დღიური ბარათი)
       localStorage.clear();
-      
-      // 2. ვშლით Supabase სესიას
       await supabase.auth.signOut();
-      
-      // 3. ვტვირთავთ გვერდს თავიდან (რათა SplashScreen-მა იმუშაოს თავიდან)
       window.location.reload();
     } catch (err: any) {
       addDebugLog('error', 'AUTH', `Logout failed: ${err.message}`);
     }
   };
 
-  // 🆕 ტესტის ფუნქცია: აიძულებს სისტემას შეამოწმოს და შექმნას ჩანაწერი (Splash Screen-ის ლოგიკა)
+  // 🆕 ტესტის ფუნქცია: აიძულებს სისტემას შეამოწმოს და შექმნას ჩანაწერი
   const testEconomyInitialization = async () => {
     if (!user || !supabase) {
       addDebugLog('error', 'TEST', 'No user or supabase available for test');
       return;
     }
     addDebugLog('info', 'TEST', 'Starting manual economy initialization test...');
-    
     try {
-      // 1. ჯერ ვშლით არსებულ ჩანაწერს (ტესტისთვის, რომ სიმულაცია იყოს)
       await supabase.from('user_economy').delete().eq('user_id', user.id);
       addDebugLog('info', 'TEST', 'Existing record deleted for testing.');
 
-      // 2. ვამოწმებთ (მივიღებთ 0 rows შეცდომას PGRST116)
-      const { error: fetchError } = await supabase
-        .from('user_economy')
-        .select('user_id')
-        .eq('user_id', user.id)
-        .single();
+      const { error: fetchError } = await supabase.from('user_economy').select('user_id').eq('user_id', user.id).single();
 
-      // 3. თუ 0 rows-ია, ვქმნით ახალს (ზუსტად ისე, როგორც Splash Screen-ზე)
       if (fetchError && fetchError.code === 'PGRST116') {
         addDebugLog('warning', 'TEST', 'No record found (PGRST116). Creating new one...');
-        
-        const { error: insertError } = await supabase
-          .from('user_economy')
-          .insert({
-            user_id: user.id,
-            cosmic_coins: 0,
-            xp: 0,
-            level: 1,
-            cosmic_focus: 3,
-            max_focus: 3,
-            current_streak: 0,
-            longest_streak: 0,
-            last_active_date: new Date().toISOString().split('T')[0],
-            last_daily_claim: null
-          });
+        const { error: insertError } = await supabase.from('user_economy').insert({
+          user_id: user.id, cosmic_coins: 0, xp: 0, level: 1, cosmic_focus: 3, max_focus: 3,
+          current_streak: 0, longest_streak: 0, last_active_date: new Date().toISOString().split('T')[0], last_daily_claim: null
+        });
 
         if (insertError) throw new Error(insertError.message);
-        
         addDebugLog('success', 'TEST', '✅ SUCCESS: New economy record created automatically!');
-        
-        // განვაახლოთ სტეიტი ეკრანზე მყისიერად
         setEconomy({ cosmic_coins: 0, xp: 0, level: 1, current_streak: 0 });
         setDbStatus('connected');
         setEconomyLoadStatus('success');
@@ -231,16 +228,68 @@ End of Debug Report
     }
   };
 
+  // 🆕 ტესტის ფუნქცია: ქოინების დამატება
+  const testAddCoins = async (amount: number) => {
+    if (!user || !supabase) return;
+    addDebugLog('info', 'TEST', `🪙 Adding ${amount} coins...`);
+    try {
+      const currentCoins = economy.cosmic_coins;
+      const newCoins = currentCoins + amount;
+      const { data, error } = await supabase.from('user_economy').update({ cosmic_coins: newCoins }).eq('user_id', user.id).select().single();
+      
+      addToDbDebugHistory('user_economy', 'UPDATE', { userId: user.id, field: 'cosmic_coins', oldValue: currentCoins, newValue: newCoins }, data, error);
+      if (error) throw error;
+
+      setEconomy(prev => ({ ...prev, cosmic_coins: newCoins }));
+      addDebugLog('success', 'TEST', `✅ Added ${amount} coins. New balance: ${newCoins}`);
+    } catch (err: any) {
+      addDebugLog('error', 'TEST', `❌ Failed: ${err.message}`);
+    }
+  };
+
+  // 🆕 ტესტის ფუნქცია: XP-ს დამატება
+  const testAddXP = async (amount: number) => {
+    if (!user || !supabase) return;
+    addDebugLog('info', 'TEST', `⭐ Adding ${amount} XP...`);
+    try {
+      const currentXP = economy.xp;
+      const newXP = currentXP + amount;
+      const newLevel = Math.floor(newXP / 100) + 1;
+      const { data, error } = await supabase.from('user_economy').update({ xp: newXP, level: newLevel }).eq('user_id', user.id).select().single();
+      
+      addToDbDebugHistory('user_economy', 'UPDATE', { userId: user.id, field: 'xp', oldValue: currentXP, newValue: newXP, newLevel }, data, error);
+      if (error) throw error;
+
+      setEconomy(prev => ({ ...prev, xp: newXP, level: newLevel }));
+      addDebugLog('success', 'TEST', `✅ Added ${amount} XP. New: ${newXP} XP, Level ${newLevel}`);
+    } catch (err: any) {
+      addDebugLog('error', 'TEST', `❌ Failed: ${err.message}`);
+    }
+  };
+
+  // 🆕 ფუნქცია: ბაზის მონაცემების ხელახალი ჩატვირთვა
+  const reloadFromDatabase = async () => {
+    addDebugLog('info', 'DB', '🔄 Reloading all data from database...');
+    setEconomyLoadStatus('pending');
+    if (user && supabase) {
+      const { data, error } = await supabase.from('user_economy').select('cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus').eq('user_id', user.id).single();
+      if (!error && data) {
+        setEconomy({ cosmic_coins: data.cosmic_coins || 0, xp: data.xp || 0, level: data.level || 1, current_streak: data.current_streak || 0 });
+        setCurrentStreak(data.current_streak || 0);
+        setDbDebugInfo(prev => ({ ...prev, economyData: data }));
+        addDebugLog('success', 'DB', '✅ Data reloaded successfully');
+      }
+    }
+    setEconomyLoadStatus('success');
+  };
+
   useEffect(() => {
     if (user) {
       addDebugLog('info', 'USER', 'User loaded', { userId: user.id, displayName: user.display_name });
-      
       isAdmin(user.id).then(admin => {
         setIsUserAdmin(admin);
         addDebugLog('success', 'ADMIN', 'Admin check completed', { isAdmin: admin });
-      }).catch(err => {
-        addDebugLog('error', 'ADMIN', 'Admin check failed', err.message);
-      });
+      }).catch(err => addDebugLog('error', 'ADMIN', `Admin check failed: ${err.message}`));
     } else {
       addDebugLog('warning', 'USER', 'No user loaded');
     }
@@ -251,13 +300,11 @@ End of Debug Report
       getActiveSubscription(user.id).then(sub => {
         setActiveSubscription(sub);
         addDebugLog('success', 'SUBSCRIPTION', 'Subscription loaded', { hasSubscription: !!sub });
-      }).catch(err => {
-        addDebugLog('error', 'SUBSCRIPTION', 'Subscription load failed', err.message);
-      });
+      }).catch(err => addDebugLog('error', 'SUBSCRIPTION', `Subscription load failed: ${err.message}`));
     }
   }, [user]);
 
-  // 🆕 ეკონომიკის მონაცემების წამოღება Debug-ით
+  // 🆕 ეკონომიკის მონაცემების წამოღება დეტალური დებაგით
   useEffect(() => {
     const loadEconomy = async () => {
       if (!user) {
@@ -265,7 +312,6 @@ End of Debug Report
         setEconomyLoadStatus('pending');
         return;
       }
-      
       if (!supabase) {
         addDebugLog('error', 'ECONOMY', 'Supabase client is null');
         setEconomyLoadStatus('error');
@@ -274,69 +320,49 @@ End of Debug Report
 
       setEconomyLoadStatus('loading');
       setDbStatus('connecting');
-      addDebugLog('info', 'ECONOMY', 'Starting economy data load', { userId: user.id });
+      addDebugLog('info', 'ECONOMY', '📡 Starting economy data load', { userId: user.id });
 
       try {
-        const query = supabase
-          .from('user_economy')
-          .select('cosmic_coins, xp, level, current_streak')
-          .eq('user_id', user.id)
-          .single();
+        const queryParams = { table: 'user_economy', columns: 'cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus', userId: user.id };
+        setLastDbQuery(queryParams);
+        addToDbDebugHistory('user_economy', 'SELECT', queryParams, 'PENDING');
 
-        setLastDbQuery({
-          table: 'user_economy',
-          columns: 'cosmic_coins, xp, level, current_streak',
-          userId: user.id
-        });
-
-        const { data, error } = await query;
+        const { data, error } = await supabase.from('user_economy').select('cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus').eq('user_id', user.id).single();
 
         if (error) {
           setDbStatus('error');
           setEconomyLoadStatus('error');
-          addDebugLog('error', 'ECONOMY', 'Database query failed', { 
-            error: error.message, 
-            code: error.code,
-            details: error.details 
-          });
+          addToDbDebugHistory('user_economy', 'SELECT', queryParams, null, error);
+          addDebugLog('error', 'ECONOMY', '❌ Database query failed', { error: error.message, code: error.code, details: error.details });
           return;
         }
 
         setDbStatus('connected');
         setEconomyLoadStatus('success');
-        addDebugLog('success', 'ECONOMY', 'Economy data loaded successfully', data);
+        addToDbDebugHistory('user_economy', 'SELECT', queryParams, data);
+        setDbDebugInfo(prev => ({ ...prev, economyData: data }));
+        addDebugLog('success', 'ECONOMY', '✅ Economy data loaded successfully', data);
 
         if (data) {
-          const economyData = {
-            cosmic_coins: data.cosmic_coins || 0,
-            xp: data.xp || 0,
-            level: data.level || 1,
-            current_streak: data.current_streak || 0
-          };
-          
+          const economyData = { cosmic_coins: data.cosmic_coins || 0, xp: data.xp || 0, level: data.level || 1, current_streak: data.current_streak || 0 };
           setEconomy(economyData);
           setCurrentStreak(economyData.current_streak);
-          addDebugLog('info', 'STATE', 'Economy state updated', economyData);
+          addDebugLog('info', 'STATE', '💰 Economy state updated', economyData);
         } else {
-          addDebugLog('warning', 'ECONOMY', 'No economy data found for user');
+          addDebugLog('warning', 'ECONOMY', '⚠️ No economy data found for user');
         }
       } catch (error: any) {
         setDbStatus('error');
         setEconomyLoadStatus('error');
-        addDebugLog('error', 'ECONOMY', 'Exception during economy load', { 
-          message: error.message,
-          stack: error.stack 
-        });
+        addDebugLog('error', 'ECONOMY', '💥 Exception during economy load', { message: error.message, stack: error.stack });
       }
     };
-
     loadEconomy();
   }, [user]);
 
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
     const stored = localStorage.getItem('dailyCard');
-    
     if (stored) {
       const parsed = JSON.parse(stored);
       if (parsed.date === today) {
@@ -346,12 +372,10 @@ End of Debug Report
         return;
       }
     }
-
     const dayOfYear = getDayOfYear(new Date());
     const cardIndex = dayOfYear % tarotCards.length;
     const card = tarotCards[cardIndex];
     const isReversed = Math.random() < 0.5;
-    
     const newReading = { card, isReversed, date: today };
     localStorage.setItem('dailyCard', JSON.stringify(newReading));
     setDailyCard(card);
@@ -368,9 +392,7 @@ End of Debug Report
 
   const getCardMeta = (card: typeof tarotCards[0]) => {
     if (card.arcana === 'major') return 'Major Arcana';
-    if (card.suit && SUITS[card.suit]) {
-      return `${SUITS[card.suit].element}`;
-    }
+    if (card.suit && SUITS[card.suit]) return `${SUITS[card.suit].element}`;
     return '';
   };
 
@@ -380,11 +402,9 @@ End of Debug Report
       const tomorrow = new Date(now);
       tomorrow.setHours(24, 0, 0, 0);
       const diff = tomorrow.getTime() - now.getTime();
-      
       const hours = Math.floor(diff / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      
       setTimeLeft(`${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`);
     }, 1000);
     return () => clearInterval(timer);
@@ -395,10 +415,8 @@ End of Debug Report
       addDebugLog('warning', 'REWARD', 'Reward already claimed or claiming');
       return;
     }
-    
     addDebugLog('info', 'REWARD', 'Starting reward claim process');
     setIsClaiming(true);
-    
     try {
       if (!user?.id) {
         addDebugLog('error', 'REWARD', 'No user ID available');
@@ -406,58 +424,29 @@ End of Debug Report
         setIsClaiming(false);
         return;
       }
-
-      addDebugLog('info', 'REWARD', 'Calling Edge Function', { 
-        userId: user.id,
-        url: 'https://eutavdhcxpfhpfsyaskb.supabase.co/functions/v1/claim-daily-reward'
-      });
-
+      addDebugLog('info', 'REWARD', 'Calling Edge Function', { userId: user.id, url: 'https://eutavdhcxpfhpfsyaskb.supabase.co/functions/v1/claim-daily-reward' });
       const response = await fetch('https://eutavdhcxpfhpfsyaskb.supabase.co/functions/v1/claim-daily-reward', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-User-Id': user.id
-        },
+        headers: { 'Content-Type': 'application/json', 'X-User-Id': user.id },
         body: JSON.stringify({})
       });
-      
-      addDebugLog('info', 'REWARD', 'Edge Function response received', { 
-        status: response.status,
-        statusText: response.statusText 
-      });
-
+      addDebugLog('info', 'REWARD', 'Edge Function response received', { status: response.status, statusText: response.statusText });
       const result = await response.json();
       addDebugLog('info', 'REWARD', 'Response parsed', result);
       
       if (result.success) {
         setRewardClaimed(true);
         setCurrentStreak(result.reward.streak);
-        
-        const newEconomy = {
-          ...economy,
-          cosmic_coins: economy.cosmic_coins + result.reward.coins,
-          xp: economy.xp + result.reward.xp,
-          current_streak: result.reward.streak
-        };
-        
+        const newEconomy = { ...economy, cosmic_coins: economy.cosmic_coins + result.reward.coins, xp: economy.xp + result.reward.xp, current_streak: result.reward.streak };
         setEconomy(newEconomy);
-        addDebugLog('success', 'REWARD', 'Reward claimed successfully', { 
-          coins: result.reward.coins,
-          xp: result.reward.xp,
-          streak: result.reward.streak,
-          newEconomy 
-        });
-        
+        addDebugLog('success', 'REWARD', 'Reward claimed successfully', { coins: result.reward.coins, xp: result.reward.xp, streak: result.reward.streak, newEconomy });
         alert(`✅ Daily Reward Claimed!\n💰 Coins: +${result.reward.coins}\n⭐ XP: +${result.reward.xp}\n🔥 Streak: ${result.reward.streak} days`);
       } else {
         addDebugLog('warning', 'REWARD', 'Edge Function returned error', result.error);
         alert(`⚠️ ${result.error || 'Failed to claim reward'}`);
       }
     } catch (error: any) {
-      addDebugLog('error', 'REWARD', 'Exception during reward claim', { 
-        message: error.message,
-        stack: error.stack 
-      });
+      addDebugLog('error', 'REWARD', 'Exception during reward claim', { message: error.message, stack: error.stack });
       alert('❌ Failed to connect to server.');
     } finally {
       setIsClaiming(false);
@@ -467,33 +456,19 @@ End of Debug Report
   const handleQuickAction = (action: string) => {
     addDebugLog('info', 'NAVIGATION', 'Quick action clicked', { action });
     if (onNavigate) {
-      if (action === 'Tarot') {
-        onNavigate('card-fan');
-      } else if (action === 'Daily') {
-        onNavigate('daily-card');
-      } else if (action === '3Cards') {
-        onNavigate('three-card-reading');
-      } else if (action === 'Astrology') {
-        onNavigate('astro');
-      } else if (action === 'Cards') {
-        onNavigate('cards');
-      } else if (action === 'History') {
-        onNavigate('reading-history');
-      } else if (action === 'CelticCross') {
-        onNavigate('celtic-cross');
-      } else if (action === 'Horseshoe') {
-        onNavigate('horseshoe');
-      } else if (action === 'Relationship') {
-        onNavigate('relationship');
-      } else if (action === 'Horoscope') {
-        onNavigate('horoscope');
-      } else if (action === 'Admin') {
-        onNavigate('admin');
-      } else if (action === 'Subscription') {
-        onNavigate('subscription');
-      } else if (action === 'Services') {
-        onNavigate('services');
-      }
+      if (action === 'Tarot') onNavigate('card-fan');
+      else if (action === 'Daily') onNavigate('daily-card');
+      else if (action === '3Cards') onNavigate('three-card-reading');
+      else if (action === 'Astrology') onNavigate('astro');
+      else if (action === 'Cards') onNavigate('cards');
+      else if (action === 'History') onNavigate('reading-history');
+      else if (action === 'CelticCross') onNavigate('celtic-cross');
+      else if (action === 'Horseshoe') onNavigate('horseshoe');
+      else if (action === 'Relationship') onNavigate('relationship');
+      else if (action === 'Horoscope') onNavigate('horoscope');
+      else if (action === 'Admin') onNavigate('admin');
+      else if (action === 'Subscription') onNavigate('subscription');
+      else if (action === 'Services') onNavigate('services');
     }
   };
 
@@ -511,13 +486,7 @@ End of Debug Report
   ];
 
   if (isUserAdmin) {
-    quickActions.push({
-      icon: <Shield size={28} />,
-      label: 'Admin',
-      sublabel: 'Panel',
-      color: '#ef4444',
-      action: 'Admin'
-    });
+    quickActions.push({ icon: <Shield size={28} />, label: 'Admin', sublabel: 'Panel', color: '#ef4444', action: 'Admin' });
   }
 
   const quests = [
@@ -527,9 +496,7 @@ End of Debug Report
 
   const dailyCardName = dailyCard?.name || 'THE FOOL';
   const dailyCardNumber = dailyCard?.number || '0';
-  const dailyCardMeaning = isDailyReversed 
-    ? (dailyCard?.reversed_keywords?.[0] || 'Reflection')
-    : (dailyCard?.keywords?.[0] || 'New Beginnings');
+  const dailyCardMeaning = isDailyReversed ? (dailyCard?.reversed_keywords?.[0] || 'Reflection') : (dailyCard?.keywords?.[0] || 'New Beginnings');
   const dailyCardElement = dailyCard ? getCardMeta(dailyCard) : '';
 
   const xpPercent = 78;
@@ -541,33 +508,10 @@ End of Debug Report
       {/* 1. USER HEADER */}
       <div className="user-header">
         <div className="user-main-row">
-          <div 
-            className="avatar-section clickable-avatar"
-            onClick={() => onNavigate?.('profile')}
-          >
+          <div className="avatar-section clickable-avatar" onClick={() => onNavigate?.('profile')}>
             <svg className="xp-circular-progress" width="56" height="56" viewBox="0 0 56 56">
-              <circle
-                className="xp-circle-bg"
-                cx="28"
-                cy="28"
-                r="22"
-                fill="none"
-                stroke="rgba(197, 160, 89, 0.2)"
-                strokeWidth="3"
-              />
-              <circle
-                className="xp-circle-progress"
-                cx="28"
-                cy="28"
-                r="22"
-                fill="none"
-                stroke="url(#xpGradient)"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeDasharray={circumference}
-                strokeDashoffset={strokeDashoffset}
-                transform="rotate(-90 28 28)"
-              />
+              <circle className="xp-circle-bg" cx="28" cy="28" r="22" fill="none" stroke="rgba(197, 160, 89, 0.2)" strokeWidth="3" />
+              <circle className="xp-circle-progress" cx="28" cy="28" r="22" fill="none" stroke="url(#xpGradient)" strokeWidth="3" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} transform="rotate(-90 28 28)" />
               <defs>
                 <linearGradient id="xpGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#C5A059" />
@@ -575,27 +519,15 @@ End of Debug Report
                 </linearGradient>
               </defs>
             </svg>
-            
-            <div className="avatar-image">
-              {user?.display_name?.charAt(0).toUpperCase() || 'U'}
-            </div>
-            
-            {activeSubscription && (
-              <div className="premium-avatar-badge">
-                <Crown size={10} />
-              </div>
-            )}
+            <div className="avatar-image">{user?.display_name?.charAt(0).toUpperCase() || 'U'}</div>
+            {activeSubscription && <div className="premium-avatar-badge"><Crown size={10} /></div>}
           </div>
           
           <div className="user-info-section">
             <h2 className="username">{user?.display_name || 'LunaraSeeker'}</h2>
             {activeSubscription && (
-              <div 
-                className="premium-status-badge"
-                onClick={() => onNavigate?.('subscription')}
-              >
-                <Infinity size={10} />
-                <span>PREMIUM</span>
+              <div className="premium-status-badge" onClick={() => onNavigate?.('subscription')}>
+                <Infinity size={10} /><span>PREMIUM</span>
               </div>
             )}
           </div>
@@ -616,189 +548,34 @@ End of Debug Report
       </div>
 
       {/* 2. DAILY QUESTS (60%) + ACTION BUTTONS (40%) */}
-      <div 
-        className="quests-and-actions-split"
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-          gap: '2px',
-          marginBottom: '2px',
-          width: '100%',
-          alignItems: 'stretch'
-        }}
-      >
-        {/* LEFT - Daily Quests (60%) */}
-        <div 
-          className="daily-quests-compact"
-          style={{
-            flex: '0 0 60%',
-            minWidth: 0,
-            background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)',
-            border: '1px solid #332a1a',
-            borderRadius: '14px',
-            padding: '8px',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)',
-            display: 'flex',
-            flexDirection: 'column'
-          }}
-        >
-          <div 
-            className="quests-header-compact"
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '6px',
-              padding: '0 2px'
-            }}
-          >
+      <div className="quests-and-actions-split" style={{ display: 'flex', flexDirection: 'row', gap: '2px', marginBottom: '2px', width: '100%', alignItems: 'stretch' }}>
+        <div className="daily-quests-compact" style={{ flex: '0 0 60%', minWidth: 0, background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)', border: '1px solid #332a1a', borderRadius: '14px', padding: '8px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)', display: 'flex', flexDirection: 'column' }}>
+          <div className="quests-header-compact" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', padding: '0 2px' }}>
             <h3 style={{ margin: 0, fontSize: '9px', color: '#C5A059', letterSpacing: '1px', fontWeight: 700, textTransform: 'uppercase' }}>DAILY QUESTS</h3>
             <span style={{ fontSize: '9px', color: '#b3a68c', fontFamily: 'monospace' }}>{timeLeft}</span>
           </div>
-          <div 
-            className="quest-list-compact"
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '4px',
-              flex: 1,
-              justifyContent: 'center'
-            }}
-          >
+          <div className="quest-list-compact" style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, justifyContent: 'center' }}>
             {quests.map((quest, index) => (
-              <div 
-                key={index} 
-                className="quest-item-compact"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '4px 6px',
-                  background: 'rgba(197, 160, 89, 0.05)',
-                  borderRadius: '6px',
-                  border: '1px solid rgba(197, 160, 89, 0.08)'
-                }}
-              >
-                <div 
-                  className="quest-icon-compact"
-                  style={{
-                    color: '#C5A059',
-                    flexShrink: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: '16px',
-                    height: '16px'
-                  }}
-                >
-                  {quest.icon}
-                </div>
+              <div key={index} className="quest-item-compact" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 6px', background: 'rgba(197, 160, 89, 0.05)', borderRadius: '6px', border: '1px solid rgba(197, 160, 89, 0.08)' }}>
+                <div className="quest-icon-compact" style={{ color: '#C5A059', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '16px', height: '16px' }}>{quest.icon}</div>
                 <div className="quest-info-compact" style={{ flex: 1, minWidth: 0 }}>
-                  <span 
-                    className="quest-name-compact"
-                    style={{
-                      fontSize: '9px',
-                      color: '#fff',
-                      fontWeight: 500,
-                      display: 'block',
-                      marginBottom: '2px',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis'
-                    }}
-                  >
-                    {quest.name}
-                  </span>
+                  <span className="quest-name-compact" style={{ fontSize: '9px', color: '#fff', fontWeight: 500, display: 'block', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{quest.name}</span>
                   <div className="quest-progress-compact" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <div 
-                      className="progress-bar-compact"
-                      style={{
-                        flex: 1,
-                        height: '3px',
-                        background: 'rgba(255, 255, 255, 0.1)',
-                        borderRadius: '2px',
-                        overflow: 'hidden'
-                      }}
-                    >
-                      <div 
-                        className="progress-fill-compact" 
-                        style={{ 
-                          width: `${(quest.current / quest.total) * 100}%`,
-                          height: '100%',
-                          background: 'linear-gradient(90deg, #C5A059, #ffe566)',
-                          borderRadius: '2px',
-                          boxShadow: '0 0 4px rgba(197, 160, 89, 0.5)'
-                        }}
-                      ></div>
+                    <div className="progress-bar-compact" style={{ flex: 1, height: '3px', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '2px', overflow: 'hidden' }}>
+                      <div className="progress-fill-compact" style={{ width: `${(quest.current / quest.total) * 100}%`, height: '100%', background: 'linear-gradient(90deg, #C5A059, #ffe566)', borderRadius: '2px', boxShadow: '0 0 4px rgba(197, 160, 89, 0.5)' }}></div>
                     </div>
                     <span style={{ fontSize: '8px', color: '#b3a68c', minWidth: '18px' }}>{quest.current}/{quest.total}</span>
                   </div>
                 </div>
-                <div 
-                  className="quest-reward-compact"
-                  style={{
-                    fontSize: '9px',
-                    color: '#C5A059',
-                    fontWeight: 600,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '1px',
-                    flexShrink: 0
-                  }}
-                >
-                  +{quest.reward} <Gem size={9} />
-                </div>
+                <div className="quest-reward-compact" style={{ fontSize: '9px', color: '#C5A059', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '1px', flexShrink: 0 }}>+{quest.reward} <Gem size={9} /></div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* RIGHT - Action Buttons (40%) */}
-        <div 
-          className="action-buttons-panel"
-          style={{
-            flex: '0 0 calc(40% - 2px)',
-            minWidth: 0,
-            background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)',
-            border: '1px solid #332a1a',
-            borderRadius: '14px',
-            padding: '6px',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)',
-            display: 'flex'
-          }}
-        >
-          <div 
-            className="action-grid-vertical"
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gridTemplateRows: '1fr 1fr',
-              gap: '4px',
-              width: '100%',
-              height: '100%'
-            }}
-          >
-            <button 
-              className={`action-btn-vertical ${rewardClaimed ? 'claimed' : ''}`}
-              onClick={handleClaimReward}
-              disabled={rewardClaimed || isClaiming}
-              style={{
-                background: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid rgba(197, 160, 89, 0.15)',
-                borderRadius: '8px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: (rewardClaimed || isClaiming) ? 'not-allowed' : 'pointer',
-                position: 'relative',
-                overflow: 'hidden',
-                padding: '4px',
-                width: '100%',
-                height: '100%',
-                opacity: (rewardClaimed || isClaiming) ? 0.7 : 1
-              }}
-            >
+        <div className="action-buttons-panel" style={{ flex: '0 0 calc(40% - 2px)', minWidth: 0, background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)', border: '1px solid #332a1a', borderRadius: '14px', padding: '6px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)', display: 'flex' }}>
+          <div className="action-grid-vertical" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: '4px', width: '100%', height: '100%' }}>
+            <button className={`action-btn-vertical ${rewardClaimed ? 'claimed' : ''}`} onClick={handleClaimReward} disabled={rewardClaimed || isClaiming} style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: (rewardClaimed || isClaiming) ? 'not-allowed' : 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%', opacity: (rewardClaimed || isClaiming) ? 0.7 : 1 }}>
               {isClaiming ? (
                 <svg className="animate-spin" style={{ width: '20px', height: '20px', color: '#C5A059' }} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -810,79 +587,21 @@ End of Debug Report
               {!rewardClaimed && !isClaiming && <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>50</div>}
             </button>
 
-            <button 
-              className="action-btn-vertical streak-btn-v"
-              style={{
-                background: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid rgba(197, 160, 89, 0.15)',
-                borderRadius: '8px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                position: 'relative',
-                overflow: 'hidden',
-                padding: '4px',
-                width: '100%',
-                height: '100%'
-              }}
-            >
+            <button className="action-btn-vertical streak-btn-v" style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%' }}>
               <Flame size={22} style={{ filter: 'drop-shadow(0 0 6px #ff6b35)', color: '#ff6b35', width: '20px', height: '20px' }} />
               <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>{currentStreak}</div>
             </button>
 
-            <button 
-              className="action-btn-vertical rank-btn-v"
-              style={{
-                background: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid rgba(197, 160, 89, 0.15)',
-                borderRadius: '8px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                position: 'relative',
-                overflow: 'hidden',
-                padding: '4px',
-                width: '100%',
-                height: '100%'
-              }}
-            >
+            <button className="action-btn-vertical rank-btn-v" style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%' }}>
               <Trophy size={22} style={{ filter: 'drop-shadow(0 0 6px #ffd700)', color: '#ffd700', width: '20px', height: '20px' }} />
               <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>TOP</div>
             </button>
 
-            <button 
-              className={`action-btn-vertical ${activeSubscription ? 'subscription-btn-v' : 'upgrade-btn-v'}`}
-              onClick={() => onNavigate && onNavigate(activeSubscription ? 'subscription' : 'pricing')}
-              style={{
-                background: activeSubscription ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 165, 0, 0.05) 100%)' : 'rgba(255, 255, 255, 0.03)',
-                border: activeSubscription ? '1px solid rgba(255, 215, 0, 0.4)' : '1px solid rgba(197, 160, 89, 0.15)',
-                borderRadius: '8px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                position: 'relative',
-                overflow: 'hidden',
-                padding: '4px',
-                width: '100%',
-                height: '100%'
-              }}
-            >
+            <button className={`action-btn-vertical ${activeSubscription ? 'subscription-btn-v' : 'upgrade-btn-v'}`} onClick={() => onNavigate && onNavigate(activeSubscription ? 'subscription' : 'pricing')} style={{ background: activeSubscription ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 165, 0, 0.05) 100%)' : 'rgba(255, 255, 255, 0.03)', border: activeSubscription ? '1px solid rgba(255, 215, 0, 0.4)' : '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%' }}>
               {activeSubscription ? (
-                <>
-                  <Infinity size={22} style={{ filter: 'drop-shadow(0 0 6px #FFD700)', color: '#FFD700', width: '20px', height: '20px' }} />
-                  <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>VIP</div>
-                </>
+                <><Infinity size={22} style={{ filter: 'drop-shadow(0 0 6px #FFD700)', color: '#FFD700', width: '20px', height: '20px' }} /><div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>VIP</div></>
               ) : (
-                <>
-                  <Crown size={22} style={{ filter: 'drop-shadow(0 0 6px #a78bfa)', color: '#a78bfa', width: '20px', height: '20px' }} />
-                  <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>PRO</div>
-                </>
+                <><Crown size={22} style={{ filter: 'drop-shadow(0 0 6px #a78bfa)', color: '#a78bfa', width: '20px', height: '20px' }} /><div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>PRO</div></>
               )}
             </button>
           </div>
@@ -890,191 +609,38 @@ End of Debug Report
       </div>
 
       {/* 3. CARD OF THE DAY */}
-      <div 
-        className="card-of-day-banner clickable-card"
-        onClick={() => onNavigate && onNavigate('daily-card')}
-        style={{
-          background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)',
-          border: '1px solid #332a1a',
-          borderRadius: '16px',
-          padding: '12px',
-          marginBottom: '2px',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)',
-          position: 'relative',
-          overflow: 'visible',
-          cursor: 'pointer'
-        }}
-      >
-        <div 
-          className="card-of-day-content"
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: '0'
-          }}
-        >
-          <div 
-            className="card-half-left"
-            style={{
-              flex: '0 0 45%',
-              position: 'relative',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '8px 0'
-            }}
-          >
-            <div 
-              className="card-image-3d-wrapper"
-              style={{
-                position: 'relative',
-                width: 'clamp(80px, 22vw, 110px)',
-                aspectRatio: '2/3',
-                perspective: '800px'
-              }}
-            >
-              <div 
-                className="card-image-tilted"
-                style={{
-                  position: 'relative',
-                  width: '100%',
-                  height: '100%',
-                  transform: 'rotateY(-5deg) rotateX(2deg) rotate(3deg)',
-                  transition: 'transform 0.4s ease',
-                  zIndex: 2,
-                  transformStyle: 'preserve-3d'
-                }}
-              >
+      <div className="card-of-day-banner clickable-card" onClick={() => onNavigate && onNavigate('daily-card')} style={{ background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)', border: '1px solid #332a1a', borderRadius: '16px', padding: '12px', marginBottom: '2px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)', position: 'relative', overflow: 'visible', cursor: 'pointer' }}>
+        <div className="card-of-day-content" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '0' }}>
+          <div className="card-half-left" style={{ flex: '0 0 45%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px 0' }}>
+            <div className="card-image-3d-wrapper" style={{ position: 'relative', width: 'clamp(80px, 22vw, 110px)', aspectRatio: '2/3', perspective: '800px' }}>
+              <div className="card-image-tilted" style={{ position: 'relative', width: '100%', height: '100%', transform: 'rotateY(-5deg) rotateX(2deg) rotate(3deg)', transition: 'transform 0.4s ease', zIndex: 2, transformStyle: 'preserve-3d' }}>
                 {dailyCard?.image_url ? (
-                  <img 
-                    src={dailyCard.image_url} 
-                    alt={dailyCardName}
-                    className="card-image-large"
-                    style={{ 
-                      transform: isDailyReversed ? 'rotate(183deg)' : 'rotate(3deg)',
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      borderRadius: '8px',
-                      border: '2px solid #C5A059',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.4), 0 8px 16px rgba(0,0,0,0.5), 0 16px 32px rgba(0,0,0,0.6), 0 0 20px rgba(197,160,89,0.3)'
-                    }}
-                  />
+                  <img src={dailyCard.image_url} alt={dailyCardName} className="card-image-large" style={{ transform: isDailyReversed ? 'rotate(183deg)' : 'rotate(3deg)', width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px', border: '2px solid #C5A059', boxShadow: '0 2px 4px rgba(0,0,0,0.4), 0 8px 16px rgba(0,0,0,0.5), 0 16px 32px rgba(0,0,0,0.6), 0 0 20px rgba(197,160,89,0.3)' }} />
                 ) : (
-                  <div 
-                    className="card-placeholder-large" 
-                    style={{ 
-                      transform: 'rotate(3deg)',
-                      width: '100%',
-                      height: '100%',
-                      background: 'linear-gradient(135deg, #2a2215, #1a1510)',
-                      borderRadius: '8px',
-                      border: '2px solid #C5A059',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.4), 0 8px 16px rgba(0,0,0,0.5), 0 16px 32px rgba(0,0,0,0.6), 0 0 20px rgba(197,160,89,0.3)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '4px'
-                    }}
-                  >
+                  <div className="card-placeholder-large" style={{ transform: 'rotate(3deg)', width: '100%', height: '100%', background: 'linear-gradient(135deg, #2a2215, #1a1510)', borderRadius: '8px', border: '2px solid #C5A059', boxShadow: '0 2px 4px rgba(0,0,0,0.4), 0 8px 16px rgba(0,0,0,0.5), 0 16px 32px rgba(0,0,0,0.6), 0 0 20px rgba(197,160,89,0.3)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                     <span style={{ fontSize: '14px', fontWeight: 700, color: '#C5A059' }}>{dailyCardNumber}</span>
                     <div style={{ fontSize: '28px', filter: 'drop-shadow(0 0 10px rgba(197, 160, 89, 0.6))' }}>✦</div>
                     <span style={{ fontSize: '10px', fontWeight: 700, color: '#C5A059', textAlign: 'center', padding: '0 6px' }}>{dailyCardName}</span>
                   </div>
                 )}
                 {isDailyReversed && (
-                  <div 
-                    className="card-reversed-indicator-large"
-                    style={{
-                      position: 'absolute',
-                      top: '5px',
-                      right: '5px',
-                      width: '24px',
-                      height: '24px',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '13px',
-                      fontWeight: 900,
-                      zIndex: 3,
-                      background: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)',
-                      color: '#fff',
-                      border: '2px solid #fff',
-                      boxShadow: '0 0 0 2px rgba(167,139,250,0.5), 0 4px 12px rgba(167,139,250,0.8), 0 0 20px rgba(167,139,250,0.6)'
-                    }}
-                  >
+                  <div className="card-reversed-indicator-large" style={{ position: 'absolute', top: '5px', right: '5px', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 900, zIndex: 3, background: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)', color: '#fff', border: '2px solid #fff', boxShadow: '0 0 0 2px rgba(167,139,250,0.5), 0 4px 12px rgba(167,139,250,0.8), 0 0 20px rgba(167,139,250,0.6)' }}>
                     <span>R</span>
                   </div>
                 )}
               </div>
-              <div 
-                className="card-3d-shadow"
-                style={{
-                  position: 'absolute',
-                  bottom: '-6px',
-                  left: '10%',
-                  width: '80%',
-                  height: '14px',
-                  background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.6) 0%, transparent 70%)',
-                  filter: 'blur(6px)',
-                  zIndex: 1,
-                  opacity: 0.7
-                }}
-              ></div>
+              <div className="card-3d-shadow" style={{ position: 'absolute', bottom: '-6px', left: '10%', width: '80%', height: '14px', background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.6) 0%, transparent 70%)', filter: 'blur(6px)', zIndex: 1, opacity: 0.7 }}></div>
             </div>
           </div>
 
-          <div 
-            className="card-half-right"
-            style={{
-              flex: '0 0 55%',
-              paddingLeft: '12px',
-              display: 'flex',
-              alignItems: 'center'
-            }}
-          >
-            <div 
-              className="card-info-section"
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                gap: '4px',
-                width: '100%',
-                minWidth: 0
-              }}
-            >
+          <div className="card-half-right" style={{ flex: '0 0 55%', paddingLeft: '12px', display: 'flex', alignItems: 'center' }}>
+            <div className="card-info-section" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '4px', width: '100%', minWidth: 0 }}>
               <div style={{ fontSize: '9px', color: '#C5A059', letterSpacing: '2px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 600 }}>CARD OF THE DAY</div>
               <h3 style={{ margin: 0, fontSize: '16px', color: '#C5A059', letterSpacing: '0.5px', fontWeight: 700, lineHeight: 1.2 }}>{dailyCardName}</h3>
               <p style={{ margin: 0, fontSize: '11px', color: 'rgba(255,255,255,0.7)', fontStyle: 'italic', lineHeight: 1.3 }}>"{dailyCardMeaning}"</p>
-              {dailyCardElement && (
-                <p style={{ margin: 0, fontSize: '10px', color: '#888' }}>{dailyCardElement}</p>
-              )}
-              <button 
-                className="read-guidance-btn"
-                style={{
-                  background: 'transparent',
-                  border: '1px solid #C5A059',
-                  color: '#C5A059',
-                  padding: '5px 10px',
-                  borderRadius: '6px',
-                  fontSize: '9px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  letterSpacing: '0.5px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '4px',
-                  marginTop: '4px',
-                  alignSelf: 'flex-start'
-                }}
-              >
-                READ GUIDANCE
-                <ChevronRight size={14} />
+              {dailyCardElement && <p style={{ margin: 0, fontSize: '10px', color: '#888' }}>{dailyCardElement}</p>}
+              <button className="read-guidance-btn" style={{ background: 'transparent', border: '1px solid #C5A059', color: '#C5A059', padding: '5px 10px', borderRadius: '6px', fontSize: '9px', fontWeight: 700, cursor: 'pointer', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '4px', alignSelf: 'flex-start' }}>
+                READ GUIDANCE <ChevronRight size={14} />
               </button>
             </div>
           </div>
@@ -1085,35 +651,10 @@ End of Debug Report
       <div className="quick-access" style={{ marginBottom: '8px', width: '100%' }}>
         <div className="quick-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
           {quickActions.map((action, index) => (
-            <button 
-              key={index} 
-              className={`quick-item ${action.isPremium ? 'premium-item' : ''} ${action.action === 'Admin' ? 'admin-item' : ''} ${(action as any).isServices ? 'services-item' : ''}`}
-              style={{ 
-                '--glow-color': action.color,
-                background: action.isPremium ? 'linear-gradient(135deg, rgba(197, 160, 89, 0.15) 0%, rgba(139, 105, 20, 0.1) 100%)' : (action as any).isServices ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 165, 0, 0.08) 100%)' : '#1a1510',
-                border: action.isPremium ? '1px solid rgba(197, 160, 89, 0.4)' : (action as any).isServices ? '1px solid rgba(255, 215, 0, 0.4)' : '1px solid #2a2215',
-                borderRadius: '12px',
-                padding: 'clamp(8px, 2.5vw, 12px) 4px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '4px',
-                color: '#fff',
-                cursor: 'pointer',
-                position: 'relative',
-                overflow: 'hidden'
-              } as React.CSSProperties}
-              onClick={() => handleQuickAction(action.action)}
-            >
-              {action.isPremium && (
-                <div style={{ position: 'absolute', top: '-4px', right: '-4px', background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', boxShadow: '0 2px 8px rgba(197, 160, 89, 0.5)', zIndex: 10 }}>💎</div>
-              )}
-              {(action as any).isServices && (
-                <div style={{ position: 'absolute', top: '-4px', right: '-4px', background: 'linear-gradient(135deg, #FFD700 0%, #FF8C00 100%)', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', boxShadow: '0 2px 8px rgba(255, 215, 0, 0.5)', zIndex: 10, animation: 'paywallPulse 2s ease-in-out infinite' }}>🛍️</div>
-              )}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1, filter: `drop-shadow(0 0 6px ${action.color})`, color: action.color }}>
-                {action.icon}
-              </div>
+            <button key={index} className={`quick-item ${action.isPremium ? 'premium-item' : ''} ${action.action === 'Admin' ? 'admin-item' : ''} ${(action as any).isServices ? 'services-item' : ''}`} style={{ '--glow-color': action.color, background: action.isPremium ? 'linear-gradient(135deg, rgba(197, 160, 89, 0.15) 0%, rgba(139, 105, 20, 0.1) 100%)' : (action as any).isServices ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 165, 0, 0.08) 100%)' : '#1a1510', border: action.isPremium ? '1px solid rgba(197, 160, 89, 0.4)' : (action as any).isServices ? '1px solid rgba(255, 215, 0, 0.4)' : '1px solid #2a2215', borderRadius: '12px', padding: 'clamp(8px, 2.5vw, 12px) 4px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', color: '#fff', cursor: 'pointer', position: 'relative', overflow: 'hidden' } as React.CSSProperties} onClick={() => handleQuickAction(action.action)}>
+              {action.isPremium && <div style={{ position: 'absolute', top: '-4px', right: '-4px', background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', boxShadow: '0 2px 8px rgba(197, 160, 89, 0.5)', zIndex: 10 }}>💎</div>}
+              {(action as any).isServices && <div style={{ position: 'absolute', top: '-4px', right: '-4px', background: 'linear-gradient(135deg, #FFD700 0%, #FF8C00 100%)', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', boxShadow: '0 2px 8px rgba(255, 215, 0, 0.5)', zIndex: 10, animation: 'paywallPulse 2s ease-in-out infinite' }}>🛍️</div>}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1, filter: `drop-shadow(0 0 6px ${action.color})`, color: action.color }}>{action.icon}</div>
               <span style={{ fontSize: '10px', color: '#fff', fontWeight: 600, textAlign: 'center', lineHeight: 1.1 }}>{action.label}</span>
               {action.sublabel && <span style={{ fontSize: '9px', color: '#b3a68c', textAlign: 'center', lineHeight: 1.1 }}>{action.sublabel}</span>}
             </button>
@@ -1123,224 +664,119 @@ End of Debug Report
 
       {/* 🆕 5. DEBUG PANEL (Admin Only - GIO ONLY) */}
       {isUserAdmin && user?.id === 'c9dbe3be-5c02-4034-8bfd-1d693eb02754' && (
-        <div style={{ 
-          position: 'fixed', 
-          bottom: '80px', 
-          right: '16px', 
-          zIndex: 10000,
-          maxWidth: '400px',
-          maxHeight: '60vh',
-          overflow: 'auto'
-        }}>
-          {/* Debug Toggle Button */}
-          <button 
-            onClick={() => setShowDebug(!showDebug)}
-            style={{
-              width: '56px',
-              height: '56px',
-              borderRadius: '50%',
-              background: showDebug ? '#10b981' : '#ef4444',
-              border: '3px solid rgba(255,255,255,0.3)',
-              color: '#fff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.6)',
-              marginBottom: '12px'
-            }}
-          >
+        <div style={{ position: 'fixed', bottom: '80px', right: '16px', zIndex: 10000, maxWidth: '450px', maxHeight: '70vh', overflow: 'auto' }}>
+          <button onClick={() => setShowDebug(!showDebug)} style={{ width: '56px', height: '56px', borderRadius: '50%', background: showDebug ? '#10b981' : '#ef4444', border: '3px solid rgba(255,255,255,0.3)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 16px rgba(0,0,0,0.6)', marginBottom: '12px' }}>
             <Bug size={28} />
           </button>
 
-          {/* Debug Panel */}
           {showDebug && (
-            <div style={{
-              background: 'rgba(10, 6, 0, 0.98)',
-              border: '2px solid rgba(255, 229, 102, 0.5)',
-              borderRadius: '16px',
-              padding: '16px',
-              color: '#ffe566',
-              fontFamily: 'monospace',
-              fontSize: '11px',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.8)'
-            }}>
-              {/* Header with COPY ALL button */}
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center', 
-                marginBottom: '12px',
-                paddingBottom: '8px',
-                borderBottom: '2px solid rgba(255, 229, 102, 0.3)'
-              }}>
+            <div style={{ background: 'rgba(10, 6, 0, 0.98)', border: '2px solid rgba(255, 229, 102, 0.5)', borderRadius: '16px', padding: '16px', color: '#ffe566', fontFamily: 'monospace', fontSize: '10px', boxShadow: '0 8px 32px rgba(0,0,0,0.8)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', paddingBottom: '8px', borderBottom: '2px solid rgba(255, 229, 102, 0.3)' }}>
                 <strong style={{ fontSize: '14px', color: '#ffe566' }}>🔧 DEBUG PANEL</strong>
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                  
-                  {/* 🆕 ახალი Refresh User Data ღილაკი */}
-                  <button 
-                    onClick={refreshUserDataDebug}
-                    style={{
-                      background: 'rgba(59, 130, 246, 0.3)',
-                      border: '1px solid #3b82f6',
-                      borderRadius: '6px',
-                      padding: '4px 8px',
-                      color: '#3b82f6',
-                      cursor: 'pointer',
-                      fontSize: '9px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }}
-                  >
-                    🔄 REFRESH USER DATA
-                  </button>
-
-                  <button 
-                    onClick={handleLogoutAndReset}
-                    style={{
-                      background: 'rgba(239, 68, 68, 0.3)',
-                      border: '1px solid #ef4444',
-                      borderRadius: '6px',
-                      padding: '4px 8px',
-                      color: '#ef4444',
-                      cursor: 'pointer',
-                      fontSize: '9px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }}
-                  >
-                    <LogOut size={12} /> LOGOUT & RESET
-                  </button>
-
-                  <button 
-                    onClick={testEconomyInitialization}
-                    style={{
-                      background: 'rgba(168, 85, 247, 0.3)',
-                      border: '1px solid #a855f7',
-                      borderRadius: '6px',
-                      padding: '4px 8px',
-                      color: '#a855f7',
-                      cursor: 'pointer',
-                      fontSize: '9px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }}
-                  >
-                    🔄 TEST INIT
-                  </button>
-
-                  <button 
-                    onClick={copyAllDebugInfo}
-                    style={{
-                      background: copySuccess ? 'rgba(16, 185, 129, 0.3)' : 'rgba(96, 165, 250, 0.3)',
-                      border: `1px solid ${copySuccess ? '#10b981' : '#60a5fa'}`,
-                      borderRadius: '6px',
-                      padding: '4px 8px',
-                      color: copySuccess ? '#10b981' : '#60a5fa',
-                      cursor: 'pointer',
-                      fontSize: '9px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    <Copy size={12} />
-                    {copySuccess ? 'COPIED!' : 'COPY ALL'}
-                  </button>
-                  <button 
-                    onClick={() => setDebugLogs([])}
-                    style={{
-                      background: 'rgba(239, 68, 68, 0.3)',
-                      border: '1px solid #ef4444',
-                      borderRadius: '6px',
-                      padding: '4px 8px',
-                      color: '#ef4444',
-                      cursor: 'pointer',
-                      fontSize: '9px'
-                    }}
-                  >
-                    CLEAR
-                  </button>
-                </div>
+                <button onClick={() => setShowDebug(false)} style={{ padding: '2px 6px', background: '#ef4444', border: 'none', borderRadius: '4px', color: '#fff', cursor: 'pointer', fontSize: '8px' }}>✕</button>
               </div>
 
-              {/* Status Indicators */}
-              <div style={{ marginBottom: '12px', padding: '8px', background: 'rgba(0,0,0,0.4)', borderRadius: '8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                  {dbStatus === 'connected' ? <CheckCircle size={16} color="#10b981" /> : 
-                   dbStatus === 'error' ? <XCircle size={16} color="#ef4444" /> : 
-                   <RefreshCw size={16} color="#fbbf24" />}
-                  <span>DB: <strong style={{ color: dbStatus === 'connected' ? '#10b981' : dbStatus === 'error' ? '#ef4444' : '#fbbf24' }}>{dbStatus.toUpperCase()}</strong></span>
+              {/* DATABASE CONNECTION INFO */}
+              <div style={{ marginBottom: '12px', padding: '8px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
+                <div style={{ marginBottom: '6px', color: '#3b82f6', fontWeight: 'bold' }}>🗄️ DATABASE CONNECTION</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                  {dbStatus === 'connected' ? <CheckCircle size={14} color="#10b981" /> : dbStatus === 'error' ? <XCircle size={14} color="#ef4444" /> : <RefreshCw size={14} color="#fbbf24" />}
+                  <span>Status: <strong style={{ color: dbStatus === 'connected' ? '#10b981' : dbStatus === 'error' ? '#ef4444' : '#fbbf24' }}>{dbStatus.toUpperCase()}</strong></span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                  {economyLoadStatus === 'success' ? <CheckCircle size={16} color="#10b981" /> : 
-                   economyLoadStatus === 'error' ? <XCircle size={16} color="#ef4444" /> : 
-                   <RefreshCw size={16} color="#fbbf24" />}
-                  <span>Economy: <strong style={{ color: economyLoadStatus === 'success' ? '#10b981' : economyLoadStatus === 'error' ? '#ef4444' : '#fbbf24' }}>{economyLoadStatus.toUpperCase()}</strong></span>
-                </div>
+                <div style={{ fontSize: '9px', color: '#94a3b8' }}>User ID: {user?.id?.slice(0, 8)}...</div>
               </div>
 
-              {/* Current State */}
-              <div style={{ marginBottom: '12px', padding: '8px', background: 'rgba(0,0,0,0.4)', borderRadius: '8px' }}>
-                <div style={{ marginBottom: '6px', color: '#60a5fa' }}>📊 CURRENT STATE:</div>
-                <div>💰 Coins: <strong>{economy.cosmic_coins}</strong></div>
-                <div>⭐ XP: <strong>{economy.xp}</strong></div>
-                <div>🎯 Level: <strong>{economy.level}</strong></div>
-                <div>🔥 Streak: <strong>{currentStreak}</strong></div>
-                <div>👤 User: <strong>{user?.id?.slice(0, 8)}...</strong></div>
+              {/* ECONOMY DATA FROM DB */}
+              <div style={{ marginBottom: '12px', padding: '8px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                <div style={{ marginBottom: '6px', color: '#10b981', fontWeight: 'bold' }}>💰 ECONOMY (FROM DB)</div>
+                {dbDebugInfo.economyData ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
+                    <div>🪙 Coins: <strong>{dbDebugInfo.economyData.cosmic_coins}</strong></div>
+                    <div>⭐ XP: <strong>{dbDebugInfo.economyData.xp}</strong></div>
+                    <div>🎯 Level: <strong>{dbDebugInfo.economyData.level}</strong></div>
+                    <div>🔥 Streak: <strong>{dbDebugInfo.economyData.current_streak}</strong></div>
+                    <div>⚡ Focus: <strong>{dbDebugInfo.economyData.cosmic_focus || 0}/{dbDebugInfo.economyData.max_focus || 0}</strong></div>
+                  </div>
+                ) : (
+                  <div style={{ color: '#64748b' }}>No data loaded yet</div>
+                )}
               </div>
 
-              {/* Last DB Query */}
-              {lastDbQuery && (
-                <div style={{ marginBottom: '12px', padding: '8px', background: 'rgba(0,0,0,0.4)', borderRadius: '8px' }}>
-                  <div style={{ marginBottom: '6px', color: '#a78bfa' }}>🗄️ LAST QUERY:</div>
-                  <div>Table: <strong>{lastDbQuery.table}</strong></div>
-                  <div>User ID: <strong>{lastDbQuery.userId?.slice(0, 8)}...</strong></div>
+              {/* LAST DB QUERY */}
+              {dbDebugInfo.lastQuery && (
+                <div style={{ marginBottom: '12px', padding: '8px', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
+                  <div style={{ marginBottom: '6px', color: '#8b5cf6', fontWeight: 'bold' }}>📡 LAST QUERY</div>
+                  <div style={{ fontSize: '9px', marginBottom: '4px' }}><strong>Table:</strong> {dbDebugInfo.lastQuery.table}</div>
+                  <div style={{ fontSize: '9px', marginBottom: '4px' }}><strong>Operation:</strong> {dbDebugInfo.lastQuery.operation}</div>
+                  <div style={{ fontSize: '9px', color: '#64748b', wordBreak: 'break-all' }}><strong>Params:</strong> {JSON.stringify(dbDebugInfo.lastQuery.params)}</div>
+                  {dbDebugInfo.lastResponse && (
+                    <div style={{ marginTop: '4px', fontSize: '9px', color: '#10b981', wordBreak: 'break-all' }}>
+                      <strong>Response:</strong> {JSON.stringify(dbDebugInfo.lastResponse).slice(0, 100)}...
+                    </div>
+                  )}
                 </div>
               )}
 
-              {/* Logs */}
+              {/* QUICK TEST BUTTONS */}
+              <div style={{ marginBottom: '12px', padding: '8px', background: 'rgba(245, 158, 11, 0.1)', borderRadius: '8px', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+                <div style={{ marginBottom: '6px', color: '#f59e0b', fontWeight: 'bold' }}>🧪 QUICK TESTS</div>
+                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '6px' }}>
+                  <button onClick={() => testAddCoins(10)} style={{ padding: '4px 8px', background: '#fbbf24', border: 'none', borderRadius: '4px', color: '#000', cursor: 'pointer', fontSize: '9px', fontWeight: 'bold' }}>+10 Coins</button>
+                  <button onClick={() => testAddCoins(50)} style={{ padding: '4px 8px', background: '#f59e0b', border: 'none', borderRadius: '4px', color: '#000', cursor: 'pointer', fontSize: '9px', fontWeight: 'bold' }}>+50 Coins</button>
+                  <button onClick={() => testAddCoins(100)} style={{ padding: '4px 8px', background: '#d97706', border: 'none', borderRadius: '4px', color: '#fff', cursor: 'pointer', fontSize: '9px', fontWeight: 'bold' }}>+100 Coins</button>
+                </div>
+                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '6px' }}>
+                  <button onClick={() => testAddXP(50)} style={{ padding: '4px 8px', background: '#a78bfa', border: 'none', borderRadius: '4px', color: '#000', cursor: 'pointer', fontSize: '9px', fontWeight: 'bold' }}>+50 XP</button>
+                  <button onClick={() => testAddXP(100)} style={{ padding: '4px 8px', background: '#8b5cf6', border: 'none', borderRadius: '4px', color: '#fff', cursor: 'pointer', fontSize: '9px', fontWeight: 'bold' }}>+100 XP</button>
+                </div>
+                <button onClick={reloadFromDatabase} style={{ width: '100%', padding: '6px', background: '#3b82f6', border: 'none', borderRadius: '4px', color: '#fff', cursor: 'pointer', fontSize: '9px', fontWeight: 'bold' }}>🔄 RELOAD FROM DB</button>
+              </div>
+
+              {/* ACTION BUTTONS */}
+              <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                <button onClick={handleLogoutAndReset} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(239, 68, 68, 0.3)', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontSize: '9px' }}>🚪 LOGOUT</button>
+                <button onClick={refreshUserDataDebug} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(59, 130, 246, 0.3)', border: '1px solid #3b82f6', borderRadius: '6px', color: '#3b82f6', cursor: 'pointer', fontSize: '9px' }}>🔄 REFRESH USER</button>
+                <button onClick={testEconomyInitialization} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(168, 85, 247, 0.3)', border: '1px solid #a855f7', borderRadius: '6px', color: '#a855f7', cursor: 'pointer', fontSize: '9px' }}>🔄 TEST INIT</button>
+              </div>
+
+              {/* COPY & CLEAR */}
+              <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
+                <button onClick={copyAllDebugInfo} style={{ flex: 1, padding: '6px', background: copySuccess ? 'rgba(16, 185, 129, 0.3)' : 'rgba(96, 165, 250, 0.3)', border: `1px solid ${copySuccess ? '#10b981' : '#60a5fa'}`, borderRadius: '6px', color: copySuccess ? '#10b981' : '#60a5fa', cursor: 'pointer', fontSize: '9px' }}>
+                  {copySuccess ? '✅ COPIED!' : '📋 COPY ALL'}
+                </button>
+                <button onClick={() => setDebugLogs([])} style={{ flex: 1, padding: '6px', background: 'rgba(239, 68, 68, 0.3)', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontSize: '9px' }}>🗑️ CLEAR LOGS</button>
+              </div>
+
+              {/* QUERY HISTORY */}
+              {dbDebugInfo.queryHistory.length > 0 && (
+                <div style={{ marginBottom: '12px' }}>
+                  <div style={{ marginBottom: '6px', color: '#f472b6', fontWeight: 'bold' }}>📜 QUERY HISTORY ({dbDebugInfo.queryHistory.length})</div>
+                  <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
+                    {dbDebugInfo.queryHistory.slice(0, 10).map((query, idx) => (
+                      <div key={idx} style={{ padding: '6px', marginBottom: '4px', background: 'rgba(0,0,0,0.5)', borderRadius: '4px', borderLeft: query.error ? '3px solid #ef4444' : '3px solid #10b981' }}>
+                        <div style={{ fontSize: '9px', color: '#64748b', marginBottom: '2px' }}>{query.timestamp}</div>
+                        <div style={{ fontSize: '9px' }}><strong>{query.operation}</strong> {query.table}</div>
+                        {query.error && <div style={{ fontSize: '8px', color: '#ef4444', marginTop: '2px' }}>Error: {query.error.message}</div>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* LOGS */}
               <div>
-                <div style={{ marginBottom: '6px', color: '#f472b6' }}>📝 LOGS ({debugLogs.length}):</div>
+                <div style={{ marginBottom: '6px', color: '#f472b6', fontWeight: 'bold' }}>📝 LOGS ({debugLogs.length})</div>
                 <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
                   {debugLogs.slice(0, 20).map((log) => (
-                    <div 
-                      key={log.id} 
-                      style={{ 
-                        padding: '6px', 
-                        marginBottom: '4px', 
-                        background: 'rgba(0,0,0,0.5)', 
-                        borderRadius: '4px',
-                        borderLeft: `3px solid ${
-                          log.type === 'error' ? '#ef4444' : 
-                          log.type === 'success' ? '#10b981' : 
-                          log.type === 'warning' ? '#fbbf24' : '#60a5fa'
-                        }`
-                      }}
-                    >
+                    <div key={log.id} style={{ padding: '6px', marginBottom: '4px', background: 'rgba(0,0,0,0.5)', borderRadius: '4px', borderLeft: `3px solid ${log.type === 'error' ? '#ef4444' : log.type === 'success' ? '#10b981' : log.type === 'warning' ? '#fbbf24' : '#60a5fa'}` }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
                         <span style={{ color: '#64748b', fontSize: '9px' }}>{log.timestamp}</span>
-                        <span style={{ 
-                          fontSize: '9px', 
-                          color: log.type === 'error' ? '#ef4444' : 
-                                 log.type === 'success' ? '#10b981' : 
-                                 log.type === 'warning' ? '#fbbf24' : '#60a5fa',
-                          fontWeight: 'bold'
-                        }}>{log.category}</span>
+                        <span style={{ fontSize: '9px', color: log.type === 'error' ? '#ef4444' : log.type === 'success' ? '#10b981' : log.type === 'warning' ? '#fbbf24' : '#60a5fa', fontWeight: 'bold' }}>{log.category}</span>
                       </div>
-                      <div style={{ color: '#fff' }}>{log.message}</div>
+                      <div style={{ color: '#fff', fontSize: '9px' }}>{log.message}</div>
                       {log.data && (
-                        <div style={{ 
-                          marginTop: '4px', 
-                          fontSize: '9px', 
-                          color: '#94a3b8',
-                          wordBreak: 'break-all'
-                        }}>
-                          {typeof log.data === 'object' ? JSON.stringify(log.data, null, 2) : log.data}
+                        <div style={{ marginTop: '4px', fontSize: '8px', color: '#94a3b8', wordBreak: 'break-all' }}>
+                          {typeof log.data === 'object' ? JSON.stringify(log.data, null, 2).slice(0, 200) : log.data}
                         </div>
                       )}
                     </div>
