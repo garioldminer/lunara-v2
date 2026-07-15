@@ -33,7 +33,6 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [isUserAdmin, setIsUserAdmin] = useState(false);
   const [activeSubscription, setActiveSubscription] = useState<any>(null);
   
-  // 🆕 ეკონომიკის მონაცემები
   const [economy, setEconomy] = useState<EconomyData>({
     cosmic_coins: 0,
     xp: 0,
@@ -59,35 +58,37 @@ export default function HomeScreen({ onNavigate }: Props) {
 
   // 🆕 ეკონომიკის მონაცემების წამოღება
   useEffect(() => {
-    if (user && supabase) {
-      loadEconomyData();
-    }
-  }, [user]);
+    const loadEconomy = async () => {
+      if (!user || !supabase) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('user_economy')
+          .select('cosmic_coins, xp, level, current_streak')
+          .eq('user_id', user.id)
+          .single();
 
-  const loadEconomyData = async () => {
-    if (!supabase || !user) return;
-    try {
-      const { data, error } = await supabase
-        .from('user_economy')
-        .select('cosmic_coins, xp, level, current_streak')
-        .eq('user_id', user.id)
-        .single();
+        if (error) {
+          console.error('Error loading economy:', error);
+          return;
+        }
 
-      if (error) {
-        console.error('Error loading economy:', error);
-      } else if (data) {
-        setEconomy({
-          cosmic_coins: data.cosmic_coins || 0,
-          xp: data.xp || 0,
-          level: data.level || 1,
-          current_streak: data.current_streak || 0
-        });
-        setCurrentStreak(data.current_streak || 0);
+        if (data) {
+          setEconomy({
+            cosmic_coins: data.cosmic_coins || 0,
+            xp: data.xp || 0,
+            level: data.level || 1,
+            current_streak: data.current_streak || 0
+          });
+          setCurrentStreak(data.current_streak || 0);
+        }
+      } catch (error) {
+        console.error('Error loading economy data:', error);
       }
-    } catch (error) {
-      console.error('Error loading economy data:', error);
-    }
-  };
+    };
+
+    loadEconomy();
+  }, [user]);
 
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
@@ -169,16 +170,15 @@ export default function HomeScreen({ onNavigate }: Props) {
       if (result.success) {
         setRewardClaimed(true);
         setCurrentStreak(result.reward.streak);
-        // 🆕 განვაახლოთ ეკონომიკის მონაცემები ლოკალურადაც
         setEconomy(prev => ({
           ...prev,
           cosmic_coins: prev.cosmic_coins + result.reward.coins,
           xp: prev.xp + result.reward.xp,
           current_streak: result.reward.streak
         }));
-        alert(`✅ Daily Reward Claimed!\n💰 Coins: +${result.reward.coins}\n⭐ XP: +${result.reward.xp}\n🔥 Streak: ${result.reward.streak} days`);
+        alert(`✅ Daily Reward Claimed!\n💰 Coins: +${result.reward.coins}\n⭐ XP: +${result.reward.xp}\n Streak: ${result.reward.streak} days`);
       } else {
-        alert(`⚠️ ${result.error || 'Failed to claim reward'}`);
+        alert(`️ ${result.error || 'Failed to claim reward'}`);
       }
     } catch (error) {
       console.error('Error claiming reward:', error);
@@ -331,7 +331,6 @@ export default function HomeScreen({ onNavigate }: Props) {
               <span className="value">{economy.cosmic_coins.toLocaleString()}</span>
               <button className="add-btn">+</button>
             </div>
-            {/* 🆕 რეალური Energy (ჯერჯერობით hardcoded) */}
             <div className="resource energy">
               <Zap size={14} className="resource-icon energy-icon" />
               <span className="value">18/20</span>
@@ -835,7 +834,7 @@ export default function HomeScreen({ onNavigate }: Props) {
                 <div style={{ position: 'absolute', top: '-4px', right: '-4px', background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', boxShadow: '0 2px 8px rgba(197, 160, 89, 0.5)', zIndex: 10 }}>💎</div>
               )}
               {(action as any).isServices && (
-                <div style={{ position: 'absolute', top: '-4px', right: '-4px', background: 'linear-gradient(135deg, #FFD700 0%, #FF8C00 100%)', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', boxShadow: '0 2px 8px rgba(255, 215, 0, 0.5)', zIndex: 10, animation: 'paywallPulse 2s ease-in-out infinite' }}>🛍️</div>
+                <div style={{ position: 'absolute', top: '-4px', right: '-4px', background: 'linear-gradient(135deg, #FFD700 0%, #FF8C00 100%)', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', boxShadow: '0 2px 8px rgba(255, 215, 0, 0.5)', zIndex: 10, animation: 'paywallPulse 2s ease-in-out infinite' }}>️</div>
               )}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1, filter: `drop-shadow(0 0 6px ${action.color})`, color: action.color }}>
                 {action.icon}
