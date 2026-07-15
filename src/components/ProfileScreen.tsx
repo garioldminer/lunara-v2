@@ -4,6 +4,7 @@ import { useUser } from '../context/UserContext';
 import { useSettings } from '../context/SettingsContext';
 import { updateUser, resetZodiacSign } from '../lib/userService';
 import { getActiveSubscription } from '../lib/subscriptionService';
+import { supabase } from '../lib/supabase'; // 🆕 დამატებულია
 
 interface Props {
   onNavigate?: (screen: string) => void;
@@ -76,8 +77,8 @@ export default function ProfileScreen({ onNavigate }: Props) {
   const [activeTab, setActiveTab] = useState<'profile' | 'achievements' | 'settings'>('profile');
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showBirthInfo, setShowBirthInfo] = useState(false);
-  const [showResetConfirm, setShowResetConfirm] = useState(false); // ✅ ახალი
-  const [resetting, setResetting] = useState(false); // ✅ ახალი
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const [editSection, setEditSection] = useState<'personal' | 'astrology' | 'preferences'>('personal');
   const [mounted, setMounted] = useState(false);
   const [activeSubscription, setActiveSubscription] = useState<any>(null);
@@ -174,18 +175,36 @@ export default function ProfileScreen({ onNavigate }: Props) {
     { id: '8', icon: '💰', title: 'High Roller', description: 'Spin the wheel 100 times', unlocked: false, progress: 23, total: 100 },
   ];
 
-  const handleSettingClick = (setting: string) => {
+  // 🆕 განახლებული: დაემატა 'logout' ლოგიკა
+  const handleSettingClick = async (setting: string) => {
     console.log(`Setting clicked: ${setting}`);
+    
     if (setting === 'subscription' && onNavigate) {
       if (activeSubscription) {
         onNavigate('subscription');
       } else {
         onNavigate('services');
       }
+    } else if (setting === 'logout') {
+      try {
+        console.log('🚪 Logging out user...');
+        
+        // 1. სრულად ვშლით ლოკალურ მეხსიერებას (მაგ. დღიური ბარათი, სეტინგები)
+        localStorage.clear();
+        
+        // 2. ვშლით Supabase-ის ავტორიზაციის სესიას
+        await supabase.auth.signOut();
+        
+        // 3. ვტვირთავთ გვერდს თავიდან, რათა აპლიკაცია დაიწყოს ნულიდან (SplashScreen-ით)
+        window.location.reload();
+        
+      } catch (error) {
+        console.error('❌ Error logging out:', error);
+        alert('გასვლა ვერ მოხერხდა. გთხოვთ, სცადოთ მოგვიანებით.');
+      }
     }
   };
 
-  // ✅ ახალი: Change Sign handler
   const handleChangeSign = () => {
     console.log('🔄 Changing zodiac sign...');
     if (onNavigate) {
@@ -193,7 +212,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
     }
   };
 
-  // ✅ ახალი: Reset Sign handler
   const handleResetSign = async () => {
     if (!user) {
       console.warn('⚠️ No user to reset');
@@ -211,7 +229,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
         console.log('✅ Zodiac sign reset successfully');
         setShowResetConfirm(false);
         
-        // Navigate to sign selection
         if (onNavigate) {
           onNavigate('sign-selection');
         }
@@ -473,18 +490,11 @@ export default function ProfileScreen({ onNavigate }: Props) {
                 ))}
               </div>
               
-              {/* ✅ ახალი: Change/Reset Sign ღილაკები */}
               <div className="sign-actions">
-                <button 
-                  className="change-sign-btn" 
-                  onClick={handleChangeSign}
-                >
+                <button className="change-sign-btn" onClick={handleChangeSign}>
                   <span>🔄 Change Sign</span>
                 </button>
-                <button 
-                  className="reset-sign-btn" 
-                  onClick={() => setShowResetConfirm(true)}
-                >
+                <button className="reset-sign-btn" onClick={() => setShowResetConfirm(true)}>
                   <span>🗑️ Reset Sign</span>
                 </button>
               </div>
@@ -739,6 +749,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
                 <span className="setting-arrow">→</span>
               </div>
 
+              {/* 🚪 ეს არის ის ღილაკი, რომელიც ახლა სრულად მუშაობს */}
               <div className="setting-item danger animate-fade-in stagger-12" onClick={() => handleSettingClick('logout')}>
                 <span className="setting-icon">🚪</span>
                 <span className="setting-label">Logout</span>
@@ -773,7 +784,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
         />
       )}
 
-      {/* ✅ ახალი: Reset Confirmation Modal */}
       {showResetConfirm && (
         <ResetConfirmModal
           resetting={resetting}
@@ -945,7 +955,7 @@ function BirthInfoModal({ birthDate, birthTime, birthPlace, onSave, onClose }: {
   );
 }
 
-// ✅ ახალი: Reset Confirmation Modal
+// ===== RESET CONFIRMATION MODAL =====
 function ResetConfirmModal({ 
   resetting, 
   onConfirm, 
