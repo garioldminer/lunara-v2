@@ -175,7 +175,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
     { id: '8', icon: '💰', title: 'High Roller', description: 'Spin the wheel 100 times', unlocked: false, progress: 23, total: 100 },
   ];
 
-  // 🆕 განახლებული: სრული რესეტი და თავიდან დაწყება
+  // 🆕 განახლებული: სრული რესეტი, ბაზაში onboarding_completed-ის განულებით
   const handleSettingClick = async (setting: string) => {
     console.log(`Setting clicked: ${setting}`);
     
@@ -189,17 +189,25 @@ export default function ProfileScreen({ onNavigate }: Props) {
       try {
         console.log('🚪 Initiating full app reset and logout...');
         
-        // 1. სრულად ვშლით ლოკალურ და სესიურ მეხსიერებას
+        // 1. ვანულებთ onboarding_completed-ს ბაზაში, რომ აპლიკაციამ ისევ აჩვენოს ონბორდინგის გვერდები
+        if (user && supabase) {
+          await supabase
+            .from('users')
+            .update({ onboarding_completed: false })
+            .eq('id', user.id);
+          console.log('✅ Onboarding status reset in database');
+        }
+
+        // 2. სრულად ვშლით ლოკალურ და სესიურ მეხსიერებას
         localStorage.clear();
         sessionStorage.clear();
         
-        // 2. ვშლით Supabase-ის ავტორიზაციის სესიას
+        // 3. ვშლით Supabase-ის ავტორიზაციის სესიას
         if (supabase) {
           await supabase.auth.signOut();
         }
         
-        // 3. ვაკეთებთ იძულებით გადამისამართებას მთავარ გვერდზე ('/')
-        // ეს აიძულებს აპლიკაციას, ნულიდან დაიწყოს რენდერი და ამოქმედდეს SplashScreen-ის სრული ლოგიკა
+        // 4. ვაკეთებთ იძულებით გადამისამართებას მთავარ გვერდზე ('/')
         window.location.href = '/';
         
       } catch (error) {
