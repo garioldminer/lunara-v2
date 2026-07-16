@@ -28,9 +28,6 @@ export interface QuestReward {
   quest_title: string;
 }
 
-/**
- * ქვესტის პროგრესის განახლება უსაფრთხო ფუნქციით
- */
 export async function trackQuestProgress(
   userId: string,
   actionType: string,
@@ -51,13 +48,19 @@ export async function trackQuestProgress(
       .single();
 
     if (questError || !quest) {
-      console.log(`️ No active quest found for action: ${actionType}`);
+      console.error(`❌ No active quest found for action: ${actionType}`, questError);
       return null;
     }
 
-    console.log(`📋 Found quest: ${quest.title} (target: ${quest.target_count})`);
+    console.log(`📋 Found quest in DB:`, quest);
 
     // 2. გამოვიძახოთ უსაფრთხო ფუნქცია
+    console.log(`📡 Calling RPC upsert_quest_progress with:`, { 
+      p_user_id: userId, 
+      p_quest_id: quest.id, 
+      p_increment: increment 
+    });
+    
     const { data: result, error: funcError } = await supabase.rpc('upsert_quest_progress', {
       p_user_id: userId,
       p_quest_id: quest.id,
@@ -65,11 +68,11 @@ export async function trackQuestProgress(
     });
 
     if (funcError) {
-      console.error('❌ Error calling upsert_quest_progress:', funcError);
+      console.error('❌ Error calling upsert_quest_progress RPC:', funcError);
       return null;
     }
 
-    console.log('📊 Function result:', result);
+    console.log('📊 RPC Function raw result:', result);
 
     // 3. თუ დასრულდა, დავაბრუნოთ ჯილდო
     if (result?.completed) {
@@ -81,7 +84,7 @@ export async function trackQuestProgress(
       };
     }
 
-    console.log(`⏳ Progress updated: ${result?.progress}/${quest.target_count}`);
+    console.log(`⏳ Progress updated but NOT completed. RPC returned:`, result);
     return null;
   } catch (error) {
     console.error('❌ Exception in trackQuestProgress:', error);
@@ -89,9 +92,6 @@ export async function trackQuestProgress(
   }
 }
 
-/**
- * მომხმარებლის ქვესტების ჩატვირთვა
- */
 export async function loadUserQuests(userId: string): Promise<QuestProgress[]> {
   if (!supabase) return [];
 
@@ -101,11 +101,10 @@ export async function loadUserQuests(userId: string): Promise<QuestProgress[]> {
     });
 
     if (error) {
-      console.error('❌ Error loading quests:', error);
+      console.error('❌ Error loading quests via RPC:', error);
       return [];
     }
 
-    // ტრანსფორმაცია QuestProgress ფორმატში
     return (data || []).map((item: any) => ({
       id: item.id,
       user_id: userId,
@@ -131,9 +130,6 @@ export async function loadUserQuests(userId: string): Promise<QuestProgress[]> {
   }
 }
 
-/**
- * ყველა აქტიური ქვესტის ჩატვირთვა
- */
 export async function loadActiveQuests(): Promise<QuestDefinition[]> {
   if (!supabase) return [];
 
