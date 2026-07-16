@@ -157,6 +157,58 @@ End of Debug Report
     }
   };
 
+  // 🆕 ახალი ფუნქცია: ბაზის სტატუსის შემოწმება
+  const checkDatabaseStatus = async () => {
+    addDebugLog('info', 'DB_CHECK', '🔍 Starting database status check...');
+    if (!user || !supabase) {
+      addDebugLog('error', 'DB_CHECK', '❌ No user or supabase client available');
+      return;
+    }
+
+    try {
+      // 1. შევამოწმოთ users ცხრილი
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('id, display_name, telegram_id')
+        .eq('id', user.id)
+        .single();
+
+      if (userError) {
+        addDebugLog('error', 'DB_CHECK', `❌ Error fetching user: ${userError.message}`);
+      } else {
+        addDebugLog('success', 'DB_CHECK', '✅ User found in database', userData);
+      }
+
+      // 2. შევამოწმოთ user_economy ცხრილი
+      const { data: economyData, error: economyError } = await supabase
+        .from('user_economy')
+        .select('cosmic_coins, xp, level')
+        .eq('user_id', user.id)
+        .single();
+
+      if (economyError) {
+        addDebugLog('error', 'DB_CHECK', `❌ Error fetching economy: ${economyError.message}`);
+      } else {
+        addDebugLog('success', 'DB_CHECK', '✅ Economy record found', economyData);
+      }
+
+      // 3. შევამოწმოთ მუშაობს თუ არა quest RPC ფუნქცია
+      const { data: questsData, error: questsError } = await supabase
+        .rpc('get_user_quests', { p_user_id: user.id });
+
+      if (questsError) {
+        addDebugLog('error', 'DB_CHECK', `❌ Error calling get_user_quests RPC: ${questsError.message}`);
+        addDebugLog('warning', 'DB_CHECK', '⚠️ Make sure you ran the SQL script to create the RPC functions in Supabase!');
+      } else {
+        addDebugLog('success', 'DB_CHECK', `✅ get_user_quests RPC works. Found ${questsData?.length || 0} quests.`);
+      }
+
+      addDebugLog('success', 'DB_CHECK', '🎉 Database check completed!');
+    } catch (err: any) {
+      addDebugLog('error', 'DB_CHECK', `💥 Exception during DB check: ${err.message}`);
+    }
+  };
+
   const refreshUserDataDebug = async () => {
     addDebugLog('info', 'AUTH_DEBUG', '🔄 Starting manual user data refresh...');
     const tgUser = getTelegramUser();
@@ -259,7 +311,6 @@ End of Debug Report
     }
   };
 
-  // 🆕 განახლებული: მხოლოდ უსაფრთხო RPC ფუნქციის გამოყენება, პირდაპირი INSERT-ის გარეშე
   const testCompleteQuest = async () => {
     if (!user || !supabase) {
       addDebugLog('error', 'QUEST_TEST', 'No user or supabase available for test');
@@ -276,7 +327,6 @@ End of Debug Report
       addDebugLog('info', 'QUEST_TEST', 'Quest not found in user progress. Will create new record via secure function...');
     }
 
-    // ვიყენებთ მხოლოდ trackQuestProgress-ს, რომელიც იძახებს უსაფრთხო upsert_quest_progress RPC-ს
     const reward = await trackQuestProgress(user.id, 'draw_daily_card', 1);
     
     if (reward) {
@@ -787,6 +837,9 @@ End of Debug Report
               </div>
 
               <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                <button onClick={checkDatabaseStatus} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(16, 185, 129, 0.3)', border: '1px solid #10b981', borderRadius: '6px', color: '#10b981', cursor: 'pointer', fontSize: '9px' }}>
+                  🩺 CHECK DB
+                </button>
                 <button onClick={handleLogoutAndReset} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(239, 68, 68, 0.3)', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontSize: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}><LogOut size={12} /> LOGOUT</button>
                 <button onClick={refreshUserDataDebug} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(59, 130, 246, 0.3)', border: '1px solid #3b82f6', borderRadius: '6px', color: '#3b82f6', cursor: 'pointer', fontSize: '9px' }}>🔄 REFRESH USER</button>
                 <button onClick={testEconomyInitialization} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(168, 85, 247, 0.3)', border: '1px solid #a855f7', borderRadius: '6px', color: '#a855f7', cursor: 'pointer', fontSize: '9px' }}>🔄 TEST INIT</button>
