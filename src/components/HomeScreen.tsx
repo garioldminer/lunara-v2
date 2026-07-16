@@ -55,7 +55,6 @@ interface DailyQuestDisplay extends QuestProgress {
 
 export default function HomeScreen({ onNavigate }: Props) {
   const { user, setUser } = useUser();
-  const [isClaiming, setIsClaiming] = useState(false);
   const [timeLeft, setTimeLeft] = useState('14:32:18');
   const [dailyCard, setDailyCard] = useState<typeof tarotCards[0] | null>(null);
   const [isDailyReversed, setIsDailyReversed] = useState(false);
@@ -334,11 +333,10 @@ End of Debug Report
     if (reward) {
       addDebugLog('success', 'QUEST_TEST', `🎉 Quest Completed! Reward: ${reward.coins} coins, ${reward.xp} XP`);
       reloadFromDatabase();
-      const updatedQuests = await loadUserQuests(user.id);
-      // Note: setUserQuests removed, using loadQuests logic instead
+      await loadQuests();
     } else {
       addDebugLog('info', 'QUEST_TEST', 'Progress updated. Check logs for details.');
-      await loadUserQuests(user.id);
+      await loadQuests();
     }
   };
 
