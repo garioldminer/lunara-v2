@@ -260,7 +260,10 @@ End of Debug Report
   };
 
   const testCompleteQuest = async () => {
-    if (!user) return;
+    if (!user || !supabase) {
+      addDebugLog('error', 'QUEST_TEST', 'No user or supabase available for test');
+      return;
+    }
     addDebugLog('info', 'QUEST_TEST', '🎯 Simulating quest completion: draw_daily_card');
     
     const currentQuests = await loadUserQuests(user.id);
@@ -272,7 +275,6 @@ End of Debug Report
       addDebugLog('warning', 'QUEST_TEST', 'Quest not found in user progress. Creating new record...');
     }
 
-    // დროებითი ჰაკი: პირდაპირ ვცდილობთ ჩაწერას, რომ დავინახოთ RLS შეცდომა თუ არის
     const { error: testInsertError } = await supabase
       .from('user_quest_progress')
       .insert({
