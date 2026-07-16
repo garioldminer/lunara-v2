@@ -28,6 +28,9 @@ export interface QuestReward {
   quest_title: string;
 }
 
+/**
+ * ქვესტის პროგრესის განახლება უსაფრთხო ფუნქციით
+ */
 export async function trackQuestProgress(
   userId: string,
   actionType: string,
@@ -39,7 +42,7 @@ export async function trackQuestProgress(
   }
 
   try {
-    // 1. ვიპოვოთ ქვესტა action_type-ით
+    // 1. ვიპოვოთ ქვესთა action_type-ით
     const { data: quest, error: questError } = await supabase
       .from('quest_definitions')
       .select('*')
@@ -52,15 +55,7 @@ export async function trackQuestProgress(
       return null;
     }
 
-    console.log(`📋 Found quest in DB:`, quest);
-
     // 2. გამოვიძახოთ უსაფრთხო ფუნქცია
-    console.log(`📡 Calling RPC upsert_quest_progress with:`, { 
-      p_user_id: userId, 
-      p_quest_id: quest.id, 
-      p_increment: increment 
-    });
-    
     const { data: result, error: funcError } = await supabase.rpc('upsert_quest_progress', {
       p_user_id: userId,
       p_quest_id: quest.id,
@@ -72,11 +67,8 @@ export async function trackQuestProgress(
       return null;
     }
 
-    console.log('📊 RPC Function raw result:', result);
-
     // 3. თუ დასრულდა, დავაბრუნოთ ჯილდო
     if (result?.completed) {
-      console.log(`🎉 Quest completed: ${quest.title}!`);
       return {
         xp: result.reward.xp,
         coins: result.reward.coins,
@@ -84,7 +76,6 @@ export async function trackQuestProgress(
       };
     }
 
-    console.log(`⏳ Progress updated but NOT completed. RPC returned:`, result);
     return null;
   } catch (error) {
     console.error('❌ Exception in trackQuestProgress:', error);
@@ -92,10 +83,17 @@ export async function trackQuestProgress(
   }
 }
 
+/**
+ * მომხმარებლის ქვესტების ჩატვირთვა (ავტომატური დღიური რესეტით)
+ */
 export async function loadUserQuests(userId: string): Promise<QuestProgress[]> {
   if (!supabase) return [];
 
   try {
+    // 🆕 1. ჯერ ვასინქრონებთ დღიურ ქვესთებს (რესეტი თუ საჭიროა)
+    await supabase.rpc('sync_daily_quests', { p_user_id: userId });
+
+    // 2. შემდეგ ვიტვირთავთ განახლებულ სიას
     const { data, error } = await supabase.rpc('get_user_quests', {
       p_user_id: userId
     });
@@ -130,6 +128,9 @@ export async function loadUserQuests(userId: string): Promise<QuestProgress[]> {
   }
 }
 
+/**
+ * ყველა აქტიური ქვესტის ჩატვირთვა (ადმინისთვის)
+ */
 export async function loadActiveQuests(): Promise<QuestDefinition[]> {
   if (!supabase) return [];
 
