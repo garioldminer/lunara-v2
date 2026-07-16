@@ -10,6 +10,38 @@ interface Props {
   onNavigate?: (screen: string) => void;
 }
 
+// 🆕 ექსპონენციალური ლეველის ლოგიკა
+const getXPToNextLevel = (level: number): number => {
+  if (level === 1) return 100;
+  if (level === 2) return 250;
+  if (level === 3) return 500;
+  if (level === 4) return 1000;
+  if (level === 5) return 2000;
+  // 6-ე ლეველიდან იწყება ექსპონენციალური ზრდა (1.8-ჯერ მეტი წინაზე)
+  return Math.floor(2000 * Math.pow(1.8, level - 5));
+};
+
+const getLevelTitle = (level: number): string => {
+  if (level >= 20) return 'CELESTIAL';
+  if (level >= 10) return 'ORACLE';
+  if (level >= 5) return 'MYSTIC';
+  return 'SEEKER';
+};
+
+const getLevelFromTotalXP = (totalXP: number) => {
+  let level = 1;
+  let xpRequiredForNext = getXPToNextLevel(level);
+  let currentLevelXP = totalXP;
+  
+  while (currentLevelXP >= xpRequiredForNext) {
+    currentLevelXP -= xpRequiredForNext;
+    level++;
+    xpRequiredForNext = getXPToNextLevel(level);
+  }
+  
+  return { level, currentLevelXP, xpToNext: xpRequiredForNext };
+};
+
 interface Achievement {
   id: string;
   icon: string;
@@ -100,6 +132,9 @@ export default function ProfileScreen({ onNavigate }: Props) {
     }
   }, [user]);
 
+  // 🆕 დინამიური ლეველის გამოთვლა ჯამური XP-დან
+  const userLevelData = user ? getLevelFromTotalXP(user.xp || 0) : { level: 1, currentLevelXP: 0, xpToNext: 100 };
+
   const userData = user ? {
     telegramUsername: '@' + (user.username || 'user'),
     displayName: user.display_name || 'User',
@@ -112,17 +147,17 @@ export default function ProfileScreen({ onNavigate }: Props) {
     birthTime: user.birth_time || '',
     birthPlace: user.birth_place || '',
     zodiac: user.sun_sign || '',
-    zodiacSymbol: '♏',
+    zodiacSymbol: '♏', // ეს შეიძლება დინამიურიც გახდეს, მაგრამ ჯერ ასე დავტოვოთ
     element: 'Water',
-    level: user.level,
-    levelTitle: user.level >= 20 ? 'MYSTIC' : 'SEEKER',
-    xp: user.xp,
-    xpToNext: 3000,
+    level: userLevelData.level,
+    levelTitle: getLevelTitle(userLevelData.level),
+    xp: userLevelData.currentLevelXP, // XP მიმდინარე ლეველში
+    xpToNext: userLevelData.xpToNext,  // XP რაც სჭირდება შემდეგ ლეველამდე
     memberSince: new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
     avatar: user.display_name?.charAt(0).toUpperCase() || 'U',
-    currentPlan: user.current_plan,
-    gems: user.gems,
-    streak: user.streak,
+    currentPlan: user.current_plan || 'FREE',
+    gems: user.gems || 0,
+    streak: user.streak || 0,
   } : null;
 
   const collectionData = {
@@ -175,7 +210,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
     { id: '8', icon: '💰', title: 'High Roller', description: 'Spin the wheel 100 times', unlocked: false, progress: 23, total: 100 },
   ];
 
-  // 🆕 იდეალური ლოგაუთის ლოგიკა: მონაცემების შენარჩუნებით და ონბორდინგის თავიდან ჩვენებით
   const handleSettingClick = async (setting: string) => {
     console.log(`Setting clicked: ${setting}`);
     
@@ -189,8 +223,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
       try {
         console.log('🚪 Initiating safe logout with onboarding reset...');
         
-        // 1. ვანულებთ მხოლოდ onboarding_completed ფლაგს. 
-        // ეს არ შლის მომხმარებელს, ქოინებს, XP-ს ან სხვა მონაცემებს!
         if (user && supabase) {
           await supabase
             .from('users')
@@ -199,16 +231,13 @@ export default function ProfileScreen({ onNavigate }: Props) {
           console.log('✅ Onboarding flag reset in database (Data preserved)');
         }
 
-        // 2. ვწმენდთ ლოკალურ მეხსიერებას (დროებითი ფლაგების წასაშლელად)
         localStorage.clear();
         sessionStorage.clear();
         
-        // 3. ვწყვეტთ მიმდინარე ავტორიზაციის სესიას
         if (supabase) {
           await supabase.auth.signOut();
         }
         
-        // 4. ვაკეთებთ აპლიკაციის სრულ გადატვირთვას ნულიდან
         window.location.href = '/';
         
       } catch (error) {
@@ -380,6 +409,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
                 </div>
               </div>
 
+              {/* 🆕 დინამიური ლეველის სექცია */}
               <div className="hero-level-section">
                 <div className="hero-level-header">
                   <span className="hero-level-text">
@@ -394,6 +424,9 @@ export default function ProfileScreen({ onNavigate }: Props) {
                   >
                     <div className="progress-shimmer"></div>
                   </div>
+                </div>
+                <div style={{ textAlign: 'right', fontSize: '10px', color: '#888', marginTop: '4px' }}>
+                  {userData.xpToNext - userData.xp} XP to Level {userData.level + 1}
                 </div>
               </div>
 
@@ -420,6 +453,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
               </div>
             </div>
 
+            {/* ... დანარჩენი კომპონენტები (Moon Phase, Collection, My Signs, Recent Readings, Stats) უცვლელი რჩება ... */}
             <div className="moon-phase-card animate-fade-in stagger-2">
               <h3 className="card-title">✦ MOON PHASE ✦</h3>
               <div className="moon-content">
@@ -550,6 +584,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
           </div>
         )}
 
+        {/* Achievements Tab */}
         {activeTab === 'achievements' && (
           <div className="achievements-tab">
             <PillTabs activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -586,6 +621,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
           </div>
         )}
 
+        {/* Settings Tab */}
         {activeTab === 'settings' && (
           <div className="settings-tab">
             <PillTabs activeTab={activeTab} setActiveTab={setActiveTab} />
