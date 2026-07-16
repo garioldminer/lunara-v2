@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion'; // 🆕 წაშლილია AnimatePresence
 import { 
   ArrowLeft, Users, Plus, Trash2, RefreshCw, Crown, ShieldAlert, 
   Calendar, Clock, Zap, Key, Activity, CheckCircle, XCircle, 
   AlertCircle, Play, Eye, BarChart3, TrendingUp, DollarSign, Flame,
-  Trophy, Bug, ChevronUp, ChevronDown, Edit2 // 🆕 დამატებულია
+  Trophy, Bug, ChevronUp, ChevronDown, Edit2
 } from 'lucide-react';
 import { useUser } from '../context/UserContext';
-import { supabase } from '../lib/supabase'; // 🆕 დამატებულია
+import { supabase } from '../lib/supabase';
 import { 
   isAdmin, 
   getAllUsersWithCredits, 
@@ -60,7 +60,6 @@ interface SubscriptionWithUser {
   };
 }
 
-// 🆕 Quest & Debug Interfaces
 interface Quest {
   id: string;
   title: string;
@@ -92,7 +91,6 @@ export default function AdminScreen({ onNavigate }: Props) {
   const [newAmount, setNewAmount] = useState(0);
   const [activeTab, setActiveTab] = useState<'credits' | 'subscriptions' | 'monitoring' | 'analytics' | 'quests'>('credits');
   
-  // Subscription management states
   const [showAddSubscription, setShowAddSubscription] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
@@ -101,16 +99,13 @@ export default function AdminScreen({ onNavigate }: Props) {
   const [extendingSubId, setExtendingSubId] = useState<string>('');
   const [extendDays, setExtendDays] = useState(30);
 
-  // Monitoring states
   const [functionStatuses, setFunctionStatuses] = useState<FunctionStatus[]>([]);
   const [recentLogs, setRecentLogs] = useState<FunctionLog[]>([]);
   const [selectedFunction, setSelectedFunction] = useState<string | null>(null);
   const [functionLogs, setFunctionLogs] = useState<FunctionLog[]>([]);
 
-  // Analytics states
   const [analyticsOverview, setAnalyticsOverview] = useState<UserAnalyticsOverview | null>(null);
 
-  // 🆕 Quests & Debug states
   const [quests, setQuests] = useState<Quest[]>([]);
   const [showAddQuest, setShowAddQuest] = useState(false);
   const [editingQuest, setEditingQuest] = useState<string | null>(null);
@@ -161,7 +156,7 @@ export default function AdminScreen({ onNavigate }: Props) {
   }, [user]);
 
   const loadData = async () => {
-    if (!user) return;
+    if (!user || !supabase) return; // 🆕 დამატებულია !supabase შემოწმება
     setLoading(true);
     addDebugLog('info', 'LOAD', '🔄 Starting admin data load...');
     
@@ -295,7 +290,6 @@ export default function AdminScreen({ onNavigate }: Props) {
     }
   };
 
-  // 🆕 Quest Handlers
   const handleAddQuest = async () => {
     if (!supabase) return;
     addDebugLog('info', 'QUESTS', 'Attempting to add quest', { title: newQuest.title, action_type: newQuest.action_type });
@@ -441,7 +435,6 @@ export default function AdminScreen({ onNavigate }: Props) {
 
   return (
     <div className="admin-screen" style={{ paddingBottom: showDebug ? '340px' : '120px' }}>
-      {/* Header */}
       <div className="admin-header">
         <button className="admin-back-btn" onClick={() => onNavigate?.('home')}>
           <ArrowLeft size={20} />
@@ -455,9 +448,7 @@ export default function AdminScreen({ onNavigate }: Props) {
         </button>
       </div>
 
-      {/* Content Area */}
       <div className="admin-content-area">
-        {/* Credits Tab */}
         {activeTab === 'credits' && (
           <>
             <div className="admin-stats">
@@ -570,7 +561,6 @@ export default function AdminScreen({ onNavigate }: Props) {
           </>
         )}
 
-        {/* Subscriptions Tab */}
         {activeTab === 'subscriptions' && (
           <>
             <div className="admin-stats">
@@ -677,7 +667,6 @@ export default function AdminScreen({ onNavigate }: Props) {
           </>
         )}
 
-        {/* Monitoring Tab */}
         {activeTab === 'monitoring' && (
           <>
             <div className="admin-stats">
@@ -840,7 +829,6 @@ export default function AdminScreen({ onNavigate }: Props) {
           </>
         )}
 
-        {/* Analytics Tab */}
         {activeTab === 'analytics' && (
           <>
             <div className="analytics-overview-grid">
@@ -919,7 +907,6 @@ export default function AdminScreen({ onNavigate }: Props) {
           </>
         )}
 
-        {/* 🆕 Quests Tab */}
         {activeTab === 'quests' && (
           <>
             <div className="admin-stats">
@@ -1021,7 +1008,6 @@ export default function AdminScreen({ onNavigate }: Props) {
         )}
       </div>
 
-      {/* Bottom Navigation */}
       <div className="admin-bottom-nav">
         <button className={`admin-nav-btn ${activeTab === 'credits' ? 'active' : ''}`} onClick={() => setActiveTab('credits')}>
           <Key size={20} />
@@ -1049,7 +1035,6 @@ export default function AdminScreen({ onNavigate }: Props) {
         </button>
       </div>
 
-      {/* Add Subscription Modal */}
       {showAddSubscription && (
         <div className="modal-overlay" onClick={() => setShowAddSubscription(false)}>
           <motion.div className="modal" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} onClick={(e) => e.stopPropagation()}>
@@ -1082,7 +1067,6 @@ export default function AdminScreen({ onNavigate }: Props) {
         </div>
       )}
 
-      {/* Extend Subscription Modal */}
       {showExtendModal && (
         <div className="modal-overlay" onClick={() => setShowExtendModal(false)}>
           <motion.div className="modal" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} onClick={(e) => e.stopPropagation()}>
@@ -1099,7 +1083,6 @@ export default function AdminScreen({ onNavigate }: Props) {
         </div>
       )}
 
-      {/* 🆕 Add/Edit Quest Modal */}
       {showAddQuest && (
         <div className="modal-overlay" onClick={() => { setShowAddQuest(false); setEditingQuest(null); }}>
           <motion.div className="modal" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
@@ -1152,7 +1135,6 @@ export default function AdminScreen({ onNavigate }: Props) {
         </div>
       )}
 
-      {/* Function Logs Modal */}
       {selectedFunction && (
         <div className="modal-overlay" onClick={() => setSelectedFunction(null)}>
           <motion.div className="modal" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px', maxHeight: '80vh', overflowY: 'auto' }}>
@@ -1187,10 +1169,9 @@ export default function AdminScreen({ onNavigate }: Props) {
         </div>
       )}
 
-      {/* 🆕 ქვედა ფიქსირებული დებაგ / მონიტორინგ პანელი */}
       <div style={{
         position: 'fixed',
-        bottom: '60px', // 🆕 60px ზემოთ, რათა ქვედა ნავიგაციას არ გადაფაროს
+        bottom: '60px',
         left: 0,
         right: 0,
         background: 'rgba(10, 6, 0, 0.98)',
