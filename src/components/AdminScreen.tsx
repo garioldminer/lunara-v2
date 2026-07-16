@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowLeft, Users, Plus, Trash2, RefreshCw, Crown, ShieldAlert, 
   Calendar, Clock, Zap, Key, Activity, CheckCircle, XCircle, 
-  AlertCircle, Play, Eye, BarChart3, TrendingUp, DollarSign, Flame
+  AlertCircle, Play, Eye, BarChart3, TrendingUp, DollarSign, Flame,
+  Trophy, Bug, ChevronUp, ChevronDown, Edit2 // 🆕 დამატებულია
 } from 'lucide-react';
 import { useUser } from '../context/UserContext';
+import { supabase } from '../lib/supabase'; // 🆕 დამატებულია
 import { 
   isAdmin, 
   getAllUsersWithCredits, 
@@ -58,6 +60,27 @@ interface SubscriptionWithUser {
   };
 }
 
+// 🆕 Quest & Debug Interfaces
+interface Quest {
+  id: string;
+  title: string;
+  description: string;
+  action_type: string;
+  target_count: number;
+  reward_xp: number;
+  reward_coins: number;
+  quest_type: 'daily' | 'weekly' | 'milestone';
+  is_active: boolean;
+}
+
+interface DebugLog {
+  timestamp: string;
+  type: 'info' | 'success' | 'error' | 'warn' | 'data';
+  source: string;
+  message: string;
+  data?: any;
+}
+
 export default function AdminScreen({ onNavigate }: Props) {
   const { user } = useUser();
   const [users, setUsers] = useState<UserWithCredits[]>([]);
@@ -67,7 +90,7 @@ export default function AdminScreen({ onNavigate }: Props) {
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [editingFeature, setEditingFeature] = useState<string>('');
   const [newAmount, setNewAmount] = useState(0);
-  const [activeTab, setActiveTab] = useState<'credits' | 'subscriptions' | 'monitoring' | 'analytics'>('credits');
+  const [activeTab, setActiveTab] = useState<'credits' | 'subscriptions' | 'monitoring' | 'analytics' | 'quests'>('credits');
   
   // Subscription management states
   const [showAddSubscription, setShowAddSubscription] = useState(false);
@@ -84,17 +107,49 @@ export default function AdminScreen({ onNavigate }: Props) {
   const [selectedFunction, setSelectedFunction] = useState<string | null>(null);
   const [functionLogs, setFunctionLogs] = useState<FunctionLog[]>([]);
 
-  // 🆕 Analytics states
+  // Analytics states
   const [analyticsOverview, setAnalyticsOverview] = useState<UserAnalyticsOverview | null>(null);
+
+  // 🆕 Quests & Debug states
+  const [quests, setQuests] = useState<Quest[]>([]);
+  const [showAddQuest, setShowAddQuest] = useState(false);
+  const [editingQuest, setEditingQuest] = useState<string | null>(null);
+  const [newQuest, setNewQuest] = useState({
+    title: '',
+    description: '',
+    action_type: 'draw_daily_card',
+    target_count: 1,
+    reward_xp: 10,
+    reward_coins: 5,
+    quest_type: 'daily' as 'daily' | 'weekly' | 'milestone',
+    is_active: true
+  });
+  const [showDebug, setShowDebug] = useState(true);
+  const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
+
+  const addDebugLog = (type: DebugLog['type'], source: string, message: string, data?: any) => {
+    const log: DebugLog = {
+      timestamp: new Date().toLocaleTimeString(),
+      type,
+      source,
+      message,
+      data
+    };
+    setDebugLogs(prev => [log, ...prev].slice(0, 100));
+    console.log(`[${type.toUpperCase()}] [${source}] ${message}`, data || '');
+  };
 
   useEffect(() => {
     const checkAdmin = async () => {
       if (user) {
+        addDebugLog('info', 'ADMIN_CHECK', `Checking admin status for: ${user.id}`);
         const admin = await isAdmin(user.id);
         setIsUserAdmin(admin);
         if (admin) {
+          addDebugLog('success', 'ADMIN_CHECK', '✅ Admin access granted');
           await loadData();
         } else {
+          addDebugLog('error', 'ADMIN_CHECK', '❌ Admin access denied');
           setLoading(false);
         }
       } else {
@@ -108,18 +163,36 @@ export default function AdminScreen({ onNavigate }: Props) {
   const loadData = async () => {
     if (!user) return;
     setLoading(true);
-    const [usersData, subsData, statusesData, logsData, analyticsData] = await Promise.all([
-      getAllUsersWithCredits(user.id),
-      getAllSubscriptions(user.id),
-      getAllFunctionStatuses(user.id),
-      getRecentLogs(user.id, 20),
-      getUserAnalyticsOverview(user.id)
-    ]);
-    setUsers(usersData);
-    setSubscriptions(subsData);
-    setFunctionStatuses(statusesData);
-    setRecentLogs(logsData);
-    setAnalyticsOverview(analyticsData);
+    addDebugLog('info', 'LOAD', '🔄 Starting admin data load...');
+    
+    try {
+      const [usersData, subsData, statusesData, logsData, analyticsData, questsRes] = await Promise.all([
+        getAllUsersWithCredits(user.id),
+        getAllSubscriptions(user.id),
+        getAllFunctionStatuses(user.id),
+        getRecentLogs(user.id, 20),
+        getUserAnalyticsOverview(user.id),
+        supabase.from('quest_definitions').select('*').order('quest_type', { ascending: true }).order('title', { ascending: true })
+      ]);
+
+      setUsers(usersData);
+      setSubscriptions(subsData);
+      setFunctionStatuses(statusesData);
+      setRecentLogs(logsData);
+      setAnalyticsOverview(analyticsData);
+      
+      if (questsRes.error) {
+        addDebugLog('error', 'LOAD_QUESTS', `❌ Failed to fetch quests: ${questsRes.error.message}`);
+        setQuests([]);
+      } else {
+        setQuests(questsRes.data || []);
+        addDebugLog('success', 'LOAD_QUESTS', `✅ Loaded ${questsRes.data?.length || 0} quests`);
+      }
+      
+      addDebugLog('success', 'LOAD', '✅ All admin data loaded successfully');
+    } catch (error) {
+      addDebugLog('error', 'LOAD', `❌ Critical error: ${(error as Error).message}`);
+    }
     setLoading(false);
   };
 
@@ -127,6 +200,7 @@ export default function AdminScreen({ onNavigate }: Props) {
     if (!user) return;
     const success = await updateUserCredits(user.id, targetUserId, featureId, newAmount);
     if (success) {
+      addDebugLog('success', 'CREDITS', `Updated ${featureId} credits for user ${targetUserId} to ${newAmount}`);
       await loadData();
       setEditingUser(null);
       setNewAmount(0);
@@ -137,6 +211,7 @@ export default function AdminScreen({ onNavigate }: Props) {
     if (!user) return;
     const success = await addCreditsToUser(user.id, targetUserId, featureId, amount);
     if (success) {
+      addDebugLog('success', 'CREDITS', `Added ${amount} ${featureId} credits to user ${targetUserId}`);
       await loadData();
     }
   };
@@ -146,6 +221,7 @@ export default function AdminScreen({ onNavigate }: Props) {
     if (confirm('Are you sure you want to delete these credits?')) {
       const success = await deleteUserCredits(user.id, targetUserId, featureId);
       if (success) {
+        addDebugLog('success', 'CREDITS', `Deleted ${featureId} credits for user ${targetUserId}`);
         await loadData();
       }
     }
@@ -155,6 +231,7 @@ export default function AdminScreen({ onNavigate }: Props) {
     if (!user || !selectedUserId) return;
     const success = await createSubscriptionForUser(user.id, selectedUserId, selectedPlan, selectedDays);
     if (success) {
+      addDebugLog('success', 'SUBS', `Created ${selectedPlan} subscription for user ${selectedUserId}`);
       await loadData();
       setShowAddSubscription(false);
       setSelectedUserId('');
@@ -168,6 +245,7 @@ export default function AdminScreen({ onNavigate }: Props) {
     if (confirm('Are you sure you want to cancel this subscription?')) {
       const success = await cancelSubscriptionForUser(user.id, subscriptionId);
       if (success) {
+        addDebugLog('success', 'SUBS', `Cancelled subscription ${subscriptionId}`);
         await loadData();
       }
     }
@@ -177,6 +255,7 @@ export default function AdminScreen({ onNavigate }: Props) {
     if (!user || !extendingSubId) return;
     const success = await extendSubscription(user.id, extendingSubId, extendDays);
     if (success) {
+      addDebugLog('success', 'SUBS', `Extended subscription ${extendingSubId} by ${extendDays} days`);
       await loadData();
       setShowExtendModal(false);
       setExtendingSubId('');
@@ -184,7 +263,6 @@ export default function AdminScreen({ onNavigate }: Props) {
     }
   };
 
-  // ✅ Monitoring handlers - დროებით გამორთულია CORS პრობლემის გამო
   const handleTestFunction = async (functionName: string) => {
     alert(
       `⚠️ Test Function დროებით გამორთულია\n\n` +
@@ -210,9 +288,113 @@ export default function AdminScreen({ onNavigate }: Props) {
     if (confirm('წავშალოთ 30 დღეზე მეტი ლოგები?')) {
       const success = await cleanupOldLogs(user.id);
       if (success) {
+        addDebugLog('success', 'MONITOR', '✅ Old logs cleaned up');
         await loadData();
         alert('✅ ძველი ლოგები წაიშალა');
       }
+    }
+  };
+
+  // 🆕 Quest Handlers
+  const handleAddQuest = async () => {
+    if (!supabase) return;
+    addDebugLog('info', 'QUESTS', 'Attempting to add quest', { title: newQuest.title, action_type: newQuest.action_type });
+    if (!newQuest.title || !newQuest.action_type) {
+      addDebugLog('warn', 'QUESTS', '❌ Title or action type is empty!');
+      return;
+    }
+    try {
+      const { data, error } = await supabase.from('quest_definitions').insert([newQuest]).select().single();
+      if (error) {
+        addDebugLog('error', 'QUESTS', `❌ Failed: ${error.message}`);
+      } else {
+        addDebugLog('success', 'QUESTS', '✅ Quest added successfully', data);
+        setShowAddQuest(false);
+        setNewQuest({ title: '', description: '', action_type: 'draw_daily_card', target_count: 1, reward_xp: 10, reward_coins: 5, quest_type: 'daily', is_active: true });
+        await loadData();
+      }
+    } catch (error) {
+      addDebugLog('error', 'QUESTS', '❌ Exception while adding quest', (error as Error).message);
+    }
+  };
+
+  const handleUpdateQuest = async (questId: string) => {
+    addDebugLog('info', 'QUESTS', `Opening edit mode for quest: ${questId}`);
+    const quest = quests.find(q => q.id === questId);
+    if (!quest) {
+      addDebugLog('error', 'QUESTS', '❌ Quest not found!');
+      return;
+    }
+    setNewQuest({ ...quest });
+    setEditingQuest(questId);
+    setShowAddQuest(true);
+  };
+
+  const handleSaveEditQuest = async () => {
+    if (!supabase) return;
+    addDebugLog('info', 'QUESTS', `Saving edit for quest: ${editingQuest}`);
+    if (!editingQuest || !newQuest.title || !newQuest.action_type) {
+      addDebugLog('warn', 'QUESTS', '❌ Missing required fields!');
+      return;
+    }
+    try {
+      const { data, error } = await supabase.from('quest_definitions').update({
+        title: newQuest.title,
+        description: newQuest.description,
+        action_type: newQuest.action_type,
+        target_count: newQuest.target_count,
+        reward_xp: newQuest.reward_xp,
+        reward_coins: newQuest.reward_coins,
+        quest_type: newQuest.quest_type,
+        is_active: newQuest.is_active
+      }).eq('id', editingQuest).select().single();
+      if (error) {
+        addDebugLog('error', 'QUESTS', `❌ Failed: ${error.message}`);
+      } else {
+        addDebugLog('success', 'QUESTS', '✅ Quest updated successfully', data);
+        setShowAddQuest(false);
+        setEditingQuest(null);
+        setNewQuest({ title: '', description: '', action_type: 'draw_daily_card', target_count: 1, reward_xp: 10, reward_coins: 5, quest_type: 'daily', is_active: true });
+        await loadData();
+      }
+    } catch (error) {
+      addDebugLog('error', 'QUESTS', '❌ Exception while updating quest', (error as Error).message);
+    }
+  };
+
+  const handleToggleQuest = async (questId: string, isActive: boolean) => {
+    if (!supabase) return;
+    addDebugLog('info', 'QUESTS', `Toggling quest ${questId} to ${!isActive}`);
+    try {
+      const { error } = await supabase.from('quest_definitions').update({ is_active: !isActive }).eq('id', questId);
+      if (error) {
+        addDebugLog('error', 'QUESTS', `❌ Failed: ${error.message}`);
+      } else {
+        addDebugLog('success', 'QUESTS', '✅ Quest toggled successfully');
+        await loadData();
+      }
+    } catch (error) {
+      addDebugLog('error', 'QUESTS', '❌ Exception while toggling quest', (error as Error).message);
+    }
+  };
+
+  const handleDeleteQuest = async (questId: string) => {
+    if (!supabase) return;
+    addDebugLog('info', 'QUESTS', `Attempting to delete quest: ${questId}`);
+    if (!confirm('Are you sure you want to delete this quest?')) {
+      addDebugLog('info', 'QUESTS', 'User cancelled deletion');
+      return;
+    }
+    try {
+      const { error } = await supabase.from('quest_definitions').delete().eq('id', questId);
+      if (error) {
+        addDebugLog('error', 'QUESTS', `❌ Failed: ${error.message}`);
+      } else {
+        addDebugLog('success', 'QUESTS', '✅ Quest deleted successfully');
+        await loadData();
+      }
+    } catch (error) {
+      addDebugLog('error', 'QUESTS', '❌ Exception while deleting quest', (error as Error).message);
     }
   };
 
@@ -232,7 +414,6 @@ export default function AdminScreen({ onNavigate }: Props) {
     return days;
   };
 
-  // ჯერ არ ვიცით admin თუ არა
   if (isUserAdmin === null || loading) {
     return (
       <div className="admin-screen">
@@ -244,7 +425,6 @@ export default function AdminScreen({ onNavigate }: Props) {
     );
   }
 
-  // არ არის admin
   if (!isUserAdmin) {
     return (
       <div className="admin-screen">
@@ -260,7 +440,7 @@ export default function AdminScreen({ onNavigate }: Props) {
   }
 
   return (
-    <div className="admin-screen">
+    <div className="admin-screen" style={{ paddingBottom: showDebug ? '340px' : '120px' }}>
       {/* Header */}
       <div className="admin-header">
         <button className="admin-back-btn" onClick={() => onNavigate?.('home')}>
@@ -497,7 +677,7 @@ export default function AdminScreen({ onNavigate }: Props) {
           </>
         )}
 
-        {/* 🆕 Monitoring Tab */}
+        {/* Monitoring Tab */}
         {activeTab === 'monitoring' && (
           <>
             <div className="admin-stats">
@@ -619,14 +799,11 @@ export default function AdminScreen({ onNavigate }: Props) {
               })}
             </div>
 
-            {/* Recent Logs Section */}
             <div style={{ marginTop: '24px' }}>
               <h3 style={{ color: '#D9B66F', marginBottom: '12px' }}>📝 ბოლო 20 ლოგი</h3>
               <div className="admin-users-list">
                 {recentLogs.length === 0 ? (
-                  <p style={{ textAlign: 'center', opacity: 0.7, padding: '20px' }}>
-                    ლოგები არ არის
-                  </p>
+                  <p style={{ textAlign: 'center', opacity: 0.7, padding: '20px' }}>ლოგები არ არის</p>
                 ) : (
                   recentLogs.map((log) => (
                     <motion.div
@@ -663,81 +840,46 @@ export default function AdminScreen({ onNavigate }: Props) {
           </>
         )}
 
-        {/* 🆕 Analytics Tab */}
+        {/* Analytics Tab */}
         {activeTab === 'analytics' && (
           <>
-            {/* Overview Cards */}
             <div className="analytics-overview-grid">
-              <motion.div 
-                className="analytics-overview-card blue"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
+              <motion.div className="analytics-overview-card blue" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                 <Users size={20} />
                 <div className="analytics-info">
                   <span className="analytics-number">{analyticsOverview?.total_users || 0}</span>
                   <span className="analytics-label">Total Users</span>
                 </div>
               </motion.div>
-
-              <motion.div 
-                className="analytics-overview-card green"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-              >
+              <motion.div className="analytics-overview-card green" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
                 <Activity size={20} />
                 <div className="analytics-info">
                   <span className="analytics-number">{analyticsOverview?.active_today || 0}</span>
                   <span className="analytics-label">Active Today</span>
                 </div>
               </motion.div>
-
-              <motion.div 
-                className="analytics-overview-card gold"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
+              <motion.div className="analytics-overview-card gold" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
                 <Crown size={20} />
                 <div className="analytics-info">
                   <span className="analytics-number">{analyticsOverview?.premium_users || 0}</span>
                   <span className="analytics-label">Premium</span>
                 </div>
               </motion.div>
-
-              <motion.div 
-                className="analytics-overview-card orange"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-              >
+              <motion.div className="analytics-overview-card orange" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
                 <Flame size={20} />
                 <div className="analytics-info">
                   <span className="analytics-number">{analyticsOverview?.avg_streak || 0}</span>
                   <span className="analytics-label">Avg Streak</span>
                 </div>
               </motion.div>
-
-              <motion.div 
-                className="analytics-overview-card purple"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-              >
+              <motion.div className="analytics-overview-card purple" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
                 <BarChart3 size={20} />
                 <div className="analytics-info">
                   <span className="analytics-number">{analyticsOverview?.total_readings || 0}</span>
                   <span className="analytics-label">Readings</span>
                 </div>
               </motion.div>
-
-              <motion.div 
-                className="analytics-overview-card emerald"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-              >
+              <motion.div className="analytics-overview-card emerald" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
                 <DollarSign size={20} />
                 <div className="analytics-info">
                   <span className="analytics-number">${(analyticsOverview?.total_revenue || 0).toFixed(2)}</span>
@@ -746,7 +888,6 @@ export default function AdminScreen({ onNavigate }: Props) {
               </motion.div>
             </div>
 
-            {/* View Full Analytics Button */}
             <motion.button 
               className="view-full-analytics-btn"
               onClick={() => onNavigate?.('user-analytics')}
@@ -762,7 +903,6 @@ export default function AdminScreen({ onNavigate }: Props) {
               <ArrowLeft size={20} style={{ transform: 'rotate(180deg)' }} />
             </motion.button>
 
-            {/* Quick Stats Info */}
             <div className="analytics-info-card">
               <h3>📊 What you'll see in Full Analytics</h3>
               <ul>
@@ -778,42 +918,132 @@ export default function AdminScreen({ onNavigate }: Props) {
             </div>
           </>
         )}
+
+        {/* 🆕 Quests Tab */}
+        {activeTab === 'quests' && (
+          <>
+            <div className="admin-stats">
+              <div className="stat-card">
+                <span className="stat-number">{quests.length}</span>
+                <span className="stat-label">Total Quests</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-number">{quests.filter(q => q.quest_type === 'daily').length}</span>
+                <span className="stat-label">Daily</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-number">{quests.filter(q => q.quest_type === 'weekly').length}</span>
+                <span className="stat-label">Weekly</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-number">{quests.filter(q => q.quest_type === 'milestone').length}</span>
+                <span className="stat-label">Milestone</span>
+              </div>
+            </div>
+
+            <button className="add-subscription-btn" onClick={() => {
+              setEditingQuest(null);
+              setNewQuest({ title: '', description: '', action_type: 'draw_daily_card', target_count: 1, reward_xp: 10, reward_coins: 5, quest_type: 'daily', is_active: true });
+              setShowAddQuest(true);
+              addDebugLog('info', 'UI', 'Opening Add Quest modal');
+            }}>
+              <Plus size={16} />
+              <span>Add Quest</span>
+            </button>
+
+            <div className="admin-users-list">
+              {quests.length === 0 && (
+                <div className="debug-warning" style={{ padding: '20px', textAlign: 'center' }}>
+                  ⚠️ No quests found. Click "Add Quest" to create one.
+                </div>
+              )}
+              {quests.map((quest) => (
+                <motion.div
+                  key={quest.id}
+                  className={`admin-user-card ${quest.is_active ? 'status-success' : 'status-unknown'}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <div className="user-info">
+                    <div className="user-avatar" style={{ background: quest.is_active ? '#10b981' : '#6b7280' }}>
+                      <Trophy size={24} />
+                    </div>
+                    <div className="user-details">
+                      <h3>{quest.title}</h3>
+                      <p style={{ fontSize: '11px', opacity: 0.7 }}>{quest.description || 'No description'}</p>
+                    </div>
+                  </div>
+
+                  <div className="user-credits" style={{ marginTop: '12px' }}>
+                    <div className="credit-item">
+                      <span className="credit-label">Action:</span>
+                      <span className="credit-amount" style={{ color: '#60a5fa', fontWeight: 'bold' }}>{quest.action_type}</span>
+                    </div>
+                    <div className="credit-item">
+                      <span className="credit-label">Target:</span>
+                      <span className="credit-amount">{quest.target_count}</span>
+                    </div>
+                    <div className="credit-item">
+                      <span className="credit-label">XP Reward:</span>
+                      <span className="credit-amount" style={{ color: '#a78bfa' }}>{quest.reward_xp}</span>
+                    </div>
+                    <div className="credit-item">
+                      <span className="credit-label">Coins Reward:</span>
+                      <span className="credit-amount" style={{ color: '#fbbf24' }}>{quest.reward_coins}</span>
+                    </div>
+                    <div className="credit-item">
+                      <span className="credit-label">Type:</span>
+                      <span className="credit-amount">{quest.quest_type}</span>
+                    </div>
+                  </div>
+
+                  <div className="subscription-actions" style={{ marginTop: '12px' }}>
+                    <button className="extend-btn" onClick={() => handleUpdateQuest(quest.id)}>
+                      <Edit2 size={14} />
+                      <span>Edit</span>
+                    </button>
+                    <button
+                      className="cancel-sub-btn"
+                      onClick={() => handleToggleQuest(quest.id, quest.is_active)}
+                      style={{ background: quest.is_active ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)', borderColor: quest.is_active ? '#ef4444' : '#10b981', color: quest.is_active ? '#ef4444' : '#10b981' }}
+                    >
+                      {quest.is_active ? 'Disable' : 'Enable'}
+                    </button>
+                    <button className="cancel-sub-btn" onClick={() => handleDeleteQuest(quest.id)}>
+                      <Trash2 size={14} />
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
-      {/* ქვედა ნავიგაციის პანელი */}
+      {/* Bottom Navigation */}
       <div className="admin-bottom-nav">
-        <button
-          className={`admin-nav-btn ${activeTab === 'credits' ? 'active' : ''}`}
-          onClick={() => setActiveTab('credits')}
-        >
+        <button className={`admin-nav-btn ${activeTab === 'credits' ? 'active' : ''}`} onClick={() => setActiveTab('credits')}>
           <Key size={20} />
           <span>Credits</span>
         </button>
-        <button
-          className={`admin-nav-btn ${activeTab === 'subscriptions' ? 'active' : ''}`}
-          onClick={() => setActiveTab('subscriptions')}
-        >
+        <button className={`admin-nav-btn ${activeTab === 'subscriptions' ? 'active' : ''}`} onClick={() => setActiveTab('subscriptions')}>
           <Crown size={20} />
           <span>Subs</span>
         </button>
-        <button
-          className={`admin-nav-btn ${activeTab === 'monitoring' ? 'active' : ''}`}
-          onClick={() => setActiveTab('monitoring')}
-        >
+        <button className={`admin-nav-btn ${activeTab === 'monitoring' ? 'active' : ''}`} onClick={() => setActiveTab('monitoring')}>
           <Activity size={20} />
           <span>Monitor</span>
         </button>
-        <button
-          className={`admin-nav-btn ${activeTab === 'analytics' ? 'active' : ''}`}
-          onClick={() => setActiveTab('analytics')}
-        >
+        <button className={`admin-nav-btn ${activeTab === 'analytics' ? 'active' : ''}`} onClick={() => setActiveTab('analytics')}>
           <BarChart3 size={20} />
           <span>Analytics</span>
         </button>
-        <button
-          className="admin-nav-btn ai-nav-btn"
-          onClick={() => onNavigate?.('ai-management')}
-        >
+        <button className={`admin-nav-btn ${activeTab === 'quests' ? 'active' : ''}`} onClick={() => setActiveTab('quests')}>
+          <Trophy size={20} />
+          <span>Quests</span>
+        </button>
+        <button className="admin-nav-btn ai-nav-btn" onClick={() => onNavigate?.('ai-management')}>
           <Zap size={20} />
           <span>AI</span>
         </button>
@@ -822,72 +1052,31 @@ export default function AdminScreen({ onNavigate }: Props) {
       {/* Add Subscription Modal */}
       {showAddSubscription && (
         <div className="modal-overlay" onClick={() => setShowAddSubscription(false)}>
-          <motion.div
-            className="modal"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            onClick={(e) => e.stopPropagation()}
-          >
+          <motion.div className="modal" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} onClick={(e) => e.stopPropagation()}>
             <h3>Add Subscription</h3>
-            
             <div className="modal-field">
               <label>Select User:</label>
-              <select
-                value={selectedUserId}
-                onChange={(e) => setSelectedUserId(e.target.value)}
-              >
+              <select value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value)}>
                 <option value="">-- Select User --</option>
                 {users.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.display_name || 'Unknown'} (@{u.username || u.telegram_id})
-                  </option>
+                  <option key={u.id} value={u.id}>{u.display_name || 'Unknown'} (@{u.username || u.telegram_id})</option>
                 ))}
               </select>
             </div>
-
             <div className="modal-field">
               <label>Plan Type:</label>
               <div className="plan-selector">
-                <button
-                  className={`plan-option ${selectedPlan === 'monthly' ? 'active' : ''}`}
-                  onClick={() => setSelectedPlan('monthly')}
-                >
-                  Monthly
-                </button>
-                <button
-                  className={`plan-option ${selectedPlan === 'yearly' ? 'active' : ''}`}
-                  onClick={() => setSelectedPlan('yearly')}
-                >
-                  Yearly
-                </button>
+                <button className={`plan-option ${selectedPlan === 'monthly' ? 'active' : ''}`} onClick={() => setSelectedPlan('monthly')}>Monthly</button>
+                <button className={`plan-option ${selectedPlan === 'yearly' ? 'active' : ''}`} onClick={() => setSelectedPlan('yearly')}>Yearly</button>
               </div>
             </div>
-
             <div className="modal-field">
               <label>Duration (days):</label>
-              <input
-                type="number"
-                value={selectedDays}
-                onChange={(e) => setSelectedDays(parseInt(e.target.value) || 30)}
-                min="1"
-                max="365"
-              />
+              <input type="number" value={selectedDays} onChange={(e) => setSelectedDays(parseInt(e.target.value) || 30)} min="1" max="365" />
             </div>
-
             <div className="modal-buttons">
-              <button
-                className="modal-btn cancel"
-                onClick={() => setShowAddSubscription(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="modal-btn confirm"
-                onClick={handleCreateSubscription}
-                disabled={!selectedUserId}
-              >
-                Create Subscription
-              </button>
+              <button className="modal-btn cancel" onClick={() => setShowAddSubscription(false)}>Cancel</button>
+              <button className="modal-btn confirm" onClick={handleCreateSubscription} disabled={!selectedUserId}>Create Subscription</button>
             </div>
           </motion.div>
         </div>
@@ -896,38 +1085,68 @@ export default function AdminScreen({ onNavigate }: Props) {
       {/* Extend Subscription Modal */}
       {showExtendModal && (
         <div className="modal-overlay" onClick={() => setShowExtendModal(false)}>
-          <motion.div
-            className="modal"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            onClick={(e) => e.stopPropagation()}
-          >
+          <motion.div className="modal" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} onClick={(e) => e.stopPropagation()}>
             <h3>Extend Subscription</h3>
-            
             <div className="modal-field">
               <label>Additional Days:</label>
-              <input
-                type="number"
-                value={extendDays}
-                onChange={(e) => setExtendDays(parseInt(e.target.value) || 30)}
-                min="1"
-                max="365"
-              />
+              <input type="number" value={extendDays} onChange={(e) => setExtendDays(parseInt(e.target.value) || 30)} min="1" max="365" />
             </div>
-
             <div className="modal-buttons">
-              <button
-                className="modal-btn cancel"
-                onClick={() => setShowExtendModal(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="modal-btn confirm"
-                onClick={handleExtendSubscription}
-              >
-                Extend
-              </button>
+              <button className="modal-btn cancel" onClick={() => setShowExtendModal(false)}>Cancel</button>
+              <button className="modal-btn confirm" onClick={handleExtendSubscription}>Extend</button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* 🆕 Add/Edit Quest Modal */}
+      {showAddQuest && (
+        <div className="modal-overlay" onClick={() => { setShowAddQuest(false); setEditingQuest(null); }}>
+          <motion.div className="modal" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <h3>{editingQuest ? 'Edit Quest' : 'Add New Quest'}</h3>
+            <div className="modal-field">
+              <label>Title:</label>
+              <input type="text" value={newQuest.title} onChange={(e) => setNewQuest({ ...newQuest, title: e.target.value })} placeholder="e.g., Daily Card Draw" />
+            </div>
+            <div className="modal-field">
+              <label>Description:</label>
+              <textarea value={newQuest.description} onChange={(e) => setNewQuest({ ...newQuest, description: e.target.value })} placeholder="e.g., Draw your daily tarot card" rows={2} />
+            </div>
+            <div className="modal-field">
+              <label>Action Type:</label>
+              <select value={newQuest.action_type} onChange={(e) => setNewQuest({ ...newQuest, action_type: e.target.value })}>
+                <option value="draw_daily_card">draw_daily_card</option>
+                <option value="check_horoscope">check_horoscope</option>
+                <option value="complete_reading">complete_reading</option>
+                <option value="discover_card">discover_card</option>
+                <option value="maintain_streak">maintain_streak</option>
+              </select>
+            </div>
+            <div className="modal-field">
+              <label>Quest Type:</label>
+              <select value={newQuest.quest_type} onChange={(e) => setNewQuest({ ...newQuest, quest_type: e.target.value as 'daily' | 'weekly' | 'milestone' })}>
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="milestone">Milestone</option>
+              </select>
+            </div>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <div className="modal-field" style={{ flex: 1 }}>
+                <label>Target Count:</label>
+                <input type="number" value={newQuest.target_count} onChange={(e) => setNewQuest({ ...newQuest, target_count: parseInt(e.target.value) || 1 })} min="1" />
+              </div>
+              <div className="modal-field" style={{ flex: 1 }}>
+                <label>XP Reward:</label>
+                <input type="number" value={newQuest.reward_xp} onChange={(e) => setNewQuest({ ...newQuest, reward_xp: parseInt(e.target.value) || 0 })} min="0" />
+              </div>
+              <div className="modal-field" style={{ flex: 1 }}>
+                <label>Coins Reward:</label>
+                <input type="number" value={newQuest.reward_coins} onChange={(e) => setNewQuest({ ...newQuest, reward_coins: parseInt(e.target.value) || 0 })} min="0" />
+              </div>
+            </div>
+            <div className="modal-buttons">
+              <button className="modal-btn cancel" onClick={() => { setShowAddQuest(false); setEditingQuest(null); }}>Cancel</button>
+              <button className="modal-btn confirm" onClick={editingQuest ? handleSaveEditQuest : handleAddQuest}>{editingQuest ? 'Save Changes' : 'Add Quest'}</button>
             </div>
           </motion.div>
         </div>
@@ -936,66 +1155,135 @@ export default function AdminScreen({ onNavigate }: Props) {
       {/* Function Logs Modal */}
       {selectedFunction && (
         <div className="modal-overlay" onClick={() => setSelectedFunction(null)}>
-          <motion.div
-            className="modal"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: '600px', maxHeight: '80vh', overflowY: 'auto' }}
-          >
+          <motion.div className="modal" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px', maxHeight: '80vh', overflowY: 'auto' }}>
             <h3>📋 {selectedFunction} - ლოგები</h3>
-            
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {functionLogs.length === 0 ? (
                 <p style={{ textAlign: 'center', opacity: 0.7 }}>ლოგები არ არის</p>
               ) : (
                 functionLogs.map((log) => (
-                  <div 
-                    key={log.id} 
-                    style={{
-                      padding: '10px',
-                      background: log.status === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                      borderRadius: '8px',
-                      border: `1px solid ${log.status === 'success' ? '#10b981' : '#ef4444'}`
-                    }}
-                  >
+                  <div key={log.id} style={{ padding: '10px', background: log.status === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', border: `1px solid ${log.status === 'success' ? '#10b981' : '#ef4444'}` }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                       <strong>{log.status === 'success' ? '✅' : '❌'} {log.status.toUpperCase()}</strong>
-                      <span style={{ fontSize: '11px', opacity: 0.7 }}>
-                        {new Date(log.created_at).toLocaleString('ka-GE')}
-                      </span>
+                      <span style={{ fontSize: '11px', opacity: 0.7 }}>{new Date(log.created_at).toLocaleString('ka-GE')}</span>
                     </div>
                     <div style={{ fontSize: '11px', opacity: 0.8 }}>
-                      ⏱️ {log.response_time_ms || 'N/A'}ms | 
-                      📡 {log.status_code || 'N/A'} | 
-                      🔹 {log.triggered_by}
+                      ⏱️ {log.response_time_ms || 'N/A'}ms | 📡 {log.status_code || 'N/A'} | 🔹 {log.triggered_by}
                     </div>
                     {log.error_message && (
-                      <div style={{ fontSize: '11px', color: '#ef4444', marginTop: '4px' }}>
-                        ❌ {log.error_message}
-                      </div>
+                      <div style={{ fontSize: '11px', color: '#ef4444', marginTop: '4px' }}>❌ {log.error_message}</div>
                     )}
                     {log.response_data && (
-                      <div style={{ fontSize: '10px', opacity: 0.7, marginTop: '4px', maxHeight: '80px', overflow: 'auto' }}>
-                        📦 {JSON.stringify(log.response_data).substring(0, 200)}
-                      </div>
+                      <div style={{ fontSize: '10px', opacity: 0.7, marginTop: '4px', maxHeight: '80px', overflow: 'auto' }}>📦 {JSON.stringify(log.response_data).substring(0, 200)}</div>
                     )}
                   </div>
                 ))
               )}
             </div>
-
             <div className="modal-buttons" style={{ marginTop: '16px' }}>
-              <button
-                className="modal-btn cancel"
-                onClick={() => setSelectedFunction(null)}
-              >
-                Close
-              </button>
+              <button className="modal-btn cancel" onClick={() => setSelectedFunction(null)}>Close</button>
             </div>
           </motion.div>
         </div>
       )}
+
+      {/* 🆕 ქვედა ფიქსირებული დებაგ / მონიტორინგ პანელი */}
+      <div style={{
+        position: 'fixed',
+        bottom: '60px', // 🆕 60px ზემოთ, რათა ქვედა ნავიგაციას არ გადაფაროს
+        left: 0,
+        right: 0,
+        background: 'rgba(10, 6, 0, 0.98)',
+        borderTop: '2px solid #fbbf24',
+        zIndex: 9998,
+        maxHeight: showDebug ? '280px' : '40px',
+        transition: 'max-height 0.3s ease',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        boxShadow: '0 -4px 20px rgba(0,0,0,0.8)'
+      }}>
+        <div 
+          onClick={() => setShowDebug(!showDebug)}
+          style={{
+            padding: '8px 16px',
+            background: 'rgba(251, 191, 36, 0.1)',
+            color: '#fbbf24',
+            cursor: 'pointer',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            fontSize: '12px',
+            fontWeight: 'bold',
+            borderBottom: showDebug ? '1px solid rgba(251, 191, 36, 0.3)' : 'none',
+            userSelect: 'none'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <Bug size={14} />
+            <span>ADMIN MONITOR & DEBUG</span>
+            <span style={{ background: '#fbbf24', color: '#000', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold' }}>
+              QUESTS: {quests.length}
+            </span>
+            <span style={{ background: isUserAdmin ? '#10b981' : '#ef4444', color: '#fff', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold' }}>
+              ADMIN: {isUserAdmin ? 'YES' : 'NO'}
+            </span>
+            <span style={{ color: '#94a3b8', fontSize: '10px' }}>
+              ({debugLogs.length} logs)
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button 
+              onClick={(e) => { e.stopPropagation(); setDebugLogs([]); }}
+              style={{ background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', color: '#ef4444', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', cursor: 'pointer' }}
+            >
+              Clear
+            </button>
+            {showDebug ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+          </div>
+        </div>
+
+        {showDebug && (
+          <div style={{ flex: 1, overflowY: 'auto', padding: '12px', fontSize: '11px', fontFamily: 'monospace' }}>
+            {debugLogs.length === 0 && (
+              <div style={{ color: '#94a3b8', textAlign: 'center', padding: '10px' }}>No logs yet. Perform an action to see logs here.</div>
+            )}
+            {debugLogs.map((log, i) => (
+              <div key={i} style={{ 
+                padding: '4px 8px', 
+                marginBottom: '4px', 
+                background: 'rgba(255,255,255,0.03)', 
+                borderRadius: '4px',
+                borderLeft: `3px solid ${
+                  log.type === 'error' ? '#ef4444' : 
+                  log.type === 'success' ? '#10b981' : 
+                  log.type === 'warn' ? '#fbbf24' : '#60a5fa'
+                }`
+              }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <span style={{ color: '#64748b', fontSize: '10px' }}>{log.timestamp}</span>
+                  <span style={{ 
+                    color: log.type === 'error' ? '#ef4444' : 
+                           log.type === 'success' ? '#10b981' : 
+                           log.type === 'warn' ? '#fbbf24' : '#60a5fa',
+                    fontWeight: 'bold',
+                    fontSize: '10px'
+                  }}>[{log.source}]</span>
+                  <span style={{ color: '#e2e8f0' }}>{log.message}</span>
+                </div>
+                {log.data && (
+                  <details style={{ marginTop: '4px', cursor: 'pointer' }}>
+                    <summary style={{ fontSize: '10px', color: '#94a3b8' }}>Data</summary>
+                    <pre style={{ fontSize: '9px', color: '#94a3b8', marginTop: '4px', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+                      {JSON.stringify(log.data, null, 2)}
+                    </pre>
+                  </details>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
