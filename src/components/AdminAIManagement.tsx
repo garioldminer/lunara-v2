@@ -19,7 +19,6 @@ import {
   XCircle,
   Edit2,
   Bug,
-  Info,
   Trophy,
   ChevronUp,
   ChevronDown
@@ -81,7 +80,6 @@ export default function AdminAIManagement({ onNavigate }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [loading, setLoading] = useState(true);
   
-  // 🆕 დებაგ პანელი ნაგულისხმევად გაშლილია ქვემოთ
   const [showDebug, setShowDebug] = useState(true);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
   
@@ -207,7 +205,6 @@ export default function AdminAIManagement({ onNavigate }: Props) {
         })
       ]);
 
-      // 🆕 ქვესტების ცალკე ჩატვირთვა TypeScript-ის ტიპის შეცდომების თავიდან ასაცილებლად
       let questsData: any[] = [];
       try {
         const res = await supabase.from('quest_definitions').select('*').order('quest_type', { ascending: true }).order('title', { ascending: true });
@@ -582,7 +579,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
   }
 
   return (
-    <div className="ai-admin-screen" style={{ paddingBottom: showDebug ? '280px' : '60px' }}> {/* 🆕 დამატებულია padding ქვედა პანელისთვის */}
+    <div className="ai-admin-screen" style={{ paddingBottom: showDebug ? '280px' : '60px' }}>
       <div className="ai-admin-header">
         <button className="ai-admin-back-btn" onClick={() => onNavigate?.('admin')}>
           <ArrowLeft size={20} />
