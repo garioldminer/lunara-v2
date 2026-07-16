@@ -33,7 +33,7 @@ export interface QuestReward {
  * @param userId - მომხმარებლის ID
  * @param actionType - ქვესტის action_type (მაგ: 'draw_daily_card')
  * @param increment - რამდენით გაიზარდოს პროგრესი (default: 1)
- * @returns QuestReward | null - ილდო თუ ქვესტა დასრულდა, null თუ არა
+ * @returns QuestReward | null - ჯილდო თუ ქვესტა დასრულდა, null თუ არა
  */
 export async function trackQuestProgress(
   userId: string,
@@ -62,7 +62,8 @@ export async function trackQuestProgress(
     console.log(`📋 Found quest: ${quest.title} (target: ${quest.target_count})`);
 
     // 2. ვიპოვოთ მომხმარებლის პროგრესი ამ ქვესტაზე
-    const { data: progress, error: progressError } = await supabase
+    // შენიშვნა: თუ ჩანაწერი არ არსებობს, data იქნება null, რაც ჩვენთვის მისაღებია
+    const { data: progress } = await supabase
       .from('user_quest_progress')
       .select('*')
       .eq('user_id', userId)
@@ -97,7 +98,7 @@ export async function trackQuestProgress(
         return null;
       }
 
-      console.log(` Progress updated: ${newProgress}/${quest.target_count}`);
+      console.log(`⏳ Progress updated: ${newProgress}/${quest.target_count}`);
     } else {
       // 4b. შევქმნათ ახალი პროგრესის ჩანაწერი
       newProgress = increment;
@@ -120,56 +121,44 @@ export async function trackQuestProgress(
         return null;
       }
 
-      console.log(` New progress created: ${newProgress}/${quest.target_count}`);
+      console.log(`🆕 New progress created: ${newProgress}/${quest.target_count}`);
     }
 
     // 5. თუ ქვესტა დასრულდა, გავცეთ ჯილდო
     if (isCompleted) {
       console.log(`🎉 Quest completed: ${quest.title}! Rewarding XP: ${quest.reward_xp}, Coins: ${quest.reward_coins}`);
 
-      // განვაახლოთ user_economy ცხრილი
-      const { error: economyError } = await supabase.rpc('add_quest_rewards', {
-        p_user_id: userId,
-        p_xp: quest.reward_xp,
-        p_coins: quest.reward_coins
-      });
+      // ვიპოვოთ მიმდინარე ეკონომიკა
+      const { data: economy, error: econFetchError } = await supabase
+        .from('user_economy')
+        .select('cosmic_coins, xp, level')
+        .eq('user_id', userId)
+        .single();
 
-      // თუ RPC ფუნქცია არ არსებობს, პირდაპირ განვაახლოთ
-      if (economyError) {
-        console.log('⚠️ RPC function not found, using direct update...');
-        
-        // ვიპოვოთ მიმდინარე ეკონომიკა
-        const { data: economy, error: econFetchError } = await supabase
-          .from('user_economy')
-          .select('cosmic_coins, xp')
-          .eq('user_id', userId)
-          .single();
-
-        if (econFetchError) {
-          console.error('❌ Error fetching economy:', econFetchError);
-          return null;
-        }
-
-        const newCoins = (economy?.cosmic_coins || 0) + quest.reward_coins;
-        const newXP = (economy?.xp || 0) + quest.reward_xp;
-        const newLevel = Math.floor(newXP / 100) + 1;
-
-        const { error: updateError } = await supabase
-          .from('user_economy')
-          .update({
-            cosmic_coins: newCoins,
-            xp: newXP,
-            level: newLevel
-          })
-          .eq('user_id', userId);
-
-        if (updateError) {
-          console.error('❌ Error updating economy:', updateError);
-          return null;
-        }
-
-        console.log(`💰 Economy updated: Coins=${newCoins}, XP=${newXP}, Level=${newLevel}`);
+      if (econFetchError) {
+        console.error('❌ Error fetching economy:', econFetchError);
+        return null;
       }
+
+      const newCoins = (economy?.cosmic_coins || 0) + quest.reward_coins;
+      const newXP = (economy?.xp || 0) + quest.reward_xp;
+      const newLevel = Math.floor(newXP / 100) + 1;
+
+      const { error: updateError } = await supabase
+        .from('user_economy')
+        .update({
+          cosmic_coins: newCoins,
+          xp: newXP,
+          level: newLevel
+        })
+        .eq('user_id', userId);
+
+      if (updateError) {
+        console.error('❌ Error updating economy:', updateError);
+        return null;
+      }
+
+      console.log(`💰 Economy updated: Coins=${newCoins}, XP=${newXP}, Level=${newLevel}`);
 
       return {
         xp: quest.reward_xp,
@@ -199,7 +188,7 @@ export async function loadUserQuests(userId: string): Promise<QuestProgress[]> {
         quest:quest_definitions(*)
       `)
       .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+      // .order('created_at', { ascending: false }); // შენიშვნა: created_at არ არის quest_progress-ში, ამიტომ ვტოვებთ მარტივად
 
     if (error) {
       console.error('❌ Error loading quests:', error);
@@ -208,7 +197,7 @@ export async function loadUserQuests(userId: string): Promise<QuestProgress[]> {
 
     return data || [];
   } catch (error) {
-    console.error(' Exception in loadUserQuests:', error);
+    console.error('❌ Exception in loadUserQuests:', error);
     return [];
   }
 }
