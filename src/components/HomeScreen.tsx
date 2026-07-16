@@ -6,6 +6,7 @@ import { getActiveSubscription } from '../lib/subscriptionService';
 import { supabase } from '../lib/supabase';
 import { getTelegramUser } from '../lib/telegramAuth';
 import { getOrCreateUser } from '../lib/userService';
+import { loadUserQuests, trackQuestProgress, type QuestProgress } from '../lib/questService'; // 🆕 დამატებულია
 import { 
   Gem, Zap, Trophy, Flame, Bug, CheckCircle, XCircle,
   Sparkles, LayoutGrid, Moon, Hash, 
@@ -65,6 +66,10 @@ export default function HomeScreen({ onNavigate }: Props) {
     level: 1,
     current_streak: 0
   });
+
+  // 🆕 Quests State
+  const [userQuests, setUserQuests] = useState<QuestProgress[]>([]);
+  const [questsLoading, setQuestsLoading] = useState(true);
 
   const [showDebug, setShowDebug] = useState(false);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
@@ -255,6 +260,23 @@ End of Debug Report
     }
   };
 
+  // 🆕 ტესტი ქვესტის სისტემისთვის
+  const testCompleteQuest = async () => {
+    if (!user) return;
+    addDebugLog('info', 'QUEST_TEST', '🎯 Simulating quest completion: draw_daily_card');
+    const reward = await trackQuestProgress(user.id, 'draw_daily_card', 1);
+    if (reward) {
+      addDebugLog('success', 'QUEST_TEST', `🎉 Quest Completed! Reward: ${reward.coins} coins, ${reward.xp} XP`);
+      reloadFromDatabase();
+      const updatedQuests = await loadUserQuests(user.id);
+      setUserQuests(updatedQuests);
+    } else {
+      addDebugLog('info', 'QUEST_TEST', 'Progress updated, but quest not yet completed or already completed.');
+      const updatedQuests = await loadUserQuests(user.id);
+      setUserQuests(updatedQuests);
+    }
+  };
+
   const reloadFromDatabase = async () => {
     addDebugLog('info', 'DB', '🔄 Reloading all data from database...');
     setEconomyLoadStatus('pending');
@@ -289,6 +311,21 @@ End of Debug Report
         addDebugLog('success', 'SUBSCRIPTION', 'Subscription loaded', { hasSubscription: !!sub });
       }).catch(err => addDebugLog('error', 'SUBSCRIPTION', `Subscription load failed: ${err.message}`));
     }
+  }, [user]);
+
+  // 🆕 ქვესტების ჩატვირთვა
+  useEffect(() => {
+    const fetchQuests = async () => {
+      if (!user) {
+        setQuestsLoading(false);
+        return;
+      }
+      setQuestsLoading(true);
+      const quests = await loadUserQuests(user.id);
+      setUserQuests(quests);
+      setQuestsLoading(false);
+    };
+    fetchQuests();
   }, [user]);
 
   useEffect(() => {
@@ -475,11 +512,6 @@ End of Debug Report
     quickActions.push({ icon: <Shield size={28} />, label: 'Admin', sublabel: 'Panel', color: '#ef4444', action: 'Admin' });
   }
 
-  const quests = [
-    { icon: <Scroll size={16} />, name: 'Draw 3 Cards', current: 2, total: 3, reward: 20 },
-    { icon: <Sparkles size={16} />, name: 'Check Horoscope', current: 1, total: 1, reward: 15 },
-  ];
-
   const dailyCardName = dailyCard?.name || 'THE FOOL';
   const dailyCardNumber = dailyCard?.number || '0';
   const dailyCardMeaning = isDailyReversed ? (dailyCard?.reversed_keywords?.[0] || 'Reflection') : (dailyCard?.keywords?.[0] || 'New Beginnings');
@@ -488,6 +520,18 @@ End of Debug Report
   const xpPercent = 78;
   const circumference = 2 * Math.PI * 22;
   const strokeDashoffset = circumference - (xpPercent / 100) * circumference;
+
+  // 🆕 დახმარებადი ფუნქცია ქვესტის აიკონისთვის
+  const getQuestIcon = (actionType: string) => {
+    switch (actionType) {
+      case 'draw_daily_card': return <Scroll size={16} />;
+      case 'check_horoscope': return <Sparkles size={16} />;
+      case 'complete_reading': return <LayoutGrid size={16} />;
+      case 'discover_card': return <Gem size={16} />;
+      case 'maintain_streak': return <Flame size={16} />;
+      default: return <Scroll size={16} />;
+    }
+  };
 
   return (
     <div className="home-screen">
@@ -538,22 +582,44 @@ End of Debug Report
             <h3 style={{ margin: 0, fontSize: '9px', color: '#C5A059', letterSpacing: '1px', fontWeight: 700, textTransform: 'uppercase' }}>DAILY QUESTS</h3>
             <span style={{ fontSize: '9px', color: '#b3a68c', fontFamily: 'monospace' }}>{timeLeft}</span>
           </div>
+          
+          {/* 🆕 დინამიური ქვესტების სია */}
           <div className="quest-list-compact" style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, justifyContent: 'center' }}>
-            {quests.map((quest, index) => (
-              <div key={index} className="quest-item-compact" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 6px', background: 'rgba(197, 160, 89, 0.05)', borderRadius: '6px', border: '1px solid rgba(197, 160, 89, 0.08)' }}>
-                <div className="quest-icon-compact" style={{ color: '#C5A059', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '16px', height: '16px' }}>{quest.icon}</div>
-                <div className="quest-info-compact" style={{ flex: 1, minWidth: 0 }}>
-                  <span className="quest-name-compact" style={{ fontSize: '9px', color: '#fff', fontWeight: 500, display: 'block', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{quest.name}</span>
-                  <div className="quest-progress-compact" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <div className="progress-bar-compact" style={{ flex: 1, height: '3px', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '2px', overflow: 'hidden' }}>
-                      <div className="progress-fill-compact" style={{ width: `${(quest.current / quest.total) * 100}%`, height: '100%', background: 'linear-gradient(90deg, #C5A059, #ffe566)', borderRadius: '2px', boxShadow: '0 0 4px rgba(197, 160, 89, 0.5)' }}></div>
+            {questsLoading ? (
+              <div style={{ textAlign: 'center', color: '#b3a68c', fontSize: '9px', padding: '10px' }}>Loading quests...</div>
+            ) : userQuests.length === 0 ? (
+              <div style={{ textAlign: 'center', color: '#b3a68c', fontSize: '9px', padding: '10px' }}>No active quests</div>
+            ) : (
+              userQuests.slice(0, 3).map((q) => {
+                const target = q.quest?.target_count || 1;
+                const progressPercent = Math.min((q.current_progress / target) * 100, 100);
+                return (
+                  <div key={q.id} className="quest-item-compact" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 6px', background: q.is_completed ? 'rgba(16, 185, 129, 0.1)' : 'rgba(197, 160, 89, 0.05)', borderRadius: '6px', border: `1px solid ${q.is_completed ? 'rgba(16, 185, 129, 0.3)' : 'rgba(197, 160, 89, 0.08)'}` }}>
+                    <div className="quest-icon-compact" style={{ color: q.is_completed ? '#10b981' : '#C5A059', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '16px', height: '16px' }}>
+                      {getQuestIcon(q.quest?.action_type || '')}
                     </div>
-                    <span style={{ fontSize: '8px', color: '#b3a68c', minWidth: '18px' }}>{quest.current}/{quest.total}</span>
+                    <div className="quest-info-compact" style={{ flex: 1, minWidth: 0 }}>
+                      <span className="quest-name-compact" style={{ fontSize: '9px', color: '#fff', fontWeight: 500, display: 'block', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {q.quest?.title || 'Quest'}
+                      </span>
+                      <div className="quest-progress-compact" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <div className="progress-bar-compact" style={{ flex: 1, height: '3px', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '2px', overflow: 'hidden' }}>
+                          <div className="progress-fill-compact" style={{ width: `${progressPercent}%`, height: '100%', background: q.is_completed ? '#10b981' : 'linear-gradient(90deg, #C5A059, #ffe566)', borderRadius: '2px', boxShadow: '0 0 4px rgba(197, 160, 89, 0.5)' }}></div>
+                        </div>
+                        <span style={{ fontSize: '8px', color: '#b3a68c', minWidth: '18px' }}>{q.current_progress}/{target}</span>
+                      </div>
+                    </div>
+                    <div className="quest-reward-compact" style={{ fontSize: '9px', color: q.is_completed ? '#10b981' : '#C5A059', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '1px', flexShrink: 0 }}>
+                      {q.is_completed ? (
+                        <span style={{ fontSize: '8px' }}>✅ DONE</span>
+                      ) : (
+                        <><Gem size={9} /> +{q.quest?.reward_coins}</>
+                      )}
+                    </div>
                   </div>
-                </div>
-                <div className="quest-reward-compact" style={{ fontSize: '9px', color: '#C5A059', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '1px', flexShrink: 0 }}>+{quest.reward} <Gem size={9} /></div>
-              </div>
-            ))}
+                );
+              })
+            )}
           </div>
         </div>
 
@@ -713,6 +779,7 @@ End of Debug Report
                 <button onClick={handleLogoutAndReset} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(239, 68, 68, 0.3)', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontSize: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}><LogOut size={12} /> LOGOUT</button>
                 <button onClick={refreshUserDataDebug} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(59, 130, 246, 0.3)', border: '1px solid #3b82f6', borderRadius: '6px', color: '#3b82f6', cursor: 'pointer', fontSize: '9px' }}>🔄 REFRESH USER</button>
                 <button onClick={testEconomyInitialization} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(168, 85, 247, 0.3)', border: '1px solid #a855f7', borderRadius: '6px', color: '#a855f7', cursor: 'pointer', fontSize: '9px' }}>🔄 TEST INIT</button>
+                <button onClick={testCompleteQuest} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(16, 185, 129, 0.3)', border: '1px solid #10b981', borderRadius: '6px', color: '#10b981', cursor: 'pointer', fontSize: '9px' }}>🎯 TEST QUEST</button>
               </div>
 
               <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
