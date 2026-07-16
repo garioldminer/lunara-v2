@@ -10,7 +10,7 @@ import { loadUserQuests, trackQuestProgress, type QuestProgress } from '../lib/q
 import { 
   Gem, Zap, Trophy, Flame, Bug, CheckCircle, XCircle,
   Sparkles, LayoutGrid, Moon, Hash, 
-  Crown, Scroll, ChevronRight, Gift, Shield, Infinity,
+  Crown, Scroll, ChevronRight, Shield, Infinity,
   RefreshCw, Copy, LogOut, X, Clock
 } from 'lucide-react';
 import './HomeScreen.css';
@@ -49,14 +49,12 @@ interface DatabaseDebugInfo {
   }>;
 }
 
-// 🆕 Quest Modal-ისთვის
 interface DailyQuestDisplay extends QuestProgress {
   isClaimable: boolean;
 }
 
 export default function HomeScreen({ onNavigate }: Props) {
   const { user, setUser } = useUser();
-  const [rewardClaimed, setRewardClaimed] = useState(false);
   const [isClaiming, setIsClaiming] = useState(false);
   const [timeLeft, setTimeLeft] = useState('14:32:18');
   const [dailyCard, setDailyCard] = useState<typeof tarotCards[0] | null>(null);
@@ -72,10 +70,8 @@ export default function HomeScreen({ onNavigate }: Props) {
     current_streak: 0
   });
 
-  const [userQuests, setUserQuests] = useState<QuestProgress[]>([]);
   const [questsLoading, setQuestsLoading] = useState(true);
   
-  // 🆕 Daily Quests Logic
   const [dailyQuests, setDailyQuests] = useState<DailyQuestDisplay[]>([]);
   const [activeDailyQuest, setActiveDailyQuest] = useState<DailyQuestDisplay | null>(null);
   const [showQuestModal, setShowQuestModal] = useState(false);
@@ -205,7 +201,6 @@ End of Debug Report
 
       if (questsError) {
         addDebugLog('error', 'DB_CHECK', `❌ Error calling get_user_quests RPC: ${questsError.message}`);
-        addDebugLog('warning', 'DB_CHECK', '⚠️ Make sure you ran the SQL script to create the RPC functions in Supabase!');
       } else {
         addDebugLog('success', 'DB_CHECK', `✅ get_user_quests RPC works. Found ${questsData?.length || 0} quests.`);
       }
@@ -340,11 +335,10 @@ End of Debug Report
       addDebugLog('success', 'QUEST_TEST', `🎉 Quest Completed! Reward: ${reward.coins} coins, ${reward.xp} XP`);
       reloadFromDatabase();
       const updatedQuests = await loadUserQuests(user.id);
-      setUserQuests(updatedQuests);
+      // Note: setUserQuests removed, using loadQuests logic instead
     } else {
       addDebugLog('info', 'QUEST_TEST', 'Progress updated. Check logs for details.');
-      const updatedQuests = await loadUserQuests(user.id);
-      setUserQuests(updatedQuests);
+      await loadUserQuests(user.id);
     }
   };
 
@@ -363,17 +357,13 @@ End of Debug Report
     setEconomyLoadStatus('success');
   };
 
-  // 🆕 ქვესთების ჩატვირთვა და დღიური ქვესთების ფილტრაცია
   const loadQuests = async () => {
     if (!user) return;
     setQuestsLoading(true);
     const quests = await loadUserQuests(user.id);
-    setUserQuests(quests);
     
-    // ფილტრაცია: მხოლოდ დღიური ქვესთები
     const dQuests = quests.filter(q => q.quest?.quest_type === 'daily') as DailyQuestDisplay[];
     
-    // isClaimable ლოგიკა: შესრულებულია, მაგრამ ჯერ არ არის დაკლეიმებული
     const processedQuests = dQuests.map(q => ({
       ...q,
       isClaimable: q.is_completed && !q.is_claimed
@@ -381,25 +371,17 @@ End of Debug Report
     
     setDailyQuests(processedQuests);
     
-    // ვიპოვოთ პირველი რენდომი ქვესთა, რომელიც ჯერ არ არის დაკლეიმებული
     const unclaimed = processedQuests.filter(q => !q.is_claimed);
     if (unclaimed.length > 0) {
       const randomIndex = Math.floor(Math.random() * unclaimed.length);
       setActiveDailyQuest(unclaimed[randomIndex]);
     } else {
-      setActiveDailyQuest(null); // ყველა დაკლეიმებულია
+      setActiveDailyQuest(null);
     }
     
     setQuestsLoading(false);
   };
 
-  useEffect(() => {
-    if (user) {
-      loadQuests();
-    }
-  }, [user]);
-
-  // 🆕 Quest Claim ლოგიკა
   const handleClaimQuest = async (quest: DailyQuestDisplay) => {
     if (!user || !supabase || isClaimingQuest) return;
     
@@ -418,7 +400,6 @@ End of Debug Report
       } else {
         addDebugLog('success', 'QUEST_CLAIM', `Claimed! +${data.reward.coins} coins, +${data.reward.xp} XP`);
         
-        // ეკონომიკის განახლება
         setEconomy(prev => ({
           ...prev,
           cosmic_coins: prev.cosmic_coins + data.reward.coins,
@@ -428,7 +409,6 @@ End of Debug Report
         
         alert(`🎉 Quest Completed!\n💰 +${data.reward.coins} Coins\n⭐ +${data.reward.xp} XP`);
         
-        // ქვესთების ხელახლა ჩატვირთვა, რომ გამოჩნდეს შემდეგი
         await loadQuests();
       }
     } catch (err: any) {
@@ -456,6 +436,12 @@ End of Debug Report
         setActiveSubscription(sub);
         addDebugLog('success', 'SUBSCRIPTION', 'Subscription loaded', { hasSubscription: !!sub });
       }).catch(err => addDebugLog('error', 'SUBSCRIPTION', `Subscription load failed: ${err.message}`));
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      loadQuests();
     }
   }, [user]);
 
@@ -563,49 +549,6 @@ End of Debug Report
     }, 1000);
     return () => clearInterval(timer);
   }, []);
-
-  const handleClaimReward = async () => {
-    if (rewardClaimed || isClaiming) {
-      addDebugLog('warning', 'REWARD', 'Reward already claimed or claiming');
-      return;
-    }
-    addDebugLog('info', 'REWARD', 'Starting reward claim process');
-    setIsClaiming(true);
-    try {
-      if (!user?.id) {
-        addDebugLog('error', 'REWARD', 'No user ID available');
-        alert('❌ მომხმარებლის ID ვერ მოიძებნა.');
-        setIsClaiming(false);
-        return;
-      }
-      addDebugLog('info', 'REWARD', 'Calling Edge Function', { userId: user.id, url: 'https://eutavdhcxpfhpfsyaskb.supabase.co/functions/v1/claim-daily-reward' });
-      const response = await fetch('https://eutavdhcxpfhpfsyaskb.supabase.co/functions/v1/claim-daily-reward', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-User-Id': user.id },
-        body: JSON.stringify({})
-      });
-      addDebugLog('info', 'REWARD', 'Edge Function response received', { status: response.status, statusText: response.statusText });
-      const result = await response.json();
-      addDebugLog('info', 'REWARD', 'Response parsed', result);
-      
-      if (result.success) {
-        setRewardClaimed(true);
-        setCurrentStreak(result.reward.streak);
-        const newEconomy = { ...economy, cosmic_coins: economy.cosmic_coins + result.reward.coins, xp: economy.xp + result.reward.xp, current_streak: result.reward.streak };
-        setEconomy(newEconomy);
-        addDebugLog('success', 'REWARD', 'Reward claimed successfully', { coins: result.reward.coins, xp: result.reward.xp, streak: result.reward.streak, newEconomy });
-        alert(`✅ Daily Reward Claimed!\n💰 Coins: +${result.reward.coins}\n⭐ XP: +${result.reward.xp}\n🔥 Streak: ${result.reward.streak} days`);
-      } else {
-        addDebugLog('warning', 'REWARD', 'Edge Function returned error', result.error);
-        alert(`⚠️ ${result.error || 'Failed to claim reward'}`);
-      }
-    } catch (error: any) {
-      addDebugLog('error', 'REWARD', 'Exception during reward claim', { message: error.message, stack: error.stack });
-      alert('❌ Failed to connect to server.');
-    } finally {
-      setIsClaiming(false);
-    }
-  };
 
   const handleQuickAction = (action: string) => {
     addDebugLog('info', 'NAVIGATION', 'Quick action clicked', { action });
