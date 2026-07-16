@@ -6,7 +6,7 @@ import { getActiveSubscription } from '../lib/subscriptionService';
 import { supabase } from '../lib/supabase';
 import { getTelegramUser } from '../lib/telegramAuth';
 import { getOrCreateUser } from '../lib/userService';
-import { loadUserQuests, trackQuestProgress, type QuestProgress } from '../lib/questService'; // 🆕 დამატებულია
+import { loadUserQuests, trackQuestProgress, type QuestProgress } from '../lib/questService';
 import { 
   Gem, Zap, Trophy, Flame, Bug, CheckCircle, XCircle,
   Sparkles, LayoutGrid, Moon, Hash, 
@@ -67,7 +67,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     current_streak: 0
   });
 
-  // 🆕 Quests State
   const [userQuests, setUserQuests] = useState<QuestProgress[]>([]);
   const [questsLoading, setQuestsLoading] = useState(true);
 
@@ -260,18 +259,30 @@ End of Debug Report
     }
   };
 
-  // 🆕 ტესტი ქვესტის სისტემისთვის
+  // 🆕 გაუმჯობესებული ტესტი ქვესტის სისტემისთვის
   const testCompleteQuest = async () => {
     if (!user) return;
     addDebugLog('info', 'QUEST_TEST', '🎯 Simulating quest completion: draw_daily_card');
+    
+    // ჯერ შევამოწმოთ მიმდინარე სტატუსი
+    const currentQuests = await loadUserQuests(user.id);
+    const q = currentQuests.find(x => x.quest?.action_type === 'draw_daily_card');
+    
+    if (q) {
+      addDebugLog('info', 'QUEST_TEST', `Current State -> Progress: ${q.current_progress}/${q.quest?.target_count}, Completed: ${q.is_completed}`);
+    } else {
+      addDebugLog('warning', 'QUEST_TEST', 'Quest not found in user progress. It might be the first time.');
+    }
+
     const reward = await trackQuestProgress(user.id, 'draw_daily_card', 1);
+    
     if (reward) {
       addDebugLog('success', 'QUEST_TEST', `🎉 Quest Completed! Reward: ${reward.coins} coins, ${reward.xp} XP`);
       reloadFromDatabase();
       const updatedQuests = await loadUserQuests(user.id);
       setUserQuests(updatedQuests);
     } else {
-      addDebugLog('info', 'QUEST_TEST', 'Progress updated, but quest not yet completed or already completed.');
+      addDebugLog('warning', 'QUEST_TEST', 'No reward returned. Quest is likely already completed, or an error occurred in trackQuestProgress.');
       const updatedQuests = await loadUserQuests(user.id);
       setUserQuests(updatedQuests);
     }
@@ -313,7 +324,6 @@ End of Debug Report
     }
   }, [user]);
 
-  // 🆕 ქვესტების ჩატვირთვა
   useEffect(() => {
     const fetchQuests = async () => {
       if (!user) {
@@ -521,7 +531,6 @@ End of Debug Report
   const circumference = 2 * Math.PI * 22;
   const strokeDashoffset = circumference - (xpPercent / 100) * circumference;
 
-  // 🆕 დახმარებადი ფუნქცია ქვესტის აიკონისთვის
   const getQuestIcon = (actionType: string) => {
     switch (actionType) {
       case 'draw_daily_card': return <Scroll size={16} />;
@@ -583,7 +592,6 @@ End of Debug Report
             <span style={{ fontSize: '9px', color: '#b3a68c', fontFamily: 'monospace' }}>{timeLeft}</span>
           </div>
           
-          {/* 🆕 დინამიური ქვესტების სია */}
           <div className="quest-list-compact" style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, justifyContent: 'center' }}>
             {questsLoading ? (
               <div style={{ textAlign: 'center', color: '#b3a68c', fontSize: '9px', padding: '10px' }}>Loading quests...</div>
