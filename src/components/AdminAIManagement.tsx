@@ -79,7 +79,8 @@ export default function AdminAIManagement({ onNavigate }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [loading, setLoading] = useState(true);
   
-  const [showDebug, setShowDebug] = useState(false);
+  // 🆕 დებაგ პანელი ნაგულისხმევად ჩართულია
+  const [showDebug, setShowDebug] = useState(true);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
   
   const [providers, setProviders] = useState<AIProvider[]>([]);
@@ -124,12 +125,37 @@ export default function AdminAIManagement({ onNavigate }: Props) {
   const [testingKey, setTestingKey] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<{ [key: string]: { success: boolean; message: string } }>({});
 
+  const addDebugLog = (type: DebugLog['type'], source: string, message: string, data?: any) => {
+    const log: DebugLog = {
+      timestamp: new Date().toLocaleTimeString(),
+      type,
+      source,
+      message,
+      data
+    };
+    setDebugLogs(prev => [log, ...prev].slice(0, 100));
+    console.log(`[${type.toUpperCase()}] [${source}] ${message}`, data || '');
+  };
+
+  // 🆕 ადმინის სტატუსის შემოწმება დეტალური ლოგირებით
   useEffect(() => {
+    addDebugLog('info', 'ADMIN_CHECK', '🔍 Checking admin status...');
+    
     if (user) {
+      addDebugLog('info', 'ADMIN_CHECK', `👤 User found: ${user.id} (${user.display_name || 'Unknown'})`);
+      
       isAdmin(user.id).then(admin => {
         setIsUserAdmin(admin);
+        addDebugLog(admin ? 'success' : 'error', 'ADMIN_CHECK', 
+          `✅ Admin check result: ${admin}`, 
+          { userId: user.id, isAdmin: admin }
+        );
+      }).catch(err => {
+        addDebugLog('error', 'ADMIN_CHECK', `❌ Admin check failed: ${err.message}`);
+        setIsUserAdmin(false);
       });
     } else {
+      addDebugLog('error', 'ADMIN_CHECK', ' No user in context!');
       setIsUserAdmin(false);
     }
   }, [user]);
@@ -155,62 +181,57 @@ export default function AdminAIManagement({ onNavigate }: Props) {
     ? todayStats.reduce((sum, s) => sum + safeNum(s.total_cost), 0)
     : 0;
 
-  const addDebugLog = (type: DebugLog['type'], source: string, message: string, data?: any) => {
-    const log: DebugLog = {
-      timestamp: new Date().toLocaleTimeString(),
-      type,
-      source,
-      message,
-      data
-    };
-    setDebugLogs(prev => [log, ...prev].slice(0, 100));
-    console.log(`[${type.toUpperCase()}] [${source}] ${message}`, data || '');
-  };
-
   useEffect(() => {
-    addDebugLog('info', 'INIT', 'AI Management component mounted');
-    addDebugLog('info', 'INIT', `Initial tab: ${activeTab}`);
+    addDebugLog('info', 'INIT', '🚀 AI Management component mounted');
+    addDebugLog('info', 'INIT', ` Initial tab: ${activeTab}`);
     loadData();
   }, []);
 
   const loadData = async () => {
     if (!supabase) {
-      addDebugLog('error', 'LOAD', 'Supabase client is null');
+      addDebugLog('error', 'LOAD', '❌ Supabase client is null!');
       return;
     }
-    addDebugLog('info', 'LOAD', 'Starting data load...');
+    
+    addDebugLog('info', 'LOAD', '🔄 Starting data load...');
     setLoading(true);
     
     try {
-      addDebugLog('info', 'LOAD', 'Fetching all data in parallel...');
+      addDebugLog('info', 'LOAD', '📡 Fetching all data in parallel...');
       
       const [providersData, keysData, promptsData, statsData, usageData, questsData] = await Promise.all([
         getAllProviders().catch(err => {
-          addDebugLog('error', 'LOAD', 'Failed to fetch providers', err.message);
+          addDebugLog('error', 'LOAD', '❌ Failed to fetch providers', err.message);
           return [];
         }),
         getAllApiKeys().catch(err => {
-          addDebugLog('error', 'LOAD', 'Failed to fetch API keys', err.message);
+          addDebugLog('error', 'LOAD', ' Failed to fetch API keys', err.message);
           return [];
         }),
         getAllPrompts().catch(err => {
-          addDebugLog('error', 'LOAD', 'Failed to fetch prompts', err.message);
+          addDebugLog('error', 'LOAD', '❌ Failed to fetch prompts', err.message);
           return [];
         }),
         getTodayStats().catch(err => {
-          addDebugLog('error', 'LOAD', 'Failed to fetch today stats', err.message);
+          addDebugLog('error', 'LOAD', '❌ Failed to fetch today stats', err.message);
           return [];
         }),
         getApiKeyUsage().catch(err => {
-          addDebugLog('error', 'LOAD', 'Failed to fetch API key usage', err.message);
+          addDebugLog('error', 'LOAD', ' Failed to fetch API key usage', err.message);
           return [];
         }),
+        // 🆕 დეტალური ლოგირება quest-ების ჩატვირთვისთვის
         supabase.from('quest_definitions').select('*').order('quest_type', { ascending: true }).order('title', { ascending: true }).then(res => {
           if (res.error) {
-            addDebugLog('error', 'LOAD', 'Failed to fetch quests', res.error.message);
+            addDebugLog('error', 'LOAD_QUESTS', `❌ Failed to fetch quests: ${res.error.message}`, res.error);
             return [];
           }
+          const count = res.data?.length || 0;
+          addDebugLog('success', 'LOAD_QUESTS', `✅ Loaded ${count} quests from database`, res.data);
           return res.data || [];
+        }).catch(err => {
+          addDebugLog('error', 'LOAD_QUESTS', `❌ Exception while fetching quests: ${err.message}`);
+          return [];
         })
       ]);
 
@@ -221,19 +242,25 @@ export default function AdminAIManagement({ onNavigate }: Props) {
       setApiKeyUsage(usageData);
       setQuests(questsData);
 
-      addDebugLog('data', 'PROVIDERS', `Loaded ${providersData.length} providers`, providersData);
-      addDebugLog('data', 'API_KEYS', `Loaded ${keysData.length} API keys`, keysData);
-      addDebugLog('data', 'PROMPTS', `Loaded ${promptsData.length} prompts`, promptsData);
-      addDebugLog('data', 'STATS', `Loaded ${statsData.length} stats entries`, statsData);
-      addDebugLog('data', 'USAGE', `Loaded ${usageData.length} usage entries`, usageData);
-      addDebugLog('data', 'QUESTS', `Loaded ${questsData.length} quests`, questsData);
+      addDebugLog('data', 'LOAD', '📊 Data summary', {
+        providers: providersData.length,
+        apiKeys: keysData.length,
+        prompts: promptsData.length,
+        stats: statsData.length,
+        usage: usageData.length,
+        quests: questsData.length
+      });
 
       if (providersData.length === 0) {
-        addDebugLog('warn', 'PROVIDERS', '⚠️ No providers found!');
+        addDebugLog('warn', 'LOAD', '⚠️ No providers found!');
       }
 
       if (keysData.length === 0) {
-        addDebugLog('warn', 'API_KEYS', '⚠️ No API keys found.');
+        addDebugLog('warn', 'LOAD', '⚠️ No API keys found.');
+      }
+
+      if (questsData.length === 0) {
+        addDebugLog('warn', 'LOAD_QUESTS', '⚠️ No quests found in database! Check RLS policies.');
       }
 
       addDebugLog('success', 'LOAD', '✅ All data loaded successfully');
@@ -686,10 +713,10 @@ export default function AdminAIManagement({ onNavigate }: Props) {
       </div>
 
       {showDebug && (
-        <div className="debug-panel">
+        <div className="debug-panel" style={{ maxHeight: '50vh', overflowY: 'auto' }}>
           <div className="debug-header">
             <Bug size={16} />
-            <span>Debug Panel</span>
+            <span>Admin Debug Panel</span>
             <span className="debug-count">{debugLogs.length} logs</span>
             <button 
               className="debug-clear" 
@@ -699,30 +726,30 @@ export default function AdminAIManagement({ onNavigate }: Props) {
             </button>
           </div>
           
-          <div className="debug-summary">
-            <div className="debug-stat">
-              <Info size={12} />
-              <span>Providers: <strong>{providers.length}</strong></span>
+          {/* 🆕 ადმინის სტატუსის სწრაფი მიმოხილვა */}
+          <div style={{ 
+            display: 'flex', 
+            gap: '16px', 
+            padding: '12px', 
+            background: 'rgba(0,0,0,0.4)', 
+            borderRadius: '8px', 
+            marginBottom: '12px',
+            fontSize: '12px',
+            flexWrap: 'wrap'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Shield size={14} color={isUserAdmin ? '#10b981' : '#ef4444'} />
+              <span>Admin: <strong style={{ color: isUserAdmin ? '#10b981' : '#ef4444' }}>{isUserAdmin ? 'YES' : 'NO'}</strong></span>
             </div>
-            <div className="debug-stat">
-              <Key size={12} />
-              <span>API Keys: <strong>{apiKeys.length}</strong></span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Trophy size={14} color="#fbbf24" />
+              <span>Quests: <strong style={{ color: '#fbbf24' }}>{quests.length}</strong></span>
             </div>
-            <div className="debug-stat">
-              <MessageSquare size={12} />
-              <span>Prompts: <strong>{prompts.length}</strong></span>
-            </div>
-            <div className="debug-stat">
-              <Trophy size={12} />
-              <span>Quests: <strong>{quests.length}</strong></span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Info size={14} color="#60a5fa" />
+              <span>Active Tab: <strong style={{ color: '#60a5fa' }}>{activeTab}</strong></span>
             </div>
           </div>
-
-          {providers.length === 0 && (
-            <div className="debug-warning">
-              ⚠️ <strong>No providers in database!</strong> Run SQL to insert default providers.
-            </div>
-          )}
 
           <div className="debug-logs">
             {debugLogs.length === 0 && (
@@ -732,15 +759,15 @@ export default function AdminAIManagement({ onNavigate }: Props) {
             )}
             {debugLogs.map((log, i) => (
               <div key={i} className={`debug-log ${log.type}`}>
-                <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap', fontSize: '11px' }}>
                   <span className="debug-time">{log.timestamp}</span>
                   <span className="debug-source">[{log.source}]</span>
                   <span className="debug-msg">{log.message}</span>
                 </div>
                 {log.data && (
                   <details className="debug-data">
-                    <summary>Data</summary>
-                    <pre>{JSON.stringify(log.data, null, 2)}</pre>
+                    <summary style={{ fontSize: '10px', cursor: 'pointer' }}>Data</summary>
+                    <pre style={{ fontSize: '9px', marginTop: '4px' }}>{JSON.stringify(log.data, null, 2)}</pre>
                   </details>
                 )}
               </div>
@@ -815,7 +842,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
       <div className="ai-admin-content">
         {activeTab === 'dashboard' && (
           <div className="ai-dashboard">
-            <h2>📊 Today's Overview</h2>
+            <h2> Today's Overview</h2>
             
             <div className="dashboard-stats">
               <div className="dashboard-stat-card">
