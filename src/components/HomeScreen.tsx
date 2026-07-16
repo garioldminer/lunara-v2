@@ -11,7 +11,7 @@ import {
   Gem, Zap, Trophy, Flame, Bug, CheckCircle, XCircle,
   Sparkles, LayoutGrid, Moon, Hash, 
   Crown, Scroll, ChevronRight, Gift, Shield, Infinity,
-  RefreshCw, Copy, LogOut, X, Clock
+  RefreshCw, Copy, LogOut, X
 } from 'lucide-react';
 import './HomeScreen.css';
 
@@ -693,7 +693,7 @@ End of Debug Report
         </div>
       </div>
 
-      {/* 🆕 აღდგენილი ორიგინალური ლეიაუტი: მარცხნივ ქვესთები, მარჯვნივ ღილაკები */}
+      {/* აღდგენილი ორიგინალური ლეიაუტი: მარცხნივ ქვესთები, მარჯვნივ ღილაკები */}
       <div className="quests-and-actions-split" style={{ display: 'flex', flexDirection: 'row', gap: '2px', marginBottom: '2px', width: '100%', alignItems: 'stretch' }}>
         <div 
           className="daily-quests-compact" 
@@ -746,7 +746,7 @@ End of Debug Report
           </div>
         </div>
 
-        {/* 🆕 აღდგენილი მარჯვენა პანელი (Daily Reward, Streak, Rank, Subscription) */}
+        {/* აღდგენილი მარჯვენა პანელი (Daily Reward, Streak, Rank, Subscription) */}
         <div className="action-buttons-panel" style={{ flex: '0 0 calc(40% - 2px)', minWidth: 0, background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)', border: '1px solid #332a1a', borderRadius: '14px', padding: '6px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)', display: 'flex' }}>
           <div className="action-grid-vertical" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: '4px', width: '100%', height: '100%' }}>
             <button className={`action-btn-vertical ${rewardClaimed ? 'claimed' : ''}`} onClick={handleClaimReward} disabled={rewardClaimed || isClaiming} style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: (rewardClaimed || isClaiming) ? 'not-allowed' : 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%', opacity: (rewardClaimed || isClaiming) ? 0.7 : 1 }}>
@@ -782,7 +782,7 @@ End of Debug Report
         </div>
       </div>
 
-      {/* 🆕 QUEST MODAL (ბანერზე დაჭერისას იხსნება) */}
+      {/* QUEST MODAL (ბანერზე დაჭერისას იხსნება) */}
       {showQuestModal && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
