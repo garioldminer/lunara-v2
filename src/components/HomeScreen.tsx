@@ -560,7 +560,7 @@ End of Debug Report
     try {
       if (!user?.id) {
         addDebugLog('error', 'REWARD', 'No user ID available');
-        alert('❌ მომხმარებლის ID ვერ მოიძებნა.');
+        alert('❌ User ID not found.'); // 🆕 შეცვლილია ინგლისურად
         setIsClaiming(false);
         return;
       }
