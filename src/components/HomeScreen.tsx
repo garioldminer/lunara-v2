@@ -259,19 +259,34 @@ End of Debug Report
     }
   };
 
-  // 🆕 გაუმჯობესებული ტესტი ქვესტის სისტემისთვის
   const testCompleteQuest = async () => {
     if (!user) return;
     addDebugLog('info', 'QUEST_TEST', '🎯 Simulating quest completion: draw_daily_card');
     
-    // ჯერ შევამოწმოთ მიმდინარე სტატუსი
     const currentQuests = await loadUserQuests(user.id);
     const q = currentQuests.find(x => x.quest?.action_type === 'draw_daily_card');
     
     if (q) {
       addDebugLog('info', 'QUEST_TEST', `Current State -> Progress: ${q.current_progress}/${q.quest?.target_count}, Completed: ${q.is_completed}`);
     } else {
-      addDebugLog('warning', 'QUEST_TEST', 'Quest not found in user progress. It might be the first time.');
+      addDebugLog('warning', 'QUEST_TEST', 'Quest not found in user progress. Creating new record...');
+    }
+
+    // დროებითი ჰაკი: პირდაპირ ვცდილობთ ჩაწერას, რომ დავინახოთ RLS შეცდომა თუ არის
+    const { error: testInsertError } = await supabase
+      .from('user_quest_progress')
+      .insert({
+        user_id: user.id,
+        quest_id: (await supabase.from('quest_definitions').select('id').eq('action_type', 'draw_daily_card').single()).data?.id,
+        current_progress: 1,
+        is_completed: false,
+        is_claimed: false
+      });
+
+    if (testInsertError) {
+      addDebugLog('error', 'QUEST_TEST', `❌ RLS BLOCKED INSERT: ${testInsertError.message}`);
+      addDebugLog('error', 'QUEST_TEST', 'Please run the updated RLS SQL script in Supabase!');
+      return;
     }
 
     const reward = await trackQuestProgress(user.id, 'draw_daily_card', 1);
@@ -282,7 +297,7 @@ End of Debug Report
       const updatedQuests = await loadUserQuests(user.id);
       setUserQuests(updatedQuests);
     } else {
-      addDebugLog('warning', 'QUEST_TEST', 'No reward returned. Quest is likely already completed, or an error occurred in trackQuestProgress.');
+      addDebugLog('warning', 'QUEST_TEST', 'No reward returned. Check browser console (F12) for detailed trackQuestProgress errors.');
       const updatedQuests = await loadUserQuests(user.id);
       setUserQuests(updatedQuests);
     }
