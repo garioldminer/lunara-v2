@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowLeft, Users, Plus, Trash2, RefreshCw, Crown, ShieldAlert, 
   Calendar, Clock, Zap, Key, Activity, CheckCircle, XCircle, 
   AlertCircle, Play, Eye, BarChart3, TrendingUp, DollarSign, Flame,
-  Trophy, Bug, ChevronUp, ChevronDown, Edit2
+  Trophy, Bug, ChevronUp, ChevronDown, Edit2, X, Database
 } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { supabase } from '../lib/supabase';
@@ -80,6 +80,52 @@ interface DebugLog {
   data?: any;
 }
 
+interface Toast {
+  message: string;
+  type: 'success' | 'error' | 'info';
+}
+
+// 🆕 Toast Notification Component
+function ToastNotification({ toast, onClose }: { toast: Toast; onClose: () => void }) {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 3000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <motion.div 
+      className={`toast toast-${toast.type}`}
+      initial={{ opacity: 0, y: 50, scale: 0.9 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 20, scale: 0.9 }}
+      transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+      style={{
+        position: 'fixed',
+        top: '20px',
+        right: '20px',
+        zIndex: 10001,
+        background: toast.type === 'success' ? 'rgba(16, 185, 129, 0.95)' : toast.type === 'error' ? 'rgba(239, 68, 68, 0.95)' : 'rgba(59, 130, 246, 0.95)',
+        color: '#fff',
+        padding: '12px 16px',
+        borderRadius: '8px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        fontSize: '14px',
+        fontWeight: '500',
+        minWidth: '250px'
+      }}
+    >
+      <span>{toast.type === 'success' ? '✅' : toast.type === 'error' ? '⚠️' : 'ℹ️'}</span>
+      <span style={{ flex: 1 }}>{toast.message}</span>
+      <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', opacity: 0.8 }}>
+        <X size={16} />
+      </button>
+    </motion.div>
+  );
+}
+
 export default function AdminScreen({ onNavigate }: Props) {
   const { user } = useUser();
   const [users, setUsers] = useState<UserWithCredits[]>([]);
@@ -119,8 +165,14 @@ export default function AdminScreen({ onNavigate }: Props) {
     quest_type: 'daily' as 'daily' | 'weekly' | 'milestone',
     is_active: true
   });
+  
   const [showDebug, setShowDebug] = useState(true);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
+  const [toast, setToast] = useState<Toast | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+    setToast({ message, type });
+  };
 
   const addDebugLog = (type: DebugLog['type'], source: string, message: string, data?: any) => {
     const log: DebugLog = {
@@ -132,6 +184,24 @@ export default function AdminScreen({ onNavigate }: Props) {
     };
     setDebugLogs(prev => [log, ...prev].slice(0, 100));
     console.log(`[${type.toUpperCase()}] [${source}] ${message}`, data || '');
+  };
+
+  // 🆕 ჭკვიანი ტესტი: Quest RPC-ის პირდაპირი შემოწმება
+  const testQuestRPC = async () => {
+    if (!user || !supabase) return;
+    addDebugLog('info', 'DEBUG_ACTION', '🧪 Testing get_user_quests RPC...');
+    try {
+      const { data, error } = await supabase.rpc('get_user_quests', { p_user_id: user.id });
+      if (error) {
+        addDebugLog('error', 'DEBUG_ACTION', `❌ RPC Failed: ${error.message}`);
+        showToast('Quest RPC Failed: ' + error.message, 'error');
+      } else {
+        addDebugLog('success', 'DEBUG_ACTION', `✅ RPC Success! Found ${data?.length || 0} quests.`);
+        showToast(`Quest RPC works! Found ${data?.length || 0} quests.`, 'success');
+      }
+    } catch (err: any) {
+      addDebugLog('error', 'DEBUG_ACTION', `💥 Exception: ${err.message}`);
+    }
   };
 
   useEffect(() => {
@@ -196,6 +266,7 @@ export default function AdminScreen({ onNavigate }: Props) {
     const success = await updateUserCredits(user.id, targetUserId, featureId, newAmount);
     if (success) {
       addDebugLog('success', 'CREDITS', `Updated ${featureId} credits for user ${targetUserId} to ${newAmount}`);
+      showToast('Credits updated successfully!', 'success');
       await loadData();
       setEditingUser(null);
       setNewAmount(0);
@@ -207,6 +278,7 @@ export default function AdminScreen({ onNavigate }: Props) {
     const success = await addCreditsToUser(user.id, targetUserId, featureId, amount);
     if (success) {
       addDebugLog('success', 'CREDITS', `Added ${amount} ${featureId} credits to user ${targetUserId}`);
+      showToast(`Added ${amount} credits!`, 'success');
       await loadData();
     }
   };
@@ -217,6 +289,7 @@ export default function AdminScreen({ onNavigate }: Props) {
       const success = await deleteUserCredits(user.id, targetUserId, featureId);
       if (success) {
         addDebugLog('success', 'CREDITS', `Deleted ${featureId} credits for user ${targetUserId}`);
+        showToast('Credits deleted.', 'info');
         await loadData();
       }
     }
@@ -227,6 +300,7 @@ export default function AdminScreen({ onNavigate }: Props) {
     const success = await createSubscriptionForUser(user.id, selectedUserId, selectedPlan, selectedDays);
     if (success) {
       addDebugLog('success', 'SUBS', `Created ${selectedPlan} subscription for user ${selectedUserId}`);
+      showToast('Subscription created successfully!', 'success');
       await loadData();
       setShowAddSubscription(false);
       setSelectedUserId('');
@@ -241,6 +315,7 @@ export default function AdminScreen({ onNavigate }: Props) {
       const success = await cancelSubscriptionForUser(user.id, subscriptionId);
       if (success) {
         addDebugLog('success', 'SUBS', `Cancelled subscription ${subscriptionId}`);
+        showToast('Subscription cancelled.', 'info');
         await loadData();
       }
     }
@@ -251,6 +326,7 @@ export default function AdminScreen({ onNavigate }: Props) {
     const success = await extendSubscription(user.id, extendingSubId, extendDays);
     if (success) {
       addDebugLog('success', 'SUBS', `Extended subscription ${extendingSubId} by ${extendDays} days`);
+      showToast(`Extended by ${extendDays} days!`, 'success');
       await loadData();
       setShowExtendModal(false);
       setExtendingSubId('');
@@ -259,16 +335,8 @@ export default function AdminScreen({ onNavigate }: Props) {
   };
 
   const handleTestFunction = async (functionName: string) => {
-    alert(
-      `⚠️ Test Function დროებით გამორთულია\n\n` +
-      `მიზეზი: CORS პოლიტიკა ბლოკავს Telegram-იდან გამოძახებას\n\n` +
-      `Function მაინც მუშაობს:\n` +
-      `✅ ავტომატურად გაეშვება ყოველდღე 00:01 UTC-ზე\n` +
-      `✅ ლოგები იწერება function_logs ცხრილში\n` +
-      `✅ ნახეთ "View Logs" ღილაკით\n\n` +
-      `Function URL:\n` +
-      `https://eutavdhcxpfhpfsyaskb.supabase.co/functions/v1/${functionName}`
-    );
+    showToast('Test Function is disabled via UI. Check logs for automated runs.', 'info');
+    addDebugLog('info', 'MONITOR', `Manual test requested for ${functionName}. Check automated logs.`);
   };
 
   const handleViewLogs = async (functionName: string) => {
@@ -280,12 +348,12 @@ export default function AdminScreen({ onNavigate }: Props) {
 
   const handleCleanupLogs = async () => {
     if (!user) return;
-    if (confirm('წავშალოთ 30 დღეზე მეტი ლოგები?')) {
+    if (confirm('Delete logs older than 30 days?')) {
       const success = await cleanupOldLogs(user.id);
       if (success) {
         addDebugLog('success', 'MONITOR', '✅ Old logs cleaned up');
+        showToast('Old logs cleaned up!', 'success');
         await loadData();
-        alert('✅ ძველი ლოგები წაიშალა');
       }
     }
   };
@@ -294,21 +362,24 @@ export default function AdminScreen({ onNavigate }: Props) {
     if (!supabase) return;
     addDebugLog('info', 'QUESTS', 'Attempting to add quest', { title: newQuest.title, action_type: newQuest.action_type });
     if (!newQuest.title || !newQuest.action_type) {
-      addDebugLog('warn', 'QUESTS', '❌ Title or action type is empty!');
+      showToast('Title and Action Type are required!', 'error');
       return;
     }
     try {
       const { data, error } = await supabase.from('quest_definitions').insert([newQuest]).select().single();
       if (error) {
         addDebugLog('error', 'QUESTS', `❌ Failed: ${error.message}`);
+        showToast('Failed to add quest: ' + error.message, 'error');
       } else {
         addDebugLog('success', 'QUESTS', '✅ Quest added successfully', data);
+        showToast('Quest added successfully!', 'success');
         setShowAddQuest(false);
         setNewQuest({ title: '', description: '', action_type: 'draw_daily_card', target_count: 1, reward_xp: 10, reward_coins: 5, quest_type: 'daily', is_active: true });
         await loadData();
       }
     } catch (error) {
       addDebugLog('error', 'QUESTS', '❌ Exception while adding quest', (error as Error).message);
+      showToast('An error occurred.', 'error');
     }
   };
 
@@ -316,7 +387,7 @@ export default function AdminScreen({ onNavigate }: Props) {
     addDebugLog('info', 'QUESTS', `Opening edit mode for quest: ${questId}`);
     const quest = quests.find(q => q.id === questId);
     if (!quest) {
-      addDebugLog('error', 'QUESTS', '❌ Quest not found!');
+      showToast('Quest not found!', 'error');
       return;
     }
     setNewQuest({ ...quest });
@@ -328,7 +399,7 @@ export default function AdminScreen({ onNavigate }: Props) {
     if (!supabase) return;
     addDebugLog('info', 'QUESTS', `Saving edit for quest: ${editingQuest}`);
     if (!editingQuest || !newQuest.title || !newQuest.action_type) {
-      addDebugLog('warn', 'QUESTS', '❌ Missing required fields!');
+      showToast('Title and Action Type are required!', 'error');
       return;
     }
     try {
@@ -344,8 +415,10 @@ export default function AdminScreen({ onNavigate }: Props) {
       }).eq('id', editingQuest).select().single();
       if (error) {
         addDebugLog('error', 'QUESTS', `❌ Failed: ${error.message}`);
+        showToast('Failed to update quest: ' + error.message, 'error');
       } else {
         addDebugLog('success', 'QUESTS', '✅ Quest updated successfully', data);
+        showToast('Quest updated successfully!', 'success');
         setShowAddQuest(false);
         setEditingQuest(null);
         setNewQuest({ title: '', description: '', action_type: 'draw_daily_card', target_count: 1, reward_xp: 10, reward_coins: 5, quest_type: 'daily', is_active: true });
@@ -353,6 +426,7 @@ export default function AdminScreen({ onNavigate }: Props) {
       }
     } catch (error) {
       addDebugLog('error', 'QUESTS', '❌ Exception while updating quest', (error as Error).message);
+      showToast('An error occurred.', 'error');
     }
   };
 
@@ -363,12 +437,15 @@ export default function AdminScreen({ onNavigate }: Props) {
       const { error } = await supabase.from('quest_definitions').update({ is_active: !isActive }).eq('id', questId);
       if (error) {
         addDebugLog('error', 'QUESTS', `❌ Failed: ${error.message}`);
+        showToast('Failed to toggle quest.', 'error');
       } else {
         addDebugLog('success', 'QUESTS', '✅ Quest toggled successfully');
+        showToast(`Quest ${!isActive ? 'Enabled' : 'Disabled'}!`, 'success');
         await loadData();
       }
     } catch (error) {
       addDebugLog('error', 'QUESTS', '❌ Exception while toggling quest', (error as Error).message);
+      showToast('An error occurred.', 'error');
     }
   };
 
@@ -383,12 +460,15 @@ export default function AdminScreen({ onNavigate }: Props) {
       const { error } = await supabase.from('quest_definitions').delete().eq('id', questId);
       if (error) {
         addDebugLog('error', 'QUESTS', `❌ Failed: ${error.message}`);
+        showToast('Failed to delete quest.', 'error');
       } else {
         addDebugLog('success', 'QUESTS', '✅ Quest deleted successfully');
+        showToast('Quest deleted.', 'info');
         await loadData();
       }
     } catch (error) {
       addDebugLog('error', 'QUESTS', '❌ Exception while deleting quest', (error as Error).message);
+      showToast('An error occurred.', 'error');
     }
   };
 
@@ -435,6 +515,10 @@ export default function AdminScreen({ onNavigate }: Props) {
 
   return (
     <div className="admin-screen" style={{ paddingBottom: showDebug ? '360px' : '140px' }}>
+      <AnimatePresence>
+        {toast && <ToastNotification toast={toast} onClose={() => setToast(null)} />}
+      </AnimatePresence>
+
       <div className="admin-header">
         <button className="admin-back-btn" onClick={() => onNavigate?.('home')}>
           <ArrowLeft size={20} />
@@ -573,11 +657,11 @@ export default function AdminScreen({ onNavigate }: Props) {
                       </div>
                       <div className="user-details">
                         <h3>{func.name}</h3>
-                        <p style={{ fontSize: '11px', opacity: 0.7 }}>{func.lastRun ? `ბოლო: ${new Date(func.lastRun.created_at).toLocaleString('ka-GE')}` : 'არასდროს გაშვებულა'}</p>
+                        <p style={{ fontSize: '11px', opacity: 0.7 }}>{func.lastRun ? `Last run: ${new Date(func.lastRun.created_at).toLocaleString('en-US')}` : 'Never run'}</p>
                       </div>
                     </div>
                     <div className="user-credits" style={{ marginTop: '12px' }}>
-                      <div className="credit-item"><span className="credit-label">სტატუსი:</span><span className={`credit-amount ${isHealthy ? 'text-success' : hasError ? 'text-error' : ''}`}>{isHealthy ? '✅ SUCCESS' : hasError ? '❌ ERROR' : noData ? '⚠️ NO DATA' : '???'}</span></div>
+                      <div className="credit-item"><span className="credit-label">Status:</span><span className={`credit-amount ${isHealthy ? 'text-success' : hasError ? 'text-error' : ''}`}>{isHealthy ? '✅ SUCCESS' : hasError ? '❌ ERROR' : noData ? '⚠️ NO DATA' : '???'}</span></div>
                       <div className="credit-item"><span className="credit-label">Success Rate:</span><span className="credit-amount">{func.successRate.toFixed(0)}%</span></div>
                       <div className="credit-item"><span className="credit-label">Total Runs:</span><span className="credit-amount">{func.totalRuns}</span></div>
                       <div className="credit-item"><span className="credit-label">Avg Response:</span><span className="credit-amount">{func.avgResponseTime}ms</span></div>
@@ -591,16 +675,16 @@ export default function AdminScreen({ onNavigate }: Props) {
               })}
             </div>
             <div style={{ marginTop: '24px' }}>
-              <h3 style={{ color: '#D9B66F', marginBottom: '12px' }}>📝 ბოლო 20 ლოგი</h3>
+              <h3 style={{ color: '#D9B66F', marginBottom: '12px' }}>📝 Recent 20 Logs</h3>
               <div className="admin-users-list">
-                {recentLogs.length === 0 ? <p style={{ textAlign: 'center', opacity: 0.7, padding: '20px' }}>ლოგები არ არის</p> : recentLogs.map((log) => (
+                {recentLogs.length === 0 ? <p style={{ textAlign: 'center', opacity: 0.7, padding: '20px' }}>No logs available</p> : recentLogs.map((log) => (
                   <motion.div key={log.id} className={`admin-user-card ${log.status === 'success' ? 'status-success' : 'status-error'}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ padding: '10px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         {log.status === 'success' ? <CheckCircle size={16} color="#10b981" /> : <XCircle size={16} color="#ef4444" />}
                         <strong style={{ fontSize: '13px' }}>{log.function_name}</strong>
                       </div>
-                      <span style={{ fontSize: '11px', opacity: 0.7 }}>{new Date(log.created_at).toLocaleString('ka-GE')}</span>
+                      <span style={{ fontSize: '11px', opacity: 0.7 }}>{new Date(log.created_at).toLocaleString('en-US')}</span>
                     </div>
                     <div style={{ fontSize: '11px', opacity: 0.8, marginTop: '4px' }}>
                       {log.response_time_ms && <span>⏱️ {log.response_time_ms}ms</span>}
@@ -631,6 +715,7 @@ export default function AdminScreen({ onNavigate }: Props) {
           </>
         )}
 
+        {/* 🆕 გაუმჯობესებული Quests ტაბი */}
         {activeTab === 'quests' && (
           <>
             <div className="admin-stats">
@@ -658,15 +743,36 @@ export default function AdminScreen({ onNavigate }: Props) {
                   <div className="user-info">
                     <div className="user-avatar" style={{ background: quest.is_active ? '#10b981' : '#6b7280' }}><Trophy size={24} /></div>
                     <div className="user-details">
-                      <h3>{quest.title}</h3>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                        <h3>{quest.title}</h3>
+                        <span style={{ 
+                          fontSize: '9px', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold', textTransform: 'uppercase',
+                          background: quest.quest_type === 'daily' ? 'rgba(59, 130, 246, 0.2)' : quest.quest_type === 'weekly' ? 'rgba(168, 85, 247, 0.2)' : 'rgba(245, 158, 11, 0.2)',
+                          color: quest.quest_type === 'daily' ? '#60a5fa' : quest.quest_type === 'weekly' ? '#c084fc' : '#fbbf24'
+                        }}>
+                          {quest.quest_type}
+                        </span>
+                      </div>
                       <p style={{ fontSize: '11px', opacity: 0.7 }}>{quest.description || 'No description'}</p>
                     </div>
                   </div>
-                  <div className="user-credits" style={{ marginTop: '12px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                    <div className="credit-item"><span className="credit-label">Action:</span><span className="credit-amount" style={{ color: '#60a5fa', fontSize: '11px' }}>{quest.action_type}</span></div>
-                    <div className="credit-item"><span className="credit-label">Target:</span><span className="credit-amount" style={{ fontSize: '11px' }}>{quest.target_count}</span></div>
-                    <div className="credit-item"><span className="credit-label">XP:</span><span className="credit-amount" style={{ color: '#a78bfa', fontSize: '11px' }}>{quest.reward_xp}</span></div>
-                    <div className="credit-item"><span className="credit-label">Coins:</span><span className="credit-amount" style={{ color: '#fbbf24', fontSize: '11px' }}>{quest.reward_coins}</span></div>
+                  <div className="user-credits" style={{ marginTop: '12px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+                    <div className="credit-item" style={{ textAlign: 'center', background: 'rgba(96, 165, 250, 0.1)', padding: '6px', borderRadius: '6px' }}>
+                      <span className="credit-label" style={{ display: 'block', fontSize: '9px', marginBottom: '2px' }}>Action</span>
+                      <span className="credit-amount" style={{ color: '#60a5fa', fontSize: '10px', wordBreak: 'break-all' }}>{quest.action_type}</span>
+                    </div>
+                    <div className="credit-item" style={{ textAlign: 'center', background: 'rgba(255, 255, 255, 0.05)', padding: '6px', borderRadius: '6px' }}>
+                      <span className="credit-label" style={{ display: 'block', fontSize: '9px', marginBottom: '2px' }}>Target</span>
+                      <span className="credit-amount" style={{ fontSize: '14px', fontWeight: 'bold' }}>{quest.target_count}</span>
+                    </div>
+                    <div className="credit-item" style={{ textAlign: 'center', background: 'rgba(167, 139, 250, 0.1)', padding: '6px', borderRadius: '6px' }}>
+                      <span className="credit-label" style={{ display: 'block', fontSize: '9px', marginBottom: '2px' }}>XP</span>
+                      <span className="credit-amount" style={{ color: '#a78bfa', fontSize: '14px', fontWeight: 'bold' }}>{quest.reward_xp}</span>
+                    </div>
+                    <div className="credit-item" style={{ textAlign: 'center', background: 'rgba(251, 191, 36, 0.1)', padding: '6px', borderRadius: '6px' }}>
+                      <span className="credit-label" style={{ display: 'block', fontSize: '9px', marginBottom: '2px' }}>Coins</span>
+                      <span className="credit-amount" style={{ color: '#fbbf24', fontSize: '14px', fontWeight: 'bold' }}>{quest.reward_coins}</span>
+                    </div>
                   </div>
                   <div className="subscription-actions" style={{ marginTop: '12px' }}>
                     <button className="extend-btn" onClick={() => handleUpdateQuest(quest.id)}><Edit2 size={14} /><span>Edit</span></button>
@@ -682,7 +788,7 @@ export default function AdminScreen({ onNavigate }: Props) {
         )}
       </div>
 
-      {/* 🆕 ოპტიმიზირებული 2-რიგიანი (3x2) ქვედა ნავიგაცია მობილურისთვის */}
+      {/* ოპტიმიზირებული 2-რიგიანი (3x2) ქვედა ნავიგაცია მობილურისთვის */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(3, 1fr)',
@@ -774,11 +880,11 @@ export default function AdminScreen({ onNavigate }: Props) {
       {selectedFunction && (
         <div className="modal-overlay" onClick={() => setSelectedFunction(null)}>
           <motion.div className="modal" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} onClick={(e) => e.stopPropagation()} style={{ maxWidth: '90vw', maxHeight: '80vh', overflowY: 'auto' }}>
-            <h3>📋 {selectedFunction} - ლოგები</h3>
+            <h3>📋 {selectedFunction} - Logs</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {functionLogs.length === 0 ? <p style={{ textAlign: 'center', opacity: 0.7 }}>ლოგები არ არის</p> : functionLogs.map((log) => (
+              {functionLogs.length === 0 ? <p style={{ textAlign: 'center', opacity: 0.7 }}>No logs available</p> : functionLogs.map((log) => (
                 <div key={log.id} style={{ padding: '10px', background: log.status === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', border: `1px solid ${log.status === 'success' ? '#10b981' : '#ef4444'}` }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}><strong>{log.status === 'success' ? '✅' : '❌'} {log.status.toUpperCase()}</strong><span style={{ fontSize: '11px', opacity: 0.7 }}>{new Date(log.created_at).toLocaleString('ka-GE')}</span></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}><strong>{log.status === 'success' ? '✅' : '❌'} {log.status.toUpperCase()}</strong><span style={{ fontSize: '11px', opacity: 0.7 }}>{new Date(log.created_at).toLocaleString('en-US')}</span></div>
                   <div style={{ fontSize: '11px', opacity: 0.8 }}>⏱️ {log.response_time_ms || 'N/A'}ms | 📡 {log.status_code || 'N/A'}</div>
                   {log.error_message && <div style={{ fontSize: '11px', color: '#ef4444', marginTop: '4px' }}>❌ {log.error_message}</div>}
                 </div>
@@ -789,16 +895,16 @@ export default function AdminScreen({ onNavigate }: Props) {
         </div>
       )}
 
-      {/* 🆕 ქვედა ფიქსირებული დებაგ / მონიტორინგ პანელი (ნავიგაციის ზემოთ) */}
+      {/* 🆕 ჭკვიანი და ინფორმაციული Debug პანელი */}
       <div style={{
         position: 'fixed',
-        bottom: '110px', // 🆕 აწეულია, რათა 2-რიგიან ნავიგაციას არ გადაფაროს
+        bottom: '110px',
         left: 0,
         right: 0,
         background: 'rgba(10, 6, 0, 0.98)',
         borderTop: '2px solid #fbbf24',
         zIndex: 9998,
-        maxHeight: showDebug ? '250px' : '36px',
+        maxHeight: showDebug ? '300px' : '36px',
         transition: 'max-height 0.3s ease',
         overflow: 'hidden',
         display: 'flex',
@@ -824,6 +930,7 @@ export default function AdminScreen({ onNavigate }: Props) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <Bug size={12} />
             <span>ADMIN DEBUG</span>
+            <span style={{ background: '#10b981', color: '#fff', padding: '1px 6px', borderRadius: '4px', fontSize: '9px', fontWeight: 'bold' }}>DB: {dbStatus === 'connected' ? 'OK' : 'ERR'}</span>
             <span style={{ background: '#fbbf24', color: '#000', padding: '1px 6px', borderRadius: '4px', fontSize: '9px', fontWeight: 'bold' }}>QUESTS: {quests.length}</span>
             <span style={{ background: isUserAdmin ? '#10b981' : '#ef4444', color: '#fff', padding: '1px 6px', borderRadius: '4px', fontSize: '9px', fontWeight: 'bold' }}>ADMIN: {isUserAdmin ? 'YES' : 'NO'}</span>
           </div>
@@ -835,7 +942,17 @@ export default function AdminScreen({ onNavigate }: Props) {
 
         {showDebug && (
           <div style={{ flex: 1, overflowY: 'auto', padding: '8px', fontSize: '10px', fontFamily: 'monospace' }}>
-            {debugLogs.length === 0 && <div style={{ color: '#94a3b8', textAlign: 'center', padding: '8px' }}>No logs yet.</div>}
+            {/* 🆕 სწრაფი მოქმედებები */}
+            <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' }}>
+              <button onClick={(e) => { e.stopPropagation(); loadData(); }} style={{ background: 'rgba(59, 130, 246, 0.2)', border: '1px solid #3b82f6', color: '#60a5fa', padding: '4px 8px', borderRadius: '4px', fontSize: '9px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <RefreshCw size={10} /> Reload Data
+              </button>
+              <button onClick={(e) => { e.stopPropagation(); testQuestRPC(); }} style={{ background: 'rgba(16, 185, 129, 0.2)', border: '1px solid #10b981', color: '#10b981', padding: '4px 8px', borderRadius: '4px', fontSize: '9px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Database size={10} /> Test Quest RPC
+              </button>
+            </div>
+
+            {debugLogs.length === 0 && <div style={{ color: '#94a3b8', textAlign: 'center', padding: '8px' }}>No logs yet. Perform an action to see logs here.</div>}
             {debugLogs.map((log, i) => (
               <div key={i} style={{ padding: '4px 6px', marginBottom: '2px', background: 'rgba(255,255,255,0.03)', borderRadius: '3px', borderLeft: `2px solid ${log.type === 'error' ? '#ef4444' : log.type === 'success' ? '#10b981' : log.type === 'warn' ? '#fbbf24' : '#60a5fa'}` }}>
                 <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
