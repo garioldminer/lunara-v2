@@ -19,10 +19,12 @@ import {
   XCircle,
   Edit2,
   Bug,
-  Info
+  Info,
+  Trophy // 🆕 დამატებულია Quests ტაბისთვის
 } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { isAdmin } from '../lib/adminService';
+import { supabase } from '../lib/supabase'; // 🆕 დამატებულია ბაზასთან პირდაპირი მუშაობისთვის
 import {
   getAllProviders,
   getAllApiKeys,
@@ -49,7 +51,7 @@ interface Props {
   onNavigate?: (screen: string) => void;
 }
 
-type Tab = 'dashboard' | 'keys' | 'providers' | 'prompts' | 'stats';
+type Tab = 'dashboard' | 'keys' | 'providers' | 'prompts' | 'stats' | 'quests'; // 🆕 დამატებულია 'quests'
 
 interface DebugLog {
   timestamp: string;
@@ -57,6 +59,18 @@ interface DebugLog {
   source: string;
   message: string;
   data?: any;
+}
+
+interface Quest {
+  id: string;
+  title: string;
+  description: string;
+  action_type: string;
+  target_count: number;
+  reward_xp: number;
+  reward_coins: number;
+  quest_type: 'daily' | 'weekly' | 'milestone';
+  is_active: boolean;
 }
 
 export default function AdminAIManagement({ onNavigate }: Props) {
@@ -73,6 +87,21 @@ export default function AdminAIManagement({ onNavigate }: Props) {
   const [prompts, setPrompts] = useState<AIPrompt[]>([]);
   const [todayStats, setTodayStats] = useState<AIUsageStats[]>([]);
   const [apiKeyUsage, setApiKeyUsage] = useState<any[]>([]);
+  
+  // 🆕 Quests State
+  const [quests, setQuests] = useState<Quest[]>([]);
+  const [showAddQuest, setShowAddQuest] = useState(false);
+  const [editingQuest, setEditingQuest] = useState<string | null>(null);
+  const [newQuest, setNewQuest] = useState({
+    title: '',
+    description: '',
+    action_type: 'draw_daily_card',
+    target_count: 1,
+    reward_xp: 10,
+    reward_coins: 5,
+    quest_type: 'daily' as 'daily' | 'weekly' | 'milestone',
+    is_active: true
+  });
   
   const [showAddKey, setShowAddKey] = useState(false);
   const [showAddPrompt, setShowAddPrompt] = useState(false);
@@ -155,7 +184,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
     try {
       addDebugLog('info', 'LOAD', 'Fetching all data in parallel...');
       
-      const [providersData, keysData, promptsData, statsData, usageData] = await Promise.all([
+      const [providersData, keysData, promptsData, statsData, usageData, questsData] = await Promise.all([
         getAllProviders().catch(err => {
           addDebugLog('error', 'LOAD', 'Failed to fetch providers', err.message);
           return [];
@@ -175,6 +204,13 @@ export default function AdminAIManagement({ onNavigate }: Props) {
         getApiKeyUsage().catch(err => {
           addDebugLog('error', 'LOAD', 'Failed to fetch API key usage', err.message);
           return [];
+        }),
+        supabase.from('quest_definitions').select('*').order('quest_type', { ascending: true }).order('title', { ascending: true }).then(res => {
+          if (res.error) {
+            addDebugLog('error', 'LOAD', 'Failed to fetch quests', res.error.message);
+            return [];
+          }
+          return res.data || [];
         })
       ]);
 
@@ -183,12 +219,14 @@ export default function AdminAIManagement({ onNavigate }: Props) {
       setPrompts(promptsData);
       setTodayStats(statsData);
       setApiKeyUsage(usageData);
+      setQuests(questsData); // 🆕
 
       addDebugLog('data', 'PROVIDERS', `Loaded ${providersData.length} providers`, providersData);
       addDebugLog('data', 'API_KEYS', `Loaded ${keysData.length} API keys`, keysData);
       addDebugLog('data', 'PROMPTS', `Loaded ${promptsData.length} prompts`, promptsData);
       addDebugLog('data', 'STATS', `Loaded ${statsData.length} stats entries`, statsData);
       addDebugLog('data', 'USAGE', `Loaded ${usageData.length} usage entries`, usageData);
+      addDebugLog('data', 'QUESTS', `Loaded ${questsData.length} quests`, questsData); // 🆕
 
       if (providersData.length === 0) {
         addDebugLog('warn', 'PROVIDERS', '⚠️ No providers found!');
@@ -204,6 +242,119 @@ export default function AdminAIManagement({ onNavigate }: Props) {
     }
     
     setLoading(false);
+  };
+
+  // ============================================
+  // 🆕 QUESTS HANDLERS
+  // ============================================
+  
+  const handleAddQuest = async () => {
+    addDebugLog('info', 'ADD_QUEST', 'Attempting to add quest', { title: newQuest.title, action_type: newQuest.action_type });
+    
+    if (!newQuest.title || !newQuest.action_type) {
+      addDebugLog('warn', 'ADD_QUEST', '❌ Title or action type is empty!');
+      return;
+    }
+    
+    try {
+      const { data, error } = await supabase.from('quest_definitions').insert([newQuest]).select().single();
+      
+      if (error) {
+        addDebugLog('error', 'ADD_QUEST', `❌ Failed: ${error.message}`);
+      } else {
+        addDebugLog('success', 'ADD_QUEST', '✅ Quest added successfully', data);
+        setShowAddQuest(false);
+        setNewQuest({ title: '', description: '', action_type: 'draw_daily_card', target_count: 1, reward_xp: 10, reward_coins: 5, quest_type: 'daily', is_active: true });
+        await loadData();
+      }
+    } catch (error) {
+      addDebugLog('error', 'ADD_QUEST', '❌ Exception while adding quest', (error as Error).message);
+    }
+  };
+
+  const handleUpdateQuest = async (questId: string) => {
+    addDebugLog('info', 'EDIT_QUEST', `Opening edit mode for quest: ${questId}`);
+    
+    const quest = quests.find(q => q.id === questId);
+    if (!quest) {
+      addDebugLog('error', 'EDIT_QUEST', '❌ Quest not found!');
+      return;
+    }
+    
+    setNewQuest({ ...quest });
+    setEditingQuest(questId);
+    setShowAddQuest(true);
+  };
+
+  const handleSaveEditQuest = async () => {
+    addDebugLog('info', 'SAVE_EDIT_QUEST', `Saving edit for quest: ${editingQuest}`);
+    
+    if (!editingQuest || !newQuest.title || !newQuest.action_type) {
+      addDebugLog('warn', 'SAVE_EDIT_QUEST', '❌ Missing required fields!');
+      return;
+    }
+    
+    try {
+      const { data, error } = await supabase.from('quest_definitions').update({
+        title: newQuest.title,
+        description: newQuest.description,
+        action_type: newQuest.action_type,
+        target_count: newQuest.target_count,
+        reward_xp: newQuest.reward_xp,
+        reward_coins: newQuest.reward_coins,
+        quest_type: newQuest.quest_type,
+        is_active: newQuest.is_active
+      }).eq('id', editingQuest).select().single();
+      
+      if (error) {
+        addDebugLog('error', 'SAVE_EDIT_QUEST', `❌ Failed: ${error.message}`);
+      } else {
+        addDebugLog('success', 'SAVE_EDIT_QUEST', '✅ Quest updated successfully', data);
+        setShowAddQuest(false);
+        setEditingQuest(null);
+        setNewQuest({ title: '', description: '', action_type: 'draw_daily_card', target_count: 1, reward_xp: 10, reward_coins: 5, quest_type: 'daily', is_active: true });
+        await loadData();
+      }
+    } catch (error) {
+      addDebugLog('error', 'SAVE_EDIT_QUEST', '❌ Exception while updating quest', (error as Error).message);
+    }
+  };
+
+  const handleToggleQuest = async (questId: string, isActive: boolean) => {
+    addDebugLog('info', 'TOGGLE_QUEST', `Toggling quest ${questId} to ${!isActive}`);
+    
+    try {
+      const { error } = await supabase.from('quest_definitions').update({ is_active: !isActive }).eq('id', questId);
+      if (error) {
+        addDebugLog('error', 'TOGGLE_QUEST', `❌ Failed: ${error.message}`);
+      } else {
+        addDebugLog('success', 'TOGGLE_QUEST', '✅ Quest toggled successfully');
+        await loadData();
+      }
+    } catch (error) {
+      addDebugLog('error', 'TOGGLE_QUEST', '❌ Exception while toggling quest', (error as Error).message);
+    }
+  };
+
+  const handleDeleteQuest = async (questId: string) => {
+    addDebugLog('info', 'DELETE_QUEST', `Attempting to delete quest: ${questId}`);
+    
+    if (!confirm('Are you sure you want to delete this quest?')) {
+      addDebugLog('info', 'DELETE_QUEST', 'User cancelled deletion');
+      return;
+    }
+    
+    try {
+      const { error } = await supabase.from('quest_definitions').delete().eq('id', questId);
+      if (error) {
+        addDebugLog('error', 'DELETE_QUEST', `❌ Failed: ${error.message}`);
+      } else {
+        addDebugLog('success', 'DELETE_QUEST', '✅ Quest deleted successfully');
+        await loadData();
+      }
+    } catch (error) {
+      addDebugLog('error', 'DELETE_QUEST', '❌ Exception while deleting quest', (error as Error).message);
+    }
   };
 
   // ============================================
@@ -581,6 +732,10 @@ export default function AdminAIManagement({ onNavigate }: Props) {
               <MessageSquare size={12} />
               <span>Prompts: <strong>{prompts.length}</strong></span>
             </div>
+            <div className="debug-stat">
+              <Trophy size={12} />
+              <span>Quests: <strong>{quests.length}</strong></span>
+            </div>
           </div>
 
           {providers.length === 0 && (
@@ -666,12 +821,23 @@ export default function AdminAIManagement({ onNavigate }: Props) {
           <BarChart3 size={16} />
           <span>Stats</span>
         </button>
+        {/* 🆕 Quests Tab Button */}
+        <button
+          className={`ai-admin-tab ${activeTab === 'quests' ? 'active' : ''}`}
+          onClick={() => {
+            setActiveTab('quests');
+            addDebugLog('info', 'NAV', 'Switched to Quests tab');
+          }}
+        >
+          <Trophy size={16} />
+          <span>Quests</span>
+        </button>
       </div>
 
       {/* Content */}
       <div className="ai-admin-content">
         
-        {/* ✅ DASHBOARD TAB - NaN Fix-ით */}
+        {/* ✅ DASHBOARD TAB */}
         {activeTab === 'dashboard' && (
           <div className="ai-dashboard">
             <h2>📊 Today's Overview</h2>
@@ -1200,6 +1366,209 @@ export default function AdminAIManagement({ onNavigate }: Props) {
                       </button>
                       <button className="confirm-btn" onClick={editingPrompt ? handleSaveEditPrompt : handleAddPrompt}>
                         {editingPrompt ? 'Save Changes' : 'Add Prompt'}
+                      </button>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
+
+        {/* 🆕 QUESTS TAB */}
+        {activeTab === 'quests' && (
+          <div className="ai-prompts"> {/* Reusing ai-prompts layout for consistency */}
+            <div className="prompts-header">
+              <h2>🏆 Quests Management ({quests.length} total)</h2>
+              <button className="add-btn" onClick={() => {
+                setEditingQuest(null);
+                setNewQuest({
+                  title: '',
+                  description: '',
+                  action_type: 'draw_daily_card',
+                  target_count: 1,
+                  reward_xp: 10,
+                  reward_coins: 5,
+                  quest_type: 'daily',
+                  is_active: true
+                });
+                setShowAddQuest(true);
+                addDebugLog('info', 'UI', 'Opening Add Quest modal');
+              }}>
+                <Plus size={16} />
+                <span>Add Quest</span>
+              </button>
+            </div>
+
+            <div className="prompts-list">
+              {quests.length === 0 && (
+                <div className="debug-warning">
+                  ⚠️ No quests found. Click "Add Quest" to create one.
+                </div>
+              )}
+              {quests.map((quest) => (
+                <motion.div
+                  key={quest.id}
+                  className={`prompt-card ${quest.is_active ? 'active' : 'inactive'}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <div className="prompt-header">
+                    <div className="prompt-info">
+                      <h3>{quest.title}</h3>
+                      <span className="category-badge">{quest.quest_type}</span>
+                    </div>
+                    <div className="prompt-actions">
+                      <button
+                        className="icon-btn edit"
+                        onClick={() => handleUpdateQuest(quest.id)}
+                        title="Edit"
+                      >
+                        <Edit2 size={14} />
+                      </button>
+                      <button
+                        className="icon-btn toggle"
+                        onClick={() => handleToggleQuest(quest.id, quest.is_active)}
+                        title={quest.is_active ? 'Disable' : 'Enable'}
+                      >
+                        {quest.is_active ? <Check size={14} /> : <X size={14} />}
+                      </button>
+                      <button
+                        className="icon-btn delete"
+                        onClick={() => handleDeleteQuest(quest.id)}
+                        title="Delete"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="prompt-content">
+                    <div className="prompt-section">
+                      <span className="section-label">Action Type:</span>
+                      <p className="section-text" style={{ color: '#60a5fa', fontWeight: 'bold' }}>{quest.action_type}</p>
+                    </div>
+                    <div className="prompt-section">
+                      <span className="section-label">Description:</span>
+                      <p className="section-text">{quest.description}</p>
+                    </div>
+                    <div className="prompt-variables" style={{ display: 'flex', gap: '16px', marginTop: '8px', flexWrap: 'wrap' }}>
+                      <span className="section-label">Target: <span style={{color: '#fff'}}>{quest.target_count}</span></span>
+                      <span className="section-label">XP: <span style={{color: '#a78bfa', fontWeight: 'bold'}}>{quest.reward_xp}</span></span>
+                      <span className="section-label">Coins: <span style={{color: '#fbbf24', fontWeight: 'bold'}}>{quest.reward_coins}</span></span>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Add/Edit Quest Modal */}
+            <AnimatePresence>
+              {showAddQuest && (
+                <motion.div
+                  className="modal-overlay"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => {
+                    setShowAddQuest(false);
+                    setEditingQuest(null);
+                  }}
+                >
+                  <motion.div
+                    className="modal large"
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.9, opacity: 0 }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <h3>{editingQuest ? 'Edit Quest' : 'Add New Quest'}</h3>
+                    
+                    <div className="modal-field">
+                      <label>Title:</label>
+                      <input
+                        type="text"
+                        value={newQuest.title}
+                        onChange={(e) => setNewQuest({ ...newQuest, title: e.target.value })}
+                        placeholder="e.g., Daily Card Draw"
+                      />
+                    </div>
+
+                    <div className="modal-field">
+                      <label>Description:</label>
+                      <textarea
+                        value={newQuest.description}
+                        onChange={(e) => setNewQuest({ ...newQuest, description: e.target.value })}
+                        placeholder="e.g., Draw your daily tarot card"
+                        rows={2}
+                      />
+                    </div>
+
+                    <div className="modal-field">
+                      <label>Action Type:</label>
+                      <select
+                        value={newQuest.action_type}
+                        onChange={(e) => setNewQuest({ ...newQuest, action_type: e.target.value })}
+                      >
+                        <option value="draw_daily_card">draw_daily_card</option>
+                        <option value="check_horoscope">check_horoscope</option>
+                        <option value="complete_reading">complete_reading</option>
+                        <option value="discover_card">discover_card</option>
+                        <option value="maintain_streak">maintain_streak</option>
+                      </select>
+                    </div>
+
+                    <div className="modal-field">
+                      <label>Quest Type:</label>
+                      <select
+                        value={newQuest.quest_type}
+                        onChange={(e) => setNewQuest({ ...newQuest, quest_type: e.target.value as 'daily' | 'weekly' | 'milestone' })}
+                      >
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="milestone">Milestone</option>
+                      </select>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '16px' }}>
+                      <div className="modal-field" style={{ flex: 1 }}>
+                        <label>Target Count:</label>
+                        <input
+                          type="number"
+                          value={newQuest.target_count}
+                          onChange={(e) => setNewQuest({ ...newQuest, target_count: parseInt(e.target.value) || 1 })}
+                          min="1"
+                        />
+                      </div>
+                      <div className="modal-field" style={{ flex: 1 }}>
+                        <label>XP Reward:</label>
+                        <input
+                          type="number"
+                          value={newQuest.reward_xp}
+                          onChange={(e) => setNewQuest({ ...newQuest, reward_xp: parseInt(e.target.value) || 0 })}
+                          min="0"
+                        />
+                      </div>
+                      <div className="modal-field" style={{ flex: 1 }}>
+                        <label>Coins Reward:</label>
+                        <input
+                          type="number"
+                          value={newQuest.reward_coins}
+                          onChange={(e) => setNewQuest({ ...newQuest, reward_coins: parseInt(e.target.value) || 0 })}
+                          min="0"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="modal-buttons">
+                      <button className="cancel-btn" onClick={() => {
+                        setShowAddQuest(false);
+                        setEditingQuest(null);
+                      }}>
+                        Cancel
+                      </button>
+                      <button className="confirm-btn" onClick={editingQuest ? handleSaveEditQuest : handleAddQuest}>
+                        {editingQuest ? 'Save Changes' : 'Add Quest'}
                       </button>
                     </div>
                   </motion.div>
