@@ -5,6 +5,7 @@ import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards'
 import QuestionInput from './QuestionInput';
 import { saveReading } from '../lib/readingService';
 import { logReading } from '../lib/adminService';
+import { trackQuestProgress } from '../lib/questService'; // 🆕 დამატებულია ქვესთების იმპორტი
 import { useUser } from '../context/UserContext';
 import './DailyCardScreen.css';
 
@@ -100,7 +101,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         }]
       });
 
-      // 🆕 ეტაპი 3: ჩაწერა reading_history ცხრილში
+      // ეტაპი 3: ჩაწერა reading_history ცხრილში
       try {
         await logReading(
           user.id,
@@ -111,6 +112,17 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         console.log('✅ [Reading] Daily card logged:', dailyReading.card.name);
       } catch (error) {
         console.error('❌ [Reading] Error logging daily card:', error);
+      }
+
+      // 🆕 ქვესთების ლოგიკა: განაახლე პროგრესი 'draw_daily_card' ქვესთისთვის
+      try {
+        const reward = await trackQuestProgress(user.id, 'draw_daily_card', 1);
+        if (reward) {
+          console.log(`🎉 Quest Completed! Reward: ${reward.coins} coins, ${reward.xp} XP`);
+          // აქ მომავალში შეგვიძლია დავამატოთ ლამაზი Toast შეტყობინება
+        }
+      } catch (error) {
+        console.error('❌ [Quest] Error updating daily card quest:', error);
       }
     }
   };

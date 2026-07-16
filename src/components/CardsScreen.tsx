@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { tarotCards, SUITS } from '../data/tarotCards';
 import { ArrowLeft } from 'lucide-react';
+import { trackQuestProgress } from '../lib/questService'; // 🆕 დამატებულია ქვესთების იმპორტი
+import { useUser } from '../context/UserContext'; // 🆕 დამატებულია User კონტექსტი
 import './CardsScreen.css';
 
 type FilterType = 'all' | 'major' | 'minor';
@@ -10,6 +12,7 @@ interface Props {
 }
 
 export default function CardsScreen({ onNavigate }: Props) {
+  const { user } = useUser(); // 🆕
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [selectedCard, setSelectedCard] = useState(tarotCards[0]);
 
@@ -24,9 +27,19 @@ export default function CardsScreen({ onNavigate }: Props) {
     setSelectedCard(card);
   };
 
-  const handleViewCard = () => {
+  const handleViewCard = async () => { // 🆕 დამატებულია async
     if (onNavigate && selectedCard) {
       onNavigate(`card-detail-${selectedCard.id}`);
+      
+      // 🆕 ქვესთების ლოგიკა: განაახლე პროგრესი 'view_gallery' ქვესთისთვის
+      if (user) {
+        try {
+          await trackQuestProgress(user.id, 'view_gallery', 1);
+          console.log('✅ [Quest] view_gallery progress updated');
+        } catch (error) {
+          console.error('❌ [Quest] Error updating view gallery quest:', error);
+        }
+      }
     }
   };
 

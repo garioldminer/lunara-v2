@@ -13,6 +13,7 @@ import ShareCardPreview from './ShareCardPreview';
 import LoadingScreen from './LoadingScreen';
 import SignSelectionScreen from './SignSelectionScreen';
 import { logReading } from '../lib/adminService';
+import { trackQuestProgress } from '../lib/questService'; // 🆕 დამატებულია ქვესთების იმპორტი
 import './HoroscopeScreen.css';
 
 type TabType = 'today' | 'tomorrow' | 'weekly' | 'monthly';
@@ -95,7 +96,6 @@ const ALL_SIGNS = [
   'capricorn', 'aquarius', 'pisces'
 ];
 
-// 🆕 SAFE STRING FUNCTION - converts any value to safe string
 const safeString = (value: any): string => {
   if (value === null || value === undefined) return '';
   if (typeof value === 'string') return value;
@@ -105,7 +105,6 @@ const safeString = (value: any): string => {
   return String(value);
 };
 
-// 🆕 SAFE TRANSIT EXTRACTION FUNCTION
 const safeExtractTransit = (transit: any) => ({
   planet1: safeString(transit?.planet1),
   aspect_type: safeString(transit?.aspect_type),
@@ -328,7 +327,6 @@ function DebugPanel({
               </motion.button>
             </div>
 
-            {/* HOROSCOPE DATA INSPECTOR */}
             <div style={{ 
               background: 'rgba(139, 92, 246, 0.1)',
               border: '1px solid rgba(139, 92, 246, 0.3)',
@@ -694,7 +692,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
   const { horoscope, loading, refreshing, error, refetch } = useHoroscope(
     user?.id || '', 
-    user?.sun_sign || '',  // 🆕 დავამატეთ sun_sign
+    user?.sun_sign || '',
     activeTab
   );
   
@@ -803,6 +801,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     }
   }, [loading, horoscope]);
 
+  // 🆕 აქ ვამატებთ ქვესთის ლოგიკას, როცა წაკითხვა წარმატებით ლოგირდება
   useEffect(() => {
     if (!user || !horoscope || loading || !userSign) return;
     
@@ -827,6 +826,16 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         if (isAdmin) {
           addLog('success', 'READING', '✅ Horoscope reading logged');
         }
+        
+        // 🆕 ქვესთების ლოგიკა: განაახლე პროგრესი 'check_horoscope' ქვესთისთვის
+        trackQuestProgress(user.id, 'check_horoscope', 1).then(reward => {
+          if (reward) {
+            console.log(`🎉 Quest Completed! Reward: ${reward.coins} coins, ${reward.xp} XP`);
+          }
+        }).catch(err => {
+          console.error('❌ [Quest] Error updating horoscope quest:', err);
+        });
+
       }).catch((readingError: any) => {
         if (isAdmin) {
           addLog('error', 'READING', '❌ Failed to log reading', readingError);
@@ -1015,12 +1024,10 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     hero_description: fixHoroscopeText(horoscope.hero_description, userSign, detectWrongSign)
   };
 
-  // 🆕 SAFE TRANSITS ARRAY
   const safeTransits = Array.isArray(fixedHoroscope.key_transits) 
     ? fixedHoroscope.key_transits.map(safeExtractTransit)
     : [];
 
-  // 🆕 SAFE DATE
   const safeDate = safeString(fixedHoroscope.date);
   
   const formattedDate = new Date(safeDate).toLocaleDateString('en-US', {

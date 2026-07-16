@@ -5,6 +5,7 @@ import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards'
 import QuestionInput from './QuestionInput';
 import { saveReading } from '../lib/readingService';
 import { logReading } from '../lib/adminService';
+import { trackQuestProgress } from '../lib/questService'; // 🆕 დამატებულია ქვესთების იმპორტი
 import { useUser } from '../context/UserContext';
 import './ThreeCardReadingScreen.css';
 
@@ -73,7 +74,7 @@ export default function ThreeCardReadingScreen({ onNavigate }: Props) {
           }))
         });
 
-        // 🆕 ეტაპი 3: ჩაწერა reading_history ცხრილში
+        // ეტაპი 3: ჩაწერა reading_history ცხრილში
         try {
           logReading(
             user.id,
@@ -82,6 +83,16 @@ export default function ThreeCardReadingScreen({ onNavigate }: Props) {
             newReading.map(rc => `${rc.card.name}${rc.isReversed ? ' (R)' : ''}`).join(', ')
           ).then(() => {
             console.log('✅ [Reading] Three cards logged:', newReading.map(rc => rc.card.name).join(', '));
+            
+            // 🆕 ქვესთების ლოგიკა: განაახლე პროგრესი 'complete_reading' ქვესთისთვის
+            trackQuestProgress(user.id, 'complete_reading', 1).then(reward => {
+              if (reward) {
+                console.log(`🎉 Quest Completed! Reward: ${reward.coins} coins, ${reward.xp} XP`);
+              }
+            }).catch(err => {
+              console.error('❌ [Quest] Error updating three card reading quest:', err);
+            });
+            
           }).catch(err => {
             console.error('❌ [Reading] Error logging three cards:', err);
           });
