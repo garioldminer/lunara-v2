@@ -11,7 +11,7 @@ import {
   Gem, Zap, Trophy, Flame, Bug, CheckCircle, XCircle,
   Sparkles, LayoutGrid, Moon, Hash, 
   Crown, Scroll, ChevronRight, Gift, Shield, Infinity,
-  RefreshCw, Copy, LogOut
+  RefreshCw, Copy, LogOut, X, Clock
 } from 'lucide-react';
 import './HomeScreen.css';
 
@@ -49,6 +49,11 @@ interface DatabaseDebugInfo {
   }>;
 }
 
+// 🆕 Quest Modal-ისთვის
+interface DailyQuestDisplay extends QuestProgress {
+  isClaimable: boolean;
+}
+
 export default function HomeScreen({ onNavigate }: Props) {
   const { user, setUser } = useUser();
   const [rewardClaimed, setRewardClaimed] = useState(false);
@@ -69,6 +74,12 @@ export default function HomeScreen({ onNavigate }: Props) {
 
   const [userQuests, setUserQuests] = useState<QuestProgress[]>([]);
   const [questsLoading, setQuestsLoading] = useState(true);
+  
+  // 🆕 Daily Quests Logic
+  const [dailyQuests, setDailyQuests] = useState<DailyQuestDisplay[]>([]);
+  const [activeDailyQuest, setActiveDailyQuest] = useState<DailyQuestDisplay | null>(null);
+  const [showQuestModal, setShowQuestModal] = useState(false);
+  const [isClaimingQuest, setIsClaimingQuest] = useState(false);
 
   const [showDebug, setShowDebug] = useState(false);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
@@ -157,7 +168,6 @@ End of Debug Report
     }
   };
 
-  // 🆕 ახალი ფუნქცია: ბაზის სტატუსის შემოწმება
   const checkDatabaseStatus = async () => {
     addDebugLog('info', 'DB_CHECK', '🔍 Starting database status check...');
     if (!user || !supabase) {
@@ -166,7 +176,6 @@ End of Debug Report
     }
 
     try {
-      // 1. შევამოწმოთ users ცხრილი
       const { data: userData, error: userError } = await supabase
         .from('users')
         .select('id, display_name, telegram_id')
@@ -179,7 +188,6 @@ End of Debug Report
         addDebugLog('success', 'DB_CHECK', '✅ User found in database', userData);
       }
 
-      // 2. შევამოწმოთ user_economy ცხრილი
       const { data: economyData, error: economyError } = await supabase
         .from('user_economy')
         .select('cosmic_coins, xp, level')
@@ -192,7 +200,6 @@ End of Debug Report
         addDebugLog('success', 'DB_CHECK', '✅ Economy record found', economyData);
       }
 
-      // 3. შევამოწმოთ მუშაობს თუ არა quest RPC ფუნქცია
       const { data: questsData, error: questsError } = await supabase
         .rpc('get_user_quests', { p_user_id: user.id });
 
@@ -356,6 +363,81 @@ End of Debug Report
     setEconomyLoadStatus('success');
   };
 
+  // 🆕 ქვესთების ჩატვირთვა და დღიური ქვესთების ფილტრაცია
+  const loadQuests = async () => {
+    if (!user) return;
+    setQuestsLoading(true);
+    const quests = await loadUserQuests(user.id);
+    setUserQuests(quests);
+    
+    // ფილტრაცია: მხოლოდ დღიური ქვესთები
+    const dQuests = quests.filter(q => q.quest?.quest_type === 'daily') as DailyQuestDisplay[];
+    
+    // isClaimable ლოგიკა: შესრულებულია, მაგრამ ჯერ არ არის დაკლეიმებული
+    const processedQuests = dQuests.map(q => ({
+      ...q,
+      isClaimable: q.is_completed && !q.is_claimed
+    }));
+    
+    setDailyQuests(processedQuests);
+    
+    // ვიპოვოთ პირველი რენდომი ქვესთა, რომელიც ჯერ არ არის დაკლეიმებული
+    const unclaimed = processedQuests.filter(q => !q.is_claimed);
+    if (unclaimed.length > 0) {
+      const randomIndex = Math.floor(Math.random() * unclaimed.length);
+      setActiveDailyQuest(unclaimed[randomIndex]);
+    } else {
+      setActiveDailyQuest(null); // ყველა დაკლეიმებულია
+    }
+    
+    setQuestsLoading(false);
+  };
+
+  useEffect(() => {
+    if (user) {
+      loadQuests();
+    }
+  }, [user]);
+
+  // 🆕 Quest Claim ლოგიკა
+  const handleClaimQuest = async (quest: DailyQuestDisplay) => {
+    if (!user || !supabase || isClaimingQuest) return;
+    
+    setIsClaimingQuest(true);
+    addDebugLog('info', 'QUEST_CLAIM', `Attempting to claim quest: ${quest.quest?.title}`);
+    
+    try {
+      const { data, error } = await supabase.rpc('claim_quest_reward', {
+        p_user_id: user.id,
+        p_quest_id: quest.quest_id
+      });
+      
+      if (error || !data?.success) {
+        addDebugLog('error', 'QUEST_CLAIM', `Failed: ${error?.message || data?.error}`);
+        alert(`⚠️ ${data?.error || 'Failed to claim reward'}`);
+      } else {
+        addDebugLog('success', 'QUEST_CLAIM', `Claimed! +${data.reward.coins} coins, +${data.reward.xp} XP`);
+        
+        // ეკონომიკის განახლება
+        setEconomy(prev => ({
+          ...prev,
+          cosmic_coins: prev.cosmic_coins + data.reward.coins,
+          xp: prev.xp + data.reward.xp,
+          level: Math.floor((prev.xp + data.reward.xp) / 100) + 1
+        }));
+        
+        alert(`🎉 Quest Completed!\n💰 +${data.reward.coins} Coins\n⭐ +${data.reward.xp} XP`);
+        
+        // ქვესთების ხელახლა ჩატვირთვა, რომ გამოჩნდეს შემდეგი
+        await loadQuests();
+      }
+    } catch (err: any) {
+      addDebugLog('error', 'QUEST_CLAIM', `Exception: ${err.message}`);
+    } finally {
+      setIsClaimingQuest(false);
+    }
+  };
+
   useEffect(() => {
     if (user) {
       addDebugLog('info', 'USER', 'User loaded', { userId: user.id, displayName: user.display_name });
@@ -375,20 +457,6 @@ End of Debug Report
         addDebugLog('success', 'SUBSCRIPTION', 'Subscription loaded', { hasSubscription: !!sub });
       }).catch(err => addDebugLog('error', 'SUBSCRIPTION', `Subscription load failed: ${err.message}`));
     }
-  }, [user]);
-
-  useEffect(() => {
-    const fetchQuests = async () => {
-      if (!user) {
-        setQuestsLoading(false);
-        return;
-      }
-      setQuestsLoading(true);
-      const quests = await loadUserQuests(user.id);
-      setUserQuests(quests);
-      setQuestsLoading(false);
-    };
-    fetchQuests();
   }, [user]);
 
   useEffect(() => {
@@ -591,6 +659,7 @@ End of Debug Report
       case 'complete_reading': return <LayoutGrid size={16} />;
       case 'discover_card': return <Gem size={16} />;
       case 'maintain_streak': return <Flame size={16} />;
+      case 'view_gallery': return <LayoutGrid size={16} />;
       default: return <Scroll size={16} />;
     }
   };
@@ -638,86 +707,247 @@ End of Debug Report
         </div>
       </div>
 
-      <div className="quests-and-actions-split" style={{ display: 'flex', flexDirection: 'row', gap: '2px', marginBottom: '2px', width: '100%', alignItems: 'stretch' }}>
-        <div className="daily-quests-compact" style={{ flex: '0 0 60%', minWidth: 0, background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)', border: '1px solid #332a1a', borderRadius: '14px', padding: '8px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)', display: 'flex', flexDirection: 'column' }}>
-          <div className="quests-header-compact" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', padding: '0 2px' }}>
-            <h3 style={{ margin: 0, fontSize: '9px', color: '#C5A059', letterSpacing: '1px', fontWeight: 700, textTransform: 'uppercase' }}>DAILY QUESTS</h3>
-            <span style={{ fontSize: '9px', color: '#b3a68c', fontFamily: 'monospace' }}>{timeLeft}</span>
-          </div>
-          
-          <div className="quest-list-compact" style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, justifyContent: 'center' }}>
-            {questsLoading ? (
-              <div style={{ textAlign: 'center', color: '#b3a68c', fontSize: '9px', padding: '10px' }}>Loading quests...</div>
-            ) : userQuests.length === 0 ? (
-              <div style={{ textAlign: 'center', color: '#b3a68c', fontSize: '9px', padding: '10px' }}>No active quests</div>
+      {/* 🆕 2. DAILY QUESTS BANNER */}
+      <div 
+        className="daily-quests-banner"
+        onClick={() => setShowQuestModal(true)}
+        style={{
+          background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)',
+          border: '1px solid #332a1a',
+          borderRadius: '14px',
+          padding: '12px',
+          marginBottom: '2px',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)',
+          cursor: 'pointer',
+          position: 'relative',
+          overflow: 'hidden'
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <h3 style={{ margin: 0, fontSize: '11px', color: '#C5A059', letterSpacing: '1px', fontWeight: 700, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Trophy size={14} /> DAILY QUESTS
+          </h3>
+          <span style={{ fontSize: '10px', color: '#b3a68c', fontFamily: 'monospace', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Clock size={12} /> {timeLeft}
+          </span>
+        </div>
+
+        {questsLoading ? (
+          <div style={{ textAlign: 'center', color: '#b3a68c', fontSize: '11px', padding: '10px' }}>Loading quests...</div>
+        ) : dailyQuests.length === 0 ? (
+          <div style={{ textAlign: 'center', color: '#b3a68c', fontSize: '11px', padding: '10px' }}>No daily quests available.</div>
+        ) : activeDailyQuest ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ 
+              width: '40px', height: '40px', borderRadius: '10px', 
+              background: activeDailyQuest.isClaimable ? 'rgba(16, 185, 129, 0.2)' : 'rgba(197, 160, 89, 0.1)',
+              border: `1px solid ${activeDailyQuest.isClaimable ? '#10b981' : 'rgba(197, 160, 89, 0.3)'}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: activeDailyQuest.isClaimable ? '#10b981' : '#C5A059',
+              flexShrink: 0
+            }}>
+              {getQuestIcon(activeDailyQuest.quest?.action_type || '')}
+            </div>
+            
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: '12px', color: '#fff', fontWeight: 600, marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {activeDailyQuest.quest?.title}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ flex: 1, height: '4px', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '2px', overflow: 'hidden' }}>
+                  <div style={{ 
+                    width: `${Math.min((activeDailyQuest.current_progress / (activeDailyQuest.quest?.target_count || 1)) * 100, 100)}%`,
+                    height: '100%',
+                    background: activeDailyQuest.isClaimable ? '#10b981' : 'linear-gradient(90deg, #C5A059, #ffe566)',
+                    borderRadius: '2px'
+                  }}></div>
+                </div>
+                <span style={{ fontSize: '10px', color: '#b3a68c', minWidth: '30px', textAlign: 'right' }}>
+                  {activeDailyQuest.current_progress}/{activeDailyQuest.quest?.target_count}
+                </span>
+              </div>
+            </div>
+
+            {activeDailyQuest.isClaimable ? (
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleClaimQuest(activeDailyQuest);
+                }}
+                disabled={isClaimingQuest}
+                style={{
+                  background: 'linear-gradient(135deg, #10b981, #059669)',
+                  border: 'none',
+                  borderRadius: '8px',
+                  color: '#fff',
+                  padding: '8px 16px',
+                  fontSize: '11px',
+                  fontWeight: 'bold',
+                  cursor: isClaimingQuest ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  boxShadow: '0 2px 8px rgba(16, 185, 129, 0.4)'
+                }}
+              >
+                {isClaimingQuest ? <RefreshCw size={14} className="spin" /> : <><CheckCircle size={14} /> CLAIM</>}
+              </button>
             ) : (
-              userQuests.slice(0, 3).map((q) => {
-                const target = q.quest?.target_count || 1;
-                const progressPercent = Math.min((q.current_progress / target) * 100, 100);
-                return (
-                  <div key={q.id} className="quest-item-compact" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 6px', background: q.is_completed ? 'rgba(16, 185, 129, 0.1)' : 'rgba(197, 160, 89, 0.05)', borderRadius: '6px', border: `1px solid ${q.is_completed ? 'rgba(16, 185, 129, 0.3)' : 'rgba(197, 160, 89, 0.08)'}` }}>
-                    <div className="quest-icon-compact" style={{ color: q.is_completed ? '#10b981' : '#C5A059', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '16px', height: '16px' }}>
-                      {getQuestIcon(q.quest?.action_type || '')}
-                    </div>
-                    <div className="quest-info-compact" style={{ flex: 1, minWidth: 0 }}>
-                      <span className="quest-name-compact" style={{ fontSize: '9px', color: '#fff', fontWeight: 500, display: 'block', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {q.quest?.title || 'Quest'}
-                      </span>
-                      <div className="quest-progress-compact" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <div className="progress-bar-compact" style={{ flex: 1, height: '3px', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '2px', overflow: 'hidden' }}>
-                          <div className="progress-fill-compact" style={{ width: `${progressPercent}%`, height: '100%', background: q.is_completed ? '#10b981' : 'linear-gradient(90deg, #C5A059, #ffe566)', borderRadius: '2px', boxShadow: '0 0 4px rgba(197, 160, 89, 0.5)' }}></div>
-                        </div>
-                        <span style={{ fontSize: '8px', color: '#b3a68c', minWidth: '18px' }}>{q.current_progress}/{target}</span>
-                      </div>
-                    </div>
-                    <div className="quest-reward-compact" style={{ fontSize: '9px', color: q.is_completed ? '#10b981' : '#C5A059', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '1px', flexShrink: 0 }}>
-                      {q.is_completed ? (
-                        <span style={{ fontSize: '8px' }}>✅ DONE</span>
-                      ) : (
-                        <><Gem size={9} /> +{q.quest?.reward_coins}</>
-                      )}
-                    </div>
-                  </div>
-                );
-              })
+              <div style={{ 
+                background: 'rgba(197, 160, 89, 0.2)',
+                border: '1px solid rgba(197, 160, 89, 0.4)',
+                borderRadius: '8px',
+                color: '#C5A059',
+                padding: '8px 12px',
+                fontSize: '10px',
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}>
+                <Gem size={12} /> +{activeDailyQuest.quest?.reward_coins}
+              </div>
             )}
           </div>
-        </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '10px' }}>
+            <div style={{ fontSize: '14px', color: '#10b981', fontWeight: 'bold', marginBottom: '4px' }}>🎉 All Daily Quests Complete!</div>
+            <div style={{ fontSize: '11px', color: '#b3a68c' }}>
+              💎 You earned today's rewards.<br/>
+              🕐 Reset in {timeLeft}
+            </div>
+          </div>
+        )}
+      </div>
 
-        <div className="action-buttons-panel" style={{ flex: '0 0 calc(40% - 2px)', minWidth: 0, background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)', border: '1px solid #332a1a', borderRadius: '14px', padding: '6px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)', display: 'flex' }}>
-          <div className="action-grid-vertical" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: '4px', width: '100%', height: '100%' }}>
-            <button className={`action-btn-vertical ${rewardClaimed ? 'claimed' : ''}`} onClick={handleClaimReward} disabled={rewardClaimed || isClaiming} style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: (rewardClaimed || isClaiming) ? 'not-allowed' : 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%', opacity: (rewardClaimed || isClaiming) ? 0.7 : 1 }}>
-              {isClaiming ? (
-                <svg className="animate-spin" style={{ width: '20px', height: '20px', color: '#C5A059' }} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
+      {/* 🆕 QUEST MODAL */}
+      {showQuestModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.85)', zIndex: 10000,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px'
+        }} onClick={() => setShowQuestModal(false)}>
+          <div 
+            style={{
+              background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)',
+              border: '1px solid #332a1a',
+              borderRadius: '16px',
+              width: '100%',
+              maxWidth: '400px',
+              maxHeight: '80vh',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ margin: 0, color: '#C5A059', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Trophy size={18} /> Daily Quests
+              </h3>
+              <button onClick={() => setShowQuestModal(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div style={{ padding: '16px', overflowY: 'auto', flex: 1 }}>
+              {dailyQuests.length === 0 ? (
+                <div style={{ textAlign: 'center', color: '#94a3b8', padding: '20px' }}>No quests available.</div>
               ) : (
-                <Gift size={22} style={{ filter: 'drop-shadow(0 0 6px #C5A059)', color: '#C5A059', width: '20px', height: '20px' }} />
+                dailyQuests.map((q, idx) => (
+                  <div key={q.id} style={{ 
+                    background: q.is_claimed ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255,255,255,0.03)',
+                    border: `1px solid ${q.is_claimed ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255,255,255,0.1)'}`,
+                    borderRadius: '12px',
+                    padding: '12px',
+                    marginBottom: idx < dailyQuests.length - 1 ? '12px' : '0',
+                    opacity: q.is_claimed ? 0.7 : 1
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{ 
+                          width: '32px', height: '32px', borderRadius: '8px', 
+                          background: q.isClaimable ? 'rgba(16, 185, 129, 0.2)' : 'rgba(197, 160, 89, 0.1)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: q.isClaimable ? '#10b981' : '#C5A059'
+                        }}>
+                          {getQuestIcon(q.quest?.action_type || '')}
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '13px', color: '#fff', fontWeight: 600 }}>{q.quest?.title}</div>
+                          <div style={{ fontSize: '10px', color: '#94a3b8' }}>{q.quest?.description}</div>
+                        </div>
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#fbbf24', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Gem size={12} /> +{q.quest?.reward_coins}
+                      </div>
+                    </div>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                      <div style={{ flex: 1, height: '4px', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '2px', overflow: 'hidden' }}>
+                        <div style={{ 
+                          width: `${Math.min((q.current_progress / (q.quest?.target_count || 1)) * 100, 100)}%`,
+                          height: '100%',
+                          background: q.isClaimable ? '#10b981' : 'linear-gradient(90deg, #C5A059, #ffe566)',
+                          borderRadius: '2px'
+                        }}></div>
+                      </div>
+                      <span style={{ fontSize: '11px', color: '#b3a68c', minWidth: '30px', textAlign: 'right' }}>
+                        {q.current_progress}/{q.quest?.target_count}
+                      </span>
+                    </div>
+
+                    {q.isClaimable && (
+                      <button 
+                        onClick={() => handleClaimQuest(q)}
+                        disabled={isClaimingQuest}
+                        style={{
+                          width: '100%',
+                          background: 'linear-gradient(135deg, #10b981, #059669)',
+                          border: 'none',
+                          borderRadius: '8px',
+                          color: '#fff',
+                          padding: '8px',
+                          fontSize: '12px',
+                          fontWeight: 'bold',
+                          cursor: isClaimingQuest ? 'not-allowed' : 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        {isClaimingQuest ? <RefreshCw size={14} className="spin" /> : <><CheckCircle size={14} /> CLAIM REWARD</>}
+                      </button>
+                    )}
+                    
+                    {q.is_claimed && (
+                      <div style={{ 
+                        width: '100%', background: 'rgba(16, 185, 129, 0.2)', border: '1px solid rgba(16, 185, 129, 0.4)',
+                        borderRadius: '8px', padding: '8px', fontSize: '12px', fontWeight: 'bold', color: '#10b981',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
+                      }}>
+                        <CheckCircle size={14} /> COMPLETED & CLAIMED
+                      </div>
+                    )}
+                  </div>
+                ))
               )}
-              {!rewardClaimed && !isClaiming && <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>50</div>}
-            </button>
-
-            <button className="action-btn-vertical streak-btn-v" style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%' }}>
-              <Flame size={22} style={{ filter: 'drop-shadow(0 0 6px #ff6b35)', color: '#ff6b35', width: '20px', height: '20px' }} />
-              <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>{currentStreak}</div>
-            </button>
-
-            <button className="action-btn-vertical rank-btn-v" style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%' }}>
-              <Trophy size={22} style={{ filter: 'drop-shadow(0 0 6px #ffd700)', color: '#ffd700', width: '20px', height: '20px' }} />
-              <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>TOP</div>
-            </button>
-
-            <button className={`action-btn-vertical ${activeSubscription ? 'subscription-btn-v' : 'upgrade-btn-v'}`} onClick={() => onNavigate && onNavigate(activeSubscription ? 'subscription' : 'pricing')} style={{ background: activeSubscription ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 165, 0, 0.05) 100%)' : 'rgba(255, 255, 255, 0.03)', border: activeSubscription ? '1px solid rgba(255, 215, 0, 0.4)' : '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%' }}>
-              {activeSubscription ? (
-                <><Infinity size={22} style={{ filter: 'drop-shadow(0 0 6px #FFD700)', color: '#FFD700', width: '20px', height: '20px' }} /><div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>VIP</div></>
-              ) : (
-                <><Crown size={22} style={{ filter: 'drop-shadow(0 0 6px #a78bfa)', color: '#a78bfa', width: '20px', height: '20px' }} /><div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>PRO</div></>
+              
+              {dailyQuests.length > 0 && dailyQuests.every(q => q.is_claimed) && (
+                <div style={{ 
+                  textAlign: 'center', padding: '16px', background: 'rgba(16, 185, 129, 0.1)', 
+                  borderRadius: '12px', border: '1px solid rgba(16, 185, 129, 0.3)', marginTop: '16px'
+                }}>
+                  <div style={{ fontSize: '14px', color: '#10b981', fontWeight: 'bold', marginBottom: '4px' }}>🎉 All Complete!</div>
+                  <div style={{ fontSize: '11px', color: '#94a3b8' }}>Come back in {timeLeft} for new quests.</div>
+                </div>
               )}
-            </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="card-of-day-banner clickable-card" onClick={() => onNavigate && onNavigate('daily-card')} style={{ background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)', border: '1px solid #332a1a', borderRadius: '16px', padding: '12px', marginBottom: '2px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)', position: 'relative', overflow: 'visible', cursor: 'pointer' }}>
         <div className="card-of-day-content" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '0' }}>
