@@ -20,7 +20,9 @@ import {
   Edit2,
   Bug,
   Info,
-  Trophy
+  Trophy,
+  ChevronUp,
+  ChevronDown
 } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { isAdmin } from '../lib/adminService';
@@ -79,6 +81,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [loading, setLoading] = useState(true);
   
+  // 🆕 დებაგ პანელი ნაგულისხმევად გაშლილია ქვემოთ
   const [showDebug, setShowDebug] = useState(true);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
   
@@ -143,7 +146,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
       isAdmin(user.id).then(admin => {
         setIsUserAdmin(admin);
         addDebugLog(admin ? 'success' : 'error', 'ADMIN_CHECK', `✅ Admin check result: ${admin}`, { userId: user.id, isAdmin: admin });
-      }).catch(err => {
+      }).catch((err: any) => {
         addDebugLog('error', 'ADMIN_CHECK', `❌ Admin check failed: ${err.message}`);
         setIsUserAdmin(false);
       });
@@ -579,7 +582,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
   }
 
   return (
-    <div className="ai-admin-screen">
+    <div className="ai-admin-screen" style={{ paddingBottom: showDebug ? '280px' : '60px' }}> {/* 🆕 დამატებულია padding ქვედა პანელისთვის */}
       <div className="ai-admin-header">
         <button className="ai-admin-back-btn" onClick={() => onNavigate?.('admin')}>
           <ArrowLeft size={20} />
@@ -589,61 +592,11 @@ export default function AdminAIManagement({ onNavigate }: Props) {
           <h1>AI Management</h1>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
-          <button className="ai-admin-refresh-btn" onClick={() => setShowDebug(!showDebug)} title="Toggle Debug Panel" style={{ background: showDebug ? 'rgba(96, 165, 250, 0.3)' : 'rgba(96, 165, 250, 0.15)', borderColor: showDebug ? '#60a5fa' : 'rgba(96, 165, 250, 0.3)' }}>
-            <Bug size={18} />
-          </button>
           <button className="ai-admin-refresh-btn" onClick={loadData} title="Refresh">
             <RefreshCw size={20} />
           </button>
         </div>
       </div>
-
-      {showDebug && (
-        <div className="debug-panel" style={{ maxHeight: '50vh', overflowY: 'auto' }}>
-          <div className="debug-header">
-            <Bug size={16} />
-            <span>Admin Debug Panel</span>
-            <span className="debug-count">{debugLogs.length} logs</span>
-            <button className="debug-clear" onClick={() => setDebugLogs([])}>Clear</button>
-          </div>
-          
-          <div style={{ display: 'flex', gap: '16px', padding: '12px', background: 'rgba(0,0,0,0.4)', borderRadius: '8px', marginBottom: '12px', fontSize: '12px', flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Shield size={14} color={isUserAdmin ? '#10b981' : '#ef4444'} />
-              <span>Admin: <strong style={{ color: isUserAdmin ? '#10b981' : '#ef4444' }}>{isUserAdmin ? 'YES' : 'NO'}</strong></span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Trophy size={14} color="#fbbf24" />
-              <span>Quests: <strong style={{ color: '#fbbf24' }}>{quests.length}</strong></span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Info size={14} color="#60a5fa" />
-              <span>Active Tab: <strong style={{ color: '#60a5fa' }}>{activeTab}</strong></span>
-            </div>
-          </div>
-
-          <div className="debug-logs">
-            {debugLogs.length === 0 && (
-              <div style={{ color: '#94a3b8', fontSize: '11px', textAlign: 'center', padding: '10px' }}>No logs yet. Perform an action to see logs here.</div>
-            )}
-            {debugLogs.map((log, i) => (
-              <div key={i} className={`debug-log ${log.type}`}>
-                <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap', fontSize: '11px' }}>
-                  <span className="debug-time">{log.timestamp}</span>
-                  <span className="debug-source">[{log.source}]</span>
-                  <span className="debug-msg">{log.message}</span>
-                </div>
-                {log.data && (
-                  <details className="debug-data">
-                    <summary style={{ fontSize: '10px', cursor: 'pointer' }}>Data</summary>
-                    <pre style={{ fontSize: '9px', marginTop: '4px' }}>{JSON.stringify(log.data, null, 2)}</pre>
-                  </details>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       <div className="ai-admin-tabs">
         <button className={`ai-admin-tab ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => { setActiveTab('dashboard'); addDebugLog('info', 'NAV', 'Switched to Dashboard tab'); }}>
@@ -1015,6 +968,104 @@ export default function AdminAIManagement({ onNavigate }: Props) {
                 ))}
               </div>
             </div>
+          </div>
+        )}
+      </div>
+
+      {/* 🆕 ქვედა ფიქსირებული დებაგ / მონიტორინგ პანელი */}
+      <div style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        background: 'rgba(10, 6, 0, 0.98)',
+        borderTop: '2px solid #fbbf24',
+        zIndex: 9999,
+        maxHeight: showDebug ? '300px' : '40px',
+        transition: 'max-height 0.3s ease',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        boxShadow: '0 -4px 20px rgba(0,0,0,0.8)'
+      }}>
+        <div 
+          onClick={() => setShowDebug(!showDebug)}
+          style={{
+            padding: '8px 16px',
+            background: 'rgba(251, 191, 36, 0.1)',
+            color: '#fbbf24',
+            cursor: 'pointer',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            fontSize: '12px',
+            fontWeight: 'bold',
+            borderBottom: showDebug ? '1px solid rgba(251, 191, 36, 0.3)' : 'none',
+            userSelect: 'none'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <Bug size={14} />
+            <span>SYSTEM MONITOR & DEBUG</span>
+            <span style={{ background: '#fbbf24', color: '#000', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold' }}>
+              QUESTS: {quests.length}
+            </span>
+            <span style={{ background: isUserAdmin ? '#10b981' : '#ef4444', color: '#fff', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold' }}>
+              ADMIN: {isUserAdmin ? 'YES' : 'NO'}
+            </span>
+            <span style={{ color: '#94a3b8', fontSize: '10px' }}>
+              ({debugLogs.length} logs)
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button 
+              onClick={(e) => { e.stopPropagation(); setDebugLogs([]); }}
+              style={{ background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', color: '#ef4444', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', cursor: 'pointer' }}
+            >
+              Clear
+            </button>
+            {showDebug ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+          </div>
+        </div>
+
+        {showDebug && (
+          <div style={{ flex: 1, overflowY: 'auto', padding: '12px', fontSize: '11px', fontFamily: 'monospace' }}>
+            {debugLogs.length === 0 && (
+              <div style={{ color: '#94a3b8', textAlign: 'center', padding: '10px' }}>No logs yet. Perform an action to see logs here.</div>
+            )}
+            {debugLogs.map((log, i) => (
+              <div key={i} style={{ 
+                padding: '4px 8px', 
+                marginBottom: '4px', 
+                background: 'rgba(255,255,255,0.03)', 
+                borderRadius: '4px',
+                borderLeft: `3px solid ${
+                  log.type === 'error' ? '#ef4444' : 
+                  log.type === 'success' ? '#10b981' : 
+                  log.type === 'warn' ? '#fbbf24' : '#60a5fa'
+                }`
+              }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <span style={{ color: '#64748b', fontSize: '10px' }}>{log.timestamp}</span>
+                  <span style={{ 
+                    color: log.type === 'error' ? '#ef4444' : 
+                           log.type === 'success' ? '#10b981' : 
+                           log.type === 'warn' ? '#fbbf24' : '#60a5fa',
+                    fontWeight: 'bold',
+                    fontSize: '10px'
+                  }}>[{log.source}]</span>
+                  <span style={{ color: '#e2e8f0' }}>{log.message}</span>
+                </div>
+                {log.data && (
+                  <details style={{ marginTop: '4px', cursor: 'pointer' }}>
+                    <summary style={{ fontSize: '10px', color: '#94a3b8' }}>Data</summary>
+                    <pre style={{ fontSize: '9px', color: '#94a3b8', marginTop: '4px', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+                      {JSON.stringify(log.data, null, 2)}
+                    </pre>
+                  </details>
+                )}
+              </div>
+            ))}
           </div>
         )}
       </div>
