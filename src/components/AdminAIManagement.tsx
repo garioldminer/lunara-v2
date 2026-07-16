@@ -20,11 +20,11 @@ import {
   Edit2,
   Bug,
   Info,
-  Trophy // 🆕 დამატებულია Quests ტაბისთვის
+  Trophy
 } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { isAdmin } from '../lib/adminService';
-import { supabase } from '../lib/supabase'; // 🆕 დამატებულია ბაზასთან პირდაპირი მუშაობისთვის
+import { supabase } from '../lib/supabase';
 import {
   getAllProviders,
   getAllApiKeys,
@@ -51,7 +51,7 @@ interface Props {
   onNavigate?: (screen: string) => void;
 }
 
-type Tab = 'dashboard' | 'keys' | 'providers' | 'prompts' | 'stats' | 'quests'; // 🆕 დამატებულია 'quests'
+type Tab = 'dashboard' | 'keys' | 'providers' | 'prompts' | 'stats' | 'quests';
 
 interface DebugLog {
   timestamp: string;
@@ -88,7 +88,6 @@ export default function AdminAIManagement({ onNavigate }: Props) {
   const [todayStats, setTodayStats] = useState<AIUsageStats[]>([]);
   const [apiKeyUsage, setApiKeyUsage] = useState<any[]>([]);
   
-  // 🆕 Quests State
   const [quests, setQuests] = useState<Quest[]>([]);
   const [showAddQuest, setShowAddQuest] = useState(false);
   const [editingQuest, setEditingQuest] = useState<string | null>(null);
@@ -125,7 +124,6 @@ export default function AdminAIManagement({ onNavigate }: Props) {
   const [testingKey, setTestingKey] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<{ [key: string]: { success: boolean; message: string } }>({});
 
-  // ✅ Admin check
   useEffect(() => {
     if (user) {
       isAdmin(user.id).then(admin => {
@@ -136,13 +134,11 @@ export default function AdminAIManagement({ onNavigate }: Props) {
     }
   }, [user]);
 
-  // ✅ SAFE NUMBER HELPER - NaN-ის თავიდან ასაცილებლად
   const safeNum = (value: any): number => {
     const num = Number(value);
     return isNaN(num) || !isFinite(num) ? 0 : num;
   };
 
-  // ✅ COMPUTED STATS - ერთხელ გამოითვლება
   const totalRequests = todayStats.length > 0 
     ? todayStats.reduce((sum, s) => sum + safeNum(s.total_requests), 0)
     : 0;
@@ -178,6 +174,10 @@ export default function AdminAIManagement({ onNavigate }: Props) {
   }, []);
 
   const loadData = async () => {
+    if (!supabase) {
+      addDebugLog('error', 'LOAD', 'Supabase client is null');
+      return;
+    }
     addDebugLog('info', 'LOAD', 'Starting data load...');
     setLoading(true);
     
@@ -219,14 +219,14 @@ export default function AdminAIManagement({ onNavigate }: Props) {
       setPrompts(promptsData);
       setTodayStats(statsData);
       setApiKeyUsage(usageData);
-      setQuests(questsData); // 🆕
+      setQuests(questsData);
 
       addDebugLog('data', 'PROVIDERS', `Loaded ${providersData.length} providers`, providersData);
       addDebugLog('data', 'API_KEYS', `Loaded ${keysData.length} API keys`, keysData);
       addDebugLog('data', 'PROMPTS', `Loaded ${promptsData.length} prompts`, promptsData);
       addDebugLog('data', 'STATS', `Loaded ${statsData.length} stats entries`, statsData);
       addDebugLog('data', 'USAGE', `Loaded ${usageData.length} usage entries`, usageData);
-      addDebugLog('data', 'QUESTS', `Loaded ${questsData.length} quests`, questsData); // 🆕
+      addDebugLog('data', 'QUESTS', `Loaded ${questsData.length} quests`, questsData);
 
       if (providersData.length === 0) {
         addDebugLog('warn', 'PROVIDERS', '⚠️ No providers found!');
@@ -244,11 +244,8 @@ export default function AdminAIManagement({ onNavigate }: Props) {
     setLoading(false);
   };
 
-  // ============================================
-  // 🆕 QUESTS HANDLERS
-  // ============================================
-  
   const handleAddQuest = async () => {
+    if (!supabase) return;
     addDebugLog('info', 'ADD_QUEST', 'Attempting to add quest', { title: newQuest.title, action_type: newQuest.action_type });
     
     if (!newQuest.title || !newQuest.action_type) {
@@ -287,6 +284,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
   };
 
   const handleSaveEditQuest = async () => {
+    if (!supabase) return;
     addDebugLog('info', 'SAVE_EDIT_QUEST', `Saving edit for quest: ${editingQuest}`);
     
     if (!editingQuest || !newQuest.title || !newQuest.action_type) {
@@ -321,6 +319,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
   };
 
   const handleToggleQuest = async (questId: string, isActive: boolean) => {
+    if (!supabase) return;
     addDebugLog('info', 'TOGGLE_QUEST', `Toggling quest ${questId} to ${!isActive}`);
     
     try {
@@ -337,6 +336,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
   };
 
   const handleDeleteQuest = async (questId: string) => {
+    if (!supabase) return;
     addDebugLog('info', 'DELETE_QUEST', `Attempting to delete quest: ${questId}`);
     
     if (!confirm('Are you sure you want to delete this quest?')) {
@@ -357,10 +357,6 @@ export default function AdminAIManagement({ onNavigate }: Props) {
     }
   };
 
-  // ============================================
-  // API KEYS HANDLERS
-  // ============================================
-  
   const handleAddApiKey = async () => {
     addDebugLog('info', 'ADD_KEY', 'Attempting to add API key', { 
       provider: newKey.provider_name, 
@@ -447,10 +443,6 @@ export default function AdminAIManagement({ onNavigate }: Props) {
     setTestingKey(null);
   };
 
-  // ============================================
-  // PROMPTS HANDLERS
-  // ============================================
-  
   const handleAddPrompt = async () => {
     addDebugLog('info', 'ADD_PROMPT', 'Attempting to add prompt', { name: newPrompt.name, category: newPrompt.category });
     
@@ -568,10 +560,6 @@ export default function AdminAIManagement({ onNavigate }: Props) {
     }
   };
 
-  // ============================================
-  // PROVIDERS HANDLERS
-  // ============================================
-  
   const handleToggleProvider = async (providerId: string, isActive: boolean) => {
     addDebugLog('info', 'TOGGLE_PROVIDER', `Toggling provider ${providerId} to ${!isActive}`);
     
@@ -604,11 +592,6 @@ export default function AdminAIManagement({ onNavigate }: Props) {
     }
   };
 
-  // ============================================
-  // RENDER
-  // ============================================
-  
-  // ✅ ჯერ არ ვიცით admin თუ არა
   if (isUserAdmin === null) {
     return (
       <div className="ai-admin-screen">
@@ -620,7 +603,6 @@ export default function AdminAIManagement({ onNavigate }: Props) {
     );
   }
 
-  // ✅ არ არის admin
   if (!isUserAdmin) {
     return (
       <div className="ai-admin-screen">
@@ -677,7 +659,6 @@ export default function AdminAIManagement({ onNavigate }: Props) {
 
   return (
     <div className="ai-admin-screen">
-      {/* Header */}
       <div className="ai-admin-header">
         <button className="ai-admin-back-btn" onClick={() => onNavigate?.('admin')}>
           <ArrowLeft size={20} />
@@ -704,7 +685,6 @@ export default function AdminAIManagement({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* DEBUG PANEL */}
       {showDebug && (
         <div className="debug-panel">
           <div className="debug-header">
@@ -769,7 +749,6 @@ export default function AdminAIManagement({ onNavigate }: Props) {
         </div>
       )}
 
-      {/* Tabs */}
       <div className="ai-admin-tabs">
         <button
           className={`ai-admin-tab ${activeTab === 'dashboard' ? 'active' : ''}`}
@@ -821,7 +800,6 @@ export default function AdminAIManagement({ onNavigate }: Props) {
           <BarChart3 size={16} />
           <span>Stats</span>
         </button>
-        {/* 🆕 Quests Tab Button */}
         <button
           className={`ai-admin-tab ${activeTab === 'quests' ? 'active' : ''}`}
           onClick={() => {
@@ -834,10 +812,7 @@ export default function AdminAIManagement({ onNavigate }: Props) {
         </button>
       </div>
 
-      {/* Content */}
       <div className="ai-admin-content">
-        
-        {/* ✅ DASHBOARD TAB */}
         {activeTab === 'dashboard' && (
           <div className="ai-dashboard">
             <h2>📊 Today's Overview</h2>
@@ -920,7 +895,6 @@ export default function AdminAIManagement({ onNavigate }: Props) {
           </div>
         )}
 
-        {/* API KEYS TAB */}
         {activeTab === 'keys' && (
           <div className="ai-keys">
             <div className="keys-header">
@@ -1026,7 +1000,6 @@ export default function AdminAIManagement({ onNavigate }: Props) {
               ))}
             </div>
 
-            {/* Add Key Modal */}
             <AnimatePresence>
               {showAddKey && (
                 <motion.div
@@ -1115,7 +1088,6 @@ export default function AdminAIManagement({ onNavigate }: Props) {
           </div>
         )}
 
-        {/* PROVIDERS TAB */}
         {activeTab === 'providers' && (
           <div className="ai-providers">
             <h2>🗄️ Providers Management ({providers.length} total)</h2>
@@ -1198,7 +1170,6 @@ export default function AdminAIManagement({ onNavigate }: Props) {
           </div>
         )}
 
-        {/* PROMPTS TAB */}
         {activeTab === 'prompts' && (
           <div className="ai-prompts">
             <div className="prompts-header">
@@ -1280,7 +1251,6 @@ export default function AdminAIManagement({ onNavigate }: Props) {
               ))}
             </div>
 
-            {/* Add/Edit Prompt Modal */}
             <AnimatePresence>
               {showAddPrompt && (
                 <motion.div
@@ -1375,9 +1345,8 @@ export default function AdminAIManagement({ onNavigate }: Props) {
           </div>
         )}
 
-        {/* 🆕 QUESTS TAB */}
         {activeTab === 'quests' && (
-          <div className="ai-prompts"> {/* Reusing ai-prompts layout for consistency */}
+          <div className="ai-prompts">
             <div className="prompts-header">
               <h2>🏆 Quests Management ({quests.length} total)</h2>
               <button className="add-btn" onClick={() => {
@@ -1462,7 +1431,6 @@ export default function AdminAIManagement({ onNavigate }: Props) {
               ))}
             </div>
 
-            {/* Add/Edit Quest Modal */}
             <AnimatePresence>
               {showAddQuest && (
                 <motion.div
@@ -1578,7 +1546,6 @@ export default function AdminAIManagement({ onNavigate }: Props) {
           </div>
         )}
 
-        {/* STATS TAB */}
         {activeTab === 'stats' && (
           <div className="ai-stats">
             <h2>📈 Usage Statistics</h2>
