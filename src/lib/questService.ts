@@ -29,11 +29,7 @@ export interface QuestReward {
 }
 
 /**
- * უნივერსალური ფუნქცია ქვესტის პროგრესის განახლებისთვის
- * @param userId - მომხმარებლის ID
- * @param actionType - ქვესტის action_type (მაგ: 'draw_daily_card')
- * @param increment - რამდენით გაიზარდოს პროგრესი (default: 1)
- * @returns QuestReward | null - ჯილდო თუ ქვესტა დასრულდა, null თუ არა
+ * ქვესტის პროგრესის განახლება უსაფრთხო ფუნქციით
  */
 export async function trackQuestProgress(
   userId: string,
@@ -46,7 +42,7 @@ export async function trackQuestProgress(
   }
 
   try {
-    // 1. ვიპოვოთ აქტიური ქვესტა ამ action_type-ით
+    // 1. ვიპოვოთ ქვესტა action_type-ით
     const { data: quest, error: questError } = await supabase
       .from('quest_definitions')
       .select('*')
@@ -55,118 +51,37 @@ export async function trackQuestProgress(
       .single();
 
     if (questError || !quest) {
-      console.log(`⚠️ No active quest found for action: ${actionType}`);
+      console.log(`️ No active quest found for action: ${actionType}`);
       return null;
     }
 
     console.log(`📋 Found quest: ${quest.title} (target: ${quest.target_count})`);
 
-    // 2. ვიპოვოთ მომხმარებლის პროგრესი ამ ქვესტაზე
-    // შენიშვნა: თუ ჩანაწერი არ არსებობს, data იქნება null, რაც ჩვენთვის მისაღებია
-    const { data: progress } = await supabase
-      .from('user_quest_progress')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('quest_id', quest.id)
-      .single();
+    // 2. გამოვიძახოთ უსაფრთხო ფუნქცია
+    const { data: result, error: funcError } = await supabase.rpc('upsert_quest_progress', {
+      p_user_id: userId,
+      p_quest_id: quest.id,
+      p_increment: increment
+    });
 
-    // 3. თუ პროგრესი უკვე დასრულებულია, არაფერი გავაკეთოთ
-    if (progress && progress.is_completed) {
-      console.log(`✅ Quest already completed: ${quest.title}`);
+    if (funcError) {
+      console.error('❌ Error calling upsert_quest_progress:', funcError);
       return null;
     }
 
-    let newProgress: number;
-    let isCompleted: boolean = false;
+    console.log('📊 Function result:', result);
 
-    if (progress) {
-      // 4a. განვაახლოთ არსებული პროგრესი
-      newProgress = progress.current_progress + increment;
-      isCompleted = newProgress >= quest.target_count;
-
-      const { error: updateError } = await supabase
-        .from('user_quest_progress')
-        .update({
-          current_progress: newProgress,
-          is_completed: isCompleted,
-          completed_at: isCompleted ? new Date().toISOString() : null
-        })
-        .eq('id', progress.id);
-
-      if (updateError) {
-        console.error('❌ Error updating quest progress:', updateError);
-        return null;
-      }
-
-      console.log(`⏳ Progress updated: ${newProgress}/${quest.target_count}`);
-    } else {
-      // 4b. შევქმნათ ახალი პროგრესის ჩანაწერი
-      newProgress = increment;
-      isCompleted = newProgress >= quest.target_count;
-
-      const { error: insertError } = await supabase
-        .from('user_quest_progress')
-        .insert({
-          user_id: userId,
-          quest_id: quest.id,
-          current_progress: newProgress,
-          is_completed: isCompleted,
-          is_claimed: false,
-          last_reset_at: new Date().toISOString(),
-          completed_at: isCompleted ? new Date().toISOString() : null
-        });
-
-      if (insertError) {
-        console.error('❌ Error creating quest progress:', insertError);
-        return null;
-      }
-
-      console.log(`🆕 New progress created: ${newProgress}/${quest.target_count}`);
-    }
-
-    // 5. თუ ქვესტა დასრულდა, გავცეთ ჯილდო
-    if (isCompleted) {
-      console.log(`🎉 Quest completed: ${quest.title}! Rewarding XP: ${quest.reward_xp}, Coins: ${quest.reward_coins}`);
-
-      // ვიპოვოთ მიმდინარე ეკონომიკა
-      const { data: economy, error: econFetchError } = await supabase
-        .from('user_economy')
-        .select('cosmic_coins, xp, level')
-        .eq('user_id', userId)
-        .single();
-
-      if (econFetchError) {
-        console.error('❌ Error fetching economy:', econFetchError);
-        return null;
-      }
-
-      const newCoins = (economy?.cosmic_coins || 0) + quest.reward_coins;
-      const newXP = (economy?.xp || 0) + quest.reward_xp;
-      const newLevel = Math.floor(newXP / 100) + 1;
-
-      const { error: updateError } = await supabase
-        .from('user_economy')
-        .update({
-          cosmic_coins: newCoins,
-          xp: newXP,
-          level: newLevel
-        })
-        .eq('user_id', userId);
-
-      if (updateError) {
-        console.error('❌ Error updating economy:', updateError);
-        return null;
-      }
-
-      console.log(`💰 Economy updated: Coins=${newCoins}, XP=${newXP}, Level=${newLevel}`);
-
+    // 3. თუ დასრულდა, დავაბრუნოთ ჯილდო
+    if (result?.completed) {
+      console.log(`🎉 Quest completed: ${quest.title}!`);
       return {
-        xp: quest.reward_xp,
-        coins: quest.reward_coins,
-        quest_title: quest.title
+        xp: result.reward.xp,
+        coins: result.reward.coins,
+        quest_title: result.reward.quest_title
       };
     }
 
+    console.log(`⏳ Progress updated: ${result?.progress}/${quest.target_count}`);
     return null;
   } catch (error) {
     console.error('❌ Exception in trackQuestProgress:', error);
@@ -175,27 +90,41 @@ export async function trackQuestProgress(
 }
 
 /**
- * მიმდინარე ქვესტების ჩატვირთვა მომხმარებლისთვის
+ * მომხმარებლის ქვესტების ჩატვირთვა
  */
 export async function loadUserQuests(userId: string): Promise<QuestProgress[]> {
   if (!supabase) return [];
 
   try {
-    const { data, error } = await supabase
-      .from('user_quest_progress')
-      .select(`
-        *,
-        quest:quest_definitions(*)
-      `)
-      .eq('user_id', userId)
-      // .order('created_at', { ascending: false }); // შენიშვნა: created_at არ არის quest_progress-ში, ამიტომ ვტოვებთ მარტივად
+    const { data, error } = await supabase.rpc('get_user_quests', {
+      p_user_id: userId
+    });
 
     if (error) {
       console.error('❌ Error loading quests:', error);
       return [];
     }
 
-    return data || [];
+    // ტრანსფორმაცია QuestProgress ფორმატში
+    return (data || []).map((item: any) => ({
+      id: item.id,
+      user_id: userId,
+      quest_id: item.quest_id,
+      current_progress: item.current_progress,
+      is_completed: item.is_completed,
+      is_claimed: item.is_claimed,
+      quest: {
+        id: item.quest_id,
+        title: item.quest_title,
+        description: item.quest_description,
+        action_type: item.quest_action_type,
+        target_count: item.quest_target_count,
+        reward_xp: item.quest_reward_xp,
+        reward_coins: item.quest_reward_coins,
+        quest_type: item.quest_type,
+        is_active: true
+      }
+    }));
   } catch (error) {
     console.error('❌ Exception in loadUserQuests:', error);
     return [];
@@ -203,7 +132,7 @@ export async function loadUserQuests(userId: string): Promise<QuestProgress[]> {
 }
 
 /**
- * ყველა აქტიური ქვესტის ჩატვირთვა (განმარტებები)
+ * ყველა აქტიური ქვესტის ჩატვირთვა
  */
 export async function loadActiveQuests(): Promise<QuestDefinition[]> {
   if (!supabase) return [];

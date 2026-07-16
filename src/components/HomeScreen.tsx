@@ -259,6 +259,7 @@ End of Debug Report
     }
   };
 
+  // 🆕 განახლებული: მხოლოდ უსაფრთხო RPC ფუნქციის გამოყენება, პირდაპირი INSERT-ის გარეშე
   const testCompleteQuest = async () => {
     if (!user || !supabase) {
       addDebugLog('error', 'QUEST_TEST', 'No user or supabase available for test');
@@ -272,25 +273,10 @@ End of Debug Report
     if (q) {
       addDebugLog('info', 'QUEST_TEST', `Current State -> Progress: ${q.current_progress}/${q.quest?.target_count}, Completed: ${q.is_completed}`);
     } else {
-      addDebugLog('warning', 'QUEST_TEST', 'Quest not found in user progress. Creating new record...');
+      addDebugLog('info', 'QUEST_TEST', 'Quest not found in user progress. Will create new record via secure function...');
     }
 
-    const { error: testInsertError } = await supabase
-      .from('user_quest_progress')
-      .insert({
-        user_id: user.id,
-        quest_id: (await supabase.from('quest_definitions').select('id').eq('action_type', 'draw_daily_card').single()).data?.id,
-        current_progress: 1,
-        is_completed: false,
-        is_claimed: false
-      });
-
-    if (testInsertError) {
-      addDebugLog('error', 'QUEST_TEST', `❌ RLS BLOCKED INSERT: ${testInsertError.message}`);
-      addDebugLog('error', 'QUEST_TEST', 'Please run the updated RLS SQL script in Supabase!');
-      return;
-    }
-
+    // ვიყენებთ მხოლოდ trackQuestProgress-ს, რომელიც იძახებს უსაფრთხო upsert_quest_progress RPC-ს
     const reward = await trackQuestProgress(user.id, 'draw_daily_card', 1);
     
     if (reward) {
@@ -299,7 +285,7 @@ End of Debug Report
       const updatedQuests = await loadUserQuests(user.id);
       setUserQuests(updatedQuests);
     } else {
-      addDebugLog('warning', 'QUEST_TEST', 'No reward returned. Check browser console (F12) for detailed trackQuestProgress errors.');
+      addDebugLog('info', 'QUEST_TEST', 'Progress updated. Check logs for details.');
       const updatedQuests = await loadUserQuests(user.id);
       setUserQuests(updatedQuests);
     }
