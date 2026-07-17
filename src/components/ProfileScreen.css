@@ -87,7 +87,7 @@
 .profile-header-top {
   display: flex;
   justify-content: space-between;
-  align-items: stretch; /* 🆕 უზრუნველყოფს, რომ ორივე მხარე ერთ სიმაღლეზე იყოს */
+  align-items: center; /* 🆕 ყველა ელემენტი ცენტრშია ვერტიკალურად */
   gap: 12px;
   margin-bottom: 12px;
 }
@@ -96,7 +96,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  width: 65%; /* 🆕 მარცხენა მხარე იკავებს 65%-ს */
+  width: 65%;
 }
 
 .profile-avatar {
@@ -160,30 +160,30 @@
   letter-spacing: 0.3px;
 }
 
-/* 2x2 Navigation Grid - 🆕 მარჯვენა მხარე იკავებს 35%-ს */
+/* 2x2 Navigation Grid - 🆕 ზუსტად იმავე სიმაღლეზე რაც ავატარის რგოლი */
 .profile-nav-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   grid-template-rows: repeat(2, 1fr);
   gap: 6px;
   width: 35%;
-  min-width: unset;
+  height: 60px; /* 🆕 ზუსტად იგივე სიმაღლე რაც ავატარის რგოლს (56px + 4px border) */
 }
 
 .nav-pill {
   background: rgba(20, 12, 5, 0.8);
   border: 1px solid rgba(200, 120, 0, 0.25);
   border-radius: 10px;
-  padding: 6px 4px;
+  padding: 4px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 2px;
   cursor: pointer;
   transition: all 0.3s ease;
-  height: 100%;
-  aspect-ratio: 1; /* 🆕 უზრუნველყოფს, რომ ღილაკები იყოს ზუსტად კვადრატული და თანაბარი */
+  width: 100%;
+  height: 100%; /* 🆕 იკავებს მთელ სივრცეს */
 }
 
 .nav-pill.active {
@@ -199,16 +199,16 @@
 
 .nav-pill:active { transform: scale(0.95); }
 
-.nav-icon { font-size: 16px; }
+.nav-icon { font-size: 14px; } /* 🆕 ოდნავ პატარა */
 
 .nav-label {
   font-family: 'Georgia', serif;
-  font-size: 8px;
+  font-size: 7px; /* 🆕 პატარა რომ ჩაეტია */
   color: #ffe566;
   font-weight: 600;
   letter-spacing: 0.3px;
   text-align: center;
-  line-height: 1.1;
+  line-height: 1;
 }
 
 /* ===== HERO LEVEL SECTION ===== */
@@ -989,8 +989,8 @@
   .profile-header-top { flex-direction: column; align-items: center; text-align: center; }
   .profile-avatar-section { flex-direction: column; align-items: center; width: 100%; }
   
-  .profile-nav-grid { width: 100%; grid-template-columns: repeat(4, 1fr); grid-template-rows: auto; }
-  .nav-pill { min-height: 50px; padding: 6px 4px; aspect-ratio: auto; }
+  .profile-nav-grid { width: 100%; grid-template-columns: repeat(4, 1fr); grid-template-rows: auto; height: auto; }
+  .nav-pill { min-height: 50px; padding: 6px 4px; }
   .nav-icon { font-size: 16px; }
   .nav-label { font-size: 8px; }
   
