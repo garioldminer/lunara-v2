@@ -41,7 +41,7 @@ const getLevelFromTotalXP = (totalXP: number) => {
   return { level, currentLevelXP, xpToNext: xpRequiredForNext };
 };
 
-// 🆕 Toast Notification Component - ახლა ცენტრშია და აქვს X ღილაკი
+// 🆕 Toast Notification Component - ეკრანის ზედა ნაწილში ცენტრში, ლამაზი დიზაინით
 interface Toast {
   message: string;
   type: 'success' | 'error' | 'info';
@@ -49,48 +49,50 @@ interface Toast {
 
 function ToastNotification({ toast, onClose }: { toast: Toast; onClose: () => void }) {
   useEffect(() => {
-    const timer = setTimeout(onClose, 4000); // 4 წამი
+    const timer = setTimeout(onClose, 3000);
     return () => clearTimeout(timer);
   }, [onClose]);
 
   return (
     <motion.div 
-      initial={{ opacity: 0, scale: 0.9, y: 20 }}
+      initial={{ opacity: 0, scale: 0.8, y: -50 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.9, y: 20 }}
+      exit={{ opacity: 0, scale: 0.8, y: -50 }}
       transition={{ type: 'spring', damping: 20, stiffness: 300 }}
       style={{
         position: 'fixed',
-        top: '50%',
+        top: '20%',
         left: '50%',
-        transform: 'translate(-50%, -50%)',
+        transform: 'translateX(-50%)',
         zIndex: 10003,
-        background: toast.type === 'success' ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.98), rgba(5, 150, 105, 0.98))' : 
-                    toast.type === 'error' ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.98), rgba(220, 38, 38, 0.98))' : 
-                    'linear-gradient(135deg, rgba(59, 130, 246, 0.98), rgba(37, 99, 235, 0.98))',
+        background: toast.type === 'success' 
+          ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.95), rgba(5, 150, 105, 0.95))'
+          : toast.type === 'error'
+          ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.95), rgba(220, 38, 38, 0.95))'
+          : 'linear-gradient(135deg, rgba(251, 191, 36, 0.95), rgba(245, 158, 11, 0.95))',
         color: '#fff',
-        padding: '20px 28px',
+        padding: '16px 24px',
         borderRadius: '16px',
         boxShadow: '0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1)',
         display: 'flex',
         alignItems: 'center',
-        gap: '14px',
+        gap: '12px',
         fontSize: '15px',
         fontWeight: '600',
-        minWidth: '320px',
+        minWidth: '280px',
         maxWidth: '90vw',
         backdropFilter: 'blur(12px)',
         border: '1px solid rgba(255,255,255,0.1)'
       }}
     >
-      <span style={{ fontSize: '22px' }}>
+      <span style={{ fontSize: '24px' }}>
         {toast.type === 'success' ? '✅' : toast.type === 'error' ? '⚠️' : 'ℹ️'}
       </span>
-      <span style={{ flex: 1, textAlign: 'center' }}>{toast.message}</span>
+      <span style={{ flex: 1 }}>{toast.message}</span>
       <button 
         onClick={onClose} 
         style={{ 
-          background: 'rgba(255,255,255,0.15)', 
+          background: 'rgba(255,255,255,0.2)', 
           border: 'none', 
           borderRadius: '8px', 
           width: '28px', 
@@ -100,10 +102,11 @@ function ToastNotification({ toast, onClose }: { toast: Toast; onClose: () => vo
           justifyContent: 'center',
           cursor: 'pointer',
           color: '#fff',
-          transition: 'all 0.2s'
+          fontSize: '18px',
+          lineHeight: 1
         }}
       >
-        <X size={16} />
+        ×
       </button>
     </motion.div>
   );
