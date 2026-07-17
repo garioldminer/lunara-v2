@@ -41,7 +41,7 @@ const getLevelFromTotalXP = (totalXP: number) => {
   return { level, currentLevelXP, xpToNext: xpRequiredForNext };
 };
 
-// 🆕 Toast Notification Component
+// 🆕 Toast Notification Component - ახლა ცენტრშია და აქვს X ღილაკი
 interface Toast {
   message: string;
   type: 'success' | 'error' | 'info';
@@ -49,59 +49,61 @@ interface Toast {
 
 function ToastNotification({ toast, onClose }: { toast: Toast; onClose: () => void }) {
   useEffect(() => {
-    const timer = setTimeout(onClose, 3000);
+    const timer = setTimeout(onClose, 4000); // 4 წამი
     return () => clearTimeout(timer);
   }, [onClose]);
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: -50, scale: 0.9 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -20, scale: 0.9 }}
+      initial={{ opacity: 0, scale: 0.9, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.9, y: 20 }}
       transition={{ type: 'spring', damping: 20, stiffness: 300 }}
       style={{
         position: 'fixed',
-        top: '20px',
+        top: '50%',
         left: '50%',
-        transform: 'translateX(-50%)',
+        transform: 'translate(-50%, -50%)',
         zIndex: 10003,
-        background: toast.type === 'success' ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.95), rgba(5, 150, 105, 0.95))' : 
-                    toast.type === 'error' ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.95), rgba(220, 38, 38, 0.95))' : 
-                    'linear-gradient(135deg, rgba(59, 130, 246, 0.95), rgba(37, 99, 235, 0.95))',
+        background: toast.type === 'success' ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.98), rgba(5, 150, 105, 0.98))' : 
+                    toast.type === 'error' ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.98), rgba(220, 38, 38, 0.98))' : 
+                    'linear-gradient(135deg, rgba(59, 130, 246, 0.98), rgba(37, 99, 235, 0.98))',
         color: '#fff',
-        padding: '14px 24px',
-        borderRadius: '12px',
-        boxShadow: '0 8px 24px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1)',
+        padding: '20px 28px',
+        borderRadius: '16px',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1)',
         display: 'flex',
         alignItems: 'center',
-        gap: '12px',
-        fontSize: '14px',
+        gap: '14px',
+        fontSize: '15px',
         fontWeight: '600',
-        minWidth: '280px',
+        minWidth: '320px',
         maxWidth: '90vw',
-        backdropFilter: 'blur(10px)'
+        backdropFilter: 'blur(12px)',
+        border: '1px solid rgba(255,255,255,0.1)'
       }}
     >
-      <span style={{ fontSize: '18px' }}>
+      <span style={{ fontSize: '22px' }}>
         {toast.type === 'success' ? '✅' : toast.type === 'error' ? '⚠️' : 'ℹ️'}
       </span>
-      <span style={{ flex: 1 }}>{toast.message}</span>
+      <span style={{ flex: 1, textAlign: 'center' }}>{toast.message}</span>
       <button 
         onClick={onClose} 
         style={{ 
-          background: 'rgba(255,255,255,0.2)', 
+          background: 'rgba(255,255,255,0.15)', 
           border: 'none', 
-          borderRadius: '6px', 
-          width: '24px', 
-          height: '24px', 
+          borderRadius: '8px', 
+          width: '28px', 
+          height: '28px', 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'center',
           cursor: 'pointer',
-          color: '#fff'
+          color: '#fff',
+          transition: 'all 0.2s'
         }}
       >
-        <X size={14} />
+        <X size={16} />
       </button>
     </motion.div>
   );
@@ -740,7 +742,6 @@ End of Debug Report
     return () => clearInterval(timer);
   }, []);
 
-  // 🆕 გასწორებული handleClaimReward ფუნქცია
   const handleClaimReward = async () => {
     if (rewardClaimed || isClaiming) {
       showToast('Reward already claimed or claiming', 'info');
@@ -765,7 +766,6 @@ End of Debug Report
       const result = await response.json();
       addDebugLog('info', 'REWARD', 'Response parsed', result);
       
-      // 🆕 აქ ვამოწმებთ result.data.reward-ს, რადგან Edge Function ასე აბრუნებს
       if (result.success) {
         setRewardClaimed(true);
         const rewardData = result.data?.reward || result.reward;
@@ -839,7 +839,7 @@ End of Debug Report
 
   const userLevelData = getLevelFromTotalXP(economy.xp);
   const xpPercent = Math.min((userLevelData.currentLevelXP / userLevelData.xpToNext) * 100, 100);
-  const circumference = 2 * Math.PI * 22;
+  const circumference = 2 * Math.PI * 23; // 🆕 განახლებული რადიუსისთვის (r=23)
   const strokeDashoffset = circumference - (xpPercent / 100) * circumference;
 
   const getQuestIcon = (actionType: string) => {
@@ -863,44 +863,84 @@ End of Debug Report
 
       <div className="user-header">
         <div className="user-main-row">
+          {/* 🆕 ავატარი განახლებული დიზაინით */}
           <div className="avatar-section clickable-avatar" onClick={() => onNavigate?.('profile')} style={{ position: 'relative' }}>
-            <svg className="xp-circular-progress" width="56" height="56" viewBox="0 0 56 56" style={{ position: 'absolute', top: 0, left: 0, zIndex: 1 }}>
-              <circle className="xp-circle-bg" cx="28" cy="28" r="22" fill="none" stroke="rgba(197, 160, 89, 0.2)" strokeWidth="3" />
-              <circle className="xp-circle-progress" cx="28" cy="28" r="22" fill="none" stroke="url(#xpGradient)" strokeWidth="3" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} transform="rotate(-90 28 28)" />
+            {/* წრიანი XP პროგრესი - უფრო ლამაზი ხაზებით */}
+            <svg className="xp-circular-progress" width="52" height="52" viewBox="0 0 52 52" style={{ position: 'absolute', top: 0, left: 0, zIndex: 1 }}>
+              {/* ფონური წრე - უფრო მუქი */}
+              <circle className="xp-circle-bg" cx="26" cy="26" r="23" fill="none" stroke="rgba(197, 160, 89, 0.15)" strokeWidth="2.5" />
+              {/* პროგრესის წრე - გრადიენტი */}
+              <circle className="xp-circle-progress" cx="26" cy="26" r="23" fill="none" stroke="url(#xpGradient)" strokeWidth="2.5" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} transform="rotate(-90 26 26)" />
               <defs>
                 <linearGradient id="xpGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#C5A059" />
-                  <stop offset="100%" stopColor="#ffe566" />
+                  <stop offset="0%" stopColor="#fbbf24" />
+                  <stop offset="100%" stopColor="#f59e0b" />
                 </linearGradient>
               </defs>
             </svg>
             
-            <div className="avatar-image" style={{ position: 'relative', zIndex: 2 }}>
-              {user?.display_name?.charAt(0).toUpperCase() || 'U'}
-            </div>
-            
-            <div style={{
-              position: 'absolute',
-              bottom: '-2px',
-              left: '-2px',
-              background: 'linear-gradient(135deg, #fbbf24, #d97706)',
-              color: '#0f0c08',
-              borderRadius: '8px',
-              width: '20px',
-              height: '20px',
+            {/* ავატარი - ოდნავ შემცირებული */}
+            <div className="avatar-image" style={{ 
+              position: 'relative', 
+              zIndex: 2,
+              width: '48px',
+              height: '48px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '11px',
+              fontSize: '20px',
+              fontWeight: 'bold',
+              background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)',
+              borderRadius: '50%',
+              color: '#0f0c08',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+            }}>
+              {user?.display_name?.charAt(0).toUpperCase() || 'U'}
+            </div>
+            
+            {/* 🆕 Level ბეიჯი - ქვედა მარცხენა */}
+            <div style={{
+              position: 'absolute',
+              bottom: '0px',
+              left: '0px',
+              background: 'linear-gradient(135deg, #fbbf24, #d97706)',
+              color: '#0f0c08',
+              borderRadius: '6px',
+              width: '18px',
+              height: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '10px',
               fontWeight: 'bold',
               zIndex: 3,
-              boxShadow: '0 2px 6px rgba(0,0,0,0.4), 0 0 0 2px #1a1510',
-              border: '2px solid #1a1510'
+              boxShadow: '0 2px 6px rgba(0,0,0,0.4), 0 0 0 1.5px #1a1510',
+              border: '1.5px solid #1a1510'
             }}>
               {userLevelData.level}
             </div>
             
-            {activeSubscription && <div className="premium-avatar-badge"><Crown size={10} /></div>}
+            {/* 🆕 Premium ბეიჯი - ქვედა მარჯვენა (იგივე დიზაინი) */}
+            {activeSubscription && (
+              <div style={{
+                position: 'absolute',
+                bottom: '0px',
+                right: '0px',
+                background: 'linear-gradient(135deg, #a78bfa, #7c3aed)',
+                color: '#fff',
+                borderRadius: '6px',
+                width: '18px',
+                height: '18px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 3,
+                boxShadow: '0 2px 6px rgba(0,0,0,0.4), 0 0 0 1.5px #1a1510',
+                border: '1.5px solid #1a1510'
+              }}>
+                <Crown size={10} style={{ filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.5))' }} />
+              </div>
+            )}
           </div>
           
           <div className="user-info-section">
