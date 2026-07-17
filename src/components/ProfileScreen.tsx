@@ -253,6 +253,12 @@ export default function ProfileScreen({ onNavigate }: Props) {
     { id: '5', icon: '🌙', title: 'Moon Master', description: 'Complete 10 moon rituals', unlocked: false, progress: 3, total: 10 },
   ] : [];
 
+  const mySigns: { label: string; icon: string; sign: SignInfo }[] = userData ? [
+    { label: 'Sun Sign', icon: '☀️', sign: { name: user.sun_sign || '', ...getSignInfo(user.sun_sign || '') } },
+    { label: 'Moon Sign', icon: '🌙', sign: { name: user.moon_sign || '', ...getSignInfo(user.moon_sign || '') } },
+    { label: 'Rising Sign', icon: '⬆️', sign: { name: user.rising_sign || '', ...getSignInfo(user.rising_sign || '') } },
+  ] : [];
+
   const moonPhase = getDynamicMoonPhase();
 
   const handleSettingClick = async (setting: string) => {
@@ -447,7 +453,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
             <div className="my-signs-card animate-fade-in stagger-3">
               <h3 className="card-title">✦ MY SIGNS ✦</h3>
               <div className="signs-grid">
-                {mySigns.map((item, index) => (
+                {mySigns.map((item: { label: string; icon: string; sign: SignInfo }, index: number) => (
                   <div key={index} className="sign-item">
                     <div className="sign-icon">{item.icon}</div>
                     <div className="sign-label">{item.label}</div>
