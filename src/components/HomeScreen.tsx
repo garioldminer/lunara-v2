@@ -41,42 +41,70 @@ const getLevelFromTotalXP = (totalXP: number) => {
   return { level, currentLevelXP, xpToNext: xpRequiredForNext };
 };
 
-interface Props {
-  onNavigate?: (screen: string) => void;
-}
-
-interface EconomyData {
-  cosmic_coins: number;
-  xp: number; // აქ ინახება ჯამური XP
-  level: number;
-  current_streak: number;
-}
-
-interface DebugLog {
-  id: number;
-  timestamp: string;
-  type: 'info' | 'success' | 'error' | 'warning';
-  category: string;
+// 🆕 Toast Notification Component
+interface Toast {
   message: string;
-  data?: any;
+  type: 'success' | 'error' | 'info';
 }
 
-interface DatabaseDebugInfo {
-  lastQuery: any;
-  lastResponse: any;
-  economyData: any;
-  queryHistory: Array<{
-    timestamp: string;
-    table: string;
-    operation: string;
-    params: any;
-    result: any;
-    error?: any;
-  }>;
-}
+function ToastNotification({ toast, onClose }: { toast: Toast; onClose: () => void }) {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 3000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
 
-interface DailyQuestDisplay extends QuestProgress {
-  isClaimable: boolean;
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: -50, scale: 0.9 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -20, scale: 0.9 }}
+      transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+      style={{
+        position: 'fixed',
+        top: '20px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: 10003,
+        background: toast.type === 'success' ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.95), rgba(5, 150, 105, 0.95))' : 
+                    toast.type === 'error' ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.95), rgba(220, 38, 38, 0.95))' : 
+                    'linear-gradient(135deg, rgba(59, 130, 246, 0.95), rgba(37, 99, 235, 0.95))',
+        color: '#fff',
+        padding: '14px 24px',
+        borderRadius: '12px',
+        boxShadow: '0 8px 24px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        fontSize: '14px',
+        fontWeight: '600',
+        minWidth: '280px',
+        maxWidth: '90vw',
+        backdropFilter: 'blur(10px)'
+      }}
+    >
+      <span style={{ fontSize: '18px' }}>
+        {toast.type === 'success' ? '✅' : toast.type === 'error' ? '⚠️' : 'ℹ️'}
+      </span>
+      <span style={{ flex: 1 }}>{toast.message}</span>
+      <button 
+        onClick={onClose} 
+        style={{ 
+          background: 'rgba(255,255,255,0.2)', 
+          border: 'none', 
+          borderRadius: '6px', 
+          width: '24px', 
+          height: '24px', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          cursor: 'pointer',
+          color: '#fff'
+        }}
+      >
+        <X size={14} />
+      </button>
+    </motion.div>
+  );
 }
 
 // 🆕 Level Up Modal Component
@@ -133,6 +161,44 @@ function LevelUpModal({ level, onClose }: { level: number; onClose: () => void }
   );
 }
 
+interface Props {
+  onNavigate?: (screen: string) => void;
+}
+
+interface EconomyData {
+  cosmic_coins: number;
+  xp: number;
+  level: number;
+  current_streak: number;
+}
+
+interface DebugLog {
+  id: number;
+  timestamp: string;
+  type: 'info' | 'success' | 'error' | 'warning';
+  category: string;
+  message: string;
+  data?: any;
+}
+
+interface DatabaseDebugInfo {
+  lastQuery: any;
+  lastResponse: any;
+  economyData: any;
+  queryHistory: Array<{
+    timestamp: string;
+    table: string;
+    operation: string;
+    params: any;
+    result: any;
+    error?: any;
+  }>;
+}
+
+interface DailyQuestDisplay extends QuestProgress {
+  isClaimable: boolean;
+}
+
 export default function HomeScreen({ onNavigate }: Props) {
   const { user, setUser } = useUser();
   const [rewardClaimed, setRewardClaimed] = useState(false);
@@ -158,9 +224,10 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [showQuestModal, setShowQuestModal] = useState(false);
   const [isClaimingQuest, setIsClaimingQuest] = useState(false);
 
-  // 🆕 Level Up State
   const [showLevelUpModal, setShowLevelUpModal] = useState(false);
   const [leveledUpTo, setLeveledUpTo] = useState<number>(1);
+  
+  const [toast, setToast] = useState<Toast | null>(null);
 
   const [showDebug, setShowDebug] = useState(false);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
@@ -175,6 +242,10 @@ export default function HomeScreen({ onNavigate }: Props) {
     economyData: null,
     queryHistory: []
   });
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+    setToast({ message, type });
+  };
 
   const addDebugLog = (type: DebugLog['type'], category: string, message: string, data?: any) => {
     const log: DebugLog = {
@@ -207,7 +278,7 @@ export default function HomeScreen({ onNavigate }: Props) {
 
   const copyAllDebugInfo = async () => {
     const debugText = `
-🔧 LUNARA DEBUG REPORT
+ LUNARA DEBUG REPORT
 📅 ${new Date().toLocaleString()}
 
 👤 USER INFO:
@@ -220,7 +291,7 @@ export default function HomeScreen({ onNavigate }: Props) {
    Level: ${economy.level}
    Streak: ${currentStreak}
 
-📊 STATUS:
+ STATUS:
    Database: ${dbStatus.toUpperCase()}
    Economy Load: ${economyLoadStatus.toUpperCase()}
 
@@ -245,12 +316,12 @@ End of Debug Report
       setTimeout(() => setCopySuccess(false), 2000);
     } catch (err) {
       console.error('Failed to copy:', err);
-      alert('Failed to copy to clipboard');
+      showToast('Failed to copy to clipboard', 'error');
     }
   };
 
   const checkDatabaseStatus = async () => {
-    addDebugLog('info', 'DB_CHECK', '🔍 Starting database status check...');
+    addDebugLog('info', 'DB_CHECK', ' Starting database status check...');
     if (!user || !supabase) {
       addDebugLog('error', 'DB_CHECK', '❌ No user or supabase client available');
       return;
@@ -374,8 +445,10 @@ End of Debug Report
 
       setEconomy(prev => ({ ...prev, cosmic_coins: newCoins }));
       addDebugLog('success', 'TEST', `✅ Added ${amount} coins. New balance: ${newCoins}`);
+      showToast(`Added ${amount} coins!`, 'success');
     } catch (err: any) {
       addDebugLog('error', 'TEST', `❌ Failed: ${err.message}`);
+      showToast('Failed to add coins', 'error');
     }
   };
 
@@ -393,8 +466,10 @@ End of Debug Report
 
       setEconomy(prev => ({ ...prev, xp: newXP, level: newLevelData.level }));
       addDebugLog('success', 'TEST', `✅ Added ${amount} XP. New: ${newXP} XP, Level ${newLevelData.level}`);
+      showToast(`Added ${amount} XP!`, 'success');
     } catch (err: any) {
       addDebugLog('error', 'TEST', `❌ Failed: ${err.message}`);
+      showToast('Failed to add XP', 'error');
     }
   };
 
@@ -417,7 +492,7 @@ End of Debug Report
     const reward = await trackQuestProgress(user.id, 'draw_daily_card', 1);
     
     if (reward) {
-      addDebugLog('success', 'QUEST_TEST', `🎉 Quest Completed! Reward: ${reward.coins} coins, ${reward.xp} XP`);
+      addDebugLog('success', 'QUEST_TEST', ` Quest Completed! Reward: ${reward.coins} coins, ${reward.xp} XP`);
       reloadFromDatabase();
       await loadQuests();
     } else {
@@ -472,7 +547,6 @@ End of Debug Report
     setQuestsLoading(false);
   };
 
-  // 🆕 განახლებული Claim ლოგიკა Level Up ეფექტით
   const handleClaimQuest = async (quest: DailyQuestDisplay) => {
     if (!user || !supabase || isClaimingQuest) return;
     
@@ -487,7 +561,7 @@ End of Debug Report
       
       if (error || !data?.success) {
         addDebugLog('error', 'QUEST_CLAIM', `Failed: ${error?.message || data?.error}`);
-        alert(`⚠️ ${data?.error || 'Failed to claim reward'}`);
+        showToast(data?.error || 'Failed to claim reward', 'error');
       } else {
         addDebugLog('success', 'QUEST_CLAIM', `Claimed! +${data.reward.coins} coins, +${data.reward.xp} XP`);
         
@@ -515,13 +589,14 @@ End of Debug Report
           setLeveledUpTo(newLevelData.level);
           setShowLevelUpModal(true);
         } else {
-          alert(`🎉 Quest Completed!\n💰 +${data.reward.coins} Coins\n⭐ +${data.reward.xp} XP`);
+          showToast(`Quest Completed! +${data.reward.coins} Coins, +${data.reward.xp} XP`, 'success');
         }
         
         await loadQuests();
       }
     } catch (err: any) {
       addDebugLog('error', 'QUEST_CLAIM', `Exception: ${err.message}`);
+      showToast('Failed to claim quest', 'error');
     } finally {
       setIsClaimingQuest(false);
     }
@@ -667,7 +742,7 @@ End of Debug Report
 
   const handleClaimReward = async () => {
     if (rewardClaimed || isClaiming) {
-      addDebugLog('warning', 'REWARD', 'Reward already claimed or claiming');
+      showToast('Reward already claimed or claiming', 'info');
       return;
     }
     addDebugLog('info', 'REWARD', 'Starting reward claim process');
@@ -675,7 +750,7 @@ End of Debug Report
     try {
       if (!user?.id) {
         addDebugLog('error', 'REWARD', 'No user ID available');
-        alert('❌ User ID not found.');
+        showToast('User ID not found', 'error');
         setIsClaiming(false);
         return;
       }
@@ -695,14 +770,14 @@ End of Debug Report
         const newEconomy = { ...economy, cosmic_coins: economy.cosmic_coins + result.reward.coins, xp: economy.xp + result.reward.xp, current_streak: result.reward.streak };
         setEconomy(newEconomy);
         addDebugLog('success', 'REWARD', 'Reward claimed successfully', { coins: result.reward.coins, xp: result.reward.xp, streak: result.reward.streak, newEconomy });
-        alert(`✅ Daily Reward Claimed!\n💰 Coins: +${result.reward.coins}\n⭐ XP: +${result.reward.xp}\n🔥 Streak: ${result.reward.streak} days`);
+        showToast(`Daily Reward Claimed! +${result.reward.coins} Coins, +${result.reward.xp} XP`, 'success');
       } else {
         addDebugLog('warning', 'REWARD', 'Edge Function returned error', result.error);
-        alert(`⚠️ ${result.error || 'Failed to claim reward'}`);
+        showToast(result.error || 'Failed to claim reward', 'error');
       }
     } catch (error: any) {
       addDebugLog('error', 'REWARD', 'Exception during reward claim', { message: error.message, stack: error.stack });
-      alert('❌ Failed to connect to server.');
+      showToast('Failed to connect to server', 'error');
     } finally {
       setIsClaiming(false);
     }
@@ -769,15 +844,16 @@ End of Debug Report
   return (
     <div className="home-screen">
       <AnimatePresence>
-        {showLevelUpModal && (
-          <LevelUpModal level={leveledUpTo} onClose={() => setShowLevelUpModal(false)} />
-        )}
+        {toast && <ToastNotification toast={toast} onClose={() => setToast(null)} />}
+        {showLevelUpModal && <LevelUpModal level={leveledUpTo} onClose={() => setShowLevelUpModal(false)} />}
       </AnimatePresence>
 
       <div className="user-header">
         <div className="user-main-row">
-          <div className="avatar-section clickable-avatar" onClick={() => onNavigate?.('profile')}>
-            <svg className="xp-circular-progress" width="56" height="56" viewBox="0 0 56 56">
+          {/* 🆕 ავატარი ლეველის ინდიკატორით */}
+          <div className="avatar-section clickable-avatar" onClick={() => onNavigate?.('profile')} style={{ position: 'relative' }}>
+            {/* წრიანი XP პროგრესი ავატარის გარშემო */}
+            <svg className="xp-circular-progress" width="56" height="56" viewBox="0 0 56 56" style={{ position: 'absolute', top: 0, left: 0, zIndex: 1 }}>
               <circle className="xp-circle-bg" cx="28" cy="28" r="22" fill="none" stroke="rgba(197, 160, 89, 0.2)" strokeWidth="3" />
               <circle className="xp-circle-progress" cx="28" cy="28" r="22" fill="none" stroke="url(#xpGradient)" strokeWidth="3" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} transform="rotate(-90 28 28)" />
               <defs>
@@ -787,7 +863,34 @@ End of Debug Report
                 </linearGradient>
               </defs>
             </svg>
-            <div className="avatar-image">{user?.display_name?.charAt(0).toUpperCase() || 'U'}</div>
+            
+            {/* ავატარი */}
+            <div className="avatar-image" style={{ position: 'relative', zIndex: 2 }}>
+              {user?.display_name?.charAt(0).toUpperCase() || 'U'}
+            </div>
+            
+            {/* 🆕 ლეველის ბეიჯი (ქვედა მარცხენა კუთხე) */}
+            <div style={{
+              position: 'absolute',
+              bottom: '-2px',
+              left: '-2px',
+              background: 'linear-gradient(135deg, #fbbf24, #d97706)',
+              color: '#0f0c08',
+              borderRadius: '8px',
+              width: '20px',
+              height: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '11px',
+              fontWeight: 'bold',
+              zIndex: 3,
+              boxShadow: '0 2px 6px rgba(0,0,0,0.4), 0 0 0 2px #1a1510',
+              border: '2px solid #1a1510'
+            }}>
+              {userLevelData.level}
+            </div>
+            
             {activeSubscription && <div className="premium-avatar-badge"><Crown size={10} /></div>}
           </div>
           
@@ -1105,7 +1208,7 @@ End of Debug Report
               </div>
 
               <div style={{ marginBottom: '12px', padding: '8px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
-                <div style={{ marginBottom: '6px', color: '#10b981', fontWeight: 'bold' }}>💰 ECONOMY (FROM DB)</div>
+                <div style={{ marginBottom: '6px', color: '#10b981', fontWeight: 'bold' }}> ECONOMY (FROM DB)</div>
                 {dbDebugInfo.economyData ? (
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
                     <div>🪙 Coins: <strong>{dbDebugInfo.economyData.cosmic_coins}</strong></div>
@@ -1152,7 +1255,7 @@ End of Debug Report
                   🩺 CHECK DB
                 </button>
                 <button onClick={handleLogoutAndReset} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(239, 68, 68, 0.3)', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontSize: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}><LogOut size={12} /> LOGOUT</button>
-                <button onClick={refreshUserDataDebug} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(59, 130, 246, 0.3)', border: '1px solid #3b82f6', borderRadius: '6px', color: '#3b82f6', cursor: 'pointer', fontSize: '9px' }}>🔄 REFRESH USER</button>
+                <button onClick={refreshUserDataDebug} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(59, 130, 246, 0.3)', border: '1px solid #3b82f6', borderRadius: '6px', color: '#3b82f6', cursor: 'pointer', fontSize: '9px' }}> REFRESH USER</button>
                 <button onClick={testEconomyInitialization} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(168, 85, 247, 0.3)', border: '1px solid #a855f7', borderRadius: '6px', color: '#a855f7', cursor: 'pointer', fontSize: '9px' }}>🔄 TEST INIT</button>
                 <button onClick={testCompleteQuest} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(16, 185, 129, 0.3)', border: '1px solid #10b981', borderRadius: '6px', color: '#10b981', cursor: 'pointer', fontSize: '9px' }}>🎯 TEST QUEST</button>
               </div>
