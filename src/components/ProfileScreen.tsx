@@ -478,7 +478,19 @@ export default function ProfileScreen({ onNavigate }: Props) {
               </div>
             </div>
 
-            <div className="quick-actions-card animate-fade-in stagger-3">
+            <div className="moon-phase-card animate-fade-in stagger-3">
+              <h3 className="card-title">✦ MOON PHASE ✦</h3>
+              <div className="moon-content">
+                <div className="moon-symbol">{moonPhase.symbol}</div>
+                <div className="moon-info">
+                  <div className="moon-phase-name">{moonPhase.phase}</div>
+                  <div className="moon-details">Illuminated: {moonPhase.illumination}%</div>
+                  <div className="moon-best-for">Best for: {moonPhase.bestFor}</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="quick-actions-card animate-fade-in stagger-4">
               <h3 className="card-title">✦ EXPLORE ✦</h3>
               <div className="action-buttons-grid">
                 <button className="premium-action-btn" onClick={() => onNavigate && onNavigate('natal-chart')}>
@@ -497,7 +509,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
               </div>
             </div>
 
-            <div className="my-signs-card animate-fade-in stagger-4">
+            <div className="my-signs-card animate-fade-in stagger-5">
               <h3 className="card-title">✦ MY SIGNS ✦</h3>
               <div className="signs-grid">
                 {mySigns.map((item, index) => (
@@ -517,7 +529,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
             </div>
 
             {recentReadings.length > 0 && (
-              <div className="recent-readings-card animate-fade-in stagger-5">
+              <div className="recent-readings-card animate-fade-in stagger-6">
                 <h3 className="card-title">✦ RECENT READINGS ✦</h3>
                 <div className="readings-list">
                   {recentReadings.map((reading) => (
