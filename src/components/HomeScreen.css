@@ -38,8 +38,9 @@
   
   .avatar-section {
     position: relative;
-    width: 56px;
-    height: 56px;
+    /* 🆕 განახლებული ზომები TSX-თან შესაბამისობაში */
+    width: 48px;
+    height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -73,14 +74,15 @@
   }
   
   .avatar-image {
-    width: 48px;
-    height: 48px;
+    /* 🆕 განახლებული ზომები TSX-თან შესაბამისობაში */
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     background: linear-gradient(135deg, #C5A059, #8B6914);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    font-size: 16px; /* 🆕 შემცირებული შრიფტი 40px-თან შესაბამისობაში */
     font-weight: 700;
     color: #0a0600;
     position: relative;
@@ -114,7 +116,7 @@
     cursor: pointer;
     transition: all 0.2s;
     box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
-    margin-top: 2px;
+    margin-top: 4px; /* 🆕 განახლებული margin TSX-ის marginTop: '4px'-თან შესაბამისობაში */
   }
   
   .premium-status-badge:hover {
@@ -138,7 +140,8 @@
     align-items: center;
     gap: 6px;
     background: rgba(255, 255, 255, 0.08);
-    padding: 3px 8px;
+    /* 🆕 განახლებული padding TSX-თან შესაბამისობაში */
+    padding: 4px 10px;
     border-radius: 20px;
     font-size: 12px;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -160,8 +163,9 @@
     color: #0a0600;
     border: none;
     border-radius: 50%;
-    width: 16px;
-    height: 16px;
+    /* 🆕 განახლებული ზომები TSX-თან შესაბამისობაში */
+    width: 18px;
+    height: 18px;
     font-size: 12px;
     font-weight: 700;
     cursor: pointer;
