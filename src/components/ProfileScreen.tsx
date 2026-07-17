@@ -5,7 +5,7 @@ import { useSettings } from '../context/SettingsContext';
 import { updateUser, resetZodiacSign } from '../lib/userService';
 import { getActiveSubscription } from '../lib/subscriptionService';
 import { supabase } from '../lib/supabase';
-import { Bug, X, Star, Heart, BookOpen, Lock, Infinity } from 'lucide-react';
+import { Bug, X, Star, Heart, BookOpen, Lock } from 'lucide-react';
 
 interface Props {
   onNavigate?: (screen: string) => void;
