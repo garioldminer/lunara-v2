@@ -150,25 +150,6 @@ interface Reading {
   cards: string[];
 }
 
-// ==========================================
-// კომპონენტები
-// ==========================================
-function PillTabs({ 
-  activeTab, 
-  setActiveTab 
-}: { 
-  activeTab: 'profile' | 'achievements' | 'settings';
-  setActiveTab: (tab: 'profile' | 'achievements' | 'settings') => void;
-}) {
-  return (
-    <div className="pill-tabs">
-      <button className={`pill-tab ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>👤 Profile</button>
-      <button className={`pill-tab ${activeTab === 'achievements' ? 'active' : ''}`} onClick={() => setActiveTab('achievements')}>🏆 Awards</button>
-      <button className={`pill-tab ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>⚙️ Settings</button>
-    </div>
-  );
-}
-
 export default function ProfileScreen({ onNavigate }: Props) {
   const [activeTab, setActiveTab] = useState<'profile' | 'achievements' | 'settings'>('profile');
   const [showEditProfile, setShowEditProfile] = useState(false);
@@ -251,15 +232,15 @@ export default function ProfileScreen({ onNavigate }: Props) {
   } : null;
 
   const coreTraits: CoreTrait[] = userData ? [
-    { title: 'Sun Sign', sign: userData.sunSign || 'Unknown', description: 'Your core identity and life purpose.', icon: '☀️' },
-    { title: 'Moon Sign', sign: userData.moonSign || 'Unknown', description: 'Your inner emotional world and instincts.', icon: '🌙' },
-    { title: 'Rising Sign', sign: userData.risingSign || 'Unknown', description: 'The mask you wear and first impressions.', icon: '⬆️' },
+    { title: 'Sun Sign', sign: userData.sunSign || 'Unknown', description: 'Your core identity.', icon: '☀️' },
+    { title: 'Moon Sign', sign: userData.moonSign || 'Unknown', description: 'Your inner emotions.', icon: '🌙' },
+    { title: 'Rising Sign', sign: userData.risingSign || 'Unknown', description: 'First impressions.', icon: '⬆️' },
   ] : [];
 
   const mySigns: { label: string; icon: string; sign: SignInfo }[] = userData ? [
-    { label: 'Sun Sign', icon: '☀️', sign: { name: userData.sunSign, ...getSignInfo(userData.sunSign) } },
-    { label: 'Moon Sign', icon: '🌙', sign: { name: userData.moonSign, ...getSignInfo(userData.moonSign) } },
-    { label: 'Rising Sign', icon: '⬆️', sign: { name: userData.risingSign, ...getSignInfo(userData.risingSign) } },
+    { label: 'Sun', icon: '☀️', sign: { name: userData.sunSign, ...getSignInfo(userData.sunSign) } },
+    { label: 'Moon', icon: '🌙', sign: { name: userData.moonSign, ...getSignInfo(userData.moonSign) } },
+    { label: 'Rising', icon: '⬆️', sign: { name: userData.risingSign, ...getSignInfo(userData.risingSign) } },
   ] : [];
 
   const stats: Stat[] = userData ? [
@@ -418,22 +399,37 @@ export default function ProfileScreen({ onNavigate }: Props) {
       <div className="profile-content">
         {activeTab === 'profile' && (
           <div className="profile-tab">
-            <div className="hero-card animate-fade-in stagger-1">
-              <div className="hero-shimmer"></div>
-              <div className="hero-plan-badge" style={{ '--plan-color': planConfig.color } as React.CSSProperties}>
-                <span className="plan-badge-icon">{planConfig.icon}</span>
-                <span className="plan-badge-text">{userData.currentPlan}</span>
-              </div>
-
-              <div className="hero-top-row">
-                <div className="hero-avatar">
-                  <span className="avatar-letter">{userData.avatar}</span>
-                  <div className="avatar-ring"></div>
-                  <button className="avatar-edit-btn" onClick={() => setShowEditProfile(true)}>✏️</button>
+            {/* 1. Compact Header with Avatar + 4 Nav Pills */}
+            <div className="profile-header-compact animate-fade-in stagger-1">
+              <div className="profile-header-top">
+                <div className="profile-avatar-section">
+                  <div className="profile-avatar">
+                    <span className="avatar-letter">{userData.avatar}</span>
+                    <div className="avatar-ring"></div>
+                  </div>
+                  <div className="profile-user-info">
+                    <h2 className="profile-username">{userData.displayName}</h2>
+                    <p className="profile-zodiac">{userData.zodiacSymbol} {userData.zodiac.charAt(0).toUpperCase() + userData.zodiac.slice(1)} · {userData.element}</p>
+                  </div>
                 </div>
-                <div className="hero-user-info">
-                  <h2 className="hero-username">{userData.displayName}</h2>
-                  <p className="hero-zodiac">{userData.zodiacSymbol} {userData.zodiac.charAt(0).toUpperCase() + userData.zodiac.slice(1)} · {userData.element}</p>
+                
+                <div className="profile-nav-grid">
+                  <button className={`nav-pill ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
+                    <span className="nav-icon">👤</span>
+                    <span className="nav-label">Profile</span>
+                  </button>
+                  <button className={`nav-pill ${activeTab === 'achievements' ? 'active' : ''}`} onClick={() => setActiveTab('achievements')}>
+                    <span className="nav-icon">🏆</span>
+                    <span className="nav-label">Awards</span>
+                  </button>
+                  <button className="nav-pill premium-badge" onClick={() => onNavigate && onNavigate('subscription')}>
+                    <span className="nav-icon">💎</span>
+                    <span className="nav-label">{activeSubscription ? 'PREMIUM' : 'FREE'}</span>
+                  </button>
+                  <button className={`nav-pill ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>
+                    <span className="nav-icon">⚙️</span>
+                    <span className="nav-label">Settings</span>
+                  </button>
                 </div>
               </div>
 
@@ -451,34 +447,35 @@ export default function ProfileScreen({ onNavigate }: Props) {
                   {userData.xpToNext - userData.xp} XP to Level {userData.level + 1}
                 </div>
               </div>
-
-              <PillTabs activeTab={activeTab} setActiveTab={setActiveTab} />
-
-              <div className="hero-stats-row">
-                {stats.map((stat, idx) => (
-                  <div key={idx} className="hero-stat">
-                    <span className="hero-stat-icon">{stat.icon}</span>
-                    <span className="hero-stat-value">{stat.value}</span>
-                    <span className="hero-stat-label">{stat.label}</span>
-                  </div>
-                ))}
-              </div>
             </div>
 
-            <div className="core-traits-card animate-fade-in stagger-2">
+            {/* 2. Compact Stats Grid */}
+            <div className="stats-compact-grid animate-fade-in stagger-2">
+              {stats.map((stat, idx) => (
+                <div key={idx} className="stat-compact-item">
+                  <div className="stat-compact-icon">{stat.icon}</div>
+                  <div className="stat-compact-value">{stat.value}</div>
+                  <div className="stat-compact-label">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* 3. Horizontal Core Traits */}
+            <div className="core-traits-horizontal animate-fade-in stagger-3">
               <h3 className="card-title">✦ CORE TRAITS ✦</h3>
-              <div className="traits-grid">
+              <div className="traits-horizontal-grid">
                 {coreTraits.map((trait, index) => (
-                  <div key={index} className="trait-item">
-                    <div className="trait-icon">{trait.icon}</div>
-                    <div className="trait-name">{trait.sign.charAt(0).toUpperCase() + trait.sign.slice(1)}</div>
-                    <div className="trait-desc">{trait.description}</div>
+                  <div key={index} className="trait-compact-item">
+                    <div className="trait-compact-icon">{trait.icon}</div>
+                    <div className="trait-compact-name">{trait.sign.charAt(0).toUpperCase() + trait.sign.slice(1)}</div>
+                    <div className="trait-compact-desc">{trait.description}</div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="moon-phase-card animate-fade-in stagger-3">
+            {/* 4. Moon Phase */}
+            <div className="moon-phase-card animate-fade-in stagger-4">
               <h3 className="card-title">✦ MOON PHASE ✦</h3>
               <div className="moon-content">
                 <div className="moon-symbol">{moonPhase.symbol}</div>
@@ -490,26 +487,28 @@ export default function ProfileScreen({ onNavigate }: Props) {
               </div>
             </div>
 
-            <div className="quick-actions-card animate-fade-in stagger-4">
+            {/* 5. Explore Buttons */}
+            <div className="quick-actions-card animate-fade-in stagger-5">
               <h3 className="card-title">✦ EXPLORE ✦</h3>
               <div className="action-buttons-grid">
                 <button className="premium-action-btn" onClick={() => onNavigate && onNavigate('natal-chart')}>
-                  <Star size={20} />
-                  <span>Full Natal Chart</span>
-                  {userData.currentPlan === 'FREE' && <Lock size={14} className="lock-icon" />}
+                  <Star size={18} />
+                  <span>Natal Chart</span>
+                  {userData.currentPlan === 'FREE' && <Lock size={12} className="lock-icon" />}
                 </button>
                 <button className="premium-action-btn" onClick={() => onNavigate && onNavigate('compatibility')}>
-                  <Heart size={20} />
+                  <Heart size={18} />
                   <span>Compatibility</span>
                 </button>
                 <button className="premium-action-btn" onClick={() => onNavigate && onNavigate('journal')}>
-                  <BookOpen size={20} />
-                  <span>My Journal</span>
+                  <BookOpen size={18} />
+                  <span>Journal</span>
                 </button>
               </div>
             </div>
 
-            <div className="my-signs-card animate-fade-in stagger-5">
+            {/* 6. My Signs */}
+            <div className="my-signs-card animate-fade-in stagger-6">
               <h3 className="card-title">✦ MY SIGNS ✦</h3>
               <div className="signs-grid">
                 {mySigns.map((item, index) => (
@@ -522,14 +521,14 @@ export default function ProfileScreen({ onNavigate }: Props) {
                 ))}
               </div>
               <div className="sign-actions">
-                <button className="change-sign-btn" onClick={handleChangeSign}><span>🔄 Change Sign</span></button>
-                <button className="reset-sign-btn" onClick={() => setShowResetConfirm(true)}><span>🗑️ Reset Sign</span></button>
+                <button className="change-sign-btn" onClick={handleChangeSign}><span>🔄 Change</span></button>
+                <button className="reset-sign-btn" onClick={() => setShowResetConfirm(true)}><span>🗑️ Reset</span></button>
               </div>
-              <button className="birth-chart-btn" onClick={() => setShowBirthInfo(true)}><span>View Birth Chart</span><span className="arrow">→</span></button>
             </div>
 
+            {/* 7. Recent Readings */}
             {recentReadings.length > 0 && (
-              <div className="recent-readings-card animate-fade-in stagger-6">
+              <div className="recent-readings-card animate-fade-in stagger-7">
                 <h3 className="card-title">✦ RECENT READINGS ✦</h3>
                 <div className="readings-list">
                   {recentReadings.map((reading) => (
@@ -550,7 +549,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
 
         {activeTab === 'achievements' && (
           <div className="achievements-tab">
-            <PillTabs activeTab={activeTab} setActiveTab={setActiveTab} />
             <h3 className="section-title">✦ ACHIEVEMENTS ✦</h3>
             <div className="achievements-list">
               {achievements.map((achievement, index) => (
@@ -574,7 +572,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
 
         {activeTab === 'settings' && (
           <div className="settings-tab">
-            <PillTabs activeTab={activeTab} setActiveTab={setActiveTab} />
             <h3 className="section-title">✦ SETTINGS ✦</h3>
             <div className="settings-section">
               <h4 className="settings-section-title">🎨 Appearance</h4>
@@ -647,9 +644,32 @@ export default function ProfileScreen({ onNavigate }: Props) {
         </div>
       )}
 
-      {showEditProfile && <EditProfileModal userData={userData} editSection={editSection} setEditSection={setEditSection} onSave={handleSaveEdit} onClose={() => setShowEditProfile(false)} onEditBirthInfo={() => { setShowEditProfile(false); setShowBirthInfo(true); }} />}
-      {showBirthInfo && <BirthInfoModal birthDate={userData.birthDate} birthTime={userData.birthTime} birthPlace={userData.birthPlace} onSave={handleSaveBirthInfo} onClose={() => setShowBirthInfo(false)} />}
-      {showResetConfirm && <ResetConfirmModal resetting={resetting} onConfirm={handleResetSign} onCancel={() => setShowResetConfirm(false)} />}
+      {showEditProfile && (
+        <EditProfileModal 
+          userData={userData} 
+          editSection={editSection} 
+          setEditSection={setEditSection} 
+          onSave={handleSaveEdit} 
+          onClose={() => setShowEditProfile(false)} 
+          onEditBirthInfo={() => { setShowEditProfile(false); setShowBirthInfo(true); }} 
+        />
+      )}
+      {showBirthInfo && (
+        <BirthInfoModal 
+          birthDate={userData.birthDate} 
+          birthTime={userData.birthTime} 
+          birthPlace={userData.birthPlace} 
+          onSave={handleSaveBirthInfo} 
+          onClose={() => setShowBirthInfo(false)} 
+        />
+      )}
+      {showResetConfirm && (
+        <ResetConfirmModal 
+          resetting={resetting} 
+          onConfirm={handleResetSign} 
+          onCancel={() => setShowResetConfirm(false)} 
+        />
+      )}
     </div>
   );
 }
