@@ -111,7 +111,7 @@
   background: linear-gradient(135deg, #1a0f05 0%, #0a0600 50%, #1a0f05 100%);
   border: 1px solid rgba(200, 120, 0, 0.4);
   border-radius: 14px;
-  padding: 12px;
+  padding: 16px;
   margin-bottom: 12px;
   overflow: hidden;
   box-shadow: 
@@ -145,15 +145,15 @@
 
 .hero-plan-badge {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 12px;
+  right: 12px;
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   background: rgba(255, 229, 102, 0.1);
   border: 1px solid var(--plan-color);
   border-radius: 12px;
-  padding: 3px 7px;
+  padding: 4px 8px;
   box-shadow: 0 0 8px var(--plan-color);
   animation: badgePulse 3s ease-in-out infinite, scaleIn 0.4s ease-out 0.3s backwards;
   z-index: 5;
@@ -164,11 +164,11 @@
   50% { box-shadow: 0 0 12px var(--plan-color); }
 }
 
-.plan-badge-icon { font-size: 10px; }
+.plan-badge-icon { font-size: 12px; }
 
 .plan-badge-text {
   font-family: 'Georgia', serif;
-  font-size: 7px;
+  font-size: 8px;
   font-weight: bold;
   color: var(--plan-color);
   letter-spacing: 0.6px;
@@ -177,14 +177,14 @@
 .hero-top-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 .hero-avatar {
   position: relative;
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   flex-shrink: 0;
 }
 
@@ -198,7 +198,7 @@
   border-radius: 50%;
   color: #0a0600;
   font-weight: bold;
-  font-size: 18px;
+  font-size: 20px;
   font-family: 'Georgia', serif;
   z-index: 2;
 }
@@ -231,7 +231,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 9px;
+  font-size: 10px;
   cursor: pointer;
   z-index: 10;
   padding: 0;
@@ -252,9 +252,9 @@
 
 .hero-username {
   font-family: 'Georgia', serif;
-  font-size: 15px;
+  font-size: 18px;
   color: #ffe566;
-  margin: 0 0 2px;
+  margin: 0 0 4px;
   font-weight: bold;
   letter-spacing: 0.6px;
   text-shadow: 0 0 8px rgba(255, 229, 102, 0.3);
@@ -262,30 +262,30 @@
 
 .hero-zodiac {
   font-family: 'Georgia', serif;
-  font-size: 9px;
+  font-size: 11px;
   color: #c87800;
   margin: 0;
   letter-spacing: 0.3px;
 }
 
 .hero-level-section {
-  margin-bottom: 10px;
-  padding: 7px 9px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
   background: rgba(20, 12, 5, 0.6);
   border: 1px solid rgba(200, 120, 0, 0.2);
-  border-radius: 7px;
+  border-radius: 10px;
 }
 
 .hero-level-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 5px;
+  margin-bottom: 6px;
 }
 
 .hero-level-text {
   font-family: 'Georgia', serif;
-  font-size: 10px;
+  font-size: 12px;
   color: #ffe566;
   font-weight: bold;
 }
@@ -293,32 +293,32 @@
 .level-title {
   color: #c87800;
   font-weight: normal;
-  font-size: 9px;
-  margin-left: 3px;
+  font-size: 10px;
+  margin-left: 4px;
 }
 
 .hero-xp-text {
   font-family: 'Georgia', serif;
-  font-size: 8px;
+  font-size: 10px;
   color: #886600;
 }
 
 .hero-progress-bar {
   width: 100%;
-  height: 4px;
-  background: rgba(167, 139, 250, 0.15); /* 🆕 განახლებულია იასამნისფერ თემასთან შესაბამისობაში */
-  border-radius: 2px;
+  height: 6px;
+  background: rgba(167, 139, 250, 0.15);
+  border-radius: 3px;
   overflow: hidden;
   position: relative;
 }
 
 .hero-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #a78bfa, #7c3aed); /* 🆕 იასამნისფერი გრადიენტი */
-  border-radius: 2px;
+  background: linear-gradient(90deg, #a78bfa, #7c3aed);
+  border-radius: 3px;
   position: relative;
   transition: width 1s ease-out;
-  box-shadow: 0 0 6px rgba(167, 139, 250, 0.5); /* 🆕 იასამნისფერი ჩრდილი */
+  box-shadow: 0 0 6px rgba(167, 139, 250, 0.5);
 }
 
 .progress-shimmer {
@@ -339,8 +339,8 @@
 /* ===== PILL TABS ===== */
 .pill-tabs {
   display: flex;
-  gap: 6px;
-  margin: 10px 0;
+  gap: 8px;
+  margin: 12px 0;
   padding: 0;
   background: transparent;
   border: none;
@@ -351,19 +351,19 @@
   background: rgba(20, 12, 5, 0.6);
   border: 1px solid rgba(200, 120, 0, 0.25);
   border-radius: 20px;
-  padding: 8px 10px;
+  padding: 10px 12px;
   color: #c87800;
   font-family: 'Georgia', serif;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
   letter-spacing: 0.5px;
-  min-height: 36px;
+  min-height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 6px;
   white-space: nowrap;
   overflow: hidden;
 }
@@ -385,7 +385,7 @@
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding-top: 7px;
+  padding-top: 12px;
   border-top: 1px solid rgba(200, 120, 0, 0.15);
 }
 
@@ -393,12 +393,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   flex: 1;
 }
 
 .hero-stat-icon { 
-  font-size: 14px;
+  font-size: 18px;
   animation: iconPop 0.5s ease-out 0.4s backwards;
 }
 
@@ -410,34 +410,36 @@
 
 .hero-stat-value {
   font-family: 'Georgia', serif;
-  font-size: 12px;
+  font-size: 14px;
   color: #ffe566;
   font-weight: bold;
 }
 
 .hero-stat-label {
   font-family: 'Georgia', serif;
-  font-size: 7px;
+  font-size: 9px;
   color: #886600;
   letter-spacing: 0.3px;
 }
 
 .hero-stat-divider {
   width: 1px;
-  height: 24px;
+  height: 28px;
   background: linear-gradient(180deg, transparent, rgba(200, 120, 0, 0.3), transparent);
 }
 
 /* ===== UNIFIED CARD STYLE ===== */
+.core-traits-card,
 .moon-phase-card,
 .collection-card,
 .recent-readings-card,
-.my-signs-card {
+.my-signs-card,
+.quick-actions-card {
   background: linear-gradient(135deg, #1a0f05 0%, #0a0600 50%, #1a0f05 100%);
   border: 1px solid rgba(200, 120, 0, 0.35);
-  border-radius: 12px;
-  padding: 12px;
-  margin-bottom: 10px;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
   box-shadow: 
     0 4px 20px rgba(0, 0, 0, 0.4),
     0 0 12px rgba(200, 120, 0, 0.08),
@@ -448,23 +450,69 @@
 
 .card-title {
   font-family: 'Georgia', serif;
-  font-size: 10px;
+  font-size: 12px;
   color: #ffe566;
   text-align: center;
-  margin: 0 0 10px;
-  letter-spacing: 1.5px;
+  margin: 0 0 16px;
+  letter-spacing: 2px;
+}
+
+/* ===== CORE TRAITS ===== */
+.traits-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.trait-item {
+  background: rgba(20, 12, 5, 0.6);
+  border: 1px solid rgba(200, 120, 0, 0.2);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.trait-item:active {
+  transform: scale(0.98);
+  border-color: rgba(255, 229, 102, 0.4);
+  background: rgba(200, 120, 0, 0.1);
+}
+
+.trait-icon {
+  font-size: 24px;
+  margin-bottom: 2px;
+}
+
+.trait-name {
+  font-family: 'Georgia', serif;
+  font-size: 14px;
+  color: #ffe566;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+.trait-desc {
+  font-family: 'Georgia', serif;
+  font-size: 10px;
+  color: #c87800;
+  line-height: 1.4;
 }
 
 /* ===== MOON PHASE ===== */
 .moon-content {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
+  padding: 8px;
 }
 
 .moon-symbol {
-  font-size: 36px;
-  filter: drop-shadow(0 0 8px rgba(255, 229, 102, 0.4));
+  font-size: 48px;
+  filter: drop-shadow(0 0 12px rgba(255, 229, 102, 0.5));
   flex-shrink: 0;
   animation: moonGlow 4s ease-in-out infinite;
 }
@@ -475,7 +523,7 @@
     transform: scale(1);
   }
   50% { 
-    filter: drop-shadow(0 0 14px rgba(255, 229, 102, 0.7));
+    filter: drop-shadow(0 0 16px rgba(255, 229, 102, 0.7));
     transform: scale(1.05);
   }
 }
@@ -484,62 +532,113 @@
 
 .moon-phase-name {
   font-family: 'Georgia', serif;
-  font-size: 12px;
+  font-size: 16px;
   color: #ffe566;
   font-weight: bold;
-  margin-bottom: 3px;
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
 }
 
 .moon-details {
   font-family: 'Georgia', serif;
-  font-size: 9px;
+  font-size: 11px;
   color: #c87800;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
-.moon-best-for,
-.moon-next-full {
+.moon-best-for {
   font-family: 'Georgia', serif;
-  font-size: 8px;
+  font-size: 10px;
   color: #886600;
-  margin-bottom: 2px;
+  font-style: italic;
+}
+
+/* ===== EXPLORE SECTION ===== */
+.action-buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.premium-action-btn {
+  background: linear-gradient(135deg, rgba(200, 120, 0, 0.15) 0%, rgba(255, 229, 102, 0.08) 100%);
+  border: 1px solid rgba(200, 120, 0, 0.3);
+  border-radius: 12px;
+  padding: 16px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  min-height: 90px;
+  justify-content: center;
+}
+
+.premium-action-btn:active {
+  transform: scale(0.95);
+  border-color: rgba(255, 229, 102, 0.5);
+  background: linear-gradient(135deg, rgba(200, 120, 0, 0.25) 0%, rgba(255, 229, 102, 0.15) 100%);
+}
+
+.premium-action-btn svg {
+  color: #ffe566;
+  filter: drop-shadow(0 0 6px rgba(255, 229, 102, 0.4));
+}
+
+.premium-action-btn span {
+  font-family: 'Georgia', serif;
+  font-size: 10px;
+  color: #ffe566;
+  text-align: center;
+  letter-spacing: 0.3px;
+  font-weight: 600;
+}
+
+.premium-action-btn .lock-icon {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: #c87800;
+  font-size: 14px;
 }
 
 /* ===== CARD COLLECTION ===== */
-.collection-progress { margin-bottom: 10px; }
+.collection-progress { margin-bottom: 12px; }
 
 .collection-total {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .collection-count {
   font-family: 'Georgia', serif;
-  font-size: 16px;
+  font-size: 18px;
   color: #ffe566;
   font-weight: bold;
 }
 
 .collection-label {
   font-family: 'Georgia', serif;
-  font-size: 9px;
+  font-size: 10px;
   color: #c87800;
 }
 
 .collection-bar {
   width: 100%;
-  height: 6px;
+  height: 8px;
   background: rgba(200, 120, 0, 0.15);
-  border-radius: 3px;
+  border-radius: 4px;
   overflow: hidden;
 }
 
 .collection-fill {
   height: 100%;
   background: linear-gradient(90deg, #c87800, #ffe566);
-  border-radius: 3px;
+  border-radius: 4px;
   transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 0 6px rgba(255, 229, 102, 0.4);
   position: relative;
@@ -559,22 +658,22 @@
 .collection-suits {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 6px;
-  margin-bottom: 10px;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 .suit-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   background: rgba(20, 12, 5, 0.6);
   border: 1px solid rgba(200, 120, 0, 0.2);
-  border-radius: 7px;
-  padding: 6px 3px;
+  border-radius: 8px;
+  padding: 8px 4px;
   transition: all 0.3s ease;
   cursor: pointer;
-  min-height: 48px;
+  min-height: 56px;
 }
 
 .suit-item:active {
@@ -584,7 +683,7 @@
 }
 
 .suit-icon { 
-  font-size: 16px; 
+  font-size: 18px; 
   transition: transform 0.3s ease;
 }
 
@@ -594,13 +693,13 @@
 
 .suit-name {
   font-family: 'Georgia', serif;
-  font-size: 7px;
+  font-size: 8px;
   color: #c87800;
 }
 
 .suit-count {
   font-family: 'Georgia', serif;
-  font-size: 8px;
+  font-size: 9px;
   color: #ffe566;
   font-weight: bold;
 }
@@ -609,113 +708,172 @@
 .readings-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: 10px;
 }
 
 .reading-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   background: rgba(20, 12, 5, 0.6);
   border: 1px solid rgba(200, 120, 0, 0.2);
-  border-radius: 8px;
-  padding: 10px;
+  border-radius: 10px;
+  padding: 12px;
   transition: all 0.3s ease;
   cursor: pointer;
-  min-height: 44px;
 }
 
 .reading-item:active {
   transform: scale(0.98);
-  border-color: #ffe566;
+  border-color: rgba(255, 229, 102, 0.4);
   background: rgba(200, 120, 0, 0.1);
 }
 
 .reading-icon {
-  font-size: 20px;
+  font-size: 24px;
   flex-shrink: 0;
 }
 
-.reading-info { flex: 1; }
+.reading-info { flex: 1; min-width: 0; }
 
 .reading-type {
   font-family: 'Georgia', serif;
-  font-size: 11px;
+  font-size: 12px;
   color: #ffe566;
   font-weight: bold;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
+  letter-spacing: 0.3px;
 }
 
 .reading-cards {
   font-family: 'Georgia', serif;
-  font-size: 8px;
+  font-size: 10px;
   color: #c87800;
-  line-height: 1.3;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .reading-date {
   font-family: 'Georgia', serif;
-  font-size: 8px;
+  font-size: 9px;
   color: #886600;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* ===== MY SIGNS ===== */
 .signs-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: 10px;
+  margin-bottom: 16px;
 }
 
 .sign-item {
   background: rgba(20, 12, 5, 0.6);
   border: 1px solid rgba(200, 120, 0, 0.2);
-  border-radius: 8px;
-  padding: 10px 6px;
+  border-radius: 10px;
+  padding: 16px 10px;
   text-align: center;
   transition: all 0.3s ease;
   cursor: pointer;
-  min-height: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
 
 .sign-item:active {
   transform: scale(0.95) translateY(-2px);
-  border-color: #ffe566;
+  border-color: rgba(255, 229, 102, 0.4);
   box-shadow: 0 4px 12px rgba(255, 229, 102, 0.2);
 }
 
 .sign-icon {
-  font-size: 20px;
-  margin-bottom: 4px;
+  font-size: 28px;
   transition: transform 0.3s ease;
 }
 
 .sign-item:active .sign-icon {
-  transform: scale(1.3);
+  transform: scale(1.2);
 }
 
 .sign-label {
   font-family: 'Georgia', serif;
-  font-size: 7px;
+  font-size: 8px;
   color: #886600;
-  letter-spacing: 0.4px;
-  margin-bottom: 3px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .sign-name {
   font-family: 'Georgia', serif;
-  font-size: 11px;
+  font-size: 14px;
   color: #ffe566;
   font-weight: bold;
-  margin-bottom: 2px;
+  letter-spacing: 0.3px;
 }
 
 .sign-details {
   font-family: 'Georgia', serif;
-  font-size: 7px;
+  font-size: 10px;
   color: #c87800;
+  margin-top: 2px;
+}
+
+/* ===== SIGN ACTION BUTTONS ===== */
+.sign-actions {
+  display: flex;
+  gap: 12px;
+  margin: 16px 0;
+  width: 100%;
+}
+
+.change-sign-btn,
+.reset-sign-btn {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-family: 'Georgia', serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  position: relative;
+  overflow: hidden;
+}
+
+.change-sign-btn {
+  background: linear-gradient(135deg, rgba(217, 182, 111, 0.2) 0%, rgba(217, 182, 111, 0.1) 100%);
+  border-color: rgba(217, 182, 111, 0.4);
+  color: #D9B66F;
+}
+
+.change-sign-btn:active {
+  background: linear-gradient(135deg, rgba(217, 182, 111, 0.3) 0%, rgba(217, 182, 111, 0.2) 100%);
+  border-color: rgba(217, 182, 111, 0.6);
+  transform: scale(0.98);
+}
+
+.reset-sign-btn {
+  background: linear-gradient(135deg, rgba(232, 115, 138, 0.15) 0%, rgba(232, 115, 138, 0.08) 100%);
+  border-color: rgba(232, 115, 138, 0.3);
+  color: #E8738A;
+}
+
+.reset-sign-btn:active {
+  background: linear-gradient(135deg, rgba(232, 115, 138, 0.25) 0%, rgba(232, 115, 138, 0.15) 100%);
+  border-color: rgba(232, 115, 138, 0.5);
+  transform: scale(0.98);
 }
 
 /* ===== BUTTONS ===== */
@@ -725,18 +883,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   width: 100%;
   background: rgba(200, 120, 0, 0.12);
   border: 1px solid rgba(200, 120, 0, 0.25);
-  border-radius: 8px;
-  padding: 10px;
+  border-radius: 10px;
+  padding: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
   font-family: 'Georgia', serif;
-  font-size: 10px;
+  font-size: 11px;
   color: #ffe566;
-  letter-spacing: 0.8px;
+  letter-spacing: 1px;
   min-height: 44px;
   position: relative;
   overflow: hidden;
@@ -772,7 +930,7 @@
 }
 
 .arrow { 
-  font-size: 12px; 
+  font-size: 14px; 
   transition: transform 0.3s ease;
 }
 
@@ -786,7 +944,7 @@
 .stats-grid-section {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  gap: 10px;
   margin-bottom: 16px;
 }
 
@@ -794,15 +952,15 @@
   background: rgba(20, 12, 5, 0.8);
   border: 1px solid rgba(200, 120, 0, 0.25);
   border-radius: 10px;
-  padding: 10px 6px;
+  padding: 12px 8px;
   text-align: center;
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   cursor: pointer;
-  min-height: 64px;
+  min-height: 72px;
 }
 
 .stat-card:active {
@@ -812,7 +970,7 @@
 }
 
 .stat-icon { 
-  font-size: 20px; 
+  font-size: 22px; 
   transition: transform 0.3s ease;
 }
 
@@ -822,14 +980,14 @@
 
 .stat-value {
   font-family: 'Georgia', serif;
-  font-size: 14px;
+  font-size: 16px;
   color: #ffe566;
   font-weight: bold;
 }
 
 .stat-label {
   font-family: 'Georgia', serif;
-  font-size: 8px;
+  font-size: 9px;
   color: #c87800;
   letter-spacing: 0.4px;
 }
@@ -842,10 +1000,10 @@
 /* ===== SECTION TITLE ===== */
 .section-title {
   font-family: 'Georgia', serif;
-  font-size: 12px;
+  font-size: 14px;
   color: #ffe566;
   text-align: center;
-  margin: 0 0 12px;
+  margin: 0 0 16px;
   letter-spacing: 1.5px;
 }
 
@@ -853,20 +1011,19 @@
 .achievements-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .achievement-card {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   background: rgba(20, 12, 5, 0.8);
   border: 1px solid rgba(200, 120, 0, 0.25);
-  border-radius: 10px;
-  padding: 12px;
+  border-radius: 12px;
+  padding: 14px;
   transition: all 0.3s ease;
   cursor: pointer;
-  min-height: 44px;
 }
 
 .achievement-card.unlocked {
@@ -881,7 +1038,7 @@
 }
 
 .achievement-icon {
-  font-size: 28px;
+  font-size: 32px;
   flex-shrink: 0;
 }
 
@@ -898,28 +1055,28 @@
 
 .achievement-title {
   font-family: 'Georgia', serif;
-  font-size: 12px;
+  font-size: 13px;
   color: #ffe566;
-  margin: 0 0 3px;
+  margin: 0 0 4px;
   font-weight: bold;
 }
 
 .achievement-desc {
   font-family: 'Georgia', serif;
-  font-size: 10px;
+  font-size: 11px;
   color: #c87800;
-  margin: 0 0 6px;
+  margin: 0 0 8px;
 }
 
 .achievement-progress {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .progress-bar-small {
   flex: 1;
-  height: 3px;
+  height: 4px;
   background: rgba(200, 120, 0, 0.2);
   border-radius: 2px;
   overflow: hidden;
@@ -934,7 +1091,7 @@
 
 .progress-text {
   font-family: 'Georgia', serif;
-  font-size: 9px;
+  font-size: 10px;
   color: #c87800;
   white-space: nowrap;
 }
@@ -943,14 +1100,14 @@
    SETTINGS TAB - ახალი სტილები
    ============================================ */
 .settings-section {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .settings-section-title {
   font-family: 'Georgia', serif;
-  font-size: 12px;
+  font-size: 13px;
   color: #c87800;
-  margin: 0 0 10px 4px;
+  margin: 0 0 12px 4px;
   letter-spacing: 0.5px;
   font-weight: 600;
 }
@@ -960,30 +1117,30 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
 }
 
 /* Theme Options Mini */
 .theme-options {
   display: flex;
-  gap: 4px;
+  gap: 6px;
 }
 
 .theme-option-mini {
   background: rgba(20, 12, 5, 0.6);
   border: 1px solid rgba(200, 120, 0, 0.25);
-  border-radius: 6px;
-  padding: 4px 8px;
+  border-radius: 8px;
+  padding: 6px 10px;
   color: #c87800;
   font-family: 'Georgia', serif;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  min-height: 28px;
+  min-height: 32px;
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
 }
 
 .theme-option-mini.active {
@@ -999,33 +1156,33 @@
 
 /* Settings Select */
 .settings-select {
-  min-height: 32px !important;
-  padding: 6px 28px 6px 10px !important;
-  font-size: 11px !important;
+  min-height: 36px !important;
+  padding: 6px 32px 6px 12px !important;
+  font-size: 12px !important;
   max-width: 140px;
 }
 
 /* Settings Time Input */
 .settings-time-input {
-  min-height: 32px !important;
-  padding: 6px 10px !important;
-  font-size: 11px !important;
+  min-height: 36px !important;
+  padding: 6px 12px !important;
+  font-size: 12px !important;
   max-width: 100px;
 }
 
 /* Sub Setting */
 .setting-item.sub-setting {
-  margin-left: 20px;
+  margin-left: 24px;
   background: rgba(20, 12, 5, 0.4);
   border-color: rgba(200, 120, 0, 0.15);
 }
 
 .setting-item.sub-setting .setting-icon {
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .setting-item.sub-setting .setting-label {
-  font-size: 10px;
+  font-size: 11px;
   color: #c87800;
 }
 
@@ -1033,20 +1190,20 @@
 .settings-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .setting-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   background: rgba(20, 12, 5, 0.8);
   border: 1px solid rgba(200, 120, 0, 0.25);
-  border-radius: 10px;
-  padding: 12px;
+  border-radius: 12px;
+  padding: 14px;
   cursor: pointer;
   transition: all 0.3s ease;
-  min-height: 48px;
+  min-height: 52px;
 }
 
 .setting-item:active {
@@ -1067,14 +1224,14 @@
 }
 
 .setting-icon {
-  font-size: 18px;
+  font-size: 20px;
   flex-shrink: 0;
 }
 
 .setting-label {
   flex: 1;
   font-family: 'Georgia', serif;
-  font-size: 12px;
+  font-size: 13px;
   color: #ffe566;
 }
 
@@ -1082,15 +1239,15 @@
   background: linear-gradient(135deg, #c87800, #ffe566);
   color: #0a0600;
   font-family: 'Georgia', serif;
-  font-size: 8px;
+  font-size: 9px;
   font-weight: bold;
-  padding: 2px 6px;
+  padding: 3px 8px;
   border-radius: 6px;
   letter-spacing: 0.8px;
 }
 
 .setting-arrow {
-  font-size: 12px;
+  font-size: 14px;
   color: #c87800;
   transition: transform 0.3s ease;
 }
@@ -1126,8 +1283,8 @@
   background: linear-gradient(135deg, #1a0f05, #0a0600);
   border: 2px solid rgba(200, 120, 0, 0.5);
   border-radius: 18px;
-  padding: 20px 18px;
-  max-width: 340px;
+  padding: 24px 20px;
+  max-width: 360px;
   width: 100%;
   max-height: 85vh;
   overflow-y: auto;
@@ -1146,15 +1303,15 @@
 
 .modal-close {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 16px;
+  right: 16px;
   background: rgba(200, 120, 0, 0.2);
   border: 1px solid rgba(200, 120, 0, 0.4);
   color: #ffe566;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  font-size: 14px;
+  font-size: 16px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1170,29 +1327,29 @@
 
 .modal-title {
   font-family: 'Georgia', serif;
-  font-size: 18px;
+  font-size: 20px;
   color: #ffe566;
   text-align: center;
-  margin: 0 0 6px;
+  margin: 0 0 8px;
   letter-spacing: 1.5px;
 }
 
 .modal-subtitle {
   font-family: 'Georgia', serif;
-  font-size: 10px;
+  font-size: 11px;
   color: #c87800;
   text-align: center;
-  margin: 0 0 16px;
+  margin: 0 0 20px;
 }
 
-.form-group { margin-bottom: 14px; }
+.form-group { margin-bottom: 16px; }
 
 .form-label {
   display: block;
   font-family: 'Georgia', serif;
-  font-size: 10px;
+  font-size: 11px;
   color: #c87800;
-  margin-bottom: 5px;
+  margin-bottom: 6px;
   letter-spacing: 0.4px;
 }
 
@@ -1200,15 +1357,15 @@
   width: 100%;
   background: rgba(20, 12, 5, 0.8);
   border: 1px solid rgba(200, 120, 0, 0.3);
-  border-radius: 8px;
-  padding: 10px;
+  border-radius: 10px;
+  padding: 12px;
   color: #ffe566;
   font-family: 'Georgia', serif;
   font-size: 14px;
   outline: none;
   transition: all 0.3s ease;
   box-sizing: border-box;
-  min-height: 44px;
+  min-height: 48px;
   -webkit-appearance: none;
   appearance: none;
 }
@@ -1222,13 +1379,13 @@
 
 .modal-submit-btn {
   width: 100%;
-  height: 44px;
+  height: 48px;
   background: linear-gradient(135deg, #c87800, #e8a020, #ffe566);
   border: 2px solid #ffe566;
-  border-radius: 20px;
+  border-radius: 24px;
   color: #0a0600;
   font-family: 'Georgia', serif;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: bold;
   letter-spacing: 1.5px;
   cursor: pointer;
@@ -1236,8 +1393,8 @@
   box-shadow: 
     0 4px 16px rgba(200, 120, 0, 0.4),
     0 0 30px rgba(200, 120, 0, 0.2);
-  margin-top: 6px;
-  min-height: 44px;
+  margin-top: 8px;
+  min-height: 48px;
 }
 
 .modal-submit-btn:active { 
@@ -1251,9 +1408,9 @@
 
 .edit-section-tabs {
   display: flex;
-  gap: 6px;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
   border-bottom: 1px solid rgba(200, 120, 0, 0.2);
 }
 
@@ -1261,15 +1418,15 @@
   flex: 1;
   background: rgba(20, 12, 5, 0.6);
   border: 1px solid rgba(200, 120, 0, 0.25);
-  border-radius: 8px;
-  padding: 8px;
+  border-radius: 10px;
+  padding: 10px;
   color: #c87800;
   font-family: 'Georgia', serif;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
-  min-height: 40px;
+  min-height: 44px;
 }
 
 .edit-tab.active {
@@ -1280,28 +1437,28 @@
 
 .edit-tab:active { transform: scale(0.95); }
 
-.edit-section { margin-bottom: 16px; }
+.edit-section { margin-bottom: 20px; }
 
 .edit-avatar-section {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-  padding: 12px;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding: 16px;
   background: rgba(20, 12, 5, 0.6);
   border: 1px solid rgba(200, 120, 0, 0.2);
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
 .edit-avatar-circle {
-  width: 50px;
-  height: 50px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   background: linear-gradient(135deg, #c87800, #ffe566);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: bold;
   color: #0a0600;
   font-family: 'Georgia', serif;
@@ -1312,27 +1469,27 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .edit-telegram-name {
   font-family: 'Georgia', serif;
-  font-size: 11px;
+  font-size: 12px;
   color: #886600;
 }
 
 .edit-avatar-btn {
   background: rgba(200, 120, 0, 0.15);
   border: 1px solid rgba(200, 120, 0, 0.3);
-  border-radius: 6px;
-  padding: 6px 10px;
+  border-radius: 8px;
+  padding: 8px 12px;
   color: #ffe566;
   font-family: 'Georgia', serif;
-  font-size: 9px;
+  font-size: 10px;
   cursor: pointer;
   transition: all 0.3s ease;
   align-self: flex-start;
-  min-height: 32px;
+  min-height: 36px;
 }
 
 .edit-avatar-btn:active {
@@ -1342,16 +1499,16 @@
 
 .form-textarea {
   resize: none;
-  min-height: 70px;
+  min-height: 80px;
 }
 
 .char-count {
   display: block;
   text-align: right;
   font-family: 'Georgia', serif;
-  font-size: 9px;
+  font-size: 10px;
   color: #886600;
-  margin-top: 4px;
+  margin-top: 6px;
 }
 
 .form-select {
@@ -1360,7 +1517,7 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23c87800' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
-  padding-right: 32px;
+  padding-right: 36px;
 }
 
 /* Toggle Switch */
@@ -1368,35 +1525,35 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 12px;
+  padding: 12px 14px;
   background: rgba(20, 12, 5, 0.6);
   border: 1px solid rgba(200, 120, 0, 0.2);
-  border-radius: 8px;
-  margin-bottom: 8px;
-  min-height: 48px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  min-height: 52px;
 }
 
 .toggle-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .toggle-icon {
-  font-size: 16px;
+  font-size: 18px;
 }
 
 .toggle-label {
   font-family: 'Georgia', serif;
-  font-size: 11px;
+  font-size: 12px;
   color: #ffe566;
 }
 
 .toggle-switch {
   position: relative;
   display: inline-block;
-  width: 44px;
-  height: 24px;
+  width: 48px;
+  height: 26px;
   flex-shrink: 0;
 }
 
@@ -1414,15 +1571,15 @@
   right: 0;
   bottom: 0;
   background: rgba(200, 120, 0, 0.2);
-  border-radius: 24px;
+  border-radius: 26px;
   transition: 0.3s;
 }
 
 .toggle-slider:before {
   position: absolute;
   content: '';
-  height: 18px;
-  width: 18px;
+  height: 20px;
+  width: 20px;
   left: 3px;
   bottom: 3px;
   background: #c87800;
@@ -1435,18 +1592,18 @@
 }
 
 .toggle-switch input:checked + .toggle-slider:before {
-  transform: translateX(20px);
+  transform: translateX(22px);
   background: #ffe566;
 }
 
 .time-input {
   margin-top: -4px;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 .theme-selector {
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
 .theme-option {
@@ -1454,17 +1611,17 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   background: rgba(20, 12, 5, 0.6);
   border: 1px solid rgba(200, 120, 0, 0.2);
-  border-radius: 8px;
-  padding: 10px 8px;
+  border-radius: 10px;
+  padding: 12px 10px;
   color: #c87800;
   font-family: 'Georgia', serif;
-  font-size: 10px;
+  font-size: 11px;
   cursor: pointer;
   transition: all 0.3s ease;
-  min-height: 52px;
+  min-height: 56px;
 }
 
 .theme-option.active {
@@ -1481,15 +1638,15 @@
   width: 100%;
   background: rgba(200, 120, 0, 0.12);
   border: 1px solid rgba(200, 120, 0, 0.25);
-  border-radius: 8px;
-  padding: 10px;
+  border-radius: 10px;
+  padding: 12px;
   color: #ffe566;
   font-family: 'Georgia', serif;
-  font-size: 11px;
+  font-size: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-top: 8px;
-  min-height: 44px;
+  margin-top: 10px;
+  min-height: 48px;
 }
 
 .edit-birth-info-btn:active {
@@ -1500,7 +1657,7 @@
 /* ===== SCROLLBAR ===== */
 .profile-content::-webkit-scrollbar,
 .modal-content::-webkit-scrollbar {
-  width: 3px;
+  width: 4px;
 }
 
 .profile-content::-webkit-scrollbar-track,
@@ -1512,107 +1669,6 @@
 .modal-content::-webkit-scrollbar-thumb {
   background: rgba(200, 120, 0, 0.3);
   border-radius: 2px;
-}
-
-/* ============================================
-   ✅ NEW: SIGN ACTION BUTTONS (Change/Reset Sign)
-   ============================================ */
-.sign-actions {
-  display: flex;
-  gap: 10px;
-  margin: 16px 0;
-  width: 100%;
-}
-
-.change-sign-btn,
-.reset-sign-btn {
-  flex: 1;
-  padding: 12px 16px;
-  border-radius: 10px;
-  font-family: 'Georgia', serif;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: 1px solid;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  position: relative;
-  overflow: hidden;
-}
-
-.change-sign-btn {
-  background: linear-gradient(135deg, rgba(217, 182, 111, 0.2) 0%, rgba(217, 182, 111, 0.1) 100%);
-  border-color: rgba(217, 182, 111, 0.4);
-  color: #D9B66F;
-}
-
-.change-sign-btn::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  background: rgba(255, 229, 102, 0.1);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  transition: width 0.4s ease, height 0.4s ease;
-}
-
-.change-sign-btn:active::before {
-  width: 300px;
-  height: 300px;
-}
-
-.change-sign-btn:hover {
-  background: linear-gradient(135deg, rgba(217, 182, 111, 0.3) 0%, rgba(217, 182, 111, 0.2) 100%);
-  border-color: rgba(217, 182, 111, 0.6);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(217, 182, 111, 0.3);
-}
-
-.change-sign-btn:active {
-  transform: scale(0.98);
-}
-
-.reset-sign-btn {
-  background: linear-gradient(135deg, rgba(232, 115, 138, 0.15) 0%, rgba(232, 115, 138, 0.08) 100%);
-  border-color: rgba(232, 115, 138, 0.3);
-  color: #E8738A;
-}
-
-.reset-sign-btn::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  background: rgba(232, 115, 138, 0.1);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  transition: width 0.4s ease, height 0.4s ease;
-}
-
-.reset-sign-btn:active::before {
-  width: 300px;
-  height: 300px;
-}
-
-.reset-sign-btn:hover {
-  background: linear-gradient(135deg, rgba(232, 115, 138, 0.25) 0%, rgba(232, 115, 138, 0.15) 100%);
-  border-color: rgba(232, 115, 138, 0.5);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(232, 115, 138, 0.3);
-}
-
-.reset-sign-btn:active {
-  transform: scale(0.98);
 }
 
 /* ============================================
@@ -1679,31 +1735,9 @@
   color: rgba(247, 243, 235, 0.7);
 }
 
-.reset-cancel-btn::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  transition: width 0.4s ease, height 0.4s ease;
-}
-
-.reset-cancel-btn:active::before {
-  width: 300px;
-  height: 300px;
-}
-
-.reset-cancel-btn:hover:not(:disabled) {
+.reset-cancel-btn:active {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
-}
-
-.reset-cancel-btn:active:not(:disabled) {
   transform: scale(0.98);
 }
 
@@ -1713,32 +1747,9 @@
   color: #E8738A;
 }
 
-.reset-confirm-btn::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  background: rgba(232, 115, 138, 0.15);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  transition: width 0.4s ease, height 0.4s ease;
-}
-
-.reset-confirm-btn:active::before {
-  width: 300px;
-  height: 300px;
-}
-
-.reset-confirm-btn:hover:not(:disabled) {
+.reset-confirm-btn:active {
   background: linear-gradient(135deg, rgba(232, 115, 138, 0.4) 0%, rgba(232, 115, 138, 0.3) 100%);
   border-color: rgba(232, 115, 138, 0.7);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(232, 115, 138, 0.4);
-}
-
-.reset-confirm-btn:active:not(:disabled) {
   transform: scale(0.98);
 }
 
@@ -1756,37 +1767,37 @@
   }
   
   .hero-card {
-    padding: 10px;
+    padding: 12px;
   }
   
   .pill-tab {
-    font-size: 9px;
-    padding: 7px 6px;
+    font-size: 10px;
+    padding: 8px 6px;
   }
   
   .stats-grid-section {
-    gap: 6px;
+    gap: 8px;
   }
   
   .stat-card {
-    padding: 8px 4px;
+    padding: 10px 6px;
   }
   
   .stat-value {
-    font-size: 12px;
+    font-size: 14px;
   }
   
   .collection-suits {
-    gap: 4px;
+    gap: 6px;
   }
   
   .suit-item {
-    padding: 5px 2px;
+    padding: 6px 4px;
   }
 
   .theme-options {
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
   }
   
   .theme-option-mini {
@@ -1799,19 +1810,17 @@
     max-width: 100%;
   }
 
-  /* ✅ Mobile - Sign Actions */
   .sign-actions {
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
   }
 
   .change-sign-btn,
   .reset-sign-btn {
     font-size: 12px;
-    padding: 10px 14px;
+    padding: 12px 14px;
   }
 
-  /* ✅ Mobile - Reset Modal */
   .reset-modal {
     padding: 24px 18px;
   }
@@ -1832,7 +1841,38 @@
   .reset-cancel-btn,
   .reset-confirm-btn {
     font-size: 13px;
-    padding: 10px 16px;
+    padding: 12px 16px;
+  }
+  
+  .action-buttons-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .premium-action-btn {
+    flex-direction: row;
+    justify-content: flex-start;
+    min-height: 56px;
+    padding: 12px 16px;
+  }
+  
+  .premium-action-btn svg {
+    margin-right: 12px;
+  }
+  
+  .signs-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .sign-item {
+    flex-direction: row;
+    justify-content: flex-start;
+    text-align: left;
+    padding: 14px;
+  }
+  
+  .sign-icon {
+    margin-bottom: 0;
+    margin-right: 16px;
   }
 }
 
@@ -1842,15 +1882,17 @@
   }
   
   .hero-card {
-    margin-bottom: 8px;
+    margin-bottom: 10px;
   }
   
+  .core-traits-card,
   .moon-phase-card,
   .collection-card,
   .recent-readings-card,
-  .my-signs-card {
-    margin-bottom: 8px;
-    padding: 10px;
+  .my-signs-card,
+  .quick-actions-card {
+    margin-bottom: 10px;
+    padding: 14px;
   }
 }
 
