@@ -153,7 +153,6 @@ interface Reading {
 }
 
 export default function ProfileScreen({ onNavigate }: Props) {
-  // ცხადად მითითებული ტიპი TypeScript-ის შეცდომების თავიდან ასაცილებლად
   const [activeTab, setActiveTab] = useState<TabType>('profile');
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showBirthInfo, setShowBirthInfo] = useState(false);
@@ -387,57 +386,59 @@ export default function ProfileScreen({ onNavigate }: Props) {
       )}
 
       <div className="profile-content">
-        {activeTab === 'profile' && (
-          <div className="profile-tab">
-            <div className="profile-header-compact animate-fade-in stagger-1">
-              <div className="profile-header-top">
-                <div className="profile-avatar-section">
-                  <div className="profile-avatar">
-                    <span className="avatar-letter">{userData.avatar}</span>
-                    <div className="avatar-ring"></div>
-                  </div>
-                  <div className="profile-user-info">
-                    <h2 className="profile-username">{userData.displayName}</h2>
-                    <p className="profile-zodiac">{userData.zodiacSymbol} {userData.zodiac.charAt(0).toUpperCase() + userData.zodiac.slice(1)} · {userData.element}</p>
-                  </div>
-                </div>
-                
-                <div className="profile-nav-grid">
-                  <button className={`nav-pill ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
-                    <span className="nav-icon">👤</span>
-                    <span className="nav-label">Profile</span>
-                  </button>
-                  <button className={`nav-pill ${activeTab === 'achievements' ? 'active' : ''}`} onClick={() => setActiveTab('achievements')}>
-                    <span className="nav-icon">🏆</span>
-                    <span className="nav-label">Awards</span>
-                  </button>
-                  <button className="nav-pill premium-badge" onClick={() => onNavigate && onNavigate('subscription')}>
-                    <span className="nav-icon">💎</span>
-                    <span className="nav-label">{activeSubscription ? 'PREMIUM' : 'FREE'}</span>
-                  </button>
-                  <button className={`nav-pill ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>
-                    <span className="nav-icon">⚙️</span>
-                    <span className="nav-label">Settings</span>
-                  </button>
-                </div>
+        {/* 🆕 მთავარი ჰედერი და ნავიგაცია გავიტანეთ პირობითი ბლოკის გარეთ, რათა TypeScript-მა არ შეცდეს და ყველა ტაბზე ჩანდეს */}
+        <div className="profile-header-compact animate-fade-in stagger-1">
+          <div className="profile-header-top">
+            <div className="profile-avatar-section">
+              <div className="profile-avatar">
+                <span className="avatar-letter">{userData.avatar}</span>
+                <div className="avatar-ring"></div>
               </div>
-
-              <div className="hero-level-section">
-                <div className="hero-level-header">
-                  <span className="hero-level-text">Lv.{userData.level} <span className="level-title">{userData.levelTitle}</span></span>
-                  <span className="hero-xp-text">{userData.xp} / {userData.xpToNext} XP</span>
-                </div>
-                <div className="hero-progress-bar">
-                  <div className="hero-progress-fill" style={{ width: mounted ? `${xpProgress}%` : '0%', background: 'linear-gradient(90deg, #a78bfa, #7c3aed)' }}>
-                    <div className="progress-shimmer"></div>
-                  </div>
-                </div>
-                <div style={{ textAlign: 'right', fontSize: '10px', color: '#888', marginTop: '4px' }}>
-                  {userData.xpToNext - userData.xp} XP to Level {userData.level + 1}
-                </div>
+              <div className="profile-user-info">
+                <h2 className="profile-username">{userData.displayName}</h2>
+                <p className="profile-zodiac">{userData.zodiacSymbol} {userData.zodiac.charAt(0).toUpperCase() + userData.zodiac.slice(1)} · {userData.element}</p>
               </div>
             </div>
+            
+            <div className="profile-nav-grid">
+              <button className={`nav-pill ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
+                <span className="nav-icon">👤</span>
+                <span className="nav-label">Profile</span>
+              </button>
+              <button className={`nav-pill ${activeTab === 'achievements' ? 'active' : ''}`} onClick={() => setActiveTab('achievements')}>
+                <span className="nav-icon">🏆</span>
+                <span className="nav-label">Awards</span>
+              </button>
+              <button className="nav-pill premium-badge" onClick={() => onNavigate && onNavigate('subscription')}>
+                <span className="nav-icon">💎</span>
+                <span className="nav-label">{activeSubscription ? 'PREMIUM' : 'FREE'}</span>
+              </button>
+              <button className={`nav-pill ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>
+                <span className="nav-icon">⚙️</span>
+                <span className="nav-label">Settings</span>
+              </button>
+            </div>
+          </div>
 
+          <div className="hero-level-section">
+            <div className="hero-level-header">
+              <span className="hero-level-text">Lv.{userData.level} <span className="level-title">{userData.levelTitle}</span></span>
+              <span className="hero-xp-text">{userData.xp} / {userData.xpToNext} XP</span>
+            </div>
+            <div className="hero-progress-bar">
+              <div className="hero-progress-fill" style={{ width: mounted ? `${xpProgress}%` : '0%', background: 'linear-gradient(90deg, #a78bfa, #7c3aed)' }}>
+                <div className="progress-shimmer"></div>
+              </div>
+            </div>
+            <div style={{ textAlign: 'right', fontSize: '10px', color: '#888', marginTop: '4px' }}>
+              {userData.xpToNext - userData.xp} XP to Level {userData.level + 1}
+            </div>
+          </div>
+        </div>
+
+        {/* 🆕 ტაბების შიგთავსი ცალ-ცალკეა, რათა TypeScript-მა სწორად გაანალიზოს activeTab-ის ტიპი */}
+        {activeTab === 'profile' && (
+          <div className="tab-content animate-fade-in">
             <div className="stats-compact-grid animate-fade-in stagger-2">
               {stats.map((stat, idx) => (
                 <div key={idx} className="stat-compact-item">
@@ -531,7 +532,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
         )}
 
         {activeTab === 'achievements' && (
-          <div className="achievements-tab">
+          <div className="tab-content animate-fade-in">
             <h3 className="section-title">✦ ACHIEVEMENTS ✦</h3>
             <div className="achievements-list">
               {achievements.map((achievement, index) => (
@@ -554,7 +555,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
         )}
 
         {activeTab === 'settings' && (
-          <div className="settings-tab">
+          <div className="tab-content animate-fade-in">
             <h3 className="section-title">✦ SETTINGS ✦</h3>
             <div className="settings-section">
               <h4 className="settings-section-title">🎨 Appearance</h4>
