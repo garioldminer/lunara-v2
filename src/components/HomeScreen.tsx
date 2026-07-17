@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import './HomeScreen.css';
 
-// 🆕 ექსპონენციალური ლეველის ლოგიკა
+// ექსპონენციალური ლეველის ლოგიკა
 const getXPToNextLevel = (level: number): number => {
   if (level === 1) return 100;
   if (level === 2) return 250;
@@ -41,7 +41,7 @@ const getLevelFromTotalXP = (totalXP: number) => {
   return { level, currentLevelXP, xpToNext: xpRequiredForNext };
 };
 
-// 🆕 Toast Notification Component - იდეალურად ცენტრში, X ღილაკით
+// Toast Notification Component - იდეალურად ცენტრში, X ღილაკით
 interface Toast {
   message: string;
   type: 'success' | 'error' | 'info';
@@ -124,7 +124,7 @@ function ToastNotification({ toast, onClose }: { toast: Toast; onClose: () => vo
   );
 }
 
-// 🆕 Level Up Modal Component
+// Level Up Modal Component
 function LevelUpModal({ level, onClose }: { level: number; onClose: () => void }) {
   return (
     <div style={{
@@ -595,7 +595,7 @@ End of Debug Report
           level: newLevelData.level
         }));
 
-        // 🎉 LEVEL UP EFFECT
+        // LEVEL UP EFFECT
         if (newLevelData.level > oldLevelData.level) {
           confetti({
             particleCount: 150,
@@ -854,7 +854,8 @@ End of Debug Report
 
   const userLevelData = getLevelFromTotalXP(economy.xp);
   const xpPercent = Math.min((userLevelData.currentLevelXP / userLevelData.xpToNext) * 100, 100);
-  const circumference = 2 * Math.PI * 20; // 🆕 განახლებული რადიუსისთვის (r=20)
+  // 🆕 განახლებული რადიუსისთვის (r=22)
+  const circumference = 2 * Math.PI * 22; 
   const strokeDashoffset = circumference - (xpPercent / 100) * circumference;
 
   const getQuestIcon = (actionType: string) => {
@@ -877,31 +878,26 @@ End of Debug Report
       </AnimatePresence>
 
       <div className="user-header">
-        {/* 🆕 იდეალური გასწორება: მთლიანი ბარათი 48px სიმაღლეზე */}
         <div className="user-main-row" style={{ 
           alignItems: 'center',
-          height: '48px',
+          height: '52px', /* 🆕 განახლებულია 48px-დან 52px-მდე */
           display: 'flex',
           justifyContent: 'space-between'
         }}>
           
-          {/* ავატარი და XP წრე - 48px კონტეინერი, 40px ავატარი, უფრო სქელი XP წრე (strokeWidth=4, r=20) */}
-          <div className="avatar-section clickable-avatar" onClick={() => onNavigate?.('profile')} style={{ position: 'relative', width: '48px', height: '48px', flexShrink: 0 }}>
-            <svg className="xp-circular-progress" width="48" height="48" viewBox="0 0 48 48" style={{ position: 'absolute', top: 0, left: 0 }}>
-              <circle className="xp-circle-bg" cx="24" cy="24" r="20" fill="none" stroke="rgba(197, 160, 89, 0.15)" strokeWidth="4" />
-              <circle className="xp-circle-progress" cx="24" cy="24" r="20" fill="none" stroke="url(#xpGradient)" strokeWidth="4" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} transform="rotate(-90 24 24)" />
-              <defs>
-                <linearGradient id="xpGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#fbbf24" />
-                  <stop offset="100%" stopColor="#f59e0b" />
-                </linearGradient>
-              </defs>
+          {/* 🆕 ავატარი და XP წრე - 52px კონტეინერი, 40px ავატარი, იასამნისფერი XP წრე */}
+          <div className="avatar-section clickable-avatar" onClick={() => onNavigate?.('profile')} style={{ position: 'relative', width: '52px', height: '52px', flexShrink: 0 }}>
+            <svg className="xp-circular-progress" width="52" height="52" viewBox="0 0 52 52" style={{ position: 'absolute', top: 0, left: 0 }}>
+              {/* ღია იასამნისფერი ფონის წრე */}
+              <circle className="xp-circle-bg" cx="26" cy="26" r="22" fill="none" stroke="#e9d5ff" strokeWidth="4" />
+              {/* მუქი იასამნისფერი პროგრესის წრე */}
+              <circle className="xp-circle-progress" cx="26" cy="26" r="22" fill="none" stroke="#7c3aed" strokeWidth="4" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} transform="rotate(-90 26 26)" />
             </svg>
             
             <div style={{ 
               position: 'absolute',
-              top: '4px',
-              left: '4px',
+              top: '6px', /* 🆕 განახლებულია 4px-დან 6px-მდე */
+              left: '6px', /* 🆕 განახლებულია 4px-დან 6px-მდე */
               width: '40px',
               height: '40px',
               display: 'flex',
@@ -920,8 +916,8 @@ End of Debug Report
             
             <div style={{
               position: 'absolute',
-              bottom: '0px',
-              left: '0px',
+              bottom: '2px', /* 🆕 განახლებულია 0px-დან 2px-მდე */
+              left: '2px', /* 🆕 განახლებულია 0px-დან 2px-მდე */
               background: 'linear-gradient(135deg, #fbbf24, #d97706)',
               color: '#0f0c08',
               borderRadius: '6px',
@@ -942,8 +938,8 @@ End of Debug Report
             {activeSubscription && (
               <div style={{
                 position: 'absolute',
-                bottom: '0px',
-                right: '0px',
+                bottom: '2px', /* 🆕 განახლებულია 0px-დან 2px-მდე */
+                right: '2px', /* 🆕 განახლებულია 0px-დან 2px-მდე */
                 background: 'linear-gradient(135deg, #a78bfa, #7c3aed)',
                 color: '#fff',
                 borderRadius: '6px',
@@ -961,8 +957,8 @@ End of Debug Report
             )}
           </div>
           
-          {/* 🆕 მომხმარებლის ინფო - სახელი ზედა ხაზთან, ბეიჯი ქვედა ხაზთან (space-between) */}
-          <div className="user-info-section" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '48px', marginLeft: '12px', flex: 1, minWidth: 0 }}>
+          {/* მომხმარებლის ინფო - სახელი ზედა ხაზთან, ბეიჯი ქვედა ხაზთან (space-between) */}
+          <div className="user-info-section" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '52px', marginLeft: '12px', flex: 1, minWidth: 0 }}>
             <h2 className="username" style={{ margin: 0, fontSize: '18px', lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {user?.display_name || 'LunaraSeeker'}
             </h2>
@@ -973,7 +969,7 @@ End of Debug Report
             )}
           </div>
           
-          {/* 🆕 ქოინები და ენერგია - დაპატარავებული ბანერები (22px), ჯამში 48px (22+22+4) */}
+          {/* ქოინები და ენერგია - დაპატარავებული ბანერები (22px), ჯამში 48px (22+22+4) */}
           <div className="user-resources" style={{ 
             display: 'flex', 
             flexDirection: 'column', 

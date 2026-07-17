@@ -3,7 +3,7 @@
    ============================================ */
 
    :root {
-    /* 🎯 ზუსტად 3px დაშორება ეკრანის მარცხენა და მარჯვენა კიდეებიდან */
+    /*  ზუსტად 3px დაშორება ეკრანის მარცხენა და მარჯვენა კიდეებიდან */
     --screen-padding: 3px;
     --section-gap: 2px;
     --max-width: 480px;
@@ -46,8 +46,9 @@
   
   .avatar-section {
     position: relative;
-    width: 48px;
-    height: 48px;
+    /* 🆕 გაზრდილია 48px → 52px (XP წრის ჩაჭრის ასაცილებლად) */
+    width: 52px;
+    height: 52px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -72,12 +73,16 @@
   }
   
   .xp-circle-bg {
-    opacity: 0.3;
+    /* 🆕 ღია იასამნისფერი ფონის წრე */
+    stroke: #e9d5ff;
+    opacity: 1;
   }
   
   .xp-circle-progress {
+    /* 🆕 მუქი იასამნისფერი პროგრესის წრე */
+    stroke: #7c3aed;
     transition: stroke-dashoffset 0.5s ease;
-    filter: drop-shadow(0 0 4px rgba(197, 160, 89, 0.6));
+    filter: drop-shadow(0 0 4px rgba(124, 58, 237, 0.6));
   }
   
   .avatar-image {
