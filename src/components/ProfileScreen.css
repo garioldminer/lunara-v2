@@ -74,187 +74,109 @@
 .stagger-8 { animation-delay: 0.4s; }
 
 /* ============================================
-   🆕 NEW PROFILE HEADER (ულტრა კომპაქტური)
+   🆕 USER HEADER - სწორი კლასები TSX-დან
    ============================================ */
-.new-profile-header {
+.user-header {
+  margin-bottom: 12px;
+}
+
+.user-main-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 10px; /* 🆕 შემცირებულია 12px-დან 10px-მდე */
+  height: 52px;
+  justify-content: space-between;
   background: linear-gradient(135deg, #1a0f05 0%, #0a0600 50%, #1a0f05 100%);
   border: 1px solid rgba(200, 120, 0, 0.4);
   border-radius: 16px;
-  padding: 10px 12px; /* 🆕 შემცირებულია 12px 16px-დან 10px 12px-მდე */
-  margin-bottom: 12px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5), 0 0 16px rgba(200, 120, 0, 0.1);
-  animation: fadeInUp 0.5s ease-out backwards;
+  padding: 8px 12px;
+  gap: 8px;
 }
 
-.header-left-section {
-  display: flex;
-  align-items: center;
-  gap: 10px; /* 🆕 შემცირებულია 12px-დან 10px-მდე */
-  flex: 1;
-  min-width: 0;
-}
-
-/* Avatar with Level Ring */
-.avatar-with-level-ring {
+.avatar-section {
   position: relative;
-  width: 48px; /* 🆕 შემცირებულია 52px-დან 48px-მდე */
-  height: 48px; /* 🆕 შემცირებულია 52px-დან 48px-მდე */
+  width: 48px;
+  height: 48px;
   flex-shrink: 0;
 }
 
-.profile-avatar-large {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  overflow: hidden;
-}
-
-.profile-avatar-large .avatar-letter {
-  position: absolute;
-  inset: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #c87800, #ffe566);
-  border-radius: 50%;
-  color: #0a0600;
-  font-weight: bold;
-  font-size: 18px; /*  შემცირებულია 20px-დან 18px-მდე */
-  font-family: 'Georgia', serif;
-  z-index: 2;
-}
-
-.level-ring {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: conic-gradient(#ffe566 0deg, rgba(200, 120, 0, 0.2) 0deg);
-  z-index: 1;
-  transition: background 0.5s ease;
-}
-
-.level-ring::after {
-  content: '';
-  position: absolute;
-  inset: 6px;
-  border-radius: 50%;
-  background: #0a0600;
-}
-
-.level-badge {
-  position: absolute;
-  bottom: -2px;
-  right: -2px;
-  background: linear-gradient(135deg, #c87800, #ffe566);
-  color: #0a0600;
-  font-family: 'Georgia', serif;
-  font-size: 9px;
-  font-weight: bold;
-  padding: 2px 5px; /* 🆕 შემცირებულია 2px 6px-დან 2px 5px-მდე */
-  border-radius: 8px;
-  border: 2px solid #0a0600;
-  z-index: 3;
-  white-space: nowrap;
-}
-
-/* User Info Horizontal */
-.user-info-horizontal {
+.user-info-section {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  justify-content: center;
+  height: 52px;
+  margin-left: 12px;
+  flex: 1;
   min-width: 0;
+  gap: 2px;
 }
 
-.user-display-name {
-  font-family: 'Georgia', serif;
-  font-size: 16px; /* 🆕 შემცირებულია 18px-დან 16px-მდე */
+.username {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: #ffe566;
-  margin: 0;
+  font-family: 'Georgia', serif;
   font-weight: bold;
-  letter-spacing: 0.6px;
-  text-shadow: 0 0 8px rgba(255, 229, 102, 0.3);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.user-zodiac-info {
-  font-family: 'Georgia', serif;
-  font-size: 10px; /* 🆕 შემცირებულია 11px-დან 10px-მდე */
-  color: #c87800;
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.user-telegram {
-  font-family: 'Georgia', serif;
-  font-size: 10px;
-  color: #886600;
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Header Right Buttons - 🆕 ულტრა კომპაქტური */
-.header-right-buttons {
+/* ============================================
+   🆕 4 ნავიგაციის ღილაკი - სწორი selector
+   ============================================ */
+.user-main-row > div:last-child {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 3px; /*  შემცირებულია 4px-დან 3px-მდე */
+  gap: 3px;
   flex-shrink: 1;
-  min-width: 70px; /* 🆕 შემცირებულია 80px-დან 70px-მდე */
+  min-width: 65px;
 }
 
-.header-btn {
+.user-main-row > div:last-child button {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1px; /* 🆕 შემცირებულია 2px-დან 1px-მდე */
+  gap: 1px;
   background: rgba(20, 12, 5, 0.8);
   border: 1px solid rgba(200, 120, 0, 0.25);
-  border-radius: 5px; /* 🆕 შემცირებულია 6px-დან 5px-მდე */
-  padding: 3px 2px; /*  შემცირებულია 4px 2px-დან 3px 2px-მდე */
+  border-radius: 5px;
+  padding: 2px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  min-width: 35px; /* 🆕 შემცირებულია 42px-დან 35px-მდე */
-  min-height: 35px; /* 🆕 შემცირებულია 40px-დან 35px-მდე */
+  transition: all 0.2s;
+  min-width: 32px;
+  min-height: 32px;
 }
 
-.header-btn.active {
+.user-main-row > div:last-child button span:first-child {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.user-main-row > div:last-child button span:last-child {
+  font-family: 'Georgia', serif;
+  font-size: 6px;
+  color: #ffe566;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.user-main-row > div:last-child button.active {
   background: linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2));
   border-color: #ffe566;
-  box-shadow: 0 0 12px rgba(255, 229, 102, 0.3);
+  box-shadow: 0 0 8px rgba(255, 229, 102, 0.3);
 }
 
-.header-btn.premium-btn {
+.user-main-row > div:last-child button.premium-btn {
   border-color: rgba(255, 215, 0, 0.4);
   background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 165, 0, 0.05));
 }
 
-.header-btn:active { transform: scale(0.95); }
-
-.btn-icon { 
-  font-size: 13px; /*  შემცირებულია 14px-დან 13px-მდე */
-  line-height: 1; 
-}
-
-.btn-text {
-  font-family: 'Georgia', serif;
-  font-size: 6px; /* 🆕 შემცირებულია 7px-დან 6px-მდე */
-  color: #ffe566;
-  font-weight: 600;
-  letter-spacing: 0.1px; /* 🆕 შემცირებულია 0.2px-დან 0.1px-მდე */
-  text-align: center;
-  white-space: nowrap;
-  line-height: 1;
+.user-main-row > div:last-child button:active {
+  transform: scale(0.95);
 }
 
 /* ============================================
@@ -987,47 +909,43 @@
    MOBILE OPTIMIZATION
    ============================================ */
 @media (max-width: 768px) {
-  .new-profile-header {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
+  .user-main-row {
+    flex-wrap: wrap;
+    height: auto;
     padding: 10px;
   }
   
-  .header-left-section {
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
+  .user-info-section {
+    height: auto;
+    margin-left: 0;
   }
   
-  .user-info-horizontal {
-    align-items: center;
-  }
-  
-  .header-right-buttons {
+  .user-main-row > div:last-child {
     width: 100%;
     justify-content: center;
   }
   
-  .header-btn {
+  .user-main-row > div:last-child button {
     min-width: 35px;
     padding: 3px 2px;
   }
   
-  .btn-text { font-size: 6px; }
+  .user-main-row > div:last-child button span:last-child {
+    font-size: 6px;
+  }
 }
 
 @media (max-width: 380px) {
   .profile-content { padding: 12px 10px; padding-bottom: calc(70px + env(safe-area-inset-bottom, 0)); }
   
-  .avatar-with-level-ring { width: 44px; height: 44px; }
-  .profile-avatar-large .avatar-letter { font-size: 16px; }
-  .user-display-name { font-size: 14px; }
+  .avatar-section { width: 44px; height: 44px; }
+  .avatar-section .avatar-letter { font-size: 16px; }
+  .username { font-size: 14px; }
   
-  .header-right-buttons { gap: 2px; min-width: 65px; }
-  .header-btn { min-width: 32px; min-height: 32px; padding: 2px 2px; }
-  .btn-icon { font-size: 12px; }
-  .btn-text { font-size: 6px; }
+  .user-main-row > div:last-child { gap: 2px; min-width: 60px; }
+  .user-main-row > div:last-child button { min-width: 30px; min-height: 30px; padding: 2px; }
+  .user-main-row > div:last-child button span:first-child { font-size: 11px; }
+  .user-main-row > div:last-child button span:last-child { font-size: 5px; }
   
   .stats-compact-grid { gap: 6px; padding: 10px; }
   .stat-compact-icon { font-size: 20px; }
@@ -1056,10 +974,10 @@
 
 @media (max-height: 700px) {
   .profile-content { padding-top: 10px; }
-  .new-profile-header, .moon-phase-card, .collection-card, .recent-readings-card, .my-signs-card, .quick-actions-card { margin-bottom: 10px; padding: 12px; }
+  .moon-phase-card, .collection-card, .recent-readings-card, .my-signs-card, .quick-actions-card { margin-bottom: 10px; padding: 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .new-profile-header, .level-ring, .moon-symbol, .particle { animation: none; }
+  .moon-symbol, .particle { animation: none; }
   * { transition-duration: 0.01ms !important; }
 }
