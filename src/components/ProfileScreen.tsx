@@ -328,19 +328,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
   };
 
   const xpProgress = userData ? (userData.xp / userData.xpToNext) * 100 : 0;
-  
-  const getPlanConfig = (plan: string) => {
-    const configs: Record<string, { icon: string; color: string; glow: string }> = {
-      SEEKER: { icon: '🌑', color: '#888', glow: 'rgba(136, 136, 136, 0.5)' },
-      MYSTIC: { icon: '🌙', color: '#ffe566', glow: 'rgba(255, 229, 102, 0.5)' },
-      ORACLE: { icon: '🌕', color: '#a78bfa', glow: 'rgba(167, 139, 250, 0.5)' },
-      CELESTIAL: { icon: '✨', color: '#60a5fa', glow: 'rgba(96, 165, 250, 0.5)' },
-      FREE: { icon: '🌑', color: '#888', glow: 'rgba(136, 136, 136, 0.5)' },
-    };
-    return configs[plan] || configs.FREE;
-  };
-
-  const planConfig = userData ? getPlanConfig(userData.currentPlan) : getPlanConfig('FREE');
 
   const copyDebugData = async () => {
     const debugText = JSON.stringify({ 
@@ -399,7 +386,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
       <div className="profile-content">
         {activeTab === 'profile' && (
           <div className="profile-tab">
-            {/* 1. Compact Header with Avatar + 4 Nav Pills */}
             <div className="profile-header-compact animate-fade-in stagger-1">
               <div className="profile-header-top">
                 <div className="profile-avatar-section">
@@ -449,7 +435,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
               </div>
             </div>
 
-            {/* 2. Compact Stats Grid */}
             <div className="stats-compact-grid animate-fade-in stagger-2">
               {stats.map((stat, idx) => (
                 <div key={idx} className="stat-compact-item">
@@ -460,7 +445,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
               ))}
             </div>
 
-            {/* 3. Horizontal Core Traits */}
             <div className="core-traits-horizontal animate-fade-in stagger-3">
               <h3 className="card-title">✦ CORE TRAITS ✦</h3>
               <div className="traits-horizontal-grid">
@@ -474,7 +458,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
               </div>
             </div>
 
-            {/* 4. Moon Phase */}
             <div className="moon-phase-card animate-fade-in stagger-4">
               <h3 className="card-title">✦ MOON PHASE ✦</h3>
               <div className="moon-content">
@@ -487,7 +470,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
               </div>
             </div>
 
-            {/* 5. Explore Buttons */}
             <div className="quick-actions-card animate-fade-in stagger-5">
               <h3 className="card-title">✦ EXPLORE ✦</h3>
               <div className="action-buttons-grid">
@@ -507,7 +489,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
               </div>
             </div>
 
-            {/* 6. My Signs */}
             <div className="my-signs-card animate-fade-in stagger-6">
               <h3 className="card-title">✦ MY SIGNS ✦</h3>
               <div className="signs-grid">
@@ -526,7 +507,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
               </div>
             </div>
 
-            {/* 7. Recent Readings */}
             {recentReadings.length > 0 && (
               <div className="recent-readings-card animate-fade-in stagger-7">
                 <h3 className="card-title">✦ RECENT READINGS ✦</h3>
