@@ -160,26 +160,26 @@
   letter-spacing: 0.3px;
 }
 
-/* 2x2 Navigation Grid - 🆕 პროპორციულად დაპატარავებული */
+/* ===== 2x2 NAVIGATION GRID (კომპაქტური) ===== */
 .profile-nav-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   grid-template-rows: repeat(2, 1fr);
-  gap: 4px; /* 🆕 პატარა gap */
+  gap: 2px; /* 🆕 მინიმალური დაშორება */
   width: 35%;
-  height: 56px; /* 🆕 ზუსტად იგივე სიმაღლე რაც ავატარს */
+  height: 56px; /* 🆕 ზუსტად ავატარის კონტეინერის სიმაღლე, რომ არ გასცდეს რგოლს */
 }
 
 .nav-pill {
   background: rgba(20, 12, 5, 0.8);
   border: 1px solid rgba(200, 120, 0, 0.25);
-  border-radius: 8px; /* 🆕 პატარა border-radius */
-  padding: 2px; /* 🆕 მინიმალური padding */
+  border-radius: 6px; /* 🆕 უფრო მცირე radius */
+  padding: 2px; /* 🆕 მინიმალური შიდა დაშორება */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1px; /*  მინიმალური gap */
+  gap: 1px;
   cursor: pointer;
   transition: all 0.3s ease;
   width: 100%;
@@ -200,15 +200,16 @@
 .nav-pill:active { transform: scale(0.95); }
 
 .nav-icon { 
-  font-size: 12px; /* 🆕 პატარა */
+  font-size: 12px; /* 🆕 კომპაქტური ზომა */
+  line-height: 1;
 }
 
 .nav-label {
   font-family: 'Georgia', serif;
-  font-size: 6px; /* 🆕 ძალიან პატარა */
+  font-size: 6px; /* 🆕 ძალიან კომპაქტური ტექსტი */
   color: #ffe566;
   font-weight: 600;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.1px;
   text-align: center;
   line-height: 1;
 }
@@ -992,9 +993,9 @@
   .profile-avatar-section { flex-direction: column; align-items: center; width: 100%; }
   
   .profile-nav-grid { width: 100%; grid-template-columns: repeat(4, 1fr); grid-template-rows: auto; height: auto; }
-  .nav-pill { min-height: 50px; padding: 6px 4px; }
-  .nav-icon { font-size: 16px; }
-  .nav-label { font-size: 8px; }
+  .nav-pill { min-height: 45px; padding: 4px 2px; }
+  .nav-icon { font-size: 14px; }
+  .nav-label { font-size: 7px; }
   
   .stats-compact-grid { gap: 6px; padding: 10px; }
   .stat-compact-icon { font-size: 20px; }
