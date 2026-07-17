@@ -11,6 +11,8 @@ interface Props {
   onNavigate?: (screen: string) => void;
 }
 
+type TabType = 'profile' | 'achievements' | 'settings';
+
 // ==========================================
 // დინამიური მონაცემების ჰელპერები
 // ==========================================
@@ -151,7 +153,8 @@ interface Reading {
 }
 
 export default function ProfileScreen({ onNavigate }: Props) {
-  const [activeTab, setActiveTab] = useState<'profile' | 'achievements' | 'settings'>('profile');
+  // ცხადად მითითებული ტიპი TypeScript-ის შეცდომების თავიდან ასაცილებლად
+  const [activeTab, setActiveTab] = useState<TabType>('profile');
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showBirthInfo, setShowBirthInfo] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
