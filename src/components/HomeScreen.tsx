@@ -839,7 +839,7 @@ End of Debug Report
 
   const userLevelData = getLevelFromTotalXP(economy.xp);
   const xpPercent = Math.min((userLevelData.currentLevelXP / userLevelData.xpToNext) * 100, 100);
-  const circumference = 2 * Math.PI * 24; // 🆕 განახლებული რადიუსისთვის (r=24)
+  const circumference = 2 * Math.PI * 22; // 🆕 განახლებული რადიუსისთვის (r=22)
   const strokeDashoffset = circumference - (xpPercent / 100) * circumference;
 
   const getQuestIcon = (actionType: string) => {
@@ -862,14 +862,19 @@ End of Debug Report
       </AnimatePresence>
 
       <div className="user-header">
-        {/* 🆕 იდეალური გასწორება: ზედა და ქვედა კიდეები */}
-        <div className="user-main-row" style={{ alignItems: 'flex-start' }}>
+        {/* 🆕 იდეალური გასწორება: ზედა და ქვედა კიდეები, მთლიანი ბარათი 48px სიმაღლეზე */}
+        <div className="user-main-row" style={{ 
+          alignItems: 'flex-start',
+          height: '48px',
+          display: 'flex',
+          justifyContent: 'space-between'
+        }}>
           
-          {/* ავატარი და XP წრე - იდეალურად ცენტრირებული */}
-          <div className="avatar-section clickable-avatar" onClick={() => onNavigate?.('profile')} style={{ position: 'relative', width: '52px', height: '52px', flexShrink: 0 }}>
-            <svg className="xp-circular-progress" width="52" height="52" viewBox="0 0 52 52" style={{ position: 'absolute', top: 0, left: 0 }}>
-              <circle className="xp-circle-bg" cx="26" cy="26" r="24" fill="none" stroke="rgba(197, 160, 89, 0.15)" strokeWidth="2" />
-              <circle className="xp-circle-progress" cx="26" cy="26" r="24" fill="none" stroke="url(#xpGradient)" strokeWidth="2" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} transform="rotate(-90 26 26)" />
+          {/* ავატარი და XP წრე - 48px კონტეინერი, 44px ავატარი */}
+          <div className="avatar-section clickable-avatar" onClick={() => onNavigate?.('profile')} style={{ position: 'relative', width: '48px', height: '48px', flexShrink: 0 }}>
+            <svg className="xp-circular-progress" width="48" height="48" viewBox="0 0 48 48" style={{ position: 'absolute', top: 0, left: 0 }}>
+              <circle className="xp-circle-bg" cx="24" cy="24" r="22" fill="none" stroke="rgba(197, 160, 89, 0.15)" strokeWidth="2" />
+              <circle className="xp-circle-progress" cx="24" cy="24" r="22" fill="none" stroke="url(#xpGradient)" strokeWidth="2" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} transform="rotate(-90 24 24)" />
               <defs>
                 <linearGradient id="xpGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#fbbf24" />
@@ -882,12 +887,12 @@ End of Debug Report
               position: 'absolute',
               top: '2px',
               left: '2px',
-              width: '48px',
-              height: '48px',
+              width: '44px',
+              height: '44px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '20px',
+              fontSize: '18px',
               fontWeight: 'bold',
               background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)',
               borderRadius: '50%',
@@ -941,8 +946,8 @@ End of Debug Report
             )}
           </div>
           
-          {/* 🆕 მომხმარებლის ინფო - ზუსტად 52px სიმაღლეზე გაწერილი, რათა ზედა და ქვედა კიდეები ემთხვეოდეს ავატარს */}
-          <div className="user-info-section" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '52px', marginLeft: '12px', flex: 1, minWidth: 0 }}>
+          {/* 🆕 მომხმარებლის ინფო - ზუსტად 48px სიმაღლეზე გაწერილი */}
+          <div className="user-info-section" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '48px', marginLeft: '12px', flex: 1, minWidth: 0 }}>
             <h2 className="username" style={{ margin: 0, fontSize: '18px', lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {user?.display_name || 'LunaraSeeker'}
             </h2>
@@ -953,16 +958,71 @@ End of Debug Report
             )}
           </div>
           
-          <div className="user-resources" style={{ flexShrink: 0 }}>
-            <div className="resource gems">
-              <Gem size={14} className="resource-icon gem-icon" />
-              <span className="value">{economy.cosmic_coins.toLocaleString()}</span>
-              <button className="add-btn">+</button>
+          {/* 🆕 ქოინები და ენერგია - ასევე 48px სიმაღლეზე გასწორებული და ლამაზი ბანერებით */}
+          <div className="user-resources" style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            justifyContent: 'space-between',
+            height: '48px',
+            gap: '6px',
+            flexShrink: 0 
+          }}>
+            <div className="resource gems" style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: 'rgba(147, 112, 219, 0.15)',
+              padding: '4px 10px',
+              borderRadius: '20px',
+              border: '1px solid rgba(147, 112, 219, 0.3)'
+            }}>
+              <Gem size={14} className="resource-icon gem-icon" style={{ color: '#9370db' }} />
+              <span className="value" style={{ fontSize: '13px', fontWeight: '600', color: '#fff' }}>
+                {economy.cosmic_coins.toLocaleString()}
+              </span>
+              <button className="add-btn" style={{
+                width: '20px',
+                height: '20px',
+                borderRadius: '50%',
+                background: 'rgba(197, 160, 89, 0.3)',
+                border: 'none',
+                color: '#C5A059',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: 'bold'
+              }}>+</button>
             </div>
-            <div className="resource energy">
-              <Zap size={14} className="resource-icon energy-icon" />
-              <span className="value">18/20</span>
-              <button className="add-btn">+</button>
+            
+            <div className="resource energy" style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: 'rgba(251, 191, 36, 0.15)',
+              padding: '4px 10px',
+              borderRadius: '20px',
+              border: '1px solid rgba(251, 191, 36, 0.3)'
+            }}>
+              <Zap size={14} className="resource-icon energy-icon" style={{ color: '#fbbf24' }} />
+              <span className="value" style={{ fontSize: '13px', fontWeight: '600', color: '#fff' }}>
+                18/20
+              </span>
+              <button className="add-btn" style={{
+                width: '20px',
+                height: '20px',
+                borderRadius: '50%',
+                background: 'rgba(197, 160, 89, 0.3)',
+                border: 'none',
+                color: '#C5A059',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: 'bold'
+              }}>+</button>
             </div>
           </div>
         </div>
