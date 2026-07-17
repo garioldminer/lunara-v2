@@ -5,16 +5,15 @@ import { useSettings } from '../context/SettingsContext';
 import { updateUser, resetZodiacSign } from '../lib/userService';
 import { getActiveSubscription } from '../lib/subscriptionService';
 import { supabase } from '../lib/supabase';
-import { Bug, X } from 'lucide-react';
+import { Bug, X, Star, Heart, BookOpen, Sparkles, Crown, Lock } from 'lucide-react';
 
 interface Props {
   onNavigate?: (screen: string) => void;
 }
 
 // ==========================================
-// 🆕 დინამიური მონაცემების ჰელპერები
+// დინამიური მონაცემების ჰელპერები
 // ==========================================
-
 const ZODIAC_DATA: Record<string, { symbol: string; element: string; planet: string }> = {
   Aries: { symbol: '♈', element: 'Fire', planet: 'Mars' },
   Taurus: { symbol: '♉', element: 'Earth', planet: 'Venus' },
@@ -30,7 +29,6 @@ const ZODIAC_DATA: Record<string, { symbol: string; element: string; planet: str
   Pisces: { symbol: '♓', element: 'Water', planet: 'Neptune' },
 };
 
-// 🆕 გამოსწორებულია: ავტომატურად ადიდებს პირველ ასოს, რათა "virgo" და "Virgo" ორივე იმუშაოს
 const getSignInfo = (signName: string) => {
   if (!signName) return { symbol: '✨', element: 'Unknown', planet: 'Unknown' };
   const capitalized = signName.charAt(0).toUpperCase() + signName.slice(1).toLowerCase();
@@ -137,6 +135,13 @@ interface SignInfo {
   planet: string;
 }
 
+interface CoreTrait {
+  title: string;
+  sign: string;
+  description: string;
+  icon: string;
+}
+
 interface Reading {
   id: string;
   type: string;
@@ -174,6 +179,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
   const [mounted, setMounted] = useState(false);
   const [activeSubscription, setActiveSubscription] = useState<any>(null);
   const [recentReadings, setRecentReadings] = useState<Reading[]>([]);
+  const [isUserAdmin, setIsUserAdmin] = useState(false);
   
   const [showDebug, setShowDebug] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
@@ -183,7 +189,10 @@ export default function ProfileScreen({ onNavigate }: Props) {
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    if (user?.id === 'c9dbe3be-5c02-4034-8bfd-1d693eb02754') {
+      setIsUserAdmin(true);
+    }
+  }, [user]);
 
   useEffect(() => {
     if (user) {
@@ -212,7 +221,9 @@ export default function ProfileScreen({ onNavigate }: Props) {
   }, [user]);
 
   const userLevelData = user ? getLevelFromTotalXP(user.xp || 0) : { level: 1, currentLevelXP: 0, xpToNext: 100 };
-  const signData = getSignInfo(user?.sun_sign || '');
+  const sunSignData = getSignInfo(user?.sun_sign || '');
+  const moonSignData = getSignInfo(user?.moon_sign || '');
+  const risingSignData = getSignInfo(user?.rising_sign || '');
 
   const userData = user ? {
     telegramUsername: '@' + (user.username || 'user'),
@@ -226,8 +237,8 @@ export default function ProfileScreen({ onNavigate }: Props) {
     birthTime: user.birth_time || '',
     birthPlace: user.birth_place || '',
     zodiac: user.sun_sign || '',
-    zodiacSymbol: signData.symbol,
-    element: signData.element,
+    zodiacSymbol: sunSignData.symbol,
+    element: sunSignData.element,
     level: userLevelData.level,
     levelTitle: getLevelTitle(userLevelData.level),
     xp: userLevelData.currentLevelXP,
@@ -240,6 +251,13 @@ export default function ProfileScreen({ onNavigate }: Props) {
     readingsCount: (user as any).readings_count || 0,
     cardsCollected: (user as any).cards_collected || 0,
   } : null;
+
+  // 🆕 ახალი: Core Traits (AI-სტილის მოკლე აღწერები)
+  const coreTraits: CoreTrait[] = userData ? [
+    { title: 'Sun Sign', sign: userData.sunSign, description: 'Your core identity and life purpose.', icon: '☀️' },
+    { title: 'Moon Sign', sign: userData.moonSign, description: 'Your inner emotional world and instincts.', icon: '🌙' },
+    { title: 'Rising Sign', sign: userData.risingSign, description: 'The mask you wear and first impressions.', icon: '⬆️' },
+  ] : [];
 
   const stats: Stat[] = userData ? [
     { label: 'Readings', value: userData.readingsCount || recentReadings.length, icon: '🔮' },
@@ -254,12 +272,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
     { id: '3', icon: '📚', title: 'Collector', description: 'Collect all 78 tarot cards', unlocked: userData.cardsCollected >= 78, progress: userData.cardsCollected, total: 78 },
     { id: '4', icon: '💕', title: 'Love Expert', description: 'Complete 50 love readings', unlocked: false, progress: 12, total: 50 },
     { id: '5', icon: '🌙', title: 'Moon Master', description: 'Complete 10 moon rituals', unlocked: false, progress: 3, total: 10 },
-  ] : [];
-
-  const mySigns: { label: string; icon: string; sign: SignInfo }[] = userData ? [
-    { label: 'Sun Sign', icon: '☀️', sign: { name: userData.sunSign, ...getSignInfo(userData.sunSign) } },
-    { label: 'Moon Sign', icon: '🌙', sign: { name: userData.moonSign, ...getSignInfo(userData.moonSign) } },
-    { label: 'Rising Sign', icon: '⬆️', sign: { name: userData.risingSign, ...getSignInfo(userData.risingSign) } },
   ] : [];
 
   const moonPhase = getDynamicMoonPhase();
@@ -347,7 +359,14 @@ export default function ProfileScreen({ onNavigate }: Props) {
   const planConfig = userData ? getPlanConfig(userData.currentPlan) : getPlanConfig('FREE');
 
   const copyDebugData = async () => {
-    const debugText = JSON.stringify({ userData, stats, recentReadings, achievements }, null, 2);
+    const debugText = JSON.stringify({ 
+      isAdmin: isUserAdmin,
+      userId: user?.id,
+      userData, 
+      stats, 
+      recentReadings, 
+      achievements 
+    }, null, 2);
     try {
       await navigator.clipboard.writeText(debugText);
       setCopySuccess(true);
@@ -377,19 +396,22 @@ export default function ProfileScreen({ onNavigate }: Props) {
         ))}
       </div>
 
-      <button 
-        onClick={() => setShowDebug(!showDebug)} 
-        style={{
-          position: 'fixed', bottom: '20px', right: '20px', zIndex: 9999,
-          width: '48px', height: '48px', borderRadius: '50%',
-          background: showDebug ? '#10b981' : '#333',
-          border: '2px solid rgba(255,255,255,0.2)',
-          color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
-        }}
-      >
-        <Bug size={24} />
-      </button>
+      {/* 🆕 დებაგერი მხოლოდ ადმინისთვის ჩანს */}
+      {isUserAdmin && (
+        <button 
+          onClick={() => setShowDebug(!showDebug)} 
+          style={{
+            position: 'fixed', bottom: '20px', right: '20px', zIndex: 9999,
+            width: '48px', height: '48px', borderRadius: '50%',
+            background: showDebug ? '#10b981' : '#333',
+            border: '2px solid rgba(255,255,255,0.2)',
+            color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+          }}
+        >
+          <Bug size={24} />
+        </button>
+      )}
 
       <div className="profile-content">
         {activeTab === 'profile' && (
@@ -441,19 +463,41 @@ export default function ProfileScreen({ onNavigate }: Props) {
               </div>
             </div>
 
-            <div className="moon-phase-card animate-fade-in stagger-2">
-              <h3 className="card-title">✦ MOON PHASE ✦</h3>
-              <div className="moon-content">
-                <div className="moon-symbol">{moonPhase.symbol}</div>
-                <div className="moon-info">
-                  <div className="moon-phase-name">{moonPhase.phase}</div>
-                  <div className="moon-details">Illuminated: {moonPhase.illumination}%</div>
-                  <div className="moon-best-for">Best for: {moonPhase.bestFor}</div>
-                </div>
+            {/* 🆕 ახალი: Core Traits (როგორც Co-Star / The Pattern-ში) */}
+            <div className="core-traits-card animate-fade-in stagger-2">
+              <h3 className="card-title">✦ CORE TRAITS ✦</h3>
+              <div className="traits-grid">
+                {coreTraits.map((trait, index) => (
+                  <div key={index} className="trait-item">
+                    <div className="trait-icon">{trait.icon}</div>
+                    <div className="trait-name">{trait.sign ? trait.sign.charAt(0).toUpperCase() + trait.sign.slice(1) : 'Unknown'}</div>
+                    <div className="trait-desc">{trait.description}</div>
+                  </div>
+                ))}
               </div>
             </div>
 
-            <div className="my-signs-card animate-fade-in stagger-3">
+            {/* 🆕 ახალი: Premium Quick Actions */}
+            <div className="quick-actions-card animate-fade-in stagger-3">
+              <h3 className="card-title">✦ EXPLORE ✦</h3>
+              <div className="action-buttons-grid">
+                <button className="premium-action-btn" onClick={() => onNavigate && onNavigate('natal-chart')}>
+                  <Star size={20} />
+                  <span>Full Natal Chart</span>
+                  {userData.currentPlan === 'FREE' && <Lock size={14} className="lock-icon" />}
+                </button>
+                <button className="premium-action-btn" onClick={() => onNavigate && onNavigate('compatibility')}>
+                  <Heart size={20} />
+                  <span>Compatibility</span>
+                </button>
+                <button className="premium-action-btn" onClick={() => onNavigate && onNavigate('journal')}>
+                  <BookOpen size={20} />
+                  <span>My Journal</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="my-signs-card animate-fade-in stagger-4">
               <h3 className="card-title">✦ MY SIGNS ✦</h3>
               <div className="signs-grid">
                 {mySigns.map((item, index) => (
@@ -473,7 +517,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
             </div>
 
             {recentReadings.length > 0 && (
-              <div className="recent-readings-card animate-fade-in stagger-4">
+              <div className="recent-readings-card animate-fade-in stagger-5">
                 <h3 className="card-title">✦ RECENT READINGS ✦</h3>
                 <div className="readings-list">
                   {recentReadings.map((reading) => (
@@ -561,14 +605,15 @@ export default function ProfileScreen({ onNavigate }: Props) {
         )}
       </div>
 
-      {showDebug && (
+      {/* 🆕 გაფართოებული დებაგერი მხოლოდ ადმინისთვის */}
+      {isUserAdmin && showDebug && (
         <div style={{
           position: 'fixed', top: '20px', right: '20px', bottom: '80px', width: '350px',
           background: 'rgba(10, 6, 0, 0.98)', border: '2px solid #fbbf24', borderRadius: '12px',
           zIndex: 9998, display: 'flex', flexDirection: 'column', boxShadow: '0 8px 32px rgba(0,0,0,0.8)'
         }}>
           <div style={{ padding: '12px', borderBottom: '1px solid rgba(251, 191, 36, 0.3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ color: '#fbbf24', fontWeight: 'bold', fontSize: '14px' }}>🔧 PROFILE DEBUG</span>
+            <span style={{ color: '#fbbf24', fontWeight: 'bold', fontSize: '14px' }}>🔧 ADMIN DEBUG</span>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button onClick={copyDebugData} style={{ background: 'rgba(96, 165, 250, 0.2)', border: '1px solid #60a5fa', color: '#60a5fa', borderRadius: '4px', padding: '4px 8px', cursor: 'pointer', fontSize: '11px' }}>
                 {copySuccess ? 'Copied!' : 'Copy JSON'}
@@ -578,11 +623,14 @@ export default function ProfileScreen({ onNavigate }: Props) {
           </div>
           <pre style={{ flex: 1, overflow: 'auto', padding: '12px', color: '#a78bfa', fontSize: '11px', margin: 0 }}>
             {JSON.stringify({
+              isAdmin: isUserAdmin,
+              userId: user?.id,
               userData: { ...userData, xpToNext: undefined, xp: undefined },
               levelData: userLevelData,
               stats,
               recentReadingsCount: recentReadings.length,
-              achievementsUnlocked: achievements.filter(a => a.unlocked).length
+              achievementsUnlocked: achievements.filter(a => a.unlocked).length,
+              localStorageKeys: Object.keys(localStorage)
             }, null, 2)}
           </pre>
         </div>
