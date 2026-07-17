@@ -5,7 +5,7 @@ import { useSettings } from '../context/SettingsContext';
 import { updateUser, resetZodiacSign } from '../lib/userService';
 import { getActiveSubscription } from '../lib/subscriptionService';
 import { supabase } from '../lib/supabase';
-import { Bug, X, Star, Heart, BookOpen, Sparkles, Crown, Lock } from 'lucide-react';
+import { Bug, X, Star, Heart, BookOpen, Lock } from 'lucide-react';
 
 interface Props {
   onNavigate?: (screen: string) => void;
@@ -222,8 +222,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
 
   const userLevelData = user ? getLevelFromTotalXP(user.xp || 0) : { level: 1, currentLevelXP: 0, xpToNext: 100 };
   const sunSignData = getSignInfo(user?.sun_sign || '');
-  const moonSignData = getSignInfo(user?.moon_sign || '');
-  const risingSignData = getSignInfo(user?.rising_sign || '');
 
   const userData = user ? {
     telegramUsername: '@' + (user.username || 'user'),
@@ -252,11 +250,16 @@ export default function ProfileScreen({ onNavigate }: Props) {
     cardsCollected: (user as any).cards_collected || 0,
   } : null;
 
-  // 🆕 ახალი: Core Traits (AI-სტილის მოკლე აღწერები)
   const coreTraits: CoreTrait[] = userData ? [
-    { title: 'Sun Sign', sign: userData.sunSign, description: 'Your core identity and life purpose.', icon: '☀️' },
-    { title: 'Moon Sign', sign: userData.moonSign, description: 'Your inner emotional world and instincts.', icon: '🌙' },
-    { title: 'Rising Sign', sign: userData.risingSign, description: 'The mask you wear and first impressions.', icon: '⬆️' },
+    { title: 'Sun Sign', sign: userData.sunSign || 'Unknown', description: 'Your core identity and life purpose.', icon: '☀️' },
+    { title: 'Moon Sign', sign: userData.moonSign || 'Unknown', description: 'Your inner emotional world and instincts.', icon: '🌙' },
+    { title: 'Rising Sign', sign: userData.risingSign || 'Unknown', description: 'The mask you wear and first impressions.', icon: '⬆️' },
+  ] : [];
+
+  const mySigns: { label: string; icon: string; sign: SignInfo }[] = userData ? [
+    { label: 'Sun Sign', icon: '☀️', sign: { name: userData.sunSign, ...getSignInfo(userData.sunSign) } },
+    { label: 'Moon Sign', icon: '🌙', sign: { name: userData.moonSign, ...getSignInfo(userData.moonSign) } },
+    { label: 'Rising Sign', icon: '⬆️', sign: { name: userData.risingSign, ...getSignInfo(userData.risingSign) } },
   ] : [];
 
   const stats: Stat[] = userData ? [
@@ -396,7 +399,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
         ))}
       </div>
 
-      {/* 🆕 დებაგერი მხოლოდ ადმინისთვის ჩანს */}
       {isUserAdmin && (
         <button 
           onClick={() => setShowDebug(!showDebug)} 
@@ -463,21 +465,19 @@ export default function ProfileScreen({ onNavigate }: Props) {
               </div>
             </div>
 
-            {/* 🆕 ახალი: Core Traits (როგორც Co-Star / The Pattern-ში) */}
             <div className="core-traits-card animate-fade-in stagger-2">
               <h3 className="card-title">✦ CORE TRAITS ✦</h3>
               <div className="traits-grid">
                 {coreTraits.map((trait, index) => (
                   <div key={index} className="trait-item">
                     <div className="trait-icon">{trait.icon}</div>
-                    <div className="trait-name">{trait.sign ? trait.sign.charAt(0).toUpperCase() + trait.sign.slice(1) : 'Unknown'}</div>
+                    <div className="trait-name">{trait.sign.charAt(0).toUpperCase() + trait.sign.slice(1)}</div>
                     <div className="trait-desc">{trait.description}</div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* 🆕 ახალი: Premium Quick Actions */}
             <div className="quick-actions-card animate-fade-in stagger-3">
               <h3 className="card-title">✦ EXPLORE ✦</h3>
               <div className="action-buttons-grid">
@@ -605,7 +605,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
         )}
       </div>
 
-      {/* 🆕 გაფართოებული დებაგერი მხოლოდ ადმინისთვის */}
       {isUserAdmin && showDebug && (
         <div style={{
           position: 'fixed', top: '20px', right: '20px', bottom: '80px', width: '350px',
