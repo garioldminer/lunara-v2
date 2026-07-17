@@ -73,42 +73,50 @@
 .stagger-7 { animation-delay: 0.35s; }
 .stagger-8 { animation-delay: 0.4s; }
 
-/* ===== COMPACT PROFILE HEADER ===== */
-.profile-header-compact {
+/* ============================================
+   🆕 NEW PROFILE HEADER (ავატარი + ინფო + 4 ღილაკი)
+   ============================================ */
+.new-profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
   background: linear-gradient(135deg, #1a0f05 0%, #0a0600 50%, #1a0f05 100%);
   border: 1px solid rgba(200, 120, 0, 0.4);
   border-radius: 16px;
-  padding: 16px;
+  padding: 16px 20px;
   margin-bottom: 12px;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5), 0 0 16px rgba(200, 120, 0, 0.1);
   animation: fadeInUp 0.5s ease-out backwards;
 }
 
-.profile-header-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.profile-avatar-section {
+.header-left-section {
   display: flex;
   align-items: center;
-  gap: 12px;
-  width: 65%;
+  gap: 16px;
+  flex: 1;
+  min-width: 0;
 }
 
-.profile-avatar {
+/* Avatar with Level Ring */
+.avatar-with-level-ring {
   position: relative;
-  width: 56px;
-  height: 56px;
+  width: 80px;
+  height: 80px;
   flex-shrink: 0;
 }
 
-.profile-avatar .avatar-letter {
+.profile-avatar-large {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.profile-avatar-large .avatar-letter {
   position: absolute;
-  inset: 0;
+  inset: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -116,174 +124,135 @@
   border-radius: 50%;
   color: #0a0600;
   font-weight: bold;
-  font-size: 24px;
+  font-size: 32px;
   font-family: 'Georgia', serif;
   z-index: 2;
 }
 
-.avatar-ring {
+.level-ring {
   position: absolute;
-  inset: -2px;
+  inset: 0;
   border-radius: 50%;
-  border: 1.5px solid #ffe566;
-  animation: ringRotate 8s linear infinite;
-  background: conic-gradient(from 0deg, transparent 0%, #ffe566 25%, transparent 50%, #c87800 75%, transparent 100%);
-  mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #fff calc(100% - 1.5px));
-  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #fff calc(100% - 1.5px));
+  background: conic-gradient(#ffe566 0deg, rgba(200, 120, 0, 0.2) 0deg);
+  z-index: 1;
+  transition: background 0.5s ease;
 }
 
-@keyframes ringRotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.level-ring::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background: #0a0600;
 }
 
-.profile-user-info {
-  flex: 1;
+.level-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  background: linear-gradient(135deg, #c87800, #ffe566);
+  color: #0a0600;
+  font-family: 'Georgia', serif;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 3px 8px;
+  border-radius: 10px;
+  border: 2px solid #0a0600;
+  z-index: 3;
+  white-space: nowrap;
+}
+
+/* User Info Horizontal */
+.user-info-horizontal {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   min-width: 0;
 }
 
-.profile-username {
+.user-display-name {
   font-family: 'Georgia', serif;
-  font-size: 18px;
+  font-size: 24px;
   color: #ffe566;
-  margin: 0 0 4px;
+  margin: 0;
   font-weight: bold;
   letter-spacing: 0.6px;
   text-shadow: 0 0 8px rgba(255, 229, 102, 0.3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.profile-zodiac {
+.user-zodiac-info {
   font-family: 'Georgia', serif;
-  font-size: 11px;
+  font-size: 13px;
   color: #c87800;
   margin: 0;
-  letter-spacing: 0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* ===== 2x2 NAVIGATION GRID (კომპაქტური) ===== */
-.profile-nav-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(2, 1fr);
-  gap: 2px; /* 🆕 მინიმალური დაშორება */
-  width: 35%;
-  height: 56px; /* 🆕 ზუსტად ავატარის კონტეინერის სიმაღლე, რომ არ გასცდეს რგოლს */
+.user-telegram {
+  font-family: 'Georgia', serif;
+  font-size: 11px;
+  color: #886600;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.nav-pill {
-  background: rgba(20, 12, 5, 0.8);
-  border: 1px solid rgba(200, 120, 0, 0.25);
-  border-radius: 6px; /* 🆕 უფრო მცირე radius */
-  padding: 2px; /* 🆕 მინიმალური შიდა დაშორება */
+/* Header Right Buttons */
+.header-right-buttons {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.header-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1px;
+  gap: 4px;
+  background: rgba(20, 12, 5, 0.8);
+  border: 1px solid rgba(200, 120, 0, 0.25);
+  border-radius: 10px;
+  padding: 10px 14px;
   cursor: pointer;
   transition: all 0.3s ease;
-  width: 100%;
-  height: 100%;
+  min-width: 70px;
 }
 
-.nav-pill.active {
+.header-btn.active {
   background: linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2));
   border-color: #ffe566;
   box-shadow: 0 0 12px rgba(255, 229, 102, 0.3);
 }
 
-.nav-pill.premium-badge {
+.header-btn.premium-btn {
   border-color: rgba(255, 215, 0, 0.4);
   background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 165, 0, 0.05));
 }
 
-.nav-pill:active { transform: scale(0.95); }
+.header-btn:active { transform: scale(0.95); }
 
-.nav-icon { 
-  font-size: 12px; /* 🆕 კომპაქტური ზომა */
-  line-height: 1;
-}
+.btn-icon { font-size: 20px; line-height: 1; }
 
-.nav-label {
+.btn-text {
   font-family: 'Georgia', serif;
-  font-size: 6px; /* 🆕 ძალიან კომპაქტური ტექსტი */
+  font-size: 9px;
   color: #ffe566;
   font-weight: 600;
-  letter-spacing: 0.1px;
+  letter-spacing: 0.3px;
   text-align: center;
-  line-height: 1;
+  white-space: nowrap;
 }
 
-/* ===== HERO LEVEL SECTION ===== */
-.hero-level-section {
-  margin-bottom: 0;
-  padding: 10px 12px;
-  background: rgba(20, 12, 5, 0.6);
-  border: 1px solid rgba(200, 120, 0, 0.2);
-  border-radius: 10px;
-}
-
-.hero-level-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
-}
-
-.hero-level-text {
-  font-family: 'Georgia', serif;
-  font-size: 12px;
-  color: #ffe566;
-  font-weight: bold;
-}
-
-.level-title {
-  color: #c87800;
-  font-weight: normal;
-  font-size: 10px;
-  margin-left: 4px;
-}
-
-.hero-xp-text {
-  font-family: 'Georgia', serif;
-  font-size: 10px;
-  color: #886600;
-}
-
-.hero-progress-bar {
-  width: 100%;
-  height: 6px;
-  background: rgba(167, 139, 250, 0.15);
-  border-radius: 3px;
-  overflow: hidden;
-  position: relative;
-}
-
-.hero-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #a78bfa, #7c3aed);
-  border-radius: 3px;
-  position: relative;
-  transition: width 1s ease-out;
-  box-shadow: 0 0 6px rgba(167, 139, 250, 0.5);
-}
-
-.progress-shimmer {
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
-  animation: progressShimmer 2s ease-in-out infinite;
-}
-
-@keyframes progressShimmer {
-  0% { left: -100%; }
-  100% { left: 100%; }
-}
-
-/* ===== COMPACT STATS GRID ===== */
+/* ============================================
+   STATS GRID
+   ============================================ */
 .stats-compact-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -324,7 +293,9 @@
   letter-spacing: 0.3px;
 }
 
-/* ===== HORIZONTAL CORE TRAITS ===== */
+/* ============================================
+   CORE TRAITS
+   ============================================ */
 .core-traits-horizontal {
   background: linear-gradient(135deg, #1a0f05 0%, #0a0600 50%, #1a0f05 100%);
   border: 1px solid rgba(200, 120, 0, 0.35);
@@ -381,7 +352,9 @@
   line-height: 1.3;
 }
 
-/* ===== UNIFIED CARD STYLE ===== */
+/* ============================================
+   UNIFIED CARD STYLE
+   ============================================ */
 .moon-phase-card,
 .collection-card,
 .recent-readings-card,
@@ -406,7 +379,9 @@
   letter-spacing: 2px;
 }
 
-/* ===== MOON PHASE ===== */
+/* ============================================
+   MOON PHASE
+   ============================================ */
 .moon-content {
   display: flex;
   align-items: center;
@@ -451,7 +426,9 @@
   font-style: italic;
 }
 
-/* ===== EXPLORE SECTION ===== */
+/* ============================================
+   EXPLORE SECTION
+   ============================================ */
 .action-buttons-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -502,7 +479,9 @@
   font-size: 12px;
 }
 
-/* ===== MY SIGNS ===== */
+/* ============================================
+   MY SIGNS
+   ============================================ */
 .signs-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -556,7 +535,9 @@
   color: #c87800;
 }
 
-/* ===== SIGN ACTION BUTTONS ===== */
+/* ============================================
+   SIGN ACTION BUTTONS
+   ============================================ */
 .sign-actions {
   display: flex;
   gap: 8px;
@@ -601,7 +582,9 @@
   transform: scale(0.98);
 }
 
-/* ===== RECENT READINGS ===== */
+/* ============================================
+   RECENT READINGS
+   ============================================ */
 .readings-list {
   display: flex;
   flex-direction: column;
@@ -656,7 +639,9 @@
   flex-shrink: 0;
 }
 
-/* ===== ACHIEVEMENTS ===== */
+/* ============================================
+   ACHIEVEMENTS
+   ============================================ */
 .section-title {
   font-family: 'Georgia', serif;
   font-size: 14px;
@@ -740,7 +725,9 @@
   white-space: nowrap;
 }
 
-/* ===== SETTINGS TAB ===== */
+/* ============================================
+   SETTINGS TAB
+   ============================================ */
 .settings-section { margin-bottom: 24px; }
 
 .settings-section-title {
@@ -830,7 +817,9 @@
 .setting-arrow { font-size: 14px; color: #c87800; transition: transform 0.3s ease; }
 .setting-item:active .setting-arrow { transform: translateX(3px); }
 
-/* ===== MODAL STYLES ===== */
+/* ============================================
+   MODAL STYLES
+   ============================================ */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -980,22 +969,59 @@
 .edit-tab:active { transform: scale(0.95); }
 .edit-section { margin-bottom: 20px; }
 
-/* ===== SCROLLBAR ===== */
+/* ============================================
+   SCROLLBAR
+   ============================================ */
 .profile-content::-webkit-scrollbar, .modal-content::-webkit-scrollbar { width: 4px; }
 .profile-content::-webkit-scrollbar-track, .modal-content::-webkit-scrollbar-track { background: transparent; }
 .profile-content::-webkit-scrollbar-thumb, .modal-content::-webkit-scrollbar-thumb { background: rgba(200, 120, 0, 0.3); border-radius: 2px; }
 
-/* ===== MOBILE OPTIMIZATION ===== */
+/* ============================================
+   MOBILE OPTIMIZATION
+   ============================================ */
+@media (max-width: 768px) {
+  .new-profile-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 16px;
+  }
+  
+  .header-left-section {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+  
+  .user-info-horizontal {
+    align-items: center;
+  }
+  
+  .header-right-buttons {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .header-btn {
+    min-width: 60px;
+    padding: 8px 10px;
+  }
+  
+  .btn-text { font-size: 8px; }
+}
+
 @media (max-width: 380px) {
   .profile-content { padding: 12px 10px; padding-bottom: calc(70px + env(safe-area-inset-bottom, 0)); }
   
-  .profile-header-top { flex-direction: column; align-items: center; text-align: center; }
-  .profile-avatar-section { flex-direction: column; align-items: center; width: 100%; }
+  .avatar-with-level-ring { width: 70px; height: 70px; }
+  .profile-avatar-large .avatar-letter { font-size: 28px; }
+  .user-display-name { font-size: 20px; }
   
-  .profile-nav-grid { width: 100%; grid-template-columns: repeat(4, 1fr); grid-template-rows: auto; height: auto; }
-  .nav-pill { min-height: 45px; padding: 4px 2px; }
-  .nav-icon { font-size: 14px; }
-  .nav-label { font-size: 7px; }
+  .header-right-buttons { gap: 6px; }
+  .header-btn { min-width: 55px; padding: 6px 8px; }
+  .btn-icon { font-size: 18px; }
+  .btn-text { font-size: 7px; }
   
   .stats-compact-grid { gap: 6px; padding: 10px; }
   .stat-compact-icon { font-size: 20px; }
@@ -1024,10 +1050,10 @@
 
 @media (max-height: 700px) {
   .profile-content { padding-top: 10px; }
-  .profile-header-compact, .moon-phase-card, .collection-card, .recent-readings-card, .my-signs-card, .quick-actions-card { margin-bottom: 10px; padding: 14px; }
+  .new-profile-header, .moon-phase-card, .collection-card, .recent-readings-card, .my-signs-card, .quick-actions-card { margin-bottom: 10px; padding: 14px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .profile-header-compact, .avatar-ring, .moon-symbol, .particle { animation: none; }
+  .new-profile-header, .level-ring, .moon-symbol, .particle { animation: none; }
   * { transition-duration: 0.01ms !important; }
 }
