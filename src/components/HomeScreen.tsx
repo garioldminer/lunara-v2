@@ -839,7 +839,7 @@ End of Debug Report
 
   const userLevelData = getLevelFromTotalXP(economy.xp);
   const xpPercent = Math.min((userLevelData.currentLevelXP / userLevelData.xpToNext) * 100, 100);
-  const circumference = 2 * Math.PI * 23; // 🆕 განახლებული რადიუსისთვის (r=23)
+  const circumference = 2 * Math.PI * 24; // 🆕 განახლებული რადიუსისთვის (r=24)
   const strokeDashoffset = circumference - (xpPercent / 100) * circumference;
 
   const getQuestIcon = (actionType: string) => {
@@ -862,15 +862,14 @@ End of Debug Report
       </AnimatePresence>
 
       <div className="user-header">
-        <div className="user-main-row">
-          {/* 🆕 ავატარი განახლებული დიზაინით */}
-          <div className="avatar-section clickable-avatar" onClick={() => onNavigate?.('profile')} style={{ position: 'relative' }}>
-            {/* წრიანი XP პროგრესი - უფრო ლამაზი ხაზებით */}
-            <svg className="xp-circular-progress" width="52" height="52" viewBox="0 0 52 52" style={{ position: 'absolute', top: 0, left: 0, zIndex: 1 }}>
-              {/* ფონური წრე - უფრო მუქი */}
-              <circle className="xp-circle-bg" cx="26" cy="26" r="23" fill="none" stroke="rgba(197, 160, 89, 0.15)" strokeWidth="2.5" />
-              {/* პროგრესის წრე - გრადიენტი */}
-              <circle className="xp-circle-progress" cx="26" cy="26" r="23" fill="none" stroke="url(#xpGradient)" strokeWidth="2.5" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} transform="rotate(-90 26 26)" />
+        {/* 🆕 იდეალური გასწორება: ზედა და ქვედა კიდეები */}
+        <div className="user-main-row" style={{ alignItems: 'flex-start' }}>
+          
+          {/* ავატარი და XP წრე - იდეალურად ცენტრირებული */}
+          <div className="avatar-section clickable-avatar" onClick={() => onNavigate?.('profile')} style={{ position: 'relative', width: '52px', height: '52px', flexShrink: 0 }}>
+            <svg className="xp-circular-progress" width="52" height="52" viewBox="0 0 52 52" style={{ position: 'absolute', top: 0, left: 0 }}>
+              <circle className="xp-circle-bg" cx="26" cy="26" r="24" fill="none" stroke="rgba(197, 160, 89, 0.15)" strokeWidth="2" />
+              <circle className="xp-circle-progress" cx="26" cy="26" r="24" fill="none" stroke="url(#xpGradient)" strokeWidth="2" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} transform="rotate(-90 26 26)" />
               <defs>
                 <linearGradient id="xpGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#fbbf24" />
@@ -879,10 +878,10 @@ End of Debug Report
               </defs>
             </svg>
             
-            {/* ავატარი - ოდნავ შემცირებული */}
-            <div className="avatar-image" style={{ 
-              position: 'relative', 
-              zIndex: 2,
+            <div style={{ 
+              position: 'absolute',
+              top: '2px',
+              left: '2px',
               width: '48px',
               height: '48px',
               display: 'flex',
@@ -893,12 +892,12 @@ End of Debug Report
               background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)',
               borderRadius: '50%',
               color: '#0f0c08',
+              zIndex: 2,
               boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
             }}>
               {user?.display_name?.charAt(0).toUpperCase() || 'U'}
             </div>
             
-            {/* 🆕 Level ბეიჯი - ქვედა მარცხენა */}
             <div style={{
               position: 'absolute',
               bottom: '0px',
@@ -920,7 +919,6 @@ End of Debug Report
               {userLevelData.level}
             </div>
             
-            {/* 🆕 Premium ბეიჯი - ქვედა მარჯვენა (იგივე დიზაინი) */}
             {activeSubscription && (
               <div style={{
                 position: 'absolute',
@@ -943,16 +941,19 @@ End of Debug Report
             )}
           </div>
           
-          <div className="user-info-section">
-            <h2 className="username">{user?.display_name || 'LunaraSeeker'}</h2>
+          {/* 🆕 მომხმარებლის ინფო - ზუსტად 52px სიმაღლეზე გაწერილი, რათა ზედა და ქვედა კიდეები ემთხვეოდეს ავატარს */}
+          <div className="user-info-section" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '52px', marginLeft: '12px', flex: 1, minWidth: 0 }}>
+            <h2 className="username" style={{ margin: 0, fontSize: '18px', lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {user?.display_name || 'LunaraSeeker'}
+            </h2>
             {activeSubscription && (
-              <div className="premium-status-badge" onClick={() => onNavigate?.('subscription')}>
+              <div className="premium-status-badge" onClick={() => onNavigate?.('subscription')} style={{ marginTop: 'auto', alignSelf: 'flex-start' }}>
                 <Infinity size={10} /><span>PREMIUM</span>
               </div>
             )}
           </div>
           
-          <div className="user-resources">
+          <div className="user-resources" style={{ flexShrink: 0 }}>
             <div className="resource gems">
               <Gem size={14} className="resource-icon gem-icon" />
               <span className="value">{economy.cosmic_coins.toLocaleString()}</span>
