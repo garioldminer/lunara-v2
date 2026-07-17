@@ -74,17 +74,17 @@
 .stagger-8 { animation-delay: 0.4s; }
 
 /* ============================================
-   🆕 NEW PROFILE HEADER (ავატარი + ინფო + 4 ღილაკი)
+   🆕 NEW PROFILE HEADER (ულტრა კომპაქტური)
    ============================================ */
 .new-profile-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px; /* 🆕 შემცირებულია 20px-დან 12px-მდე */
+  gap: 10px; /* 🆕 შემცირებულია 12px-დან 10px-მდე */
   background: linear-gradient(135deg, #1a0f05 0%, #0a0600 50%, #1a0f05 100%);
   border: 1px solid rgba(200, 120, 0, 0.4);
   border-radius: 16px;
-  padding: 12px 16px; /* 🆕 შემცირებულია 16px 20px-დან 12px 16px-მდე */
+  padding: 10px 12px; /* 🆕 შემცირებულია 12px 16px-დან 10px 12px-მდე */
   margin-bottom: 12px;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5), 0 0 16px rgba(200, 120, 0, 0.1);
   animation: fadeInUp 0.5s ease-out backwards;
@@ -93,7 +93,7 @@
 .header-left-section {
   display: flex;
   align-items: center;
-  gap: 12px; /* 🆕 შემცირებულია 16px-დან 12px-მდე */
+  gap: 10px; /* 🆕 შემცირებულია 12px-დან 10px-მდე */
   flex: 1;
   min-width: 0;
 }
@@ -101,8 +101,8 @@
 /* Avatar with Level Ring */
 .avatar-with-level-ring {
   position: relative;
-  width: 52px; /* 🆕 შემცირებულია 80px-დან 52px-მდე */
-  height: 52px; /* 🆕 შემცირებულია 80px-დან 52px-მდე */
+  width: 48px; /* 🆕 შემცირებულია 52px-დან 48px-მდე */
+  height: 48px; /* 🆕 შემცირებულია 52px-დან 48px-მდე */
   flex-shrink: 0;
 }
 
@@ -124,7 +124,7 @@
   border-radius: 50%;
   color: #0a0600;
   font-weight: bold;
-  font-size: 20px; /* 🆕 შემცირებულია 32px-დან 20px-მდე */
+  font-size: 18px; /*  შემცირებულია 20px-დან 18px-მდე */
   font-family: 'Georgia', serif;
   z-index: 2;
 }
@@ -153,10 +153,10 @@
   background: linear-gradient(135deg, #c87800, #ffe566);
   color: #0a0600;
   font-family: 'Georgia', serif;
-  font-size: 9px; /* 🆕 შემცირებულია 10px-დან 9px-მდე */
+  font-size: 9px;
   font-weight: bold;
-  padding: 2px 6px; /*  შემცირებულია 3px 8px-დან 2px 6px-მდე */
-  border-radius: 8px; /* 🆕 შემცირებულია 10px-დან 8px-მდე */
+  padding: 2px 5px; /* 🆕 შემცირებულია 2px 6px-დან 2px 5px-მდე */
+  border-radius: 8px;
   border: 2px solid #0a0600;
   z-index: 3;
   white-space: nowrap;
@@ -166,13 +166,13 @@
 .user-info-horizontal {
   display: flex;
   flex-direction: column;
-  gap: 2px; /* 🆕 შემცირებულია 4px-დან 2px-მდე */
+  gap: 2px;
   min-width: 0;
 }
 
 .user-display-name {
   font-family: 'Georgia', serif;
-  font-size: 18px; /* 🆕 შემცირებულია 24px-დან 18px-მდე */
+  font-size: 16px; /* 🆕 შემცირებულია 18px-დან 16px-მდე */
   color: #ffe566;
   margin: 0;
   font-weight: bold;
@@ -185,7 +185,7 @@
 
 .user-zodiac-info {
   font-family: 'Georgia', serif;
-  font-size: 11px; /* 🆕 შემცირებულია 13px-დან 11px-მდე */
+  font-size: 10px; /* 🆕 შემცირებულია 11px-დან 10px-მდე */
   color: #c87800;
   margin: 0;
   white-space: nowrap;
@@ -195,7 +195,7 @@
 
 .user-telegram {
   font-family: 'Georgia', serif;
-  font-size: 10px; /* 🆕 შემცირებულია 11px-დან 10px-მდე */
+  font-size: 10px;
   color: #886600;
   margin: 0;
   white-space: nowrap;
@@ -203,13 +203,13 @@
   text-overflow: ellipsis;
 }
 
-/* Header Right Buttons - 🆕 მაქსიმალურად კომპაქტური */
+/* Header Right Buttons - 🆕 ულტრა კომპაქტური */
 .header-right-buttons {
-  display: grid; /* 🆕 შეიცვალა flex-დან grid-ად */
-  grid-template-columns: repeat(2, 1fr); /* 🆕 2 სვეტი */
-  gap: 4px; /* 🆕 შემცირებულია 8px-დან 4px-მდე */
-  flex-shrink: 1; /* 🆕 შეიცვალა 0-დან 1-მდე */
-  min-width: 80px; /* 🆕 დამატებულია */
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 3px; /*  შემცირებულია 4px-დან 3px-მდე */
+  flex-shrink: 1;
+  min-width: 70px; /* 🆕 შემცირებულია 80px-დან 70px-მდე */
 }
 
 .header-btn {
@@ -217,15 +217,15 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px; /* 🆕 შემცირებულია 4px-დან 2px-მდე */
+  gap: 1px; /* 🆕 შემცირებულია 2px-დან 1px-მდე */
   background: rgba(20, 12, 5, 0.8);
   border: 1px solid rgba(200, 120, 0, 0.25);
-  border-radius: 6px; /* 🆕 შემცირებულია 10px-დან 6px-მდე */
-  padding: 4px 2px; /* 🆕 მაქსიმალურად შემცირებულია */
+  border-radius: 5px; /* 🆕 შემცირებულია 6px-დან 5px-მდე */
+  padding: 3px 2px; /*  შემცირებულია 4px 2px-დან 3px 2px-მდე */
   cursor: pointer;
   transition: all 0.3s ease;
-  min-width: 42px; /* 🆕 შემცირებულია 70px-დან 42px-მდე */
-  min-height: 40px; /* 🆕 დამატებულია */
+  min-width: 35px; /* 🆕 შემცირებულია 42px-დან 35px-მდე */
+  min-height: 35px; /* 🆕 შემცირებულია 40px-დან 35px-მდე */
 }
 
 .header-btn.active {
@@ -242,19 +242,19 @@
 .header-btn:active { transform: scale(0.95); }
 
 .btn-icon { 
-  font-size: 14px; /*  შემცირებულია 20px-დან 14px-მდე */
+  font-size: 13px; /*  შემცირებულია 14px-დან 13px-მდე */
   line-height: 1; 
 }
 
 .btn-text {
   font-family: 'Georgia', serif;
-  font-size: 7px; /* 🆕 შემცირებულია 9px-დან 7px-მდე */
+  font-size: 6px; /* 🆕 შემცირებულია 7px-დან 6px-მდე */
   color: #ffe566;
   font-weight: 600;
-  letter-spacing: 0.2px; /* 🆕 შემცირებულია 0.3px-დან 0.2px-მდე */
+  letter-spacing: 0.1px; /* 🆕 შემცირებულია 0.2px-დან 0.1px-მდე */
   text-align: center;
   white-space: nowrap;
-  line-height: 1; /* 🆕 დამატებულია */
+  line-height: 1;
 }
 
 /* ============================================
@@ -991,7 +991,7 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    padding: 12px;
+    padding: 10px;
   }
   
   .header-left-section {
@@ -1010,23 +1010,23 @@
   }
   
   .header-btn {
-    min-width: 40px;
-    padding: 4px 2px;
+    min-width: 35px;
+    padding: 3px 2px;
   }
   
-  .btn-text { font-size: 7px; }
+  .btn-text { font-size: 6px; }
 }
 
 @media (max-width: 380px) {
   .profile-content { padding: 12px 10px; padding-bottom: calc(70px + env(safe-area-inset-bottom, 0)); }
   
-  .avatar-with-level-ring { width: 48px; height: 48px; }
-  .profile-avatar-large .avatar-letter { font-size: 18px; }
-  .user-display-name { font-size: 16px; }
+  .avatar-with-level-ring { width: 44px; height: 44px; }
+  .profile-avatar-large .avatar-letter { font-size: 16px; }
+  .user-display-name { font-size: 14px; }
   
-  .header-right-buttons { gap: 3px; }
-  .header-btn { min-width: 38px; padding: 3px 2px; }
-  .btn-icon { font-size: 13px; }
+  .header-right-buttons { gap: 2px; min-width: 65px; }
+  .header-btn { min-width: 32px; min-height: 32px; padding: 2px 2px; }
+  .btn-icon { font-size: 12px; }
   .btn-text { font-size: 6px; }
   
   .stats-compact-grid { gap: 6px; padding: 10px; }
