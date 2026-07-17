@@ -278,7 +278,7 @@ export default function HomeScreen({ onNavigate }: Props) {
 
   const copyAllDebugInfo = async () => {
     const debugText = `
- LUNARA DEBUG REPORT
+🔧 LUNARA DEBUG REPORT
 📅 ${new Date().toLocaleString()}
 
 👤 USER INFO:
@@ -291,7 +291,7 @@ export default function HomeScreen({ onNavigate }: Props) {
    Level: ${economy.level}
    Streak: ${currentStreak}
 
- STATUS:
+📊 STATUS:
    Database: ${dbStatus.toUpperCase()}
    Economy Load: ${economyLoadStatus.toUpperCase()}
 
@@ -321,7 +321,7 @@ End of Debug Report
   };
 
   const checkDatabaseStatus = async () => {
-    addDebugLog('info', 'DB_CHECK', ' Starting database status check...');
+    addDebugLog('info', 'DB_CHECK', '🔍 Starting database status check...');
     if (!user || !supabase) {
       addDebugLog('error', 'DB_CHECK', '❌ No user or supabase client available');
       return;
@@ -492,7 +492,7 @@ End of Debug Report
     const reward = await trackQuestProgress(user.id, 'draw_daily_card', 1);
     
     if (reward) {
-      addDebugLog('success', 'QUEST_TEST', ` Quest Completed! Reward: ${reward.coins} coins, ${reward.xp} XP`);
+      addDebugLog('success', 'QUEST_TEST', `🎉 Quest Completed! Reward: ${reward.coins} coins, ${reward.xp} XP`);
       reloadFromDatabase();
       await loadQuests();
     } else {
@@ -740,6 +740,7 @@ End of Debug Report
     return () => clearInterval(timer);
   }, []);
 
+  // 🆕 გასწორებული handleClaimReward ფუნქცია
   const handleClaimReward = async () => {
     if (rewardClaimed || isClaiming) {
       showToast('Reward already claimed or claiming', 'info');
@@ -764,13 +765,25 @@ End of Debug Report
       const result = await response.json();
       addDebugLog('info', 'REWARD', 'Response parsed', result);
       
+      // 🆕 აქ ვამოწმებთ result.data.reward-ს, რადგან Edge Function ასე აბრუნებს
       if (result.success) {
         setRewardClaimed(true);
-        setCurrentStreak(result.reward.streak);
-        const newEconomy = { ...economy, cosmic_coins: economy.cosmic_coins + result.reward.coins, xp: economy.xp + result.reward.xp, current_streak: result.reward.streak };
-        setEconomy(newEconomy);
-        addDebugLog('success', 'REWARD', 'Reward claimed successfully', { coins: result.reward.coins, xp: result.reward.xp, streak: result.reward.streak, newEconomy });
-        showToast(`Daily Reward Claimed! +${result.reward.coins} Coins, +${result.reward.xp} XP`, 'success');
+        const rewardData = result.data?.reward || result.reward;
+        
+        if (rewardData) {
+          setCurrentStreak(rewardData.streak);
+          const newEconomy = { 
+            ...economy, 
+            cosmic_coins: economy.cosmic_coins + rewardData.coins, 
+            xp: economy.xp + rewardData.xp, 
+            current_streak: rewardData.streak 
+          };
+          setEconomy(newEconomy);
+          addDebugLog('success', 'REWARD', 'Reward claimed successfully', { coins: rewardData.coins, xp: rewardData.xp, streak: rewardData.streak, newEconomy });
+          showToast(`Daily Reward Claimed! +${rewardData.coins} Coins, +${rewardData.xp} XP`, 'success');
+        } else {
+          showToast('Reward data missing in response', 'error');
+        }
       } else {
         addDebugLog('warning', 'REWARD', 'Edge Function returned error', result.error);
         showToast(result.error || 'Failed to claim reward', 'error');
@@ -850,9 +863,7 @@ End of Debug Report
 
       <div className="user-header">
         <div className="user-main-row">
-          {/* 🆕 ავატარი ლეველის ინდიკატორით */}
           <div className="avatar-section clickable-avatar" onClick={() => onNavigate?.('profile')} style={{ position: 'relative' }}>
-            {/* წრიანი XP პროგრესი ავატარის გარშემო */}
             <svg className="xp-circular-progress" width="56" height="56" viewBox="0 0 56 56" style={{ position: 'absolute', top: 0, left: 0, zIndex: 1 }}>
               <circle className="xp-circle-bg" cx="28" cy="28" r="22" fill="none" stroke="rgba(197, 160, 89, 0.2)" strokeWidth="3" />
               <circle className="xp-circle-progress" cx="28" cy="28" r="22" fill="none" stroke="url(#xpGradient)" strokeWidth="3" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} transform="rotate(-90 28 28)" />
@@ -864,12 +875,10 @@ End of Debug Report
               </defs>
             </svg>
             
-            {/* ავატარი */}
             <div className="avatar-image" style={{ position: 'relative', zIndex: 2 }}>
               {user?.display_name?.charAt(0).toUpperCase() || 'U'}
             </div>
             
-            {/* 🆕 ლეველის ბეიჯი (ქვედა მარცხენა კუთხე) */}
             <div style={{
               position: 'absolute',
               bottom: '-2px',
@@ -1208,7 +1217,7 @@ End of Debug Report
               </div>
 
               <div style={{ marginBottom: '12px', padding: '8px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
-                <div style={{ marginBottom: '6px', color: '#10b981', fontWeight: 'bold' }}> ECONOMY (FROM DB)</div>
+                <div style={{ marginBottom: '6px', color: '#10b981', fontWeight: 'bold' }}>💰 ECONOMY (FROM DB)</div>
                 {dbDebugInfo.economyData ? (
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
                     <div>🪙 Coins: <strong>{dbDebugInfo.economyData.cosmic_coins}</strong></div>
@@ -1255,7 +1264,7 @@ End of Debug Report
                   🩺 CHECK DB
                 </button>
                 <button onClick={handleLogoutAndReset} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(239, 68, 68, 0.3)', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontSize: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}><LogOut size={12} /> LOGOUT</button>
-                <button onClick={refreshUserDataDebug} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(59, 130, 246, 0.3)', border: '1px solid #3b82f6', borderRadius: '6px', color: '#3b82f6', cursor: 'pointer', fontSize: '9px' }}> REFRESH USER</button>
+                <button onClick={refreshUserDataDebug} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(59, 130, 246, 0.3)', border: '1px solid #3b82f6', borderRadius: '6px', color: '#3b82f6', cursor: 'pointer', fontSize: '9px' }}>🔄 REFRESH USER</button>
                 <button onClick={testEconomyInitialization} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(168, 85, 247, 0.3)', border: '1px solid #a855f7', borderRadius: '6px', color: '#a855f7', cursor: 'pointer', fontSize: '9px' }}>🔄 TEST INIT</button>
                 <button onClick={testCompleteQuest} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(16, 185, 129, 0.3)', border: '1px solid #10b981', borderRadius: '6px', color: '#10b981', cursor: 'pointer', fontSize: '9px' }}>🎯 TEST QUEST</button>
               </div>
