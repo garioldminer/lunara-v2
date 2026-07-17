@@ -453,62 +453,62 @@ export default function ProfileScreen({ onNavigate }: Props) {
               </p>
             </div>
             
-            {/* 4 ნავიგაციის ღილაკი (2x2 გრიდი) */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px', flexShrink: 0 }}>
+            {/* 🆕 4 ნავიგაციის ღილაკი (2x2 გრიდი) - მაქსიმალურად კომპაქტური */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '4px', flexShrink: 1, minWidth: '85px' }}>
               <button 
                 className={`nav-pill ${activeTab === 'profile' ? 'active' : ''}`} 
                 onClick={() => setActiveTab('profile')} 
                 style={{ 
-                  padding: '6px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px', 
+                  padding: '4px 2px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px', 
                   background: activeTab === 'profile' ? 'linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2))' : 'rgba(20, 12, 5, 0.8)', 
                   border: activeTab === 'profile' ? '1px solid #ffe566' : '1px solid rgba(200, 120, 0, 0.25)', 
-                  borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s'
+                  borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s', minHeight: '40px'
                 }}
               >
-                <span style={{ fontSize: '16px' }}>👤</span>
-                <span style={{ fontSize: '8px', color: '#ffe566', fontWeight: 600 }}>Profile</span>
+                <span style={{ fontSize: '14px' }}>👤</span>
+                <span style={{ fontSize: '7px', color: '#ffe566', fontWeight: 600, lineHeight: 1 }}>Profile</span>
               </button>
               
               <button 
                 className={`nav-pill ${activeTab === 'achievements' ? 'active' : ''}`} 
                 onClick={() => setActiveTab('achievements')} 
                 style={{ 
-                  padding: '6px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px', 
+                  padding: '4px 2px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px', 
                   background: activeTab === 'achievements' ? 'linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2))' : 'rgba(20, 12, 5, 0.8)', 
                   border: activeTab === 'achievements' ? '1px solid #ffe566' : '1px solid rgba(200, 120, 0, 0.25)', 
-                  borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s'
+                  borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s', minHeight: '40px'
                 }}
               >
-                <span style={{ fontSize: '16px' }}>🏆</span>
-                <span style={{ fontSize: '8px', color: '#ffe566', fontWeight: 600 }}>Awards</span>
+                <span style={{ fontSize: '14px' }}>🏆</span>
+                <span style={{ fontSize: '7px', color: '#ffe566', fontWeight: 600, lineHeight: 1 }}>Awards</span>
               </button>
 
               <button 
                 className="nav-pill premium-btn" 
                 onClick={() => onNavigate && onNavigate('subscription')} 
                 style={{ 
-                  padding: '6px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px', 
+                  padding: '4px 2px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px', 
                   background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 165, 0, 0.05))', 
                   border: '1px solid rgba(255, 215, 0, 0.4)', 
-                  borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s'
+                  borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s', minHeight: '40px'
                 }}
               >
-                <span style={{ fontSize: '16px' }}>💎</span>
-                <span style={{ fontSize: '8px', color: '#ffe566', fontWeight: 600 }}>{activeSubscription ? 'PREMIUM' : 'FREE'}</span>
+                <span style={{ fontSize: '14px' }}>💎</span>
+                <span style={{ fontSize: '7px', color: '#ffe566', fontWeight: 600, lineHeight: 1 }}>{activeSubscription ? 'PREM' : 'FREE'}</span>
               </button>
 
               <button 
                 className={`nav-pill ${activeTab === 'settings' ? 'active' : ''}`} 
                 onClick={() => setActiveTab('settings')} 
                 style={{ 
-                  padding: '6px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px', 
+                  padding: '4px 2px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px', 
                   background: activeTab === 'settings' ? 'linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2))' : 'rgba(20, 12, 5, 0.8)', 
                   border: activeTab === 'settings' ? '1px solid #ffe566' : '1px solid rgba(200, 120, 0, 0.25)', 
-                  borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s'
+                  borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s', minHeight: '40px'
                 }}
               >
-                <span style={{ fontSize: '16px' }}>⚙️</span>
-                <span style={{ fontSize: '8px', color: '#ffe566', fontWeight: 600 }}>Settings</span>
+                <span style={{ fontSize: '14px' }}>⚙️</span>
+                <span style={{ fontSize: '7px', color: '#ffe566', fontWeight: 600, lineHeight: 1 }}>Settings</span>
               </button>
             </div>
           </div>
