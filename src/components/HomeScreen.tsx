@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import confetti from 'canvas-confetti';
 import { useUser } from '../context/UserContext';
 import { tarotCards, SUITS } from '../data/tarotCards';
 import { isAdmin } from '../lib/adminService';
@@ -15,13 +17,37 @@ import {
 } from 'lucide-react';
 import './HomeScreen.css';
 
+// 🆕 ექსპონენციალური ლეველის ლოგიკა
+const getXPToNextLevel = (level: number): number => {
+  if (level === 1) return 100;
+  if (level === 2) return 250;
+  if (level === 3) return 500;
+  if (level === 4) return 1000;
+  if (level === 5) return 2000;
+  return Math.floor(2000 * Math.pow(1.8, level - 5));
+};
+
+const getLevelFromTotalXP = (totalXP: number) => {
+  let level = 1;
+  let xpRequiredForNext = getXPToNextLevel(level);
+  let currentLevelXP = totalXP;
+  
+  while (currentLevelXP >= xpRequiredForNext) {
+    currentLevelXP -= xpRequiredForNext;
+    level++;
+    xpRequiredForNext = getXPToNextLevel(level);
+  }
+  
+  return { level, currentLevelXP, xpToNext: xpRequiredForNext };
+};
+
 interface Props {
   onNavigate?: (screen: string) => void;
 }
 
 interface EconomyData {
   cosmic_coins: number;
-  xp: number;
+  xp: number; // აქ ინახება ჯამური XP
   level: number;
   current_streak: number;
 }
@@ -53,6 +79,60 @@ interface DailyQuestDisplay extends QuestProgress {
   isClaimable: boolean;
 }
 
+// 🆕 Level Up Modal Component
+function LevelUpModal({ level, onClose }: { level: number; onClose: () => void }) {
+  return (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+      background: 'rgba(0,0,0,0.85)', zIndex: 10002,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: '20px'
+    }} onClick={onClose}>
+      <motion.div 
+        initial={{ scale: 0.5, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.5, opacity: 0 }}
+        transition={{ type: 'spring', damping: 15, stiffness: 200 }}
+        style={{
+          background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)',
+          border: '2px solid #fbbf24',
+          borderRadius: '24px',
+          padding: '32px 24px',
+          textAlign: 'center',
+          maxWidth: '320px',
+          width: '100%',
+          boxShadow: '0 0 50px rgba(251, 191, 36, 0.4)'
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div style={{ fontSize: '64px', marginBottom: '16px', filter: 'drop-shadow(0 0 10px rgba(251, 191, 36, 0.5))' }}>🎉</div>
+        <h2 style={{ color: '#fbbf24', fontSize: '28px', fontWeight: 'bold', marginBottom: '8px', letterSpacing: '1px' }}>LEVEL UP!</h2>
+        <p style={{ color: '#e2e8f0', fontSize: '16px', marginBottom: '24px', lineHeight: '1.5' }}>
+          Congratulations!<br/>
+          You reached <span style={{ color: '#fbbf24', fontWeight: 'bold', fontSize: '20px' }}>Level {level}</span>
+        </p>
+        <button 
+          onClick={onClose}
+          style={{
+            background: 'linear-gradient(135deg, #fbbf24, #d97706)',
+            color: '#0f0c08',
+            border: 'none',
+            borderRadius: '12px',
+            padding: '14px 32px',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            width: '100%',
+            boxShadow: '0 4px 15px rgba(251, 191, 36, 0.3)'
+          }}
+        >
+          Awesome!
+        </button>
+      </motion.div>
+    </div>
+  );
+}
+
 export default function HomeScreen({ onNavigate }: Props) {
   const { user, setUser } = useUser();
   const [rewardClaimed, setRewardClaimed] = useState(false);
@@ -77,6 +157,10 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [activeDailyQuest, setActiveDailyQuest] = useState<DailyQuestDisplay | null>(null);
   const [showQuestModal, setShowQuestModal] = useState(false);
   const [isClaimingQuest, setIsClaimingQuest] = useState(false);
+
+  // 🆕 Level Up State
+  const [showLevelUpModal, setShowLevelUpModal] = useState(false);
+  const [leveledUpTo, setLeveledUpTo] = useState<number>(1);
 
   const [showDebug, setShowDebug] = useState(false);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
@@ -301,14 +385,14 @@ End of Debug Report
     try {
       const currentXP = economy.xp;
       const newXP = currentXP + amount;
-      const newLevel = Math.floor(newXP / 100) + 1;
-      const { data, error } = await supabase.from('user_economy').update({ xp: newXP, level: newLevel }).eq('user_id', user.id).select().single();
+      const newLevelData = getLevelFromTotalXP(newXP);
+      const { data, error } = await supabase.from('user_economy').update({ xp: newXP, level: newLevelData.level }).eq('user_id', user.id).select().single();
       
-      addToDbDebugHistory('user_economy', 'UPDATE', { userId: user.id, field: 'xp', oldValue: currentXP, newValue: newXP, newLevel }, data, error);
+      addToDbDebugHistory('user_economy', 'UPDATE', { userId: user.id, field: 'xp', oldValue: currentXP, newValue: newXP, newLevel: newLevelData.level }, data, error);
       if (error) throw error;
 
-      setEconomy(prev => ({ ...prev, xp: newXP, level: newLevel }));
-      addDebugLog('success', 'TEST', `✅ Added ${amount} XP. New: ${newXP} XP, Level ${newLevel}`);
+      setEconomy(prev => ({ ...prev, xp: newXP, level: newLevelData.level }));
+      addDebugLog('success', 'TEST', `✅ Added ${amount} XP. New: ${newXP} XP, Level ${newLevelData.level}`);
     } catch (err: any) {
       addDebugLog('error', 'TEST', `❌ Failed: ${err.message}`);
     }
@@ -348,7 +432,13 @@ End of Debug Report
     if (user && supabase) {
       const { data, error } = await supabase.from('user_economy').select('cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus').eq('user_id', user.id).single();
       if (!error && data) {
-        setEconomy({ cosmic_coins: data.cosmic_coins || 0, xp: data.xp || 0, level: data.level || 1, current_streak: data.current_streak || 0 });
+        const levelData = getLevelFromTotalXP(data.xp || 0);
+        setEconomy({ 
+          cosmic_coins: data.cosmic_coins || 0, 
+          xp: data.xp || 0, 
+          level: levelData.level, 
+          current_streak: data.current_streak || 0 
+        });
         setCurrentStreak(data.current_streak || 0);
         setDbDebugInfo(prev => ({ ...prev, economyData: data }));
         addDebugLog('success', 'DB', '✅ Data reloaded successfully');
@@ -382,6 +472,7 @@ End of Debug Report
     setQuestsLoading(false);
   };
 
+  // 🆕 განახლებული Claim ლოგიკა Level Up ეფექტით
   const handleClaimQuest = async (quest: DailyQuestDisplay) => {
     if (!user || !supabase || isClaimingQuest) return;
     
@@ -400,14 +491,32 @@ End of Debug Report
       } else {
         addDebugLog('success', 'QUEST_CLAIM', `Claimed! +${data.reward.coins} coins, +${data.reward.xp} XP`);
         
+        const currentTotalXP = user.xp || 0;
+        const newTotalXP = currentTotalXP + data.reward.xp;
+        
+        const oldLevelData = getLevelFromTotalXP(currentTotalXP);
+        const newLevelData = getLevelFromTotalXP(newTotalXP);
+        
         setEconomy(prev => ({
           ...prev,
           cosmic_coins: prev.cosmic_coins + data.reward.coins,
-          xp: prev.xp + data.reward.xp,
-          level: Math.floor((prev.xp + data.reward.xp) / 100) + 1
+          xp: newTotalXP,
+          level: newLevelData.level
         }));
-        
-        alert(`🎉 Quest Completed!\n💰 +${data.reward.coins} Coins\n⭐ +${data.reward.xp} XP`);
+
+        // 🎉 LEVEL UP EFFECT
+        if (newLevelData.level > oldLevelData.level) {
+          confetti({
+            particleCount: 150,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#fbbf24', '#f59e0b', '#ffffff', '#10b981']
+          });
+          setLeveledUpTo(newLevelData.level);
+          setShowLevelUpModal(true);
+        } else {
+          alert(`🎉 Quest Completed!\n💰 +${data.reward.coins} Coins\n⭐ +${data.reward.xp} XP`);
+        }
         
         await loadQuests();
       }
@@ -484,7 +593,13 @@ End of Debug Report
         addDebugLog('success', 'ECONOMY', '✅ Economy data loaded successfully', data);
 
         if (data) {
-          const economyData = { cosmic_coins: data.cosmic_coins || 0, xp: data.xp || 0, level: data.level || 1, current_streak: data.current_streak || 0 };
+          const levelData = getLevelFromTotalXP(data.xp || 0);
+          const economyData = { 
+            cosmic_coins: data.cosmic_coins || 0, 
+            xp: data.xp || 0, 
+            level: levelData.level, 
+            current_streak: data.current_streak || 0 
+          };
           setEconomy(economyData);
           setCurrentStreak(economyData.current_streak);
           addDebugLog('info', 'STATE', '💰 Economy state updated', economyData);
@@ -560,7 +675,7 @@ End of Debug Report
     try {
       if (!user?.id) {
         addDebugLog('error', 'REWARD', 'No user ID available');
-        alert('❌ User ID not found.'); // 🆕 შეცვლილია ინგლისურად
+        alert('❌ User ID not found.');
         setIsClaiming(false);
         return;
       }
@@ -634,7 +749,8 @@ End of Debug Report
   const dailyCardMeaning = isDailyReversed ? (dailyCard?.reversed_keywords?.[0] || 'Reflection') : (dailyCard?.keywords?.[0] || 'New Beginnings');
   const dailyCardElement = dailyCard ? getCardMeta(dailyCard) : '';
 
-  const xpPercent = 78;
+  const userLevelData = getLevelFromTotalXP(economy.xp);
+  const xpPercent = Math.min((userLevelData.currentLevelXP / userLevelData.xpToNext) * 100, 100);
   const circumference = 2 * Math.PI * 22;
   const strokeDashoffset = circumference - (xpPercent / 100) * circumference;
 
@@ -652,6 +768,12 @@ End of Debug Report
 
   return (
     <div className="home-screen">
+      <AnimatePresence>
+        {showLevelUpModal && (
+          <LevelUpModal level={leveledUpTo} onClose={() => setShowLevelUpModal(false)} />
+        )}
+      </AnimatePresence>
+
       <div className="user-header">
         <div className="user-main-row">
           <div className="avatar-section clickable-avatar" onClick={() => onNavigate?.('profile')}>
@@ -693,7 +815,6 @@ End of Debug Report
         </div>
       </div>
 
-      {/* აღდგენილი ორიგინალური ლეიაუტი: მარცხნივ ქვესთები, მარჯვნივ ღილაკები */}
       <div className="quests-and-actions-split" style={{ display: 'flex', flexDirection: 'row', gap: '2px', marginBottom: '2px', width: '100%', alignItems: 'stretch' }}>
         <div 
           className="daily-quests-compact" 
@@ -746,7 +867,6 @@ End of Debug Report
           </div>
         </div>
 
-        {/* აღდგენილი მარჯვენა პანელი (Daily Reward, Streak, Rank, Subscription) */}
         <div className="action-buttons-panel" style={{ flex: '0 0 calc(40% - 2px)', minWidth: 0, background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)', border: '1px solid #332a1a', borderRadius: '14px', padding: '6px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)', display: 'flex' }}>
           <div className="action-grid-vertical" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: '4px', width: '100%', height: '100%' }}>
             <button className={`action-btn-vertical ${rewardClaimed ? 'claimed' : ''}`} onClick={handleClaimReward} disabled={rewardClaimed || isClaiming} style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: (rewardClaimed || isClaiming) ? 'not-allowed' : 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%', opacity: (rewardClaimed || isClaiming) ? 0.7 : 1 }}>
@@ -782,7 +902,6 @@ End of Debug Report
         </div>
       </div>
 
-      {/* QUEST MODAL (ბანერზე დაჭერისას იხსნება) */}
       {showQuestModal && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
