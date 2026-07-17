@@ -11,8 +11,6 @@ interface Props {
   onNavigate?: (screen: string) => void;
 }
 
-type TabType = 'profile' | 'achievements' | 'settings';
-
 // ==========================================
 // დინამიური მონაცემების ჰელპერები
 // ==========================================
@@ -21,11 +19,11 @@ const ZODIAC_DATA: Record<string, { symbol: string; element: string; planet: str
   Taurus: { symbol: '♉', element: 'Earth', planet: 'Venus' },
   Gemini: { symbol: '♊', element: 'Air', planet: 'Mercury' },
   Cancer: { symbol: '♋', element: 'Water', planet: 'Moon' },
-  Leo: { symbol: '', element: 'Fire', planet: 'Sun' },
+  Leo: { symbol: '♌', element: 'Fire', planet: 'Sun' },
   Virgo: { symbol: '♍', element: 'Earth', planet: 'Mercury' },
   Libra: { symbol: '♎', element: 'Air', planet: 'Venus' },
   Scorpio: { symbol: '♏', element: 'Water', planet: 'Pluto' },
-  Sagittarius: { symbol: '', element: 'Fire', planet: 'Jupiter' },
+  Sagittarius: { symbol: '♐', element: 'Fire', planet: 'Jupiter' },
   Capricorn: { symbol: '♑', element: 'Earth', planet: 'Saturn' },
   Aquarius: { symbol: '♒', element: 'Air', planet: 'Uranus' },
   Pisces: { symbol: '♓', element: 'Water', planet: 'Neptune' },
@@ -50,11 +48,11 @@ const getDynamicMoonPhase = () => {
   const phases = [
     { phase: 'New Moon', symbol: '🌑', bestFor: 'New beginnings, Setting intentions' },
     { phase: 'Waxing Crescent', symbol: '🌒', bestFor: 'Action, Building momentum' },
-    { phase: 'First Quarter', symbol: '', bestFor: 'Decisions, Overcoming obstacles' },
+    { phase: 'First Quarter', symbol: '🌓', bestFor: 'Decisions, Overcoming obstacles' },
     { phase: 'Waxing Gibbous', symbol: '🌔', bestFor: 'Refinement, Preparation' },
-    { phase: 'Full Moon', symbol: '', bestFor: 'Culmination, Release, Celebration' },
+    { phase: 'Full Moon', symbol: '🌕', bestFor: 'Culmination, Release, Celebration' },
     { phase: 'Waning Gibbous', symbol: '🌖', bestFor: 'Gratitude, Sharing wisdom' },
-    { phase: 'Last Quarter', symbol: '', bestFor: 'Release, Forgiveness, Letting go' },
+    { phase: 'Last Quarter', symbol: '🌗', bestFor: 'Release, Forgiveness, Letting go' },
     { phase: 'Waning Crescent', symbol: '🌘', bestFor: 'Rest, Reflection, Surrender' },
   ];
   
@@ -153,7 +151,9 @@ interface Reading {
 }
 
 export default function ProfileScreen({ onNavigate }: Props) {
-  const [activeTab, setActiveTab] = useState<TabType>('profile');
+  // 🆕 ცხადად მითითებული ტიპი TypeScript-ის შეცდომების თავიდან ასაცილებლად
+  const [activeTab, setActiveTab] = useState<'profile' | 'achievements' | 'settings'>('profile');
+  
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showBirthInfo, setShowBirthInfo] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -241,7 +241,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
 
   const mySigns: { label: string; icon: string; sign: SignInfo }[] = userData ? [
     { label: 'Sun', icon: '☀️', sign: { name: userData.sunSign, ...getSignInfo(userData.sunSign) } },
-    { label: 'Moon', icon: '', sign: { name: userData.moonSign, ...getSignInfo(userData.moonSign) } },
+    { label: 'Moon', icon: '🌙', sign: { name: userData.moonSign, ...getSignInfo(userData.moonSign) } },
     { label: 'Rising', icon: '⬆️', sign: { name: userData.risingSign, ...getSignInfo(userData.risingSign) } },
   ] : [];
 
@@ -275,7 +275,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
         if (supabase) await supabase.auth.signOut();
         window.location.href = '/';
       } catch (error) {
-        console.error(' Error logging out:', error);
+        console.error('❌ Error logging out:', error);
         alert('გასვლა ვერ მოხერხდა. გთხოვთ, სცადოთ მოგვიანებით.');
       }
     }
@@ -386,56 +386,56 @@ export default function ProfileScreen({ onNavigate }: Props) {
       )}
 
       <div className="profile-content">
-        {activeTab === 'profile' && (
-          <div className="profile-tab">
-            {/*  ახალი ჰედერი */}
-            <div className="new-profile-header animate-fade-in stagger-1">
-              <div className="header-left-section">
-                {/* ავატარი + Level Ring */}
-                <div className="avatar-with-level-ring">
-                  <div className="profile-avatar-large">
-                    <span className="avatar-letter">{userData.avatar}</span>
-                    <div className="level-ring" style={{
-                      background: `conic-gradient(#ffe566 ${xpProgress}%, rgba(200, 120, 0, 0.2) ${xpProgress}%)`
-                    }}></div>
-                  </div>
-                  <div className="level-badge">
-                    <span>Lv.{userData.level}</span>
-                  </div>
-                </div>
-
-                {/* სახელი და ჰოროსკოპი */}
-                <div className="user-info-horizontal">
-                  <h2 className="user-display-name">{userData.displayName}</h2>
-                  <p className="user-zodiac-info">
-                    {userData.zodiacSymbol} {userData.zodiac.charAt(0).toUpperCase() + userData.zodiac.slice(1)} · {userData.element}
-                  </p>
-                  <p className="user-telegram">{userData.telegramUsername}</p>
-                </div>
+        {/* 🆕 ახალი ჰედერი */}
+        <div className="new-profile-header animate-fade-in stagger-1">
+          <div className="header-left-section">
+            {/* ავატარი + Level Ring */}
+            <div className="avatar-with-level-ring">
+              <div className="profile-avatar-large">
+                <span className="avatar-letter">{userData.avatar}</span>
+                <div className="level-ring" style={{
+                  background: `conic-gradient(#ffe566 ${xpProgress}%, rgba(200, 120, 0, 0.2) ${xpProgress}%)`
+                }}></div>
               </div>
-
-              {/* 4 ღილაკი მარჯვნივ */}
-              <div className="header-right-buttons">
-                <button className={`header-btn ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
-                  <span className="btn-icon">👤</span>
-                  <span className="btn-text">Profile</span>
-                </button>
-                <button className={`header-btn ${activeTab === 'achievements' ? 'active' : ''}`} onClick={() => setActiveTab('achievements')}>
-                  <span className="btn-icon">🏆</span>
-                  <span className="btn-text">Awards</span>
-                </button>
-                <button className="header-btn premium-btn" onClick={() => onNavigate && onNavigate('subscription')}>
-                  <span className="btn-icon">💎</span>
-                  <span className="btn-text">{activeSubscription ? 'PREMIUM' : 'FREE'}</span>
-                </button>
-                <button className={`header-btn ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>
-                  <span className="btn-icon">️</span>
-                  <span className="btn-text">Settings</span>
-                </button>
+              <div className="level-badge">
+                <span>Lv.{userData.level}</span>
               </div>
             </div>
 
-            {/* დანარჩენი კონტენტი */}
+            {/* სახელი და ჰოროსკოპი */}
+            <div className="user-info-horizontal">
+              <h2 className="user-display-name">{userData.displayName}</h2>
+              <p className="user-zodiac-info">
+                {userData.zodiacSymbol} {userData.zodiac.charAt(0).toUpperCase() + userData.zodiac.slice(1)} · {userData.element}
+              </p>
+              <p className="user-telegram">{userData.telegramUsername}</p>
+            </div>
+          </div>
+
+          {/* 4 ღილაკი მარჯვნივ */}
+          <div className="header-right-buttons">
+            <button className={`header-btn ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
+              <span className="btn-icon">👤</span>
+              <span className="btn-text">Profile</span>
+            </button>
+            <button className={`header-btn ${activeTab === 'achievements' ? 'active' : ''}`} onClick={() => setActiveTab('achievements')}>
+              <span className="btn-icon">🏆</span>
+              <span className="btn-text">Awards</span>
+            </button>
+            <button className="header-btn premium-btn" onClick={() => onNavigate && onNavigate('subscription')}>
+              <span className="btn-icon">💎</span>
+              <span className="btn-text">{activeSubscription ? 'PREMIUM' : 'FREE'}</span>
+            </button>
+            <button className={`header-btn ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>
+              <span className="btn-icon">⚙️</span>
+              <span className="btn-text">Settings</span>
+            </button>
+          </div>
+        </div>
+
+        {/* დანარჩენი კონტენტი */}
+        {activeTab === 'profile' && (
+          <div className="tab-content animate-fade-in">
             <div className="stats-compact-grid animate-fade-in stagger-2">
               {stats.map((stat, idx) => (
                 <div key={idx} className="stat-compact-item">
@@ -555,7 +555,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
           <div className="tab-content animate-fade-in">
             <h3 className="section-title">✦ SETTINGS ✦</h3>
             <div className="settings-section">
-              <h4 className="settings-section-title"> Appearance</h4>
+              <h4 className="settings-section-title">🎨 Appearance</h4>
               <div className="setting-item">
                 <span className="setting-icon">🌗</span>
                 <div className="setting-content">
@@ -578,9 +578,9 @@ export default function ProfileScreen({ onNavigate }: Props) {
               </div>
             </div>
             <div className="settings-section">
-              <h4 className="settings-section-title"> Account</h4>
+              <h4 className="settings-section-title">💎 Account</h4>
               <div className="setting-item premium" onClick={() => handleSettingClick('subscription')}>
-                <span className="setting-icon"></span>
+                <span className="setting-icon">💎</span>
                 <span className="setting-label">Subscription</span>
                 <span className="setting-badge">{activeSubscription ? 'ACTIVE' : 'FREE'}</span>
                 <span className="setting-arrow">→</span>
@@ -666,9 +666,9 @@ function EditProfileModal({ userData, editSection, setEditSection, onSave, onClo
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content edit-modal" onClick={(e) => e.stopPropagation()}>
         <button className="modal-close" onClick={onClose}><X size={20} /></button>
-        <h2 className="modal-title"> EDIT PROFILE ✦</h2>
+        <h2 className="modal-title">✦ EDIT PROFILE ✦</h2>
         <div className="edit-section-tabs">
-          <button type="button" className={`edit-tab ${editSection === 'personal' ? 'active' : ''}`} onClick={() => setEditSection('personal')}> Personal</button>
+          <button type="button" className={`edit-tab ${editSection === 'personal' ? 'active' : ''}`} onClick={() => setEditSection('personal')}>👤 Personal</button>
           <button type="button" className={`edit-tab ${editSection === 'astrology' ? 'active' : ''}`} onClick={() => setEditSection('astrology')}>✨ Astro</button>
         </div>
         <form onSubmit={(e) => { e.preventDefault(); onSave(editSection, formData); onClose(); }}>
