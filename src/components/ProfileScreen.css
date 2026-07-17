@@ -80,11 +80,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 20px;
+  gap: 12px; /* 🆕 შემცირებულია 20px-დან 12px-მდე */
   background: linear-gradient(135deg, #1a0f05 0%, #0a0600 50%, #1a0f05 100%);
   border: 1px solid rgba(200, 120, 0, 0.4);
   border-radius: 16px;
-  padding: 16px 20px;
+  padding: 12px 16px; /* 🆕 შემცირებულია 16px 20px-დან 12px 16px-მდე */
   margin-bottom: 12px;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5), 0 0 16px rgba(200, 120, 0, 0.1);
   animation: fadeInUp 0.5s ease-out backwards;
@@ -93,7 +93,7 @@
 .header-left-section {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px; /* 🆕 შემცირებულია 16px-დან 12px-მდე */
   flex: 1;
   min-width: 0;
 }
@@ -101,8 +101,8 @@
 /* Avatar with Level Ring */
 .avatar-with-level-ring {
   position: relative;
-  width: 80px;
-  height: 80px;
+  width: 52px; /* 🆕 შემცირებულია 80px-დან 52px-მდე */
+  height: 52px; /* 🆕 შემცირებულია 80px-დან 52px-მდე */
   flex-shrink: 0;
 }
 
@@ -124,7 +124,7 @@
   border-radius: 50%;
   color: #0a0600;
   font-weight: bold;
-  font-size: 32px;
+  font-size: 20px; /* 🆕 შემცირებულია 32px-დან 20px-მდე */
   font-family: 'Georgia', serif;
   z-index: 2;
 }
@@ -153,10 +153,10 @@
   background: linear-gradient(135deg, #c87800, #ffe566);
   color: #0a0600;
   font-family: 'Georgia', serif;
-  font-size: 10px;
+  font-size: 9px; /* 🆕 შემცირებულია 10px-დან 9px-მდე */
   font-weight: bold;
-  padding: 3px 8px;
-  border-radius: 10px;
+  padding: 2px 6px; /*  შემცირებულია 3px 8px-დან 2px 6px-მდე */
+  border-radius: 8px; /* 🆕 შემცირებულია 10px-დან 8px-მდე */
   border: 2px solid #0a0600;
   z-index: 3;
   white-space: nowrap;
@@ -166,13 +166,13 @@
 .user-info-horizontal {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px; /* 🆕 შემცირებულია 4px-დან 2px-მდე */
   min-width: 0;
 }
 
 .user-display-name {
   font-family: 'Georgia', serif;
-  font-size: 24px;
+  font-size: 18px; /* 🆕 შემცირებულია 24px-დან 18px-მდე */
   color: #ffe566;
   margin: 0;
   font-weight: bold;
@@ -185,7 +185,7 @@
 
 .user-zodiac-info {
   font-family: 'Georgia', serif;
-  font-size: 13px;
+  font-size: 11px; /* 🆕 შემცირებულია 13px-დან 11px-მდე */
   color: #c87800;
   margin: 0;
   white-space: nowrap;
@@ -195,7 +195,7 @@
 
 .user-telegram {
   font-family: 'Georgia', serif;
-  font-size: 11px;
+  font-size: 10px; /* 🆕 შემცირებულია 11px-დან 10px-მდე */
   color: #886600;
   margin: 0;
   white-space: nowrap;
@@ -203,11 +203,13 @@
   text-overflow: ellipsis;
 }
 
-/* Header Right Buttons */
+/* Header Right Buttons - 🆕 მაქსიმალურად კომპაქტური */
 .header-right-buttons {
-  display: flex;
-  gap: 8px;
-  flex-shrink: 0;
+  display: grid; /* 🆕 შეიცვალა flex-დან grid-ად */
+  grid-template-columns: repeat(2, 1fr); /* 🆕 2 სვეტი */
+  gap: 4px; /* 🆕 შემცირებულია 8px-დან 4px-მდე */
+  flex-shrink: 1; /* 🆕 შეიცვალა 0-დან 1-მდე */
+  min-width: 80px; /* 🆕 დამატებულია */
 }
 
 .header-btn {
@@ -215,14 +217,15 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 2px; /* 🆕 შემცირებულია 4px-დან 2px-მდე */
   background: rgba(20, 12, 5, 0.8);
   border: 1px solid rgba(200, 120, 0, 0.25);
-  border-radius: 10px;
-  padding: 10px 14px;
+  border-radius: 6px; /* 🆕 შემცირებულია 10px-დან 6px-მდე */
+  padding: 4px 2px; /* 🆕 მაქსიმალურად შემცირებულია */
   cursor: pointer;
   transition: all 0.3s ease;
-  min-width: 70px;
+  min-width: 42px; /* 🆕 შემცირებულია 70px-დან 42px-მდე */
+  min-height: 40px; /* 🆕 დამატებულია */
 }
 
 .header-btn.active {
@@ -238,16 +241,20 @@
 
 .header-btn:active { transform: scale(0.95); }
 
-.btn-icon { font-size: 20px; line-height: 1; }
+.btn-icon { 
+  font-size: 14px; /*  შემცირებულია 20px-დან 14px-მდე */
+  line-height: 1; 
+}
 
 .btn-text {
   font-family: 'Georgia', serif;
-  font-size: 9px;
+  font-size: 7px; /* 🆕 შემცირებულია 9px-დან 7px-მდე */
   color: #ffe566;
   font-weight: 600;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px; /* 🆕 შემცირებულია 0.3px-დან 0.2px-მდე */
   text-align: center;
   white-space: nowrap;
+  line-height: 1; /* 🆕 დამატებულია */
 }
 
 /* ============================================
@@ -984,7 +991,7 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    padding: 16px;
+    padding: 12px;
   }
   
   .header-left-section {
@@ -1000,28 +1007,27 @@
   .header-right-buttons {
     width: 100%;
     justify-content: center;
-    flex-wrap: wrap;
   }
   
   .header-btn {
-    min-width: 60px;
-    padding: 8px 10px;
+    min-width: 40px;
+    padding: 4px 2px;
   }
   
-  .btn-text { font-size: 8px; }
+  .btn-text { font-size: 7px; }
 }
 
 @media (max-width: 380px) {
   .profile-content { padding: 12px 10px; padding-bottom: calc(70px + env(safe-area-inset-bottom, 0)); }
   
-  .avatar-with-level-ring { width: 70px; height: 70px; }
-  .profile-avatar-large .avatar-letter { font-size: 28px; }
-  .user-display-name { font-size: 20px; }
+  .avatar-with-level-ring { width: 48px; height: 48px; }
+  .profile-avatar-large .avatar-letter { font-size: 18px; }
+  .user-display-name { font-size: 16px; }
   
-  .header-right-buttons { gap: 6px; }
-  .header-btn { min-width: 55px; padding: 6px 8px; }
-  .btn-icon { font-size: 18px; }
-  .btn-text { font-size: 7px; }
+  .header-right-buttons { gap: 3px; }
+  .header-btn { min-width: 38px; padding: 3px 2px; }
+  .btn-icon { font-size: 13px; }
+  .btn-text { font-size: 6px; }
   
   .stats-compact-grid { gap: 6px; padding: 10px; }
   .stat-compact-icon { font-size: 20px; }
@@ -1050,7 +1056,7 @@
 
 @media (max-height: 700px) {
   .profile-content { padding-top: 10px; }
-  .new-profile-header, .moon-phase-card, .collection-card, .recent-readings-card, .my-signs-card, .quick-actions-card { margin-bottom: 10px; padding: 14px; }
+  .new-profile-header, .moon-phase-card, .collection-card, .recent-readings-card, .my-signs-card, .quick-actions-card { margin-bottom: 10px; padding: 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
