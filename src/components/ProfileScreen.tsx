@@ -30,8 +30,11 @@ const ZODIAC_DATA: Record<string, { symbol: string; element: string; planet: str
   Pisces: { symbol: '♓', element: 'Water', planet: 'Neptune' },
 };
 
+// 🆕 გამოსწორებულია: ავტომატურად ადიდებს პირველ ასოს, რათა "virgo" და "Virgo" ორივე იმუშაოს
 const getSignInfo = (signName: string) => {
-  return ZODIAC_DATA[signName] || { symbol: '✨', element: 'Unknown', planet: 'Unknown' };
+  if (!signName) return { symbol: '✨', element: 'Unknown', planet: 'Unknown' };
+  const capitalized = signName.charAt(0).toUpperCase() + signName.slice(1).toLowerCase();
+  return ZODIAC_DATA[capitalized] || { symbol: '✨', element: 'Unknown', planet: 'Unknown' };
 };
 
 const getDayOfYear = (date: Date): number => {
@@ -253,7 +256,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
     { id: '5', icon: '🌙', title: 'Moon Master', description: 'Complete 10 moon rituals', unlocked: false, progress: 3, total: 10 },
   ] : [];
 
-  // 🆕 გამოსწორებულია: ვიყენებთ userData-ს user-ის ნაცვლად, რათა თავიდან ავიცილოთ null შეცდომა
   const mySigns: { label: string; icon: string; sign: SignInfo }[] = userData ? [
     { label: 'Sun Sign', icon: '☀️', sign: { name: userData.sunSign, ...getSignInfo(userData.sunSign) } },
     { label: 'Moon Sign', icon: '🌙', sign: { name: userData.moonSign, ...getSignInfo(userData.moonSign) } },
@@ -407,7 +409,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
                 </div>
                 <div className="hero-user-info">
                   <h2 className="hero-username">{userData.displayName}</h2>
-                  <p className="hero-zodiac">{userData.zodiacSymbol} {userData.zodiac} · {userData.element}</p>
+                  <p className="hero-zodiac">{userData.zodiacSymbol} {userData.zodiac.charAt(0).toUpperCase() + userData.zodiac.slice(1)} · {userData.element}</p>
                 </div>
               </div>
 
