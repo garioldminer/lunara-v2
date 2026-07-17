@@ -5,7 +5,7 @@ import { useSettings } from '../context/SettingsContext';
 import { updateUser, resetZodiacSign } from '../lib/userService';
 import { getActiveSubscription } from '../lib/subscriptionService';
 import { supabase } from '../lib/supabase';
-import { Bug, Copy, X } from 'lucide-react';
+import { Bug, X } from 'lucide-react';
 
 interface Props {
   onNavigate?: (screen: string) => void;
@@ -40,7 +40,6 @@ const getDayOfYear = (date: Date): number => {
   return Math.floor(diff / (1000 * 60 * 60 * 24));
 };
 
-// მთვარის ფაზის მიახლოებითი დინამიური გამოთვლა
 const getDynamicMoonPhase = () => {
   const dayOfYear = getDayOfYear(new Date());
   const lunarCycle = 29.53;
@@ -63,7 +62,7 @@ const getDynamicMoonPhase = () => {
     phase: current.phase,
     symbol: current.symbol,
     illumination: illumination,
-    zodiac: 'Dynamic', // სრული სიზუსტისთვის საჭიროა ეფემერიდების API
+    zodiac: 'Dynamic',
     bestFor: current.bestFor,
     nextFull: 'Calculated dynamically'
   };
@@ -173,7 +172,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
   const [activeSubscription, setActiveSubscription] = useState<any>(null);
   const [recentReadings, setRecentReadings] = useState<Reading[]>([]);
   
-  // 🆕 Debug Panel State
   const [showDebug, setShowDebug] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
 
@@ -188,31 +186,31 @@ export default function ProfileScreen({ onNavigate }: Props) {
     if (user) {
       getActiveSubscription(user.id).then(setActiveSubscription);
       
-      // 🆕 დინამიურად ვტვირთავთ ბოლო გაშლებს
-      supabase
-        .from('reading_history')
-        .select('reading_type, created_at, cards')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(4)
-        .then(({ data }) => {
-          if (data && data.length > 0) {
-            setRecentReadings(data.map((r: any, idx: number) => ({
-              id: `r-${idx}`,
-              type: r.reading_type || 'Unknown Reading',
-              icon: '🔮',
-              date: timeAgo(r.created_at),
-              cards: r.cards || []
-            })));
-          }
-        });
+      if (supabase) {
+        supabase
+          .from('reading_history')
+          .select('reading_type, created_at, cards')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(4)
+          .then(({ data }) => {
+            if (data && data.length > 0) {
+              setRecentReadings(data.map((r: any, idx: number) => ({
+                id: `r-${idx}`,
+                type: r.reading_type || 'Unknown Reading',
+                icon: '🔮',
+                date: timeAgo(r.created_at),
+                cards: r.cards || []
+              })));
+            }
+          });
+      }
     }
   }, [user]);
 
   const userLevelData = user ? getLevelFromTotalXP(user.xp || 0) : { level: 1, currentLevelXP: 0, xpToNext: 100 };
   const signData = getSignInfo(user?.sun_sign || '');
 
-  // 🆕 სრულად დინამიური UserData
   const userData = user ? {
     telegramUsername: '@' + (user.username || 'user'),
     displayName: user.display_name || 'User',
@@ -236,32 +234,23 @@ export default function ProfileScreen({ onNavigate }: Props) {
     currentPlan: user.current_plan || 'FREE',
     gems: user.gems || 0,
     streak: user.streak || 0,
-    readingsCount: user.readings_count || 0, // დამატებითი ველი (თუ ბაზაში გაქვთ)
-    cardsCollected: user.cards_collected || 0, // დამატებითი ველი (თუ ბაზაში გაქვთ)
+    readingsCount: (user as any).readings_count || 0,
+    cardsCollected: (user as any).cards_collected || 0,
   } : null;
 
-  // 🆕 დინამიური სტატისტიკა
-  const stats: Stat[] = user ? [
+  const stats: Stat[] = userData ? [
     { label: 'Readings', value: userData.readingsCount || recentReadings.length, icon: '🔮' },
     { label: 'Cards', value: `${userData.cardsCollected}/78`, icon: '🃏' },
     { label: 'Streak', value: userData.streak, icon: '🔥' },
     { label: 'Gems', value: userData.gems, icon: '💎' },
   ] : [];
 
-  // 🆕 დინამიური მიღწევები (მაგალითი ლოგიკით)
-  const achievements: Achievement[] = user ? [
+  const achievements: Achievement[] = userData ? [
     { id: '1', icon: '🎯', title: 'First Reading', description: 'Complete your first tarot reading', unlocked: (userData.readingsCount || recentReadings.length) >= 1, progress: Math.min((userData.readingsCount || recentReadings.length), 1), total: 1 },
     { id: '2', icon: '🔥', title: '7-Day Streak', description: 'Use the app 7 days in a row', unlocked: userData.streak >= 7, progress: Math.min(userData.streak, 7), total: 7 },
     { id: '3', icon: '📚', title: 'Collector', description: 'Collect all 78 tarot cards', unlocked: userData.cardsCollected >= 78, progress: userData.cardsCollected, total: 78 },
-    { id: '4', icon: '💕', title: 'Love Expert', description: 'Complete 50 love readings', unlocked: false, progress: 12, total: 50 }, // აქაც ბაზიდან უნდა წამოვიდეს
+    { id: '4', icon: '💕', title: 'Love Expert', description: 'Complete 50 love readings', unlocked: false, progress: 12, total: 50 },
     { id: '5', icon: '🌙', title: 'Moon Master', description: 'Complete 10 moon rituals', unlocked: false, progress: 3, total: 10 },
-  ] : [];
-
-  // 🆕 დინამიური ნიშნები
-  const mySigns: { label: string; icon: string; sign: SignInfo }[] = user ? [
-    { label: 'Sun Sign', icon: '☀️', sign: { name: user.sun_sign || '', ...getSignInfo(user.sun_sign || '') } },
-    { label: 'Moon Sign', icon: '🌙', sign: { name: user.moon_sign || '', ...getSignInfo(user.moon_sign || '') } },
-    { label: 'Rising Sign', icon: '⬆️', sign: { name: user.rising_sign || '', ...getSignInfo(user.rising_sign || '') } },
   ] : [];
 
   const moonPhase = getDynamicMoonPhase();
@@ -348,7 +337,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
 
   const planConfig = userData ? getPlanConfig(userData.currentPlan) : getPlanConfig('FREE');
 
-  // 🆕 Debug Copy Function
   const copyDebugData = async () => {
     const debugText = JSON.stringify({ userData, stats, recentReadings, achievements }, null, 2);
     try {
@@ -380,7 +368,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
         ))}
       </div>
 
-      {/* 🆕 DEBUG BUTTON */}
       <button 
         onClick={() => setShowDebug(!showDebug)} 
         style={{
@@ -423,7 +410,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
                   <span className="hero-xp-text">{userData.xp} / {userData.xpToNext} XP</span>
                 </div>
                 <div className="hero-progress-bar">
-                  {/* 🆕 იასამნისფერი გრადიენტი XP ბარისთვის */}
                   <div className="hero-progress-fill" style={{ width: mounted ? `${xpProgress}%` : '0%', background: 'linear-gradient(90deg, #a78bfa, #7c3aed)' }}>
                     <div className="progress-shimmer"></div>
                   </div>
@@ -541,7 +527,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
                 <span className="setting-icon">🌐</span>
                 <div className="setting-content">
                   <span className="setting-label">Language</span>
-                  <select className="form-input form-select settings-select" value={settings.language} onChange={(e) => updateSetting('language', e.target.value)}>
+                  <select className="form-input form-select settings-select" value={settings.language} onChange={(e) => updateSetting('language', e.target.value as any)}>
                     <option value="en">🇬🇧 English</option>
                     <option value="ka">🇬🇪 ქართული</option>
                   </select>
@@ -566,7 +552,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
         )}
       </div>
 
-      {/* 🆕 DEBUG PANEL OVERLAY */}
       {showDebug && (
         <div style={{
           position: 'fixed', top: '20px', right: '20px', bottom: '80px', width: '350px',
@@ -584,7 +569,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
           </div>
           <pre style={{ flex: 1, overflow: 'auto', padding: '12px', color: '#a78bfa', fontSize: '11px', margin: 0 }}>
             {JSON.stringify({
-              userData: { ...userData, xpToNext: undefined, xp: undefined }, // XP-ს ვმალავთ რომ JSON მოკლე იყოს, რადგან levelData-შია
+              userData: { ...userData, xpToNext: undefined, xp: undefined },
               levelData: userLevelData,
               stats,
               recentReadingsCount: recentReadings.length,
@@ -594,7 +579,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
         </div>
       )}
 
-      {/* Modals */}
       {showEditProfile && <EditProfileModal userData={userData} editSection={editSection} setEditSection={setEditSection} onSave={handleSaveEdit} onClose={() => setShowEditProfile(false)} onEditBirthInfo={() => { setShowEditProfile(false); setShowBirthInfo(true); }} />}
       {showBirthInfo && <BirthInfoModal birthDate={userData.birthDate} birthTime={userData.birthTime} birthPlace={userData.birthPlace} onSave={handleSaveBirthInfo} onClose={() => setShowBirthInfo(false)} />}
       {showResetConfirm && <ResetConfirmModal resetting={resetting} onConfirm={handleResetSign} onCancel={() => setShowResetConfirm(false)} />}
@@ -603,7 +587,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
 }
 
 // ==========================================
-// MODAL COMPONENTS (უცვლელი სტრუქტურა, მხოლოდ გასუფთავებული)
+// MODAL COMPONENTS
 // ==========================================
 function EditProfileModal({ userData, editSection, setEditSection, onSave, onClose, onEditBirthInfo }: any) {
   const [formData, setFormData] = useState(userData);
@@ -612,7 +596,7 @@ function EditProfileModal({ userData, editSection, setEditSection, onSave, onClo
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content edit-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>✕</button>
+        <button className="modal-close" onClick={onClose}><X size={20} /></button>
         <h2 className="modal-title">✦ EDIT PROFILE ✦</h2>
         <div className="edit-section-tabs">
           <button type="button" className={`edit-tab ${editSection === 'personal' ? 'active' : ''}`} onClick={() => setEditSection('personal')}>👤 Personal</button>
@@ -656,7 +640,7 @@ function BirthInfoModal({ birthDate, birthTime, birthPlace, onSave, onClose }: a
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>✕</button>
+        <button className="modal-close" onClick={onClose}><X size={20} /></button>
         <h2 className="modal-title">✦ BIRTH INFO ✦</h2>
         <form onSubmit={(e) => { e.preventDefault(); onSave(formData.date, formData.time, formData.place); onClose(); }}>
           <div className="form-group"><label className="form-label">Date of Birth</label><input type="date" className="form-input" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} /></div>
