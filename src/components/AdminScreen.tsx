@@ -85,7 +85,6 @@ interface Toast {
   type: 'success' | 'error' | 'info';
 }
 
-// 🆕 Toast Notification Component
 function ToastNotification({ toast, onClose }: { toast: Toast; onClose: () => void }) {
   useEffect(() => {
     const timer = setTimeout(onClose, 3000);
@@ -186,7 +185,6 @@ export default function AdminScreen({ onNavigate }: Props) {
     console.log(`[${type.toUpperCase()}] [${source}] ${message}`, data || '');
   };
 
-  // 🆕 ჭკვიანი ტესტი: Quest RPC-ის პირდაპირი შემოწმება
   const testQuestRPC = async () => {
     if (!user || !supabase) return;
     addDebugLog('info', 'DEBUG_ACTION', '🧪 Testing get_user_quests RPC...');
@@ -715,7 +713,6 @@ export default function AdminScreen({ onNavigate }: Props) {
           </>
         )}
 
-        {/* 🆕 გაუმჯობესებული Quests ტაბი */}
         {activeTab === 'quests' && (
           <>
             <div className="admin-stats">
@@ -788,7 +785,6 @@ export default function AdminScreen({ onNavigate }: Props) {
         )}
       </div>
 
-      {/* ოპტიმიზირებული 2-რიგიანი (3x2) ქვედა ნავიგაცია მობილურისთვის */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(3, 1fr)',
@@ -836,7 +832,6 @@ export default function AdminScreen({ onNavigate }: Props) {
         ))}
       </div>
 
-      {/* Modals (Add Sub, Extend, Add Quest, Logs) */}
       {showAddSubscription && (
         <div className="modal-overlay" onClick={() => setShowAddSubscription(false)}>
           <motion.div className="modal" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} onClick={(e) => e.stopPropagation()}>
@@ -895,7 +890,6 @@ export default function AdminScreen({ onNavigate }: Props) {
         </div>
       )}
 
-      {/* 🆕 ჭკვიანი და ინფორმაციული Debug პანელი */}
       <div style={{
         position: 'fixed',
         bottom: '110px',
@@ -930,7 +924,7 @@ export default function AdminScreen({ onNavigate }: Props) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <Bug size={12} />
             <span>ADMIN DEBUG</span>
-            <span style={{ background: '#10b981', color: '#fff', padding: '1px 6px', borderRadius: '4px', fontSize: '9px', fontWeight: 'bold' }}>DB: {dbStatus === 'connected' ? 'OK' : 'ERR'}</span>
+            <span style={{ background: '#3b82f6', color: '#fff', padding: '1px 6px', borderRadius: '4px', fontSize: '9px', fontWeight: 'bold' }}>USERS: {users.length}</span>
             <span style={{ background: '#fbbf24', color: '#000', padding: '1px 6px', borderRadius: '4px', fontSize: '9px', fontWeight: 'bold' }}>QUESTS: {quests.length}</span>
             <span style={{ background: isUserAdmin ? '#10b981' : '#ef4444', color: '#fff', padding: '1px 6px', borderRadius: '4px', fontSize: '9px', fontWeight: 'bold' }}>ADMIN: {isUserAdmin ? 'YES' : 'NO'}</span>
           </div>
@@ -942,7 +936,6 @@ export default function AdminScreen({ onNavigate }: Props) {
 
         {showDebug && (
           <div style={{ flex: 1, overflowY: 'auto', padding: '8px', fontSize: '10px', fontFamily: 'monospace' }}>
-            {/* 🆕 სწრაფი მოქმედებები */}
             <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' }}>
               <button onClick={(e) => { e.stopPropagation(); loadData(); }} style={{ background: 'rgba(59, 130, 246, 0.2)', border: '1px solid #3b82f6', color: '#60a5fa', padding: '4px 8px', borderRadius: '4px', fontSize: '9px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <RefreshCw size={10} /> Reload Data
