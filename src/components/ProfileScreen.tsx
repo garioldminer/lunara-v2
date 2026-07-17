@@ -5,7 +5,7 @@ import { useSettings } from '../context/SettingsContext';
 import { updateUser, resetZodiacSign } from '../lib/userService';
 import { getActiveSubscription } from '../lib/subscriptionService';
 import { supabase } from '../lib/supabase';
-import { Bug, X, Star, Heart, BookOpen, Lock } from 'lucide-react';
+import { Bug, X, Star, Heart, BookOpen, Lock, Infinity } from 'lucide-react';
 
 interface Props {
   onNavigate?: (screen: string) => void;
@@ -151,9 +151,7 @@ interface Reading {
 }
 
 export default function ProfileScreen({ onNavigate }: Props) {
-  // 🆕 ცხადად მითითებული ტიპი TypeScript-ის შეცდომების თავიდან ასაცილებლად
   const [activeTab, setActiveTab] = useState<'profile' | 'achievements' | 'settings'>('profile');
-  
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showBirthInfo, setShowBirthInfo] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -330,6 +328,8 @@ export default function ProfileScreen({ onNavigate }: Props) {
   };
 
   const xpProgress = userData ? (userData.xp / userData.xpToNext) * 100 : 0;
+  const circumference = 2 * Math.PI * 22;
+  const strokeDashoffset = circumference - (xpProgress / 100) * circumference;
 
   const copyDebugData = async () => {
     const debugText = JSON.stringify({ 
@@ -386,54 +386,135 @@ export default function ProfileScreen({ onNavigate }: Props) {
       )}
 
       <div className="profile-content">
-        {/* 🆕 ახალი ჰედერი */}
-        <div className="new-profile-header animate-fade-in stagger-1">
-          <div className="header-left-section">
-            {/* ავატარი + Level Ring */}
-            <div className="avatar-with-level-ring">
-              <div className="profile-avatar-large">
-                <span className="avatar-letter">{userData.avatar}</span>
-                <div className="level-ring" style={{
-                  background: `conic-gradient(#ffe566 ${xpProgress}%, rgba(200, 120, 0, 0.2) ${xpProgress}%)`
-                }}></div>
+        {/* 🆕 ახალი ჰედერი, ზუსტად HomeScreen-ის სტილში */}
+        <div className="user-header" style={{ marginBottom: '12px' }}>
+          <div className="user-main-row" style={{ 
+            alignItems: 'center',
+            height: '52px',
+            display: 'flex',
+            justifyContent: 'space-between'
+          }}>
+            {/* ავატარი და XP წრე */}
+            <div className="avatar-section" style={{ position: 'relative', width: '52px', height: '52px', flexShrink: 0 }}>
+              <svg className="xp-circular-progress" width="52" height="52" viewBox="0 0 52 52" style={{ position: 'absolute', top: 0, left: 0 }}>
+                <circle className="xp-circle-bg" cx="26" cy="26" r="22" fill="none" stroke="#e9d5ff" strokeWidth="4" />
+                <circle className="xp-circle-progress" cx="26" cy="26" r="22" fill="none" stroke="#7c3aed" strokeWidth="4" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} transform="rotate(-90 26 26)" />
+              </svg>
+              
+              <div style={{ 
+                position: 'absolute',
+                top: '6px',
+                left: '6px',
+                width: '40px',
+                height: '40px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)',
+                borderRadius: '50%',
+                color: '#0f0c08',
+                zIndex: 2,
+                boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+              }}>
+                {userData.avatar}
               </div>
-              <div className="level-badge">
-                <span>Lv.{userData.level}</span>
+              
+              <div style={{
+                position: 'absolute',
+                bottom: '2px',
+                left: '2px',
+                background: 'linear-gradient(135deg, #fbbf24, #d97706)',
+                color: '#0f0c08',
+                borderRadius: '6px',
+                width: '18px',
+                height: '18px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '10px',
+                fontWeight: 'bold',
+                zIndex: 3,
+                boxShadow: '0 2px 6px rgba(0,0,0,0.4), 0 0 0 1.5px #1a1510',
+                border: '1.5px solid #1a1510'
+              }}>
+                {userData.level}
               </div>
             </div>
-
-            {/* სახელი და ჰოროსკოპი */}
-            <div className="user-info-horizontal">
-              <h2 className="user-display-name">{userData.displayName}</h2>
-              <p className="user-zodiac-info">
+            
+            {/* მომხმარებლის ინფო */}
+            <div className="user-info-section" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '52px', marginLeft: '12px', flex: 1, minWidth: 0 }}>
+              <h2 className="username" style={{ margin: 0, fontSize: '18px', lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#ffe566' }}>
+                {userData.displayName}
+              </h2>
+              <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: '#c87800', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {userData.zodiacSymbol} {userData.zodiac.charAt(0).toUpperCase() + userData.zodiac.slice(1)} · {userData.element}
               </p>
-              <p className="user-telegram">{userData.telegramUsername}</p>
             </div>
-          </div>
+            
+            {/* 4 ნავიგაციის ღილაკი (2x2 გრიდი) */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px', flexShrink: 0 }}>
+              <button 
+                className={`nav-pill ${activeTab === 'profile' ? 'active' : ''}`} 
+                onClick={() => setActiveTab('profile')} 
+                style={{ 
+                  padding: '6px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px', 
+                  background: activeTab === 'profile' ? 'linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2))' : 'rgba(20, 12, 5, 0.8)', 
+                  border: activeTab === 'profile' ? '1px solid #ffe566' : '1px solid rgba(200, 120, 0, 0.25)', 
+                  borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s'
+                }}
+              >
+                <span style={{ fontSize: '16px' }}>👤</span>
+                <span style={{ fontSize: '8px', color: '#ffe566', fontWeight: 600 }}>Profile</span>
+              </button>
+              
+              <button 
+                className={`nav-pill ${activeTab === 'achievements' ? 'active' : ''}`} 
+                onClick={() => setActiveTab('achievements')} 
+                style={{ 
+                  padding: '6px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px', 
+                  background: activeTab === 'achievements' ? 'linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2))' : 'rgba(20, 12, 5, 0.8)', 
+                  border: activeTab === 'achievements' ? '1px solid #ffe566' : '1px solid rgba(200, 120, 0, 0.25)', 
+                  borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s'
+                }}
+              >
+                <span style={{ fontSize: '16px' }}>🏆</span>
+                <span style={{ fontSize: '8px', color: '#ffe566', fontWeight: 600 }}>Awards</span>
+              </button>
 
-          {/* 4 ღილაკი მარჯვნივ */}
-          <div className="header-right-buttons">
-            <button className={`header-btn ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
-              <span className="btn-icon">👤</span>
-              <span className="btn-text">Profile</span>
-            </button>
-            <button className={`header-btn ${activeTab === 'achievements' ? 'active' : ''}`} onClick={() => setActiveTab('achievements')}>
-              <span className="btn-icon">🏆</span>
-              <span className="btn-text">Awards</span>
-            </button>
-            <button className="header-btn premium-btn" onClick={() => onNavigate && onNavigate('subscription')}>
-              <span className="btn-icon">💎</span>
-              <span className="btn-text">{activeSubscription ? 'PREMIUM' : 'FREE'}</span>
-            </button>
-            <button className={`header-btn ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>
-              <span className="btn-icon">⚙️</span>
-              <span className="btn-text">Settings</span>
-            </button>
+              <button 
+                className="nav-pill premium-btn" 
+                onClick={() => onNavigate && onNavigate('subscription')} 
+                style={{ 
+                  padding: '6px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px', 
+                  background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 165, 0, 0.05))', 
+                  border: '1px solid rgba(255, 215, 0, 0.4)', 
+                  borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s'
+                }}
+              >
+                <span style={{ fontSize: '16px' }}>💎</span>
+                <span style={{ fontSize: '8px', color: '#ffe566', fontWeight: 600 }}>{activeSubscription ? 'PREMIUM' : 'FREE'}</span>
+              </button>
+
+              <button 
+                className={`nav-pill ${activeTab === 'settings' ? 'active' : ''}`} 
+                onClick={() => setActiveTab('settings')} 
+                style={{ 
+                  padding: '6px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px', 
+                  background: activeTab === 'settings' ? 'linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2))' : 'rgba(20, 12, 5, 0.8)', 
+                  border: activeTab === 'settings' ? '1px solid #ffe566' : '1px solid rgba(200, 120, 0, 0.25)', 
+                  borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s'
+                }}
+              >
+                <span style={{ fontSize: '16px' }}>⚙️</span>
+                <span style={{ fontSize: '8px', color: '#ffe566', fontWeight: 600 }}>Settings</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* დანარჩენი კონტენტი */}
+        {/* დანარჩენი კონტენტი (Tab-ების მიხედვით) */}
         {activeTab === 'profile' && (
           <div className="tab-content animate-fade-in">
             <div className="stats-compact-grid animate-fade-in stagger-2">
