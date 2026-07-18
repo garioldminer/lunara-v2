@@ -5,7 +5,7 @@ import { useSettings } from '../context/SettingsContext';
 import { updateUser, resetZodiacSign } from '../lib/userService';
 import { getActiveSubscription } from '../lib/subscriptionService';
 import { supabase } from '../lib/supabase';
-import { Bug, X, Star, Heart, BookOpen, Lock } from 'lucide-react';
+import { Bug, X, Star, Heart, BookOpen, Lock, User, Trophy, Gem, Settings } from 'lucide-react';
 
 interface Props {
   onNavigate?: (screen: string) => void;
@@ -49,11 +49,11 @@ const getDynamicMoonPhase = () => {
     { phase: 'New Moon', symbol: '🌑', bestFor: 'New beginnings, Setting intentions' },
     { phase: 'Waxing Crescent', symbol: '🌒', bestFor: 'Action, Building momentum' },
     { phase: 'First Quarter', symbol: '🌓', bestFor: 'Decisions, Overcoming obstacles' },
-    { phase: 'Waxing Gibbous', symbol: '', bestFor: 'Refinement, Preparation' },
+    { phase: 'Waxing Gibbous', symbol: '🌔', bestFor: 'Refinement, Preparation' },
     { phase: 'Full Moon', symbol: '🌕', bestFor: 'Culmination, Release, Celebration' },
-    { phase: 'Waning Gibbous', symbol: '', bestFor: 'Gratitude, Sharing wisdom' },
+    { phase: 'Waning Gibbous', symbol: '🌖', bestFor: 'Gratitude, Sharing wisdom' },
     { phase: 'Last Quarter', symbol: '🌗', bestFor: 'Release, Forgiveness, Letting go' },
-    { phase: 'Waning Crescent', symbol: '', bestFor: 'Rest, Reflection, Surrender' },
+    { phase: 'Waning Crescent', symbol: '🌘', bestFor: 'Rest, Reflection, Surrender' },
   ];
   
   const current = phases[phaseIndex];
@@ -77,7 +77,7 @@ const timeAgo = (dateString: string) => {
 };
 
 // ==========================================
-// ეველის ლოგიკა
+// ლეველის ლოგიკა
 // ==========================================
 const getXPToNextLevel = (level: number): number => {
   if (level === 1) return 100;
@@ -245,8 +245,8 @@ export default function ProfileScreen({ onNavigate }: Props) {
 
   const stats: Stat[] = userData ? [
     { label: 'Readings', value: userData.readingsCount || recentReadings.length, icon: '🔮' },
-    { label: 'Cards', value: `${userData.cardsCollected}/78`, icon: '' },
-    { label: 'Streak', value: userData.streak, icon: '' },
+    { label: 'Cards', value: `${userData.cardsCollected}/78`, icon: '🃏' },
+    { label: 'Streak', value: userData.streak, icon: '🔥' },
     { label: 'Gems', value: userData.gems, icon: '💎' },
   ] : [];
 
@@ -386,7 +386,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
       )}
 
       <div className="profile-content">
-        {/*  ახალი ედერი - 65% მარცხნივ, 35% მარჯვნივ */}
+        {/* ახალი ჰედერი - 65% მარცხნივ, 35% მარჯვნივ */}
         <div className="user-header">
           <div className="user-main-row">
             {/* მარცხენა მხარე - 65% */}
@@ -451,14 +451,14 @@ export default function ProfileScreen({ onNavigate }: Props) {
               </div>
             </div>
             
-            {/* მარჯვენა მხარე - 35% - 4 ღილაკი (მხოლოდ იკონები) */}
+            {/* მარჯვენა მხარე - 35% - 4 ღილაკი (SVG იკონებით) */}
             <div className="nav-buttons-container">
               <button 
                 className={`nav-pill ${activeTab === 'profile' ? 'active' : ''}`} 
                 onClick={() => setActiveTab('profile')} 
                 title="Profile"
               >
-                <span>👤</span>
+                <User size={18} />
               </button>
               
               <button 
@@ -466,7 +466,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
                 onClick={() => setActiveTab('achievements')}
                 title="Awards"
               >
-                <span></span>
+                <Trophy size={18} />
               </button>
 
               <button 
@@ -474,7 +474,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
                 onClick={() => onNavigate && onNavigate('subscription')}
                 title={activeSubscription ? 'Premium' : 'Free'}
               >
-                <span></span>
+                <Gem size={18} />
               </button>
 
               <button 
@@ -482,7 +482,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
                 onClick={() => setActiveTab('settings')}
                 title="Settings"
               >
-                <span>️</span>
+                <Settings size={18} />
               </button>
             </div>
           </div>
@@ -527,7 +527,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
             </div>
 
             <div className="quick-actions-card animate-fade-in stagger-5">
-              <h3 className="card-title">✦ EXPLORE </h3>
+              <h3 className="card-title">✦ EXPLORE ✦</h3>
               <div className="action-buttons-grid">
                 <button className="premium-action-btn" onClick={() => onNavigate && onNavigate('natal-chart')}>
                   <Star size={18} />
@@ -546,7 +546,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
             </div>
 
             <div className="my-signs-card animate-fade-in stagger-6">
-              <h3 className="card-title"> MY SIGNS ✦</h3>
+              <h3 className="card-title">✦ MY SIGNS ✦</h3>
               <div className="signs-grid">
                 {mySigns.map((item, index) => (
                   <div key={index} className="sign-item">
@@ -626,7 +626,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
                 <div className="setting-content">
                   <span className="setting-label">Language</span>
                   <select className="form-input form-select settings-select" value={settings.language} onChange={(e) => updateSetting('language', e.target.value as any)}>
-                    <option value="en">🇬 English</option>
+                    <option value="en">🇬🇧 English</option>
                     <option value="ka">🇬🇪 ქართული</option>
                   </select>
                 </div>
@@ -657,7 +657,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
           zIndex: 9998, display: 'flex', flexDirection: 'column', boxShadow: '0 8px 32px rgba(0,0,0,0.8)'
         }}>
           <div style={{ padding: '12px', borderBottom: '1px solid rgba(251, 191, 36, 0.3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ color: '#fbbf24', fontWeight: 'bold', fontSize: '14px' }}> ADMIN DEBUG</span>
+            <span style={{ color: '#fbbf24', fontWeight: 'bold', fontSize: '14px' }}>🔧 ADMIN DEBUG</span>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button onClick={copyDebugData} style={{ background: 'rgba(96, 165, 250, 0.2)', border: '1px solid #60a5fa', color: '#60a5fa', borderRadius: '4px', padding: '4px 8px', cursor: 'pointer', fontSize: '11px' }}>
                 {copySuccess ? 'Copied!' : 'Copy JSON'}
@@ -743,7 +743,7 @@ function EditProfileModal({ userData, editSection, setEditSection, onSave, onClo
             <div className="edit-section">
               {['sunSign', 'moonSign', 'risingSign'].map((signType) => (
                 <div className="form-group" key={signType}>
-                  <label className="form-label">{signType === 'sunSign' ? '☀️ Sun Sign' : signType === 'moonSign' ? ' Moon Sign' : '⬆️ Rising Sign'}</label>
+                  <label className="form-label">{signType === 'sunSign' ? '☀️ Sun Sign' : signType === 'moonSign' ? '🌙 Moon Sign' : '⬆️ Rising Sign'}</label>
                   <select className="form-input form-select" value={(formData as any)[signType]} onChange={(e) => setFormData({ ...formData, [signType]: e.target.value })}>
                     {zodiacSigns.map(sign => <option key={sign.name} value={sign.name}>{sign.symbol} {sign.name} ({sign.element})</option>)}
                   </select>

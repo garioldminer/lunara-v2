@@ -170,8 +170,19 @@
     height: 100% !important; /* იკავებს თავის უჯრას (~23px) */
   }
   
+  /* 🆕 SVG იკონების სტილები ღილაკებისთვის */
+  .profile-screen .nav-pill svg {
+    color: #ffe566 !important;
+    filter: drop-shadow(0 0 4px rgba(255, 229, 102, 0.4)) !important;
+  }
+  
+  .profile-screen .nav-pill.active svg {
+    color: #ffe566 !important;
+    filter: drop-shadow(0 0 8px rgba(255, 229, 102, 0.8)) !important;
+  }
+  
   .profile-screen .nav-pill span:first-child {
-    font-size: 14px !important; /* შესაბამისი ზომა პატარა ღილაკისთვის */
+    font-size: 14px !important;
     line-height: 1 !important;
     filter: drop-shadow(0 0 4px rgba(255, 229, 102, 0.4));
   }
