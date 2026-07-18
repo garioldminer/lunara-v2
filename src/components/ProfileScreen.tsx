@@ -351,14 +351,14 @@ export default function ProfileScreen({ onNavigate }: Props) {
 
   if (loading || !userData) {
     return (
-      <div className="screen-container profile">
+      <div className="screen-container profile profile-screen">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#ffe566' }}>Loading profile...</div>
       </div>
     );
   }
 
   return (
-    <div className="screen-container profile">
+    <div className="screen-container profile profile-screen">
       <div className="particles-container">
         {[...Array(15)].map((_, i) => (
           <div key={i} className="particle" style={{
@@ -387,15 +387,10 @@ export default function ProfileScreen({ onNavigate }: Props) {
 
       <div className="profile-content">
         {/* 🆕 ახალი ჰედერი, ზუსტად HomeScreen-ის სტილში */}
-        <div className="user-header" style={{ marginBottom: '12px' }}>
-          <div className="user-main-row" style={{ 
-            alignItems: 'center',
-            height: '52px',
-            display: 'flex',
-            justifyContent: 'space-between'
-          }}>
+        <div className="user-header">
+          <div className="user-main-row">
             {/* ავატარი და XP წრე */}
-            <div className="avatar-section" style={{ position: 'relative', width: '52px', height: '52px', flexShrink: 0 }}>
+            <div className="avatar-section">
               <svg className="xp-circular-progress" width="52" height="52" viewBox="0 0 52 52" style={{ position: 'absolute', top: 0, left: 0 }}>
                 <circle className="xp-circle-bg" cx="26" cy="26" r="22" fill="none" stroke="#e9d5ff" strokeWidth="4" />
                 <circle className="xp-circle-progress" cx="26" cy="26" r="22" fill="none" stroke="#7c3aed" strokeWidth="4" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} transform="rotate(-90 26 26)" />
@@ -444,71 +439,47 @@ export default function ProfileScreen({ onNavigate }: Props) {
             </div>
             
             {/* მომხმარებლის ინფო */}
-            <div className="user-info-section" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '52px', marginLeft: '12px', flex: 1, minWidth: 0 }}>
-              <h2 className="username" style={{ margin: 0, fontSize: '18px', lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#ffe566' }}>
+            <div className="user-info-section">
+              <h2 className="username">
                 {userData.displayName}
               </h2>
-              <p style={{ margin: '4px 0 0 0', fontSize: '11px', color: '#c87800', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <p>
                 {userData.zodiacSymbol} {userData.zodiac.charAt(0).toUpperCase() + userData.zodiac.slice(1)} · {userData.element}
               </p>
             </div>
             
-            {/* 🆕 4 ნავიგაციის ღილაკი (2x2 გრიდი) - მაქსიმალურად კომპაქტური */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '4px', flexShrink: 1, minWidth: '85px' }}>
+            {/* 🆕 4 ნავიგაციის ღილაკი (2x2 გრიდი) */}
+            <div>
               <button 
                 className={`nav-pill ${activeTab === 'profile' ? 'active' : ''}`} 
                 onClick={() => setActiveTab('profile')} 
-                style={{ 
-                  padding: '4px 2px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px', 
-                  background: activeTab === 'profile' ? 'linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2))' : 'rgba(20, 12, 5, 0.8)', 
-                  border: activeTab === 'profile' ? '1px solid #ffe566' : '1px solid rgba(200, 120, 0, 0.25)', 
-                  borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s', minHeight: '40px'
-                }}
               >
-                <span style={{ fontSize: '14px' }}>👤</span>
-                <span style={{ fontSize: '7px', color: '#ffe566', fontWeight: 600, lineHeight: 1 }}>Profile</span>
+                <span>👤</span>
+                <span>Profile</span>
               </button>
               
               <button 
                 className={`nav-pill ${activeTab === 'achievements' ? 'active' : ''}`} 
                 onClick={() => setActiveTab('achievements')} 
-                style={{ 
-                  padding: '4px 2px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px', 
-                  background: activeTab === 'achievements' ? 'linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2))' : 'rgba(20, 12, 5, 0.8)', 
-                  border: activeTab === 'achievements' ? '1px solid #ffe566' : '1px solid rgba(200, 120, 0, 0.25)', 
-                  borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s', minHeight: '40px'
-                }}
               >
-                <span style={{ fontSize: '14px' }}>🏆</span>
-                <span style={{ fontSize: '7px', color: '#ffe566', fontWeight: 600, lineHeight: 1 }}>Awards</span>
+                <span>🏆</span>
+                <span>Awards</span>
               </button>
 
               <button 
                 className="nav-pill premium-btn" 
                 onClick={() => onNavigate && onNavigate('subscription')} 
-                style={{ 
-                  padding: '4px 2px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px', 
-                  background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 165, 0, 0.05))', 
-                  border: '1px solid rgba(255, 215, 0, 0.4)', 
-                  borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s', minHeight: '40px'
-                }}
               >
-                <span style={{ fontSize: '14px' }}>💎</span>
-                <span style={{ fontSize: '7px', color: '#ffe566', fontWeight: 600, lineHeight: 1 }}>{activeSubscription ? 'PREM' : 'FREE'}</span>
+                <span>💎</span>
+                <span>{activeSubscription ? 'PREMIUM' : 'FREE'}</span>
               </button>
 
               <button 
                 className={`nav-pill ${activeTab === 'settings' ? 'active' : ''}`} 
                 onClick={() => setActiveTab('settings')} 
-                style={{ 
-                  padding: '4px 2px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px', 
-                  background: activeTab === 'settings' ? 'linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2))' : 'rgba(20, 12, 5, 0.8)', 
-                  border: activeTab === 'settings' ? '1px solid #ffe566' : '1px solid rgba(200, 120, 0, 0.25)', 
-                  borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s', minHeight: '40px'
-                }}
               >
-                <span style={{ fontSize: '14px' }}>⚙️</span>
-                <span style={{ fontSize: '7px', color: '#ffe566', fontWeight: 600, lineHeight: 1 }}>Settings</span>
+                <span>⚙️</span>
+                <span>Settings</span>
               </button>
             </div>
           </div>

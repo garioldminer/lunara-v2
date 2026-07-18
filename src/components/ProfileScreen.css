@@ -1,831 +1,954 @@
-.screen-container.profile {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  height: 100dvh;
-  overflow: hidden;
-  background: #0a0600;
-  display: flex;
-  flex-direction: column;
-  padding-top: 70px;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-}
-
-.particles-container {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.particle {
-  position: absolute;
-  background: #ffe566;
-  border-radius: 50%;
-  opacity: 0;
-  animation: floatParticle ease-in-out infinite;
-  box-shadow: 0 0 6px rgba(255, 229, 102, 0.6);
-}
-
-@keyframes floatParticle {
-  0%, 100% {
-    transform: translateY(0) translateX(0);
-    opacity: 0.2;
-  }
-  50% {
-    transform: translateY(-30px) translateX(15px);
-    opacity: 0.8;
-  }
-}
-
-.profile-content {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  z-index: 2;
-  padding: 15px 12px;
-  padding-bottom: calc(70px + env(safe-area-inset-bottom, 0));
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* ===== STAGGERED ANIMATIONS ===== */
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.animate-fade-in { animation: fadeInUp 0.5s ease-out backwards; }
-.animate-scale-in { animation: scaleIn 0.5s ease-out backwards; }
-
-.stagger-1 { animation-delay: 0.05s; }
-.stagger-2 { animation-delay: 0.1s; }
-.stagger-3 { animation-delay: 0.15s; }
-.stagger-4 { animation-delay: 0.2s; }
-.stagger-5 { animation-delay: 0.25s; }
-.stagger-6 { animation-delay: 0.3s; }
-.stagger-7 { animation-delay: 0.35s; }
-.stagger-8 { animation-delay: 0.4s; }
-
-/* ===== STATS GRID ===== */
-.stats-compact-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin-bottom: 12px;
-  background: linear-gradient(135deg, #1a0f05 0%, #0a0600 50%, #1a0f05 100%);
-  border: 1px solid rgba(200, 120, 0, 0.35);
-  border-radius: 12px;
-  padding: 12px;
-  animation: fadeInUp 0.5s ease-out backwards;
-}
-
-.stat-compact-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 8px 4px;
-}
-
-.stat-compact-icon {
-  font-size: 24px;
-  filter: drop-shadow(0 0 6px rgba(255, 229, 102, 0.4));
-}
-
-.stat-compact-value {
-  font-family: 'Georgia', serif;
-  font-size: 16px;
-  color: #ffe566;
-  font-weight: bold;
-}
-
-.stat-compact-label {
-  font-family: 'Georgia', serif;
-  font-size: 9px;
-  color: #c87800;
-  text-align: center;
-  letter-spacing: 0.3px;
-}
-
-/* ===== CORE TRAITS ===== */
-.core-traits-horizontal {
-  background: linear-gradient(135deg, #1a0f05 0%, #0a0600 50%, #1a0f05 100%);
-  border: 1px solid rgba(200, 120, 0, 0.35);
-  border-radius: 12px;
-  padding: 14px;
-  margin-bottom: 12px;
-  animation: fadeInUp 0.5s ease-out backwards;
-}
-
-.core-traits-horizontal .card-title {
-  font-size: 11px;
-  margin-bottom: 12px;
-}
-
-.traits-horizontal-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-
-.trait-compact-item {
-  background: rgba(20, 12, 5, 0.6);
-  border: 1px solid rgba(200, 120, 0, 0.2);
-  border-radius: 10px;
-  padding: 12px 8px;
-  text-align: center;
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.trait-compact-item:active {
-  transform: scale(0.95);
-  border-color: rgba(255, 229, 102, 0.4);
-  background: rgba(200, 120, 0, 0.1);
-}
-
-.trait-compact-icon {
-  font-size: 28px;
-  margin-bottom: 6px;
-}
-
-.trait-compact-name {
-  font-family: 'Georgia', serif;
-  font-size: 13px;
-  color: #ffe566;
-  font-weight: bold;
-  margin-bottom: 4px;
-}
-
-.trait-compact-desc {
-  font-family: 'Georgia', serif;
-  font-size: 9px;
-  color: #886600;
-  line-height: 1.3;
-}
-
-/* ===== UNIFIED CARD STYLE ===== */
-.moon-phase-card,
-.collection-card,
-.recent-readings-card,
-.my-signs-card,
-.quick-actions-card {
-  background: linear-gradient(135deg, #1a0f05 0%, #0a0600 50%, #1a0f05 100%);
-  border: 1px solid rgba(200, 120, 0, 0.35);
-  border-radius: 14px;
-  padding: 16px;
-  margin-bottom: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 12px rgba(200, 120, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.04);
-  will-change: transform;
-  transform: translateZ(0);
-}
-
-.card-title {
-  font-family: 'Georgia', serif;
-  font-size: 12px;
-  color: #ffe566;
-  text-align: center;
-  margin: 0 0 16px;
-  letter-spacing: 2px;
-}
-
-/* ===== MOON PHASE ===== */
-.moon-content {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 8px;
-}
-
-.moon-symbol {
-  font-size: 48px;
-  filter: drop-shadow(0 0 12px rgba(255, 229, 102, 0.5));
-  flex-shrink: 0;
-  animation: moonGlow 4s ease-in-out infinite;
-}
-
-@keyframes moonGlow {
-  0%, 100% { filter: drop-shadow(0 0 8px rgba(255, 229, 102, 0.4)); transform: scale(1); }
-  50% { filter: drop-shadow(0 0 16px rgba(255, 229, 102, 0.7)); transform: scale(1.05); }
-}
-
-.moon-info { flex: 1; }
-
-.moon-phase-name {
-  font-family: 'Georgia', serif;
-  font-size: 16px;
-  color: #ffe566;
-  font-weight: bold;
-  margin-bottom: 4px;
-  letter-spacing: 0.5px;
-}
-
-.moon-details {
-  font-family: 'Georgia', serif;
-  font-size: 11px;
-  color: #c87800;
-  margin-bottom: 6px;
-}
-
-.moon-best-for {
-  font-family: 'Georgia', serif;
-  font-size: 10px;
-  color: #886600;
-  font-style: italic;
-}
-
-/* ===== EXPLORE SECTION ===== */
-.action-buttons-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-
-.premium-action-btn {
-  background: linear-gradient(135deg, rgba(200, 120, 0, 0.15) 0%, rgba(255, 229, 102, 0.08) 100%);
-  border: 1px solid rgba(200, 120, 0, 0.3);
-  border-radius: 12px;
-  padding: 12px 6px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  min-height: 70px;
-  justify-content: center;
-}
-
-.premium-action-btn:active {
-  transform: scale(0.95);
-  border-color: rgba(255, 229, 102, 0.5);
-  background: linear-gradient(135deg, rgba(200, 120, 0, 0.25) 0%, rgba(255, 229, 102, 0.15) 100%);
-}
-
-.premium-action-btn svg {
-  color: #ffe566;
-  filter: drop-shadow(0 0 6px rgba(255, 229, 102, 0.4));
-}
-
-.premium-action-btn span {
-  font-family: 'Georgia', serif;
-  font-size: 9px;
-  color: #ffe566;
-  text-align: center;
-  letter-spacing: 0.3px;
-  font-weight: 600;
-}
-
-.premium-action-btn .lock-icon {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  color: #c87800;
-  font-size: 12px;
-}
-
-/* ===== MY SIGNS ===== */
-.signs-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.sign-item {
-  background: rgba(20, 12, 5, 0.6);
-  border: 1px solid rgba(200, 120, 0, 0.2);
-  border-radius: 10px;
-  padding: 12px 8px;
-  text-align: center;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-
-.sign-item:active {
-  transform: scale(0.95);
-  border-color: rgba(255, 229, 102, 0.4);
-}
-
-.sign-icon {
-  font-size: 24px;
-  margin-bottom: 4px;
-}
-
-.sign-label {
-  font-family: 'Georgia', serif;
-  font-size: 8px;
-  color: #886600;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-
-.sign-name {
-  font-family: 'Georgia', serif;
-  font-size: 12px;
-  color: #ffe566;
-  font-weight: bold;
-  letter-spacing: 0.3px;
-}
-
-.sign-details {
-  font-family: 'Georgia', serif;
-  font-size: 9px;
-  color: #c87800;
-}
-
-/* ===== SIGN ACTION BUTTONS ===== */
-.sign-actions {
-  display: flex;
-  gap: 8px;
-  margin: 12px 0 0 0;
-}
-
-.change-sign-btn,
-.reset-sign-btn {
-  flex: 1;
-  padding: 10px;
-  border-radius: 8px;
-  font-family: 'Georgia', serif;
-  font-size: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: 1px solid;
-  min-height: 38px;
-}
-
-.change-sign-btn {
-  background: linear-gradient(135deg, rgba(217, 182, 111, 0.2) 0%, rgba(217, 182, 111, 0.1) 100%);
-  border-color: rgba(217, 182, 111, 0.4);
-  color: #D9B66F;
-}
-
-.change-sign-btn:active {
-  background: linear-gradient(135deg, rgba(217, 182, 111, 0.3) 0%, rgba(217, 182, 111, 0.2) 100%);
-  border-color: rgba(217, 182, 111, 0.6);
-  transform: scale(0.98);
-}
-
-.reset-sign-btn {
-  background: linear-gradient(135deg, rgba(232, 115, 138, 0.15) 0%, rgba(232, 115, 138, 0.08) 100%);
-  border-color: rgba(232, 115, 138, 0.3);
-  color: #E8738A;
-}
-
-.reset-sign-btn:active {
-  background: linear-gradient(135deg, rgba(232, 115, 138, 0.25) 0%, rgba(232, 115, 138, 0.15) 100%);
-  border-color: rgba(232, 115, 138, 0.5);
-  transform: scale(0.98);
-}
-
-/* ===== RECENT READINGS ===== */
-.readings-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.reading-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: rgba(20, 12, 5, 0.6);
-  border: 1px solid rgba(200, 120, 0, 0.2);
-  border-radius: 10px;
-  padding: 12px;
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.reading-item:active {
-  transform: scale(0.98);
-  border-color: rgba(255, 229, 102, 0.4);
-  background: rgba(200, 120, 0, 0.1);
-}
-
-.reading-icon { font-size: 24px; flex-shrink: 0; }
-.reading-info { flex: 1; min-width: 0; }
-
-.reading-type {
-  font-family: 'Georgia', serif;
-  font-size: 12px;
-  color: #ffe566;
-  font-weight: bold;
-  margin-bottom: 4px;
-  letter-spacing: 0.3px;
-}
-
-.reading-cards {
-  font-family: 'Georgia', serif;
-  font-size: 10px;
-  color: #c87800;
-  line-height: 1.4;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.reading-date {
-  font-family: 'Georgia', serif;
-  font-size: 9px;
-  color: #886600;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-/* ===== ACHIEVEMENTS ===== */
-.section-title {
-  font-family: 'Georgia', serif;
-  font-size: 14px;
-  color: #ffe566;
-  text-align: center;
-  margin: 0 0 16px;
-  letter-spacing: 1.5px;
-}
-
-.achievements-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.achievement-card {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: rgba(20, 12, 5, 0.8);
-  border: 1px solid rgba(200, 120, 0, 0.25);
-  border-radius: 12px;
-  padding: 14px;
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.achievement-card.unlocked { border-color: rgba(255, 229, 102, 0.35); }
-.achievement-card.locked { opacity: 0.6; }
-.achievement-card:active { transform: scale(0.98); background: rgba(200, 120, 0, 0.1); }
-
-.achievement-icon { font-size: 32px; flex-shrink: 0; }
-
-.achievement-card.unlocked .achievement-icon {
-  animation: iconBounce 2s ease-in-out infinite;
-}
-
-@keyframes iconBounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-3px); }
-}
-
-.achievement-info { flex: 1; }
-
-.achievement-title {
-  font-family: 'Georgia', serif;
-  font-size: 13px;
-  color: #ffe566;
-  margin: 0 0 4px;
-  font-weight: bold;
-}
-
-.achievement-desc {
-  font-family: 'Georgia', serif;
-  font-size: 11px;
-  color: #c87800;
-  margin: 0 0 8px;
-}
-
-.achievement-progress { display: flex; align-items: center; gap: 8px; }
-
-.progress-bar-small {
-  flex: 1;
-  height: 4px;
-  background: rgba(200, 120, 0, 0.2);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.progress-fill-small {
-  height: 100%;
-  background: linear-gradient(90deg, #c87800, #ffe566);
-  border-radius: 2px;
-  transition: width 1s ease-out;
-}
-
-.progress-text {
-  font-family: 'Georgia', serif;
-  font-size: 10px;
-  color: #c87800;
-  white-space: nowrap;
-}
-
-/* ===== SETTINGS TAB ===== */
-.settings-section { margin-bottom: 24px; }
-
-.settings-section-title {
-  font-family: 'Georgia', serif;
-  font-size: 13px;
-  color: #c87800;
-  margin: 0 0 12px 4px;
-  letter-spacing: 0.5px;
-  font-weight: 600;
-}
-
-.setting-content {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.theme-options { display: flex; gap: 6px; }
-
-.theme-option-mini {
-  background: rgba(20, 12, 5, 0.6);
-  border: 1px solid rgba(200, 120, 0, 0.25);
-  border-radius: 8px;
-  padding: 6px 10px;
-  color: #c87800;
-  font-family: 'Georgia', serif;
-  font-size: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  min-height: 32px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.theme-option-mini.active {
-  background: linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2));
-  border-color: #ffe566;
-  color: #ffe566;
-  box-shadow: 0 0 8px rgba(255, 229, 102, 0.3);
-}
-
-.theme-option-mini:active { transform: scale(0.95); }
-
-.settings-select {
-  min-height: 36px !important;
-  padding: 6px 32px 6px 12px !important;
-  font-size: 12px !important;
-  max-width: 140px;
-}
-
-.setting-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: rgba(20, 12, 5, 0.8);
-  border: 1px solid rgba(200, 120, 0, 0.25);
-  border-radius: 12px;
-  padding: 14px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  min-height: 52px;
-}
-
-.setting-item:active { background: rgba(200, 120, 0, 0.15); transform: scale(0.98); }
-.setting-item.premium { border-color: rgba(255, 229, 102, 0.35); }
-.setting-item.danger { border-color: rgba(220, 38, 38, 0.3); }
-.setting-item.danger:active { background: rgba(220, 38, 38, 0.15); }
-
-.setting-icon { font-size: 20px; flex-shrink: 0; }
-.setting-label { flex: 1; font-family: 'Georgia', serif; font-size: 13px; color: #ffe566; }
-
-.setting-badge {
-  background: linear-gradient(135deg, #c87800, #ffe566);
-  color: #0a0600;
-  font-family: 'Georgia', serif;
-  font-size: 9px;
-  font-weight: bold;
-  padding: 3px 8px;
-  border-radius: 6px;
-  letter-spacing: 0.8px;
-}
-
-.setting-arrow { font-size: 14px; color: #c87800; transition: transform 0.3s ease; }
-.setting-item:active .setting-arrow { transform: translateX(3px); }
-
-/* ===== MODAL STYLES ===== */
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.9);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.modal-content {
-  background: linear-gradient(135deg, #1a0f05, #0a0600);
-  border: 2px solid rgba(200, 120, 0, 0.5);
-  border-radius: 18px;
-  padding: 24px 20px;
-  max-width: 360px;
-  width: 100%;
-  max-height: 85vh;
-  overflow-y: auto;
-  position: relative;
-  box-shadow: 0 0 40px rgba(200, 120, 0, 0.4), 0 0 80px rgba(200, 120, 0, 0.2);
-  animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  -webkit-overflow-scrolling: touch;
-}
-
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.modal-close {
-  position: absolute;
-  top: 16px; right: 16px;
-  background: rgba(200, 120, 0, 0.2);
-  border: 1px solid rgba(200, 120, 0, 0.4);
-  color: #ffe566;
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  font-size: 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  z-index: 10;
-}
-
-.modal-close:active { background: rgba(200, 120, 0, 0.4); transform: scale(0.9) rotate(90deg); }
-
-.modal-title {
-  font-family: 'Georgia', serif;
-  font-size: 20px;
-  color: #ffe566;
-  text-align: center;
-  margin: 0 0 8px;
-  letter-spacing: 1.5px;
-}
-
-.form-group { margin-bottom: 16px; }
-
-.form-label {
-  display: block;
-  font-family: 'Georgia', serif;
-  font-size: 11px;
-  color: #c87800;
-  margin-bottom: 6px;
-  letter-spacing: 0.4px;
-}
-
-.form-input {
-  width: 100%;
-  background: rgba(20, 12, 5, 0.8);
-  border: 1px solid rgba(200, 120, 0, 0.3);
-  border-radius: 10px;
-  padding: 12px;
-  color: #ffe566;
-  font-family: 'Georgia', serif;
-  font-size: 14px;
-  outline: none;
-  transition: all 0.3s ease;
-  box-sizing: border-box;
-  min-height: 48px;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-.form-input:focus { border-color: #ffe566; box-shadow: 0 0 8px rgba(255, 229, 102, 0.3); }
-.form-input::placeholder { color: #886600; }
-
-.modal-submit-btn {
-  width: 100%;
-  height: 48px;
-  background: linear-gradient(135deg, #c87800, #e8a020, #ffe566);
-  border: 2px solid #ffe566;
-  border-radius: 24px;
-  color: #0a0600;
-  font-family: 'Georgia', serif;
-  font-size: 13px;
-  font-weight: bold;
-  letter-spacing: 1.5px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 16px rgba(200, 120, 0, 0.4), 0 0 30px rgba(200, 120, 0, 0.2);
-  margin-top: 8px;
-}
-
-.modal-submit-btn:active { transform: scale(0.96); }
-
-.edit-section-tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid rgba(200, 120, 0, 0.2);
-}
-
-.edit-tab {
-  flex: 1;
-  background: rgba(20, 12, 5, 0.6);
-  border: 1px solid rgba(200, 120, 0, 0.25);
-  border-radius: 10px;
-  padding: 10px;
-  color: #c87800;
-  font-family: 'Georgia', serif;
-  font-size: 11px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  min-height: 44px;
-}
-
-.edit-tab.active {
-  background: linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2));
-  border-color: #ffe566;
-  color: #ffe566;
-}
-
-.edit-tab:active { transform: scale(0.95); }
-.edit-section { margin-bottom: 20px; }
-
-/* ===== SCROLLBAR ===== */
-.profile-content::-webkit-scrollbar, .modal-content::-webkit-scrollbar { width: 4px; }
-.profile-content::-webkit-scrollbar-track, .modal-content::-webkit-scrollbar-track { background: transparent; }
-.profile-content::-webkit-scrollbar-thumb, .modal-content::-webkit-scrollbar-thumb { background: rgba(200, 120, 0, 0.3); border-radius: 2px; }
-
-/* ===== MOBILE OPTIMIZATION ===== */
-@media (max-width: 768px) {
-  .user-main-row {
-    flex-wrap: wrap;
-    padding: 10px;
-  }
-  
-  .user-info-section {
-    margin-left: 0;
-  }
-  
-  .user-main-row > div:last-child {
+/* ============================================
+   PROFILE SCREEN - ISOLATED STYLES
+   ყველა კლასი .profile-screen-ის ქვეშაა
+   ============================================ */
+
+   .profile-screen .screen-container {
+    position: relative;
     width: 100%;
+    height: 100%;
+    height: 100dvh;
+    overflow: hidden;
+    background: #0a0600;
+    display: flex;
+    flex-direction: column;
+    padding-top: 70px;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  
+  .profile-screen .particles-container {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+  
+  .profile-screen .particle {
+    position: absolute;
+    background: #ffe566;
+    border-radius: 50%;
+    opacity: 0;
+    animation: floatParticle ease-in-out infinite;
+    box-shadow: 0 0 6px rgba(255, 229, 102, 0.6);
+  }
+  
+  @keyframes floatParticle {
+    0%, 100% {
+      transform: translateY(0) translateX(0);
+      opacity: 0.2;
+    }
+    50% {
+      transform: translateY(-30px) translateX(15px);
+      opacity: 0.8;
+    }
+  }
+  
+  .profile-screen .profile-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 2;
+    padding: 15px 12px;
+    padding-bottom: calc(70px + env(safe-area-inset-bottom, 0));
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* ===== STAGGERED ANIMATIONS ===== */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  
+  .profile-screen .animate-fade-in { animation: fadeInUp 0.5s ease-out backwards; }
+  .profile-screen .animate-scale-in { animation: scaleIn 0.5s ease-out backwards; }
+  
+  .profile-screen .stagger-1 { animation-delay: 0.05s; }
+  .profile-screen .stagger-2 { animation-delay: 0.1s; }
+  .profile-screen .stagger-3 { animation-delay: 0.15s; }
+  .profile-screen .stagger-4 { animation-delay: 0.2s; }
+  .profile-screen .stagger-5 { animation-delay: 0.25s; }
+  .profile-screen .stagger-6 { animation-delay: 0.3s; }
+  .profile-screen .stagger-7 { animation-delay: 0.35s; }
+  .profile-screen .stagger-8 { animation-delay: 0.4s; }
+  
+  /* ===== USER HEADER ===== */
+  .profile-screen .user-header {
+    margin-bottom: 12px;
+  }
+  
+  .profile-screen .user-main-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, #1a0f05 0%, #0a0600 50%, #1a0f05 100%);
+    border: 1px solid rgba(200, 120, 0, 0.4);
+    border-radius: 16px;
+    padding: 12px 16px;
+    gap: 12px;
+  }
+  
+  .profile-screen .avatar-section {
+    position: relative;
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+  }
+  
+  .profile-screen .user-info-section {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+    min-width: 0;
+    gap: 4px;
+  }
+  
+  .profile-screen .username {
+    margin: 0;
+    font-size: 20px;
+    color: #ffe566;
+    font-family: 'Georgia', serif;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .profile-screen .user-info-section > p {
+    margin: 0;
+    font-size: 12px;
+    color: #c87800;
+    font-family: 'Georgia', serif;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  /* ===== NAV PILLS - 4 ღილაკი 2x2 გრიდში ===== */
+  .profile-screen .user-main-row > div:last-child {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  
+  .profile-screen .nav-pill {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    background: rgba(20, 12, 5, 0.9) !important;
+    border: 1px solid rgba(200, 120, 0, 0.3) !important;
+    border-radius: 10px !important;
+    padding: 8px 12px !important;
+    cursor: pointer !important;
+    transition: all 0.3s !important;
+    min-width: 70px !important;
+    min-height: 52px !important;
+  }
+  
+  .profile-screen .nav-pill span:first-child {
+    font-size: 20px !important;
+    line-height: 1 !important;
+  }
+  
+  .profile-screen .nav-pill span:last-child {
+    font-family: 'Georgia', serif !important;
+    font-size: 9px !important;
+    color: #ffe566 !important;
+    font-weight: 600 !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+  }
+  
+  .profile-screen .nav-pill.active {
+    background: linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2)) !important;
+    border-color: #ffe566 !important;
+    box-shadow: 0 0 12px rgba(255, 229, 102, 0.3) !important;
+  }
+  
+  .profile-screen .nav-pill.premium-btn {
+    border-color: rgba(255, 215, 0, 0.4) !important;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 165, 0, 0.05)) !important;
+  }
+  
+  .profile-screen .nav-pill:active {
+    transform: scale(0.95) !important;
+  }
+  
+  /* ===== STATS GRID ===== */
+  .profile-screen .stats-compact-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, #1a0f05 0%, #0a0600 50%, #1a0f05 100%);
+    border: 1px solid rgba(200, 120, 0, 0.35);
+    border-radius: 12px;
+    padding: 12px;
+    animation: fadeInUp 0.5s ease-out backwards;
+  }
+  
+  .profile-screen .stat-compact-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 4px;
+  }
+  
+  .profile-screen .stat-compact-icon {
+    font-size: 24px;
+    filter: drop-shadow(0 0 6px rgba(255, 229, 102, 0.4));
+  }
+  
+  .profile-screen .stat-compact-value {
+    font-family: 'Georgia', serif;
+    font-size: 16px;
+    color: #ffe566;
+    font-weight: bold;
+  }
+  
+  .profile-screen .stat-compact-label {
+    font-family: 'Georgia', serif;
+    font-size: 9px;
+    color: #c87800;
+    text-align: center;
+    letter-spacing: 0.3px;
+  }
+  
+  /* ===== CORE TRAITS ===== */
+  .profile-screen .core-traits-horizontal {
+    background: linear-gradient(135deg, #1a0f05 0%, #0a0600 50%, #1a0f05 100%);
+    border: 1px solid rgba(200, 120, 0, 0.35);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 12px;
+    animation: fadeInUp 0.5s ease-out backwards;
+  }
+  
+  .profile-screen .core-traits-horizontal .card-title {
+    font-size: 11px;
+    margin-bottom: 12px;
+  }
+  
+  .profile-screen .traits-horizontal-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  
+  .profile-screen .trait-compact-item {
+    background: rgba(20, 12, 5, 0.6);
+    border: 1px solid rgba(200, 120, 0, 0.2);
+    border-radius: 10px;
+    padding: 12px 8px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .profile-screen .trait-compact-item:active {
+    transform: scale(0.95);
+    border-color: rgba(255, 229, 102, 0.4);
+    background: rgba(200, 120, 0, 0.1);
+  }
+  
+  .profile-screen .trait-compact-icon {
+    font-size: 28px;
+    margin-bottom: 6px;
+  }
+  
+  .profile-screen .trait-compact-name {
+    font-family: 'Georgia', serif;
+    font-size: 13px;
+    color: #ffe566;
+    font-weight: bold;
+    margin-bottom: 4px;
+  }
+  
+  .profile-screen .trait-compact-desc {
+    font-family: 'Georgia', serif;
+    font-size: 9px;
+    color: #886600;
+    line-height: 1.3;
+  }
+  
+  /* ===== UNIFIED CARD STYLE ===== */
+  .profile-screen .moon-phase-card,
+  .profile-screen .collection-card,
+  .profile-screen .recent-readings-card,
+  .profile-screen .my-signs-card,
+  .profile-screen .quick-actions-card {
+    background: linear-gradient(135deg, #1a0f05 0%, #0a0600 50%, #1a0f05 100%);
+    border: 1px solid rgba(200, 120, 0, 0.35);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 12px rgba(200, 120, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    will-change: transform;
+    transform: translateZ(0);
+  }
+  
+  .profile-screen .card-title {
+    font-family: 'Georgia', serif;
+    font-size: 12px;
+    color: #ffe566;
+    text-align: center;
+    margin: 0 0 16px;
+    letter-spacing: 2px;
+  }
+  
+  /* ===== MOON PHASE ===== */
+  .profile-screen .moon-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px;
+  }
+  
+  .profile-screen .moon-symbol {
+    font-size: 48px;
+    filter: drop-shadow(0 0 12px rgba(255, 229, 102, 0.5));
+    flex-shrink: 0;
+    animation: moonGlow 4s ease-in-out infinite;
+  }
+  
+  @keyframes moonGlow {
+    0%, 100% { filter: drop-shadow(0 0 8px rgba(255, 229, 102, 0.4)); transform: scale(1); }
+    50% { filter: drop-shadow(0 0 16px rgba(255, 229, 102, 0.7)); transform: scale(1.05); }
+  }
+  
+  .profile-screen .moon-info { flex: 1; }
+  
+  .profile-screen .moon-phase-name {
+    font-family: 'Georgia', serif;
+    font-size: 16px;
+    color: #ffe566;
+    font-weight: bold;
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+  }
+  
+  .profile-screen .moon-details {
+    font-family: 'Georgia', serif;
+    font-size: 11px;
+    color: #c87800;
+    margin-bottom: 6px;
+  }
+  
+  .profile-screen .moon-best-for {
+    font-family: 'Georgia', serif;
+    font-size: 10px;
+    color: #886600;
+    font-style: italic;
+  }
+  
+  /* ===== EXPLORE SECTION ===== */
+  .profile-screen .action-buttons-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  
+  .profile-screen .premium-action-btn {
+    background: linear-gradient(135deg, rgba(200, 120, 0, 0.15) 0%, rgba(255, 229, 102, 0.08) 100%);
+    border: 1px solid rgba(200, 120, 0, 0.3);
+    border-radius: 12px;
+    padding: 12px 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    min-height: 70px;
     justify-content: center;
   }
-}
-
-@media (max-width: 380px) {
-  .profile-content { padding: 12px 10px; padding-bottom: calc(70px + env(safe-area-inset-bottom, 0)); }
   
-  .stats-compact-grid { gap: 6px; padding: 10px; }
-  .stat-compact-icon { font-size: 20px; }
-  .stat-compact-value { font-size: 14px; }
-  .stat-compact-label { font-size: 8px; }
+  .profile-screen .premium-action-btn:active {
+    transform: scale(0.95);
+    border-color: rgba(255, 229, 102, 0.5);
+    background: linear-gradient(135deg, rgba(200, 120, 0, 0.25) 0%, rgba(255, 229, 102, 0.15) 100%);
+  }
   
-  .traits-horizontal-grid { gap: 6px; }
-  .trait-compact-item { padding: 10px 6px; }
-  .trait-compact-icon { font-size: 24px; }
-  .trait-compact-name { font-size: 11px; }
-  .trait-compact-desc { font-size: 8px; }
+  .profile-screen .premium-action-btn svg {
+    color: #ffe566;
+    filter: drop-shadow(0 0 6px rgba(255, 229, 102, 0.4));
+  }
   
-  .action-buttons-grid { gap: 6px; }
-  .premium-action-btn { flex-direction: row; justify-content: flex-start; min-height: 56px; padding: 12px 16px; }
-  .premium-action-btn svg { margin-right: 12px; }
+  .profile-screen .premium-action-btn span {
+    font-family: 'Georgia', serif;
+    font-size: 9px;
+    color: #ffe566;
+    text-align: center;
+    letter-spacing: 0.3px;
+    font-weight: 600;
+  }
   
-  .signs-grid { gap: 6px; }
-  .sign-item { flex-direction: row; justify-content: flex-start; text-align: left; padding: 14px; }
-  .sign-icon { margin-bottom: 0; margin-right: 16px; }
+  .profile-screen .premium-action-btn .lock-icon {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    color: #c87800;
+    font-size: 12px;
+  }
   
-  .sign-actions { flex-direction: column; gap: 10px; }
-  .change-sign-btn, .reset-sign-btn { font-size: 12px; padding: 12px 14px; }
+  /* ===== MY SIGNS ===== */
+  .profile-screen .signs-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
   
-  .settings-select { max-width: 100%; }
-}
-
-@media (max-height: 700px) {
-  .profile-content { padding-top: 10px; }
-  .moon-phase-card, .collection-card, .recent-readings-card, .my-signs-card, .quick-actions-card { margin-bottom: 10px; padding: 12px; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .moon-symbol, .particle { animation: none; }
-  * { transition-duration: 0.01ms !important; }
-}
+  .profile-screen .sign-item {
+    background: rgba(20, 12, 5, 0.6);
+    border: 1px solid rgba(200, 120, 0, 0.2);
+    border-radius: 10px;
+    padding: 12px 8px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .profile-screen .sign-item:active {
+    transform: scale(0.95);
+    border-color: rgba(255, 229, 102, 0.4);
+  }
+  
+  .profile-screen .sign-icon {
+    font-size: 24px;
+    margin-bottom: 4px;
+  }
+  
+  .profile-screen .sign-label {
+    font-family: 'Georgia', serif;
+    font-size: 8px;
+    color: #886600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  
+  .profile-screen .sign-name {
+    font-family: 'Georgia', serif;
+    font-size: 12px;
+    color: #ffe566;
+    font-weight: bold;
+    letter-spacing: 0.3px;
+  }
+  
+  .profile-screen .sign-details {
+    font-family: 'Georgia', serif;
+    font-size: 9px;
+    color: #c87800;
+  }
+  
+  /* ===== SIGN ACTION BUTTONS ===== */
+  .profile-screen .sign-actions {
+    display: flex;
+    gap: 8px;
+    margin: 12px 0 0 0;
+  }
+  
+  .profile-screen .change-sign-btn,
+  .profile-screen .reset-sign-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    font-family: 'Georgia', serif;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid;
+    min-height: 38px;
+  }
+  
+  .profile-screen .change-sign-btn {
+    background: linear-gradient(135deg, rgba(217, 182, 111, 0.2) 0%, rgba(217, 182, 111, 0.1) 100%);
+    border-color: rgba(217, 182, 111, 0.4);
+    color: #D9B66F;
+  }
+  
+  .profile-screen .change-sign-btn:active {
+    background: linear-gradient(135deg, rgba(217, 182, 111, 0.3) 0%, rgba(217, 182, 111, 0.2) 100%);
+    border-color: rgba(217, 182, 111, 0.6);
+    transform: scale(0.98);
+  }
+  
+  .profile-screen .reset-sign-btn {
+    background: linear-gradient(135deg, rgba(232, 115, 138, 0.15) 0%, rgba(232, 115, 138, 0.08) 100%);
+    border-color: rgba(232, 115, 138, 0.3);
+    color: #E8738A;
+  }
+  
+  .profile-screen .reset-sign-btn:active {
+    background: linear-gradient(135deg, rgba(232, 115, 138, 0.25) 0%, rgba(232, 115, 138, 0.15) 100%);
+    border-color: rgba(232, 115, 138, 0.5);
+    transform: scale(0.98);
+  }
+  
+  /* ===== RECENT READINGS ===== */
+  .profile-screen .readings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .profile-screen .reading-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(20, 12, 5, 0.6);
+    border: 1px solid rgba(200, 120, 0, 0.2);
+    border-radius: 10px;
+    padding: 12px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .profile-screen .reading-item:active {
+    transform: scale(0.98);
+    border-color: rgba(255, 229, 102, 0.4);
+    background: rgba(200, 120, 0, 0.1);
+  }
+  
+  .profile-screen .reading-icon { font-size: 24px; flex-shrink: 0; }
+  .profile-screen .reading-info { flex: 1; min-width: 0; }
+  
+  .profile-screen .reading-type {
+    font-family: 'Georgia', serif;
+    font-size: 12px;
+    color: #ffe566;
+    font-weight: bold;
+    margin-bottom: 4px;
+    letter-spacing: 0.3px;
+  }
+  
+  .profile-screen .reading-cards {
+    font-family: 'Georgia', serif;
+    font-size: 10px;
+    color: #c87800;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .profile-screen .reading-date {
+    font-family: 'Georgia', serif;
+    font-size: 9px;
+    color: #886600;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  
+  /* ===== ACHIEVEMENTS ===== */
+  .profile-screen .section-title {
+    font-family: 'Georgia', serif;
+    font-size: 14px;
+    color: #ffe566;
+    text-align: center;
+    margin: 0 0 16px;
+    letter-spacing: 1.5px;
+  }
+  
+  .profile-screen .achievements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .profile-screen .achievement-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(20, 12, 5, 0.8);
+    border: 1px solid rgba(200, 120, 0, 0.25);
+    border-radius: 12px;
+    padding: 14px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .profile-screen .achievement-card.unlocked { border-color: rgba(255, 229, 102, 0.35); }
+  .profile-screen .achievement-card.locked { opacity: 0.6; }
+  .profile-screen .achievement-card:active { transform: scale(0.98); background: rgba(200, 120, 0, 0.1); }
+  
+  .profile-screen .achievement-icon { font-size: 32px; flex-shrink: 0; }
+  
+  .profile-screen .achievement-card.unlocked .achievement-icon {
+    animation: iconBounce 2s ease-in-out infinite;
+  }
+  
+  @keyframes iconBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+  }
+  
+  .profile-screen .achievement-info { flex: 1; }
+  
+  .profile-screen .achievement-title {
+    font-family: 'Georgia', serif;
+    font-size: 13px;
+    color: #ffe566;
+    margin: 0 0 4px;
+    font-weight: bold;
+  }
+  
+  .profile-screen .achievement-desc {
+    font-family: 'Georgia', serif;
+    font-size: 11px;
+    color: #c87800;
+    margin: 0 0 8px;
+  }
+  
+  .profile-screen .achievement-progress { display: flex; align-items: center; gap: 8px; }
+  
+  .profile-screen .progress-bar-small {
+    flex: 1;
+    height: 4px;
+    background: rgba(200, 120, 0, 0.2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  
+  .profile-screen .progress-fill-small {
+    height: 100%;
+    background: linear-gradient(90deg, #c87800, #ffe566);
+    border-radius: 2px;
+    transition: width 1s ease-out;
+  }
+  
+  .profile-screen .progress-text {
+    font-family: 'Georgia', serif;
+    font-size: 10px;
+    color: #c87800;
+    white-space: nowrap;
+  }
+  
+  /* ===== SETTINGS TAB ===== */
+  .profile-screen .settings-section { margin-bottom: 24px; }
+  
+  .profile-screen .settings-section-title {
+    font-family: 'Georgia', serif;
+    font-size: 13px;
+    color: #c87800;
+    margin: 0 0 12px 4px;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+  }
+  
+  .profile-screen .setting-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  
+  .profile-screen .theme-options { display: flex; gap: 6px; }
+  
+  .profile-screen .theme-option-mini {
+    background: rgba(20, 12, 5, 0.6);
+    border: 1px solid rgba(200, 120, 0, 0.25);
+    border-radius: 8px;
+    padding: 6px 10px;
+    color: #c87800;
+    font-family: 'Georgia', serif;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  .profile-screen .theme-option-mini.active {
+    background: linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2));
+    border-color: #ffe566;
+    color: #ffe566;
+    box-shadow: 0 0 8px rgba(255, 229, 102, 0.3);
+  }
+  
+  .profile-screen .theme-option-mini:active { transform: scale(0.95); }
+  
+  .profile-screen .settings-select {
+    min-height: 36px !important;
+    padding: 6px 32px 6px 12px !important;
+    font-size: 12px !important;
+    max-width: 140px;
+  }
+  
+  .profile-screen .setting-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(20, 12, 5, 0.8);
+    border: 1px solid rgba(200, 120, 0, 0.25);
+    border-radius: 12px;
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 52px;
+  }
+  
+  .profile-screen .setting-item:active { background: rgba(200, 120, 0, 0.15); transform: scale(0.98); }
+  .profile-screen .setting-item.premium { border-color: rgba(255, 229, 102, 0.35); }
+  .profile-screen .setting-item.danger { border-color: rgba(220, 38, 38, 0.3); }
+  .profile-screen .setting-item.danger:active { background: rgba(220, 38, 38, 0.15); }
+  
+  .profile-screen .setting-icon { font-size: 20px; flex-shrink: 0; }
+  .profile-screen .setting-label { flex: 1; font-family: 'Georgia', serif; font-size: 13px; color: #ffe566; }
+  
+  .profile-screen .setting-badge {
+    background: linear-gradient(135deg, #c87800, #ffe566);
+    color: #0a0600;
+    font-family: 'Georgia', serif;
+    font-size: 9px;
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.8px;
+  }
+  
+  .profile-screen .setting-arrow { font-size: 14px; color: #c87800; transition: transform 0.3s ease; }
+  .profile-screen .setting-item:active .setting-arrow { transform: translateX(3px); }
+  
+  /* ===== MODAL STYLES ===== */
+  .profile-screen .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    animation: fadeIn 0.3s ease;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  .profile-screen .modal-content {
+    background: linear-gradient(135deg, #1a0f05, #0a0600);
+    border: 2px solid rgba(200, 120, 0, 0.5);
+    border-radius: 18px;
+    padding: 24px 20px;
+    max-width: 360px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 0 40px rgba(200, 120, 0, 0.4), 0 0 80px rgba(200, 120, 0, 0.2);
+    animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .profile-screen .modal-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    background: rgba(200, 120, 0, 0.2);
+    border: 1px solid rgba(200, 120, 0, 0.4);
+    color: #ffe566;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 10;
+  }
+  
+  .profile-screen .modal-close:active { background: rgba(200, 120, 0, 0.4); transform: scale(0.9) rotate(90deg); }
+  
+  .profile-screen .modal-title {
+    font-family: 'Georgia', serif;
+    font-size: 20px;
+    color: #ffe566;
+    text-align: center;
+    margin: 0 0 8px;
+    letter-spacing: 1.5px;
+  }
+  
+  .profile-screen .form-group { margin-bottom: 16px; }
+  
+  .profile-screen .form-label {
+    display: block;
+    font-family: 'Georgia', serif;
+    font-size: 11px;
+    color: #c87800;
+    margin-bottom: 6px;
+    letter-spacing: 0.4px;
+  }
+  
+  .profile-screen .form-input {
+    width: 100%;
+    background: rgba(20, 12, 5, 0.8);
+    border: 1px solid rgba(200, 120, 0, 0.3);
+    border-radius: 10px;
+    padding: 12px;
+    color: #ffe566;
+    font-family: 'Georgia', serif;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    min-height: 48px;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  
+  .profile-screen .form-input:focus { border-color: #ffe566; box-shadow: 0 0 8px rgba(255, 229, 102, 0.3); }
+  .profile-screen .form-input::placeholder { color: #886600; }
+  
+  .profile-screen .modal-submit-btn {
+    width: 100%;
+    height: 48px;
+    background: linear-gradient(135deg, #c87800, #e8a020, #ffe566);
+    border: 2px solid #ffe566;
+    border-radius: 24px;
+    color: #0a0600;
+    font-family: 'Georgia', serif;
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(200, 120, 0, 0.4), 0 0 30px rgba(200, 120, 0, 0.2);
+    margin-top: 8px;
+  }
+  
+  .profile-screen .modal-submit-btn:active { transform: scale(0.96); }
+  
+  .profile-screen .edit-section-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(200, 120, 0, 0.2);
+  }
+  
+  .profile-screen .edit-tab {
+    flex: 1;
+    background: rgba(20, 12, 5, 0.6);
+    border: 1px solid rgba(200, 120, 0, 0.25);
+    border-radius: 10px;
+    padding: 10px;
+    color: #c87800;
+    font-family: 'Georgia', serif;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 44px;
+  }
+  
+  .profile-screen .edit-tab.active {
+    background: linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2));
+    border-color: #ffe566;
+    color: #ffe566;
+  }
+  
+  .profile-screen .edit-tab:active { transform: scale(0.95); }
+  .profile-screen .edit-section { margin-bottom: 20px; }
+  
+  /* ===== SCROLLBAR ===== */
+  .profile-screen .profile-content::-webkit-scrollbar,
+  .profile-screen .modal-content::-webkit-scrollbar { width: 4px; }
+  
+  .profile-screen .profile-content::-webkit-scrollbar-track,
+  .profile-screen .modal-content::-webkit-scrollbar-track { background: transparent; }
+  
+  .profile-screen .profile-content::-webkit-scrollbar-thumb,
+  .profile-screen .modal-content::-webkit-scrollbar-thumb { background: rgba(200, 120, 0, 0.3); border-radius: 2px; }
+  
+  /* ===== MOBILE OPTIMIZATION ===== */
+  @media (max-width: 768px) {
+    .profile-screen .user-main-row {
+      flex-wrap: wrap;
+      padding: 10px;
+    }
+    
+    .profile-screen .user-info-section {
+      margin-left: 0;
+    }
+    
+    .profile-screen .user-main-row > div:last-child {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+  
+  @media (max-width: 380px) {
+    .profile-screen .profile-content { padding: 12px 10px; padding-bottom: calc(70px + env(safe-area-inset-bottom, 0)); }
+    
+    .profile-screen .stats-compact-grid { gap: 6px; padding: 10px; }
+    .profile-screen .stat-compact-icon { font-size: 20px; }
+    .profile-screen .stat-compact-value { font-size: 14px; }
+    .profile-screen .stat-compact-label { font-size: 8px; }
+    
+    .profile-screen .traits-horizontal-grid { gap: 6px; }
+    .profile-screen .trait-compact-item { padding: 10px 6px; }
+    .profile-screen .trait-compact-icon { font-size: 24px; }
+    .profile-screen .trait-compact-name { font-size: 11px; }
+    .profile-screen .trait-compact-desc { font-size: 8px; }
+    
+    .profile-screen .action-buttons-grid { gap: 6px; }
+    .profile-screen .premium-action-btn { flex-direction: row; justify-content: flex-start; min-height: 56px; padding: 12px 16px; }
+    .profile-screen .premium-action-btn svg { margin-right: 12px; }
+    
+    .profile-screen .signs-grid { gap: 6px; }
+    .profile-screen .sign-item { flex-direction: row; justify-content: flex-start; text-align: left; padding: 14px; }
+    .profile-screen .sign-icon { margin-bottom: 0; margin-right: 16px; }
+    
+    .profile-screen .sign-actions { flex-direction: column; gap: 10px; }
+    .profile-screen .change-sign-btn,
+    .profile-screen .reset-sign-btn { font-size: 12px; padding: 12px 14px; }
+    
+    .profile-screen .settings-select { max-width: 100%; }
+  }
+  
+  @media (max-height: 700px) {
+    .profile-screen .profile-content { padding-top: 10px; }
+    .profile-screen .moon-phase-card,
+    .profile-screen .collection-card,
+    .profile-screen .recent-readings-card,
+    .profile-screen .my-signs-card,
+    .profile-screen .quick-actions-card { margin-bottom: 10px; padding: 12px; }
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .profile-screen .moon-symbol,
+    .profile-screen .particle { animation: none; }
+    
+    .profile-screen * { transition-duration: 0.01ms !important; }
+  }
