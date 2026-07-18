@@ -141,13 +141,15 @@
     text-overflow: ellipsis;
   }
   
-  /* მარჯვენა მხარე - 35% - 4 ღილაკი (მხოლოდ იკონები) */
+  /* მარჯვენა მხარე - 35% - 4 ღილაკი (მთლიანი კონტეინერი 52px) */
   .profile-screen .nav-buttons-container {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+    grid-template-rows: repeat(2, 1fr);
+    gap: 6px;
     flex: 0 0 35%;
     max-width: 35%;
+    height: 52px !important; /* მთლიანი კონტეინერი 52px - ზუსტად ავატარის სიმაღლე */
   }
   
   .profile-screen .nav-pill {
@@ -156,19 +158,19 @@
     justify-content: center !important;
     background: rgba(20, 12, 5, 0.9) !important;
     border: 1px solid rgba(200, 120, 0, 0.3) !important;
-    border-radius: 10px !important;
+    border-radius: 8px !important;
     padding: 0 !important;
     cursor: pointer !important;
     transition: all 0.3s !important;
     width: 100% !important;
-    height: 52px !important; /* ზუსტად ავატარის სიმაღლე */
+    height: 100% !important; /* თითოეული ღილაკი იკავებს თავის უჯრას (~26px) */
     aspect-ratio: 1 !important; /* კვადრატული ფორმა */
   }
   
   .profile-screen .nav-pill span:first-child {
-    font-size: 24px !important; /* უფრო დიდი იკონა */
+    font-size: 16px !important; /* იკონის ზომა */
     line-height: 1 !important;
-    filter: drop-shadow(0 0 8px rgba(255, 229, 102, 0.4));
+    filter: drop-shadow(0 0 6px rgba(255, 229, 102, 0.4));
   }
   
   .profile-screen .nav-pill span:last-child {
@@ -178,7 +180,7 @@
   .profile-screen .nav-pill.active {
     background: linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2)) !important;
     border-color: #ffe566 !important;
-    box-shadow: 0 0 15px rgba(255, 229, 102, 0.5) !important;
+    box-shadow: 0 0 12px rgba(255, 229, 102, 0.5) !important;
   }
   
   .profile-screen .nav-pill.premium-btn {
