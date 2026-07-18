@@ -20,10 +20,10 @@ const ZODIAC_DATA: Record<string, { symbol: string; element: string; planet: str
   Gemini: { symbol: '♊', element: 'Air', planet: 'Mercury' },
   Cancer: { symbol: '♋', element: 'Water', planet: 'Moon' },
   Leo: { symbol: '♌', element: 'Fire', planet: 'Sun' },
-  Virgo: { symbol: '♍', element: 'Earth', planet: 'Mercury' },
+  Virgo: { symbol: '', element: 'Earth', planet: 'Mercury' },
   Libra: { symbol: '♎', element: 'Air', planet: 'Venus' },
   Scorpio: { symbol: '♏', element: 'Water', planet: 'Pluto' },
-  Sagittarius: { symbol: '♐', element: 'Fire', planet: 'Jupiter' },
+  Sagittarius: { symbol: '', element: 'Fire', planet: 'Jupiter' },
   Capricorn: { symbol: '♑', element: 'Earth', planet: 'Saturn' },
   Aquarius: { symbol: '♒', element: 'Air', planet: 'Uranus' },
   Pisces: { symbol: '♓', element: 'Water', planet: 'Neptune' },
@@ -239,12 +239,12 @@ export default function ProfileScreen({ onNavigate }: Props) {
 
   const mySigns: { label: string; icon: string; sign: SignInfo }[] = userData ? [
     { label: 'Sun', icon: '☀️', sign: { name: userData.sunSign, ...getSignInfo(userData.sunSign) } },
-    { label: 'Moon', icon: '🌙', sign: { name: userData.moonSign, ...getSignInfo(userData.moonSign) } },
+    { label: 'Moon', icon: '', sign: { name: userData.moonSign, ...getSignInfo(userData.moonSign) } },
     { label: 'Rising', icon: '⬆️', sign: { name: userData.risingSign, ...getSignInfo(userData.risingSign) } },
   ] : [];
 
   const stats: Stat[] = userData ? [
-    { label: 'Readings', value: userData.readingsCount || recentReadings.length, icon: '🔮' },
+    { label: 'Readings', value: userData.readingsCount || recentReadings.length, icon: '' },
     { label: 'Cards', value: `${userData.cardsCollected}/78`, icon: '🃏' },
     { label: 'Streak', value: userData.streak, icon: '🔥' },
     { label: 'Gems', value: userData.gems, icon: '💎' },
@@ -386,10 +386,10 @@ export default function ProfileScreen({ onNavigate }: Props) {
       )}
 
       <div className="profile-content">
-        {/* 🆕 ახალი ჰედერი, ზუსტად HomeScreen-ის სტილში */}
+        {/*  ახალი ჰედერი - ავატარი, სახელი და 4 ღილაკი ერთ ხაზზე */}
         <div className="user-header">
           <div className="user-main-row">
-            {/* ავატარი და XP წრე */}
+            {/* ავატარი */}
             <div className="avatar-section">
               <svg className="xp-circular-progress" width="52" height="52" viewBox="0 0 52 52" style={{ position: 'absolute', top: 0, left: 0 }}>
                 <circle className="xp-circle-bg" cx="26" cy="26" r="22" fill="none" stroke="#e9d5ff" strokeWidth="4" />
@@ -438,7 +438,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
               </div>
             </div>
             
-            {/* მომხმარებლის ინფო */}
+            {/* სახელი და ჰოროსკოპი */}
             <div className="user-info-section">
               <h2 className="username">
                 {userData.displayName}
@@ -448,7 +448,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
               </p>
             </div>
             
-            {/* 🆕 4 ნავიგაციის ღილაკი (2x2 გრიდი) */}
+            {/* 4 ილაკი 2x2 გრიდში */}
             <div>
               <button 
                 className={`nav-pill ${activeTab === 'profile' ? 'active' : ''}`} 
@@ -462,7 +462,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
                 className={`nav-pill ${activeTab === 'achievements' ? 'active' : ''}`} 
                 onClick={() => setActiveTab('achievements')} 
               >
-                <span>🏆</span>
+                <span></span>
                 <span>Awards</span>
               </button>
 
@@ -623,7 +623,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
                 <div className="setting-content">
                   <span className="setting-label">Language</span>
                   <select className="form-input form-select settings-select" value={settings.language} onChange={(e) => updateSetting('language', e.target.value as any)}>
-                    <option value="en">🇬🇧 English</option>
+                    <option value="en">🇧 English</option>
                     <option value="ka">🇬🇪 ქართული</option>
                   </select>
                 </div>
