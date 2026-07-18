@@ -73,119 +73,7 @@
 .stagger-7 { animation-delay: 0.35s; }
 .stagger-8 { animation-delay: 0.4s; }
 
-/* ============================================
-   USER HEADER - Home-ის მსგავსი სტილი
-   ============================================ */
-.user-header {
-  margin-bottom: 12px;
-}
-
-.user-main-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: linear-gradient(135deg, #1a0f05 0%, #0a0600 50%, #1a0f05 100%);
-  border: 1px solid rgba(200, 120, 0, 0.4);
-  border-radius: 16px;
-  padding: 12px 16px;
-  gap: 12px;
-}
-
-.avatar-section {
-  position: relative;
-  width: 52px;
-  height: 52px;
-  flex-shrink: 0;
-}
-
-.user-info-section {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  flex: 1;
-  min-width: 0;
-  gap: 4px;
-}
-
-.username {
-  margin: 0;
-  font-size: 20px;
-  color: #ffe566;
-  font-family: 'Georgia', serif;
-  font-weight: bold;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.user-info-section > p {
-  margin: 0;
-  font-size: 12px;
-  color: #c87800;
-  font-family: 'Georgia', serif;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* ============================================
-   NAV PILLS - 4 ღილაკი 2x2 გრიდში
-   ============================================ */
-.user-main-row > div:last-child {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 6px;
-  flex-shrink: 0;
-}
-
-.nav-pill {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 4px !important;
-  background: rgba(20, 12, 5, 0.9) !important;
-  border: 1px solid rgba(200, 120, 0, 0.3) !important;
-  border-radius: 10px !important;
-  padding: 8px 12px !important;
-  cursor: pointer !important;
-  transition: all 0.3s !important;
-  min-width: 70px !important;
-  min-height: 52px !important;
-}
-
-.nav-pill span:first-child {
-  font-size: 20px !important;
-  line-height: 1 !important;
-}
-
-.nav-pill span:last-child {
-  font-family: 'Georgia', serif !important;
-  font-size: 9px !important;
-  color: #ffe566 !important;
-  font-weight: 600 !important;
-  text-align: center !important;
-  white-space: nowrap !important;
-}
-
-.nav-pill.active {
-  background: linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2)) !important;
-  border-color: #ffe566 !important;
-  box-shadow: 0 0 12px rgba(255, 229, 102, 0.3) !important;
-}
-
-.nav-pill.premium-btn {
-  border-color: rgba(255, 215, 0, 0.4) !important;
-  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 165, 0, 0.05)) !important;
-}
-
-.nav-pill:active {
-  transform: scale(0.95) !important;
-}
-
-/* ============================================
-   STATS GRID
-   ============================================ */
+/* ===== STATS GRID ===== */
 .stats-compact-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -226,9 +114,7 @@
   letter-spacing: 0.3px;
 }
 
-/* ============================================
-   CORE TRAITS
-   ============================================ */
+/* ===== CORE TRAITS ===== */
 .core-traits-horizontal {
   background: linear-gradient(135deg, #1a0f05 0%, #0a0600 50%, #1a0f05 100%);
   border: 1px solid rgba(200, 120, 0, 0.35);
@@ -285,9 +171,7 @@
   line-height: 1.3;
 }
 
-/* ============================================
-   UNIFIED CARD STYLE
-   ============================================ */
+/* ===== UNIFIED CARD STYLE ===== */
 .moon-phase-card,
 .collection-card,
 .recent-readings-card,
@@ -312,9 +196,7 @@
   letter-spacing: 2px;
 }
 
-/* ============================================
-   MOON PHASE
-   ============================================ */
+/* ===== MOON PHASE ===== */
 .moon-content {
   display: flex;
   align-items: center;
@@ -359,9 +241,7 @@
   font-style: italic;
 }
 
-/* ============================================
-   EXPLORE SECTION
-   ============================================ */
+/* ===== EXPLORE SECTION ===== */
 .action-buttons-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -412,9 +292,7 @@
   font-size: 12px;
 }
 
-/* ============================================
-   MY SIGNS
-   ============================================ */
+/* ===== MY SIGNS ===== */
 .signs-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -468,9 +346,7 @@
   color: #c87800;
 }
 
-/* ============================================
-   SIGN ACTION BUTTONS
-   ============================================ */
+/* ===== SIGN ACTION BUTTONS ===== */
 .sign-actions {
   display: flex;
   gap: 8px;
@@ -515,9 +391,7 @@
   transform: scale(0.98);
 }
 
-/* ============================================
-   RECENT READINGS
-   ============================================ */
+/* ===== RECENT READINGS ===== */
 .readings-list {
   display: flex;
   flex-direction: column;
@@ -572,9 +446,7 @@
   flex-shrink: 0;
 }
 
-/* ============================================
-   ACHIEVEMENTS
-   ============================================ */
+/* ===== ACHIEVEMENTS ===== */
 .section-title {
   font-family: 'Georgia', serif;
   font-size: 14px;
@@ -658,9 +530,7 @@
   white-space: nowrap;
 }
 
-/* ============================================
-   SETTINGS TAB
-   ============================================ */
+/* ===== SETTINGS TAB ===== */
 .settings-section { margin-bottom: 24px; }
 
 .settings-section-title {
@@ -750,9 +620,7 @@
 .setting-arrow { font-size: 14px; color: #c87800; transition: transform 0.3s ease; }
 .setting-item:active .setting-arrow { transform: translateX(3px); }
 
-/* ============================================
-   MODAL STYLES
-   ============================================ */
+/* ===== MODAL STYLES ===== */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -902,16 +770,12 @@
 .edit-tab:active { transform: scale(0.95); }
 .edit-section { margin-bottom: 20px; }
 
-/* ============================================
-   SCROLLBAR
-   ============================================ */
+/* ===== SCROLLBAR ===== */
 .profile-content::-webkit-scrollbar, .modal-content::-webkit-scrollbar { width: 4px; }
 .profile-content::-webkit-scrollbar-track, .modal-content::-webkit-scrollbar-track { background: transparent; }
 .profile-content::-webkit-scrollbar-thumb, .modal-content::-webkit-scrollbar-thumb { background: rgba(200, 120, 0, 0.3); border-radius: 2px; }
 
-/* ============================================
-   MOBILE OPTIMIZATION
-   ============================================ */
+/* ===== MOBILE OPTIMIZATION ===== */
 @media (max-width: 768px) {
   .user-main-row {
     flex-wrap: wrap;
@@ -926,26 +790,10 @@
     width: 100%;
     justify-content: center;
   }
-  
-  .nav-pill {
-    min-width: 35px !important;
-    padding: 3px 2px !important;
-  }
-  
-  .nav-pill span:last-child {
-    font-size: 6px !important;
-  }
 }
 
 @media (max-width: 380px) {
   .profile-content { padding: 12px 10px; padding-bottom: calc(70px + env(safe-area-inset-bottom, 0)); }
-  
-  .avatar-section { width: 44px; height: 44px; }
-  .username { font-size: 14px; }
-  
-  .nav-pill { min-width: 32px !important; min-height: 32px !important; padding: 2px !important; }
-  .nav-pill span:first-child { font-size: 12px !important; }
-  .nav-pill span:last-child { font-size: 5px !important; }
   
   .stats-compact-grid { gap: 6px; padding: 10px; }
   .stat-compact-icon { font-size: 20px; }
