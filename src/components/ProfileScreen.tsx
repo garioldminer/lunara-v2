@@ -20,10 +20,10 @@ const ZODIAC_DATA: Record<string, { symbol: string; element: string; planet: str
   Gemini: { symbol: '♊', element: 'Air', planet: 'Mercury' },
   Cancer: { symbol: '♋', element: 'Water', planet: 'Moon' },
   Leo: { symbol: '♌', element: 'Fire', planet: 'Sun' },
-  Virgo: { symbol: '', element: 'Earth', planet: 'Mercury' },
+  Virgo: { symbol: '♍', element: 'Earth', planet: 'Mercury' },
   Libra: { symbol: '♎', element: 'Air', planet: 'Venus' },
   Scorpio: { symbol: '♏', element: 'Water', planet: 'Pluto' },
-  Sagittarius: { symbol: '', element: 'Fire', planet: 'Jupiter' },
+  Sagittarius: { symbol: '♐', element: 'Fire', planet: 'Jupiter' },
   Capricorn: { symbol: '♑', element: 'Earth', planet: 'Saturn' },
   Aquarius: { symbol: '♒', element: 'Air', planet: 'Uranus' },
   Pisces: { symbol: '♓', element: 'Water', planet: 'Neptune' },
@@ -46,12 +46,12 @@ const getDynamicMoonPhase = () => {
   const lunarCycle = 29.53;
   const phaseIndex = Math.floor(((dayOfYear % lunarCycle) / lunarCycle) * 8) % 8;
   const phases = [
-    { phase: 'New Moon', symbol: '🌑', bestFor: 'New beginnings, Setting intentions' },
+    { phase: 'New Moon', symbol: '', bestFor: 'New beginnings, Setting intentions' },
     { phase: 'Waxing Crescent', symbol: '🌒', bestFor: 'Action, Building momentum' },
     { phase: 'First Quarter', symbol: '🌓', bestFor: 'Decisions, Overcoming obstacles' },
     { phase: 'Waxing Gibbous', symbol: '🌔', bestFor: 'Refinement, Preparation' },
     { phase: 'Full Moon', symbol: '🌕', bestFor: 'Culmination, Release, Celebration' },
-    { phase: 'Waning Gibbous', symbol: '🌖', bestFor: 'Gratitude, Sharing wisdom' },
+    { phase: 'Waning Gibbous', symbol: '', bestFor: 'Gratitude, Sharing wisdom' },
     { phase: 'Last Quarter', symbol: '🌗', bestFor: 'Release, Forgiveness, Letting go' },
     { phase: 'Waning Crescent', symbol: '🌘', bestFor: 'Rest, Reflection, Surrender' },
   ];
@@ -233,18 +233,18 @@ export default function ProfileScreen({ onNavigate }: Props) {
 
   const coreTraits: CoreTrait[] = userData ? [
     { title: 'Sun Sign', sign: userData.sunSign || 'Unknown', description: 'Your core identity.', icon: '☀️' },
-    { title: 'Moon Sign', sign: userData.moonSign || 'Unknown', description: 'Your inner emotions.', icon: '🌙' },
-    { title: 'Rising Sign', sign: userData.risingSign || 'Unknown', description: 'First impressions.', icon: '⬆️' },
+    { title: 'Moon Sign', sign: userData.moonSign || 'Unknown', description: 'Your inner emotions.', icon: '' },
+    { title: 'Rising Sign', sign: userData.risingSign || 'Unknown', description: 'First impressions.', icon: '️' },
   ] : [];
 
   const mySigns: { label: string; icon: string; sign: SignInfo }[] = userData ? [
-    { label: 'Sun', icon: '☀️', sign: { name: userData.sunSign, ...getSignInfo(userData.sunSign) } },
-    { label: 'Moon', icon: '', sign: { name: userData.moonSign, ...getSignInfo(userData.moonSign) } },
-    { label: 'Rising', icon: '⬆️', sign: { name: userData.risingSign, ...getSignInfo(userData.risingSign) } },
+    { label: 'Sun', icon: '️', sign: { name: userData.sunSign, ...getSignInfo(userData.sunSign) } },
+    { label: 'Moon', icon: '🌙', sign: { name: userData.moonSign, ...getSignInfo(userData.moonSign) } },
+    { label: 'Rising', icon: '️', sign: { name: userData.risingSign, ...getSignInfo(userData.risingSign) } },
   ] : [];
 
   const stats: Stat[] = userData ? [
-    { label: 'Readings', value: userData.readingsCount || recentReadings.length, icon: '' },
+    { label: 'Readings', value: userData.readingsCount || recentReadings.length, icon: '🔮' },
     { label: 'Cards', value: `${userData.cardsCollected}/78`, icon: '🃏' },
     { label: 'Streak', value: userData.streak, icon: '🔥' },
     { label: 'Gems', value: userData.gems, icon: '💎' },
@@ -386,70 +386,73 @@ export default function ProfileScreen({ onNavigate }: Props) {
       )}
 
       <div className="profile-content">
-        {/*  ახალი ჰედერი - ავატარი, სახელი და 4 ღილაკი ერთ ხაზზე */}
+        {/*  ახალი ედერი - 65% მარცხნივ, 35% მარჯვნივ */}
         <div className="user-header">
           <div className="user-main-row">
-            {/* ავატარი */}
-            <div className="avatar-section">
-              <svg className="xp-circular-progress" width="52" height="52" viewBox="0 0 52 52" style={{ position: 'absolute', top: 0, left: 0 }}>
-                <circle className="xp-circle-bg" cx="26" cy="26" r="22" fill="none" stroke="#e9d5ff" strokeWidth="4" />
-                <circle className="xp-circle-progress" cx="26" cy="26" r="22" fill="none" stroke="#7c3aed" strokeWidth="4" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} transform="rotate(-90 26 26)" />
-              </svg>
-              
-              <div style={{ 
-                position: 'absolute',
-                top: '6px',
-                left: '6px',
-                width: '40px',
-                height: '40px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '16px',
-                fontWeight: 'bold',
-                background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)',
-                borderRadius: '50%',
-                color: '#0f0c08',
-                zIndex: 2,
-                boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
-              }}>
-                {userData.avatar}
+            {/* მარცხენა მხარე - 65% */}
+            <div className="avatar-and-info">
+              {/* ავატარი */}
+              <div className="avatar-section">
+                <svg className="xp-circular-progress" width="52" height="52" viewBox="0 0 52 52" style={{ position: 'absolute', top: 0, left: 0 }}>
+                  <circle className="xp-circle-bg" cx="26" cy="26" r="22" fill="none" stroke="#e9d5ff" strokeWidth="4" />
+                  <circle className="xp-circle-progress" cx="26" cy="26" r="22" fill="none" stroke="#7c3aed" strokeWidth="4" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} transform="rotate(-90 26 26)" />
+                </svg>
+                
+                <div style={{ 
+                  position: 'absolute',
+                  top: '6px',
+                  left: '6px',
+                  width: '40px',
+                  height: '40px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)',
+                  borderRadius: '50%',
+                  color: '#0f0c08',
+                  zIndex: 2,
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+                }}>
+                  {userData.avatar}
+                </div>
+                
+                <div style={{
+                  position: 'absolute',
+                  bottom: '2px',
+                  left: '2px',
+                  background: 'linear-gradient(135deg, #fbbf24, #d97706)',
+                  color: '#0f0c08',
+                  borderRadius: '6px',
+                  width: '18px',
+                  height: '18px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  zIndex: 3,
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.4), 0 0 0 1.5px #1a1510',
+                  border: '1.5px solid #1a1510'
+                }}>
+                  {userData.level}
+                </div>
               </div>
               
-              <div style={{
-                position: 'absolute',
-                bottom: '2px',
-                left: '2px',
-                background: 'linear-gradient(135deg, #fbbf24, #d97706)',
-                color: '#0f0c08',
-                borderRadius: '6px',
-                width: '18px',
-                height: '18px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '10px',
-                fontWeight: 'bold',
-                zIndex: 3,
-                boxShadow: '0 2px 6px rgba(0,0,0,0.4), 0 0 0 1.5px #1a1510',
-                border: '1.5px solid #1a1510'
-              }}>
-                {userData.level}
+              {/* სახელი და ჰოროსკოპი */}
+              <div className="user-info-section">
+                <h2 className="username">
+                  {userData.displayName}
+                </h2>
+                <p>
+                  {userData.zodiacSymbol} {userData.zodiac.charAt(0).toUpperCase() + userData.zodiac.slice(1)} · {userData.element}
+                </p>
               </div>
             </div>
             
-            {/* სახელი და ჰოროსკოპი */}
-            <div className="user-info-section">
-              <h2 className="username">
-                {userData.displayName}
-              </h2>
-              <p>
-                {userData.zodiacSymbol} {userData.zodiac.charAt(0).toUpperCase() + userData.zodiac.slice(1)} · {userData.element}
-              </p>
-            </div>
-            
-            {/* 4 ილაკი 2x2 გრიდში */}
-            <div>
+            {/* მარჯვენა მხარე - 35% - 4 ღილაკი */}
+            <div className="nav-buttons-container">
               <button 
                 className={`nav-pill ${activeTab === 'profile' ? 'active' : ''}`} 
                 onClick={() => setActiveTab('profile')} 
@@ -471,7 +474,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
                 onClick={() => onNavigate && onNavigate('subscription')} 
               >
                 <span>💎</span>
-                <span>{activeSubscription ? 'PREMIUM' : 'FREE'}</span>
+                <span>{activeSubscription ? 'PREM' : 'FREE'}</span>
               </button>
 
               <button 
@@ -623,8 +626,8 @@ export default function ProfileScreen({ onNavigate }: Props) {
                 <div className="setting-content">
                   <span className="setting-label">Language</span>
                   <select className="form-input form-select settings-select" value={settings.language} onChange={(e) => updateSetting('language', e.target.value as any)}>
-                    <option value="en">🇧 English</option>
-                    <option value="ka">🇬🇪 ქართული</option>
+                    <option value="en">🇬🇧 English</option>
+                    <option value="ka">🇪 ქართული</option>
                   </select>
                 </div>
               </div>
@@ -718,7 +721,7 @@ function EditProfileModal({ userData, editSection, setEditSection, onSave, onClo
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content edit-modal" onClick={(e) => e.stopPropagation()}>
         <button className="modal-close" onClick={onClose}><X size={20} /></button>
-        <h2 className="modal-title">✦ EDIT PROFILE ✦</h2>
+        <h2 className="modal-title"> EDIT PROFILE ✦</h2>
         <div className="edit-section-tabs">
           <button type="button" className={`edit-tab ${editSection === 'personal' ? 'active' : ''}`} onClick={() => setEditSection('personal')}>👤 Personal</button>
           <button type="button" className={`edit-tab ${editSection === 'astrology' ? 'active' : ''}`} onClick={() => setEditSection('astrology')}>✨ Astro</button>
@@ -778,7 +781,7 @@ function ResetConfirmModal({ resetting, onConfirm, onCancel }: any) {
   return (
     <div className="modal-overlay" onClick={onCancel}>
       <div className="modal-content reset-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="reset-icon">⚠️</div>
+        <div className="reset-icon">️</div>
         <h2 className="modal-title">Reset Zodiac Sign?</h2>
         <p className="reset-message">This will remove your current zodiac sign and birth information.</p>
         <div className="reset-actions">

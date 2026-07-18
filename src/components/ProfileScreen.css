@@ -78,7 +78,7 @@
   .profile-screen .stagger-7 { animation-delay: 0.35s; }
   .profile-screen .stagger-8 { animation-delay: 0.4s; }
   
-  /* ===== USER HEADER - ღილაკები ავატარის გასწვრივ ===== */
+  /* ===== USER HEADER - 65% მარცხნივ, 35% მარჯვნივ ===== */
   .profile-screen .user-header {
     margin-bottom: 12px;
   }
@@ -92,6 +92,16 @@
     border: 1px solid rgba(200, 120, 0, 0.4);
     border-radius: 16px;
     padding: 12px 16px;
+  }
+  
+  /* მარცხენა მხარე - 65% */
+  .profile-screen .avatar-and-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 0 0 65%;
+    max-width: 65%;
+    min-width: 0;
   }
   
   .profile-screen .avatar-section {
@@ -112,7 +122,7 @@
   
   .profile-screen .username {
     margin: 0;
-    font-size: 20px;
+    font-size: 18px;
     color: #ffe566;
     font-family: 'Georgia', serif;
     font-weight: bold;
@@ -123,7 +133,7 @@
   
   .profile-screen .user-info-section > p {
     margin: 0;
-    font-size: 12px;
+    font-size: 11px;
     color: #c87800;
     font-family: 'Georgia', serif;
     white-space: nowrap;
@@ -131,12 +141,13 @@
     text-overflow: ellipsis;
   }
   
-  /* 4 ღილაკი 2x2 გრიდში - ავატარის გასწვრივ */
-  .profile-screen .user-main-row > div:last-child {
+  /* მარჯვენა მხარე - 35% - 4 ღილაკი */
+  .profile-screen .nav-buttons-container {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 6px;
-    flex-shrink: 0;
+    flex: 0 0 35%;
+    max-width: 35%;
   }
   
   .profile-screen .nav-pill {
@@ -144,29 +155,30 @@
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 4px !important;
+    gap: 2px !important;
     background: rgba(20, 12, 5, 0.9) !important;
     border: 1px solid rgba(200, 120, 0, 0.3) !important;
-    border-radius: 10px !important;
-    padding: 8px 12px !important;
+    border-radius: 8px !important;
+    padding: 6px 4px !important;
     cursor: pointer !important;
     transition: all 0.3s !important;
-    min-width: 70px !important;
-    min-height: 52px !important;
+    min-width: 100% !important;
+    min-height: 44px !important;
   }
   
   .profile-screen .nav-pill span:first-child {
-    font-size: 20px !important;
+    font-size: 16px !important;
     line-height: 1 !important;
   }
   
   .profile-screen .nav-pill span:last-child {
     font-family: 'Georgia', serif !important;
-    font-size: 9px !important;
+    font-size: 7px !important;
     color: #ffe566 !important;
     font-weight: 600 !important;
     text-align: center !important;
     white-space: nowrap !important;
+    line-height: 1 !important;
   }
   
   .profile-screen .nav-pill.active {
@@ -892,17 +904,6 @@
   .profile-screen .modal-content::-webkit-scrollbar-thumb { background: rgba(200, 120, 0, 0.3); border-radius: 2px; }
   
   /* ===== MOBILE OPTIMIZATION ===== */
-  @media (max-width: 480px) {
-    .profile-screen .user-main-row {
-      flex-wrap: wrap;
-    }
-    
-    .profile-screen .user-main-row > div:last-child {
-      width: 100%;
-      margin-top: 12px;
-    }
-  }
-  
   @media (max-width: 380px) {
     .profile-screen .profile-content { padding: 12px 10px; padding-bottom: calc(70px + env(safe-area-inset-bottom, 0)); }
     
