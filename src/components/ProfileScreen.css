@@ -141,50 +141,44 @@
     text-overflow: ellipsis;
   }
   
-  /* მარჯვენა მხარე - 35% - 4 ღილაკი */
+  /* მარჯვენა მხარე - 35% - 4 ღილაკი (მხოლოდ იკონები) */
   .profile-screen .nav-buttons-container {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 6px;
+    gap: 8px;
     flex: 0 0 35%;
     max-width: 35%;
   }
   
   .profile-screen .nav-pill {
     display: flex !important;
-    flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 2px !important;
     background: rgba(20, 12, 5, 0.9) !important;
     border: 1px solid rgba(200, 120, 0, 0.3) !important;
-    border-radius: 8px !important;
-    padding: 6px 4px !important;
+    border-radius: 10px !important;
+    padding: 0 !important;
     cursor: pointer !important;
     transition: all 0.3s !important;
-    min-width: 100% !important;
-    min-height: 44px !important;
+    width: 100% !important;
+    height: 52px !important; /* ზუსტად ავატარის სიმაღლე */
+    aspect-ratio: 1 !important; /* კვადრატული ფორმა */
   }
   
   .profile-screen .nav-pill span:first-child {
-    font-size: 16px !important;
+    font-size: 24px !important; /* უფრო დიდი იკონა */
     line-height: 1 !important;
+    filter: drop-shadow(0 0 8px rgba(255, 229, 102, 0.4));
   }
   
   .profile-screen .nav-pill span:last-child {
-    font-family: 'Georgia', serif !important;
-    font-size: 7px !important;
-    color: #ffe566 !important;
-    font-weight: 600 !important;
-    text-align: center !important;
-    white-space: nowrap !important;
-    line-height: 1 !important;
+    display: none !important; /* ტექსტის დამალვა */
   }
   
   .profile-screen .nav-pill.active {
     background: linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2)) !important;
     border-color: #ffe566 !important;
-    box-shadow: 0 0 12px rgba(255, 229, 102, 0.3) !important;
+    box-shadow: 0 0 15px rgba(255, 229, 102, 0.5) !important;
   }
   
   .profile-screen .nav-pill.premium-btn {
