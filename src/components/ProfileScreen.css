@@ -92,9 +92,9 @@
     border: 1px solid rgba(200, 120, 0, 0.4);
     border-radius: 16px;
     padding: 12px 16px;
-    min-height: 76px; /* დამატებული - საკმარისი სიმაღლე */
-    overflow: hidden; /* დამატებული - არაფერი გავიდეს გარეთ */
-    position: relative; /* დამატებული */
+    min-height: 76px;
+    overflow: hidden;
+    position: relative;
   }
   
   /* მარცხენა მხარე - 65% */
@@ -152,8 +152,8 @@
     gap: 6px;
     flex: 0 0 35%;
     max-width: 35%;
-    height: 52px !important;
-    align-self: center !important; /* დამატებული - ცენტრში ყოფნა */
+    height: 52px !important; /* მთლიანი კონტეინერი 52px */
+    align-self: center !important;
   }
   
   .profile-screen .nav-pill {
@@ -162,19 +162,18 @@
     justify-content: center !important;
     background: rgba(20, 12, 5, 0.9) !important;
     border: 1px solid rgba(200, 120, 0, 0.3) !important;
-    border-radius: 8px !important;
+    border-radius: 6px !important;
     padding: 0 !important;
     cursor: pointer !important;
     transition: all 0.3s !important;
     width: 100% !important;
-    height: 100% !important;
-    aspect-ratio: 1 !important;
+    height: 100% !important; /* იკავებს თავის უჯრას (~23px) */
   }
   
   .profile-screen .nav-pill span:first-child {
-    font-size: 16px !important;
+    font-size: 14px !important; /* შესაბამისი ზომა პატარა ღილაკისთვის */
     line-height: 1 !important;
-    filter: drop-shadow(0 0 6px rgba(255, 229, 102, 0.4));
+    filter: drop-shadow(0 0 4px rgba(255, 229, 102, 0.4));
   }
   
   .profile-screen .nav-pill span:last-child {
@@ -184,7 +183,7 @@
   .profile-screen .nav-pill.active {
     background: linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2)) !important;
     border-color: #ffe566 !important;
-    box-shadow: 0 0 12px rgba(255, 229, 102, 0.5) !important;
+    box-shadow: 0 0 10px rgba(255, 229, 102, 0.5) !important;
   }
   
   .profile-screen .nav-pill.premium-btn {
