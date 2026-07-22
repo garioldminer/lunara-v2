@@ -1,6 +1,5 @@
 /* ============================================
-   PROFILE SCREEN - ISOLATED STYLES
-   ყველა კლასი .profile-screen-ის ქვეშაა
+   PROFILE SCREEN - MODERN COMPACT DESIGN
    ============================================ */
 
    .profile-screen .screen-container {
@@ -34,14 +33,8 @@
   }
   
   @keyframes floatParticle {
-    0%, 100% {
-      transform: translateY(0) translateX(0);
-      opacity: 0.2;
-    }
-    50% {
-      transform: translateY(-30px) translateX(15px);
-      opacity: 0.8;
-    }
+    0%, 100% { transform: translateY(0) translateX(0); opacity: 0.2; }
+    50% { transform: translateY(-30px) translateX(15px); opacity: 0.8; }
   }
   
   .profile-screen .profile-content {
@@ -55,7 +48,7 @@
     -webkit-overflow-scrolling: touch;
   }
   
-  /* ===== STAGGERED ANIMATIONS ===== */
+  /* ===== ANIMATIONS ===== */
   @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
@@ -64,6 +57,18 @@
   @keyframes scaleIn {
     from { opacity: 0; transform: scale(0.9); }
     to { opacity: 1; transform: scale(1); }
+  }
+  
+  @keyframes spin { 100% { transform: rotate(360deg); } }
+  
+  @keyframes iconBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+  }
+  
+  @keyframes moonGlow {
+    0%, 100% { filter: drop-shadow(0 0 8px rgba(255, 229, 102, 0.4)); transform: scale(1); }
+    50% { filter: drop-shadow(0 0 16px rgba(255, 229, 102, 0.7)); transform: scale(1.05); }
   }
   
   .profile-screen .animate-fade-in { animation: fadeInUp 0.5s ease-out backwards; }
@@ -78,12 +83,24 @@
   .profile-screen .stagger-7 { animation-delay: 0.35s; }
   .profile-screen .stagger-8 { animation-delay: 0.4s; }
   
-  /* ===== USER HEADER - 65% მარცხნივ, 35% მარჯვნივ ===== */
-  .profile-screen .user-header {
-    margin-bottom: 12px;
+  /* ===== LOADING ===== */
+  .profile-screen .profile-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #ffe566;
+    gap: 12px;
   }
   
-  .profile-screen .user-main-row {
+  .profile-screen .loading-glyph {
+    font-size: 32px;
+    animation: spin 2s linear infinite;
+  }
+  
+  /* ===== IDENTITY BAR ===== */
+  .profile-screen .identity-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -92,38 +109,74 @@
     border: 1px solid rgba(200, 120, 0, 0.4);
     border-radius: 16px;
     padding: 12px 16px;
-    min-height: 76px;
-    overflow: hidden;
-    position: relative;
+    margin-bottom: 16px;
   }
   
-  /* მარცხენა მხარე - 65% */
-  .profile-screen .avatar-and-info {
+  .profile-screen .identity-left {
     display: flex;
     align-items: center;
     gap: 12px;
-    flex: 0 0 65%;
-    max-width: 65%;
+    cursor: pointer;
+    flex: 1;
     min-width: 0;
   }
   
-  .profile-screen .avatar-section {
+  .profile-screen .ring-avatar {
     position: relative;
-    width: 52px;
-    height: 52px;
+    width: 56px;
+    height: 56px;
     flex-shrink: 0;
   }
   
-  .profile-screen .user-info-section {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 4px;
+  .profile-screen .ring-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
   }
   
-  .profile-screen .username {
+  .profile-screen .avatar-glyph {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+    background: linear-gradient(135deg, #C5A059 0%, #8B6914 100%);
+    border-radius: 50%;
+    color: #0f0c08;
+    z-index: 2;
+  }
+  
+  .profile-screen .level-chip {
+    position: absolute;
+    bottom: 2px;
+    left: 2px;
+    background: linear-gradient(135deg, #fbbf24, #d97706);
+    color: #0f0c08;
+    border-radius: 6px;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: bold;
+    z-index: 3;
+    border: 1.5px solid #0a0600;
+  }
+  
+  .profile-screen .identity-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  
+  .profile-screen .identity-name {
     margin: 0;
     font-size: 18px;
     color: #ffe566;
@@ -134,7 +187,7 @@
     text-overflow: ellipsis;
   }
   
-  .profile-screen .user-info-section > p {
+  .profile-screen .identity-meta {
     margin: 0;
     font-size: 11px;
     color: #c87800;
@@ -144,102 +197,77 @@
     text-overflow: ellipsis;
   }
   
-  /* მარჯვენა მხარე - 35% - 4 ღილაკი (მთლიანი კონტეინერი 52px) */
-  .profile-screen .nav-buttons-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    gap: 6px;
-    flex: 0 0 35%;
-    max-width: 35%;
-    height: 52px !important; /* მთლიანი კონტეინერი 52px */
-    align-self: center !important;
-  }
-  
-  .profile-screen .nav-pill {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    background: rgba(20, 12, 5, 0.9) !important;
-    border: 1px solid rgba(200, 120, 0, 0.3) !important;
-    border-radius: 6px !important;
-    padding: 0 !important;
-    cursor: pointer !important;
-    transition: all 0.3s !important;
-    width: 100% !important;
-    height: 100% !important; /* იკავებს თავის უჯრას (~23px) */
-  }
-  
-  /* 🆕 SVG იკონების სტილები ღილაკებისთვის */
-  .profile-screen .nav-pill svg {
-    color: #ffe566 !important;
-    filter: drop-shadow(0 0 4px rgba(255, 229, 102, 0.4)) !important;
-  }
-  
-  .profile-screen .nav-pill.active svg {
-    color: #ffe566 !important;
-    filter: drop-shadow(0 0 8px rgba(255, 229, 102, 0.8)) !important;
-  }
-  
-  .profile-screen .nav-pill span:first-child {
-    font-size: 14px !important;
-    line-height: 1 !important;
-    filter: drop-shadow(0 0 4px rgba(255, 229, 102, 0.4));
-  }
-  
-  .profile-screen .nav-pill span:last-child {
-    display: none !important;
-  }
-  
-  .profile-screen .nav-pill.active {
-    background: linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2)) !important;
-    border-color: #ffe566 !important;
-    box-shadow: 0 0 10px rgba(255, 229, 102, 0.5) !important;
-  }
-  
-  .profile-screen .nav-pill.premium-btn {
-    border-color: rgba(255, 215, 0, 0.4) !important;
-    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 165, 0, 0.05)) !important;
-  }
-  
-  .profile-screen .nav-pill:active {
-    transform: scale(0.95) !important;
-  }
-  
-  /* ===== STATS GRID ===== */
-  .profile-screen .stats-compact-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
+  /* ===== TAB RAIL ===== */
+  .profile-screen .tab-rail {
+    display: flex;
     gap: 8px;
-    margin-bottom: 12px;
+    padding: 4px;
+    background: rgba(20, 12, 5, 0.6);
+    border-radius: 12px;
+    flex-shrink: 0;
+  }
+  
+  .profile-screen .rail-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: #886600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .profile-screen .rail-btn.is-active {
+    background: linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2));
+    border-color: rgba(255, 229, 102, 0.5);
+    color: #ffe566;
+    box-shadow: 0 0 10px rgba(255, 229, 102, 0.3);
+  }
+  
+  .profile-screen .rail-btn--gold {
+    color: #ffe566;
+  }
+  
+  .profile-screen .rail-btn:active {
+    transform: scale(0.95);
+  }
+  
+  /* ===== STAT STRIP ===== */
+  .profile-screen .stat-strip {
+    display: flex;
+    gap: 8px;
+    padding: 12px;
     background: linear-gradient(135deg, #1a0f05 0%, #0a0600 50%, #1a0f05 100%);
     border: 1px solid rgba(200, 120, 0, 0.35);
     border-radius: 12px;
-    padding: 12px;
-    animation: fadeInUp 0.5s ease-out backwards;
+    margin-bottom: 12px;
   }
   
-  .profile-screen .stat-compact-item {
+  .profile-screen .stat-cell {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 4px;
-    padding: 8px 4px;
   }
   
-  .profile-screen .stat-compact-icon {
-    font-size: 24px;
+  .profile-screen .stat-cell-icon {
+    font-size: 20px;
     filter: drop-shadow(0 0 6px rgba(255, 229, 102, 0.4));
   }
   
-  .profile-screen .stat-compact-value {
+  .profile-screen .stat-cell-value {
     font-family: 'Georgia', serif;
-    font-size: 16px;
+    font-size: 15px;
     color: #ffe566;
     font-weight: bold;
   }
   
-  .profile-screen .stat-compact-label {
+  .profile-screen .stat-cell-label {
     font-family: 'Georgia', serif;
     font-size: 9px;
     color: #c87800;
@@ -247,336 +275,251 @@
     letter-spacing: 0.3px;
   }
   
-  /* ===== CORE TRAITS ===== */
-  .profile-screen .core-traits-horizontal {
+  /* ===== PANELS ===== */
+  .profile-screen .panel {
     background: linear-gradient(135deg, #1a0f05 0%, #0a0600 50%, #1a0f05 100%);
     border: 1px solid rgba(200, 120, 0, 0.35);
-    border-radius: 12px;
+    border-radius: 14px;
     padding: 14px;
     margin-bottom: 12px;
-    animation: fadeInUp 0.5s ease-out backwards;
   }
   
-  .profile-screen .core-traits-horizontal .card-title {
-    font-size: 11px;
+  .profile-screen .panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 12px;
   }
   
-  .profile-screen .traits-horizontal-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-  }
-  
-  .profile-screen .trait-compact-item {
-    background: rgba(20, 12, 5, 0.6);
-    border: 1px solid rgba(200, 120, 0, 0.2);
-    border-radius: 10px;
-    padding: 12px 8px;
+  .profile-screen .panel-title {
+    font-family: 'Georgia', serif;
+    font-size: 11px;
+    color: #ffe566;
     text-align: center;
-    transition: all 0.3s ease;
-    cursor: pointer;
+    margin: 0;
+    letter-spacing: 1.5px;
+    font-weight: bold;
   }
   
-  .profile-screen .trait-compact-item:active {
-    transform: scale(0.95);
-    border-color: rgba(255, 229, 102, 0.4);
+  .profile-screen .panel-actions {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .profile-screen .ghost-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: 1px solid rgba(200, 120, 0, 0.3);
+    border-radius: 6px;
+    padding: 4px 8px;
+    color: #c87800;
+    font-family: 'Georgia', serif;
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .profile-screen .ghost-btn:active {
     background: rgba(200, 120, 0, 0.1);
   }
   
-  .profile-screen .trait-compact-icon {
-    font-size: 28px;
-    margin-bottom: 6px;
+  .profile-screen .ghost-btn--danger {
+    border-color: rgba(232, 115, 138, 0.4);
+    color: #E8738A;
   }
   
-  .profile-screen .trait-compact-name {
+  .profile-screen .ghost-btn--danger:active {
+    background: rgba(232, 115, 138, 0.1);
+  }
+  
+  /* ===== NATAL TRIO ===== */
+  .profile-screen .natal-trio {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  
+  .profile-screen .natal-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 4px;
+    background: rgba(20, 12, 5, 0.6);
+    border: 1px solid rgba(200, 120, 0, 0.2);
+    border-radius: 10px;
+    text-align: center;
+  }
+  
+  .profile-screen .natal-glyph {
+    font-size: 24px;
+  }
+  
+  .profile-screen .natal-role {
+    font-family: 'Georgia', serif;
+    font-size: 9px;
+    color: #886600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .profile-screen .natal-sign {
     font-family: 'Georgia', serif;
     font-size: 13px;
     color: #ffe566;
     font-weight: bold;
-    margin-bottom: 4px;
   }
   
-  .profile-screen .trait-compact-desc {
+  .profile-screen .natal-sub {
     font-family: 'Georgia', serif;
     font-size: 9px;
-    color: #886600;
-    line-height: 1.3;
+    color: #c87800;
   }
   
-  /* ===== UNIFIED CARD STYLE ===== */
-  .profile-screen .moon-phase-card,
-  .profile-screen .collection-card,
-  .profile-screen .recent-readings-card,
-  .profile-screen .my-signs-card,
-  .profile-screen .quick-actions-card {
-    background: linear-gradient(135deg, #1a0f05 0%, #0a0600 50%, #1a0f05 100%);
-    border: 1px solid rgba(200, 120, 0, 0.35);
-    border-radius: 14px;
-    padding: 16px;
-    margin-bottom: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 12px rgba(200, 120, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.04);
-    will-change: transform;
-    transform: translateZ(0);
-  }
-  
-  .profile-screen .card-title {
-    font-family: 'Georgia', serif;
-    font-size: 12px;
-    color: #ffe566;
-    text-align: center;
-    margin: 0 0 16px;
-    letter-spacing: 2px;
-  }
-  
-  /* ===== MOON PHASE ===== */
-  .profile-screen .moon-content {
+  /* ===== MOON ROW ===== */
+  .profile-screen .panel--row {
     display: flex;
     align-items: center;
     gap: 16px;
-    padding: 8px;
+    padding: 12px 14px;
   }
   
-  .profile-screen .moon-symbol {
-    font-size: 48px;
+  .profile-screen .moon-emblem {
+    font-size: 40px;
     filter: drop-shadow(0 0 12px rgba(255, 229, 102, 0.5));
     flex-shrink: 0;
     animation: moonGlow 4s ease-in-out infinite;
   }
   
-  @keyframes moonGlow {
-    0%, 100% { filter: drop-shadow(0 0 8px rgba(255, 229, 102, 0.4)); transform: scale(1); }
-    50% { filter: drop-shadow(0 0 16px rgba(255, 229, 102, 0.7)); transform: scale(1.05); }
+  .profile-screen .moon-copy {
+    flex: 1;
+    min-width: 0;
   }
   
-  .profile-screen .moon-info { flex: 1; }
-  
-  .profile-screen .moon-phase-name {
-    font-family: 'Georgia', serif;
-    font-size: 16px;
-    color: #ffe566;
-    font-weight: bold;
+  .profile-screen .moon-row-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 4px;
-    letter-spacing: 0.5px;
   }
   
-  .profile-screen .moon-details {
+  .profile-screen .moon-row-top .panel-title {
+    text-align: left;
+    font-size: 14px;
+  }
+  
+  .profile-screen .moon-illum {
     font-family: 'Georgia', serif;
-    font-size: 11px;
+    font-size: 10px;
     color: #c87800;
-    margin-bottom: 6px;
   }
   
-  .profile-screen .moon-best-for {
+  .profile-screen .moon-best {
     font-family: 'Georgia', serif;
     font-size: 10px;
     color: #886600;
     font-style: italic;
+    margin: 0;
+    line-height: 1.3;
   }
   
-  /* ===== EXPLORE SECTION ===== */
-  .profile-screen .action-buttons-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+  /* ===== ACTION ROW ===== */
+  .profile-screen .action-row {
+    display: flex;
     gap: 8px;
+    margin-bottom: 12px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
   }
   
-  .profile-screen .premium-action-btn {
+  .profile-screen .action-row::-webkit-scrollbar { display: none; }
+  
+  .profile-screen .action-pill {
+    flex: 1;
+    min-width: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
     background: linear-gradient(135deg, rgba(200, 120, 0, 0.15) 0%, rgba(255, 229, 102, 0.08) 100%);
     border: 1px solid rgba(200, 120, 0, 0.3);
-    border-radius: 12px;
-    padding: 12px 6px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
+    border-radius: 20px;
+    padding: 10px 12px;
+    color: #ffe566;
+    font-family: 'Georgia', serif;
+    font-size: 11px;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
-    min-height: 70px;
-    justify-content: center;
   }
   
-  .profile-screen .premium-action-btn:active {
+  .profile-screen .action-pill:active {
     transform: scale(0.95);
     border-color: rgba(255, 229, 102, 0.5);
-    background: linear-gradient(135deg, rgba(200, 120, 0, 0.25) 0%, rgba(255, 229, 102, 0.15) 100%);
   }
   
-  .profile-screen .premium-action-btn svg {
-    color: #ffe566;
-    filter: drop-shadow(0 0 6px rgba(255, 229, 102, 0.4));
-  }
-  
-  .profile-screen .premium-action-btn span {
-    font-family: 'Georgia', serif;
-    font-size: 9px;
-    color: #ffe566;
-    text-align: center;
-    letter-spacing: 0.3px;
-    font-weight: 600;
-  }
-  
-  .profile-screen .premium-action-btn .lock-icon {
+  .profile-screen .pill-lock {
     position: absolute;
-    top: 4px;
-    right: 4px;
+    top: -4px;
+    right: -4px;
+    background: #0a0600;
+    border-radius: 50%;
+    padding: 2px;
     color: #c87800;
-    font-size: 12px;
   }
   
-  /* ===== MY SIGNS ===== */
-  .profile-screen .signs-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+  /* ===== READINGS STRIP ===== */
+  .profile-screen .readings-strip {
+    display: flex;
     gap: 8px;
-    margin-bottom: 12px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
   }
   
-  .profile-screen .sign-item {
+  .profile-screen .readings-strip::-webkit-scrollbar { display: none; }
+  
+  .profile-screen .reading-chip {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
     background: rgba(20, 12, 5, 0.6);
     border: 1px solid rgba(200, 120, 0, 0.2);
-    border-radius: 10px;
-    padding: 12px 8px;
-    text-align: center;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-  }
-  
-  .profile-screen .sign-item:active {
-    transform: scale(0.95);
-    border-color: rgba(255, 229, 102, 0.4);
-  }
-  
-  .profile-screen .sign-icon {
-    font-size: 24px;
-    margin-bottom: 4px;
-  }
-  
-  .profile-screen .sign-label {
-    font-family: 'Georgia', serif;
-    font-size: 8px;
-    color: #886600;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-  }
-  
-  .profile-screen .sign-name {
-    font-family: 'Georgia', serif;
-    font-size: 12px;
-    color: #ffe566;
-    font-weight: bold;
-    letter-spacing: 0.3px;
-  }
-  
-  .profile-screen .sign-details {
-    font-family: 'Georgia', serif;
-    font-size: 9px;
-    color: #c87800;
-  }
-  
-  /* ===== SIGN ACTION BUTTONS ===== */
-  .profile-screen .sign-actions {
-    display: flex;
-    gap: 8px;
-    margin: 12px 0 0 0;
-  }
-  
-  .profile-screen .change-sign-btn,
-  .profile-screen .reset-sign-btn {
-    flex: 1;
-    padding: 10px;
     border-radius: 8px;
-    font-family: 'Georgia', serif;
-    font-size: 10px;
-    font-weight: 600;
+    padding: 8px 12px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    border: 1px solid;
-    min-height: 38px;
+    transition: all 0.2s;
   }
   
-  .profile-screen .change-sign-btn {
-    background: linear-gradient(135deg, rgba(217, 182, 111, 0.2) 0%, rgba(217, 182, 111, 0.1) 100%);
-    border-color: rgba(217, 182, 111, 0.4);
-    color: #D9B66F;
-  }
-  
-  .profile-screen .change-sign-btn:active {
-    background: linear-gradient(135deg, rgba(217, 182, 111, 0.3) 0%, rgba(217, 182, 111, 0.2) 100%);
-    border-color: rgba(217, 182, 111, 0.6);
-    transform: scale(0.98);
-  }
-  
-  .profile-screen .reset-sign-btn {
-    background: linear-gradient(135deg, rgba(232, 115, 138, 0.15) 0%, rgba(232, 115, 138, 0.08) 100%);
-    border-color: rgba(232, 115, 138, 0.3);
-    color: #E8738A;
-  }
-  
-  .profile-screen .reset-sign-btn:active {
-    background: linear-gradient(135deg, rgba(232, 115, 138, 0.25) 0%, rgba(232, 115, 138, 0.15) 100%);
-    border-color: rgba(232, 115, 138, 0.5);
-    transform: scale(0.98);
-  }
-  
-  /* ===== RECENT READINGS ===== */
-  .profile-screen .readings-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  .profile-screen .reading-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: rgba(20, 12, 5, 0.6);
-    border: 1px solid rgba(200, 120, 0, 0.2);
-    border-radius: 10px;
-    padding: 12px;
-    transition: all 0.3s ease;
-    cursor: pointer;
-  }
-  
-  .profile-screen .reading-item:active {
-    transform: scale(0.98);
-    border-color: rgba(255, 229, 102, 0.4);
+  .profile-screen .reading-chip:active {
     background: rgba(200, 120, 0, 0.1);
   }
   
-  .profile-screen .reading-icon { font-size: 24px; flex-shrink: 0; }
-  .profile-screen .reading-info { flex: 1; min-width: 0; }
+  .profile-screen .reading-chip-icon {
+    font-size: 18px;
+  }
   
-  .profile-screen .reading-type {
+  .profile-screen .reading-chip-text {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .profile-screen .reading-chip-type {
     font-family: 'Georgia', serif;
-    font-size: 12px;
+    font-size: 11px;
     color: #ffe566;
     font-weight: bold;
-    margin-bottom: 4px;
-    letter-spacing: 0.3px;
   }
   
-  .profile-screen .reading-cards {
-    font-family: 'Georgia', serif;
-    font-size: 10px;
-    color: #c87800;
-    line-height: 1.4;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  
-  .profile-screen .reading-date {
+  .profile-screen .reading-chip-date {
     font-family: 'Georgia', serif;
     font-size: 9px;
     color: #886600;
-    white-space: nowrap;
-    flex-shrink: 0;
   }
   
   /* ===== ACHIEVEMENTS ===== */
@@ -589,171 +532,286 @@
     letter-spacing: 1.5px;
   }
   
-  .profile-screen .achievements-list {
+  .profile-screen .achv-list {
     display: flex;
     flex-direction: column;
     gap: 10px;
   }
   
-  .profile-screen .achievement-card {
+  .profile-screen .achv-row {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
     background: rgba(20, 12, 5, 0.8);
     border: 1px solid rgba(200, 120, 0, 0.25);
     border-radius: 12px;
-    padding: 14px;
+    padding: 12px;
     transition: all 0.3s ease;
-    cursor: pointer;
   }
   
-  .profile-screen .achievement-card.unlocked { border-color: rgba(255, 229, 102, 0.35); }
-  .profile-screen .achievement-card.locked { opacity: 0.6; }
-  .profile-screen .achievement-card:active { transform: scale(0.98); background: rgba(200, 120, 0, 0.1); }
+  .profile-screen .achv-row.is-unlocked {
+    border-color: rgba(255, 229, 102, 0.35);
+  }
   
-  .profile-screen .achievement-icon { font-size: 32px; flex-shrink: 0; }
+  .profile-screen .achv-row.is-locked {
+    opacity: 0.6;
+  }
   
-  .profile-screen .achievement-card.unlocked .achievement-icon {
+  .profile-screen .achv-icon {
+    font-size: 28px;
+    flex-shrink: 0;
+  }
+  
+  .profile-screen .achv-row.is-unlocked .achv-icon {
     animation: iconBounce 2s ease-in-out infinite;
   }
   
-  @keyframes iconBounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-3px); }
+  .profile-screen .achv-body {
+    flex: 1;
+    min-width: 0;
   }
   
-  .profile-screen .achievement-info { flex: 1; }
+  .profile-screen .achv-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
   
-  .profile-screen .achievement-title {
+  .profile-screen .achv-title {
     font-family: 'Georgia', serif;
     font-size: 13px;
     color: #ffe566;
-    margin: 0 0 4px;
     font-weight: bold;
   }
   
-  .profile-screen .achievement-desc {
+  .profile-screen .achv-count {
     font-family: 'Georgia', serif;
-    font-size: 11px;
+    font-size: 10px;
     color: #c87800;
-    margin: 0 0 8px;
   }
   
-  .profile-screen .achievement-progress { display: flex; align-items: center; gap: 8px; }
+  .profile-screen .achv-desc {
+    font-family: 'Georgia', serif;
+    font-size: 10px;
+    color: #886600;
+    margin: 0 0 8px;
+    line-height: 1.3;
+  }
   
-  .profile-screen .progress-bar-small {
-    flex: 1;
+  .profile-screen .achv-bar {
     height: 4px;
     background: rgba(200, 120, 0, 0.2);
     border-radius: 2px;
     overflow: hidden;
   }
   
-  .profile-screen .progress-fill-small {
+  .profile-screen .achv-fill {
     height: 100%;
     background: linear-gradient(90deg, #c87800, #ffe566);
     border-radius: 2px;
     transition: width 1s ease-out;
   }
   
-  .profile-screen .progress-text {
-    font-family: 'Georgia', serif;
-    font-size: 10px;
-    color: #c87800;
-    white-space: nowrap;
+  /* ===== SETTINGS ===== */
+  .profile-screen .settings-group {
+    margin-bottom: 20px;
   }
   
-  /* ===== SETTINGS TAB ===== */
-  .profile-screen .settings-section { margin-bottom: 24px; }
-  
-  .profile-screen .settings-section-title {
+  .profile-screen .settings-group-label {
+    display: block;
     font-family: 'Georgia', serif;
-    font-size: 13px;
+    font-size: 11px;
     color: #c87800;
-    margin: 0 0 12px 4px;
+    margin: 0 0 8px 4px;
     letter-spacing: 0.5px;
     font-weight: 600;
   }
   
-  .profile-screen .setting-content {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-  }
-  
-  .profile-screen .theme-options { display: flex; gap: 6px; }
-  
-  .profile-screen .theme-option-mini {
-    background: rgba(20, 12, 5, 0.6);
-    border: 1px solid rgba(200, 120, 0, 0.25);
-    border-radius: 8px;
-    padding: 6px 10px;
-    color: #c87800;
-    font-family: 'Georgia', serif;
-    font-size: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    min-height: 32px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-  
-  .profile-screen .theme-option-mini.active {
-    background: linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2));
-    border-color: #ffe566;
-    color: #ffe566;
-    box-shadow: 0 0 8px rgba(255, 229, 102, 0.3);
-  }
-  
-  .profile-screen .theme-option-mini:active { transform: scale(0.95); }
-  
-  .profile-screen .settings-select {
-    min-height: 36px !important;
-    padding: 6px 32px 6px 12px !important;
-    font-size: 12px !important;
-    max-width: 140px;
-  }
-  
-  .profile-screen .setting-item {
+  .profile-screen .setting-row {
     display: flex;
     align-items: center;
     gap: 12px;
     background: rgba(20, 12, 5, 0.8);
     border: 1px solid rgba(200, 120, 0, 0.25);
     border-radius: 12px;
-    padding: 14px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    min-height: 52px;
+    transition: all 0.2s;
+    width: 100%;
+    text-align: left;
   }
   
-  .profile-screen .setting-item:active { background: rgba(200, 120, 0, 0.15); transform: scale(0.98); }
-  .profile-screen .setting-item.premium { border-color: rgba(255, 229, 102, 0.35); }
-  .profile-screen .setting-item.danger { border-color: rgba(220, 38, 38, 0.3); }
-  .profile-screen .setting-item.danger:active { background: rgba(220, 38, 38, 0.15); }
+  .profile-screen .setting-row:active {
+    background: rgba(200, 120, 0, 0.15);
+    transform: scale(0.98);
+  }
   
-  .profile-screen .setting-icon { font-size: 20px; flex-shrink: 0; }
-  .profile-screen .setting-label { flex: 1; font-family: 'Georgia', serif; font-size: 13px; color: #ffe566; }
+  .profile-screen .setting-row--link {
+    border: none;
+    background: rgba(20, 12, 5, 0.4);
+  }
   
-  .profile-screen .setting-badge {
-    background: linear-gradient(135deg, #c87800, #ffe566);
-    color: #0a0600;
+  .profile-screen .setting-row--danger {
+    border-color: rgba(220, 38, 38, 0.3);
+  }
+  
+  .profile-screen .setting-row--danger:active {
+    background: rgba(220, 38, 38, 0.15);
+  }
+  
+  .profile-screen .setting-row-icon {
+    flex-shrink: 0;
+    color: #ffe566;
+  }
+  
+  .profile-screen .setting-row-label {
+    flex: 1;
+    font-family: 'Georgia', serif;
+    font-size: 13px;
+    color: #ffe566;
+  }
+  
+  .profile-screen .segmented {
+    display: flex;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    padding: 2px;
+    gap: 2px;
+  }
+  
+  .profile-screen .segmented-opt {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    color: #886600;
+    font-family: 'Georgia', serif;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .profile-screen .segmented-opt.is-active {
+    background: linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2));
+    color: #ffe566;
+  }
+  
+  .profile-screen .mini-select {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(200, 120, 0, 0.3);
+    border-radius: 8px;
+    padding: 6px 12px;
+    color: #ffe566;
+    font-family: 'Georgia', serif;
+    font-size: 11px;
+    outline: none;
+  }
+  
+  .profile-screen .status-pill {
     font-family: 'Georgia', serif;
     font-size: 9px;
     font-weight: bold;
     padding: 3px 8px;
     border-radius: 6px;
-    letter-spacing: 0.8px;
+    background: rgba(200, 120, 0, 0.2);
+    color: #c87800;
+    letter-spacing: 0.5px;
   }
   
-  .profile-screen .setting-arrow { font-size: 14px; color: #c87800; transition: transform 0.3s ease; }
-  .profile-screen .setting-item:active .setting-arrow { transform: translateX(3px); }
+  .profile-screen .status-pill--active {
+    background: linear-gradient(135deg, #c87800, #ffe566);
+    color: #0a0600;
+  }
   
-  /* ===== MODAL STYLES ===== */
+  .profile-screen .row-chevron {
+    color: #c87800;
+  }
+  
+  /* ===== DEBUG ===== */
+  .profile-screen .debug-fab {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #333;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    transition: all 0.2s;
+  }
+  
+  .profile-screen .debug-fab:active {
+    transform: scale(0.9);
+  }
+  
+  .profile-screen .debug-panel {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    bottom: 80px;
+    width: 320px;
+    background: rgba(10, 6, 0, 0.98);
+    border: 2px solid #fbbf24;
+    border-radius: 12px;
+    z-index: 9998;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+  }
+  
+  .profile-screen .debug-head {
+    padding: 12px;
+    border-bottom: 1px solid rgba(251, 191, 36, 0.3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #fbbf24;
+    font-weight: bold;
+    font-size: 13px;
+  }
+  
+  .profile-screen .debug-actions {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .profile-screen .debug-actions button {
+    background: rgba(96, 165, 250, 0.2);
+    border: 1px solid #60a5fa;
+    color: #60a5fa;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 10px;
+  }
+  
+  .profile-screen .debug-actions button:last-child {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: #ef4444;
+    color: #ef4444;
+  }
+  
+  .profile-screen .debug-body {
+    flex: 1;
+    overflow: auto;
+    padding: 12px;
+    color: #a78bfa;
+    font-size: 10px;
+    margin: 0;
+  }
+  
+  /* ===== MODALS ===== */
   .profile-screen .modal-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -894,7 +952,7 @@
     min-height: 44px;
   }
   
-  .profile-screen .edit-tab.active {
+  .profile-screen .edit-tab.is-active {
     background: linear-gradient(135deg, rgba(200, 120, 0, 0.3), rgba(255, 229, 102, 0.2));
     border-color: #ffe566;
     color: #ffe566;
@@ -902,6 +960,76 @@
   
   .profile-screen .edit-tab:active { transform: scale(0.95); }
   .profile-screen .edit-section { margin-bottom: 20px; }
+  
+  .profile-screen .edit-birth-info-btn {
+    width: 100%;
+    background: rgba(200, 120, 0, 0.1);
+    border: 1px dashed rgba(200, 120, 0, 0.4);
+    border-radius: 8px;
+    padding: 10px;
+    color: #c87800;
+    font-family: 'Georgia', serif;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+  }
+  
+  .profile-screen .edit-birth-info-btn:active {
+    background: rgba(200, 120, 0, 0.2);
+  }
+  
+  /* Reset Modal Specifics */
+  .profile-screen .reset-modal {
+    text-align: center;
+  }
+  
+  .profile-screen .reset-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+  
+  .profile-screen .reset-message {
+    font-family: 'Georgia', serif;
+    font-size: 12px;
+    color: #c87800;
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+  
+  .profile-screen .reset-actions {
+    display: flex;
+    gap: 12px;
+  }
+  
+  .profile-screen .reset-cancel-btn,
+  .profile-screen .reset-confirm-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    font-family: 'Georgia', serif;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+  }
+  
+  .profile-screen .reset-cancel-btn {
+    background: rgba(200, 120, 0, 0.1);
+    color: #c87800;
+    border: 1px solid rgba(200, 120, 0, 0.3);
+  }
+  
+  .profile-screen .reset-confirm-btn {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff;
+  }
+  
+  .profile-screen .reset-cancel-btn:active,
+  .profile-screen .reset-confirm-btn:active {
+    transform: scale(0.95);
+  }
   
   /* ===== SCROLLBAR ===== */
   .profile-screen .profile-content::-webkit-scrollbar,
@@ -917,44 +1045,31 @@
   @media (max-width: 380px) {
     .profile-screen .profile-content { padding: 12px 10px; padding-bottom: calc(70px + env(safe-area-inset-bottom, 0)); }
     
-    .profile-screen .stats-compact-grid { gap: 6px; padding: 10px; }
-    .profile-screen .stat-compact-icon { font-size: 20px; }
-    .profile-screen .stat-compact-value { font-size: 14px; }
-    .profile-screen .stat-compact-label { font-size: 8px; }
+    .profile-screen .identity-bar { padding: 10px 12px; }
+    .profile-screen .rail-btn { width: 36px; height: 36px; }
     
-    .profile-screen .traits-horizontal-grid { gap: 6px; }
-    .profile-screen .trait-compact-item { padding: 10px 6px; }
-    .profile-screen .trait-compact-icon { font-size: 24px; }
-    .profile-screen .trait-compact-name { font-size: 11px; }
-    .profile-screen .trait-compact-desc { font-size: 8px; }
+    .profile-screen .stat-strip { gap: 6px; padding: 10px; }
+    .profile-screen .stat-cell-icon { font-size: 18px; }
+    .profile-screen .stat-cell-value { font-size: 14px; }
+    .profile-screen .stat-cell-label { font-size: 8px; }
     
-    .profile-screen .action-buttons-grid { gap: 6px; }
-    .profile-screen .premium-action-btn { flex-direction: row; justify-content: flex-start; min-height: 56px; padding: 12px 16px; }
-    .profile-screen .premium-action-btn svg { margin-right: 12px; }
+    .profile-screen .natal-trio { gap: 6px; }
+    .profile-screen .natal-cell { padding: 8px 4px; }
+    .profile-screen .natal-glyph { font-size: 20px; }
+    .profile-screen .natal-sign { font-size: 12px; }
     
-    .profile-screen .signs-grid { gap: 6px; }
-    .profile-screen .sign-item { flex-direction: row; justify-content: flex-start; text-align: left; padding: 14px; }
-    .profile-screen .sign-icon { margin-bottom: 0; margin-right: 16px; }
-    
-    .profile-screen .sign-actions { flex-direction: column; gap: 10px; }
-    .profile-screen .change-sign-btn,
-    .profile-screen .reset-sign-btn { font-size: 12px; padding: 12px 14px; }
-    
-    .profile-screen .settings-select { max-width: 100%; }
+    .profile-screen .action-pill { min-width: 80px; padding: 8px 10px; font-size: 10px; }
   }
   
   @media (max-height: 700px) {
     .profile-screen .profile-content { padding-top: 10px; }
-    .profile-screen .moon-phase-card,
-    .profile-screen .collection-card,
-    .profile-screen .recent-readings-card,
-    .profile-screen .my-signs-card,
-    .profile-screen .quick-actions-card { margin-bottom: 10px; padding: 12px; }
+    .profile-screen .panel, .profile-screen .identity-bar { margin-bottom: 10px; padding: 12px; }
   }
   
   @media (prefers-reduced-motion: reduce) {
-    .profile-screen .moon-symbol,
-    .profile-screen .particle { animation: none; }
+    .profile-screen .moon-emblem,
+    .profile-screen .particle,
+    .profile-screen .loading-glyph { animation: none; }
     
     .profile-screen * { transition-duration: 0.01ms !important; }
   }

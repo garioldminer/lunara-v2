@@ -5,7 +5,7 @@ import { useSettings } from '../context/SettingsContext';
 import { updateUser, resetZodiacSign } from '../lib/userService';
 import { getActiveSubscription } from '../lib/subscriptionService';
 import { supabase } from '../lib/supabase';
-import { Bug, X, Star, Heart, BookOpen, Lock, User, Trophy, Gem, Settings } from 'lucide-react';
+import { Bug, X, Star, Heart, BookOpen, Lock, User, Trophy, Gem, Settings, LogOut, ChevronRight, RotateCcw, Shuffle } from 'lucide-react';
 
 interface Props {
   onNavigate?: (screen: string) => void;
@@ -30,9 +30,9 @@ const ZODIAC_DATA: Record<string, { symbol: string; element: string; planet: str
 };
 
 const getSignInfo = (signName: string) => {
-  if (!signName) return { symbol: '✨', element: 'Unknown', planet: 'Unknown' };
+  if (!signName) return { symbol: '✧', element: 'Unknown', planet: 'Unknown' };
   const capitalized = signName.charAt(0).toUpperCase() + signName.slice(1).toLowerCase();
-  return ZODIAC_DATA[capitalized] || { symbol: '✨', element: 'Unknown', planet: 'Unknown' };
+  return ZODIAC_DATA[capitalized] || { symbol: '✧', element: 'Unknown', planet: 'Unknown' };
 };
 
 const getDayOfYear = (date: Date): number => {
@@ -46,19 +46,19 @@ const getDynamicMoonPhase = () => {
   const lunarCycle = 29.53;
   const phaseIndex = Math.floor(((dayOfYear % lunarCycle) / lunarCycle) * 8) % 8;
   const phases = [
-    { phase: 'New Moon', symbol: '🌑', bestFor: 'New beginnings, Setting intentions' },
-    { phase: 'Waxing Crescent', symbol: '🌒', bestFor: 'Action, Building momentum' },
-    { phase: 'First Quarter', symbol: '🌓', bestFor: 'Decisions, Overcoming obstacles' },
-    { phase: 'Waxing Gibbous', symbol: '🌔', bestFor: 'Refinement, Preparation' },
-    { phase: 'Full Moon', symbol: '🌕', bestFor: 'Culmination, Release, Celebration' },
-    { phase: 'Waning Gibbous', symbol: '🌖', bestFor: 'Gratitude, Sharing wisdom' },
-    { phase: 'Last Quarter', symbol: '🌗', bestFor: 'Release, Forgiveness, Letting go' },
-    { phase: 'Waning Crescent', symbol: '🌘', bestFor: 'Rest, Reflection, Surrender' },
+    { phase: 'New Moon', symbol: '🌑', bestFor: 'New beginnings, setting intentions' },
+    { phase: 'Waxing Crescent', symbol: '🌒', bestFor: 'Action, building momentum' },
+    { phase: 'First Quarter', symbol: '🌓', bestFor: 'Decisions, overcoming obstacles' },
+    { phase: 'Waxing Gibbous', symbol: '🌔', bestFor: 'Refinement, preparation' },
+    { phase: 'Full Moon', symbol: '🌕', bestFor: 'Culmination, release, celebration' },
+    { phase: 'Waning Gibbous', symbol: '🌖', bestFor: 'Gratitude, sharing wisdom' },
+    { phase: 'Last Quarter', symbol: '🌗', bestFor: 'Release, forgiveness, letting go' },
+    { phase: 'Waning Crescent', symbol: '🌘', bestFor: 'Rest, reflection, surrender' },
   ];
-  
+
   const current = phases[phaseIndex];
   const illumination = Math.floor(((dayOfYear % lunarCycle) / lunarCycle) * 100);
-  
+
   return {
     phase: current.phase,
     symbol: current.symbol,
@@ -71,9 +71,9 @@ const getDynamicMoonPhase = () => {
 
 const timeAgo = (dateString: string) => {
   const seconds = Math.floor((new Date().getTime() - new Date(dateString).getTime()) / 1000);
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-  return `${Math.floor(seconds / 86400)}d ago`;
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`;
+  return `${Math.floor(seconds / 86400)}d`;
 };
 
 // ==========================================
@@ -99,13 +99,13 @@ const getLevelFromTotalXP = (totalXP: number) => {
   let level = 1;
   let xpRequiredForNext = getXPToNextLevel(level);
   let currentLevelXP = totalXP;
-  
+
   while (currentLevelXP >= xpRequiredForNext) {
     currentLevelXP -= xpRequiredForNext;
     level++;
     xpRequiredForNext = getXPToNextLevel(level);
   }
-  
+
   return { level, currentLevelXP, xpToNext: xpRequiredForNext };
 };
 
@@ -135,13 +135,6 @@ interface SignInfo {
   planet: string;
 }
 
-interface CoreTrait {
-  title: string;
-  sign: string;
-  description: string;
-  icon: string;
-}
-
 interface Reading {
   id: string;
   type: string;
@@ -161,7 +154,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
   const [activeSubscription, setActiveSubscription] = useState<any>(null);
   const [recentReadings, setRecentReadings] = useState<Reading[]>([]);
   const [isUserAdmin, setIsUserAdmin] = useState(false);
-  
+
   const [showDebug, setShowDebug] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
 
@@ -178,7 +171,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
   useEffect(() => {
     if (user) {
       getActiveSubscription(user.id).then(setActiveSubscription);
-      
+
       if (supabase) {
         supabase
           .from('reading_history')
@@ -231,16 +224,10 @@ export default function ProfileScreen({ onNavigate }: Props) {
     cardsCollected: (user as any).cards_collected || 0,
   } : null;
 
-  const coreTraits: CoreTrait[] = userData ? [
-    { title: 'Sun Sign', sign: userData.sunSign || 'Unknown', description: 'Your core identity.', icon: '☀️' },
-    { title: 'Moon Sign', sign: userData.moonSign || 'Unknown', description: 'Your inner emotions.', icon: '🌙' },
-    { title: 'Rising Sign', sign: userData.risingSign || 'Unknown', description: 'First impressions.', icon: '⬆️' },
-  ] : [];
-
   const mySigns: { label: string; icon: string; sign: SignInfo }[] = userData ? [
-    { label: 'Sun', icon: '☀️', sign: { name: userData.sunSign, ...getSignInfo(userData.sunSign) } },
-    { label: 'Moon', icon: '🌙', sign: { name: userData.moonSign, ...getSignInfo(userData.moonSign) } },
-    { label: 'Rising', icon: '⬆️', sign: { name: userData.risingSign, ...getSignInfo(userData.risingSign) } },
+    { label: 'Sun', icon: '☀', sign: { name: userData.sunSign, ...getSignInfo(userData.sunSign) } },
+    { label: 'Moon', icon: '☾', sign: { name: userData.moonSign, ...getSignInfo(userData.moonSign) } },
+    { label: 'Rising', icon: '↑', sign: { name: userData.risingSign, ...getSignInfo(userData.risingSign) } },
   ] : [];
 
   const stats: Stat[] = userData ? [
@@ -328,17 +315,17 @@ export default function ProfileScreen({ onNavigate }: Props) {
   };
 
   const xpProgress = userData ? (userData.xp / userData.xpToNext) * 100 : 0;
-  const circumference = 2 * Math.PI * 22;
+  const circumference = 2 * Math.PI * 24;
   const strokeDashoffset = circumference - (xpProgress / 100) * circumference;
 
   const copyDebugData = async () => {
-    const debugText = JSON.stringify({ 
+    const debugText = JSON.stringify({
       isAdmin: isUserAdmin,
       userId: user?.id,
-      userData, 
-      stats, 
-      recentReadings, 
-      achievements 
+      userData,
+      stats,
+      recentReadings,
+      achievements
     }, null, 2);
     try {
       await navigator.clipboard.writeText(debugText);
@@ -352,15 +339,18 @@ export default function ProfileScreen({ onNavigate }: Props) {
   if (loading || !userData) {
     return (
       <div className="screen-container profile profile-screen">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#ffe566' }}>Loading profile...</div>
+        <div className="profile-loading">
+          <div className="loading-glyph">✦</div>
+          <span>Loading profile…</span>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="screen-container profile profile-screen">
-      <div className="particles-container">
-        {[...Array(15)].map((_, i) => (
+      <div className="particles-container" aria-hidden="true">
+        {[...Array(12)].map((_, i) => (
           <div key={i} className="particle" style={{
             left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%`,
             animationDelay: `${Math.random() * 5}s`, animationDuration: `${4 + Math.random() * 3}s`,
@@ -370,215 +360,134 @@ export default function ProfileScreen({ onNavigate }: Props) {
       </div>
 
       {isUserAdmin && (
-        <button 
-          onClick={() => setShowDebug(!showDebug)} 
-          style={{
-            position: 'fixed', bottom: '20px', right: '20px', zIndex: 9999,
-            width: '48px', height: '48px', borderRadius: '50%',
-            background: showDebug ? '#10b981' : '#333',
-            border: '2px solid rgba(255,255,255,0.2)',
-            color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
-          }}
-        >
-          <Bug size={24} />
+        <button className="debug-fab" onClick={() => setShowDebug(!showDebug)} aria-label="Toggle debug panel">
+          <Bug size={20} />
         </button>
       )}
 
-      <div className="profile-content">
-        {/* ახალი ჰედერი - 65% მარცხნივ, 35% მარჯვნივ */}
-        <div className="user-header">
-          <div className="user-main-row">
-            {/* მარცხენა მხარე - 65% */}
-            <div className="avatar-and-info">
-              {/* ავატარი */}
-              <div className="avatar-section">
-                <svg className="xp-circular-progress" width="52" height="52" viewBox="0 0 52 52" style={{ position: 'absolute', top: 0, left: 0 }}>
-                  <circle className="xp-circle-bg" cx="26" cy="26" r="22" fill="none" stroke="#e9d5ff" strokeWidth="4" />
-                  <circle className="xp-circle-progress" cx="26" cy="26" r="22" fill="none" stroke="#7c3aed" strokeWidth="4" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} transform="rotate(-90 26 26)" />
-                </svg>
-                
-                <div style={{ 
-                  position: 'absolute',
-                  top: '6px',
-                  left: '6px',
-                  width: '40px',
-                  height: '40px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '16px',
-                  fontWeight: 'bold',
-                  background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)',
-                  borderRadius: '50%',
-                  color: '#0f0c08',
-                  zIndex: 2,
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
-                }}>
-                  {userData.avatar}
-                </div>
-                
-                <div style={{
-                  position: 'absolute',
-                  bottom: '2px',
-                  left: '2px',
-                  background: 'linear-gradient(135deg, #fbbf24, #d97706)',
-                  color: '#0f0c08',
-                  borderRadius: '6px',
-                  width: '18px',
-                  height: '18px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '10px',
-                  fontWeight: 'bold',
-                  zIndex: 3,
-                  boxShadow: '0 2px 6px rgba(0,0,0,0.4), 0 0 0 1.5px #1a1510',
-                  border: '1.5px solid #1a1510'
-                }}>
-                  {userData.level}
-                </div>
-              </div>
-              
-              {/* სახელი და ჰოროსკოპი */}
-              <div className="user-info-section">
-                <h2 className="username">
-                  {userData.displayName}
-                </h2>
-                <p>
-                  {userData.zodiacSymbol} {userData.zodiac.charAt(0).toUpperCase() + userData.zodiac.slice(1)} · {userData.element}
-                </p>
-              </div>
-            </div>
-            
-            {/* მარჯვენა მხარე - 35% - 4 ღილაკი (SVG იკონებით) */}
-            <div className="nav-buttons-container">
-              <button 
-                className={`nav-pill ${activeTab === 'profile' ? 'active' : ''}`} 
-                onClick={() => setActiveTab('profile')} 
-                title="Profile"
-              >
-                <User size={18} />
-              </button>
-              
-              <button 
-                className={`nav-pill ${activeTab === 'achievements' ? 'active' : ''}`} 
-                onClick={() => setActiveTab('achievements')}
-                title="Awards"
-              >
-                <Trophy size={18} />
-              </button>
-
-              <button 
-                className="nav-pill premium-btn" 
-                onClick={() => onNavigate && onNavigate('subscription')}
-                title={activeSubscription ? 'Premium' : 'Free'}
-              >
-                <Gem size={18} />
-              </button>
-
-              <button 
-                className={`nav-pill ${activeTab === 'settings' ? 'active' : ''}`} 
-                onClick={() => setActiveTab('settings')}
-                title="Settings"
-              >
-                <Settings size={18} />
-              </button>
-            </div>
+      {/* HEADER — avatar, name, level ring, nav pills all in one compact band */}
+      <div className="identity-bar">
+        <div className="identity-left" onClick={() => setShowEditProfile(true)}>
+          <div className="ring-avatar">
+            <svg className="ring-svg" width="56" height="56" viewBox="0 0 56 56">
+              <circle cx="28" cy="28" r="24" fill="none" stroke="rgba(197,160,89,0.18)" strokeWidth="3" />
+              <circle
+                cx="28" cy="28" r="24" fill="none" stroke="url(#ringGrad)" strokeWidth="3"
+                strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset}
+                transform="rotate(-90 28 28)"
+              />
+              <defs>
+                <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#f0c869" />
+                  <stop offset="100%" stopColor="#8b6914" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <div className="avatar-glyph">{userData.avatar}</div>
+            <div className="level-chip">{userData.level}</div>
+          </div>
+          <div className="identity-text">
+            <h1 className="identity-name">{userData.displayName}</h1>
+            <p className="identity-meta">{userData.zodiacSymbol} {userData.zodiac.charAt(0).toUpperCase() + userData.zodiac.slice(1)} · {userData.levelTitle}</p>
           </div>
         </div>
 
-        {/* დანარჩენი კონტენტი (Tab-ების მიხედვით) */}
+        <nav className="tab-rail" aria-label="Profile sections">
+          <button className={`rail-btn ${activeTab === 'profile' ? 'is-active' : ''}`} onClick={() => setActiveTab('profile')} aria-label="Profile">
+            <User size={17} />
+          </button>
+          <button className={`rail-btn ${activeTab === 'achievements' ? 'is-active' : ''}`} onClick={() => setActiveTab('achievements')} aria-label="Achievements">
+            <Trophy size={17} />
+          </button>
+          <button className="rail-btn rail-btn--gold" onClick={() => onNavigate && onNavigate('subscription')} aria-label={activeSubscription ? 'Premium' : 'Upgrade'}>
+            <Gem size={17} />
+          </button>
+          <button className={`rail-btn ${activeTab === 'settings' ? 'is-active' : ''}`} onClick={() => setActiveTab('settings')} aria-label="Settings">
+            <Settings size={17} />
+          </button>
+        </nav>
+      </div>
+
+      <div className="profile-content">
         {activeTab === 'profile' && (
-          <div className="tab-content animate-fade-in">
-            <div className="stats-compact-grid animate-fade-in stagger-2">
+          <div className="tab-content">
+            {/* Stat strip — single dense row, no card padding wasted */}
+            <div className="stat-strip animate-fade-in stagger-1">
               {stats.map((stat, idx) => (
-                <div key={idx} className="stat-compact-item">
-                  <div className="stat-compact-icon">{stat.icon}</div>
-                  <div className="stat-compact-value">{stat.value}</div>
-                  <div className="stat-compact-label">{stat.label}</div>
+                <div key={idx} className="stat-cell">
+                  <span className="stat-cell-icon">{stat.icon}</span>
+                  <span className="stat-cell-value">{stat.value}</span>
+                  <span className="stat-cell-label">{stat.label}</span>
                 </div>
               ))}
             </div>
 
-            <div className="core-traits-horizontal animate-fade-in stagger-3">
-              <h3 className="card-title">✦ CORE TRAITS ✦</h3>
-              <div className="traits-horizontal-grid">
-                {coreTraits.map((trait, index) => (
-                  <div key={index} className="trait-compact-item">
-                    <div className="trait-compact-icon">{trait.icon}</div>
-                    <div className="trait-compact-name">{trait.sign.charAt(0).toUpperCase() + trait.sign.slice(1)}</div>
-                    <div className="trait-compact-desc">{trait.description}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="moon-phase-card animate-fade-in stagger-4">
-              <h3 className="card-title">✦ MOON PHASE ✦</h3>
-              <div className="moon-content">
-                <div className="moon-symbol">{moonPhase.symbol}</div>
-                <div className="moon-info">
-                  <div className="moon-phase-name">{moonPhase.phase}</div>
-                  <div className="moon-details">Illuminated: {moonPhase.illumination}%</div>
-                  <div className="moon-best-for">Best for: {moonPhase.bestFor}</div>
+            {/* Natal trio — merges former "core traits" + "my signs" into one row */}
+            <section className="panel animate-fade-in stagger-2">
+              <div className="panel-head">
+                <h3 className="panel-title">✦ NATAL CHART ✦</h3>
+                <div className="panel-actions">
+                  <button className="ghost-btn" onClick={handleChangeSign}><Shuffle size={12} /> Change</button>
+                  <button className="ghost-btn ghost-btn--danger" onClick={() => setShowResetConfirm(true)}><RotateCcw size={12} /> Reset</button>
                 </div>
               </div>
-            </div>
-
-            <div className="quick-actions-card animate-fade-in stagger-5">
-              <h3 className="card-title">✦ EXPLORE ✦</h3>
-              <div className="action-buttons-grid">
-                <button className="premium-action-btn" onClick={() => onNavigate && onNavigate('natal-chart')}>
-                  <Star size={18} />
-                  <span>Natal Chart</span>
-                  {userData.currentPlan === 'FREE' && <Lock size={12} className="lock-icon" />}
-                </button>
-                <button className="premium-action-btn" onClick={() => onNavigate && onNavigate('compatibility')}>
-                  <Heart size={18} />
-                  <span>Compatibility</span>
-                </button>
-                <button className="premium-action-btn" onClick={() => onNavigate && onNavigate('journal')}>
-                  <BookOpen size={18} />
-                  <span>Journal</span>
-                </button>
-              </div>
-            </div>
-
-            <div className="my-signs-card animate-fade-in stagger-6">
-              <h3 className="card-title">✦ MY SIGNS ✦</h3>
-              <div className="signs-grid">
+              <div className="natal-trio">
                 {mySigns.map((item, index) => (
-                  <div key={index} className="sign-item">
-                    <div className="sign-icon">{item.icon}</div>
-                    <div className="sign-label">{item.label}</div>
-                    <div className="sign-name">{item.sign.symbol} {item.sign.name}</div>
-                    <div className="sign-details">{item.sign.element} · {item.sign.planet}</div>
+                  <div key={index} className="natal-cell">
+                    <span className="natal-glyph">{item.sign.symbol}</span>
+                    <span className="natal-role">{item.label}</span>
+                    <span className="natal-sign">{item.sign.name || '—'}</span>
+                    <span className="natal-sub">{item.sign.element} · {item.sign.planet}</span>
                   </div>
                 ))}
               </div>
-              <div className="sign-actions">
-                <button className="change-sign-btn" onClick={handleChangeSign}><span>🔄 Change</span></button>
-                <button className="reset-sign-btn" onClick={() => setShowResetConfirm(true)}><span>🗑️ Reset</span></button>
-              </div>
-            </div>
+            </section>
 
+            {/* Moon phase — slim horizontal strip instead of tall card */}
+            <section className="panel panel--row animate-fade-in stagger-3">
+              <div className="moon-emblem">{moonPhase.symbol}</div>
+              <div className="moon-copy">
+                <div className="moon-row-top">
+                  <span className="panel-title">{moonPhase.phase}</span>
+                  <span className="moon-illum">{moonPhase.illumination}% lit</span>
+                </div>
+                <p className="moon-best">{moonPhase.bestFor}</p>
+              </div>
+            </section>
+
+            {/* Quick actions — horizontal pill row */}
+            <section className="action-row animate-fade-in stagger-4">
+              <button className="action-pill" onClick={() => onNavigate && onNavigate('natal-chart')}>
+                <Star size={16} />
+                <span>Natal Chart</span>
+                {userData.currentPlan === 'FREE' && <Lock size={11} className="pill-lock" />}
+              </button>
+              <button className="action-pill" onClick={() => onNavigate && onNavigate('compatibility')}>
+                <Heart size={16} />
+                <span>Compatibility</span>
+              </button>
+              <button className="action-pill" onClick={() => onNavigate && onNavigate('journal')}>
+                <BookOpen size={16} />
+                <span>Journal</span>
+              </button>
+            </section>
+
+            {/* Recent readings — compact horizontal scroll strip, capped so it never grows the page */}
             {recentReadings.length > 0 && (
-              <div className="recent-readings-card animate-fade-in stagger-7">
-                <h3 className="card-title">✦ RECENT READINGS ✦</h3>
-                <div className="readings-list">
+              <section className="panel animate-fade-in stagger-5">
+                <h3 className="panel-title">✦ RECENT READINGS ✦</h3>
+                <div className="readings-strip">
                   {recentReadings.map((reading) => (
-                    <div key={reading.id} className="reading-item">
-                      <div className="reading-icon">{reading.icon}</div>
-                      <div className="reading-info">
-                        <div className="reading-type">{reading.type}</div>
-                        <div className="reading-cards">{reading.cards.join(' · ')}</div>
+                    <div key={reading.id} className="reading-chip">
+                      <span className="reading-chip-icon">{reading.icon}</span>
+                      <div className="reading-chip-text">
+                        <span className="reading-chip-type">{reading.type}</span>
+                        <span className="reading-chip-date">{reading.date} ago</span>
                       </div>
-                      <div className="reading-date">{reading.date}</div>
                     </div>
                   ))}
                 </div>
-              </div>
+              </section>
             )}
           </div>
         )}
@@ -586,18 +495,18 @@ export default function ProfileScreen({ onNavigate }: Props) {
         {activeTab === 'achievements' && (
           <div className="tab-content animate-fade-in">
             <h3 className="section-title">✦ ACHIEVEMENTS ✦</h3>
-            <div className="achievements-list">
+            <div className="achv-list">
               {achievements.map((achievement, index) => (
-                <div key={achievement.id} className={`achievement-card ${achievement.unlocked ? 'unlocked' : 'locked'} animate-fade-in stagger-${index + 1}`}>
-                  <div className="achievement-icon">{achievement.unlocked ? achievement.icon : '🔒'}</div>
-                  <div className="achievement-info">
-                    <h4 className="achievement-title">{achievement.title}</h4>
-                    <p className="achievement-desc">{achievement.description}</p>
-                    <div className="achievement-progress">
-                      <div className="progress-bar-small">
-                        <div className="progress-fill-small" style={{ width: mounted ? `${(achievement.progress / achievement.total) * 100}%` : '0%' }}></div>
-                      </div>
-                      <span className="progress-text">{achievement.progress} / {achievement.total}</span>
+                <div key={achievement.id} className={`achv-row ${achievement.unlocked ? 'is-unlocked' : 'is-locked'} animate-fade-in stagger-${index + 1}`}>
+                  <div className="achv-icon">{achievement.unlocked ? achievement.icon : '🔒'}</div>
+                  <div className="achv-body">
+                    <div className="achv-top">
+                      <span className="achv-title">{achievement.title}</span>
+                      <span className="achv-count">{achievement.progress}/{achievement.total}</span>
+                    </div>
+                    <p className="achv-desc">{achievement.description}</p>
+                    <div className="achv-bar">
+                      <div className="achv-fill" style={{ width: mounted ? `${(achievement.progress / achievement.total) * 100}%` : '0%' }} />
                     </div>
                   </div>
                 </div>
@@ -609,63 +518,55 @@ export default function ProfileScreen({ onNavigate }: Props) {
         {activeTab === 'settings' && (
           <div className="tab-content animate-fade-in">
             <h3 className="section-title">✦ SETTINGS ✦</h3>
-            <div className="settings-section">
-              <h4 className="settings-section-title">🎨 Appearance</h4>
-              <div className="setting-item">
-                <span className="setting-icon">🌗</span>
-                <div className="setting-content">
-                  <span className="setting-label">Theme</span>
-                  <div className="theme-options">
-                    <button className={`theme-option-mini ${settings.theme === 'dark' ? 'active' : ''}`} onClick={() => updateSetting('theme', 'dark')}>🌙 Dark</button>
-                    <button className={`theme-option-mini ${settings.theme === 'light' ? 'active' : ''}`} onClick={() => updateSetting('theme', 'light')}>☀️ Light</button>
-                  </div>
+
+            <div className="settings-group">
+              <span className="settings-group-label">Appearance</span>
+              <div className="setting-row">
+                <span className="setting-row-icon">🌗</span>
+                <span className="setting-row-label">Theme</span>
+                <div className="segmented">
+                  <button className={`segmented-opt ${settings.theme === 'dark' ? 'is-active' : ''}`} onClick={() => updateSetting('theme', 'dark')}>Dark</button>
+                  <button className={`segmented-opt ${settings.theme === 'light' ? 'is-active' : ''}`} onClick={() => updateSetting('theme', 'light')}>Light</button>
                 </div>
               </div>
-              <div className="setting-item">
-                <span className="setting-icon">🌐</span>
-                <div className="setting-content">
-                  <span className="setting-label">Language</span>
-                  <select className="form-input form-select settings-select" value={settings.language} onChange={(e) => updateSetting('language', e.target.value as any)}>
-                    <option value="en">🇬🇧 English</option>
-                    <option value="ka">🇬🇪 ქართული</option>
-                  </select>
-                </div>
+              <div className="setting-row">
+                <span className="setting-row-icon">🌐</span>
+                <span className="setting-row-label">Language</span>
+                <select className="mini-select" value={settings.language} onChange={(e) => updateSetting('language', e.target.value as any)}>
+                  <option value="en">EN</option>
+                  <option value="ka">ქარ</option>
+                </select>
               </div>
             </div>
-            <div className="settings-section">
-              <h4 className="settings-section-title">💎 Account</h4>
-              <div className="setting-item premium" onClick={() => handleSettingClick('subscription')}>
-                <span className="setting-icon">💎</span>
-                <span className="setting-label">Subscription</span>
-                <span className="setting-badge">{activeSubscription ? 'ACTIVE' : 'FREE'}</span>
-                <span className="setting-arrow">→</span>
-              </div>
-              <div className="setting-item danger" onClick={() => handleSettingClick('logout')}>
-                <span className="setting-icon">🚪</span>
-                <span className="setting-label">Logout</span>
-                <span className="setting-arrow">→</span>
-              </div>
+
+            <div className="settings-group">
+              <span className="settings-group-label">Account</span>
+              <button className="setting-row setting-row--link" onClick={() => handleSettingClick('subscription')}>
+                <Gem size={16} className="setting-row-icon" />
+                <span className="setting-row-label">Subscription</span>
+                <span className={`status-pill ${activeSubscription ? 'status-pill--active' : ''}`}>{activeSubscription ? 'Active' : 'Free'}</span>
+                <ChevronRight size={16} className="row-chevron" />
+              </button>
+              <button className="setting-row setting-row--link setting-row--danger" onClick={() => handleSettingClick('logout')}>
+                <LogOut size={16} className="setting-row-icon" />
+                <span className="setting-row-label">Log out</span>
+                <ChevronRight size={16} className="row-chevron" />
+              </button>
             </div>
           </div>
         )}
       </div>
 
       {isUserAdmin && showDebug && (
-        <div style={{
-          position: 'fixed', top: '20px', right: '20px', bottom: '80px', width: '350px',
-          background: 'rgba(10, 6, 0, 0.98)', border: '2px solid #fbbf24', borderRadius: '12px',
-          zIndex: 9998, display: 'flex', flexDirection: 'column', boxShadow: '0 8px 32px rgba(0,0,0,0.8)'
-        }}>
-          <div style={{ padding: '12px', borderBottom: '1px solid rgba(251, 191, 36, 0.3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ color: '#fbbf24', fontWeight: 'bold', fontSize: '14px' }}>🔧 ADMIN DEBUG</span>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button onClick={copyDebugData} style={{ background: 'rgba(96, 165, 250, 0.2)', border: '1px solid #60a5fa', color: '#60a5fa', borderRadius: '4px', padding: '4px 8px', cursor: 'pointer', fontSize: '11px' }}>
-                {copySuccess ? 'Copied!' : 'Copy JSON'}
-              </button>
-              <button onClick={() => setShowDebug(false)} style={{ background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', color: '#ef4444', borderRadius: '4px', padding: '4px 8px', cursor: 'pointer', fontSize: '11px' }}>✕</button>
+        <div className="debug-panel">
+          <div className="debug-head">
+            <span>Admin Debug</span>
+            <div className="debug-actions">
+              <button onClick={copyDebugData}>{copySuccess ? 'Copied' : 'Copy JSON'}</button>
+              <button onClick={() => setShowDebug(false)}>✕</button>
             </div>
           </div>
-          <pre style={{ flex: 1, overflow: 'auto', padding: '12px', color: '#a78bfa', fontSize: '11px', margin: 0 }}>
+          <pre className="debug-body">
             {JSON.stringify({
               isAdmin: isUserAdmin,
               userId: user?.id,
@@ -681,29 +582,29 @@ export default function ProfileScreen({ onNavigate }: Props) {
       )}
 
       {showEditProfile && (
-        <EditProfileModal 
-          userData={userData} 
-          editSection={editSection} 
-          setEditSection={setEditSection} 
-          onSave={handleSaveEdit} 
-          onClose={() => setShowEditProfile(false)} 
-          onEditBirthInfo={() => { setShowEditProfile(false); setShowBirthInfo(true); }} 
+        <EditProfileModal
+          userData={userData}
+          editSection={editSection}
+          setEditSection={setEditSection}
+          onSave={handleSaveEdit}
+          onClose={() => setShowEditProfile(false)}
+          onEditBirthInfo={() => { setShowEditProfile(false); setShowBirthInfo(true); }}
         />
       )}
       {showBirthInfo && (
-        <BirthInfoModal 
-          birthDate={userData.birthDate} 
-          birthTime={userData.birthTime} 
-          birthPlace={userData.birthPlace} 
-          onSave={handleSaveBirthInfo} 
-          onClose={() => setShowBirthInfo(false)} 
+        <BirthInfoModal
+          birthDate={userData.birthDate}
+          birthTime={userData.birthTime}
+          birthPlace={userData.birthPlace}
+          onSave={handleSaveBirthInfo}
+          onClose={() => setShowBirthInfo(false)}
         />
       )}
       {showResetConfirm && (
-        <ResetConfirmModal 
-          resetting={resetting} 
-          onConfirm={handleResetSign} 
-          onCancel={() => setShowResetConfirm(false)} 
+        <ResetConfirmModal
+          resetting={resetting}
+          onConfirm={handleResetSign}
+          onCancel={() => setShowResetConfirm(false)}
         />
       )}
     </div>
@@ -720,11 +621,11 @@ function EditProfileModal({ userData, editSection, setEditSection, onSave, onClo
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content edit-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}><X size={20} /></button>
-        <h2 className="modal-title">✦ EDIT PROFILE ✦</h2>
+        <button className="modal-close" onClick={onClose}><X size={18} /></button>
+        <h2 className="modal-title">Edit Profile</h2>
         <div className="edit-section-tabs">
-          <button type="button" className={`edit-tab ${editSection === 'personal' ? 'active' : ''}`} onClick={() => setEditSection('personal')}>👤 Personal</button>
-          <button type="button" className={`edit-tab ${editSection === 'astrology' ? 'active' : ''}`} onClick={() => setEditSection('astrology')}>✨ Astro</button>
+          <button type="button" className={`edit-tab ${editSection === 'personal' ? 'is-active' : ''}`} onClick={() => setEditSection('personal')}>Personal</button>
+          <button type="button" className={`edit-tab ${editSection === 'astrology' ? 'is-active' : ''}`} onClick={() => setEditSection('astrology')}>Astro</button>
         </div>
         <form onSubmit={(e) => { e.preventDefault(); onSave(editSection, formData); onClose(); }}>
           {editSection === 'personal' && (
@@ -743,7 +644,7 @@ function EditProfileModal({ userData, editSection, setEditSection, onSave, onClo
             <div className="edit-section">
               {['sunSign', 'moonSign', 'risingSign'].map((signType) => (
                 <div className="form-group" key={signType}>
-                  <label className="form-label">{signType === 'sunSign' ? '☀️ Sun Sign' : signType === 'moonSign' ? '🌙 Moon Sign' : '⬆️ Rising Sign'}</label>
+                  <label className="form-label">{signType === 'sunSign' ? 'Sun Sign' : signType === 'moonSign' ? 'Moon Sign' : 'Rising Sign'}</label>
                   <select className="form-input form-select" value={(formData as any)[signType]} onChange={(e) => setFormData({ ...formData, [signType]: e.target.value })}>
                     {zodiacSigns.map(sign => <option key={sign.name} value={sign.name}>{sign.symbol} {sign.name} ({sign.element})</option>)}
                   </select>
@@ -752,7 +653,7 @@ function EditProfileModal({ userData, editSection, setEditSection, onSave, onClo
               <button type="button" className="edit-birth-info-btn" onClick={onEditBirthInfo}>Edit Birth Info →</button>
             </div>
           )}
-          <button type="submit" className="modal-submit-btn">SAVE CHANGES</button>
+          <button type="submit" className="modal-submit-btn">Save Changes</button>
         </form>
       </div>
     </div>
@@ -764,13 +665,13 @@ function BirthInfoModal({ birthDate, birthTime, birthPlace, onSave, onClose }: a
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}><X size={20} /></button>
-        <h2 className="modal-title">✦ BIRTH INFO ✦</h2>
+        <button className="modal-close" onClick={onClose}><X size={18} /></button>
+        <h2 className="modal-title">Birth Info</h2>
         <form onSubmit={(e) => { e.preventDefault(); onSave(formData.date, formData.time, formData.place); onClose(); }}>
           <div className="form-group"><label className="form-label">Date of Birth</label><input type="date" className="form-input" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} /></div>
           <div className="form-group"><label className="form-label">Time of Birth</label><input type="time" className="form-input" value={formData.time} onChange={(e) => setFormData({ ...formData, time: e.target.value })} /></div>
           <div className="form-group"><label className="form-label">Place of Birth</label><input type="text" className="form-input" value={formData.place} onChange={(e) => setFormData({ ...formData, place: e.target.value })} placeholder="City, Country" /></div>
-          <button type="submit" className="modal-submit-btn">SAVE BIRTH INFO</button>
+          <button type="submit" className="modal-submit-btn">Save Birth Info</button>
         </form>
       </div>
     </div>
@@ -781,12 +682,12 @@ function ResetConfirmModal({ resetting, onConfirm, onCancel }: any) {
   return (
     <div className="modal-overlay" onClick={onCancel}>
       <div className="modal-content reset-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="reset-icon">⚠️</div>
+        <div className="reset-icon">⚠</div>
         <h2 className="modal-title">Reset Zodiac Sign?</h2>
         <p className="reset-message">This will remove your current zodiac sign and birth information.</p>
         <div className="reset-actions">
           <button className="reset-cancel-btn" onClick={onCancel} disabled={resetting}>Cancel</button>
-          <button className="reset-confirm-btn" onClick={onConfirm} disabled={resetting}>{resetting ? 'Resetting...' : 'Reset Sign'}</button>
+          <button className="reset-confirm-btn" onClick={onConfirm} disabled={resetting}>{resetting ? 'Resetting…' : 'Reset Sign'}</button>
         </div>
       </div>
     </div>
