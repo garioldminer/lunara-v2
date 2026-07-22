@@ -5,7 +5,7 @@ import { useSettings } from '../context/SettingsContext';
 import { updateUser, resetZodiacSign } from '../lib/userService';
 import { getActiveSubscription } from '../lib/subscriptionService';
 import { supabase } from '../lib/supabase';
-import { Bug, X, Star, Heart, BookOpen, Lock, User, Trophy, Gem, Settings, LogOut, ChevronRight, RotateCcw, Shuffle } from 'lucide-react';
+import { Bug, X, Star, Heart, BookOpen, Lock, User, Trophy, Gem, Settings, LogOut, ChevronRight, RotateCcw, Shuffle, Bell, Mail, Sun, Moon } from 'lucide-react';
 import { useTranslation, LANGUAGE_META, AVAILABLE_LANGUAGES, type Language } from '../i18n/TranslationContext';
 
 interface Props {
@@ -21,10 +21,10 @@ const ZODIAC_DATA: Record<string, { symbol: string; element: string; planet: str
   Gemini: { symbol: '♊', element: 'Air', planet: 'Mercury' },
   Cancer: { symbol: '♋', element: 'Water', planet: 'Moon' },
   Leo: { symbol: '♌', element: 'Fire', planet: 'Sun' },
-  Virgo: { symbol: '♍', element: 'Earth', planet: 'Mercury' },
+  Virgo: { symbol: '', element: 'Earth', planet: 'Mercury' },
   Libra: { symbol: '♎', element: 'Air', planet: 'Venus' },
   Scorpio: { symbol: '♏', element: 'Water', planet: 'Pluto' },
-  Sagittarius: { symbol: '♐', element: 'Fire', planet: 'Jupiter' },
+  Sagittarius: { symbol: '', element: 'Fire', planet: 'Jupiter' },
   Capricorn: { symbol: '♑', element: 'Earth', planet: 'Saturn' },
   Aquarius: { symbol: '♒', element: 'Air', planet: 'Uranus' },
   Pisces: { symbol: '♓', element: 'Water', planet: 'Neptune' },
@@ -57,7 +57,7 @@ const getDynamicMoonPhase = (t: (key: string) => string) => {
 
   return {
     phase: t(`moonPhase.${current}`),
-    symbol: ['🌑', '🌒', '🌓', '🌔', '🌕', '🌖', '🌗', '🌘'][phaseIndex],
+    symbol: ['🌑', '🌒', '🌓', '🌔', '🌕', '🌖', '🌗', ''][phaseIndex],
     illumination: illumination,
     bestFor: t(`moonPhase.bestFor.${current}`)
   };
@@ -143,6 +143,17 @@ interface Notifications {
   dailyHoroscope: boolean;
   moonPhase: boolean;
 }
+
+// ენების ახალი თანმიმდევრობა: English, Russian, German, Spanish, Georgian
+const LANGUAGE_ORDER: Language[] = ['en', 'ru', 'de', 'es', 'ka'];
+
+const LANGUAGE_FLAGS: Record<Language, string> = {
+  en: '🇬🇧',
+  ru: '🇷🇺',
+  de: '🇩🇪',
+  es: '🇪🇸',
+  ka: '🇬🇪'
+};
 
 export default function ProfileScreen({ onNavigate }: Props) {
   const { t, language, setLanguage } = useTranslation();
@@ -235,7 +246,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
     { label: t('profile.stats.readings'), value: userData.readingsCount || recentReadings.length, icon: '🔮' },
     { label: t('profile.stats.cards'), value: `${userData.cardsCollected}/78`, icon: '🃏' },
     { label: t('profile.stats.streak'), value: userData.streak, icon: '🔥' },
-    { label: t('profile.stats.gems'), value: userData.gems, icon: '💎' },
+    { label: t('profile.stats.gems'), value: userData.gems, icon: '' },
   ] : [];
 
   const achievements: Achievement[] = userData ? [
@@ -331,7 +342,10 @@ export default function ProfileScreen({ onNavigate }: Props) {
       userData,
       stats,
       recentReadings,
-      achievements
+      achievements,
+      notifications,
+      currentLanguage: language,
+      theme: settings.theme
     }, null, 2);
     try {
       await navigator.clipboard.writeText(debugText);
@@ -522,69 +536,69 @@ export default function ProfileScreen({ onNavigate }: Props) {
           <div className="tab-content animate-fade-in">
             <h3 className="section-title">{t('profile.settingsTitle')}</h3>
 
-            {/* Appearance */}
+            {/* Appearance - Compact */}
             <div className="settings-group">
               <span className="settings-group-label">{t('settings.appearance')}</span>
-              <div className="setting-row">
-                <span className="setting-row-icon">🌗</span>
+              <div className="setting-row setting-row--compact">
+                <span className="setting-row-icon"><Moon size={16} /></span>
                 <span className="setting-row-label">{t('settings.theme')}</span>
-                <div className="segmented">
+                <div className="segmented segmented--small">
                   <button className={`segmented-opt ${settings.theme === 'dark' ? 'is-active' : ''}`} onClick={() => updateSetting('theme', 'dark')}>{t('settings.themeDark')}</button>
                   <button className={`segmented-opt ${settings.theme === 'light' ? 'is-active' : ''}`} onClick={() => updateSetting('theme', 'light')}>{t('settings.themeLight')}</button>
                 </div>
               </div>
-              <div className="setting-row">
-                <span className="setting-row-icon">🌐</span>
+              <div className="setting-row setting-row--compact">
+                <span className="setting-row-icon"><span className="flag-icon">🌐</span></span>
                 <span className="setting-row-label">{t('settings.language')}</span>
-                <select className="mini-select" value={language} onChange={(e) => setLanguage(e.target.value as Language)}>
-                  {AVAILABLE_LANGUAGES.map(lang => (
-                    <option key={lang} value={lang}>{LANGUAGE_META[lang].flag} {LANGUAGE_META[lang].nativeName}</option>
+                <select className="mini-select mini-select--small" value={language} onChange={(e) => setLanguage(e.target.value as Language)}>
+                  {LANGUAGE_ORDER.map(lang => (
+                    <option key={lang} value={lang}>{LANGUAGE_FLAGS[lang]} {LANGUAGE_META[lang].nativeName}</option>
                   ))}
                 </select>
               </div>
             </div>
 
-            {/* Notifications */}
+            {/* Notifications - Compact */}
             <div className="settings-group">
               <span className="settings-group-label">{t('settings.notifications')}</span>
-              <div className="setting-row">
-                <span className="setting-row-icon">🔔</span>
+              <div className="setting-row setting-row--compact">
+                <span className="setting-row-icon"><Bell size={16} /></span>
                 <span className="setting-row-label">{t('settings.pushNotifications')}</span>
                 <button 
-                  className={`toggle-switch ${notifications.push ? 'is-active' : ''}`}
+                  className={`toggle-switch toggle-switch--small ${notifications.push ? 'is-active' : ''}`}
                   onClick={() => handleNotificationToggle('push')}
                   aria-label="Toggle push notifications"
                 >
                   <span className="toggle-knob" />
                 </button>
               </div>
-              <div className="setting-row">
-                <span className="setting-row-icon">📧</span>
+              <div className="setting-row setting-row--compact">
+                <span className="setting-row-icon"><Mail size={16} /></span>
                 <span className="setting-row-label">{t('settings.emailNotifications')}</span>
                 <button 
-                  className={`toggle-switch ${notifications.email ? 'is-active' : ''}`}
+                  className={`toggle-switch toggle-switch--small ${notifications.email ? 'is-active' : ''}`}
                   onClick={() => handleNotificationToggle('email')}
                   aria-label="Toggle email notifications"
                 >
                   <span className="toggle-knob" />
                 </button>
               </div>
-              <div className="setting-row">
-                <span className="setting-row-icon">🌅</span>
+              <div className="setting-row setting-row--compact">
+                <span className="setting-row-icon"><Sun size={16} /></span>
                 <span className="setting-row-label">{t('settings.dailyHoroscope')}</span>
                 <button 
-                  className={`toggle-switch ${notifications.dailyHoroscope ? 'is-active' : ''}`}
+                  className={`toggle-switch toggle-switch--small ${notifications.dailyHoroscope ? 'is-active' : ''}`}
                   onClick={() => handleNotificationToggle('dailyHoroscope')}
                   aria-label="Toggle daily horoscope"
                 >
                   <span className="toggle-knob" />
                 </button>
               </div>
-              <div className="setting-row">
-                <span className="setting-row-icon">🌙</span>
+              <div className="setting-row setting-row--compact">
+                <span className="setting-row-icon"><Moon size={16} /></span>
                 <span className="setting-row-label">{t('settings.moonPhaseAlerts')}</span>
                 <button 
-                  className={`toggle-switch ${notifications.moonPhase ? 'is-active' : ''}`}
+                  className={`toggle-switch toggle-switch--small ${notifications.moonPhase ? 'is-active' : ''}`}
                   onClick={() => handleNotificationToggle('moonPhase')}
                   aria-label="Toggle moon phase alerts"
                 >
@@ -593,49 +607,49 @@ export default function ProfileScreen({ onNavigate }: Props) {
               </div>
             </div>
 
-            {/* Account */}
+            {/* Account - Compact */}
             <div className="settings-group">
               <span className="settings-group-label">{t('settings.account')}</span>
-              <button className="setting-row setting-row--link" onClick={() => handleSettingClick('subscription')}>
+              <button className="setting-row setting-row--link setting-row--compact" onClick={() => handleSettingClick('subscription')}>
                 <Gem size={16} className="setting-row-icon" />
                 <span className="setting-row-label">{t('settings.subscription')}</span>
-                <span className={`status-pill ${activeSubscription ? 'status-pill--active' : ''}`}>{activeSubscription ? t('common.active') : t('common.free')}</span>
-                <ChevronRight size={16} className="row-chevron" />
+                <span className={`status-pill status-pill--small ${activeSubscription ? 'status-pill--active' : ''}`}>{activeSubscription ? t('common.active') : t('common.free')}</span>
+                <ChevronRight size={14} className="row-chevron" />
               </button>
-              <button className="setting-row setting-row--link setting-row--danger" onClick={() => handleSettingClick('logout')}>
+              <button className="setting-row setting-row--link setting-row--danger setting-row--compact" onClick={() => handleSettingClick('logout')}>
                 <LogOut size={16} className="setting-row-icon" />
                 <span className="setting-row-label">{t('settings.logout')}</span>
-                <ChevronRight size={16} className="row-chevron" />
+                <ChevronRight size={14} className="row-chevron" />
               </button>
             </div>
 
-            {/* Help & Support */}
+            {/* Help & Support - Compact */}
             <div className="settings-group">
               <span className="settings-group-label">{t('settings.helpSupport')}</span>
-              <button className="setting-row setting-row--link" onClick={() => onNavigate && onNavigate('faq')}>
+              <button className="setting-row setting-row--link setting-row--compact" onClick={() => onNavigate && onNavigate('faq')}>
                 <span className="setting-row-icon">❓</span>
                 <span className="setting-row-label">{t('settings.faq')}</span>
-                <ChevronRight size={16} className="row-chevron" />
+                <ChevronRight size={14} className="row-chevron" />
               </button>
-              <button className="setting-row setting-row--link" onClick={() => onNavigate && onNavigate('contact')}>
+              <button className="setting-row setting-row--link setting-row--compact" onClick={() => onNavigate && onNavigate('contact')}>
                 <span className="setting-row-icon">💬</span>
                 <span className="setting-row-label">{t('settings.contactSupport')}</span>
-                <ChevronRight size={16} className="row-chevron" />
+                <ChevronRight size={14} className="row-chevron" />
               </button>
-              <button className="setting-row setting-row--link" onClick={() => onNavigate && onNavigate('terms')}>
+              <button className="setting-row setting-row--link setting-row--compact" onClick={() => onNavigate && onNavigate('terms')}>
                 <span className="setting-row-icon">📄</span>
                 <span className="setting-row-label">{t('settings.terms')}</span>
-                <ChevronRight size={16} className="row-chevron" />
+                <ChevronRight size={14} className="row-chevron" />
               </button>
-              <button className="setting-row setting-row--link" onClick={() => onNavigate && onNavigate('privacy')}>
+              <button className="setting-row setting-row--link setting-row--compact" onClick={() => onNavigate && onNavigate('privacy')}>
                 <span className="setting-row-icon">🔒</span>
                 <span className="setting-row-label">{t('settings.privacy')}</span>
-                <ChevronRight size={16} className="row-chevron" />
+                <ChevronRight size={14} className="row-chevron" />
               </button>
-              <div className="setting-row setting-row--static">
+              <div className="setting-row setting-row--static setting-row--compact">
                 <span className="setting-row-icon">ℹ️</span>
                 <span className="setting-row-label">{t('settings.version')}</span>
-                <span className="version-text">1.0.0</span>
+                <span className="version-text version-text--small">1.0.0</span>
               </div>
             </div>
           </div>
@@ -645,24 +659,78 @@ export default function ProfileScreen({ onNavigate }: Props) {
       {isUserAdmin && showDebug && (
         <div className="debug-panel">
           <div className="debug-head">
-            <span>Admin Debug</span>
+            <span>🔧 Admin Debug Panel</span>
             <div className="debug-actions">
-              <button onClick={copyDebugData}>{copySuccess ? 'Copied' : 'Copy JSON'}</button>
+              <button onClick={copyDebugData}>{copySuccess ? '✓ Copied' : '📋 Copy'}</button>
               <button onClick={() => setShowDebug(false)}>✕</button>
             </div>
           </div>
-          <pre className="debug-body">
-            {JSON.stringify({
-              isAdmin: isUserAdmin,
-              userId: user?.id,
-              userData: { ...userData, xpToNext: undefined, xp: undefined },
-              levelData: userLevelData,
-              stats,
-              recentReadingsCount: recentReadings.length,
-              achievementsUnlocked: achievements.filter(a => a.unlocked).length,
-              localStorageKeys: Object.keys(localStorage)
-            }, null, 2)}
-          </pre>
+          <div className="debug-body">
+            <div className="debug-section">
+              <h4>👤 User Info</h4>
+              <div className="debug-item"><span>ID:</span> <code>{user?.id?.substring(0, 8)}...</code></div>
+              <div className="debug-item"><span>Username:</span> <code>{user?.username || 'N/A'}</code></div>
+              <div className="debug-item"><span>Display Name:</span> <code>{userData.displayName}</code></div>
+              <div className="debug-item"><span>Email:</span> <code>{user?.email || 'N/A'}</code></div>
+            </div>
+            
+            <div className="debug-section">
+              <h4>⭐ Progress</h4>
+              <div className="debug-item"><span>Level:</span> <code>{userData.level} ({userData.levelTitle})</code></div>
+              <div className="debug-item"><span>XP:</span> <code>{userData.xp} / {userData.xpToNext}</code></div>
+              <div className="debug-item"><span>Progress:</span> <code>{xpProgress.toFixed(1)}%</code></div>
+              <div className="debug-item"><span>Gems:</span> <code>{userData.gems}</code></div>
+              <div className="debug-item"><span>Streak:</span> <code>{userData.streak} days</code></div>
+            </div>
+
+            <div className="debug-section">
+              <h4> Astrology</h4>
+              <div className="debug-item"><span>Sun Sign:</span> <code>{userData.sunSign || 'Not set'}</code></div>
+              <div className="debug-item"><span>Moon Sign:</span> <code>{userData.moonSign || 'Not set'}</code></div>
+              <div className="debug-item"><span>Rising Sign:</span> <code>{userData.risingSign || 'Not set'}</code></div>
+              <div className="debug-item"><span>Element:</span> <code>{userData.element}</code></div>
+            </div>
+
+            <div className="debug-section">
+              <h4>📊 Stats</h4>
+              <div className="debug-item"><span>Readings:</span> <code>{userData.readingsCount}</code></div>
+              <div className="debug-item"><span>Cards:</span> <code>{userData.cardsCollected}/78</code></div>
+              <div className="debug-item"><span>Recent:</span> <code>{recentReadings.length} readings</code></div>
+            </div>
+
+            <div className="debug-section">
+              <h4>⚙️ Settings</h4>
+              <div className="debug-item"><span>Theme:</span> <code>{settings.theme}</code></div>
+              <div className="debug-item"><span>Language:</span> <code>{language}</code></div>
+              <div className="debug-item"><span>Plan:</span> <code>{userData.currentPlan}</code></div>
+              <div className="debug-item"><span>Onboarding:</span> <code>{user?.onboarding_completed ? '✓' : '✗'}</code></div>
+            </div>
+
+            <div className="debug-section">
+              <h4> Notifications</h4>
+              <div className="debug-item"><span>Push:</span> <code>{notifications.push ? '✓' : '✗'}</code></div>
+              <div className="debug-item"><span>Email:</span> <code>{notifications.email ? '✓' : '✗'}</code></div>
+              <div className="debug-item"><span>Daily:</span> <code>{notifications.dailyHoroscope ? '✓' : '✗'}</code></div>
+              <div className="debug-item"><span>Moon:</span> <code>{notifications.moonPhase ? '✓' : '✗'}</code></div>
+            </div>
+
+            <div className="debug-section">
+              <h4>🏆 Achievements</h4>
+              <div className="debug-item"><span>Unlocked:</span> <code>{achievements.filter(a => a.unlocked).length}/{achievements.length}</code></div>
+              {achievements.map(a => (
+                <div key={a.id} className="debug-item debug-item--small">
+                  <span>{a.icon} {a.title}:</span>
+                  <code>{a.unlocked ? '✓' : `${a.progress}/${a.total}`}</code>
+                </div>
+              ))}
+            </div>
+
+            <div className="debug-section">
+              <h4>💾 Storage</h4>
+              <div className="debug-item"><span>localStorage:</span> <code>{Object.keys(localStorage).length} keys</code></div>
+              <div className="debug-item"><span>sessionStorage:</span> <code>{Object.keys(sessionStorage).length} keys</code></div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -723,7 +791,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
       {showResetConfirm && (
         <div className="modal-overlay" onClick={() => setShowResetConfirm(false)}>
           <div className="modal-content reset-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="reset-icon">⚠</div>
+            <div className="reset-icon"></div>
             <h2 className="modal-title">{t('resetSign.title')}</h2>
             <p className="reset-message">{t('resetSign.message')}</p>
             <div className="reset-actions">
