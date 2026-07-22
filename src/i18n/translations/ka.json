@@ -1,0 +1,162 @@
+{
+    "common": {
+      "loading": "იტვირთება...",
+      "save": "შენახვა",
+      "cancel": "გაუქმება",
+      "confirm": "დადასტურება",
+      "close": "დახურვა",
+      "free": "უფასო",
+      "premium": "პრემიუმ",
+      "active": "აქტიური"
+    },
+    "profile": {
+      "loading": "პროფილის ჩატვირთვა…",
+      "natalChart": " ნატალური რუკა ",
+      "recentReadings": "✦ ბოლო განმარტებები ✦",
+      "achievementsTitle": "✦ მიღწევები ✦",
+      "settingsTitle": "✦ პარამეტრები ✦",
+      "change": "შეცვლა",
+      "reset": "გადატვირთვა",
+      "noReadings": "ბოლო განმარტებები არ არის",
+      "level": "დონე {{level}}",
+      "signs": {
+        "sun": "მზე",
+        "moon": "მთვარე",
+        "rising": "ასცენდენტი",
+        "unknown": "უცნობი"
+      },
+      "stats": {
+        "readings": "განმარტებები",
+        "cards": "ბარათები",
+        "streak": "სერია",
+        "gems": "თვლები"
+      },
+      "actions": {
+        "natalChart": "ნატალური რუკა",
+        "compatibility": "თავსებადობა",
+        "journal": "ჟურნალი"
+      }
+    },
+    "achievements": {
+      "firstReading": "პირველი განმარტება",
+      "firstReadingDesc": "შეასრულე შენი პირველი ტაროს განმარტება",
+      "streak7": "7-დღიანი სერია",
+      "streak7Desc": "გამოიყენე აპი 7 დღე ზედიზედ",
+      "collector": "კოლექციონერი",
+      "collectorDesc": "შეაგროვე ყველა 78 ტაროს ბარათი",
+      "loveExpert": "სიყვარულის ექსპერტი",
+      "loveExpertDesc": "შეასრულე 50 სასიყვარულო განმარტება",
+      "moonMaster": "მთვარის სტატი",
+      "moonMasterDesc": "შეასრულე 10 მთვარის რიტუალი"
+    },
+    "settings": {
+      "appearance": "გარეგნობა",
+      "theme": "თემა",
+      "themeDark": "მუქი",
+      "themeLight": "ნათელი",
+      "language": "ენა",
+      "notifications": "შეტყობინებები",
+      "pushNotifications": "Push შეტყობინებები",
+      "emailNotifications": "ელ-ფოსტის შეტყობინებები",
+      "dailyHoroscope": "ყოველდღიური ჰოროსკოპი",
+      "moonPhaseAlerts": "მთვარის ფაზის შეტყობინებები",
+      "account": "ანგარიში",
+      "subscription": "გამოწერა",
+      "logout": "გასვლა",
+      "helpSupport": "დახმარება და მხარდაჭერა",
+      "faq": "ხშირად დასმული კითხვები",
+      "contactSupport": "დაკავშირება მხარდაჭერასთან",
+      "terms": "მომსახურების პირობები",
+      "privacy": "კონფიდენციალურობის პოლიტიკა",
+      "version": "ვერსია",
+      "languages": {
+        "en": "English",
+        "ka": "ქართული",
+        "ru": "Русский",
+        "de": "Deutsch",
+        "es": "Español"
+      }
+    },
+    "editProfile": {
+      "title": "პროფილის რედაქტირება",
+      "personal": "პირადი",
+      "astro": "ასტრო",
+      "displayName": "საჩვენებელი სახელი",
+      "bio": "ბიო",
+      "sunSign": "მზის ნიშანი",
+      "moonSign": "მთვარის ნიშანი",
+      "risingSign": "ასცენდენტი",
+      "editBirthInfo": "დაბადების ინფოს რედაქტირება →",
+      "saveChanges": "ცვლილებების შენახვა"
+    },
+    "birthInfo": {
+      "title": "დაბადების ინფო",
+      "dateOfBirth": "დაბადების თარიღი",
+      "timeOfBirth": "დაბადების დრო",
+      "placeOfBirth": "დაბადების ადგილი",
+      "cityCountry": "ქალაქი, ქვეყანა",
+      "saveBirthInfo": "დაბადების ინფოს შენახვა"
+    },
+    "resetSign": {
+      "title": "ზოდიაქოს ნიშნის გადატვირთვა?",
+      "message": "ეს წაშლის შენს მიმდინარე ზოდიაქოს ნიშანს და დაბადების ინფორმაციას.",
+      "cancel": "გაუქმება",
+      "resetting": "გადატვირთვა…",
+      "resetSign": "ნიშნის გადატვირთვა"
+    },
+    "moonPhase": {
+      "newMoon": "ახალი მთვარე",
+      "waxingCrescent": "მზარდი ნახევარმთვარე",
+      "firstQuarter": "პირველი მეოთხედი",
+      "waxingGibbous": "მზარდი ამოზნექილი",
+      "fullMoon": "სავსე მთვარე",
+      "waningGibbous": "კლებადი ამოზნექილი",
+      "lastQuarter": "ბოლო მეოთხედი",
+      "waningCrescent": "კლებადი ნახევარმთვარე",
+      "lit": "განათებული",
+      "bestFor": {
+        "newMoon": "ახალი დასაწყისი, განზრახვების დასახვა",
+        "waxingCrescent": "მოქმედება, იმპულსის აგება",
+        "firstQuarter": "გადაწყვეტილებები, დაბრკოლებების გადალახვა",
+        "waxingGibbous": "დახვეწა, მომზადება",
+        "fullMoon": "კულმინაცია, გათავისუფლება, დღესასწაული",
+        "waningGibbous": "მადლიერება, სიბრძნის გაზიარება",
+        "lastQuarter": "გათავისუფლება, პატიება, გაშვება",
+        "waningCrescent": "დასვენება, რეფლექსია, დანებება"
+      }
+    },
+    "zodiac": {
+      "Aries": "ვერძი",
+      "Taurus": "კურო",
+      "Gemini": "ტყუპები",
+      "Cancer": "კირჩხიბი",
+      "Leo": "ლომი",
+      "Virgo": "ქალწული",
+      "Libra": "სასწორი",
+      "Scorpio": "მორიელი",
+      "Sagittarius": "მშვილდოსანი",
+      "Capricorn": "თხის რქა",
+      "Aquarius": "მერწყული",
+      "Pisces": "თევზები"
+    },
+    "elements": {
+      "Fire": "ცეცხლი",
+      "Earth": "მიწა",
+      "Air": "ჰაერი",
+      "Water": "წყალი",
+      "Unknown": "უცნობი"
+    },
+    "planets": {
+      "Sun": "მზე",
+      "Moon": "მთვარე",
+      "Mercury": "მერკური",
+      "Venus": "ვენერა",
+      "Mars": "მარსი",
+      "Jupiter": "იუპიტერი",
+      "Saturn": "სატურნი",
+      "Uranus": "ურანი",
+      "Neptune": "ნეპტუნი",
+      "Pluto": "პლუტონი",
+      "Unknown": "უცნობი"
+    }
+  }

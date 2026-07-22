@@ -1,0 +1,162 @@
+{
+    "common": {
+      "loading": "Laden...",
+      "save": "Speichern",
+      "cancel": "Abbrechen",
+      "confirm": "Bestätigen",
+      "close": "Schließen",
+      "free": "Kostenlos",
+      "premium": "Premium",
+      "active": "Aktiv"
+    },
+    "profile": {
+      "loading": "Profil wird geladen…",
+      "natalChart": "✦ GEBURTSHOROSKOP ✦",
+      "recentReadings": "✦ LETZTE LEGUNGEN ✦",
+      "achievementsTitle": "✦ ERFOLGE ✦",
+      "settingsTitle": "✦ EINSTELLUNGEN ✦",
+      "change": "Ändern",
+      "reset": "Zurücksetzen",
+      "noReadings": "Keine letzten Legungen",
+      "level": "Level {{level}}",
+      "signs": {
+        "sun": "Sonne",
+        "moon": "Mond",
+        "rising": "Aszendent",
+        "unknown": "Unbekannt"
+      },
+      "stats": {
+        "readings": "Legungen",
+        "cards": "Karten",
+        "streak": "Serie",
+        "gems": "Gems"
+      },
+      "actions": {
+        "natalChart": "Geburtshoroskop",
+        "compatibility": "Kompatibilität",
+        "journal": "Journal"
+      }
+    },
+    "achievements": {
+      "firstReading": "Erste Legung",
+      "firstReadingDesc": "Führe deine erste Tarot-Legung durch",
+      "streak7": "7-Tage-Serie",
+      "streak7Desc": "Nutze die App 7 Tage in Folge",
+      "collector": "Sammler",
+      "collectorDesc": "Sammle alle 78 Tarot-Karten",
+      "loveExpert": "Liebes-Experte",
+      "loveExpertDesc": "Führe 50 Liebes-Legungen durch",
+      "moonMaster": "Mond-Meister",
+      "moonMasterDesc": "Führe 10 Mond-Rituale durch"
+    },
+    "settings": {
+      "appearance": "Erscheinungsbild",
+      "theme": "Design",
+      "themeDark": "Dunkel",
+      "themeLight": "Hell",
+      "language": "Sprache",
+      "notifications": "Benachrichtigungen",
+      "pushNotifications": "Push-Benachrichtigungen",
+      "emailNotifications": "E-Mail-Benachrichtigungen",
+      "dailyHoroscope": "Tageshoroskop",
+      "moonPhaseAlerts": "Mondphasen-Benachrichtigungen",
+      "account": "Konto",
+      "subscription": "Abonnement",
+      "logout": "Abmelden",
+      "helpSupport": "Hilfe & Support",
+      "faq": "FAQ",
+      "contactSupport": "Support kontaktieren",
+      "terms": "Nutzungsbedingungen",
+      "privacy": "Datenschutzrichtlinie",
+      "version": "Version",
+      "languages": {
+        "en": "English",
+        "ka": "ქართული",
+        "ru": "Русский",
+        "de": "Deutsch",
+        "es": "Español"
+      }
+    },
+    "editProfile": {
+      "title": "Profil bearbeiten",
+      "personal": "Persönlich",
+      "astro": "Astro",
+      "displayName": "Anzeigename",
+      "bio": "Bio",
+      "sunSign": "Sonnenzeichen",
+      "moonSign": "Mondzeichen",
+      "risingSign": "Aszendent",
+      "editBirthInfo": "Geburtsdaten bearbeiten →",
+      "saveChanges": "Änderungen speichern"
+    },
+    "birthInfo": {
+      "title": "Geburtsdaten",
+      "dateOfBirth": "Geburtsdatum",
+      "timeOfBirth": "Geburtszeit",
+      "placeOfBirth": "Geburtsort",
+      "cityCountry": "Stadt, Land",
+      "saveBirthInfo": "Geburtsdaten speichern"
+    },
+    "resetSign": {
+      "title": "Zodiac-Zeichen zurücksetzen?",
+      "message": "Dies entfernt dein aktuelles Zodiac-Zeichen und Geburtsinformationen.",
+      "cancel": "Abbrechen",
+      "resetting": "Zurücksetzen…",
+      "resetSign": "Zeichen zurücksetzen"
+    },
+    "moonPhase": {
+      "newMoon": "Neumond",
+      "waxingCrescent": "Zunehmende Sichel",
+      "firstQuarter": "Erstes Viertel",
+      "waxingGibbous": "Zunehmender Mond",
+      "fullMoon": "Vollmond",
+      "waningGibbous": "Abnehmender Mond",
+      "lastQuarter": "Letztes Viertel",
+      "waningCrescent": "Abnehmende Sichel",
+      "lit": "beleuchtet",
+      "bestFor": {
+        "newMoon": "Neue Anfänge, Absichten setzen",
+        "waxingCrescent": "Handlung, Momentum aufbauen",
+        "firstQuarter": "Entscheidungen, Hindernisse überwinden",
+        "waxingGibbous": "Verfeinerung, Vorbereitung",
+        "fullMoon": "Höhepunkt, Loslassen, Feier",
+        "waningGibbous": "Dankbarkeit, Weisheit teilen",
+        "lastQuarter": "Loslassen, Vergebung, Loslassen",
+        "waningCrescent": "Ruhe, Reflexion, Hingabe"
+      }
+    },
+    "zodiac": {
+      "Aries": "Widder",
+      "Taurus": "Stier",
+      "Gemini": "Zwillinge",
+      "Cancer": "Krebs",
+      "Leo": "Löwe",
+      "Virgo": "Virgo",
+      "Libra": "Waage",
+      "Scorpio": "Skorpion",
+      "Sagittarius": "Schütze",
+      "Capricorn": "Steinbock",
+      "Aquarius": "Wassermann",
+      "Pisces": "Fische"
+    },
+    "elements": {
+      "Fire": "Feuer",
+      "Earth": "Erde",
+      "Air": "Luft",
+      "Water": "Wasser",
+      "Unknown": "Unbekannt"
+    },
+    "planets": {
+      "Sun": "Sonne",
+      "Moon": "Mond",
+      "Mercury": "Merkur",
+      "Venus": "Venus",
+      "Mars": "Mars",
+      "Jupiter": "Jupiter",
+      "Saturn": "Saturn",
+      "Uranus": "Uranus",
+      "Neptune": "Neptun",
+      "Pluto": "Pluto",
+      "Unknown": "Unbekannt"
+    }
+  }

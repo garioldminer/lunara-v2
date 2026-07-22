@@ -1,0 +1,162 @@
+{
+    "common": {
+      "loading": "Загрузка...",
+      "save": "Сохранить",
+      "cancel": "Отмена",
+      "confirm": "Подтвердить",
+      "close": "Закрыть",
+      "free": "Бесплатно",
+      "premium": "Премиум",
+      "active": "Активно"
+    },
+    "profile": {
+      "loading": "Загрузка профиля…",
+      "natalChart": "✦ НАТАЛЬНАЯ КАРТА ✦",
+      "recentReadings": "✦ ПОСЛЕДНИЕ РАСКЛАДЫ ✦",
+      "achievementsTitle": "✦ ДОСТИЖЕНИЯ ✦",
+      "settingsTitle": "✦ НАСТРОЙКИ ",
+      "change": "Изменить",
+      "reset": "Сбросить",
+      "noReadings": "Нет последних раскладов",
+      "level": "Уровень {{level}}",
+      "signs": {
+        "sun": "Солнце",
+        "moon": "Луна",
+        "rising": "Асцендент",
+        "unknown": "Неизвестно"
+      },
+      "stats": {
+        "readings": "Расклады",
+        "cards": "Карты",
+        "streak": "Серия",
+        "gems": "Камни"
+      },
+      "actions": {
+        "natalChart": "Натальная карта",
+        "compatibility": "Совместимость",
+        "journal": "Дневник"
+      }
+    },
+    "achievements": {
+      "firstReading": "Первый расклад",
+      "firstReadingDesc": "Выполните свой первый расклад Таро",
+      "streak7": "7-дневная серия",
+      "streak7Desc": "Используйте приложение 7 дней подряд",
+      "collector": "Коллекционер",
+      "collectorDesc": "Соберите все 78 карт Таро",
+      "loveExpert": "Эксперт любви",
+      "loveExpertDesc": "Выполните 50 любовных раскладов",
+      "moonMaster": "Мастер Луны",
+      "moonMasterDesc": "Выполните 10 лунных ритуалов"
+    },
+    "settings": {
+      "appearance": "Внешний вид",
+      "theme": "Тема",
+      "themeDark": "Тёмная",
+      "themeLight": "Светлая",
+      "language": "Язык",
+      "notifications": "Уведомления",
+      "pushNotifications": "Push-уведомления",
+      "emailNotifications": "Email-уведомления",
+      "dailyHoroscope": "Ежедневный гороскоп",
+      "moonPhaseAlerts": "Уведомления о фазах Луны",
+      "account": "Аккаунт",
+      "subscription": "Подписка",
+      "logout": "Выйти",
+      "helpSupport": "Помощь и поддержка",
+      "faq": "FAQ",
+      "contactSupport": "Связаться с поддержкой",
+      "terms": "Условия использования",
+      "privacy": "Политика конфиденциальности",
+      "version": "Версия",
+      "languages": {
+        "en": "English",
+        "ka": "ქართული",
+        "ru": "Русский",
+        "de": "Deutsch",
+        "es": "Español"
+      }
+    },
+    "editProfile": {
+      "title": "Редактировать профиль",
+      "personal": "Личное",
+      "astro": "Астро",
+      "displayName": "Отображаемое имя",
+      "bio": "О себе",
+      "sunSign": "Знак Солнца",
+      "moonSign": "Знак Луны",
+      "risingSign": "Асцендент",
+      "editBirthInfo": "Редактировать данные рождения →",
+      "saveChanges": "Сохранить изменения"
+    },
+    "birthInfo": {
+      "title": "Данные рождения",
+      "dateOfBirth": "Дата рождения",
+      "timeOfBirth": "Время рождения",
+      "placeOfBirth": "Место рождения",
+      "cityCountry": "Город, Страна",
+      "saveBirthInfo": "Сохранить данные рождения"
+    },
+    "resetSign": {
+      "title": "Сбросить знак зодиака?",
+      "message": "Это удалит ваш текущий знак зодиака и информацию о рождении.",
+      "cancel": "Отмена",
+      "resetting": "Сброс…",
+      "resetSign": "Сбросить знак"
+    },
+    "moonPhase": {
+      "newMoon": "Новолуние",
+      "waxingCrescent": "Растущий серп",
+      "firstQuarter": "Первая четверть",
+      "waxingGibbous": "Растущая луна",
+      "fullMoon": "Полнолуние",
+      "waningGibbous": "Убывающая луна",
+      "lastQuarter": "Последняя четверть",
+      "waningCrescent": "Убывающий серп",
+      "lit": "освещено",
+      "bestFor": {
+        "newMoon": "Новые начинания, постановка намерений",
+        "waxingCrescent": "Действие, набор импульса",
+        "firstQuarter": "Решения, преодоление препятствий",
+        "waxingGibbous": "Уточнение, подготовка",
+        "fullMoon": "Кульминация, освобождение, праздник",
+        "waningGibbous": "Благодарность, обмен мудростью",
+        "lastQuarter": "Освобождение, прощение, отпускание",
+        "waningCrescent": "Отдых, размышление, сдача"
+      }
+    },
+    "zodiac": {
+      "Aries": "Овен",
+      "Taurus": "Телец",
+      "Gemini": "Близнецы",
+      "Cancer": "Рак",
+      "Leo": "Лев",
+      "Virgo": "Дева",
+      "Libra": "Весы",
+      "Scorpio": "Скорпион",
+      "Sagittarius": "Стрелец",
+      "Capricorn": "Козерог",
+      "Aquarius": "Водолей",
+      "Pisces": "Рыбы"
+    },
+    "elements": {
+      "Fire": "Огонь",
+      "Earth": "Земля",
+      "Air": "Воздух",
+      "Water": "Вода",
+      "Unknown": "Неизвестно"
+    },
+    "planets": {
+      "Sun": "Солнце",
+      "Moon": "Луна",
+      "Mercury": "Меркурий",
+      "Venus": "Венера",
+      "Mars": "Марс",
+      "Jupiter": "Юпитер",
+      "Saturn": "Сатурн",
+      "Uranus": "Уран",
+      "Neptune": "Нептун",
+      "Pluto": "Плутон",
+      "Unknown": "Неизвестно"
+    }
+  }

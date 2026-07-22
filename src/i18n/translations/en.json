@@ -1,0 +1,162 @@
+{
+    "common": {
+      "loading": "Loading...",
+      "save": "Save",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "close": "Close",
+      "free": "Free",
+      "premium": "Premium",
+      "active": "Active"
+    },
+    "profile": {
+      "loading": "Loading profile…",
+      "natalChart": "✦ NATAL CHART ✦",
+      "recentReadings": "✦ RECENT READINGS ✦",
+      "achievementsTitle": "✦ ACHIEVEMENTS ✦",
+      "settingsTitle": "✦ SETTINGS ✦",
+      "change": "Change",
+      "reset": "Reset",
+      "noReadings": "No recent readings",
+      "level": "Level {{level}}",
+      "signs": {
+        "sun": "Sun",
+        "moon": "Moon",
+        "rising": "Rising",
+        "unknown": "Unknown"
+      },
+      "stats": {
+        "readings": "Readings",
+        "cards": "Cards",
+        "streak": "Streak",
+        "gems": "Gems"
+      },
+      "actions": {
+        "natalChart": "Natal Chart",
+        "compatibility": "Compatibility",
+        "journal": "Journal"
+      }
+    },
+    "achievements": {
+      "firstReading": "First Reading",
+      "firstReadingDesc": "Complete your first tarot reading",
+      "streak7": "7-Day Streak",
+      "streak7Desc": "Use the app 7 days in a row",
+      "collector": "Collector",
+      "collectorDesc": "Collect all 78 tarot cards",
+      "loveExpert": "Love Expert",
+      "loveExpertDesc": "Complete 50 love readings",
+      "moonMaster": "Moon Master",
+      "moonMasterDesc": "Complete 10 moon rituals"
+    },
+    "settings": {
+      "appearance": "Appearance",
+      "theme": "Theme",
+      "themeDark": "Dark",
+      "themeLight": "Light",
+      "language": "Language",
+      "notifications": "Notifications",
+      "pushNotifications": "Push Notifications",
+      "emailNotifications": "Email Notifications",
+      "dailyHoroscope": "Daily Horoscope",
+      "moonPhaseAlerts": "Moon Phase Alerts",
+      "account": "Account",
+      "subscription": "Subscription",
+      "logout": "Log out",
+      "helpSupport": "Help & Support",
+      "faq": "FAQ",
+      "contactSupport": "Contact Support",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "version": "Version",
+      "languages": {
+        "en": "English",
+        "ka": "ქართული",
+        "ru": "Русский",
+        "de": "Deutsch",
+        "es": "Español"
+      }
+    },
+    "editProfile": {
+      "title": "Edit Profile",
+      "personal": "Personal",
+      "astro": "Astro",
+      "displayName": "Display Name",
+      "bio": "Bio",
+      "sunSign": "Sun Sign",
+      "moonSign": "Moon Sign",
+      "risingSign": "Rising Sign",
+      "editBirthInfo": "Edit Birth Info →",
+      "saveChanges": "Save Changes"
+    },
+    "birthInfo": {
+      "title": "Birth Info",
+      "dateOfBirth": "Date of Birth",
+      "timeOfBirth": "Time of Birth",
+      "placeOfBirth": "Place of Birth",
+      "cityCountry": "City, Country",
+      "saveBirthInfo": "Save Birth Info"
+    },
+    "resetSign": {
+      "title": "Reset Zodiac Sign?",
+      "message": "This will remove your current zodiac sign and birth information.",
+      "cancel": "Cancel",
+      "resetting": "Resetting…",
+      "resetSign": "Reset Sign"
+    },
+    "moonPhase": {
+      "newMoon": "New Moon",
+      "waxingCrescent": "Waxing Crescent",
+      "firstQuarter": "First Quarter",
+      "waxingGibbous": "Waxing Gibbous",
+      "fullMoon": "Full Moon",
+      "waningGibbous": "Waning Gibbous",
+      "lastQuarter": "Last Quarter",
+      "waningCrescent": "Waning Crescent",
+      "lit": "lit",
+      "bestFor": {
+        "newMoon": "New beginnings, setting intentions",
+        "waxingCrescent": "Action, building momentum",
+        "firstQuarter": "Decisions, overcoming obstacles",
+        "waxingGibbous": "Refinement, preparation",
+        "fullMoon": "Culmination, release, celebration",
+        "waningGibbous": "Gratitude, sharing wisdom",
+        "lastQuarter": "Release, forgiveness, letting go",
+        "waningCrescent": "Rest, reflection, surrender"
+      }
+    },
+    "zodiac": {
+      "Aries": "Aries",
+      "Taurus": "Taurus",
+      "Gemini": "Gemini",
+      "Cancer": "Cancer",
+      "Leo": "Leo",
+      "Virgo": "Virgo",
+      "Libra": "Libra",
+      "Scorpio": "Scorpio",
+      "Sagittarius": "Sagittarius",
+      "Capricorn": "Capricorn",
+      "Aquarius": "Aquarius",
+      "Pisces": "Pisces"
+    },
+    "elements": {
+      "Fire": "Fire",
+      "Earth": "Earth",
+      "Air": "Air",
+      "Water": "Water",
+      "Unknown": "Unknown"
+    },
+    "planets": {
+      "Sun": "Sun",
+      "Moon": "Moon",
+      "Mercury": "Mercury",
+      "Venus": "Venus",
+      "Mars": "Mars",
+      "Jupiter": "Jupiter",
+      "Saturn": "Saturn",
+      "Uranus": "Uranus",
+      "Neptune": "Neptune",
+      "Pluto": "Pluto",
+      "Unknown": "Unknown"
+    }
+  }

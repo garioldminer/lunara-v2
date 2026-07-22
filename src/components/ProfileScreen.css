@@ -16,6 +16,263 @@
     touch-action: manipulation;
   }
   
+  /* ===== LIGHT THEME ===== */
+  .profile-screen.light-theme {
+    background: #f5f0e8;
+  }
+  
+  .profile-screen.light-theme .profile-content {
+    background: #f5f0e8;
+  }
+  
+  .profile-screen.light-theme .identity-bar,
+  .profile-screen.light-theme .panel,
+  .profile-screen.light-theme .stat-strip {
+    background: linear-gradient(135deg, #fff8f0 0%, #f5f0e8 50%, #fff8f0 100%);
+    border-color: rgba(197, 160, 89, 0.4);
+  }
+  
+  .profile-screen.light-theme .identity-name,
+  .profile-screen.light-theme .stat-cell-value,
+  .profile-screen.light-theme .panel-title,
+  .profile-screen.light-theme .natal-sign,
+  .profile-screen.light-theme .achv-title,
+  .profile-screen.light-theme .setting-row-label,
+  .profile-screen.light-theme .section-title {
+    color: #8b6914;
+  }
+  
+  .profile-screen.light-theme .identity-meta,
+  .profile-screen.light-theme .stat-cell-label,
+  .profile-screen.light-theme .natal-sub,
+  .profile-screen.light-theme .achv-count,
+  .profile-screen.light-theme .achv-desc,
+  .profile-screen.light-theme .settings-group-label,
+  .profile-screen.light-theme .version-text {
+    color: #a08040;
+  }
+  
+  .profile-screen.light-theme .rail-btn {
+    color: #a08040;
+  }
+  
+  .profile-screen.light-theme .rail-btn.is-active {
+    background: linear-gradient(135deg, rgba(197, 160, 89, 0.2), rgba(139, 105, 20, 0.15));
+    border-color: rgba(197, 160, 89, 0.5);
+    color: #8b6914;
+  }
+  
+  .profile-screen.light-theme .setting-row {
+    background: rgba(255, 248, 240, 0.8);
+    border-color: rgba(197, 160, 89, 0.3);
+  }
+  
+  .profile-screen.light-theme .setting-row:active {
+    background: rgba(197, 160, 89, 0.1);
+  }
+  
+  .profile-screen.light-theme .setting-row--link {
+    background: rgba(255, 248, 240, 0.4);
+  }
+  
+  .profile-screen.light-theme .segmented {
+    background: rgba(197, 160, 89, 0.1);
+  }
+  
+  .profile-screen.light-theme .segmented-opt {
+    color: #a08040;
+  }
+  
+  .profile-screen.light-theme .segmented-opt.is-active {
+    background: linear-gradient(135deg, rgba(197, 160, 89, 0.3), rgba(139, 105, 20, 0.2));
+    color: #8b6914;
+  }
+  
+  .profile-screen.light-theme .toggle-switch {
+    background: rgba(197, 160, 89, 0.2);
+    border-color: rgba(197, 160, 89, 0.3);
+  }
+  
+  .profile-screen.light-theme .toggle-switch.is-active {
+    background: linear-gradient(135deg, rgba(197, 160, 89, 0.5), rgba(139, 105, 20, 0.4));
+    border-color: #8b6914;
+  }
+  
+  .profile-screen.light-theme .toggle-knob {
+    background: #a08040;
+  }
+  
+  .profile-screen.light-theme .toggle-switch.is-active .toggle-knob {
+    background: #8b6914;
+  }
+  
+  .profile-screen.light-theme .achv-row {
+    background: rgba(255, 248, 240, 0.8);
+    border-color: rgba(197, 160, 89, 0.3);
+  }
+  
+  .profile-screen.light-theme .achv-row.is-unlocked {
+    border-color: rgba(197, 160, 89, 0.5);
+  }
+  
+  .profile-screen.light-theme .achv-bar {
+    background: rgba(197, 160, 89, 0.2);
+  }
+  
+  .profile-screen.light-theme .achv-fill {
+    background: linear-gradient(90deg, #a08040, #8b6914);
+  }
+  
+  .profile-screen.light-theme .natal-cell {
+    background: rgba(255, 248, 240, 0.6);
+    border-color: rgba(197, 160, 89, 0.2);
+  }
+  
+  .profile-screen.light-theme .action-pill {
+    background: linear-gradient(135deg, rgba(197, 160, 89, 0.1) 0%, rgba(139, 105, 20, 0.05) 100%);
+    border-color: rgba(197, 160, 89, 0.3);
+    color: #8b6914;
+  }
+  
+  .profile-screen.light-theme .reading-chip {
+    background: rgba(255, 248, 240, 0.6);
+    border-color: rgba(197, 160, 89, 0.2);
+  }
+  
+  .profile-screen.light-theme .reading-chip-type {
+    color: #8b6914;
+  }
+  
+  .profile-screen.light-theme .reading-chip-date {
+    color: #a08040;
+  }
+  
+  .profile-screen.light-theme .ghost-btn {
+    border-color: rgba(197, 160, 89, 0.3);
+    color: #a08040;
+  }
+  
+  .profile-screen.light-theme .ghost-btn:active {
+    background: rgba(197, 160, 89, 0.1);
+  }
+  
+  .profile-screen.light-theme .ghost-btn--danger {
+    border-color: rgba(232, 115, 138, 0.4);
+    color: #E8738A;
+  }
+  
+  .profile-screen.light-theme .ghost-btn--danger:active {
+    background: rgba(232, 115, 138, 0.1);
+  }
+  
+  .profile-screen.light-theme .status-pill {
+    background: rgba(197, 160, 89, 0.2);
+    color: #a08040;
+  }
+  
+  .profile-screen.light-theme .status-pill--active {
+    background: linear-gradient(135deg, #a08040, #8b6914);
+    color: #fff8f0;
+  }
+  
+  .profile-screen.light-theme .row-chevron {
+    color: #a08040;
+  }
+  
+  .profile-screen.light-theme .mini-select {
+    background: rgba(197, 160, 89, 0.1);
+    border-color: rgba(197, 160, 89, 0.3);
+    color: #8b6914;
+  }
+  
+  .profile-screen.light-theme .debug-fab {
+    background: #8b6914;
+    color: #fff8f0;
+  }
+  
+  .profile-screen.light-theme .debug-panel {
+    background: rgba(245, 240, 232, 0.98);
+    border-color: #8b6914;
+  }
+  
+  .profile-screen.light-theme .debug-head {
+    color: #8b6914;
+    border-color: rgba(197, 160, 89, 0.3);
+  }
+  
+  .profile-screen.light-theme .debug-body {
+    color: #6b4c8a;
+  }
+  
+  .profile-screen.light-theme .modal-content {
+    background: linear-gradient(135deg, #fff8f0, #f5f0e8);
+    border-color: rgba(197, 160, 89, 0.5);
+  }
+  
+  .profile-screen.light-theme .modal-title {
+    color: #8b6914;
+  }
+  
+  .profile-screen.light-theme .modal-close {
+    background: rgba(197, 160, 89, 0.2);
+    border-color: rgba(197, 160, 89, 0.4);
+    color: #8b6914;
+  }
+  
+  .profile-screen.light-theme .form-input {
+    background: rgba(255, 248, 240, 0.8);
+    border-color: rgba(197, 160, 89, 0.3);
+    color: #8b6914;
+  }
+  
+  .profile-screen.light-theme .form-input:focus {
+    border-color: #8b6914;
+    box-shadow: 0 0 8px rgba(139, 105, 20, 0.3);
+  }
+  
+  .profile-screen.light-theme .form-input::placeholder {
+    color: #a08040;
+  }
+  
+  .profile-screen.light-theme .form-label {
+    color: #a08040;
+  }
+  
+  .profile-screen.light-theme .modal-submit-btn {
+    background: linear-gradient(135deg, #a08040, #c8a060, #8b6914);
+    border-color: #8b6914;
+    color: #fff8f0;
+  }
+  
+  .profile-screen.light-theme .edit-tab {
+    background: rgba(255, 248, 240, 0.6);
+    border-color: rgba(197, 160, 89, 0.25);
+    color: #a08040;
+  }
+  
+  .profile-screen.light-theme .edit-tab.is-active {
+    background: linear-gradient(135deg, rgba(197, 160, 89, 0.3), rgba(139, 105, 20, 0.2));
+    border-color: #8b6914;
+    color: #8b6914;
+  }
+  
+  .profile-screen.light-theme .edit-birth-info-btn {
+    background: rgba(197, 160, 89, 0.1);
+    border-color: rgba(197, 160, 89, 0.4);
+    color: #a08040;
+  }
+  
+  .profile-screen.light-theme .reset-cancel-btn {
+    background: rgba(197, 160, 89, 0.1);
+    color: #a08040;
+    border-color: rgba(197, 160, 89, 0.3);
+  }
+  
+  .profile-screen.light-theme .reset-message {
+    color: #a08040;
+  }
+  
+  /* ===== PARTICLES ===== */
   .profile-screen .particles-container {
     position: absolute;
     inset: 0;
@@ -661,6 +918,15 @@
     background: rgba(220, 38, 38, 0.15);
   }
   
+  .profile-screen .setting-row--static {
+    cursor: default;
+  }
+  
+  .profile-screen .setting-row--static:active {
+    background: rgba(20, 12, 5, 0.8);
+    transform: none;
+  }
+  
   .profile-screen .setting-row-icon {
     flex-shrink: 0;
     color: #ffe566;
@@ -729,6 +995,54 @@
   
   .profile-screen .row-chevron {
     color: #c87800;
+  }
+  
+  .profile-screen .version-text {
+    font-family: 'Georgia', serif;
+    font-size: 11px;
+    color: #c87800;
+    letter-spacing: 0.5px;
+  }
+  
+  /* ===== TOGGLE SWITCH ===== */
+  .profile-screen .toggle-switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background: rgba(200, 120, 0, 0.2);
+    border: 1px solid rgba(200, 120, 0, 0.3);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    padding: 0;
+  }
+  
+  .profile-screen .toggle-switch.is-active {
+    background: linear-gradient(135deg, rgba(200, 120, 0, 0.5), rgba(255, 229, 102, 0.4));
+    border-color: #ffe566;
+  }
+  
+  .profile-screen .toggle-knob {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+    background: #c87800;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+  
+  .profile-screen .toggle-switch.is-active .toggle-knob {
+    left: 22px;
+    background: #ffe566;
+    box-shadow: 0 2px 6px rgba(255, 229, 102, 0.5);
+  }
+  
+  .profile-screen .toggle-switch:active {
+    transform: scale(0.95);
   }
   
   /* ===== DEBUG ===== */

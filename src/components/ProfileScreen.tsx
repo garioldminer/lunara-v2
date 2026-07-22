@@ -6,6 +6,7 @@ import { updateUser, resetZodiacSign } from '../lib/userService';
 import { getActiveSubscription } from '../lib/subscriptionService';
 import { supabase } from '../lib/supabase';
 import { Bug, X, Star, Heart, BookOpen, Lock, User, Trophy, Gem, Settings, LogOut, ChevronRight, RotateCcw, Shuffle } from 'lucide-react';
+import { useTranslation, LANGUAGE_META, AVAILABLE_LANGUAGES, type Language } from '../i18n/TranslationContext';
 
 interface Props {
   onNavigate?: (screen: string) => void;
@@ -29,10 +30,15 @@ const ZODIAC_DATA: Record<string, { symbol: string; element: string; planet: str
   Pisces: { symbol: '♓', element: 'Water', planet: 'Neptune' },
 };
 
-const getSignInfo = (signName: string) => {
-  if (!signName) return { symbol: '✧', element: 'Unknown', planet: 'Unknown' };
+const getSignInfo = (signName: string, t: (key: string) => string) => {
+  if (!signName) return { symbol: '✧', element: t('elements.Unknown'), planet: t('planets.Unknown') };
   const capitalized = signName.charAt(0).toUpperCase() + signName.slice(1).toLowerCase();
-  return ZODIAC_DATA[capitalized] || { symbol: '✧', element: 'Unknown', planet: 'Unknown' };
+  const data = ZODIAC_DATA[capitalized] || { symbol: '✧', element: 'Unknown', planet: 'Unknown' };
+  return {
+    symbol: data.symbol,
+    element: t(`elements.${data.element}`),
+    planet: t(`planets.${data.planet}`)
+  };
 };
 
 const getDayOfYear = (date: Date): number => {
@@ -41,31 +47,19 @@ const getDayOfYear = (date: Date): number => {
   return Math.floor(diff / (1000 * 60 * 60 * 24));
 };
 
-const getDynamicMoonPhase = () => {
+const getDynamicMoonPhase = (t: (key: string) => string) => {
   const dayOfYear = getDayOfYear(new Date());
   const lunarCycle = 29.53;
   const phaseIndex = Math.floor(((dayOfYear % lunarCycle) / lunarCycle) * 8) % 8;
-  const phases = [
-    { phase: 'New Moon', symbol: '🌑', bestFor: 'New beginnings, setting intentions' },
-    { phase: 'Waxing Crescent', symbol: '🌒', bestFor: 'Action, building momentum' },
-    { phase: 'First Quarter', symbol: '🌓', bestFor: 'Decisions, overcoming obstacles' },
-    { phase: 'Waxing Gibbous', symbol: '🌔', bestFor: 'Refinement, preparation' },
-    { phase: 'Full Moon', symbol: '🌕', bestFor: 'Culmination, release, celebration' },
-    { phase: 'Waning Gibbous', symbol: '🌖', bestFor: 'Gratitude, sharing wisdom' },
-    { phase: 'Last Quarter', symbol: '🌗', bestFor: 'Release, forgiveness, letting go' },
-    { phase: 'Waning Crescent', symbol: '🌘', bestFor: 'Rest, reflection, surrender' },
-  ];
-
+  const phases = ['newMoon', 'waxingCrescent', 'firstQuarter', 'waxingGibbous', 'fullMoon', 'waningGibbous', 'lastQuarter', 'waningCrescent'];
   const current = phases[phaseIndex];
   const illumination = Math.floor(((dayOfYear % lunarCycle) / lunarCycle) * 100);
 
   return {
-    phase: current.phase,
-    symbol: current.symbol,
+    phase: t(`moonPhase.${current}`),
+    symbol: ['🌑', '🌒', '🌓', '🌔', '🌕', '🌖', '🌗', '🌘'][phaseIndex],
     illumination: illumination,
-    zodiac: 'Dynamic',
-    bestFor: current.bestFor,
-    nextFull: 'Calculated dynamically'
+    bestFor: t(`moonPhase.bestFor.${current}`)
   };
 };
 
@@ -143,7 +137,16 @@ interface Reading {
   cards: string[];
 }
 
+interface Notifications {
+  push: boolean;
+  email: boolean;
+  dailyHoroscope: boolean;
+  moonPhase: boolean;
+}
+
 export default function ProfileScreen({ onNavigate }: Props) {
+  const { t, language, setLanguage } = useTranslation();
+  
   const [activeTab, setActiveTab] = useState<'profile' | 'achievements' | 'settings'>('profile');
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showBirthInfo, setShowBirthInfo] = useState(false);
@@ -154,6 +157,12 @@ export default function ProfileScreen({ onNavigate }: Props) {
   const [activeSubscription, setActiveSubscription] = useState<any>(null);
   const [recentReadings, setRecentReadings] = useState<Reading[]>([]);
   const [isUserAdmin, setIsUserAdmin] = useState(false);
+  const [notifications, setNotifications] = useState<Notifications>({
+    push: true,
+    email: false,
+    dailyHoroscope: true,
+    moonPhase: true
+  });
 
   const [showDebug, setShowDebug] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
@@ -195,27 +204,19 @@ export default function ProfileScreen({ onNavigate }: Props) {
   }, [user]);
 
   const userLevelData = user ? getLevelFromTotalXP(user.xp || 0) : { level: 1, currentLevelXP: 0, xpToNext: 100 };
-  const sunSignData = getSignInfo(user?.sun_sign || '');
-
+  
   const userData = user ? {
-    telegramUsername: '@' + (user.username || 'user'),
     displayName: user.display_name || 'User',
-    bio: user.bio || '',
     sunSign: user.sun_sign || '',
     moonSign: user.moon_sign || '',
     risingSign: user.rising_sign || '',
-    partnerSign: user.partner_sign || '',
-    birthDate: user.birth_date || '',
-    birthTime: user.birth_time || '',
-    birthPlace: user.birth_place || '',
     zodiac: user.sun_sign || '',
-    zodiacSymbol: sunSignData.symbol,
-    element: sunSignData.element,
+    zodiacSymbol: getSignInfo(user.sun_sign || '', t).symbol,
+    element: getSignInfo(user.sun_sign || '', t).element,
     level: userLevelData.level,
     levelTitle: getLevelTitle(userLevelData.level),
     xp: userLevelData.currentLevelXP,
     xpToNext: userLevelData.xpToNext,
-    memberSince: new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
     avatar: user.display_name?.charAt(0).toUpperCase() || 'U',
     currentPlan: user.current_plan || 'FREE',
     gems: user.gems || 0,
@@ -225,27 +226,27 @@ export default function ProfileScreen({ onNavigate }: Props) {
   } : null;
 
   const mySigns: { label: string; icon: string; sign: SignInfo }[] = userData ? [
-    { label: 'Sun', icon: '☀', sign: { name: userData.sunSign, ...getSignInfo(userData.sunSign) } },
-    { label: 'Moon', icon: '☾', sign: { name: userData.moonSign, ...getSignInfo(userData.moonSign) } },
-    { label: 'Rising', icon: '↑', sign: { name: userData.risingSign, ...getSignInfo(userData.risingSign) } },
+    { label: t('profile.signs.sun'), icon: '☀', sign: { name: userData.sunSign, ...getSignInfo(userData.sunSign, t) } },
+    { label: t('profile.signs.moon'), icon: '☾', sign: { name: userData.moonSign, ...getSignInfo(userData.moonSign, t) } },
+    { label: t('profile.signs.rising'), icon: '↑', sign: { name: userData.risingSign, ...getSignInfo(userData.risingSign, t) } },
   ] : [];
 
   const stats: Stat[] = userData ? [
-    { label: 'Readings', value: userData.readingsCount || recentReadings.length, icon: '🔮' },
-    { label: 'Cards', value: `${userData.cardsCollected}/78`, icon: '🃏' },
-    { label: 'Streak', value: userData.streak, icon: '🔥' },
-    { label: 'Gems', value: userData.gems, icon: '💎' },
+    { label: t('profile.stats.readings'), value: userData.readingsCount || recentReadings.length, icon: '🔮' },
+    { label: t('profile.stats.cards'), value: `${userData.cardsCollected}/78`, icon: '🃏' },
+    { label: t('profile.stats.streak'), value: userData.streak, icon: '🔥' },
+    { label: t('profile.stats.gems'), value: userData.gems, icon: '💎' },
   ] : [];
 
   const achievements: Achievement[] = userData ? [
-    { id: '1', icon: '🎯', title: 'First Reading', description: 'Complete your first tarot reading', unlocked: (userData.readingsCount || recentReadings.length) >= 1, progress: Math.min((userData.readingsCount || recentReadings.length), 1), total: 1 },
-    { id: '2', icon: '🔥', title: '7-Day Streak', description: 'Use the app 7 days in a row', unlocked: userData.streak >= 7, progress: Math.min(userData.streak, 7), total: 7 },
-    { id: '3', icon: '📚', title: 'Collector', description: 'Collect all 78 tarot cards', unlocked: userData.cardsCollected >= 78, progress: userData.cardsCollected, total: 78 },
-    { id: '4', icon: '💕', title: 'Love Expert', description: 'Complete 50 love readings', unlocked: false, progress: 12, total: 50 },
-    { id: '5', icon: '🌙', title: 'Moon Master', description: 'Complete 10 moon rituals', unlocked: false, progress: 3, total: 10 },
+    { id: '1', icon: '🎯', title: t('achievements.firstReading'), description: t('achievements.firstReadingDesc'), unlocked: (userData.readingsCount || recentReadings.length) >= 1, progress: Math.min((userData.readingsCount || recentReadings.length), 1), total: 1 },
+    { id: '2', icon: '🔥', title: t('achievements.streak7'), description: t('achievements.streak7Desc'), unlocked: userData.streak >= 7, progress: Math.min(userData.streak, 7), total: 7 },
+    { id: '3', icon: '📚', title: t('achievements.collector'), description: t('achievements.collectorDesc'), unlocked: userData.cardsCollected >= 78, progress: userData.cardsCollected, total: 78 },
+    { id: '4', icon: '💕', title: t('achievements.loveExpert'), description: t('achievements.loveExpertDesc'), unlocked: false, progress: 12, total: 50 },
+    { id: '5', icon: '🌙', title: t('achievements.moonMaster'), description: t('achievements.moonMasterDesc'), unlocked: false, progress: 3, total: 10 },
   ] : [];
 
-  const moonPhase = getDynamicMoonPhase();
+  const moonPhase = getDynamicMoonPhase(t);
 
   const handleSettingClick = async (setting: string) => {
     if (setting === 'subscription' && onNavigate) {
@@ -261,7 +262,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
         window.location.href = '/';
       } catch (error) {
         console.error('❌ Error logging out:', error);
-        alert('გასვლა ვერ მოხერხდა. გთხოვთ, სცადოთ მოგვიანებით.');
+        alert('გასვლა ვერ მოხერხდა.');
       }
     }
   };
@@ -282,7 +283,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
       }
     } catch (error) {
       console.error('❌ Error resetting zodiac sign:', error);
-      alert('Failed to reset zodiac sign. Please try again.');
     } finally {
       setResetting(false);
     }
@@ -298,7 +298,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
       if (data.sunSign) updates.sun_sign = data.sunSign;
       if (data.moonSign) updates.moon_sign = data.moonSign;
       if (data.risingSign) updates.rising_sign = data.risingSign;
-      if (data.partnerSign !== undefined) updates.partner_sign = data.partnerSign;
       if (data.birthDate) updates.birth_date = data.birthDate;
       if (data.birthTime) updates.birth_time = data.birthTime;
       if (data.birthPlace) updates.birth_place = data.birthPlace;
@@ -312,6 +311,13 @@ export default function ProfileScreen({ onNavigate }: Props) {
     const updatedUser = await updateUser(user.id, { birth_date: date, birth_time: time, birth_place: place });
     if (updatedUser) setUser(updatedUser);
     setShowBirthInfo(false);
+  };
+
+  const handleNotificationToggle = (key: keyof Notifications) => {
+    setNotifications(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
   };
 
   const xpProgress = userData ? (userData.xp / userData.xpToNext) * 100 : 0;
@@ -341,14 +347,16 @@ export default function ProfileScreen({ onNavigate }: Props) {
       <div className="screen-container profile profile-screen">
         <div className="profile-loading">
           <div className="loading-glyph">✦</div>
-          <span>Loading profile…</span>
+          <span>{t('profile.loading')}</span>
         </div>
       </div>
     );
   }
 
+  const zodiacName = userData.zodiac ? t(`zodiac.${userData.zodiac.charAt(0).toUpperCase() + userData.zodiac.slice(1)}`) : '';
+
   return (
-    <div className="screen-container profile profile-screen">
+    <div className={`screen-container profile profile-screen ${settings.theme === 'light' ? 'light-theme' : ''}`}>
       <div className="particles-container" aria-hidden="true">
         {[...Array(12)].map((_, i) => (
           <div key={i} className="particle" style={{
@@ -365,7 +373,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
         </button>
       )}
 
-      {/* HEADER — avatar, name, level ring, nav pills all in one compact band */}
+      {/* HEADER */}
       <div className="identity-bar">
         <div className="identity-left" onClick={() => setShowEditProfile(true)}>
           <div className="ring-avatar">
@@ -388,7 +396,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
           </div>
           <div className="identity-text">
             <h1 className="identity-name">{userData.displayName}</h1>
-            <p className="identity-meta">{userData.zodiacSymbol} {userData.zodiac.charAt(0).toUpperCase() + userData.zodiac.slice(1)} · {userData.levelTitle}</p>
+            <p className="identity-meta">{userData.zodiacSymbol} {zodiacName} · {userData.levelTitle}</p>
           </div>
         </div>
 
@@ -411,7 +419,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
       <div className="profile-content">
         {activeTab === 'profile' && (
           <div className="tab-content">
-            {/* Stat strip — single dense row, no card padding wasted */}
             <div className="stat-strip animate-fade-in stagger-1">
               {stats.map((stat, idx) => (
                 <div key={idx} className="stat-cell">
@@ -422,13 +429,12 @@ export default function ProfileScreen({ onNavigate }: Props) {
               ))}
             </div>
 
-            {/* Natal trio — merges former "core traits" + "my signs" into one row */}
             <section className="panel animate-fade-in stagger-2">
               <div className="panel-head">
-                <h3 className="panel-title">✦ NATAL CHART ✦</h3>
+                <h3 className="panel-title">{t('profile.natalChart')}</h3>
                 <div className="panel-actions">
-                  <button className="ghost-btn" onClick={handleChangeSign}><Shuffle size={12} /> Change</button>
-                  <button className="ghost-btn ghost-btn--danger" onClick={() => setShowResetConfirm(true)}><RotateCcw size={12} /> Reset</button>
+                  <button className="ghost-btn" onClick={handleChangeSign}><Shuffle size={12} /> {t('profile.change')}</button>
+                  <button className="ghost-btn ghost-btn--danger" onClick={() => setShowResetConfirm(true)}><RotateCcw size={12} /> {t('profile.reset')}</button>
                 </div>
               </div>
               <div className="natal-trio">
@@ -443,39 +449,36 @@ export default function ProfileScreen({ onNavigate }: Props) {
               </div>
             </section>
 
-            {/* Moon phase — slim horizontal strip instead of tall card */}
             <section className="panel panel--row animate-fade-in stagger-3">
               <div className="moon-emblem">{moonPhase.symbol}</div>
               <div className="moon-copy">
                 <div className="moon-row-top">
                   <span className="panel-title">{moonPhase.phase}</span>
-                  <span className="moon-illum">{moonPhase.illumination}% lit</span>
+                  <span className="moon-illum">{moonPhase.illumination}% {t('moonPhase.lit')}</span>
                 </div>
                 <p className="moon-best">{moonPhase.bestFor}</p>
               </div>
             </section>
 
-            {/* Quick actions — horizontal pill row */}
             <section className="action-row animate-fade-in stagger-4">
               <button className="action-pill" onClick={() => onNavigate && onNavigate('natal-chart')}>
                 <Star size={16} />
-                <span>Natal Chart</span>
+                <span>{t('profile.actions.natalChart')}</span>
                 {userData.currentPlan === 'FREE' && <Lock size={11} className="pill-lock" />}
               </button>
               <button className="action-pill" onClick={() => onNavigate && onNavigate('compatibility')}>
                 <Heart size={16} />
-                <span>Compatibility</span>
+                <span>{t('profile.actions.compatibility')}</span>
               </button>
               <button className="action-pill" onClick={() => onNavigate && onNavigate('journal')}>
                 <BookOpen size={16} />
-                <span>Journal</span>
+                <span>{t('profile.actions.journal')}</span>
               </button>
             </section>
 
-            {/* Recent readings — compact horizontal scroll strip, capped so it never grows the page */}
             {recentReadings.length > 0 && (
               <section className="panel animate-fade-in stagger-5">
-                <h3 className="panel-title">✦ RECENT READINGS ✦</h3>
+                <h3 className="panel-title">{t('profile.recentReadings')}</h3>
                 <div className="readings-strip">
                   {recentReadings.map((reading) => (
                     <div key={reading.id} className="reading-chip">
@@ -494,7 +497,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
 
         {activeTab === 'achievements' && (
           <div className="tab-content animate-fade-in">
-            <h3 className="section-title">✦ ACHIEVEMENTS ✦</h3>
+            <h3 className="section-title">{t('profile.achievementsTitle')}</h3>
             <div className="achv-list">
               {achievements.map((achievement, index) => (
                 <div key={achievement.id} className={`achv-row ${achievement.unlocked ? 'is-unlocked' : 'is-locked'} animate-fade-in stagger-${index + 1}`}>
@@ -517,41 +520,123 @@ export default function ProfileScreen({ onNavigate }: Props) {
 
         {activeTab === 'settings' && (
           <div className="tab-content animate-fade-in">
-            <h3 className="section-title">✦ SETTINGS ✦</h3>
+            <h3 className="section-title">{t('profile.settingsTitle')}</h3>
 
+            {/* Appearance */}
             <div className="settings-group">
-              <span className="settings-group-label">Appearance</span>
+              <span className="settings-group-label">{t('settings.appearance')}</span>
               <div className="setting-row">
                 <span className="setting-row-icon">🌗</span>
-                <span className="setting-row-label">Theme</span>
+                <span className="setting-row-label">{t('settings.theme')}</span>
                 <div className="segmented">
-                  <button className={`segmented-opt ${settings.theme === 'dark' ? 'is-active' : ''}`} onClick={() => updateSetting('theme', 'dark')}>Dark</button>
-                  <button className={`segmented-opt ${settings.theme === 'light' ? 'is-active' : ''}`} onClick={() => updateSetting('theme', 'light')}>Light</button>
+                  <button className={`segmented-opt ${settings.theme === 'dark' ? 'is-active' : ''}`} onClick={() => updateSetting('theme', 'dark')}>{t('settings.themeDark')}</button>
+                  <button className={`segmented-opt ${settings.theme === 'light' ? 'is-active' : ''}`} onClick={() => updateSetting('theme', 'light')}>{t('settings.themeLight')}</button>
                 </div>
               </div>
               <div className="setting-row">
                 <span className="setting-row-icon">🌐</span>
-                <span className="setting-row-label">Language</span>
-                <select className="mini-select" value={settings.language} onChange={(e) => updateSetting('language', e.target.value as any)}>
-                  <option value="en">EN</option>
-                  <option value="ka">ქარ</option>
+                <span className="setting-row-label">{t('settings.language')}</span>
+                <select className="mini-select" value={language} onChange={(e) => setLanguage(e.target.value as Language)}>
+                  {AVAILABLE_LANGUAGES.map(lang => (
+                    <option key={lang} value={lang}>{LANGUAGE_META[lang].flag} {LANGUAGE_META[lang].nativeName}</option>
+                  ))}
                 </select>
               </div>
             </div>
 
+            {/* Notifications */}
             <div className="settings-group">
-              <span className="settings-group-label">Account</span>
+              <span className="settings-group-label">{t('settings.notifications')}</span>
+              <div className="setting-row">
+                <span className="setting-row-icon">🔔</span>
+                <span className="setting-row-label">{t('settings.pushNotifications')}</span>
+                <button 
+                  className={`toggle-switch ${notifications.push ? 'is-active' : ''}`}
+                  onClick={() => handleNotificationToggle('push')}
+                  aria-label="Toggle push notifications"
+                >
+                  <span className="toggle-knob" />
+                </button>
+              </div>
+              <div className="setting-row">
+                <span className="setting-row-icon">📧</span>
+                <span className="setting-row-label">{t('settings.emailNotifications')}</span>
+                <button 
+                  className={`toggle-switch ${notifications.email ? 'is-active' : ''}`}
+                  onClick={() => handleNotificationToggle('email')}
+                  aria-label="Toggle email notifications"
+                >
+                  <span className="toggle-knob" />
+                </button>
+              </div>
+              <div className="setting-row">
+                <span className="setting-row-icon">🌅</span>
+                <span className="setting-row-label">{t('settings.dailyHoroscope')}</span>
+                <button 
+                  className={`toggle-switch ${notifications.dailyHoroscope ? 'is-active' : ''}`}
+                  onClick={() => handleNotificationToggle('dailyHoroscope')}
+                  aria-label="Toggle daily horoscope"
+                >
+                  <span className="toggle-knob" />
+                </button>
+              </div>
+              <div className="setting-row">
+                <span className="setting-row-icon">🌙</span>
+                <span className="setting-row-label">{t('settings.moonPhaseAlerts')}</span>
+                <button 
+                  className={`toggle-switch ${notifications.moonPhase ? 'is-active' : ''}`}
+                  onClick={() => handleNotificationToggle('moonPhase')}
+                  aria-label="Toggle moon phase alerts"
+                >
+                  <span className="toggle-knob" />
+                </button>
+              </div>
+            </div>
+
+            {/* Account */}
+            <div className="settings-group">
+              <span className="settings-group-label">{t('settings.account')}</span>
               <button className="setting-row setting-row--link" onClick={() => handleSettingClick('subscription')}>
                 <Gem size={16} className="setting-row-icon" />
-                <span className="setting-row-label">Subscription</span>
-                <span className={`status-pill ${activeSubscription ? 'status-pill--active' : ''}`}>{activeSubscription ? 'Active' : 'Free'}</span>
+                <span className="setting-row-label">{t('settings.subscription')}</span>
+                <span className={`status-pill ${activeSubscription ? 'status-pill--active' : ''}`}>{activeSubscription ? t('common.active') : t('common.free')}</span>
                 <ChevronRight size={16} className="row-chevron" />
               </button>
               <button className="setting-row setting-row--link setting-row--danger" onClick={() => handleSettingClick('logout')}>
                 <LogOut size={16} className="setting-row-icon" />
-                <span className="setting-row-label">Log out</span>
+                <span className="setting-row-label">{t('settings.logout')}</span>
                 <ChevronRight size={16} className="row-chevron" />
               </button>
+            </div>
+
+            {/* Help & Support */}
+            <div className="settings-group">
+              <span className="settings-group-label">{t('settings.helpSupport')}</span>
+              <button className="setting-row setting-row--link" onClick={() => onNavigate && onNavigate('faq')}>
+                <span className="setting-row-icon">❓</span>
+                <span className="setting-row-label">{t('settings.faq')}</span>
+                <ChevronRight size={16} className="row-chevron" />
+              </button>
+              <button className="setting-row setting-row--link" onClick={() => onNavigate && onNavigate('contact')}>
+                <span className="setting-row-icon">💬</span>
+                <span className="setting-row-label">{t('settings.contactSupport')}</span>
+                <ChevronRight size={16} className="row-chevron" />
+              </button>
+              <button className="setting-row setting-row--link" onClick={() => onNavigate && onNavigate('terms')}>
+                <span className="setting-row-icon">📄</span>
+                <span className="setting-row-label">{t('settings.terms')}</span>
+                <ChevronRight size={16} className="row-chevron" />
+              </button>
+              <button className="setting-row setting-row--link" onClick={() => onNavigate && onNavigate('privacy')}>
+                <span className="setting-row-icon">🔒</span>
+                <span className="setting-row-label">{t('settings.privacy')}</span>
+                <ChevronRight size={16} className="row-chevron" />
+              </button>
+              <div className="setting-row setting-row--static">
+                <span className="setting-row-icon">ℹ️</span>
+                <span className="setting-row-label">{t('settings.version')}</span>
+                <span className="version-text">1.0.0</span>
+              </div>
             </div>
           </div>
         )}
@@ -582,114 +667,72 @@ export default function ProfileScreen({ onNavigate }: Props) {
       )}
 
       {showEditProfile && (
-        <EditProfileModal
-          userData={userData}
-          editSection={editSection}
-          setEditSection={setEditSection}
-          onSave={handleSaveEdit}
-          onClose={() => setShowEditProfile(false)}
-          onEditBirthInfo={() => { setShowEditProfile(false); setShowBirthInfo(true); }}
-        />
-      )}
-      {showBirthInfo && (
-        <BirthInfoModal
-          birthDate={userData.birthDate}
-          birthTime={userData.birthTime}
-          birthPlace={userData.birthPlace}
-          onSave={handleSaveBirthInfo}
-          onClose={() => setShowBirthInfo(false)}
-        />
-      )}
-      {showResetConfirm && (
-        <ResetConfirmModal
-          resetting={resetting}
-          onConfirm={handleResetSign}
-          onCancel={() => setShowResetConfirm(false)}
-        />
-      )}
-    </div>
-  );
-}
-
-// ==========================================
-// MODAL COMPONENTS
-// ==========================================
-function EditProfileModal({ userData, editSection, setEditSection, onSave, onClose, onEditBirthInfo }: any) {
-  const [formData, setFormData] = useState(userData);
-  const zodiacSigns = Object.keys(ZODIAC_DATA).map(key => ({ name: key, ...ZODIAC_DATA[key] }));
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content edit-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}><X size={18} /></button>
-        <h2 className="modal-title">Edit Profile</h2>
-        <div className="edit-section-tabs">
-          <button type="button" className={`edit-tab ${editSection === 'personal' ? 'is-active' : ''}`} onClick={() => setEditSection('personal')}>Personal</button>
-          <button type="button" className={`edit-tab ${editSection === 'astrology' ? 'is-active' : ''}`} onClick={() => setEditSection('astrology')}>Astro</button>
-        </div>
-        <form onSubmit={(e) => { e.preventDefault(); onSave(editSection, formData); onClose(); }}>
-          {editSection === 'personal' && (
-            <div className="edit-section">
-              <div className="form-group">
-                <label className="form-label">Display Name</label>
-                <input type="text" className="form-input" value={formData.displayName} onChange={(e) => setFormData({ ...formData, displayName: e.target.value })} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Bio</label>
-                <textarea className="form-input form-textarea" value={formData.bio} onChange={(e) => setFormData({ ...formData, bio: e.target.value })} maxLength={150} rows={3} />
-              </div>
+        <div className="modal-overlay" onClick={() => setShowEditProfile(false)}>
+          <div className="modal-content edit-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowEditProfile(false)}><X size={18} /></button>
+            <h2 className="modal-title">{t('editProfile.title')}</h2>
+            <div className="edit-section-tabs">
+              <button type="button" className={`edit-tab ${editSection === 'personal' ? 'is-active' : ''}`} onClick={() => setEditSection('personal')}>{t('editProfile.personal')}</button>
+              <button type="button" className={`edit-tab ${editSection === 'astrology' ? 'is-active' : ''}`} onClick={() => setEditSection('astrology')}>{t('editProfile.astro')}</button>
             </div>
-          )}
-          {editSection === 'astrology' && (
-            <div className="edit-section">
-              {['sunSign', 'moonSign', 'risingSign'].map((signType) => (
-                <div className="form-group" key={signType}>
-                  <label className="form-label">{signType === 'sunSign' ? 'Sun Sign' : signType === 'moonSign' ? 'Moon Sign' : 'Rising Sign'}</label>
-                  <select className="form-input form-select" value={(formData as any)[signType]} onChange={(e) => setFormData({ ...formData, [signType]: e.target.value })}>
-                    {zodiacSigns.map(sign => <option key={sign.name} value={sign.name}>{sign.symbol} {sign.name} ({sign.element})</option>)}
-                  </select>
+            <form onSubmit={(e) => { e.preventDefault(); handleSaveEdit(editSection, { displayName: (e.target as any).displayName.value, bio: (e.target as any).bio.value }); setShowEditProfile(false); }}>
+              {editSection === 'personal' && (
+                <div className="edit-section">
+                  <div className="form-group">
+                    <label className="form-label">{t('editProfile.displayName')}</label>
+                    <input name="displayName" type="text" className="form-input" defaultValue={userData.displayName} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">{t('editProfile.bio')}</label>
+                    <textarea name="bio" className="form-input form-textarea" defaultValue={user?.bio || ''} maxLength={150} rows={3} />
+                  </div>
                 </div>
-              ))}
-              <button type="button" className="edit-birth-info-btn" onClick={onEditBirthInfo}>Edit Birth Info →</button>
-            </div>
-          )}
-          <button type="submit" className="modal-submit-btn">Save Changes</button>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-function BirthInfoModal({ birthDate, birthTime, birthPlace, onSave, onClose }: any) {
-  const [formData, setFormData] = useState({ date: birthDate, time: birthTime, place: birthPlace });
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}><X size={18} /></button>
-        <h2 className="modal-title">Birth Info</h2>
-        <form onSubmit={(e) => { e.preventDefault(); onSave(formData.date, formData.time, formData.place); onClose(); }}>
-          <div className="form-group"><label className="form-label">Date of Birth</label><input type="date" className="form-input" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} /></div>
-          <div className="form-group"><label className="form-label">Time of Birth</label><input type="time" className="form-input" value={formData.time} onChange={(e) => setFormData({ ...formData, time: e.target.value })} /></div>
-          <div className="form-group"><label className="form-label">Place of Birth</label><input type="text" className="form-input" value={formData.place} onChange={(e) => setFormData({ ...formData, place: e.target.value })} placeholder="City, Country" /></div>
-          <button type="submit" className="modal-submit-btn">Save Birth Info</button>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-function ResetConfirmModal({ resetting, onConfirm, onCancel }: any) {
-  return (
-    <div className="modal-overlay" onClick={onCancel}>
-      <div className="modal-content reset-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="reset-icon">⚠</div>
-        <h2 className="modal-title">Reset Zodiac Sign?</h2>
-        <p className="reset-message">This will remove your current zodiac sign and birth information.</p>
-        <div className="reset-actions">
-          <button className="reset-cancel-btn" onClick={onCancel} disabled={resetting}>Cancel</button>
-          <button className="reset-confirm-btn" onClick={onConfirm} disabled={resetting}>{resetting ? 'Resetting…' : 'Reset Sign'}</button>
+              )}
+              {editSection === 'astrology' && (
+                <div className="edit-section">
+                  <div className="form-group">
+                    <label className="form-label">{t('editProfile.sunSign')}</label>
+                    <select name="sunSign" className="form-input form-select" defaultValue={user?.sun_sign || ''}>
+                      {Object.keys(ZODIAC_DATA).map(sign => <option key={sign} value={sign}>{ZODIAC_DATA[sign].symbol} {sign} ({ZODIAC_DATA[sign].element})</option>)}
+                    </select>
+                  </div>
+                  <button type="button" className="edit-birth-info-btn" onClick={() => { setShowEditProfile(false); setShowBirthInfo(true); }}>{t('editProfile.editBirthInfo')}</button>
+                </div>
+              )}
+              <button type="submit" className="modal-submit-btn">{t('editProfile.saveChanges')}</button>
+            </form>
+          </div>
         </div>
-      </div>
+      )}
+
+      {showBirthInfo && (
+        <div className="modal-overlay" onClick={() => setShowBirthInfo(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowBirthInfo(false)}><X size={18} /></button>
+            <h2 className="modal-title">{t('birthInfo.title')}</h2>
+            <form onSubmit={(e) => { e.preventDefault(); handleSaveBirthInfo((e.target as any).date.value, (e.target as any).time.value, (e.target as any).place.value); }}>
+              <div className="form-group"><label className="form-label">{t('birthInfo.dateOfBirth')}</label><input name="date" type="date" className="form-input" defaultValue={user?.birth_date || ''} /></div>
+              <div className="form-group"><label className="form-label">{t('birthInfo.timeOfBirth')}</label><input name="time" type="time" className="form-input" defaultValue={user?.birth_time || ''} /></div>
+              <div className="form-group"><label className="form-label">{t('birthInfo.placeOfBirth')}</label><input name="place" type="text" className="form-input" defaultValue={user?.birth_place || ''} placeholder={t('birthInfo.cityCountry')} /></div>
+              <button type="submit" className="modal-submit-btn">{t('birthInfo.saveBirthInfo')}</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showResetConfirm && (
+        <div className="modal-overlay" onClick={() => setShowResetConfirm(false)}>
+          <div className="modal-content reset-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="reset-icon">⚠</div>
+            <h2 className="modal-title">{t('resetSign.title')}</h2>
+            <p className="reset-message">{t('resetSign.message')}</p>
+            <div className="reset-actions">
+              <button className="reset-cancel-btn" onClick={() => setShowResetConfirm(false)} disabled={resetting}>{t('resetSign.cancel')}</button>
+              <button className="reset-confirm-btn" onClick={handleResetSign} disabled={resetting}>{resetting ? t('resetSign.resetting') : t('resetSign.resetSign')}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

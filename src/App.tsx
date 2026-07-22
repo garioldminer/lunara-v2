@@ -27,6 +27,7 @@ import ServicesScreen from './components/ServicesScreen';
 import BottomNav from './components/BottomNav';
 import { UserProvider, useUser } from './context/UserContext';
 import { SettingsProvider } from './context/SettingsContext';
+import { TranslationProvider } from './i18n/TranslationContext'; // 🆕 ახალი იმპორტი
 import { getTelegramUser } from './lib/telegramAuth';
 import { getOrCreateUser, completeOnboarding } from './lib/userService';
 import { updateUserLastActive } from './lib/adminService';
@@ -701,7 +702,9 @@ function App() {
   return (
     <UserProvider>
       <SettingsProvider>
-        <AppContent />
+        <TranslationProvider> {/* 🆕 აქ დაემატა TranslationProvider */}
+          <AppContent />
+        </TranslationProvider>
       </SettingsProvider>
     </UserProvider>
   );
