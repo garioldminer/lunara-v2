@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { useUser } from '../context/UserContext';
+import { useTranslation } from '../i18n/TranslationContext'; // 🆕 ახალი იმპორტი
 import { tarotCards, SUITS } from '../data/tarotCards';
 import { isAdmin } from '../lib/adminService';
 import { getActiveSubscription } from '../lib/subscriptionService';
@@ -41,7 +42,7 @@ const getLevelFromTotalXP = (totalXP: number) => {
   return { level, currentLevelXP, xpToNext: xpRequiredForNext };
 };
 
-// Toast Notification Component - იდეალურად ცენტრში, X ღილაკით
+// Toast Notification Component
 interface Toast {
   message: string;
   type: 'success' | 'error' | 'info';
@@ -55,15 +56,8 @@ function ToastNotification({ toast, onClose }: { toast: Toast; onClose: () => vo
 
   return (
     <div style={{
-      position: 'fixed',
-      top: '0',
-      left: '0',
-      right: '0',
-      zIndex: 10003,
-      display: 'flex',
-      justifyContent: 'center',
-      padding: '80px 16px 0 16px',
-      pointerEvents: 'none'
+      position: 'fixed', top: '0', left: '0', right: '0', zIndex: 10003,
+      display: 'flex', justifyContent: 'center', padding: '80px 16px 0 16px', pointerEvents: 'none'
     }}>
       <motion.div 
         initial={{ opacity: 0, scale: 0.9, y: -20 }}
@@ -76,20 +70,10 @@ function ToastNotification({ toast, onClose }: { toast: Toast; onClose: () => vo
             : toast.type === 'error'
             ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.98), rgba(220, 38, 38, 0.98))'
             : 'linear-gradient(135deg, rgba(251, 191, 36, 0.98), rgba(245, 158, 11, 0.98))',
-          color: '#fff',
-          padding: '16px 20px',
-          borderRadius: '16px',
+          color: '#fff', padding: '16px 20px', borderRadius: '16px',
           boxShadow: '0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          fontSize: '14px',
-          fontWeight: '600',
-          maxWidth: '400px',
-          width: '100%',
-          backdropFilter: 'blur(12px)',
-          border: '1px solid rgba(255,255,255,0.1)',
-          pointerEvents: 'auto'
+          display: 'flex', alignItems: 'center', gap: '12px', fontSize: '14px', fontWeight: '600',
+          maxWidth: '400px', width: '100%', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.1)', pointerEvents: 'auto'
         }}
       >
         <span style={{ fontSize: '20px', flexShrink: 0 }}>
@@ -99,22 +83,9 @@ function ToastNotification({ toast, onClose }: { toast: Toast; onClose: () => vo
         <button 
           onClick={onClose} 
           style={{ 
-            position: 'absolute',
-            right: '12px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            background: 'rgba(255,255,255,0.2)', 
-            border: 'none', 
-            borderRadius: '6px', 
-            width: '24px', 
-            height: '24px', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            cursor: 'pointer',
-            color: '#fff',
-            fontSize: '16px',
-            lineHeight: 1
+            position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)',
+            background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '6px', width: '24px', height: '24px', 
+            display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff', fontSize: '16px', lineHeight: 1
           }}
         >
           ×
@@ -125,13 +96,12 @@ function ToastNotification({ toast, onClose }: { toast: Toast; onClose: () => vo
 }
 
 // Level Up Modal Component
-function LevelUpModal({ level, onClose }: { level: number; onClose: () => void }) {
+function LevelUpModal({ level, onClose, t }: { level: number; onClose: () => void; t: (key: string, params?: any) => string }) {
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
       background: 'rgba(0,0,0,0.85)', zIndex: 10002,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: '20px'
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
     }} onClick={onClose}>
       <motion.div 
         initial={{ scale: 0.5, opacity: 0 }}
@@ -140,38 +110,23 @@ function LevelUpModal({ level, onClose }: { level: number; onClose: () => void }
         transition={{ type: 'spring', damping: 15, stiffness: 200 }}
         style={{
           background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)',
-          border: '2px solid #fbbf24',
-          borderRadius: '24px',
-          padding: '32px 24px',
-          textAlign: 'center',
-          maxWidth: '320px',
-          width: '100%',
-          boxShadow: '0 0 50px rgba(251, 191, 36, 0.4)'
+          border: '2px solid #fbbf24', borderRadius: '24px', padding: '32px 24px', textAlign: 'center',
+          maxWidth: '320px', width: '100%', boxShadow: '0 0 50px rgba(251, 191, 36, 0.4)'
         }}
         onClick={(e) => e.stopPropagation()}
       >
         <div style={{ fontSize: '64px', marginBottom: '16px', filter: 'drop-shadow(0 0 10px rgba(251, 191, 36, 0.5))' }}>🎉</div>
-        <h2 style={{ color: '#fbbf24', fontSize: '28px', fontWeight: 'bold', marginBottom: '8px', letterSpacing: '1px' }}>LEVEL UP!</h2>
-        <p style={{ color: '#e2e8f0', fontSize: '16px', marginBottom: '24px', lineHeight: '1.5' }}>
-          Congratulations!<br/>
-          You reached <span style={{ color: '#fbbf24', fontWeight: 'bold', fontSize: '20px' }}>Level {level}</span>
-        </p>
+        <h2 style={{ color: '#fbbf24', fontSize: '28px', fontWeight: 'bold', marginBottom: '8px', letterSpacing: '1px' }}>{t('home.levelUpTitle')}</h2>
+        <p style={{ color: '#e2e8f0', fontSize: '16px', marginBottom: '24px', lineHeight: '1.5' }} dangerouslySetInnerHTML={{ __html: t('home.levelUpMessage', { level }) }} />
         <button 
           onClick={onClose}
           style={{
-            background: 'linear-gradient(135deg, #fbbf24, #d97706)',
-            color: '#0f0c08',
-            border: 'none',
-            borderRadius: '12px',
-            padding: '14px 32px',
-            fontSize: '16px',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            width: '100%',
-            boxShadow: '0 4px 15px rgba(251, 191, 36, 0.3)'
+            background: 'linear-gradient(135deg, #fbbf24, #d97706)', color: '#0f0c08', border: 'none',
+            borderRadius: '12px', padding: '14px 32px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer',
+            width: '100%', boxShadow: '0 4px 15px rgba(251, 191, 36, 0.3)'
           }}
         >
-          Awesome!
+          {t('home.awesome')}
         </button>
       </motion.div>
     </div>
@@ -217,6 +172,7 @@ interface DailyQuestDisplay extends QuestProgress {
 }
 
 export default function HomeScreen({ onNavigate }: Props) {
+  const { t } = useTranslation(); // 🆕 i18n ჰუკი
   const { user, setUser } = useUser();
   const [rewardClaimed, setRewardClaimed] = useState(false);
   const [isClaiming, setIsClaiming] = useState(false);
@@ -227,37 +183,23 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [isUserAdmin, setIsUserAdmin] = useState(false);
   const [activeSubscription, setActiveSubscription] = useState<any>(null);
   
-  const [economy, setEconomy] = useState<EconomyData>({
-    cosmic_coins: 0,
-    xp: 0,
-    level: 1,
-    current_streak: 0
-  });
-
+  const [economy, setEconomy] = useState<EconomyData>({ cosmic_coins: 0, xp: 0, level: 1, current_streak: 0 });
   const [questsLoading, setQuestsLoading] = useState(true);
-  
   const [dailyQuests, setDailyQuests] = useState<DailyQuestDisplay[]>([]);
   const [activeDailyQuest, setActiveDailyQuest] = useState<DailyQuestDisplay | null>(null);
   const [showQuestModal, setShowQuestModal] = useState(false);
   const [isClaimingQuest, setIsClaimingQuest] = useState(false);
-
   const [showLevelUpModal, setShowLevelUpModal] = useState(false);
   const [leveledUpTo, setLeveledUpTo] = useState<number>(1);
-  
   const [toast, setToast] = useState<Toast | null>(null);
-
   const [showDebug, setShowDebug] = useState(false);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
   const [dbStatus, setDbStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
   const [economyLoadStatus, setEconomyLoadStatus] = useState<'pending' | 'loading' | 'success' | 'error'>('pending');
   const [lastDbQuery, setLastDbQuery] = useState<any>(null);
   const [copySuccess, setCopySuccess] = useState(false);
-  
   const [dbDebugInfo, setDbDebugInfo] = useState<DatabaseDebugInfo>({
-    lastQuery: null,
-    lastResponse: null,
-    economyData: null,
-    queryHistory: []
+    lastQuery: null, lastResponse: null, economyData: null, queryHistory: []
   });
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
@@ -266,29 +208,17 @@ export default function HomeScreen({ onNavigate }: Props) {
 
   const addDebugLog = (type: DebugLog['type'], category: string, message: string, data?: any) => {
     const log: DebugLog = {
-      id: Date.now(),
-      timestamp: new Date().toLocaleTimeString('en-US', { hour12: false }),
-      type,
-      category,
-      message,
-      data
+      id: Date.now(), timestamp: new Date().toLocaleTimeString('en-US', { hour12: false }), type, category, message, data
     };
     setDebugLogs(prev => [log, ...prev].slice(0, 50));
   };
 
   const addToDbDebugHistory = (table: string, operation: string, params: any, result: any, error?: any) => {
     const historyEntry = {
-      timestamp: new Date().toLocaleTimeString('en-US', { hour12: false }),
-      table,
-      operation,
-      params,
-      result,
-      error
+      timestamp: new Date().toLocaleTimeString('en-US', { hour12: false }), table, operation, params, result, error
     };
     setDbDebugInfo(prev => ({
-      ...prev,
-      lastQuery: { table, operation, params },
-      lastResponse: result || error,
+      ...prev, lastQuery: { table, operation, params }, lastResponse: result || error,
       queryHistory: [historyEntry, ...prev.queryHistory].slice(0, 20)
     }));
   };
@@ -343,40 +273,18 @@ End of Debug Report
       addDebugLog('error', 'DB_CHECK', '❌ No user or supabase client available');
       return;
     }
-
     try {
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('id, display_name, telegram_id')
-        .eq('id', user.id)
-        .single();
+      const { data: userData, error: userError } = await supabase.from('users').select('id, display_name, telegram_id').eq('id', user.id).single();
+      if (userError) addDebugLog('error', 'DB_CHECK', `❌ Error fetching user: ${userError.message}`);
+      else addDebugLog('success', 'DB_CHECK', '✅ User found in database', userData);
 
-      if (userError) {
-        addDebugLog('error', 'DB_CHECK', `❌ Error fetching user: ${userError.message}`);
-      } else {
-        addDebugLog('success', 'DB_CHECK', '✅ User found in database', userData);
-      }
+      const { data: economyData, error: economyError } = await supabase.from('user_economy').select('cosmic_coins, xp, level').eq('user_id', user.id).single();
+      if (economyError) addDebugLog('error', 'DB_CHECK', `❌ Error fetching economy: ${economyError.message}`);
+      else addDebugLog('success', 'DB_CHECK', '✅ Economy record found', economyData);
 
-      const { data: economyData, error: economyError } = await supabase
-        .from('user_economy')
-        .select('cosmic_coins, xp, level')
-        .eq('user_id', user.id)
-        .single();
-
-      if (economyError) {
-        addDebugLog('error', 'DB_CHECK', `❌ Error fetching economy: ${economyError.message}`);
-      } else {
-        addDebugLog('success', 'DB_CHECK', '✅ Economy record found', economyData);
-      }
-
-      const { data: questsData, error: questsError } = await supabase
-        .rpc('get_user_quests', { p_user_id: user.id });
-
-      if (questsError) {
-        addDebugLog('error', 'DB_CHECK', `❌ Error calling get_user_quests RPC: ${questsError.message}`);
-      } else {
-        addDebugLog('success', 'DB_CHECK', `✅ get_user_quests RPC works. Found ${questsData?.length || 0} quests.`);
-      }
+      const { data: questsData, error: questsError } = await supabase.rpc('get_user_quests', { p_user_id: user.id });
+      if (questsError) addDebugLog('error', 'DB_CHECK', `❌ Error calling get_user_quests RPC: ${questsError.message}`);
+      else addDebugLog('success', 'DB_CHECK', `✅ get_user_quests RPC works. Found ${questsData?.length || 0} quests.`);
 
       addDebugLog('success', 'DB_CHECK', '🎉 Database check completed!');
     } catch (err: any) {
@@ -388,16 +296,13 @@ End of Debug Report
     addDebugLog('info', 'AUTH_DEBUG', '🔄 Starting manual user data refresh...');
     const tgUser = getTelegramUser();
     addDebugLog('info', 'AUTH_DEBUG', '1. Data from Telegram:', tgUser);
-    
     if (!tgUser || !supabase) {
       addDebugLog('error', 'AUTH_DEBUG', '❌ CRITICAL: Missing Telegram user or Supabase!');
       return;
     }
-
     addDebugLog('info', 'AUTH_DEBUG', `2. Querying Supabase with telegram_id: ${tgUser.id}`);
     const freshUser = await getOrCreateUser(tgUser);
     addDebugLog('info', 'AUTH_DEBUG', '3. Response from getOrCreateUser:', freshUser);
-
     if (freshUser) {
       addDebugLog('success', 'AUTH_DEBUG', '✅ SUCCESS: Updating User Context with fresh data');
       setUser(freshUser);
@@ -428,16 +333,13 @@ End of Debug Report
     try {
       await supabase.from('user_economy').delete().eq('user_id', user.id);
       addDebugLog('info', 'TEST', 'Existing record deleted for testing.');
-
       const { error: fetchError } = await supabase.from('user_economy').select('user_id').eq('user_id', user.id).single();
-
       if (fetchError && fetchError.code === 'PGRST116') {
         addDebugLog('warning', 'TEST', 'No record found (PGRST116). Creating new one...');
         const { error: insertError } = await supabase.from('user_economy').insert({
           user_id: user.id, cosmic_coins: 0, xp: 0, level: 1, cosmic_focus: 3, max_focus: 3,
           current_streak: 0, longest_streak: 0, last_active_date: new Date().toISOString().split('T')[0], last_daily_claim: null
         });
-
         if (insertError) throw new Error(insertError.message);
         addDebugLog('success', 'TEST', '✅ SUCCESS: New economy record created automatically!');
         setEconomy({ cosmic_coins: 0, xp: 0, level: 1, current_streak: 0 });
@@ -456,10 +358,8 @@ End of Debug Report
       const currentCoins = economy.cosmic_coins;
       const newCoins = currentCoins + amount;
       const { data, error } = await supabase.from('user_economy').update({ cosmic_coins: newCoins }).eq('user_id', user.id).select().single();
-      
       addToDbDebugHistory('user_economy', 'UPDATE', { userId: user.id, field: 'cosmic_coins', oldValue: currentCoins, newValue: newCoins }, data, error);
       if (error) throw error;
-
       setEconomy(prev => ({ ...prev, cosmic_coins: newCoins }));
       addDebugLog('success', 'TEST', `✅ Added ${amount} coins. New balance: ${newCoins}`);
       showToast(`Added ${amount} coins!`, 'success');
@@ -477,10 +377,8 @@ End of Debug Report
       const newXP = currentXP + amount;
       const newLevelData = getLevelFromTotalXP(newXP);
       const { data, error } = await supabase.from('user_economy').update({ xp: newXP, level: newLevelData.level }).eq('user_id', user.id).select().single();
-      
       addToDbDebugHistory('user_economy', 'UPDATE', { userId: user.id, field: 'xp', oldValue: currentXP, newValue: newXP, newLevel: newLevelData.level }, data, error);
       if (error) throw error;
-
       setEconomy(prev => ({ ...prev, xp: newXP, level: newLevelData.level }));
       addDebugLog('success', 'TEST', `✅ Added ${amount} XP. New: ${newXP} XP, Level ${newLevelData.level}`);
       showToast(`Added ${amount} XP!`, 'success');
@@ -496,18 +394,14 @@ End of Debug Report
       return;
     }
     addDebugLog('info', 'QUEST_TEST', '🎯 Simulating quest completion: draw_daily_card');
-    
     const currentQuests = await loadUserQuests(user.id);
     const q = currentQuests.find(x => x.quest?.action_type === 'draw_daily_card');
-    
     if (q) {
       addDebugLog('info', 'QUEST_TEST', `Current State -> Progress: ${q.current_progress}/${q.quest?.target_count}, Completed: ${q.is_completed}`);
     } else {
       addDebugLog('info', 'QUEST_TEST', 'Quest not found in user progress. Will create new record via secure function...');
     }
-
     const reward = await trackQuestProgress(user.id, 'draw_daily_card', 1);
-    
     if (reward) {
       addDebugLog('success', 'QUEST_TEST', `🎉 Quest Completed! Reward: ${reward.coins} coins, ${reward.xp} XP`);
       reloadFromDatabase();
@@ -525,12 +419,7 @@ End of Debug Report
       const { data, error } = await supabase.from('user_economy').select('cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus').eq('user_id', user.id).single();
       if (!error && data) {
         const levelData = getLevelFromTotalXP(data.xp || 0);
-        setEconomy({ 
-          cosmic_coins: data.cosmic_coins || 0, 
-          xp: data.xp || 0, 
-          level: levelData.level, 
-          current_streak: data.current_streak || 0 
-        });
+        setEconomy({ cosmic_coins: data.cosmic_coins || 0, xp: data.xp || 0, level: levelData.level, current_streak: data.current_streak || 0 });
         setCurrentStreak(data.current_streak || 0);
         setDbDebugInfo(prev => ({ ...prev, economyData: data }));
         addDebugLog('success', 'DB', '✅ Data reloaded successfully');
@@ -543,16 +432,9 @@ End of Debug Report
     if (!user) return;
     setQuestsLoading(true);
     const quests = await loadUserQuests(user.id);
-    
     const dQuests = quests.filter(q => q.quest?.quest_type === 'daily') as DailyQuestDisplay[];
-    
-    const processedQuests = dQuests.map(q => ({
-      ...q,
-      isClaimable: q.is_completed && !q.is_claimed
-    }));
-    
+    const processedQuests = dQuests.map(q => ({ ...q, isClaimable: q.is_completed && !q.is_claimed }));
     setDailyQuests(processedQuests);
-    
     const unclaimed = processedQuests.filter(q => !q.is_claimed);
     if (unclaimed.length > 0) {
       const randomIndex = Math.floor(Math.random() * unclaimed.length);
@@ -560,55 +442,32 @@ End of Debug Report
     } else {
       setActiveDailyQuest(null);
     }
-    
     setQuestsLoading(false);
   };
 
   const handleClaimQuest = async (quest: DailyQuestDisplay) => {
     if (!user || !supabase || isClaimingQuest) return;
-    
     setIsClaimingQuest(true);
     addDebugLog('info', 'QUEST_CLAIM', `Attempting to claim quest: ${quest.quest?.title}`);
-    
     try {
-      const { data, error } = await supabase.rpc('claim_quest_reward', {
-        p_user_id: user.id,
-        p_quest_id: quest.quest_id
-      });
-      
+      const { data, error } = await supabase.rpc('claim_quest_reward', { p_user_id: user.id, p_quest_id: quest.quest_id });
       if (error || !data?.success) {
         addDebugLog('error', 'QUEST_CLAIM', `Failed: ${error?.message || data?.error}`);
         showToast(data?.error || 'Failed to claim reward', 'error');
       } else {
         addDebugLog('success', 'QUEST_CLAIM', `Claimed! +${data.reward.coins} coins, +${data.reward.xp} XP`);
-        
         const currentTotalXP = user.xp || 0;
         const newTotalXP = currentTotalXP + data.reward.xp;
-        
         const oldLevelData = getLevelFromTotalXP(currentTotalXP);
         const newLevelData = getLevelFromTotalXP(newTotalXP);
-        
-        setEconomy(prev => ({
-          ...prev,
-          cosmic_coins: prev.cosmic_coins + data.reward.coins,
-          xp: newTotalXP,
-          level: newLevelData.level
-        }));
-
-        // LEVEL UP EFFECT
+        setEconomy(prev => ({ ...prev, cosmic_coins: prev.cosmic_coins + data.reward.coins, xp: newTotalXP, level: newLevelData.level }));
         if (newLevelData.level > oldLevelData.level) {
-          confetti({
-            particleCount: 150,
-            spread: 70,
-            origin: { y: 0.6 },
-            colors: ['#fbbf24', '#f59e0b', '#ffffff', '#10b981']
-          });
+          confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#fbbf24', '#f59e0b', '#ffffff', '#10b981'] });
           setLeveledUpTo(newLevelData.level);
           setShowLevelUpModal(true);
         } else {
           showToast(`Quest Completed! +${data.reward.coins} Coins, +${data.reward.xp} XP`, 'success');
         }
-        
         await loadQuests();
       }
     } catch (err: any) {
@@ -641,9 +500,7 @@ End of Debug Report
   }, [user]);
 
   useEffect(() => {
-    if (user) {
-      loadQuests();
-    }
+    if (user) loadQuests();
   }, [user]);
 
   useEffect(() => {
@@ -658,18 +515,14 @@ End of Debug Report
         setEconomyLoadStatus('error');
         return;
       }
-
       setEconomyLoadStatus('loading');
       setDbStatus('connecting');
       addDebugLog('info', 'ECONOMY', '📡 Starting economy data load', { userId: user.id });
-
       try {
         const queryParams = { table: 'user_economy', columns: 'cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus', userId: user.id };
         setLastDbQuery(queryParams);
         addToDbDebugHistory('user_economy', 'SELECT', queryParams, 'PENDING');
-
         const { data, error } = await supabase.from('user_economy').select('cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus').eq('user_id', user.id).single();
-
         if (error) {
           setDbStatus('error');
           setEconomyLoadStatus('error');
@@ -677,21 +530,14 @@ End of Debug Report
           addDebugLog('error', 'ECONOMY', '❌ Database query failed', { error: error.message, code: error.code, details: error.details });
           return;
         }
-
         setDbStatus('connected');
         setEconomyLoadStatus('success');
         addToDbDebugHistory('user_economy', 'SELECT', queryParams, data);
         setDbDebugInfo(prev => ({ ...prev, economyData: data }));
         addDebugLog('success', 'ECONOMY', '✅ Economy data loaded successfully', data);
-
         if (data) {
           const levelData = getLevelFromTotalXP(data.xp || 0);
-          const economyData = { 
-            cosmic_coins: data.cosmic_coins || 0, 
-            xp: data.xp || 0, 
-            level: levelData.level, 
-            current_streak: data.current_streak || 0 
-          };
+          const economyData = { cosmic_coins: data.cosmic_coins || 0, xp: data.xp || 0, level: levelData.level, current_streak: data.current_streak || 0 };
           setEconomy(economyData);
           setCurrentStreak(economyData.current_streak);
           addDebugLog('info', 'STATE', '💰 Economy state updated', economyData);
@@ -773,26 +619,17 @@ End of Debug Report
       }
       addDebugLog('info', 'REWARD', 'Calling Edge Function', { userId: user.id, url: 'https://eutavdhcxpfhpfsyaskb.supabase.co/functions/v1/claim-daily-reward' });
       const response = await fetch('https://eutavdhcxpfhpfsyaskb.supabase.co/functions/v1/claim-daily-reward', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-User-Id': user.id },
-        body: JSON.stringify({})
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'X-User-Id': user.id }, body: JSON.stringify({})
       });
       addDebugLog('info', 'REWARD', 'Edge Function response received', { status: response.status, statusText: response.statusText });
       const result = await response.json();
       addDebugLog('info', 'REWARD', 'Response parsed', result);
-      
       if (result.success) {
         setRewardClaimed(true);
         const rewardData = result.data?.reward || result.reward;
-        
         if (rewardData) {
           setCurrentStreak(rewardData.streak);
-          const newEconomy = { 
-            ...economy, 
-            cosmic_coins: economy.cosmic_coins + rewardData.coins, 
-            xp: economy.xp + rewardData.xp, 
-            current_streak: rewardData.streak 
-          };
+          const newEconomy = { ...economy, cosmic_coins: economy.cosmic_coins + rewardData.coins, xp: economy.xp + rewardData.xp, current_streak: rewardData.streak };
           setEconomy(newEconomy);
           addDebugLog('success', 'REWARD', 'Reward claimed successfully', { coins: rewardData.coins, xp: rewardData.xp, streak: rewardData.streak, newEconomy });
           showToast(`Daily Reward Claimed! +${rewardData.coins} Coins, +${rewardData.xp} XP`, 'success');
@@ -830,31 +667,30 @@ End of Debug Report
     }
   };
 
+  // 🆕 განახლებული quickActions მასივი t() ფუნქციით
   const quickActions = [
-    { icon: <Sparkles size={28} />, label: 'Daily', sublabel: 'Card', color: '#C5A059', action: 'Daily' },
-    { icon: <LayoutGrid size={28} />, label: '3 Cards', sublabel: 'Reading', color: '#a78bfa', action: '3Cards' },
-    { icon: <Moon size={28} />, label: 'Tarot', sublabel: 'Draw', color: '#60a5fa', action: 'Tarot' },
-    { icon: <Hash size={28} />, label: 'Cards', sublabel: 'Gallery', color: '#fbbf24', action: 'Cards' },
-    { icon: <Scroll size={28} />, label: 'History', sublabel: 'Readings', color: '#34d399', action: 'History' },
-    { icon: <Crown size={28} />, label: 'Celtic', sublabel: 'Cross', color: '#C5A059', action: 'CelticCross', isPremium: true },
-    { icon: <span style={{ fontSize: '28px' }}>🐎</span>, label: 'Horseshoe', sublabel: '7 Cards', color: '#fb923c', action: 'Horseshoe', isPremium: true },
-    { icon: <span style={{ fontSize: '28px' }}>❤️</span>, label: 'Love', sublabel: 'Spread', color: '#f472b6', action: 'Relationship', isPremium: true },
-    { icon: <Sparkles size={28} />, label: 'Horoscope', sublabel: 'Daily', color: '#C5A059', action: 'Horoscope' },
-    { icon: <Sparkles size={28} />, label: 'Services', sublabel: 'Shop', color: '#FFD700', action: 'Services', isServices: true },
+    { icon: <Sparkles size={28} />, label: t('home.quickAccess.daily'), sublabel: t('home.quickAccess.card'), color: '#C5A059', action: 'Daily' },
+    { icon: <LayoutGrid size={28} />, label: t('home.quickAccess.threeCards'), sublabel: t('home.quickAccess.reading'), color: '#a78bfa', action: '3Cards' },
+    { icon: <Moon size={28} />, label: t('home.quickAccess.tarot'), sublabel: t('home.quickAccess.draw'), color: '#60a5fa', action: 'Tarot' },
+    { icon: <Hash size={28} />, label: t('home.quickAccess.cards'), sublabel: t('home.quickAccess.gallery'), color: '#fbbf24', action: 'Cards' },
+    { icon: <Scroll size={28} />, label: t('home.quickAccess.history'), sublabel: t('home.quickAccess.readings'), color: '#34d399', action: 'History' },
+    { icon: <Crown size={28} />, label: t('home.quickAccess.celtic'), sublabel: t('home.quickAccess.cross'), color: '#C5A059', action: 'CelticCross', isPremium: true },
+    { icon: <span style={{ fontSize: '28px' }}>🐎</span>, label: t('home.quickAccess.horseshoe'), sublabel: t('home.quickAccess.sevenCards'), color: '#fb923c', action: 'Horseshoe', isPremium: true },
+    { icon: <span style={{ fontSize: '28px' }}>❤️</span>, label: t('home.quickAccess.love'), sublabel: t('home.quickAccess.spread'), color: '#f472b6', action: 'Relationship', isPremium: true },
+    { icon: <Sparkles size={28} />, label: t('home.quickAccess.horoscope'), sublabel: t('home.quickAccess.daily'), color: '#C5A059', action: 'Horoscope' },
+    { icon: <Sparkles size={28} />, label: t('home.quickAccess.services'), sublabel: t('home.quickAccess.shop'), color: '#FFD700', action: 'Services', isServices: true },
   ];
 
   if (isUserAdmin) {
-    quickActions.push({ icon: <Shield size={28} />, label: 'Admin', sublabel: 'Panel', color: '#ef4444', action: 'Admin' });
+    quickActions.push({ icon: <Shield size={28} />, label: t('home.quickAccess.admin'), sublabel: t('home.quickAccess.panel'), color: '#ef4444', action: 'Admin' });
   }
 
   const dailyCardName = dailyCard?.name || 'THE FOOL';
   const dailyCardNumber = dailyCard?.number || '0';
   const dailyCardMeaning = isDailyReversed ? (dailyCard?.reversed_keywords?.[0] || 'Reflection') : (dailyCard?.keywords?.[0] || 'New Beginnings');
   const dailyCardElement = dailyCard ? getCardMeta(dailyCard) : '';
-
   const userLevelData = getLevelFromTotalXP(economy.xp);
   const xpPercent = Math.min((userLevelData.currentLevelXP / userLevelData.xpToNext) * 100, 100);
-  // 🆕 განახლებული რადიუსისთვის (r=22)
   const circumference = 2 * Math.PI * 22; 
   const strokeDashoffset = circumference - (xpPercent / 100) * circumference;
 
@@ -874,90 +710,29 @@ End of Debug Report
     <div className="home-screen">
       <AnimatePresence>
         {toast && <ToastNotification toast={toast} onClose={() => setToast(null)} />}
-        {showLevelUpModal && <LevelUpModal level={leveledUpTo} onClose={() => setShowLevelUpModal(false)} />}
+        {showLevelUpModal && <LevelUpModal level={leveledUpTo} onClose={() => setShowLevelUpModal(false)} t={t} />}
       </AnimatePresence>
 
       <div className="user-header">
-        <div className="user-main-row" style={{ 
-          alignItems: 'center',
-          height: '52px', /* 🆕 განახლებულია 48px-დან 52px-მდე */
-          display: 'flex',
-          justifyContent: 'space-between'
-        }}>
-          
-          {/* 🆕 ავატარი და XP წრე - 52px კონტეინერი, 40px ავატარი, იასამნისფერი XP წრე */}
+        <div className="user-main-row" style={{ alignItems: 'center', height: '52px', display: 'flex', justifyContent: 'space-between' }}>
           <div className="avatar-section clickable-avatar" onClick={() => onNavigate?.('profile')} style={{ position: 'relative', width: '52px', height: '52px', flexShrink: 0 }}>
             <svg className="xp-circular-progress" width="52" height="52" viewBox="0 0 52 52" style={{ position: 'absolute', top: 0, left: 0 }}>
-              {/* ღია იასამნისფერი ფონის წრე */}
               <circle className="xp-circle-bg" cx="26" cy="26" r="22" fill="none" stroke="#e9d5ff" strokeWidth="4" />
-              {/* მუქი იასამნისფერი პროგრესის წრე */}
               <circle className="xp-circle-progress" cx="26" cy="26" r="22" fill="none" stroke="#7c3aed" strokeWidth="4" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} transform="rotate(-90 26 26)" />
             </svg>
-            
-            <div style={{ 
-              position: 'absolute',
-              top: '6px', /* 🆕 განახლებულია 4px-დან 6px-მდე */
-              left: '6px', /* 🆕 განახლებულია 4px-დან 6px-მდე */
-              width: '40px',
-              height: '40px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '16px',
-              fontWeight: 'bold',
-              background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)',
-              borderRadius: '50%',
-              color: '#0f0c08',
-              zIndex: 2,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
-            }}>
+            <div style={{ position: 'absolute', top: '6px', left: '6px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', fontWeight: 'bold', background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)', borderRadius: '50%', color: '#0f0c08', zIndex: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
               {user?.display_name?.charAt(0).toUpperCase() || 'U'}
             </div>
-            
-            <div style={{
-              position: 'absolute',
-              bottom: '2px', /* 🆕 განახლებულია 0px-დან 2px-მდე */
-              left: '2px', /* 🆕 განახლებულია 0px-დან 2px-მდე */
-              background: 'linear-gradient(135deg, #fbbf24, #d97706)',
-              color: '#0f0c08',
-              borderRadius: '6px',
-              width: '18px',
-              height: '18px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '10px',
-              fontWeight: 'bold',
-              zIndex: 3,
-              boxShadow: '0 2px 6px rgba(0,0,0,0.4), 0 0 0 1.5px #1a1510',
-              border: '1.5px solid #1a1510'
-            }}>
+            <div style={{ position: 'absolute', bottom: '2px', left: '2px', background: 'linear-gradient(135deg, #fbbf24, #d97706)', color: '#0f0c08', borderRadius: '6px', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold', zIndex: 3, boxShadow: '0 2px 6px rgba(0,0,0,0.4), 0 0 0 1.5px #1a1510', border: '1.5px solid #1a1510' }}>
               {userLevelData.level}
             </div>
-            
             {activeSubscription && (
-              <div style={{
-                position: 'absolute',
-                bottom: '2px', /* 🆕 განახლებულია 0px-დან 2px-მდე */
-                right: '2px', /* 🆕 განახლებულია 0px-დან 2px-მდე */
-                background: 'linear-gradient(135deg, #a78bfa, #7c3aed)',
-                color: '#fff',
-                borderRadius: '6px',
-                width: '18px',
-                height: '18px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 3,
-                boxShadow: '0 2px 6px rgba(0,0,0,0.4), 0 0 0 1.5px #1a1510',
-                border: '1.5px solid #1a1510'
-              }}>
+              <div style={{ position: 'absolute', bottom: '2px', right: '2px', background: 'linear-gradient(135deg, #a78bfa, #7c3aed)', color: '#fff', borderRadius: '6px', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3, boxShadow: '0 2px 6px rgba(0,0,0,0.4), 0 0 0 1.5px #1a1510', border: '1.5px solid #1a1510' }}>
                 <Crown size={10} style={{ filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.5))' }} />
               </div>
             )}
           </div>
           
-          {/* მომხმარებლის ინფო - სახელი ზედა ხაზთან, ბეიჯი ქვედა ხაზთან (space-between) */}
           <div className="user-info-section" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '52px', marginLeft: '12px', flex: 1, minWidth: 0 }}>
             <h2 className="username" style={{ margin: 0, fontSize: '18px', lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {user?.display_name || 'LunaraSeeker'}
@@ -969,98 +744,32 @@ End of Debug Report
             )}
           </div>
           
-          {/* ქოინები და ენერგია - დაპატარავებული ბანერები (22px), ჯამში 48px (22+22+4) */}
-          <div className="user-resources" style={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            justifyContent: 'center',
-            height: '48px',
-            gap: '4px',
-            flexShrink: 0 
-          }}>
-            <div className="resource gems" style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              background: 'rgba(147, 112, 219, 0.15)',
-              padding: '4px 10px',
-              borderRadius: '20px',
-              border: '1px solid rgba(147, 112, 219, 0.3)',
-              height: '22px'
-            }}>
+          <div className="user-resources" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '48px', gap: '4px', flexShrink: 0 }}>
+            <div className="resource gems" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(147, 112, 219, 0.15)', padding: '4px 10px', borderRadius: '20px', border: '1px solid rgba(147, 112, 219, 0.3)', height: '22px' }}>
               <Gem size={12} className="resource-icon gem-icon" style={{ color: '#9370db', flexShrink: 0 }} />
-              <span className="value" style={{ fontSize: '12px', fontWeight: '600', color: '#fff', textAlign: 'center' }}>
-                {economy.cosmic_coins.toLocaleString()}
-              </span>
-              <button className="add-btn" style={{
-                width: '18px',
-                height: '18px',
-                borderRadius: '50%',
-                background: 'rgba(197, 160, 89, 0.3)',
-                border: 'none',
-                color: '#C5A059',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                fontSize: '12px',
-                fontWeight: 'bold',
-                flexShrink: 0
-              }}>+</button>
+              <span className="value" style={{ fontSize: '12px', fontWeight: '600', color: '#fff', textAlign: 'center' }}>{economy.cosmic_coins.toLocaleString()}</span>
+              <button className="add-btn" style={{ width: '18px', height: '18px', borderRadius: '50%', background: 'rgba(197, 160, 89, 0.3)', border: 'none', color: '#C5A059', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', flexShrink: 0 }}>+</button>
             </div>
-            
-            <div className="resource energy" style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              background: 'rgba(251, 191, 36, 0.15)',
-              padding: '4px 10px',
-              borderRadius: '20px',
-              border: '1px solid rgba(251, 191, 36, 0.3)',
-              height: '22px'
-            }}>
+            <div className="resource energy" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(251, 191, 36, 0.15)', padding: '4px 10px', borderRadius: '20px', border: '1px solid rgba(251, 191, 36, 0.3)', height: '22px' }}>
               <Zap size={12} className="resource-icon energy-icon" style={{ color: '#fbbf24', flexShrink: 0 }} />
-              <span className="value" style={{ fontSize: '12px', fontWeight: '600', color: '#fff', textAlign: 'center' }}>
-                18/20
-              </span>
-              <button className="add-btn" style={{
-                width: '18px',
-                height: '18px',
-                borderRadius: '50%',
-                background: 'rgba(197, 160, 89, 0.3)',
-                border: 'none',
-                color: '#C5A059',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                fontSize: '12px',
-                fontWeight: 'bold',
-                flexShrink: 0
-              }}>+</button>
+              <span className="value" style={{ fontSize: '12px', fontWeight: '600', color: '#fff', textAlign: 'center' }}>18/20</span>
+              <button className="add-btn" style={{ width: '18px', height: '18px', borderRadius: '50%', background: 'rgba(197, 160, 89, 0.3)', border: 'none', color: '#C5A059', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', flexShrink: 0 }}>+</button>
             </div>
           </div>
         </div>
       </div>
 
       <div className="quests-and-actions-split" style={{ display: 'flex', flexDirection: 'row', gap: '2px', marginBottom: '2px', width: '100%', alignItems: 'stretch' }}>
-        <div 
-          className="daily-quests-compact" 
-          style={{ flex: '0 0 60%', minWidth: 0, background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)', border: '1px solid #332a1a', borderRadius: '14px', padding: '8px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)', display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
-          onClick={() => setShowQuestModal(true)}
-        >
+        <div className="daily-quests-compact" style={{ flex: '0 0 60%', minWidth: 0, background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)', border: '1px solid #332a1a', borderRadius: '14px', padding: '8px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)', display: 'flex', flexDirection: 'column', cursor: 'pointer' }} onClick={() => setShowQuestModal(true)}>
           <div className="quests-header-compact" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', padding: '0 2px' }}>
-            <h3 style={{ margin: 0, fontSize: '9px', color: '#C5A059', letterSpacing: '1px', fontWeight: 700, textTransform: 'uppercase' }}>DAILY QUESTS</h3>
+            <h3 style={{ margin: 0, fontSize: '9px', color: '#C5A059', letterSpacing: '1px', fontWeight: 700, textTransform: 'uppercase' }}>{t('home.dailyQuests')}</h3>
             <span style={{ fontSize: '9px', color: '#b3a68c', fontFamily: 'monospace' }}>{timeLeft}</span>
           </div>
-          
           <div className="quest-list-compact" style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, justifyContent: 'center' }}>
             {questsLoading ? (
-              <div style={{ textAlign: 'center', color: '#b3a68c', fontSize: '9px', padding: '10px' }}>Loading...</div>
+              <div style={{ textAlign: 'center', color: '#b3a68c', fontSize: '9px', padding: '10px' }}>{t('home.loading')}</div>
             ) : dailyQuests.length === 0 ? (
-              <div style={{ textAlign: 'center', color: '#b3a68c', fontSize: '9px', padding: '10px' }}>No quests</div>
+              <div style={{ textAlign: 'center', color: '#b3a68c', fontSize: '9px', padding: '10px' }}>{t('home.noQuests')}</div>
             ) : activeDailyQuest ? (
               <div className="quest-item-compact" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 6px', background: activeDailyQuest.isClaimable ? 'rgba(16, 185, 129, 0.1)' : 'rgba(197, 160, 89, 0.05)', borderRadius: '6px', border: `1px solid ${activeDailyQuest.isClaimable ? 'rgba(16, 185, 129, 0.3)' : 'rgba(197, 160, 89, 0.08)'}` }}>
                 <div className="quest-icon-compact" style={{ color: activeDailyQuest.isClaimable ? '#10b981' : '#C5A059', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '16px', height: '16px' }}>
@@ -1068,7 +777,7 @@ End of Debug Report
                 </div>
                 <div className="quest-info-compact" style={{ flex: 1, minWidth: 0 }}>
                   <span className="quest-name-compact" style={{ fontSize: '9px', color: '#fff', fontWeight: 500, display: 'block', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {activeDailyQuest.quest?.title || 'Quest'}
+                    {activeDailyQuest.quest?.title || t('home.quest')}
                   </span>
                   <div className="quest-progress-compact" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <div className="progress-bar-compact" style={{ flex: 1, height: '3px', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '2px', overflow: 'hidden' }}>
@@ -1079,12 +788,8 @@ End of Debug Report
                 </div>
                 <div className="quest-reward-compact" style={{ fontSize: '9px', color: activeDailyQuest.isClaimable ? '#10b981' : '#C5A059', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '1px', flexShrink: 0 }}>
                   {activeDailyQuest.isClaimable ? (
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); handleClaimQuest(activeDailyQuest); }}
-                      disabled={isClaimingQuest}
-                      style={{ background: '#10b981', border: 'none', borderRadius: '4px', color: '#fff', padding: '2px 6px', fontSize: '8px', fontWeight: 'bold', cursor: isClaimingQuest ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}
-                    >
-                      {isClaimingQuest ? <RefreshCw size={10} className="spin" /> : 'CLAIM'}
+                    <button onClick={(e) => { e.stopPropagation(); handleClaimQuest(activeDailyQuest); }} disabled={isClaimingQuest} style={{ background: '#10b981', border: 'none', borderRadius: '4px', color: '#fff', padding: '2px 6px', fontSize: '8px', fontWeight: 'bold', cursor: isClaimingQuest ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                      {isClaimingQuest ? <RefreshCw size={10} className="spin" /> : t('home.claim')}
                     </button>
                   ) : (
                     <><Gem size={9} /> +{activeDailyQuest.quest?.reward_coins}</>
@@ -1092,7 +797,7 @@ End of Debug Report
                 </div>
               </div>
             ) : (
-              <div style={{ textAlign: 'center', color: '#10b981', fontSize: '9px', padding: '10px' }}>🎉 All Complete!</div>
+              <div style={{ textAlign: 'center', color: '#10b981', fontSize: '9px', padding: '10px' }}>{t('home.allComplete')}</div>
             )}
           </div>
         </div>
@@ -1110,17 +815,14 @@ End of Debug Report
               )}
               {!rewardClaimed && !isClaiming && <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>50</div>}
             </button>
-
             <button className="action-btn-vertical streak-btn-v" style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%' }}>
               <Flame size={22} style={{ filter: 'drop-shadow(0 0 6px #ff6b35)', color: '#ff6b35', width: '20px', height: '20px' }} />
               <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>{currentStreak}</div>
             </button>
-
             <button className="action-btn-vertical rank-btn-v" style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%' }}>
               <Trophy size={22} style={{ filter: 'drop-shadow(0 0 6px #ffd700)', color: '#ffd700', width: '20px', height: '20px' }} />
               <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>TOP</div>
             </button>
-
             <button className={`action-btn-vertical ${activeSubscription ? 'subscription-btn-v' : 'upgrade-btn-v'}`} onClick={() => onNavigate && onNavigate(activeSubscription ? 'subscription' : 'pricing')} style={{ background: activeSubscription ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 165, 0, 0.05) 100%)' : 'rgba(255, 255, 255, 0.03)', border: activeSubscription ? '1px solid rgba(255, 215, 0, 0.4)' : '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%' }}>
               {activeSubscription ? (
                 <><Infinity size={22} style={{ filter: 'drop-shadow(0 0 6px #FFD700)', color: '#FFD700', width: '20px', height: '20px' }} /><div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>VIP</div></>
@@ -1133,56 +835,25 @@ End of Debug Report
       </div>
 
       {showQuestModal && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.85)', zIndex: 10000,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '20px'
-        }} onClick={() => setShowQuestModal(false)}>
-          <div 
-            style={{
-              background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)',
-              border: '1px solid #332a1a',
-              borderRadius: '16px',
-              width: '100%',
-              maxWidth: '400px',
-              maxHeight: '80vh',
-              overflow: 'hidden',
-              display: 'flex',
-              flexDirection: 'column'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setShowQuestModal(false)}>
+          <div style={{ background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)', border: '1px solid #332a1a', borderRadius: '16px', width: '100%', maxWidth: '400px', maxHeight: '80vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }} onClick={(e) => e.stopPropagation()}>
             <div style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 style={{ margin: 0, color: '#C5A059', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Trophy size={18} /> Daily Quests
+                <Trophy size={18} /> {t('home.questModal.title')}
               </h3>
               <button onClick={() => setShowQuestModal(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>
                 <X size={20} />
               </button>
             </div>
-            
             <div style={{ padding: '16px', overflowY: 'auto', flex: 1 }}>
               {dailyQuests.length === 0 ? (
-                <div style={{ textAlign: 'center', color: '#94a3b8', padding: '20px' }}>No quests available.</div>
+                <div style={{ textAlign: 'center', color: '#94a3b8', padding: '20px' }}>{t('home.questModal.noQuests')}</div>
               ) : (
                 dailyQuests.map((q, idx) => (
-                  <div key={q.id} style={{ 
-                    background: q.is_claimed ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255,255,255,0.03)',
-                    border: `1px solid ${q.is_claimed ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255,255,255,0.1)'}`,
-                    borderRadius: '12px',
-                    padding: '12px',
-                    marginBottom: idx < dailyQuests.length - 1 ? '12px' : '0',
-                    opacity: q.is_claimed ? 0.7 : 1
-                  }}>
+                  <div key={q.id} style={{ background: q.is_claimed ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255,255,255,0.03)', border: `1px solid ${q.is_claimed ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255,255,255,0.1)'}`, borderRadius: '12px', padding: '12px', marginBottom: idx < dailyQuests.length - 1 ? '12px' : '0', opacity: q.is_claimed ? 0.7 : 1 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div style={{ 
-                          width: '32px', height: '32px', borderRadius: '8px', 
-                          background: q.isClaimable ? 'rgba(16, 185, 129, 0.2)' : 'rgba(197, 160, 89, 0.1)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: q.isClaimable ? '#10b981' : '#C5A059'
-                        }}>
+                        <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: q.isClaimable ? 'rgba(16, 185, 129, 0.2)' : 'rgba(197, 160, 89, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: q.isClaimable ? '#10b981' : '#C5A059' }}>
                           {getQuestIcon(q.quest?.action_type || '')}
                         </div>
                         <div>
@@ -1194,65 +865,29 @@ End of Debug Report
                         <Gem size={12} /> +{q.quest?.reward_coins}
                       </div>
                     </div>
-                    
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                       <div style={{ flex: 1, height: '4px', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '2px', overflow: 'hidden' }}>
-                        <div style={{ 
-                          width: `${Math.min((q.current_progress / (q.quest?.target_count || 1)) * 100, 100)}%`,
-                          height: '100%',
-                          background: q.isClaimable ? '#10b981' : 'linear-gradient(90deg, #C5A059, #ffe566)',
-                          borderRadius: '2px'
-                        }}></div>
+                        <div style={{ width: `${Math.min((q.current_progress / (q.quest?.target_count || 1)) * 100, 100)}%`, height: '100%', background: q.isClaimable ? '#10b981' : 'linear-gradient(90deg, #C5A059, #ffe566)', borderRadius: '2px' }}></div>
                       </div>
-                      <span style={{ fontSize: '11px', color: '#b3a68c', minWidth: '30px', textAlign: 'right' }}>
-                        {q.current_progress}/{q.quest?.target_count}
-                      </span>
+                      <span style={{ fontSize: '11px', color: '#b3a68c', minWidth: '30px', textAlign: 'right' }}>{q.current_progress}/{q.quest?.target_count}</span>
                     </div>
-
                     {q.isClaimable && (
-                      <button 
-                        onClick={() => handleClaimQuest(q)}
-                        disabled={isClaimingQuest}
-                        style={{
-                          width: '100%',
-                          background: 'linear-gradient(135deg, #10b981, #059669)',
-                          border: 'none',
-                          borderRadius: '8px',
-                          color: '#fff',
-                          padding: '8px',
-                          fontSize: '12px',
-                          fontWeight: 'bold',
-                          cursor: isClaimingQuest ? 'not-allowed' : 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '6px'
-                        }}
-                      >
-                        {isClaimingQuest ? <RefreshCw size={14} className="spin" /> : <><CheckCircle size={14} /> CLAIM REWARD</>}
+                      <button onClick={() => handleClaimQuest(q)} disabled={isClaimingQuest} style={{ width: '100%', background: 'linear-gradient(135deg, #10b981, #059669)', border: 'none', borderRadius: '8px', color: '#fff', padding: '8px', fontSize: '12px', fontWeight: 'bold', cursor: isClaimingQuest ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                        {isClaimingQuest ? <RefreshCw size={14} className="spin" /> : <><CheckCircle size={14} /> {t('home.questModal.claimReward')}</>}
                       </button>
                     )}
-                    
                     {q.is_claimed && (
-                      <div style={{ 
-                        width: '100%', background: 'rgba(16, 185, 129, 0.2)', border: '1px solid rgba(16, 185, 129, 0.4)',
-                        borderRadius: '8px', padding: '8px', fontSize: '12px', fontWeight: 'bold', color: '#10b981',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
-                      }}>
-                        <CheckCircle size={14} /> COMPLETED & CLAIMED
+                      <div style={{ width: '100%', background: 'rgba(16, 185, 129, 0.2)', border: '1px solid rgba(16, 185, 129, 0.4)', borderRadius: '8px', padding: '8px', fontSize: '12px', fontWeight: 'bold', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                        <CheckCircle size={14} /> {t('home.questModal.completed')}
                       </div>
                     )}
                   </div>
                 ))
               )}
-              
               {dailyQuests.length > 0 && dailyQuests.every(q => q.is_claimed) && (
-                <div style={{ 
-                  textAlign: 'center', padding: '16px', background: 'rgba(16, 185, 129, 0.1)', 
-                  borderRadius: '12px', border: '1px solid rgba(16, 185, 129, 0.3)', marginTop: '16px'
-                }}>
-                  <div style={{ fontSize: '14px', color: '#10b981', fontWeight: 'bold', marginBottom: '4px' }}>🎉 All Complete!</div>
-                  <div style={{ fontSize: '11px', color: '#94a3b8' }}>Come back in {timeLeft} for new quests.</div>
+                <div style={{ textAlign: 'center', padding: '16px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px', border: '1px solid rgba(16, 185, 129, 0.3)', marginTop: '16px' }}>
+                  <div style={{ fontSize: '14px', color: '#10b981', fontWeight: 'bold', marginBottom: '4px' }}>{t('home.questModal.allCompleteTitle')}</div>
+                  <div style={{ fontSize: '11px', color: '#94a3b8' }}>{t('home.questModal.comeBack', { time: timeLeft })}</div>
                 </div>
               )}
             </div>
@@ -1283,15 +918,14 @@ End of Debug Report
               <div className="card-3d-shadow" style={{ position: 'absolute', bottom: '-6px', left: '10%', width: '80%', height: '14px', background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.6) 0%, transparent 70%)', filter: 'blur(6px)', zIndex: 1, opacity: 0.7 }}></div>
             </div>
           </div>
-
           <div className="card-half-right" style={{ flex: '0 0 55%', paddingLeft: '12px', display: 'flex', alignItems: 'center' }}>
             <div className="card-info-section" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '4px', width: '100%', minWidth: 0 }}>
-              <div style={{ fontSize: '9px', color: '#C5A059', letterSpacing: '2px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 600 }}>CARD OF THE DAY</div>
+              <div style={{ fontSize: '9px', color: '#C5A059', letterSpacing: '2px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 600 }}>{t('home.cardOfTheDay')}</div>
               <h3 style={{ margin: 0, fontSize: '16px', color: '#C5A059', letterSpacing: '0.5px', fontWeight: 700, lineHeight: 1.2 }}>{dailyCardName}</h3>
               <p style={{ margin: 0, fontSize: '11px', color: 'rgba(255,255,255,0.7)', fontStyle: 'italic', lineHeight: 1.3 }}>"{dailyCardMeaning}"</p>
               {dailyCardElement && <p style={{ margin: 0, fontSize: '10px', color: '#888' }}>{dailyCardElement}</p>}
               <button className="read-guidance-btn" style={{ background: 'transparent', border: '1px solid #C5A059', color: '#C5A059', padding: '5px 10px', borderRadius: '6px', fontSize: '9px', fontWeight: 700, cursor: 'pointer', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '4px', alignSelf: 'flex-start' }}>
-                READ GUIDANCE <ChevronRight size={14} />
+                {t('home.readGuidance')} <ChevronRight size={14} />
               </button>
             </div>
           </div>
@@ -1317,14 +951,12 @@ End of Debug Report
           <button onClick={() => setShowDebug(!showDebug)} style={{ width: '56px', height: '56px', borderRadius: '50%', background: showDebug ? '#10b981' : '#ef4444', border: '3px solid rgba(255,255,255,0.3)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 16px rgba(0,0,0,0.6)', marginBottom: '12px' }}>
             <Bug size={28} />
           </button>
-
           {showDebug && (
             <div style={{ background: 'rgba(10, 6, 0, 0.98)', border: '2px solid rgba(255, 229, 102, 0.5)', borderRadius: '16px', padding: '16px', color: '#ffe566', fontFamily: 'monospace', fontSize: '10px', boxShadow: '0 8px 32px rgba(0,0,0,0.8)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', paddingBottom: '8px', borderBottom: '2px solid rgba(255, 229, 102, 0.3)' }}>
                 <strong style={{ fontSize: '14px', color: '#ffe566' }}>🔧 DEBUG PANEL</strong>
                 <button onClick={() => setShowDebug(false)} style={{ padding: '2px 6px', background: '#ef4444', border: 'none', borderRadius: '4px', color: '#fff', cursor: 'pointer', fontSize: '8px' }}>✕</button>
               </div>
-
               <div style={{ marginBottom: '12px', padding: '8px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
                 <div style={{ marginBottom: '6px', color: '#3b82f6', fontWeight: 'bold' }}>🗄️ DATABASE CONNECTION</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
@@ -1333,7 +965,6 @@ End of Debug Report
                 </div>
                 <div style={{ fontSize: '9px', color: '#94a3b8' }}>User ID: {user?.id?.slice(0, 8)}...</div>
               </div>
-
               <div style={{ marginBottom: '12px', padding: '8px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
                 <div style={{ marginBottom: '6px', color: '#10b981', fontWeight: 'bold' }}>💰 ECONOMY (FROM DB)</div>
                 {dbDebugInfo.economyData ? (
@@ -1348,7 +979,6 @@ End of Debug Report
                   <div style={{ color: '#64748b' }}>No data loaded yet</div>
                 )}
               </div>
-
               {dbDebugInfo.lastQuery && (
                 <div style={{ marginBottom: '12px', padding: '8px', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
                   <div style={{ marginBottom: '6px', color: '#8b5cf6', fontWeight: 'bold' }}>📡 LAST QUERY</div>
@@ -1362,7 +992,6 @@ End of Debug Report
                   )}
                 </div>
               )}
-
               <div style={{ marginBottom: '12px', padding: '8px', background: 'rgba(245, 158, 11, 0.1)', borderRadius: '8px', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
                 <div style={{ marginBottom: '6px', color: '#f59e0b', fontWeight: 'bold' }}>🧪 QUICK TESTS</div>
                 <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '6px' }}>
@@ -1376,24 +1005,19 @@ End of Debug Report
                 </div>
                 <button onClick={reloadFromDatabase} style={{ width: '100%', padding: '6px', background: '#3b82f6', border: 'none', borderRadius: '4px', color: '#fff', cursor: 'pointer', fontSize: '9px', fontWeight: 'bold' }}>🔄 RELOAD FROM DB</button>
               </div>
-
               <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '12px' }}>
-                <button onClick={checkDatabaseStatus} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(16, 185, 129, 0.3)', border: '1px solid #10b981', borderRadius: '6px', color: '#10b981', cursor: 'pointer', fontSize: '9px' }}>
-                  🩺 CHECK DB
-                </button>
+                <button onClick={checkDatabaseStatus} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(16, 185, 129, 0.3)', border: '1px solid #10b981', borderRadius: '6px', color: '#10b981', cursor: 'pointer', fontSize: '9px' }}>🩺 CHECK DB</button>
                 <button onClick={handleLogoutAndReset} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(239, 68, 68, 0.3)', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontSize: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}><LogOut size={12} /> LOGOUT</button>
                 <button onClick={refreshUserDataDebug} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(59, 130, 246, 0.3)', border: '1px solid #3b82f6', borderRadius: '6px', color: '#3b82f6', cursor: 'pointer', fontSize: '9px' }}>🔄 REFRESH USER</button>
                 <button onClick={testEconomyInitialization} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(168, 85, 247, 0.3)', border: '1px solid #a855f7', borderRadius: '6px', color: '#a855f7', cursor: 'pointer', fontSize: '9px' }}>🔄 TEST INIT</button>
                 <button onClick={testCompleteQuest} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(16, 185, 129, 0.3)', border: '1px solid #10b981', borderRadius: '6px', color: '#10b981', cursor: 'pointer', fontSize: '9px' }}>🎯 TEST QUEST</button>
               </div>
-
               <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
                 <button onClick={copyAllDebugInfo} style={{ flex: 1, padding: '6px', background: copySuccess ? 'rgba(16, 185, 129, 0.3)' : 'rgba(96, 165, 250, 0.3)', border: `1px solid ${copySuccess ? '#10b981' : '#60a5fa'}`, borderRadius: '6px', color: copySuccess ? '#10b981' : '#60a5fa', cursor: 'pointer', fontSize: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                   <Copy size={12} /> {copySuccess ? 'COPIED!' : 'COPY ALL'}
                 </button>
                 <button onClick={() => setDebugLogs([])} style={{ flex: 1, padding: '6px', background: 'rgba(239, 68, 68, 0.3)', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontSize: '9px' }}>🗑️ CLEAR LOGS</button>
               </div>
-
               {dbDebugInfo.queryHistory.length > 0 && (
                 <div style={{ marginBottom: '12px' }}>
                   <div style={{ marginBottom: '6px', color: '#f472b6', fontWeight: 'bold' }}>📜 QUERY HISTORY ({dbDebugInfo.queryHistory.length})</div>
@@ -1408,7 +1032,6 @@ End of Debug Report
                   </div>
                 </div>
               )}
-
               <div>
                 <div style={{ marginBottom: '6px', color: '#f472b6', fontWeight: 'bold' }}>📝 LOGS ({debugLogs.length})</div>
                 <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
