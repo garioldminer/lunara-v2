@@ -9,9 +9,53 @@
       "premium": "პრემიუმ",
       "active": "აქტიური"
     },
+    "home": {
+      "dailyQuests": "ყოველდღიური დავალებები",
+      "loading": "იტვირთება...",
+      "noQuests": "დავალებები არ არის",
+      "quest": "დავალება",
+      "claim": "მიღება",
+      "allComplete": "🎉 ყველა შესრულებულია!",
+      "cardOfTheDay": "დღის ბარათი",
+      "readGuidance": "წაიკითხე განმარტება",
+      "levelUpTitle": "დონის ამაღლება!",
+      "levelUpMessage": "გილოცავ!<br/>მიაღწიე <span style=\"color: #fbbf24; font-weight: bold; font-size: 20px;\">{{level}} დონეს</span>",
+      "awesome": "შესანიშნავია!",
+      "quickAccess": {
+        "daily": "ყოველდღიური",
+        "card": "ბარათი",
+        "threeCards": "3 ბარათი",
+        "reading": "განმარტება",
+        "tarot": "ტარო",
+        "draw": "ამოღება",
+        "cards": "ბარათები",
+        "gallery": "გალერეა",
+        "history": "ისტორია",
+        "readings": "განმარტებები",
+        "celtic": "კელტური",
+        "cross": "ჯვარი",
+        "horseshoe": "ცხენისქალა",
+        "sevenCards": "7 ბარათი",
+        "love": "სიყვარული",
+        "spread": "განლაგება",
+        "horoscope": "ჰოროსკოპი",
+        "services": "სერვისები",
+        "shop": "მაღაზია",
+        "admin": "ადმინი",
+        "panel": "პანელი"
+      },
+      "questModal": {
+        "title": "ყოველდღიური დავალებები",
+        "noQuests": "ამჟამად დავალებები არ არის.",
+        "claimReward": "ჯილდოს მიღება",
+        "completed": "შესრულებული და მიღებულია",
+        "allCompleteTitle": "🎉 ყველა შესრულებულია!",
+        "comeBack": "დაბრუნდი {{time}}-ში ახალი დავალებებისთვის."
+      }
+    },
     "profile": {
       "loading": "პროფილის ჩატვირთვა…",
-      "natalChart": " ნატალური რუკა ",
+      "natalChart": "✦ ნატალური რუკა ✦",
       "recentReadings": "✦ ბოლო განმარტებები ✦",
       "achievementsTitle": "✦ მიღწევები ✦",
       "settingsTitle": "✦ პარამეტრები ✦",
@@ -46,7 +90,7 @@
       "collectorDesc": "შეაგროვე ყველა 78 ტაროს ბარათი",
       "loveExpert": "სიყვარულის ექსპერტი",
       "loveExpertDesc": "შეასრულე 50 სასიყვარულო განმარტება",
-      "moonMaster": "მთვარის სტატი",
+      "moonMaster": "მთვარის ოსტატი",
       "moonMasterDesc": "შეასრულე 10 მთვარის რიტუალი"
     },
     "settings": {
