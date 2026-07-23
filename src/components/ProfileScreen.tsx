@@ -671,7 +671,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
               <div className="debug-item"><span>ID:</span> <code>{user?.id?.substring(0, 8)}...</code></div>
               <div className="debug-item"><span>Username:</span> <code>{user?.username || 'N/A'}</code></div>
               <div className="debug-item"><span>Display Name:</span> <code>{userData.displayName}</code></div>
-              <div className="debug-item"><span>Email:</span> <code>{(user as any)?.email || 'N/A'}</code></div>
+              <div className="debug-item"><span>Email:</span> <code>{user ? (user as any).email || 'N/A' : 'N/A'}</code></div>
             </div>
             
             <div className="debug-section">
