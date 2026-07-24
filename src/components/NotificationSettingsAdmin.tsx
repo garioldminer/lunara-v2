@@ -23,6 +23,8 @@ export default function NotificationSettingsAdmin() {
   }, []);
 
   const loadSettings = async () => {
+    if (!supabase) return; // 🆕 დამატებულია null შემოწმება
+    
     setLoading(true);
     setStatus({ type: null, message: '' });
     
@@ -57,7 +59,8 @@ export default function NotificationSettingsAdmin() {
   };
 
   const handleSave = async () => {
-    if (!settings) return;
+    if (!supabase || !settings) return; // 🆕 დამატებულია null შემოწმება
+    
     setSaving(true);
     setStatus({ type: null, message: '' });
 
