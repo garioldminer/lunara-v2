@@ -5,7 +5,7 @@ import { useSettings } from '../context/SettingsContext';
 import { updateUser, resetZodiacSign } from '../lib/userService';
 import { getActiveSubscription } from '../lib/subscriptionService';
 import { supabase } from '../lib/supabase';
-import { Bug, X, Star, Heart, BookOpen, Lock, User, Trophy, Gem, Settings, LogOut, ChevronRight, RotateCcw, Shuffle, Bell, Mail, Sun, Moon } from 'lucide-react';
+import { Bug, X, Star, Heart, BookOpen, Lock, User, Trophy, Gem, Settings, LogOut, ChevronRight, RotateCcw, Shuffle, Bell, Mail, Sun, Moon, RefreshCw } from 'lucide-react';
 import { useTranslation, LANGUAGE_META, type Language } from '../i18n/TranslationContext';
 
 interface Props {
@@ -177,8 +177,11 @@ export default function ProfileScreen({ onNavigate }: Props) {
   const [showDebug, setShowDebug] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   
-  // 🆕 ახალი სტეიტი დებაგინგისთვის
+  // 🆕 ახალი სტეიტები დებაგინგისთვის
   const [lastDbAction, setLastDbAction] = useState<string>('None');
+  const [preferencesData, setPreferencesData] = useState<any>(null);
+  const [isTestingNotification, setIsTestingNotification] = useState(false);
+  const [testResult, setTestResult] = useState<any>(null);
 
   const { user, setUser, loading } = useUser();
   const { settings, updateSetting } = useSettings();
@@ -231,6 +234,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
         console.log('ℹ️ No preferences found yet, using defaults.');
       } else if (data) {
         console.log('✅ Preferences loaded:', data);
+        setPreferencesData(data); // 🆕 ვინახავთ სრულ მონაცემებს
         setNotifications({
           push: data.push_notifications ?? true,
           email: data.email_notifications ?? false,
@@ -392,6 +396,67 @@ export default function ProfileScreen({ onNavigate }: Props) {
     }
   };
 
+  // 🆕 ტესტური შეტყობინების გაგზავნა
+  const testSendNotification = async () => {
+    if (!user || !supabase) {
+      setTestResult({ success: false, error: 'No user or supabase instance' });
+      return;
+    }
+
+    setIsTestingNotification(true);
+    setTestResult(null);
+    console.log('🧪 Starting notification test...');
+
+    try {
+      // 1. ვიღებთ სესიის ტოკენს
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      if (!token) {
+        throw new Error('Not authenticated');
+      }
+
+      console.log('📤 Sending request to Edge Function...');
+
+      // 2. ვუგზავნით მოთხოვნას Edge Function-ს
+      const response = await fetch(
+        'https://eutavdhcxpfhpfsyaskb.supabase.co/functions/v1/send-telegram-notification',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            user_id: user.id,
+            message: '🎉 გილოცავ! ტესტი წარმატებულია. Push Notifications მუშაობს!',
+            type: 'general'
+          })
+        }
+      );
+
+      const result = await response.json();
+      console.log('📥 Server response:', result);
+
+      setTestResult(result);
+
+      if (result.success) {
+        console.log('✅ Test notification sent successfully!');
+        setLastDbAction('✅ Test notification sent');
+      } else {
+        console.error('❌ Test failed:', result.error);
+        setLastDbAction(`❌ Test failed: ${result.error}`);
+      }
+
+    } catch (error: any) {
+      console.error('❌ Test error:', error);
+      setTestResult({ success: false, error: error.message });
+      setLastDbAction(`❌ Test error: ${error.message}`);
+    } finally {
+      setIsTestingNotification(false);
+    }
+  };
+
   const xpProgress = userData ? (userData.xp / userData.xpToNext) * 100 : 0;
   const circumference = 2 * Math.PI * 24;
   const strokeDashoffset = circumference - (xpProgress / 100) * circumference;
@@ -405,6 +470,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
       recentReadings,
       achievements,
       notifications,
+      preferencesData,
       lastDbAction,
       currentLanguage: language,
       theme: settings.theme
@@ -713,6 +779,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
         )}
       </div>
 
+      {/* 🆕 განახლებული Debug Panel ტესტირების ღილაკით */}
       {isUserAdmin && showDebug && (
         <div className="debug-panel">
           <div className="debug-head">
@@ -742,6 +809,62 @@ export default function ProfileScreen({ onNavigate }: Props) {
               <div className="debug-item"><span>Email:</span> <code>{notifications.email ? '✓' : '✗'}</code></div>
               <div className="debug-item"><span>Daily:</span> <code>{notifications.dailyHoroscope ? '✓' : '✗'}</code></div>
               <div className="debug-item"><span>Moon:</span> <code>{notifications.moonPhase ? '✓' : '✗'}</code></div>
+            </div>
+
+            {/* 🆕 ახალი სექცია: Notification Test */}
+            <div className="debug-section">
+              <h4>🧪 Notification Test</h4>
+              <div className="debug-item" style={{ flexDirection: 'column', gap: '8px' }}>
+                <span style={{ fontSize: '10px', color: '#94a3b8' }}>
+                  Chat ID: {preferencesData?.telegram_chat_id || 'Loading...'}
+                </span>
+                <button 
+                  onClick={testSendNotification}
+                  disabled={isTestingNotification}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    background: isTestingNotification ? 'rgba(251, 191, 36, 0.3)' : 'rgba(16, 185, 129, 0.3)',
+                    border: `1px solid ${isTestingNotification ? '#fbbf24' : '#10b981'}`,
+                    borderRadius: '6px',
+                    color: isTestingNotification ? '#fbbf24' : '#10b981',
+                    cursor: isTestingNotification ? 'not-allowed' : 'pointer',
+                    fontSize: '11px',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  {isTestingNotification ? (
+                    <>
+                      <RefreshCw size={12} className="spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Bell size={12} />
+                      Send Test Notification
+                    </>
+                  )}
+                </button>
+                {testResult && (
+                  <div style={{
+                    padding: '8px',
+                    background: testResult.success ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                    border: `1px solid ${testResult.success ? '#10b981' : '#ef4444'}`,
+                    borderRadius: '6px',
+                    fontSize: '10px',
+                    color: testResult.success ? '#10b981' : '#ef4444',
+                    wordBreak: 'break-word'
+                  }}>
+                    <strong>{testResult.success ? '✅ Success' : '❌ Error'}:</strong>
+                    <br />
+                    {testResult.message || testResult.error}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="debug-section">
