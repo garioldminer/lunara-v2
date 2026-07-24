@@ -144,7 +144,6 @@ interface Notifications {
   moonPhase: boolean;
 }
 
-// ენების ახალი თანმიმდევრობა: English, Russian, German, Spanish, Georgian
 const LANGUAGE_ORDER: Language[] = ['en', 'ru', 'de', 'es', 'ka'];
 
 const LANGUAGE_FLAGS: Record<Language, string> = {
@@ -177,6 +176,9 @@ export default function ProfileScreen({ onNavigate }: Props) {
 
   const [showDebug, setShowDebug] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+  
+  // 🆕 ახალი სტეიტი დებაგინგისთვის
+  const [lastDbAction, setLastDbAction] = useState<string>('None');
 
   const { user, setUser, loading } = useUser();
   const { settings, updateSetting } = useSettings();
@@ -214,24 +216,28 @@ export default function ProfileScreen({ onNavigate }: Props) {
     }
   }, [user]);
 
-  // 🆕 ახალი useEffect: პრეფერენციების ჩატვირთვა ბაზიდან
   useEffect(() => {
     const loadPreferences = async () => {
       if (!user || !supabase) return;
       
-      const { data } = await supabase
+      console.log('📥 Loading preferences for user:', user.id);
+      const { data, error } = await supabase
         .from('user_preferences')
         .select('*')
         .eq('user_id', user.id)
         .single();
 
-      if (data) {
+      if (error) {
+        console.log('ℹ️ No preferences found yet, using defaults.');
+      } else if (data) {
+        console.log('✅ Preferences loaded:', data);
         setNotifications({
           push: data.push_notifications ?? true,
           email: data.email_notifications ?? false,
           dailyHoroscope: data.daily_horoscope ?? true,
           moonPhase: data.moon_phase_alerts ?? true
         });
+        setLastDbAction('✅ Loaded from DB');
       }
     };
     loadPreferences();
@@ -347,27 +353,42 @@ export default function ProfileScreen({ onNavigate }: Props) {
     setShowBirthInfo(false);
   };
 
-  // 🆕 განახლებული handleNotificationToggle: ინახავს მონაცემებს ბაზაში
+  // 🆕 განახლებული დეტალური ლოგირებით
   const handleNotificationToggle = async (key: keyof Notifications) => {
-    if (!user || !supabase) return;
+    if (!user || !supabase) {
+      console.warn('⚠️ Toggle failed: No user or supabase instance');
+      setLastDbAction('⚠️ No user/supabase');
+      return;
+    }
 
     const newNotifications = {
       ...notifications,
       [key]: !notifications[key]
     };
-    setNotifications(newNotifications);
+    
+    console.log(`🔄 Attempting to toggle ${key} to:`, newNotifications[key]);
+    setNotifications(newNotifications); // ოპტიმისტური განახლება
 
     const dbKey = key === 'push' ? 'push_notifications' :
                   key === 'email' ? 'email_notifications' :
                   key === 'dailyHoroscope' ? 'daily_horoscope' : 'moon_phase_alerts';
 
-    const { error } = await supabase
+    const payload = { user_id: user.id, [dbKey]: newNotifications[key] };
+    console.log('💾 Sending to DB (upsert):', payload);
+
+    const { data, error } = await supabase
       .from('user_preferences')
-      .upsert({ user_id: user.id, [dbKey]: newNotifications[key] }, { onConflict: 'user_id' });
+      .upsert(payload, { onConflict: 'user_id' })
+      .select(); // .select() აბრუნებს შენახულ მონაცემს
 
     if (error) {
-      console.error('Error saving preferences:', error);
+      console.error('❌ DB Error saving preferences:', error);
+      console.log('↩️ Reverting state due to error');
+      setLastDbAction(`❌ Error: ${error.message}`);
       setNotifications(notifications); // შეცდომის შემთხვევაში ვაბრუნებთ ძველ მდგომარეობას
+    } else {
+      console.log('✅ DB Success! Saved data:', data);
+      setLastDbAction(`✅ Success: ${key} = ${newNotifications[key]}`);
     }
   };
 
@@ -384,6 +405,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
       recentReadings,
       achievements,
       notifications,
+      lastDbAction,
       currentLanguage: language,
       theme: settings.theme
     }, null, 2);
@@ -427,7 +449,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
         </button>
       )}
 
-      {/* HEADER */}
       <div className="identity-bar">
         <div className="identity-left" onClick={() => setShowEditProfile(true)}>
           <div className="ring-avatar">
@@ -576,7 +597,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
           <div className="tab-content animate-fade-in">
             <h3 className="section-title">{t('profile.settingsTitle')}</h3>
 
-            {/* Appearance - Compact */}
             <div className="settings-group">
               <span className="settings-group-label">{t('settings.appearance')}</span>
               <div className="setting-row setting-row--compact">
@@ -598,7 +618,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
               </div>
             </div>
 
-            {/* Notifications - Compact */}
             <div className="settings-group">
               <span className="settings-group-label">{t('settings.notifications')}</span>
               <div className="setting-row setting-row--compact">
@@ -647,7 +666,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
               </div>
             </div>
 
-            {/* Account - Compact */}
             <div className="settings-group">
               <span className="settings-group-label">{t('settings.account')}</span>
               <button className="setting-row setting-row--link setting-row--compact" onClick={() => handleSettingClick('subscription')}>
@@ -663,7 +681,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
               </button>
             </div>
 
-            {/* Help & Support - Compact */}
             <div className="settings-group">
               <span className="settings-group-label">{t('settings.helpSupport')}</span>
               <button className="setting-row setting-row--link setting-row--compact" onClick={() => onNavigate && onNavigate('faq')}>
@@ -711,43 +728,16 @@ export default function ProfileScreen({ onNavigate }: Props) {
               <div className="debug-item"><span>ID:</span> <code>{user?.id?.substring(0, 8)}...</code></div>
               <div className="debug-item"><span>Username:</span> <code>{user?.username || 'N/A'}</code></div>
               <div className="debug-item"><span>Display Name:</span> <code>{userData.displayName}</code></div>
-              <div className="debug-item"><span>Email:</span> <code>{user ? (user as any).email || 'N/A' : 'N/A'}</code></div>
             </div>
             
             <div className="debug-section">
-              <h4>⭐ Progress</h4>
-              <div className="debug-item"><span>Level:</span> <code>{userData.level} ({userData.levelTitle})</code></div>
-              <div className="debug-item"><span>XP:</span> <code>{userData.xp} / {userData.xpToNext}</code></div>
-              <div className="debug-item"><span>Progress:</span> <code>{xpProgress.toFixed(1)}%</code></div>
-              <div className="debug-item"><span>Gems:</span> <code>{userData.gems}</code></div>
-              <div className="debug-item"><span>Streak:</span> <code>{userData.streak} days</code></div>
-            </div>
-
-            <div className="debug-section">
-              <h4>♏ Astrology</h4>
-              <div className="debug-item"><span>Sun Sign:</span> <code>{userData.sunSign || 'Not set'}</code></div>
-              <div className="debug-item"><span>Moon Sign:</span> <code>{userData.moonSign || 'Not set'}</code></div>
-              <div className="debug-item"><span>Rising Sign:</span> <code>{userData.risingSign || 'Not set'}</code></div>
-              <div className="debug-item"><span>Element:</span> <code>{userData.element}</code></div>
-            </div>
-
-            <div className="debug-section">
-              <h4>📊 Stats</h4>
-              <div className="debug-item"><span>Readings:</span> <code>{userData.readingsCount}</code></div>
-              <div className="debug-item"><span>Cards:</span> <code>{userData.cardsCollected}/78</code></div>
-              <div className="debug-item"><span>Recent:</span> <code>{recentReadings.length} readings</code></div>
-            </div>
-
-            <div className="debug-section">
-              <h4>⚙️ Settings</h4>
-              <div className="debug-item"><span>Theme:</span> <code>{settings.theme}</code></div>
-              <div className="debug-item"><span>Language:</span> <code>{language}</code></div>
-              <div className="debug-item"><span>Plan:</span> <code>{userData.currentPlan}</code></div>
-              <div className="debug-item"><span>Onboarding:</span> <code>{user?.onboarding_completed ? '✓' : '✗'}</code></div>
-            </div>
-
-            <div className="debug-section">
-              <h4>🔔 Notifications</h4>
+              <h4>🔔 Notifications & DB Status</h4>
+              <div className="debug-item">
+                <span>Last Action:</span> 
+                <code style={{ color: lastDbAction.includes('Error') || lastDbAction.includes('⚠️') ? '#ef4444' : '#10b981' }}>
+                  {lastDbAction}
+                </code>
+              </div>
               <div className="debug-item"><span>Push:</span> <code>{notifications.push ? '✓' : '✗'}</code></div>
               <div className="debug-item"><span>Email:</span> <code>{notifications.email ? '✓' : '✗'}</code></div>
               <div className="debug-item"><span>Daily:</span> <code>{notifications.dailyHoroscope ? '✓' : '✗'}</code></div>
@@ -755,20 +745,8 @@ export default function ProfileScreen({ onNavigate }: Props) {
             </div>
 
             <div className="debug-section">
-              <h4>🏆 Achievements</h4>
-              <div className="debug-item"><span>Unlocked:</span> <code>{achievements.filter(a => a.unlocked).length}/{achievements.length}</code></div>
-              {achievements.map(a => (
-                <div key={a.id} className="debug-item debug-item--small">
-                  <span>{a.icon} {a.title}:</span>
-                  <code>{a.unlocked ? '✓' : `${a.progress}/${a.total}`}</code>
-                </div>
-              ))}
-            </div>
-
-            <div className="debug-section">
               <h4>💾 Storage</h4>
               <div className="debug-item"><span>localStorage:</span> <code>{Object.keys(localStorage).length} keys</code></div>
-              <div className="debug-item"><span>sessionStorage:</span> <code>{Object.keys(sessionStorage).length} keys</code></div>
             </div>
           </div>
         </div>
