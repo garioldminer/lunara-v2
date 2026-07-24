@@ -4,7 +4,7 @@ import {
   ArrowLeft, Users, Plus, Trash2, RefreshCw, Crown, ShieldAlert, 
   Calendar, Clock, Zap, Key, Activity, CheckCircle, XCircle, 
   AlertCircle, Play, Eye, BarChart3, TrendingUp, DollarSign, Flame,
-  Trophy, Bug, ChevronUp, ChevronDown, Edit2, X, Database
+  Trophy, Bug, ChevronUp, ChevronDown, Edit2, X, Database, Bell
 } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { supabase } from '../lib/supabase';
@@ -27,6 +27,7 @@ import {
   FunctionLog,
   UserAnalyticsOverview
 } from '../lib/adminService';
+import NotificationSettingsAdmin from './NotificationSettingsAdmin';
 import './AdminScreen.css';
 
 interface Props {
@@ -134,7 +135,7 @@ export default function AdminScreen({ onNavigate }: Props) {
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [editingFeature, setEditingFeature] = useState<string>('');
   const [newAmount, setNewAmount] = useState(0);
-  const [activeTab, setActiveTab] = useState<'credits' | 'subscriptions' | 'monitoring' | 'analytics' | 'quests'>('credits');
+  const [activeTab, setActiveTab] = useState<'credits' | 'subscriptions' | 'monitoring' | 'analytics' | 'quests' | 'notifications'>('credits');
   
   const [showAddSubscription, setShowAddSubscription] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string>('');
@@ -783,12 +784,156 @@ export default function AdminScreen({ onNavigate }: Props) {
             </div>
           </>
         )}
+
+        {/* 🆕 Notifications ტაბი - ლამაზი დიზაინით */}
+        {activeTab === 'notifications' && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {/* Header ბარათი */}
+            <motion.div 
+              className="notifications-hero-card"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              style={{
+                background: 'linear-gradient(135deg, rgba(197, 160, 89, 0.15) 0%, rgba(139, 105, 20, 0.05) 100%)',
+                border: '1px solid rgba(197, 160, 89, 0.3)',
+                borderRadius: '16px',
+                padding: '20px',
+                marginBottom: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px'
+              }}
+            >
+              <div style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '14px',
+                background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 12px rgba(197, 160, 89, 0.3)'
+              }}>
+                <Bell size={28} color="#0f0c08" />
+              </div>
+              <div style={{ flex: 1 }}>
+                <h2 style={{ 
+                  margin: 0, 
+                  fontSize: '20px', 
+                  color: '#C5A059',
+                  fontFamily: 'Georgia, serif',
+                  fontWeight: 'bold',
+                  letterSpacing: '0.5px'
+                }}>
+                  შეტყობინებების მართვა
+                </h2>
+                <p style={{ 
+                  margin: '4px 0 0 0', 
+                  fontSize: '12px', 
+                  color: '#94a3b8',
+                  fontFamily: 'Georgia, serif'
+                }}>
+                  მართე ყველა ტიპის შეტყობინება მომხმარებლებისთვის
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Stats Overview */}
+            <div className="admin-stats" style={{ marginBottom: '20px' }}>
+              <motion.div 
+                className="stat-card"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <span className="stat-number">4</span>
+                <span className="stat-label">Notification Types</span>
+              </motion.div>
+              <motion.div 
+                className="stat-card"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <span className="stat-number">2</span>
+                <span className="stat-label">Delivery Channels</span>
+              </motion.div>
+              <motion.div 
+                className="stat-card"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <span className="stat-number">Telegram</span>
+                <span className="stat-label">Primary</span>
+              </motion.div>
+            </div>
+
+            {/* Notification Settings კომპონენტი */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              style={{
+                background: 'rgba(26, 21, 16, 0.8)',
+                border: '1px solid rgba(197, 160, 89, 0.2)',
+                borderRadius: '16px',
+                overflow: 'hidden'
+              }}
+            >
+              <NotificationSettingsAdmin />
+            </motion.div>
+
+            {/* Info Footer */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              style={{
+                marginTop: '20px',
+                padding: '16px',
+                background: 'rgba(59, 130, 246, 0.1)',
+                border: '1px solid rgba(59, 130, 246, 0.3)',
+                borderRadius: '12px',
+                display: 'flex',
+                gap: '12px',
+                alignItems: 'flex-start'
+              }}
+            >
+              <div style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '8px',
+                background: 'rgba(59, 130, 246, 0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}>
+                <AlertCircle size={18} color="#60a5fa" />
+              </div>
+              <div style={{ flex: 1 }}>
+                <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', color: '#60a5fa', fontWeight: 'bold' }}>
+                  როგორ მუშაობს?
+                </h4>
+                <p style={{ margin: 0, fontSize: '11px', color: '#94a3b8', lineHeight: '1.5' }}>
+                  ეს პარამეტრები განსაზღვრავს, რომელი შეტყობინებები გაეგზავნება მომხმარებლებს. 
+                  თითოეული მომხმარებელი თავად წყვეტს, მიიღოს თუ არა კონკრეტული ტიპის შეტყობინებები 
+                  (Settings → Notifications). ეს პანელი მართავს გლობალურ ჩართვა/გამორთვას.
+                </p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
       </div>
 
+      {/* 🆕 განახლებული Navigation Bar - 7 ღილაკი */}
       <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)',
-        gridTemplateRows: 'repeat(2, auto)',
+        display: 'flex',
         gap: '4px',
         padding: '8px',
         background: 'rgba(10, 6, 0, 0.98)',
@@ -798,26 +943,34 @@ export default function AdminScreen({ onNavigate }: Props) {
         left: 0,
         right: 0,
         zIndex: 9999,
-        backdropFilter: 'blur(10px)'
+        backdropFilter: 'blur(10px)',
+        overflowX: 'auto',
+        scrollbarWidth: 'none'
       }}>
+        <style>{`
+          div::-webkit-scrollbar { display: none; }
+        `}</style>
         {[
           { id: 'credits', icon: Key, label: 'Credits' },
           { id: 'subscriptions', icon: Crown, label: 'Subs' },
           { id: 'monitoring', icon: Activity, label: 'Monitor' },
           { id: 'analytics', icon: BarChart3, label: 'Analytics' },
           { id: 'quests', icon: Trophy, label: 'Quests' },
+          { id: 'notifications', icon: Bell, label: 'Notifications' },
           { id: 'ai', icon: Zap, label: 'AI', isExternal: true }
         ].map((tab) => (
           <button
             key={tab.id}
             onClick={() => tab.isExternal ? onNavigate?.('ai-management') : setActiveTab(tab.id as any)}
             style={{
+              flex: '0 0 auto',
+              minWidth: '70px',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '4px',
-              padding: '8px 4px',
+              padding: '8px 8px',
               background: activeTab === tab.id ? 'rgba(197, 160, 89, 0.2)' : 'transparent',
               border: activeTab === tab.id ? '1px solid rgba(197, 160, 89, 0.5)' : '1px solid transparent',
               borderRadius: '8px',
@@ -827,7 +980,7 @@ export default function AdminScreen({ onNavigate }: Props) {
             }}
           >
             <tab.icon size={18} />
-            <span style={{ fontSize: '10px', fontWeight: activeTab === tab.id ? 'bold' : 'normal' }}>{tab.label}</span>
+            <span style={{ fontSize: '9px', fontWeight: activeTab === tab.id ? 'bold' : 'normal', whiteSpace: 'nowrap' }}>{tab.label}</span>
           </button>
         ))}
       </div>
