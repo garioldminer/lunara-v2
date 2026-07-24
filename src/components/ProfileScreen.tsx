@@ -5,7 +5,7 @@ import { useSettings } from '../context/SettingsContext';
 import { updateUser, resetZodiacSign } from '../lib/userService';
 import { getActiveSubscription } from '../lib/subscriptionService';
 import { supabase } from '../lib/supabase';
-import { Bug, X, Star, Heart, BookOpen, Lock, User, Trophy, Gem, Settings, LogOut, ChevronRight, RotateCcw, Shuffle, Bell, Mail, Sun, Moon, RefreshCw } from 'lucide-react';
+import { Bug, X, Star, Heart, BookOpen, Lock, User, Trophy, Gem, Settings, LogOut, ChevronRight, RotateCcw, Shuffle, Bell, Mail, Sun, Moon, RefreshCw, Trash2, CheckCircle, AlertCircle } from 'lucide-react';
 import { useTranslation, LANGUAGE_META, type Language } from '../i18n/TranslationContext';
 
 interface Props {
@@ -174,14 +174,14 @@ export default function ProfileScreen({ onNavigate }: Props) {
     moonPhase: true
   });
 
+  // 🆕 გაფართოებული დებაგინგის სტეიტები
   const [showDebug, setShowDebug] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
-  
-  // 🆕 ახალი სტეიტები დებაგინგისთვის
   const [lastDbAction, setLastDbAction] = useState<string>('None');
   const [preferencesData, setPreferencesData] = useState<any>(null);
   const [isTestingNotification, setIsTestingNotification] = useState(false);
   const [testResult, setTestResult] = useState<any>(null);
+  const [isTgDetected, setIsTgDetected] = useState(false);
 
   const { user, setUser, loading } = useUser();
   const { settings, updateSetting } = useSettings();
@@ -191,6 +191,10 @@ export default function ProfileScreen({ onNavigate }: Props) {
     if (user?.id === 'c9dbe3be-5c02-4034-8bfd-1d693eb02754') {
       setIsUserAdmin(true);
     }
+    
+    // შევამოწმოთ Telegram WebApp-ის არსებობა
+    const tg = (window as any).Telegram?.WebApp;
+    setIsTgDetected(!!tg);
   }, [user]);
 
   useEffect(() => {
@@ -234,7 +238,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
         console.log('ℹ️ No preferences found yet, using defaults.');
       } else if (data) {
         console.log('✅ Preferences loaded:', data);
-        setPreferencesData(data); // 🆕 ვინახავთ სრულ მონაცემებს
+        setPreferencesData(data);
         setNotifications({
           push: data.push_notifications ?? true,
           email: data.email_notifications ?? false,
@@ -357,7 +361,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
     setShowBirthInfo(false);
   };
 
-  // 🆕 განახლებული დეტალური ლოგირებით
   const handleNotificationToggle = async (key: keyof Notifications) => {
     if (!user || !supabase) {
       console.warn('⚠️ Toggle failed: No user or supabase instance');
@@ -371,7 +374,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
     };
     
     console.log(`🔄 Attempting to toggle ${key} to:`, newNotifications[key]);
-    setNotifications(newNotifications); // ოპტიმისტური განახლება
+    setNotifications(newNotifications);
 
     const dbKey = key === 'push' ? 'push_notifications' :
                   key === 'email' ? 'email_notifications' :
@@ -383,20 +386,19 @@ export default function ProfileScreen({ onNavigate }: Props) {
     const { data, error } = await supabase
       .from('user_preferences')
       .upsert(payload, { onConflict: 'user_id' })
-      .select(); // .select() აბრუნებს შენახულ მონაცემს
+      .select();
 
     if (error) {
       console.error('❌ DB Error saving preferences:', error);
-      console.log('↩️ Reverting state due to error');
       setLastDbAction(`❌ Error: ${error.message}`);
-      setNotifications(notifications); // შეცდომის შემთხვევაში ვაბრუნებთ ძველ მდგომარეობას
+      setNotifications(notifications);
     } else {
       console.log('✅ DB Success! Saved data:', data);
       setLastDbAction(`✅ Success: ${key} = ${newNotifications[key]}`);
     }
   };
 
-  // 🆕 ტესტური შეტყობინების გაგზავნა
+  // 🆕 გაუმჯობესებული ტესტური შეტყობინების გაგზავნა (ანონიმური გასაღებით)
   const testSendNotification = async () => {
     if (!user || !supabase) {
       setTestResult({ success: false, error: 'No user or supabase instance' });
@@ -408,24 +410,19 @@ export default function ProfileScreen({ onNavigate }: Props) {
     console.log('🧪 Starting notification test...');
 
     try {
-      // 1. ვიღებთ სესიის ტოკენს
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      // ვიღებთ anon key-ს პირდაპირ supabase ობიექტიდან
+      const supabaseClient = supabase as any;
+      const anonKey = supabaseClient.supabaseKey;
 
-      if (!token) {
-        throw new Error('Not authenticated');
-      }
+      console.log('📤 Sending request to Edge Function (using anon key)...');
 
-      console.log('📤 Sending request to Edge Function...');
-
-      // 2. ვუგზავნით მოთხოვნას Edge Function-ს
       const response = await fetch(
         'https://eutavdhcxpfhpfsyaskb.supabase.co/functions/v1/send-telegram-notification',
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'apikey': anonKey // ვიყენებთ apikey ჰედერს Authorization Bearer-ის ნაცვლად
           },
           body: JSON.stringify({
             user_id: user.id,
@@ -438,13 +435,16 @@ export default function ProfileScreen({ onNavigate }: Props) {
       const result = await response.json();
       console.log('📥 Server response:', result);
 
-      setTestResult(result);
+      setTestResult({
+        success: result.success,
+        message: result.message,
+        error: result.error,
+        httpStatus: response.status
+      });
 
       if (result.success) {
-        console.log('✅ Test notification sent successfully!');
         setLastDbAction('✅ Test notification sent');
       } else {
-        console.error('❌ Test failed:', result.error);
         setLastDbAction(`❌ Test failed: ${result.error}`);
       }
 
@@ -472,6 +472,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
       notifications,
       preferencesData,
       lastDbAction,
+      testResult,
       currentLanguage: language,
       theme: settings.theme
     }, null, 2);
@@ -779,7 +780,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
         )}
       </div>
 
-      {/* 🆕 განახლებული Debug Panel ტესტირების ღილაკით */}
+      {/* 🆕 გაფართოებული და დახვეწილი Debug Panel */}
       {isUserAdmin && showDebug && (
         <div className="debug-panel">
           <div className="debug-head">
@@ -791,17 +792,33 @@ export default function ProfileScreen({ onNavigate }: Props) {
           </div>
           <div className="debug-body">
             <div className="debug-section">
+              <h4>📡 System Status</h4>
+              <div className="debug-item">
+                <span>Supabase:</span> 
+                <code style={{ color: supabase ? '#10b981' : '#ef4444' }}>
+                  {supabase ? '✅ Connected' : '❌ Disconnected'}
+                </code>
+              </div>
+              <div className="debug-item">
+                <span>Telegram WebApp:</span> 
+                <code style={{ color: isTgDetected ? '#10b981' : '#fbbf24' }}>
+                  {isTgDetected ? '✅ Detected' : '⚠️ Not Detected (Browser?)'}
+                </code>
+              </div>
+            </div>
+
+            <div className="debug-section">
               <h4>👤 User Info</h4>
               <div className="debug-item"><span>ID:</span> <code>{user?.id?.substring(0, 8)}...</code></div>
-              <div className="debug-item"><span>Username:</span> <code>{user?.username || 'N/A'}</code></div>
-              <div className="debug-item"><span>Display Name:</span> <code>{userData.displayName}</code></div>
+              <div className="debug-item"><span>Name:</span> <code>{userData.displayName}</code></div>
+              <div className="debug-item"><span>Plan:</span> <code>{userData.currentPlan}</code></div>
             </div>
             
             <div className="debug-section">
-              <h4>🔔 Notifications & DB Status</h4>
+              <h4>🔔 Notifications & DB</h4>
               <div className="debug-item">
                 <span>Last Action:</span> 
-                <code style={{ color: lastDbAction.includes('Error') || lastDbAction.includes('⚠️') ? '#ef4444' : '#10b981' }}>
+                <code style={{ color: lastDbAction.includes('Error') || lastDbAction.includes('⚠️') ? '#ef4444' : '#10b981', fontSize: '9px' }}>
                   {lastDbAction}
                 </code>
               </div>
@@ -811,24 +828,31 @@ export default function ProfileScreen({ onNavigate }: Props) {
               <div className="debug-item"><span>Moon:</span> <code>{notifications.moonPhase ? '✓' : '✗'}</code></div>
             </div>
 
-            {/* 🆕 ახალი სექცია: Notification Test */}
             <div className="debug-section">
               <h4>🧪 Notification Test</h4>
               <div className="debug-item" style={{ flexDirection: 'column', gap: '8px' }}>
-                <span style={{ fontSize: '10px', color: '#94a3b8' }}>
-                  Chat ID: {preferencesData?.telegram_chat_id || 'Loading...'}
-                </span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '10px' }}>
+                  <span style={{ color: '#94a3b8' }}>Target User ID:</span>
+                  <code style={{ fontSize: '9px' }}>{user?.id?.substring(0, 8)}...</code>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '10px' }}>
+                  <span style={{ color: '#94a3b8' }}>Telegram Chat ID:</span>
+                  <code style={{ fontSize: '9px', color: preferencesData?.telegram_chat_id ? '#10b981' : '#ef4444' }}>
+                    {preferencesData?.telegram_chat_id || 'Not Found!'}
+                  </code>
+                </div>
+                
                 <button 
                   onClick={testSendNotification}
-                  disabled={isTestingNotification}
+                  disabled={isTestingNotification || !preferencesData?.telegram_chat_id}
                   style={{
                     width: '100%',
                     padding: '8px',
-                    background: isTestingNotification ? 'rgba(251, 191, 36, 0.3)' : 'rgba(16, 185, 129, 0.3)',
-                    border: `1px solid ${isTestingNotification ? '#fbbf24' : '#10b981'}`,
+                    background: isTestingNotification ? 'rgba(251, 191, 36, 0.3)' : (!preferencesData?.telegram_chat_id ? 'rgba(100, 116, 139, 0.3)' : 'rgba(16, 185, 129, 0.3)'),
+                    border: `1px solid ${isTestingNotification ? '#fbbf24' : (!preferencesData?.telegram_chat_id ? '#64748b' : '#10b981')}`,
                     borderRadius: '6px',
-                    color: isTestingNotification ? '#fbbf24' : '#10b981',
-                    cursor: isTestingNotification ? 'not-allowed' : 'pointer',
+                    color: isTestingNotification ? '#fbbf24' : (!preferencesData?.telegram_chat_id ? '#94a3b8' : '#10b981'),
+                    cursor: (isTestingNotification || !preferencesData?.telegram_chat_id) ? 'not-allowed' : 'pointer',
                     fontSize: '11px',
                     fontWeight: 'bold',
                     display: 'flex',
@@ -838,17 +862,12 @@ export default function ProfileScreen({ onNavigate }: Props) {
                   }}
                 >
                   {isTestingNotification ? (
-                    <>
-                      <RefreshCw size={12} className="spin" />
-                      Sending...
-                    </>
+                    <><RefreshCw size={12} className="spin" /> Sending...</>
                   ) : (
-                    <>
-                      <Bell size={12} />
-                      Send Test Notification
-                    </>
+                    <><Bell size={12} /> Send Test Notification</>
                   )}
                 </button>
+
                 {testResult && (
                   <div style={{
                     padding: '8px',
@@ -859,9 +878,18 @@ export default function ProfileScreen({ onNavigate }: Props) {
                     color: testResult.success ? '#10b981' : '#ef4444',
                     wordBreak: 'break-word'
                   }}>
-                    <strong>{testResult.success ? '✅ Success' : '❌ Error'}:</strong>
-                    <br />
-                    {testResult.message || testResult.error}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                      <strong>{testResult.success ? '✅ Success' : '❌ Error'}</strong>
+                      <button 
+                        onClick={() => setTestResult(null)}
+                        style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: 0 }}
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                    {testResult.message && <div>{testResult.message}</div>}
+                    {testResult.error && <div style={{ marginTop: '4px', color: '#fca5a5' }}>{testResult.error}</div>}
+                    {testResult.httpStatus && <div style={{ marginTop: '4px', fontSize: '9px', opacity: 0.8 }}>HTTP Status: {testResult.httpStatus}</div>}
                   </div>
                 )}
               </div>
