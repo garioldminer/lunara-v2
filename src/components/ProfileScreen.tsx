@@ -217,9 +217,9 @@ export default function ProfileScreen({ onNavigate }: Props) {
   // 🆕 ახალი useEffect: პრეფერენციების ჩატვირთვა ბაზიდან
   useEffect(() => {
     const loadPreferences = async () => {
-      if (!user) return;
+      if (!user || !supabase) return;
       
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('user_preferences')
         .select('*')
         .eq('user_id', user.id)
@@ -349,7 +349,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
 
   // 🆕 განახლებული handleNotificationToggle: ინახავს მონაცემებს ბაზაში
   const handleNotificationToggle = async (key: keyof Notifications) => {
-    if (!user) return;
+    if (!user || !supabase) return;
 
     const newNotifications = {
       ...notifications,
