@@ -214,6 +214,29 @@ export default function ProfileScreen({ onNavigate }: Props) {
     }
   }, [user]);
 
+  // 🆕 ახალი useEffect: პრეფერენციების ჩატვირთვა ბაზიდან
+  useEffect(() => {
+    const loadPreferences = async () => {
+      if (!user) return;
+      
+      const { data, error } = await supabase
+        .from('user_preferences')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (data) {
+        setNotifications({
+          push: data.push_notifications ?? true,
+          email: data.email_notifications ?? false,
+          dailyHoroscope: data.daily_horoscope ?? true,
+          moonPhase: data.moon_phase_alerts ?? true
+        });
+      }
+    };
+    loadPreferences();
+  }, [user]);
+
   const userLevelData = user ? getLevelFromTotalXP(user.xp || 0) : { level: 1, currentLevelXP: 0, xpToNext: 100 };
   
   const userData = user ? {
@@ -324,11 +347,28 @@ export default function ProfileScreen({ onNavigate }: Props) {
     setShowBirthInfo(false);
   };
 
-  const handleNotificationToggle = (key: keyof Notifications) => {
-    setNotifications(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
+  // 🆕 განახლებული handleNotificationToggle: ინახავს მონაცემებს ბაზაში
+  const handleNotificationToggle = async (key: keyof Notifications) => {
+    if (!user) return;
+
+    const newNotifications = {
+      ...notifications,
+      [key]: !notifications[key]
+    };
+    setNotifications(newNotifications);
+
+    const dbKey = key === 'push' ? 'push_notifications' :
+                  key === 'email' ? 'email_notifications' :
+                  key === 'dailyHoroscope' ? 'daily_horoscope' : 'moon_phase_alerts';
+
+    const { error } = await supabase
+      .from('user_preferences')
+      .upsert({ user_id: user.id, [dbKey]: newNotifications[key] }, { onConflict: 'user_id' });
+
+    if (error) {
+      console.error('Error saving preferences:', error);
+      setNotifications(notifications); // შეცდომის შემთხვევაში ვაბრუნებთ ძველ მდგომარეობას
+    }
   };
 
   const xpProgress = userData ? (userData.xp / userData.xpToNext) * 100 : 0;
