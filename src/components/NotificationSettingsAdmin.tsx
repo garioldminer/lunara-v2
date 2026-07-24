@@ -253,7 +253,7 @@ export default function NotificationSettingsAdmin() {
         ) : (
           <>
             <Save size={20} />
-            ცვლილებების შენახვა
+            ცვლილებების შენახვა.
           </>
         )}
       </button>
