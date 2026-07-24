@@ -423,8 +423,10 @@ function AppContent() {
   // 🆕 ავტომატური Telegram Chat ID-ის სინქრონიზაცია
   useEffect(() => {
     const syncTelegramChatId = async () => {
+      if (!supabase || !user) return; // 🆕 დამატებულია supabase-ის ნულოვანი შემოწმება
+
       const tg = (window as any).Telegram?.WebApp;
-      if (!tg || !user) return;
+      if (!tg) return;
 
       const tgUser = tg.initDataUnsafe?.user;
       if (!tgUser || !tgUser.id) return;
