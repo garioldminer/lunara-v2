@@ -27,7 +27,7 @@ import ServicesScreen from './components/ServicesScreen';
 import BottomNav from './components/BottomNav';
 import { UserProvider, useUser } from './context/UserContext';
 import { SettingsProvider } from './context/SettingsContext';
-import { TranslationProvider } from './i18n/TranslationContext'; // 🆕 ახალი იმპორტი
+import { TranslationProvider } from './i18n/TranslationContext';
 import { getTelegramUser } from './lib/telegramAuth';
 import { getOrCreateUser, completeOnboarding } from './lib/userService';
 import { updateUserLastActive } from './lib/adminService';
@@ -420,6 +420,42 @@ function AppContent() {
     };
   }, [user]);
 
+  // 🆕 ავტომატური Telegram Chat ID-ის სინქრონიზაცია
+  useEffect(() => {
+    const syncTelegramChatId = async () => {
+      const tg = (window as any).Telegram?.WebApp;
+      if (!tg || !user) return;
+
+      const tgUser = tg.initDataUnsafe?.user;
+      if (!tgUser || !tgUser.id) return;
+
+      const chatId = String(tgUser.id);
+
+      const { data: prefs } = await supabase
+        .from('user_preferences')
+        .select('telegram_chat_id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!prefs || prefs.telegram_chat_id !== chatId) {
+        const { error } = await supabase
+          .from('user_preferences')
+          .upsert({
+            user_id: user.id,
+            telegram_chat_id: chatId
+          }, { onConflict: 'user_id' });
+
+        if (error) {
+          console.error('❌ Failed to sync Telegram Chat ID:', error);
+        } else {
+          console.log('✅ Telegram Chat ID synced automatically:', chatId);
+        }
+      }
+    };
+
+    syncTelegramChatId();
+  }, [user]);
+
   const goTo = (screen: Screen) => {
     console.log('🔄 Navigating to:', screen);
     setCurrentScreen(screen);
@@ -566,15 +602,12 @@ function AppContent() {
     }
   };
 
-  // 🆕 განახლებული: ონბორდინგის დასრულებისას პირდაპირ ბაზიდან ვიღებთ რეალურ მონაცემებს
   const handleOnboardingComplete = async () => {
     console.log('🎉 Onboarding completed!');
     
     if (user && supabase) {
-      // 1. ვანახლებთ onboarding_completed სტატუსს
       await completeOnboarding(user.id);
       
-      // 2. პირდაპირ ბაზიდან ვიღებთ მომხმარებლის განახლებულ, რეალურ მონაცემებს
       const { data: freshUser, error } = await supabase
         .from('users')
         .select('*')
@@ -702,7 +735,7 @@ function App() {
   return (
     <UserProvider>
       <SettingsProvider>
-        <TranslationProvider> {/* 🆕 აქ დაემატა TranslationProvider */}
+        <TranslationProvider>
           <AppContent />
         </TranslationProvider>
       </SettingsProvider>
