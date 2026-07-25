@@ -186,9 +186,10 @@ const css = `
   background: ${palette.surfaceRaised}; border: 1px solid ${palette.gold}; color: ${palette.gold};
 }
 
+/* 🆕 გადატანილია ქვემოთ, რომ არ გადაეფაროს მთავარ ADMIN DEBUG ღილაკს (რომელიც 80px-ზეა) */
 .nsa-debug-toggle {
   position: fixed;
-  top: 80px;
+  top: 140px;
   right: 20px;
   z-index: 45;
   width: 44px;
@@ -211,7 +212,7 @@ const css = `
 
 .nsa-debug-panel {
   position: fixed;
-  top: 135px;
+  top: 195px;
   right: 20px;
   z-index: 45;
   width: 280px;
@@ -592,10 +593,11 @@ export default function NotificationSettingsAdmin() {
         <div className="nsa-toast"><Check size={16} /> {toast.text}</div>
       )}
 
+      {/* 🆕 გადატანილია ქვემოთ, რომ არ გადაეფაროს მთავარ ADMIN DEBUG ღილაკს */}
       <button 
         className="nsa-debug-toggle" 
         onClick={() => setShowDebug(!showDebug)}
-        title="Debug Panel"
+        title="Notification Debug"
       >
         <Bug size={18} />
       </button>
@@ -605,7 +607,7 @@ export default function NotificationSettingsAdmin() {
           <div className="nsa-debug-header">
             <div className="nsa-debug-title">
               <Bug size={14} />
-              Debug
+              Notify Debug
             </div>
             <button className="nsa-debug-close" onClick={() => setShowDebug(false)}>
               <X size={14} />
