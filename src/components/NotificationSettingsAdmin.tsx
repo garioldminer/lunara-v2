@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useUser } from '../context/UserContext';
-import { Bell, Moon, Sun, RefreshCw, Send, Sparkles, X, Check, Loader2, Bug, Database, Wifi, Users, MessageSquare } from 'lucide-react';
+import { Bell, Moon, Sun, RefreshCw, Send, Sparkles, X, Check, Loader2, Bug, Database, Wifi, MessageSquare } from 'lucide-react';
 
 const palette = {
   bgTop: '#120c07',
@@ -186,7 +186,6 @@ const css = `
   background: ${palette.surfaceRaised}; border: 1px solid ${palette.gold}; color: ${palette.gold};
 }
 
-/* Debug Panel - გადატანილია ზემოთ */
 .nsa-debug-toggle {
   position: fixed;
   top: 80px;
@@ -339,7 +338,6 @@ export default function NotificationSettingsAdmin() {
   const [toast, setToast] = useState<{ text: string } | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   
-  // Debug Panel State
   const [showDebug, setShowDebug] = useState(false);
   const [debugInfo, setDebugInfo] = useState({
     supabaseConnected: !!supabase,
@@ -594,7 +592,6 @@ export default function NotificationSettingsAdmin() {
         <div className="nsa-toast"><Check size={16} /> {toast.text}</div>
       )}
 
-      {/* Debug Toggle Button - გადატანილია ზემოთ */}
       <button 
         className="nsa-debug-toggle" 
         onClick={() => setShowDebug(!showDebug)}
@@ -603,7 +600,6 @@ export default function NotificationSettingsAdmin() {
         <Bug size={18} />
       </button>
 
-      {/* Debug Panel - გადატანილია ზემოთ, Header-ის ქვემოთ */}
       {showDebug && (
         <div className="nsa-debug-panel">
           <div className="nsa-debug-header">
