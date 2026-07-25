@@ -166,7 +166,7 @@ export default function AdminScreen({ onNavigate }: Props) {
     is_active: true
   });
   
-  const [showDebug, setShowDebug] = useState(true);
+  const [showDebug, setShowDebug] = useState(false);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
   const [toast, setToast] = useState<Toast | null>(null);
 
@@ -513,7 +513,7 @@ export default function AdminScreen({ onNavigate }: Props) {
   }
 
   return (
-    <div className="admin-screen" style={{ paddingBottom: showDebug ? '360px' : '140px' }}>
+    <div className="admin-screen" style={{ paddingBottom: '100px' }}>
       <AnimatePresence>
         {toast && <ToastNotification toast={toast} onClose={() => setToast(null)} />}
       </AnimatePresence>
@@ -785,155 +785,29 @@ export default function AdminScreen({ onNavigate }: Props) {
           </>
         )}
 
-        {/* 🆕 Notifications ტაბი - ლამაზი დიზაინით */}
+        {/* 🆕 Notifications ტაბი - მხოლოდ კომპონენტი, ბანერების გარეშე */}
         {activeTab === 'notifications' && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
+            style={{
+              background: 'rgba(26, 21, 16, 0.8)',
+              border: '1px solid rgba(197, 160, 89, 0.2)',
+              borderRadius: '16px',
+              overflow: 'hidden'
+            }}
           >
-            {/* Header ბარათი */}
-            <motion.div 
-              className="notifications-hero-card"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              style={{
-                background: 'linear-gradient(135deg, rgba(197, 160, 89, 0.15) 0%, rgba(139, 105, 20, 0.05) 100%)',
-                border: '1px solid rgba(197, 160, 89, 0.3)',
-                borderRadius: '16px',
-                padding: '20px',
-                marginBottom: '20px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '16px'
-              }}
-            >
-              <div style={{
-                width: '56px',
-                height: '56px',
-                borderRadius: '14px',
-                background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 4px 12px rgba(197, 160, 89, 0.3)'
-              }}>
-                <Bell size={28} color="#0f0c08" />
-              </div>
-              <div style={{ flex: 1 }}>
-                <h2 style={{ 
-                  margin: 0, 
-                  fontSize: '20px', 
-                  color: '#C5A059',
-                  fontFamily: 'Georgia, serif',
-                  fontWeight: 'bold',
-                  letterSpacing: '0.5px'
-                }}>
-                  შეტყობინებების მართვა
-                </h2>
-                <p style={{ 
-                  margin: '4px 0 0 0', 
-                  fontSize: '12px', 
-                  color: '#94a3b8',
-                  fontFamily: 'Georgia, serif'
-                }}>
-                  მართე ყველა ტიპის შეტყობინება მომხმარებლებისთვის
-                </p>
-              </div>
-            </motion.div>
-
-            {/* Stats Overview */}
-            <div className="admin-stats" style={{ marginBottom: '20px' }}>
-              <motion.div 
-                className="stat-card"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-              >
-                <span className="stat-number">4</span>
-                <span className="stat-label">Notification Types</span>
-              </motion.div>
-              <motion.div 
-                className="stat-card"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                <span className="stat-number">2</span>
-                <span className="stat-label">Delivery Channels</span>
-              </motion.div>
-              <motion.div 
-                className="stat-card"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-              >
-                <span className="stat-number">Telegram</span>
-                <span className="stat-label">Primary</span>
-              </motion.div>
-            </div>
-
-            {/* Notification Settings კომპონენტი */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              style={{
-                background: 'rgba(26, 21, 16, 0.8)',
-                border: '1px solid rgba(197, 160, 89, 0.2)',
-                borderRadius: '16px',
-                overflow: 'hidden'
-              }}
-            >
-              <NotificationSettingsAdmin />
-            </motion.div>
-
-            {/* Info Footer */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              style={{
-                marginTop: '20px',
-                padding: '16px',
-                background: 'rgba(59, 130, 246, 0.1)',
-                border: '1px solid rgba(59, 130, 246, 0.3)',
-                borderRadius: '12px',
-                display: 'flex',
-                gap: '12px',
-                alignItems: 'flex-start'
-              }}
-            >
-              <div style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '8px',
-                background: 'rgba(59, 130, 246, 0.2)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0
-              }}>
-                <AlertCircle size={18} color="#60a5fa" />
-              </div>
-              <div style={{ flex: 1 }}>
-                <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', color: '#60a5fa', fontWeight: 'bold' }}>
-                  როგორ მუშაობს?
-                </h4>
-                <p style={{ margin: 0, fontSize: '11px', color: '#94a3b8', lineHeight: '1.5' }}>
-                  ეს პარამეტრები განსაზღვრავს, რომელი შეტყობინებები გაეგზავნება მომხმარებლებს. 
-                  თითოეული მომხმარებელი თავად წყვეტს, მიიღოს თუ არა კონკრეტული ტიპის შეტყობინებები 
-                  (Settings → Notifications). ეს პანელი მართავს გლობალურ ჩართვა/გამორთვას.
-                </p>
-              </div>
-            </motion.div>
+            <NotificationSettingsAdmin />
           </motion.div>
         )}
       </div>
 
-      {/* 🆕 განახლებული Navigation Bar - 7 ღილაკი */}
+      {/* 🆕 2-რიგიანი ბადე ქვედა მენიუსთვის - სქროლის გარეშე ჩანს ყველა */}
       <div style={{
-        display: 'flex',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(4, 1fr)',
+        gridTemplateRows: 'repeat(2, auto)',
         gap: '4px',
         padding: '8px',
         background: 'rgba(10, 6, 0, 0.98)',
@@ -943,34 +817,27 @@ export default function AdminScreen({ onNavigate }: Props) {
         left: 0,
         right: 0,
         zIndex: 9999,
-        backdropFilter: 'blur(10px)',
-        overflowX: 'auto',
-        scrollbarWidth: 'none'
+        backdropFilter: 'blur(10px)'
       }}>
-        <style>{`
-          div::-webkit-scrollbar { display: none; }
-        `}</style>
         {[
           { id: 'credits', icon: Key, label: 'Credits' },
           { id: 'subscriptions', icon: Crown, label: 'Subs' },
           { id: 'monitoring', icon: Activity, label: 'Monitor' },
           { id: 'analytics', icon: BarChart3, label: 'Analytics' },
           { id: 'quests', icon: Trophy, label: 'Quests' },
-          { id: 'notifications', icon: Bell, label: 'Notifications' },
+          { id: 'notifications', icon: Bell, label: 'Notify' },
           { id: 'ai', icon: Zap, label: 'AI', isExternal: true }
         ].map((tab) => (
           <button
             key={tab.id}
             onClick={() => tab.isExternal ? onNavigate?.('ai-management') : setActiveTab(tab.id as any)}
             style={{
-              flex: '0 0 auto',
-              minWidth: '70px',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '4px',
-              padding: '8px 8px',
+              gap: '2px',
+              padding: '6px 2px',
               background: activeTab === tab.id ? 'rgba(197, 160, 89, 0.2)' : 'transparent',
               border: activeTab === tab.id ? '1px solid rgba(197, 160, 89, 0.5)' : '1px solid transparent',
               borderRadius: '8px',
@@ -979,7 +846,7 @@ export default function AdminScreen({ onNavigate }: Props) {
               transition: 'all 0.2s'
             }}
           >
-            <tab.icon size={18} />
+            <tab.icon size={16} />
             <span style={{ fontSize: '9px', fontWeight: activeTab === tab.id ? 'bold' : 'normal', whiteSpace: 'nowrap' }}>{tab.label}</span>
           </button>
         ))}
@@ -1043,74 +910,69 @@ export default function AdminScreen({ onNavigate }: Props) {
         </div>
       )}
 
-      <div style={{
-        position: 'fixed',
-        bottom: '110px',
-        left: 0,
-        right: 0,
-        background: 'rgba(10, 6, 0, 0.98)',
-        borderTop: '2px solid #fbbf24',
-        zIndex: 9998,
-        maxHeight: showDebug ? '300px' : '36px',
-        transition: 'max-height 0.3s ease',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        boxShadow: '0 -4px 20px rgba(0,0,0,0.8)'
-      }}>
-        <div 
-          onClick={() => setShowDebug(!showDebug)}
-          style={{
-            padding: '6px 12px',
-            background: 'rgba(251, 191, 36, 0.1)',
-            color: '#fbbf24',
-            cursor: 'pointer',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            fontSize: '11px',
-            fontWeight: 'bold',
-            borderBottom: showDebug ? '1px solid rgba(251, 191, 36, 0.3)' : 'none',
-            userSelect: 'none'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-            <Bug size={12} />
-            <span>ADMIN DEBUG</span>
-            <span style={{ background: '#3b82f6', color: '#fff', padding: '1px 6px', borderRadius: '4px', fontSize: '9px', fontWeight: 'bold' }}>USERS: {users.length}</span>
-            <span style={{ background: '#fbbf24', color: '#000', padding: '1px 6px', borderRadius: '4px', fontSize: '9px', fontWeight: 'bold' }}>QUESTS: {quests.length}</span>
-            <span style={{ background: isUserAdmin ? '#10b981' : '#ef4444', color: '#fff', padding: '1px 6px', borderRadius: '4px', fontSize: '9px', fontWeight: 'bold' }}>ADMIN: {isUserAdmin ? 'YES' : 'NO'}</span>
+      {/* 🆕 გადატანილი ADMIN DEBUG პანელი - ზემოთ მარჯვნივ, რომ არაფერს ეფარებოდეს */}
+      <button 
+        onClick={() => setShowDebug(!showDebug)}
+        style={{
+          position: 'fixed',
+          top: '80px',
+          right: '16px',
+          zIndex: 10000,
+          width: '40px',
+          height: '40px',
+          borderRadius: '50%',
+          background: 'rgba(251, 191, 36, 0.2)',
+          border: '1px solid #fbbf24',
+          color: '#fbbf24',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+        }}
+      >
+        <Bug size={18} />
+      </button>
+
+      {showDebug && (
+        <div style={{
+          position: 'fixed',
+          top: '130px',
+          right: '16px',
+          zIndex: 10000,
+          width: '260px',
+          maxHeight: '400px',
+          overflowY: 'auto',
+          background: 'rgba(10, 6, 0, 0.95)',
+          border: '1px solid #fbbf24',
+          borderRadius: '12px',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.8)',
+          backdropFilter: 'blur(8px)'
+        }}>
+          <div style={{ padding: '10px 12px', borderBottom: '1px solid rgba(251, 191, 36, 0.3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ color: '#fbbf24', fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}><Bug size={14} /> ADMIN DEBUG</span>
+            <button onClick={() => setShowDebug(false)} style={{ background: 'none', border: 'none', color: '#fbbf24', cursor: 'pointer' }}><X size={14} /></button>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <button onClick={(e) => { e.stopPropagation(); setDebugLogs([]); }} style={{ background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', color: '#ef4444', padding: '2px 6px', borderRadius: '4px', fontSize: '9px', cursor: 'pointer' }}>Clear</button>
-            {showDebug ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+          <div style={{ padding: '10px 12px', fontSize: '10px', fontFamily: 'monospace', color: '#e2e8f0' }}>
+            <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
+              <button onClick={loadData} style={{ background: 'rgba(59, 130, 246, 0.2)', border: '1px solid #3b82f6', color: '#60a5fa', padding: '4px 6px', borderRadius: '4px', fontSize: '9px', cursor: 'pointer', flex: 1 }}>Reload</button>
+              <button onClick={() => setDebugLogs([])} style={{ background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', color: '#ef4444', padding: '4px 6px', borderRadius: '4px', fontSize: '9px', cursor: 'pointer', flex: 1 }}>Clear</button>
+            </div>
+            <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+              {debugLogs.length === 0 && <div style={{ color: '#94a3b8', textAlign: 'center', padding: '8px' }}>No logs yet.</div>}
+              {debugLogs.map((log, i) => (
+                <div key={i} style={{ padding: '4px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                    <span style={{ color: '#64748b', fontSize: '8px' }}>{log.timestamp}</span>
+                    <span style={{ color: log.type === 'error' ? '#ef4444' : log.type === 'success' ? '#10b981' : '#fbbf24', fontWeight: 'bold', fontSize: '9px' }}>[{log.source}]</span>
+                  </div>
+                  <div style={{ color: '#e2e8f0', fontSize: '10px', wordBreak: 'break-word' }}>{log.message}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-
-        {showDebug && (
-          <div style={{ flex: 1, overflowY: 'auto', padding: '8px', fontSize: '10px', fontFamily: 'monospace' }}>
-            <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' }}>
-              <button onClick={(e) => { e.stopPropagation(); loadData(); }} style={{ background: 'rgba(59, 130, 246, 0.2)', border: '1px solid #3b82f6', color: '#60a5fa', padding: '4px 8px', borderRadius: '4px', fontSize: '9px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <RefreshCw size={10} /> Reload Data
-              </button>
-              <button onClick={(e) => { e.stopPropagation(); testQuestRPC(); }} style={{ background: 'rgba(16, 185, 129, 0.2)', border: '1px solid #10b981', color: '#10b981', padding: '4px 8px', borderRadius: '4px', fontSize: '9px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Database size={10} /> Test Quest RPC
-              </button>
-            </div>
-
-            {debugLogs.length === 0 && <div style={{ color: '#94a3b8', textAlign: 'center', padding: '8px' }}>No logs yet. Perform an action to see logs here.</div>}
-            {debugLogs.map((log, i) => (
-              <div key={i} style={{ padding: '4px 6px', marginBottom: '2px', background: 'rgba(255,255,255,0.03)', borderRadius: '3px', borderLeft: `2px solid ${log.type === 'error' ? '#ef4444' : log.type === 'success' ? '#10b981' : log.type === 'warn' ? '#fbbf24' : '#60a5fa'}` }}>
-                <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                  <span style={{ color: '#64748b', fontSize: '9px' }}>{log.timestamp}</span>
-                  <span style={{ color: log.type === 'error' ? '#ef4444' : log.type === 'success' ? '#10b981' : log.type === 'warn' ? '#fbbf24' : '#60a5fa', fontWeight: 'bold', fontSize: '9px' }}>[{log.source}]</span>
-                  <span style={{ color: '#e2e8f0', fontSize: '10px' }}>{log.message}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 }
