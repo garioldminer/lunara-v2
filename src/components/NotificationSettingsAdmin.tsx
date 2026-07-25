@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useUser } from '../context/UserContext';
-import { Bell, Moon, Sun, RefreshCw, Send, Users, Zap, CheckCircle2, XCircle } from 'lucide-react';
+import { Bell, Moon, Sun, RefreshCw, Send } from 'lucide-react';
 
 interface NotificationSettings {
   id: string;
@@ -40,7 +40,7 @@ export default function NotificationSettingsAdmin() {
 
   const handleBroadcast = async () => {
     if (!user || !message.trim()) return;
-    if (!confirm(`📢 გაგზავნა ყველა მომხმარებელს?\n\n"${message.substring(0, 50)}..."`)) return;
+    if (!confirm(`გაგზავნა ყველა მომხმარებელს?\n\n"${message.substring(0, 50)}..."`)) return;
 
     setSending(true);
     try {
@@ -65,7 +65,7 @@ export default function NotificationSettingsAdmin() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#0a0600] to-[#1a1510] flex items-center justify-center">
         <div className="text-center">
-          <RefreshCw className="animate-spin w-10 h-10 text-[#C5A059] mx-auto mb-3" />
+          <div className="animate-spin rounded-full w-10 h-10 border-2 border-[#C5A059] border-t-transparent mx-auto mb-3" />
           <p className="text-[#C5A059] text-sm">იტვირთება...</p>
         </div>
       </div>
@@ -76,7 +76,11 @@ export default function NotificationSettingsAdmin() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#0a0600] to-[#1a1510] flex items-center justify-center">
         <div className="text-center text-red-400">
-          <XCircle className="w-12 h-12 mx-auto mb-3" />
+          <div className="rounded-full w-12 h-12 bg-red-900/20 flex items-center justify-center mx-auto mb-3">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
           <p>ვერ მოიძებნა</p>
         </div>
       </div>
@@ -107,20 +111,6 @@ export default function NotificationSettingsAdmin() {
       </div>
 
       <div className="p-4 space-y-4">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-gradient-to-br from-[#1a1510] to-[#0f0c08] rounded-2xl p-4 border border-[#332a1a]">
-            <Users className="w-6 h-6 text-[#C5A059] mb-2" />
-            <div className="text-2xl font-bold text-white">All</div>
-            <div className="text-xs text-gray-400">აუდიტორია</div>
-          </div>
-          <div className="bg-gradient-to-br from-[#1a1510] to-[#0f0c08] rounded-2xl p-4 border border-[#332a1a]">
-            <Zap className="w-6 h-6 text-purple-400 mb-2" />
-            <div className="text-2xl font-bold text-white">2</div>
-            <div className="text-xs text-gray-400">არხი</div>
-          </div>
-        </div>
-
         {/* Global Settings Card */}
         <div className="bg-[#1a1510] rounded-2xl border border-[#332a1a] overflow-hidden">
           <div className="p-4 border-b border-[#332a1a]">
@@ -188,7 +178,7 @@ export default function NotificationSettingsAdmin() {
               disabled={saving}
               className="w-full py-3 bg-gradient-to-r from-[#C5A059] to-[#8B6914] text-[#0a0600] font-bold rounded-xl mt-4 active:scale-[0.98] transition-transform disabled:opacity-50"
             >
-              {saving ? 'ინახება...' : ' შენახვა'}
+              {saving ? 'ინახება...' : 'შენახვა'}
             </button>
           </div>
         </div>
@@ -217,7 +207,7 @@ export default function NotificationSettingsAdmin() {
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder=" გილოცავთ ახალ განახლებას!..."
+                placeholder="გილოცავთ ახალ განახლებას!..."
                 rows={4}
                 className="w-full bg-[#0f0c08] border border-[#332a1a] rounded-xl p-3 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-red-500/50 resize-none"
               />
@@ -232,7 +222,9 @@ export default function NotificationSettingsAdmin() {
             >
               {sending ? (
                 <>
-                  <RefreshCw className="w-5 h-5 animate-spin" />
+                  <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
                   იგზავნება...
                 </>
               ) : (
@@ -248,9 +240,13 @@ export default function NotificationSettingsAdmin() {
               <div className={`rounded-xl p-4 border ${result.success ? 'bg-green-950/30 border-green-800/50' : 'bg-red-950/30 border-red-800/50'}`}>
                 <div className="flex items-center gap-2 mb-2">
                   {result.success ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-400" />
+                    <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
                   ) : (
-                    <XCircle className="w-5 h-5 text-red-400" />
+                    <svg className="w-5 h-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
                   )}
                   <div className={`font-bold ${result.success ? 'text-green-400' : 'text-red-400'}`}>
                     {result.success ? '✅ წარმატება' : '❌ შეცდომა'}
