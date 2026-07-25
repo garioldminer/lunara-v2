@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useUser } from '../context/UserContext';
-import { Bell, Moon, Sun, Save, RefreshCw, CheckCircle, AlertCircle, Send } from 'lucide-react';
+import { Bell, Moon, Sun, RefreshCw, Send } from 'lucide-react';
 
 interface NotificationSettings {
   id: string;
