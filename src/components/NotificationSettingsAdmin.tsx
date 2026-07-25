@@ -1,18 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
+import { supabase } from '../lib/supabase';
+import { useUser } from '../context/UserContext';
 import { Bell, Moon, Sun, RefreshCw, Send, Sparkles, X, Check, Loader2 } from 'lucide-react';
-
-/* ============================================================
-   LUNARA — Notification Settings (Admin)
-   Redesign notes for გიო:
-   - Colors are applied via inline style objects, not Tailwind
-     arbitrary-value classes (bg-[#...]) — this sandbox has no
-     Tailwind JIT compiler, so bracket classes silently fail here.
-     In your real Next.js project (which DOES compile Tailwind),
-     you can keep using bg-[#0a0600] etc. if you prefer — just
-     know the two approaches aren't interchangeable environments.
-   - Replace mockLoad / mockSave / mockBroadcast with your real
-     Supabase calls — the shape of the data is unchanged.
-   ============================================================ */
 
 const palette = {
   bgTop: '#120c07',
@@ -47,42 +36,15 @@ const fontImport = `
 }
 `;
 
-// --- Mock data layer — swap these three for your real Supabase calls ---
-const MOCK_AUDIENCE = 1284;
-function mockLoad() {
-  return new Promise((res) =>
-    setTimeout(
-      () =>
-        res({
-          id: '1',
-          daily_horoscope_enabled: true,
-          moon_phase_enabled: false,
-          daily_horoscope_time: '09:00',
-        }),
-      650
-    )
-  );
+interface NotificationSettings {
+  id: string;
+  daily_horoscope_enabled: boolean;
+  moon_phase_enabled: boolean;
+  daily_horoscope_time: string;
 }
-function mockSave(settings) {
-  return new Promise((res) => setTimeout(() => res(settings), 500));
-}
-function mockBroadcast(message) {
-  return new Promise((res) =>
-    setTimeout(
-      () =>
-        res({
-          success: true,
-          message: 'შეტყობინება წარმატებით გაიგზავნა',
-          details: { successCount: MOCK_AUDIENCE - 12, failCount: 12 },
-        }),
-      1400
-    )
-  );
-}
-// -------------------------------------------------------------------
 
 const CONFIRM_PHRASE = 'გაგზავნა';
-const MESSAGE_LIMIT = 180;
+const MESSAGE_LIMIT = 500;
 
 function OrnamentDivider() {
   return (
@@ -96,7 +58,7 @@ function OrnamentDivider() {
   );
 }
 
-function Toggle({ checked, onChange, activeColor }) {
+function Toggle({ checked, onChange, activeColor }: { checked: boolean; onChange: () => void; activeColor: string }) {
   return (
     <button
       onClick={onChange}
@@ -115,7 +77,7 @@ function Toggle({ checked, onChange, activeColor }) {
   );
 }
 
-function Skeleton({ className }) {
+function Skeleton({ className }: { className: string }) {
   return (
     <div
       className={className}
@@ -125,43 +87,50 @@ function Skeleton({ className }) {
 }
 
 export default function NotificationSettingsAdmin() {
-  const [settings, setSettings] = useState(null);
+  const { user } = useUser();
+  const [settings, setSettings] = useState<NotificationSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<any>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmInput, setConfirmInput] = useState('');
-  const [toast, setToast] = useState(null);
-  const toastTimer = useRef(null);
+  const [toast, setToast] = useState<{ text: string; tone: string } | null>(null);
+  const toastTimer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     load();
   }, []);
 
-  const showToast = (text, tone = 'success') => {
+  const showToast = (text: string, tone: string = 'success') => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
     setToast({ text, tone });
     toastTimer.current = setTimeout(() => setToast(null), 2600);
   };
 
   const load = async () => {
+    if (!supabase) return;
     setLoading(true);
-    const data = await mockLoad();
-    setSettings(data);
+    const { data } = await supabase.from('notification_settings').select('*').single();
+    if (data) setSettings(data);
     setLoading(false);
   };
 
   const handleSave = async () => {
+    if (!supabase || !settings) return;
     setSaving(true);
-    await mockSave(settings);
+    const { error } = await supabase.from('notification_settings').update(settings).eq('id', settings.id);
     setSaving(false);
-    setSaved(true);
-    showToast('პარამეტრები შენახულია');
-    setTimeout(() => setSaved(false), 2000);
+    if (!error) {
+      setSaved(true);
+      showToast('პარამეტრები შენახულია');
+      setTimeout(() => setSaved(false), 2000);
+    } else {
+      showToast('შეცდომა შენახვისას', 'error');
+    }
   };
 
   const openConfirm = () => {
@@ -175,11 +144,24 @@ export default function NotificationSettingsAdmin() {
     setSending(true);
     setResult(null);
     try {
-      const data = await mockBroadcast(message.trim());
+      const res = await fetch('https://eutavdhcxpfhpfsyaskb.supabase.co/functions/v1/send-broadcast-notification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': (supabase as any).supabaseKey },
+        body: JSON.stringify({
+          admin_user_id: user?.id,
+          message: message.trim(),
+          target_audience: 'all'
+        })
+      });
+      const data = await res.json();
       setResult(data);
-      if (data.success) setMessage('');
-    } catch (e) {
+      if (data.success) {
+        setMessage('');
+        showToast('შეტყობინება წარმატებით გაიგზავნა');
+      }
+    } catch (e: any) {
       setResult({ success: false, error: e.message });
+      showToast('ვერ გაიგზავნა', 'error');
     }
     setSending(false);
   };
@@ -244,7 +226,7 @@ export default function NotificationSettingsAdmin() {
               <Skeleton className="h-12 rounded-xl" />
               <Skeleton className="h-12 rounded-xl" />
             </div>
-          ) : (
+          ) : settings && (
             <div className="p-4 space-y-1">
               {/* Daily horoscope */}
               <div className="flex items-center justify-between py-2">
@@ -267,7 +249,7 @@ export default function NotificationSettingsAdmin() {
               </div>
 
               {settings.daily_horoscope_enabled && (
-                <div className="pl-13 pb-1" style={{ paddingLeft: '52px', animation: 'lunara-rise 0.2s ease-out' }}>
+                <div className="pb-1" style={{ paddingLeft: '52px', animation: 'lunara-rise 0.2s ease-out' }}>
                   <div className="rounded-xl p-3" style={{ backgroundColor: palette.bgTop, border: `1px solid ${palette.border}` }}>
                     <label className="text-xs block mb-2" style={{ color: palette.inkMuted }}>
                       გაგზავნის დრო
@@ -337,7 +319,7 @@ export default function NotificationSettingsAdmin() {
               მასობრივი გაგზავნა
             </h2>
             <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: palette.dangerDeep, color: palette.danger }}>
-              {MOCK_AUDIENCE.toLocaleString()} მიმღები
+              ყველა მომხმარებელი
             </span>
           </div>
 
@@ -392,7 +374,7 @@ export default function NotificationSettingsAdmin() {
                     <div className="text-xs font-semibold" style={{ color: palette.ink }}>
                       LUNARA
                     </div>
-                    <div className="text-xs mt-0.5 break-words" style={{ color: palette.inkMuted }}>
+                    <div className="text-xs mt-0.5 break-words whitespace-pre-wrap" style={{ color: palette.inkMuted }}>
                       {message.trim().slice(0, MESSAGE_LIMIT)}
                     </div>
                   </div>
@@ -447,7 +429,7 @@ export default function NotificationSettingsAdmin() {
         </div>
       </div>
 
-      {/* Confirmation ritual — deliberately has friction; this is an irreversible action */}
+      {/* Confirmation ritual */}
       {confirmOpen && (
         <div
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
@@ -466,7 +448,7 @@ export default function NotificationSettingsAdmin() {
               </h3>
             </div>
             <p className="text-xs mb-4" style={{ color: palette.inkMuted }}>
-              შეტყობინება მიიღებს <strong style={{ color: palette.ink }}>{MOCK_AUDIENCE.toLocaleString()}</strong> მომხმარებელი. დასადასტურებლად ჩაწერე{' '}
+              შეტყობინება მიიღებს <strong style={{ color: palette.ink }}>ყველა</strong> მომხმარებელი. დასადასტურებლად ჩაწერე{' '}
               <span style={{ color: palette.gold }}>„{CONFIRM_PHRASE}“</span>.
             </p>
             <input
