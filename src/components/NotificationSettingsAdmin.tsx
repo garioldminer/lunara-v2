@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useUser } from '../context/UserContext';
-import { Bell, Moon, Sun, RefreshCw, Send, Sparkles, X, Check, Loader2 } from 'lucide-react';
+import { Bell, Moon, Sun, RefreshCw, Send, Sparkles, X, Check, Loader2, Bug, Database, Wifi, Users, MessageSquare } from 'lucide-react';
 
 const palette = {
   bgTop: '#120c07',
@@ -186,6 +186,153 @@ const css = `
   background: ${palette.surfaceRaised}; border: 1px solid ${palette.gold}; color: ${palette.gold};
 }
 
+/* Debug Panel Styles */
+.nsa-debug-toggle {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 70;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, ${palette.gold}, ${palette.goldDeep});
+  border: 2px solid ${palette.border};
+  color: ${palette.bgBottom};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.nsa-debug-toggle:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(197,160,89,0.4);
+}
+.nsa-debug-toggle:active {
+  transform: scale(0.95);
+}
+
+.nsa-debug-panel {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  z-index: 70;
+  width: 320px;
+  max-height: 400px;
+  overflow-y: auto;
+  background: ${palette.surface};
+  border: 1px solid ${palette.border};
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+  animation: nsa-slide-up 0.3s ease-out;
+}
+@keyframes nsa-slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.nsa-debug-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid ${palette.border};
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(197,160,89,0.1);
+}
+.nsa-debug-title {
+  font-family: 'Noto Serif Georgian', serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: ${palette.gold};
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.nsa-debug-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: ${palette.surfaceRaised};
+  border: 1px solid ${palette.border};
+  color: ${palette.inkMuted};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.nsa-debug-close:hover {
+  background: ${palette.dangerDeep};
+  color: ${palette.danger};
+}
+
+.nsa-debug-content {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.nsa-debug-section {
+  border-radius: 10px;
+  padding: 10px;
+  background: ${palette.surfaceRaised};
+  border: 1px solid ${palette.borderSubtle};
+}
+.nsa-debug-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: ${palette.inkMuted};
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nsa-debug-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid ${palette.borderSubtle};
+  font-size: 12px;
+}
+.nsa-debug-item:last-child {
+  border-bottom: none;
+}
+.nsa-debug-label {
+  color: ${palette.inkMuted};
+}
+.nsa-debug-value {
+  font-weight: 500;
+  color: ${palette.ink};
+  font-family: monospace;
+  font-size: 11px;
+}
+.nsa-debug-value.success { color: ${palette.success}; }
+.nsa-debug-value.error { color: ${palette.danger}; }
+.nsa-debug-value.warning { color: ${palette.gold}; }
+
+.nsa-debug-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.nsa-debug-status.online {
+  background: rgba(127,174,122,0.2);
+  color: ${palette.success};
+}
+.nsa-debug-status.offline {
+  background: rgba(193,68,63,0.2);
+  color: ${palette.danger};
+}
+
 @media (prefers-reduced-motion: reduce) {
   .nsa-root * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
 }
@@ -223,10 +370,32 @@ export default function NotificationSettingsAdmin() {
   const [confirmInput, setConfirmInput] = useState('');
   const [toast, setToast] = useState<{ text: string } | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  
+  // Debug Panel State
+  const [showDebug, setShowDebug] = useState(false);
+  const [debugInfo, setDebugInfo] = useState({
+    supabaseConnected: !!supabase,
+    userLoaded: !!user,
+    settingsLoaded: !!settings,
+    lastBroadcast: result ? new Date().toLocaleTimeString() : 'Never',
+    broadcastCount: result?.details?.successCount || 0,
+    failCount: result?.details?.failCount || 0,
+  });
 
   useEffect(() => {
     load();
   }, []);
+
+  useEffect(() => {
+    // Update debug info when state changes
+    setDebugInfo(prev => ({
+      ...prev,
+      settingsLoaded: !!settings,
+      lastBroadcast: result ? new Date().toLocaleTimeString() : prev.lastBroadcast,
+      broadcastCount: result?.details?.successCount || prev.broadcastCount,
+      failCount: result?.details?.failCount || prev.failCount,
+    }));
+  }, [settings, result]);
 
   const showToast = (text: string) => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -456,6 +625,118 @@ export default function NotificationSettingsAdmin() {
 
       {toast && (
         <div className="nsa-toast"><Check size={16} /> {toast.text}</div>
+      )}
+
+      {/* Debug Toggle Button */}
+      <button 
+        className="nsa-debug-toggle" 
+        onClick={() => setShowDebug(!showDebug)}
+        title="Debug Panel"
+      >
+        <Bug size={22} />
+      </button>
+
+      {/* Debug Panel */}
+      {showDebug && (
+        <div className="nsa-debug-panel">
+          <div className="nsa-debug-header">
+            <div className="nsa-debug-title">
+              <Bug size={16} />
+              System Diagnostics
+            </div>
+            <button className="nsa-debug-close" onClick={() => setShowDebug(false)}>
+              <X size={16} />
+            </button>
+          </div>
+          
+          <div className="nsa-debug-content">
+            {/* Connection Status */}
+            <div className="nsa-debug-section">
+              <div className="nsa-debug-section-title">
+                <Wifi size={12} />
+                Connection
+              </div>
+              <div className="nsa-debug-item">
+                <span className="nsa-debug-label">Supabase</span>
+                <span className={`nsa-debug-status ${debugInfo.supabaseConnected ? 'online' : 'offline'}`}>
+                  {debugInfo.supabaseConnected ? '● Online' : '○ Offline'}
+                </span>
+              </div>
+              <div className="nsa-debug-item">
+                <span className="nsa-debug-label">User Auth</span>
+                <span className={`nsa-debug-value ${debugInfo.userLoaded ? 'success' : 'error'}`}>
+                  {debugInfo.userLoaded ? '✓ Loaded' : '✗ Not Auth'}
+                </span>
+              </div>
+            </div>
+
+            {/* Data Status */}
+            <div className="nsa-debug-section">
+              <div className="nsa-debug-section-title">
+                <Database size={12} />
+                Data State
+              </div>
+              <div className="nsa-debug-item">
+                <span className="nsa-debug-label">Settings</span>
+                <span className={`nsa-debug-value ${debugInfo.settingsLoaded ? 'success' : 'warning'}`}>
+                  {debugInfo.settingsLoaded ? '✓ Loaded' : '⚠ Loading'}
+                </span>
+              </div>
+              <div className="nsa-debug-item">
+                <span className="nsa-debug-label">User ID</span>
+                <span className="nsa-debug-value" style={{ fontSize: '10px' }}>
+                  {user?.id ? `${user.id.slice(0, 8)}...` : 'N/A'}
+                </span>
+              </div>
+            </div>
+
+            {/* Broadcast Stats */}
+            <div className="nsa-debug-section">
+              <div className="nsa-debug-section-title">
+                <MessageSquare size={12} />
+                Last Broadcast
+              </div>
+              <div className="nsa-debug-item">
+                <span className="nsa-debug-label">Time</span>
+                <span className="nsa-debug-value">{debugInfo.lastBroadcast}</span>
+              </div>
+              <div className="nsa-debug-item">
+                <span className="nsa-debug-label">Success</span>
+                <span className="nsa-debug-value success">{debugInfo.broadcastCount}</span>
+              </div>
+              <div className="nsa-debug-item">
+                <span className="nsa-debug-label">Failed</span>
+                <span className={`nsa-debug-value ${debugInfo.failCount > 0 ? 'error' : 'success'}`}>
+                  {debugInfo.failCount}
+                </span>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="nsa-debug-section">
+              <div className="nsa-debug-section-title">
+                <Users size={12} />
+                Quick Actions
+              </div>
+              <button 
+                onClick={load}
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  marginTop: '4px',
+                  background: palette.surfaceRaised,
+                  border: `1px solid ${palette.border}`,
+                  color: palette.gold,
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                  cursor: 'pointer'
+                }}
+              >
+                 Reload Settings
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
