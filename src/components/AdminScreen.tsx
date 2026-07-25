@@ -4,7 +4,7 @@ import {
   ArrowLeft, Users, Plus, Trash2, RefreshCw, Crown, ShieldAlert, 
   Calendar, Clock, Zap, Key, Activity, CheckCircle, XCircle, 
   AlertCircle, Play, Eye, BarChart3, TrendingUp, DollarSign, Flame,
-  Trophy, Bug, ChevronUp, ChevronDown, Edit2, X, Database, Bell
+  Trophy, Bug, Edit2, X, Bell
 } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { supabase } from '../lib/supabase';
@@ -184,23 +184,6 @@ export default function AdminScreen({ onNavigate }: Props) {
     };
     setDebugLogs(prev => [log, ...prev].slice(0, 100));
     console.log(`[${type.toUpperCase()}] [${source}] ${message}`, data || '');
-  };
-
-  const testQuestRPC = async () => {
-    if (!user || !supabase) return;
-    addDebugLog('info', 'DEBUG_ACTION', '🧪 Testing get_user_quests RPC...');
-    try {
-      const { data, error } = await supabase.rpc('get_user_quests', { p_user_id: user.id });
-      if (error) {
-        addDebugLog('error', 'DEBUG_ACTION', `❌ RPC Failed: ${error.message}`);
-        showToast('Quest RPC Failed: ' + error.message, 'error');
-      } else {
-        addDebugLog('success', 'DEBUG_ACTION', `✅ RPC Success! Found ${data?.length || 0} quests.`);
-        showToast(`Quest RPC works! Found ${data?.length || 0} quests.`, 'success');
-      }
-    } catch (err: any) {
-      addDebugLog('error', 'DEBUG_ACTION', `💥 Exception: ${err.message}`);
-    }
   };
 
   useEffect(() => {
