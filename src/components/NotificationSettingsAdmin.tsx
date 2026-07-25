@@ -3,26 +3,6 @@ import { supabase } from '../lib/supabase';
 import { useUser } from '../context/UserContext';
 import { Bell, Moon, Sun, RefreshCw, Send, Sparkles, X, Check, Loader2 } from 'lucide-react';
 
-/* ============================================================
-   LUNARA — Notification Settings (Admin)
-
-   Why this version looks different from the last one:
-   the previous file relied on Tailwind utility classes
-   (text-xs, w-5, gap-3, rounded-xl, etc). Your screenshot shows
-   those classes never got generated — everything fell back to
-   raw browser defaults (huge default heading size, unconstrained
-   icon size, no gap/flex spacing, content overflowing the
-   viewport). That happens when Tailwind's JIT scanner doesn't
-   pick up a brand-new file/class set.
-
-   This version defines its own CSS in the <style> block below
-   with real, explicit rules — it does not depend on Tailwind
-   detecting anything. It will render identically regardless of
-   your tailwind.config content globs or JIT cache. Icon sizes
-   are also passed as explicit `size` props to lucide icons
-   instead of relying on a CSS class to constrain them.
-   ============================================================ */
-
 const palette = {
   bgTop: '#120c07',
   bgBottom: '#050301',
@@ -200,7 +180,7 @@ const css = `
 .nsa-modal-confirm:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .nsa-toast {
-  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 50;
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 60;
   padding: 10px 18px; border-radius: 999px; font-size: 14px; font-weight: 500;
   display: flex; align-items: center; gap: 8px;
   background: ${palette.surfaceRaised}; border: 1px solid ${palette.gold}; color: ${palette.gold};
@@ -283,14 +263,19 @@ export default function NotificationSettingsAdmin() {
   };
 
   const handleBroadcast = async () => {
+    if (!user) {
+      showToast('სისტემაში შესვლა აუცილებელია');
+      return;
+    }
+    
     setConfirmOpen(false);
     setSending(true);
     setResult(null);
     try {
       const res = await fetch('https://eutavdhcxpfhpfsyaskb.supabase.co/functions/v1/send-broadcast-notification', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', apikey: (supabase as any).supabaseKey },
-        body: JSON.stringify({ admin_user_id: user?.id, message: message.trim(), target_audience: 'all' }),
+        headers: { 'Content-Type': 'application/json', 'apikey': (supabase as any).supabaseKey },
+        body: JSON.stringify({ admin_user_id: user.id, message: message.trim(), target_audience: 'all' }),
       });
       const data = await res.json();
       setResult(data);
