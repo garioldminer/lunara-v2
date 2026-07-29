@@ -4,7 +4,7 @@ import {
   ArrowLeft, Users, Plus, Trash2, RefreshCw, Crown, ShieldAlert, 
   Calendar, Clock, Zap, Key, Activity, CheckCircle, XCircle, 
   AlertCircle, Play, Eye, BarChart3, TrendingUp, DollarSign, Flame,
-  Trophy, Bug, Edit2, X, Bell
+  Trophy, Bug, Edit2, X, Bell, Moon
 } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { supabase } from '../lib/supabase';
@@ -28,6 +28,7 @@ import {
   UserAnalyticsOverview
 } from '../lib/adminService';
 import NotificationSettingsAdmin from './NotificationSettingsAdmin';
+import HoroscopeMonitor from './HoroscopeMonitor';
 import './AdminScreen.css';
 
 interface Props {
@@ -135,7 +136,7 @@ export default function AdminScreen({ onNavigate }: Props) {
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [editingFeature, setEditingFeature] = useState<string>('');
   const [newAmount, setNewAmount] = useState(0);
-  const [activeTab, setActiveTab] = useState<'credits' | 'subscriptions' | 'monitoring' | 'analytics' | 'quests' | 'notifications'>('credits');
+  const [activeTab, setActiveTab] = useState<'credits' | 'subscriptions' | 'monitoring' | 'analytics' | 'quests' | 'notifications' | 'horoscope-monitor'>('credits');
   
   const [showAddSubscription, setShowAddSubscription] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string>('');
@@ -643,7 +644,7 @@ export default function AdminScreen({ onNavigate }: Props) {
                       </div>
                     </div>
                     <div className="user-credits" style={{ marginTop: '12px' }}>
-                      <div className="credit-item"><span className="credit-label">Status:</span><span className={`credit-amount ${isHealthy ? 'text-success' : hasError ? 'text-error' : ''}`}>{isHealthy ? '✅ SUCCESS' : hasError ? '❌ ERROR' : noData ? '⚠️ NO DATA' : '???'}</span></div>
+                      <div className="credit-item"><span className="credit-label">Status:</span><span className={`credit-amount ${isHealthy ? 'text-success' : hasError ? 'text-error' : ''}`}>{isHealthy ? '✅ SUCCESS' : hasError ? ' ERROR' : noData ? '⚠️ NO DATA' : '???'}</span></div>
                       <div className="credit-item"><span className="credit-label">Success Rate:</span><span className="credit-amount">{func.successRate.toFixed(0)}%</span></div>
                       <div className="credit-item"><span className="credit-label">Total Runs:</span><span className="credit-amount">{func.totalRuns}</span></div>
                       <div className="credit-item"><span className="credit-label">Avg Response:</span><span className="credit-amount">{func.avgResponseTime}ms</span></div>
@@ -768,7 +769,6 @@ export default function AdminScreen({ onNavigate }: Props) {
           </>
         )}
 
-        {/* 🆕 Notifications ტაბი - მხოლოდ კომპონენტი, ბანერების გარეშე */}
         {activeTab === 'notifications' && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -784,9 +784,19 @@ export default function AdminScreen({ onNavigate }: Props) {
             <NotificationSettingsAdmin />
           </motion.div>
         )}
+
+        {activeTab === 'horoscope-monitor' && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <HoroscopeMonitor />
+          </motion.div>
+        )}
       </div>
 
-      {/* 🆕 2-რიგიანი ბადე ქვედა მენიუსთვის - სქროლის გარეშე ჩანს ყველა */}
+      {/* 🆕 2-რიგიანი ბადე ქვედა მენიუსთვის - 8 ღილაკი (4x2) */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(4, 1fr)',
@@ -809,6 +819,7 @@ export default function AdminScreen({ onNavigate }: Props) {
           { id: 'analytics', icon: BarChart3, label: 'Analytics' },
           { id: 'quests', icon: Trophy, label: 'Quests' },
           { id: 'notifications', icon: Bell, label: 'Notify' },
+          { id: 'horoscope-monitor', icon: Moon, label: 'Horoscope' },
           { id: 'ai', icon: Zap, label: 'AI', isExternal: true }
         ].map((tab) => (
           <button
