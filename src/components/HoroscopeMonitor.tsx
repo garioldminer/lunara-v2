@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import {
   RefreshCw, Send, Trash2, Download, CheckCircle, XCircle,
-  Clock, Zap, Users, AlertCircle, TrendingUp, Database
+  Zap, Users, TrendingUp, Database
 } from 'lucide-react';
-import { useUser } from '../context/UserContext';
 import { supabase } from '../lib/supabase';
 
 interface HoroscopeLog {
@@ -39,7 +37,6 @@ interface AIStats {
 }
 
 export default function HoroscopeMonitor() {
-  const { user } = useUser();
   const [logs, setLogs] = useState<HoroscopeLog[]>([]);
   const [eligibilityStats, setEligibilityStats] = useState<EligibilityStats | null>(null);
   const [aiStats, setAiStats] = useState<AIStats | null>(null);
@@ -116,9 +113,9 @@ export default function HoroscopeMonitor() {
         .gte('created_at', `${today}T00:00:00`);
 
       if (todayLogs && todayLogs.length > 0) {
-        const geminiCount = todayLogs.filter(l => l.ai_model === 'gemini').length;
-        const groqCount = todayLogs.filter(l => l.ai_model === 'groq').length;
-        const totalTokens = todayLogs.reduce((sum, l) => sum + (l.tokens_used || 0), 0);
+        const geminiCount = todayLogs.filter((l: any) => l.ai_model === 'gemini').length;
+        const groqCount = todayLogs.filter((l: any) => l.ai_model === 'groq').length;
+        const totalTokens = todayLogs.reduce((sum: number, l: any) => sum + (l.tokens_used || 0), 0);
         const avgTokens = totalTokens / todayLogs.length;
         const estimatedCost = (totalTokens / 1000000) * 0.5; // მიახლოებითი ფასი
 
@@ -165,6 +162,7 @@ export default function HoroscopeMonitor() {
 
   const handleClearOldLogs = async () => {
     if (!confirm('Delete logs older than 30 days?')) return;
+    if (!supabase) return; // ✅ დამატებულია null check
     
     try {
       const thirtyDaysAgo = new Date();
@@ -184,6 +182,8 @@ export default function HoroscopeMonitor() {
   };
 
   const handleExportLogs = () => {
+    if (!supabase) return; // ✅ დამატებულია null check (თუმცა აქ პირდაპირ logs-ს ვიყენებთ)
+    
     const csvContent = [
       ['User', 'Sun Sign', 'Status', 'AI Model', 'Tokens', 'Timestamp', 'Error'].join(','),
       ...logs.map(log => [
@@ -229,7 +229,7 @@ export default function HoroscopeMonitor() {
   if (loading) {
     return (
       <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>
-        <RefreshCw size={32} className="animate-spin" />
+        <RefreshCw size={32} style={{ animation: 'spin 1s linear infinite' }} />
         <p>Loading monitor data...</p>
       </div>
     );
@@ -240,7 +240,7 @@ export default function HoroscopeMonitor() {
       {/* Header */}
       <div style={{ marginBottom: '24px' }}>
         <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#C5A059', marginBottom: '8px' }}>
-           Horoscope Monitor
+          🌙 Horoscope Monitor
         </h2>
         <p style={{ fontSize: '14px', color: '#94a3b8' }}>
           Track daily horoscope deliveries and AI performance
@@ -259,11 +259,12 @@ export default function HoroscopeMonitor() {
             border: 'none',
             borderRadius: '8px',
             fontWeight: 'bold',
-            cursor: 'pointer',
+            cursor: sending ? 'not-allowed' : 'pointer',
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            fontSize: '14px'
+            fontSize: '14px',
+            opacity: sending ? 0.7 : 1
           }}
         >
           <Send size={16} />
