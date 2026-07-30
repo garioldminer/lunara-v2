@@ -240,7 +240,7 @@ export default function HomeScreen({ onNavigate }: Props) {
    XP: ${economy.xp}
    Level: ${economy.level}
    Streak: ${currentStreak}
-   Energy: ${economy.cosmic_focus}/${economy.max_focus}
+   Energy: ${economy.cosmic_focus}/20
 
 📊 STATUS:
    Database: ${dbStatus.toUpperCase()}
@@ -915,7 +915,7 @@ End of Debug Report
             <div className="resource energy" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(251, 191, 36, 0.15)', padding: '4px 10px', borderRadius: '20px', border: '1px solid rgba(251, 191, 36, 0.3)', height: '22px' }}>
               <Zap size={12} className="resource-icon energy-icon" style={{ color: '#fbbf24', flexShrink: 0 }} />
               <span className="value" style={{ fontSize: '12px', fontWeight: '600', color: '#fff', textAlign: 'center' }}>
-                {economy.cosmic_focus || 0}/{economy.max_focus || 20}
+                {economy.cosmic_focus || 0}/20
               </span>
               <button 
                 className="add-btn" 
@@ -1156,7 +1156,7 @@ End of Debug Report
                 {dbDebugInfo.economyData ? (
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', fontSize: '9px', color: '#e2e8f0' }}>
                     <div>Current: <strong>{dbDebugInfo.economyData.cosmic_focus || 0}</strong></div>
-                    <div>Max: <strong>{dbDebugInfo.economyData.max_focus || 20}</strong></div>
+                    <div>Max Capacity: <strong>20</strong></div>
                     <div>Multiplier: <strong>{dbDebugInfo.economyData.energy_boost_multiplier || 1}x</strong></div>
                     <div>Last Update: <strong>{dbDebugInfo.economyData.last_energy_update ? new Date(dbDebugInfo.economyData.last_energy_update).toLocaleTimeString() : 'N/A'}</strong></div>
                   </div>
