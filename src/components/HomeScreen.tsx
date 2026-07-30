@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { useUser } from '../context/UserContext';
-import { useTranslation } from '../i18n/TranslationContext'; // 🆕 ახალი იმპორტი
+import { useTranslation } from '../i18n/TranslationContext';
 import { tarotCards, SUITS } from '../data/tarotCards';
 import { isAdmin } from '../lib/adminService';
 import { getActiveSubscription } from '../lib/subscriptionService';
@@ -18,7 +18,6 @@ import {
 } from 'lucide-react';
 import './HomeScreen.css';
 
-// ექსპონენციალური ლეველის ლოგიკა
 const getXPToNextLevel = (level: number): number => {
   if (level === 1) return 100;
   if (level === 2) return 250;
@@ -42,7 +41,6 @@ const getLevelFromTotalXP = (totalXP: number) => {
   return { level, currentLevelXP, xpToNext: xpRequiredForNext };
 };
 
-// Toast Notification Component
 interface Toast {
   message: string;
   type: 'success' | 'error' | 'info';
@@ -95,7 +93,6 @@ function ToastNotification({ toast, onClose }: { toast: Toast; onClose: () => vo
   );
 }
 
-// Level Up Modal Component
 function LevelUpModal({ level, onClose, t }: { level: number; onClose: () => void; t: (key: string, params?: any) => string }) {
   return (
     <div style={{
@@ -142,6 +139,8 @@ interface EconomyData {
   xp: number;
   level: number;
   current_streak: number;
+  cosmic_focus: number;
+  max_focus: number;
 }
 
 interface DebugLog {
@@ -172,7 +171,7 @@ interface DailyQuestDisplay extends QuestProgress {
 }
 
 export default function HomeScreen({ onNavigate }: Props) {
-  const { t } = useTranslation(); // 🆕 i18n ჰუკი
+  const { t } = useTranslation();
   const { user, setUser } = useUser();
   const [rewardClaimed, setRewardClaimed] = useState(false);
   const [isClaiming, setIsClaiming] = useState(false);
@@ -183,7 +182,9 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [isUserAdmin, setIsUserAdmin] = useState(false);
   const [activeSubscription, setActiveSubscription] = useState<any>(null);
   
-  const [economy, setEconomy] = useState<EconomyData>({ cosmic_coins: 0, xp: 0, level: 1, current_streak: 0 });
+  const [economy, setEconomy] = useState<EconomyData>({ 
+    cosmic_coins: 0, xp: 0, level: 1, current_streak: 0, cosmic_focus: 20, max_focus: 20 
+  });
   const [questsLoading, setQuestsLoading] = useState(true);
   const [dailyQuests, setDailyQuests] = useState<DailyQuestDisplay[]>([]);
   const [activeDailyQuest, setActiveDailyQuest] = useState<DailyQuestDisplay | null>(null);
@@ -237,6 +238,7 @@ export default function HomeScreen({ onNavigate }: Props) {
    XP: ${economy.xp}
    Level: ${economy.level}
    Streak: ${currentStreak}
+   Energy: ${economy.cosmic_focus}/${economy.max_focus}
 
 📊 STATUS:
    Database: ${dbStatus.toUpperCase()}
@@ -278,7 +280,7 @@ End of Debug Report
       if (userError) addDebugLog('error', 'DB_CHECK', `❌ Error fetching user: ${userError.message}`);
       else addDebugLog('success', 'DB_CHECK', '✅ User found in database', userData);
 
-      const { data: economyData, error: economyError } = await supabase.from('user_economy').select('cosmic_coins, xp, level').eq('user_id', user.id).single();
+      const { data: economyData, error: economyError } = await supabase.from('user_economy').select('cosmic_coins, xp, level, cosmic_focus, max_focus').eq('user_id', user.id).single();
       if (economyError) addDebugLog('error', 'DB_CHECK', `❌ Error fetching economy: ${economyError.message}`);
       else addDebugLog('success', 'DB_CHECK', '✅ Economy record found', economyData);
 
@@ -306,7 +308,7 @@ End of Debug Report
     if (freshUser) {
       addDebugLog('success', 'AUTH_DEBUG', '✅ SUCCESS: Updating User Context with fresh data');
       setUser(freshUser);
-      setEconomy({ cosmic_coins: 0, xp: 0, level: 1, current_streak: 0 });
+      setEconomy({ cosmic_coins: 0, xp: 0, level: 1, current_streak: 0, cosmic_focus: 20, max_focus: 20 });
     } else {
       addDebugLog('error', 'AUTH_DEBUG', '❌ FAILED: getOrCreateUser returned null.');
     }
@@ -337,12 +339,12 @@ End of Debug Report
       if (fetchError && fetchError.code === 'PGRST116') {
         addDebugLog('warning', 'TEST', 'No record found (PGRST116). Creating new one...');
         const { error: insertError } = await supabase.from('user_economy').insert({
-          user_id: user.id, cosmic_coins: 0, xp: 0, level: 1, cosmic_focus: 3, max_focus: 3,
+          user_id: user.id, cosmic_coins: 0, xp: 0, level: 1, cosmic_focus: 20, max_focus: 20,
           current_streak: 0, longest_streak: 0, last_active_date: new Date().toISOString().split('T')[0], last_daily_claim: null
         });
         if (insertError) throw new Error(insertError.message);
         addDebugLog('success', 'TEST', '✅ SUCCESS: New economy record created automatically!');
-        setEconomy({ cosmic_coins: 0, xp: 0, level: 1, current_streak: 0 });
+        setEconomy({ cosmic_coins: 0, xp: 0, level: 1, current_streak: 0, cosmic_focus: 20, max_focus: 20 });
         setDbStatus('connected');
         setEconomyLoadStatus('success');
       }
@@ -419,7 +421,14 @@ End of Debug Report
       const { data, error } = await supabase.from('user_economy').select('cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus').eq('user_id', user.id).single();
       if (!error && data) {
         const levelData = getLevelFromTotalXP(data.xp || 0);
-        setEconomy({ cosmic_coins: data.cosmic_coins || 0, xp: data.xp || 0, level: levelData.level, current_streak: data.current_streak || 0 });
+        setEconomy({ 
+          cosmic_coins: data.cosmic_coins || 0, 
+          xp: data.xp || 0, 
+          level: levelData.level, 
+          current_streak: data.current_streak || 0,
+          cosmic_focus: data.cosmic_focus || 20,
+          max_focus: data.max_focus || 20
+        });
         setCurrentStreak(data.current_streak || 0);
         setDbDebugInfo(prev => ({ ...prev, economyData: data }));
         addDebugLog('success', 'DB', '✅ Data reloaded successfully');
@@ -503,6 +512,90 @@ End of Debug Report
     if (user) loadQuests();
   }, [user]);
 
+  // ⚡ Function: გამოთვალოს რეალური energy რეგენერაციის ჩათვლით
+  const calculateRealEnergy = async () => {
+    if (!user || !supabase) return;
+
+    try {
+      const { data: economyData } = await supabase
+        .from('user_economy')
+        .select('cosmic_focus, max_focus, last_energy_update, energy_boost_multiplier')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!economyData) return;
+
+      const now = new Date();
+      const lastUpdate = new Date(economyData.last_energy_update);
+      const minutesPassed = (now.getTime() - lastUpdate.getTime()) / 1000 / 60;
+      
+      const boostMultiplier = economyData.energy_boost_multiplier || 1.0;
+      const regenRate = 30 / boostMultiplier;
+      const energyToRegen = Math.floor(minutesPassed / regenRate);
+      
+      if (energyToRegen > 0) {
+        const newEnergy = Math.min(
+          economyData.cosmic_focus + energyToRegen,
+          economyData.max_focus
+        );
+        
+        await supabase
+          .from('user_economy')
+          .update({
+            cosmic_focus: newEnergy,
+            last_energy_update: now.toISOString()
+          })
+          .eq('user_id', user.id);
+        
+        setEconomy(prev => ({
+          ...prev,
+          cosmic_focus: newEnergy
+        }));
+        
+        console.log(`⚡ Energy regenerated: +${energyToRegen}, new total: ${newEnergy}`);
+      }
+    } catch (error) {
+      console.error('❌ Error calculating energy:', error);
+    }
+  };
+
+  // ⚡ Function: შეამოწმოს და დახარჯოს energy
+  const checkAndSpendEnergy = async (readingType: string, requiredEnergy: number): Promise<boolean> => {
+    if (!user || !supabase) return false;
+
+    await calculateRealEnergy();
+    
+    if ((economy.cosmic_focus || 0) < requiredEnergy) {
+      showToast(`Not enough energy! Need ${requiredEnergy}⚡, have ${economy.cosmic_focus}⚡`, 'error');
+      return false;
+    }
+    
+    const { data, error } = await supabase.rpc('spend_energy', {
+      user_uuid: user.id,
+      amount: requiredEnergy,
+      reading_type: readingType
+    });
+    
+    if (error) {
+      console.error('❌ Error spending energy:', error);
+      showToast('Failed to spend energy', 'error');
+      return false;
+    }
+    
+    if (!data?.success) {
+      showToast(data?.error || 'Not enough energy', 'error');
+      return false;
+    }
+    
+    setEconomy(prev => ({
+      ...prev,
+      cosmic_focus: data.new_energy
+    }));
+    
+    console.log(`⚡ Spent ${requiredEnergy} energy on ${readingType}, remaining: ${data.new_energy}`);
+    return true;
+  };
+
   useEffect(() => {
     const loadEconomy = async () => {
       if (!user) {
@@ -537,7 +630,14 @@ End of Debug Report
         addDebugLog('success', 'ECONOMY', '✅ Economy data loaded successfully', data);
         if (data) {
           const levelData = getLevelFromTotalXP(data.xp || 0);
-          const economyData = { cosmic_coins: data.cosmic_coins || 0, xp: data.xp || 0, level: levelData.level, current_streak: data.current_streak || 0 };
+          const economyData = { 
+            cosmic_coins: data.cosmic_coins || 0, 
+            xp: data.xp || 0, 
+            level: levelData.level, 
+            current_streak: data.current_streak || 0,
+            cosmic_focus: data.cosmic_focus || 20,
+            max_focus: data.max_focus || 20
+          };
           setEconomy(economyData);
           setCurrentStreak(economyData.current_streak);
           addDebugLog('info', 'STATE', '💰 Economy state updated', economyData);
@@ -551,6 +651,15 @@ End of Debug Report
       }
     };
     loadEconomy();
+  }, [user]);
+
+  // ⚡ Periodic energy regeneration check
+  useEffect(() => {
+    if (user) {
+      calculateRealEnergy();
+      const interval = setInterval(calculateRealEnergy, 30000);
+      return () => clearInterval(interval);
+    }
   }, [user]);
 
   useEffect(() => {
@@ -648,18 +757,37 @@ End of Debug Report
     }
   };
 
-  const handleQuickAction = (action: string) => {
+  const handleQuickAction = async (action: string) => {
     addDebugLog('info', 'NAVIGATION', 'Quick action clicked', { action });
+    
+    // ⚡ Energy spending checks for premium readings
+    if (action === 'CelticCross') {
+      const canProceed = await checkAndSpendEnergy('celtic_cross', 6);
+      if (canProceed) onNavigate?.('celtic-cross');
+      return;
+    }
+    if (action === 'Horseshoe') {
+      const canProceed = await checkAndSpendEnergy('horseshoe', 4);
+      if (canProceed) onNavigate?.('horseshoe');
+      return;
+    }
+    if (action === 'Relationship') {
+      const canProceed = await checkAndSpendEnergy('relationship', 5);
+      if (canProceed) onNavigate?.('relationship');
+      return;
+    }
+    if (action === '3Cards') {
+      const canProceed = await checkAndSpendEnergy('three_card', 2);
+      if (canProceed) onNavigate?.('three-card-reading');
+      return;
+    }
+
     if (onNavigate) {
       if (action === 'Tarot') onNavigate('card-fan');
       else if (action === 'Daily') onNavigate('daily-card');
-      else if (action === '3Cards') onNavigate('three-card-reading');
       else if (action === 'Astrology') onNavigate('astro');
       else if (action === 'Cards') onNavigate('cards');
       else if (action === 'History') onNavigate('reading-history');
-      else if (action === 'CelticCross') onNavigate('celtic-cross');
-      else if (action === 'Horseshoe') onNavigate('horseshoe');
-      else if (action === 'Relationship') onNavigate('relationship');
       else if (action === 'Horoscope') onNavigate('horoscope');
       else if (action === 'Admin') onNavigate('admin');
       else if (action === 'Subscription') onNavigate('subscription');
@@ -667,7 +795,6 @@ End of Debug Report
     }
   };
 
-  // 🆕 განახლებული quickActions მასივი t() ფუნქციით
   const quickActions = [
     { icon: <Sparkles size={28} />, label: t('home.quickAccess.daily'), sublabel: t('home.quickAccess.card'), color: '#C5A059', action: 'Daily' },
     { icon: <LayoutGrid size={28} />, label: t('home.quickAccess.threeCards'), sublabel: t('home.quickAccess.reading'), color: '#a78bfa', action: '3Cards' },
@@ -752,8 +879,16 @@ End of Debug Report
             </div>
             <div className="resource energy" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(251, 191, 36, 0.15)', padding: '4px 10px', borderRadius: '20px', border: '1px solid rgba(251, 191, 36, 0.3)', height: '22px' }}>
               <Zap size={12} className="resource-icon energy-icon" style={{ color: '#fbbf24', flexShrink: 0 }} />
-              <span className="value" style={{ fontSize: '12px', fontWeight: '600', color: '#fff', textAlign: 'center' }}>18/20</span>
-              <button className="add-btn" style={{ width: '18px', height: '18px', borderRadius: '50%', background: 'rgba(197, 160, 89, 0.3)', border: 'none', color: '#C5A059', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', flexShrink: 0 }}>+</button>
+              <span className="value" style={{ fontSize: '12px', fontWeight: '600', color: '#fff', textAlign: 'center' }}>
+                {economy.cosmic_focus || 0}/{economy.max_focus || 20}
+              </span>
+              <button 
+                className="add-btn" 
+                onClick={() => showToast('Energy packs coming soon!', 'info')}
+                style={{ width: '18px', height: '18px', borderRadius: '50%', background: 'rgba(197, 160, 89, 0.3)', border: 'none', color: '#C5A059', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', flexShrink: 0 }}
+              >
+                +
+              </button>
             </div>
           </div>
         </div>
