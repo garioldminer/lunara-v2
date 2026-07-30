@@ -13,7 +13,7 @@ import ShareCardPreview from './ShareCardPreview';
 import LoadingScreen from './LoadingScreen';
 import SignSelectionScreen from './SignSelectionScreen';
 import { logReading } from '../lib/adminService';
-import { trackQuestProgress } from '../lib/questService'; // 🆕 დამატებულია ქვესთების იმპორტი
+import { trackQuestProgress } from '../lib/questService';
 import './HoroscopeScreen.css';
 
 type TabType = 'today' | 'tomorrow' | 'weekly' | 'monthly';
@@ -801,7 +801,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     }
   }, [loading, horoscope]);
 
-  // 🆕 აქ ვამატებთ ქვესთის ლოგიკას, როცა წაკითხვა წარმატებით ლოგირდება
   useEffect(() => {
     if (!user || !horoscope || loading || !userSign) return;
     
@@ -827,7 +826,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           addLog('success', 'READING', '✅ Horoscope reading logged');
         }
         
-        // 🆕 ქვესთების ლოგიკა: განაახლე პროგრესი 'check_horoscope' ქვესთისთვის
         trackQuestProgress(user.id, 'check_horoscope', 1).then(reward => {
           if (reward) {
             console.log(`🎉 Quest Completed! Reward: ${reward.coins} coins, ${reward.xp} XP`);
@@ -925,6 +923,13 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
       );
     }
     showToast('Opening Telegram...', 'info');
+  };
+
+  const handleCopyAffirmation = () => {
+    if (fixedHoroscope.affirmation) {
+      navigator.clipboard.writeText(fixedHoroscope.affirmation);
+      showToast('Affirmation copied! ✨', 'success');
+    }
   };
 
   if (loading && !horoscope) {
@@ -1436,7 +1441,17 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                     <div className="rf-affirmation">
                       <div className="rf-aff-glow" />
                       <div className="rf-aff-icon">✨</div>
-                      <h3 className="rf-aff-title">{activeTab === 'weekly' ? 'Weekly' : activeTab === 'monthly' ? 'Monthly' : 'Daily'} Affirmation</h3>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                        <h3 className="rf-aff-title" style={{ margin: 0 }}>{activeTab === 'weekly' ? 'Weekly' : activeTab === 'monthly' ? 'Monthly' : 'Daily'} Affirmation</h3>
+                        <motion.button 
+                          whileHover={{ scale: 1.1 }} 
+                          whileTap={{ scale: 0.9 }}
+                          onClick={handleCopyAffirmation}
+                          style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#ffe566' }}
+                        >
+                          <Copy size={16} />
+                        </motion.button>
+                      </div>
                       <p className="rf-aff-text">"{safeString(fixedHoroscope.affirmation)}"</p>
                     </div>
                   )}
@@ -1496,23 +1511,31 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                           <motion.div className="rf-accordion-content" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3 }}>
                             <div className="rf-lucky-grid">
                               <div className="rf-lucky-item">
-                                <Palette size={20} className="rf-lucky-icon" />
+                                <div className="rf-lucky-icon-wrapper" style={{ background: 'rgba(236, 72, 153, 0.1)', color: '#ec4899' }}>
+                                  <Palette size={20} />
+                                </div>
                                 <span className="rf-lucky-label">Color</span>
                                 <span className="rf-lucky-value">{safeString(fixedHoroscope.lucky_color || 'Gold')}</span>
                               </div>
                               <div className="rf-lucky-item">
-                                <Hash size={20} className="rf-lucky-icon" />
+                                <div className="rf-lucky-icon-wrapper" style={{ background: 'rgba(99, 102, 241, 0.1)', color: '#6366f1' }}>
+                                  <Hash size={20} />
+                                </div>
                                 <span className="rf-lucky-label">Number</span>
                                 <span className="rf-lucky-value">{Number(fixedHoroscope.lucky_number) || 7}</span>
                               </div>
                               <div className="rf-lucky-item">
-                                <Sun size={20} className="rf-lucky-icon" />
+                                <div className="rf-lucky-icon-wrapper" style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
+                                  <Sun size={20} />
+                                </div>
                                 <span className="rf-lucky-label">Planet</span>
                                 <span className="rf-lucky-value">{safeString(fixedHoroscope.lucky_planet || zodiacData.planet)}</span>
                               </div>
                               {fixedHoroscope.lucky_crystal && (
                                 <div className="rf-lucky-item">
-                                  <Star size={20} className="rf-lucky-icon" />
+                                  <div className="rf-lucky-icon-wrapper" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
+                                    <Star size={20} />
+                                  </div>
                                   <span className="rf-lucky-label">Crystal</span>
                                   <span className="rf-lucky-value">{safeString(fixedHoroscope.lucky_crystal)}</span>
                                 </div>
