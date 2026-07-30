@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   RefreshCw, Send, Trash2, Download, CheckCircle, XCircle,
-  Zap, Users, TrendingUp, Database, Filter
+  Zap, Users, TrendingUp, Database
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -277,7 +277,7 @@ export default function HoroscopeMonitor() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
             <thead>
               <tr style={{ background: palette.bg }}>
-                {['User', 'Sign', 'Status', 'Model', 'Tokens', 'Time', 'Error'].map((h, i) => (
+                {['User', 'Sign', 'Status', 'Model', 'Tokens', 'Time', 'Error'].map((h) => (
                   <th key={h} style={{ padding: '10px 16px', textAlign: 'left', color: palette.muted, fontWeight: '600', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: `1px solid ${palette.border}` }}>
                     {h}
                   </th>
