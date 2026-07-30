@@ -423,7 +423,7 @@ function AppContent() {
   // 🆕 ავტომატური Telegram Chat ID-ის სინქრონიზაცია
   useEffect(() => {
     const syncTelegramChatId = async () => {
-      if (!supabase || !user) return; // 🆕 დამატებულია supabase-ის ნულოვანი შემოწმება
+      if (!supabase || !user) return;
 
       const tg = (window as any).Telegram?.WebApp;
       if (!tg) return;
@@ -674,9 +674,12 @@ function AppContent() {
         </>
       )}
       {currentScreen === 'horoscope' && (
-        <ErrorBoundary>
-          <HoroscopeScreen onNavigate={handleNavigate} />
-        </ErrorBoundary>
+        <>
+          <ErrorBoundary>
+            <HoroscopeScreen onNavigate={handleNavigate} />
+          </ErrorBoundary>
+          <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+        </>
       )}
       {currentScreen === 'sign-selection' && (
         <SignSelectionScreen onNavigate={handleNavigate} />
