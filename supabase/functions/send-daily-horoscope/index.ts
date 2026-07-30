@@ -151,7 +151,7 @@ serve(async (req) => {
         // პარსინგი
         const parsed = parseHoroscopeResponse(aiText);
 
-        // ✅ ახალი: სუფთა დიზაინი + განახლებული ბოლო სტრიქონი
+        // ✅ განახლებული: დამატებულია Planet და Crystal, აღდგენილია ემოჯი
         const telegramMessage = 
 `🌙 *Good Morning, ${userName}!*
 
@@ -166,11 +166,12 @@ ${parsed.love}
 💼 *Career & Finance*
 ${parsed.career}
 
- *Health & Wellness*
+🧘 *Health & Wellness*
 ${parsed.health}
 
 🍀 *Your Luck Today*
 Color: ${parsed.lucky_color}  •  Number: ${parsed.lucky_number}
+Planet: ${parsed.lucky_planet || 'Venus'}  •  Crystal: ${parsed.lucky_crystal || 'Amethyst'}
 
 ✨ *Lunara* - Your daily dose of cosmic wisdom`;
 
