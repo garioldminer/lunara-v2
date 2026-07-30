@@ -1,18 +1,18 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  ArrowLeft, Users, Plus, Trash2, RefreshCw, Crown, ShieldAlert, 
-  Calendar, Clock, Zap, Key, Activity, CheckCircle, XCircle, 
+import {
+  ArrowLeft, Users, Plus, Trash2, RefreshCw, Crown, ShieldAlert,
+  Calendar, Clock, Zap, Key, Activity, CheckCircle, XCircle,
   AlertCircle, Play, Eye, BarChart3, TrendingUp, DollarSign, Flame,
   Trophy, Bug, Edit2, X, Bell, Moon
 } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { supabase } from '../lib/supabase';
-import { 
-  isAdmin, 
-  getAllUsersWithCredits, 
-  updateUserCredits, 
-  addCreditsToUser, 
+import {
+  isAdmin,
+  getAllUsersWithCredits,
+  updateUserCredits,
+  addCreditsToUser,
   deleteUserCredits,
   getAllSubscriptions,
   createSubscriptionForUser,
@@ -87,6 +87,17 @@ interface Toast {
   type: 'success' | 'error' | 'info';
 }
 
+const TABS = [
+  { id: 'credits', icon: Key, label: 'Credits' },
+  { id: 'subscriptions', icon: Crown, label: 'Subs' },
+  { id: 'monitoring', icon: Activity, label: 'Monitor' },
+  { id: 'analytics', icon: BarChart3, label: 'Analytics' },
+  { id: 'quests', icon: Trophy, label: 'Quests' },
+  { id: 'notifications', icon: Bell, label: 'Notify' },
+  { id: 'horoscope-monitor', icon: Moon, label: 'Horoscope' },
+  { id: 'ai', icon: Zap, label: 'AI', isExternal: true }
+] as const;
+
 function ToastNotification({ toast, onClose }: { toast: Toast; onClose: () => void }) {
   useEffect(() => {
     const timer = setTimeout(onClose, 3000);
@@ -94,7 +105,7 @@ function ToastNotification({ toast, onClose }: { toast: Toast; onClose: () => vo
   }, [onClose]);
 
   return (
-    <motion.div 
+    <motion.div
       className={`toast toast-${toast.type}`}
       initial={{ opacity: 0, y: 50, scale: 0.9 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -102,28 +113,40 @@ function ToastNotification({ toast, onClose }: { toast: Toast; onClose: () => vo
       transition={{ type: 'spring', damping: 20, stiffness: 300 }}
       style={{
         position: 'fixed',
-        top: '20px',
-        right: '20px',
+        top: 'max(16px, env(safe-area-inset-top))',
+        right: '16px',
+        left: '16px',
+        marginLeft: 'auto',
+        maxWidth: '360px',
         zIndex: 10001,
         background: toast.type === 'success' ? 'rgba(16, 185, 129, 0.95)' : toast.type === 'error' ? 'rgba(239, 68, 68, 0.95)' : 'rgba(59, 130, 246, 0.95)',
         color: '#fff',
         padding: '12px 16px',
-        borderRadius: '8px',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+        borderRadius: '12px',
+        boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+        fontSize: '13.5px',
+        fontWeight: 500,
         display: 'flex',
         alignItems: 'center',
-        gap: '10px',
-        fontSize: '14px',
-        fontWeight: '500',
-        minWidth: '250px'
+        gap: '10px'
       }}
     >
       <span>{toast.type === 'success' ? '✅' : toast.type === 'error' ? '⚠️' : 'ℹ️'}</span>
       <span style={{ flex: 1 }}>{toast.message}</span>
-      <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', opacity: 0.8 }}>
+      <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', opacity: 0.85 }}>
         <X size={16} />
       </button>
     </motion.div>
+  );
+}
+
+function EmptyState({ icon: Icon, title, hint }: { icon: any; title: string; hint?: string }) {
+  return (
+    <div style={{ textAlign: 'center', padding: '40px 20px', color: '#9c9280' }}>
+      <Icon size={30} style={{ opacity: 0.4, marginBottom: '10px' }} />
+      <p style={{ fontFamily: 'Georgia, serif', fontSize: '14px', fontStyle: 'italic', margin: 0 }}>{title}</p>
+      {hint && <p style={{ fontSize: '11.5px', marginTop: '4px', opacity: 0.7 }}>{hint}</p>}
+    </div>
   );
 }
 
@@ -136,8 +159,8 @@ export default function AdminScreen({ onNavigate }: Props) {
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [editingFeature, setEditingFeature] = useState<string>('');
   const [newAmount, setNewAmount] = useState(0);
-  const [activeTab, setActiveTab] = useState<'credits' | 'subscriptions' | 'monitoring' | 'analytics' | 'quests' | 'notifications' | 'horoscope-monitor'>('credits');
-  
+  const [activeTab, setActiveTab] = useState<typeof TABS[number]['id']>('credits');
+
   const [showAddSubscription, setShowAddSubscription] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
@@ -166,7 +189,7 @@ export default function AdminScreen({ onNavigate }: Props) {
     quest_type: 'daily' as 'daily' | 'weekly' | 'milestone',
     is_active: true
   });
-  
+
   const [showDebug, setShowDebug] = useState(false);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
   const [toast, setToast] = useState<Toast | null>(null);
@@ -212,7 +235,7 @@ export default function AdminScreen({ onNavigate }: Props) {
     if (!user || !supabase) return;
     setLoading(true);
     addDebugLog('info', 'LOAD', '🔄 Starting admin data load...');
-    
+
     try {
       const [usersData, subsData, statusesData, logsData, analyticsData, questsRes] = await Promise.all([
         getAllUsersWithCredits(user.id),
@@ -228,7 +251,7 @@ export default function AdminScreen({ onNavigate }: Props) {
       setFunctionStatuses(statusesData);
       setRecentLogs(logsData);
       setAnalyticsOverview(analyticsData);
-      
+
       if (questsRes.error) {
         addDebugLog('error', 'LOAD_QUESTS', `❌ Failed to fetch quests: ${questsRes.error.message}`);
         setQuests([]);
@@ -236,7 +259,7 @@ export default function AdminScreen({ onNavigate }: Props) {
         setQuests(questsRes.data || []);
         addDebugLog('success', 'LOAD_QUESTS', `✅ Loaded ${questsRes.data?.length || 0} quests`);
       }
-      
+
       addDebugLog('success', 'LOAD', '✅ All admin data loaded successfully');
     } catch (error) {
       addDebugLog('error', 'LOAD', `❌ Critical error: ${(error as Error).message}`);
@@ -475,8 +498,8 @@ export default function AdminScreen({ onNavigate }: Props) {
     return (
       <div className="admin-screen">
         <div className="admin-loading">
-          <RefreshCw size={32} className="spin" />
-          <p>Verifying admin access...</p>
+          <RefreshCw size={30} className="spin" />
+          <p>Verifying admin access…</p>
         </div>
       </div>
     );
@@ -486,9 +509,9 @@ export default function AdminScreen({ onNavigate }: Props) {
     return (
       <div className="admin-screen">
         <div className="admin-error">
-          <ShieldAlert size={64} className="error-icon-large" />
-          <h2>⛔ Access Denied</h2>
-          <p>You do not have permission to access this page.</p>
+          <ShieldAlert size={60} className="error-icon-large" />
+          <h2>Access Denied</h2>
+          <p>You do not have permission to view this page.</p>
           <p className="error-detail">This incident will be reported.</p>
           <button onClick={() => onNavigate?.('home')}>Return Home</button>
         </div>
@@ -497,21 +520,21 @@ export default function AdminScreen({ onNavigate }: Props) {
   }
 
   return (
-    <div className="admin-screen" style={{ paddingBottom: '100px' }}>
+    <div className="admin-screen">
       <AnimatePresence>
         {toast && <ToastNotification toast={toast} onClose={() => setToast(null)} />}
       </AnimatePresence>
 
       <div className="admin-header">
-        <button className="admin-back-btn" onClick={() => onNavigate?.('home')}>
-          <ArrowLeft size={20} />
+        <button className="admin-back-btn" onClick={() => onNavigate?.('home')} aria-label="Back">
+          <ArrowLeft size={19} />
         </button>
         <div className="admin-header-center">
-          <Users size={24} />
+          <Users size={21} />
           <h1>Admin Panel</h1>
         </div>
-        <button className="admin-refresh-btn" onClick={loadData}>
-          <RefreshCw size={20} />
+        <button className="admin-refresh-btn" onClick={loadData} aria-label="Refresh data">
+          <RefreshCw size={18} />
         </button>
       </div>
 
@@ -524,53 +547,58 @@ export default function AdminScreen({ onNavigate }: Props) {
                 <span className="stat-label">Total Users</span>
               </div>
             </div>
-            <div className="admin-users-list">
-              {users.map((targetUser) => (
-                <motion.div key={targetUser.id} className="admin-user-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-                  <div className="user-info">
-                    <div className="user-avatar">{targetUser.display_name?.charAt(0).toUpperCase() || 'U'}</div>
-                    <div className="user-details">
-                      <h3>{targetUser.display_name || 'Unknown'}</h3>
-                      <p>@{targetUser.username || targetUser.telegram_id}</p>
+
+            {users.length === 0 ? (
+              <EmptyState icon={Users} title="No users yet" hint="They'll appear here once they open LUNARA." />
+            ) : (
+              <div className="admin-users-list">
+                {users.map((targetUser) => (
+                  <motion.div key={targetUser.id} className="admin-user-card" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+                    <div className="user-info">
+                      <div className="user-avatar">{targetUser.display_name?.charAt(0).toUpperCase() || 'U'}</div>
+                      <div className="user-details">
+                        <h3>{targetUser.display_name || 'Unknown'}</h3>
+                        <p>@{targetUser.username || targetUser.telegram_id}</p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="user-credits">
-                    {['celtic_cross', 'horseshoe', 'relationship'].map((featureId) => {
-                      const credit = targetUser.credits.find(c => c.feature_id === featureId);
-                      const amount = credit?.credits || 0;
-                      return (
-                        <div key={featureId} className="credit-item">
-                          <span className="credit-label">
-                            {featureId === 'celtic_cross' && '✝️ Celtic'}
-                            {featureId === 'horseshoe' && '🐎 Horseshoe'}
-                            {featureId === 'relationship' && '❤️ Relationship'}
-                          </span>
-                          {editingUser === targetUser.id && editingFeature === featureId ? (
-                            <div className="credit-edit">
-                              <input type="number" value={newAmount} onChange={(e) => setNewAmount(parseInt(e.target.value) || 0)} min="0" />
-                              <button className="save-btn" onClick={() => handleUpdateCredits(targetUser.id, featureId)}>Save</button>
-                              <button className="cancel-btn" onClick={() => setEditingUser(null)}>Cancel</button>
-                            </div>
-                          ) : (
-                            <div className="credit-actions">
-                              <span className="credit-amount">{amount}</span>
-                              <div className="credit-buttons">
-                                <button className="add-btn" onClick={() => handleAddCredits(targetUser.id, featureId, 1)} title="Add 1"><Plus size={14} /></button>
-                                <button className="add-btn" onClick={() => handleAddCredits(targetUser.id, featureId, 5)} title="Add 5">+5</button>
-                                <button className="edit-btn" onClick={() => { setEditingUser(targetUser.id); setEditingFeature(featureId); setNewAmount(amount); }} title="Edit">Edit</button>
-                                {amount > 0 && (
-                                  <button className="delete-btn" onClick={() => handleDeleteCredits(targetUser.id, featureId)} title="Delete"><Trash2 size={14} /></button>
-                                )}
+                    <div className="user-credits">
+                      {['celtic_cross', 'horseshoe', 'relationship'].map((featureId) => {
+                        const credit = targetUser.credits.find(c => c.feature_id === featureId);
+                        const amount = credit?.credits || 0;
+                        return (
+                          <div key={featureId} className="credit-item">
+                            <span className="credit-label">
+                              {featureId === 'celtic_cross' && '✝️ Celtic'}
+                              {featureId === 'horseshoe' && '🐎 Horseshoe'}
+                              {featureId === 'relationship' && '❤️ Relationship'}
+                            </span>
+                            {editingUser === targetUser.id && editingFeature === featureId ? (
+                              <div className="credit-edit">
+                                <input type="number" value={newAmount} onChange={(e) => setNewAmount(parseInt(e.target.value) || 0)} min="0" />
+                                <button className="save-btn" onClick={() => handleUpdateCredits(targetUser.id, featureId)}>Save</button>
+                                <button className="cancel-btn" onClick={() => setEditingUser(null)}>Cancel</button>
                               </div>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                            ) : (
+                              <div className="credit-actions">
+                                <span className="credit-amount">{amount}</span>
+                                <div className="credit-buttons">
+                                  <button className="add-btn" onClick={() => handleAddCredits(targetUser.id, featureId, 1)} title="Add 1"><Plus size={13} /></button>
+                                  <button className="add-btn" onClick={() => handleAddCredits(targetUser.id, featureId, 5)} title="Add 5">+5</button>
+                                  <button className="edit-btn" onClick={() => { setEditingUser(targetUser.id); setEditingFeature(featureId); setNewAmount(amount); }} title="Edit">Edit</button>
+                                  {amount > 0 && (
+                                    <button className="delete-btn" onClick={() => handleDeleteCredits(targetUser.id, featureId)} title="Delete"><Trash2 size={13} /></button>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </>
         )}
 
@@ -584,37 +612,42 @@ export default function AdminScreen({ onNavigate }: Props) {
             <button className="add-subscription-btn" onClick={() => setShowAddSubscription(true)}>
               <Plus size={16} /><span>Add Subscription</span>
             </button>
-            <div className="subscriptions-list">
-              {subscriptions.map((sub) => {
-                const daysRemaining = getDaysRemaining(sub.expires_at);
-                return (
-                  <motion.div key={sub.id} className={`subscription-card ${sub.status}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-                    <div className="subscription-header">
-                      <div className="subscription-user">
-                        <div className="subscription-avatar">{sub.user.display_name?.charAt(0).toUpperCase() || 'U'}</div>
-                        <div className="subscription-user-info">
-                          <h4>{sub.user.display_name || 'Unknown'}</h4>
-                          <p>@{sub.user.username || sub.user.telegram_id}</p>
+
+            {subscriptions.length === 0 ? (
+              <EmptyState icon={Crown} title="No subscriptions yet" hint="Add one above to grant premium access." />
+            ) : (
+              <div className="subscriptions-list" style={{ marginTop: '14px' }}>
+                {subscriptions.map((sub) => {
+                  const daysRemaining = getDaysRemaining(sub.expires_at);
+                  return (
+                    <motion.div key={sub.id} className={`subscription-card ${sub.status}`} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+                      <div className="subscription-header">
+                        <div className="subscription-user">
+                          <div className="subscription-avatar">{sub.user.display_name?.charAt(0).toUpperCase() || 'U'}</div>
+                          <div className="subscription-user-info">
+                            <h4>{sub.user.display_name || 'Unknown'}</h4>
+                            <p>@{sub.user.username || sub.user.telegram_id}</p>
+                          </div>
                         </div>
+                        <div className={`subscription-status ${sub.status}`}>{sub.status.toUpperCase()}</div>
                       </div>
-                      <div className={`subscription-status ${sub.status}`}>{sub.status.toUpperCase()}</div>
-                    </div>
-                    <div className="subscription-details">
-                      <div className="subscription-detail-row"><Crown size={14} /><span className="detail-label">Plan:</span><span className="detail-value">{sub.plan_type === 'monthly' ? 'Monthly' : 'Yearly'}</span></div>
-                      <div className="subscription-detail-row"><Calendar size={14} /><span className="detail-label">Started:</span><span className="detail-value">{formatDate(sub.started_at)}</span></div>
-                      <div className="subscription-detail-row"><Calendar size={14} /><span className="detail-label">Expires:</span><span className="detail-value">{formatDate(sub.expires_at)}</span></div>
-                      <div className="subscription-detail-row highlight"><Clock size={14} /><span className="detail-label">Remaining:</span><span className={`detail-value ${daysRemaining <= 7 ? 'warning' : ''}`}>{daysRemaining > 0 ? `${daysRemaining} days` : 'Expired'}</span></div>
-                    </div>
-                    {sub.status === 'active' && (
-                      <div className="subscription-actions">
-                        <button className="extend-btn" onClick={() => { setExtendingSubId(sub.id); setShowExtendModal(true); }}><Plus size={14} /><span>Extend</span></button>
-                        <button className="cancel-sub-btn" onClick={() => handleCancelSubscription(sub.id)}><Trash2 size={14} /><span>Cancel</span></button>
+                      <div className="subscription-details">
+                        <div className="subscription-detail-row"><Crown size={14} /><span className="detail-label">Plan</span><span className="detail-value">{sub.plan_type === 'monthly' ? 'Monthly' : 'Yearly'}</span></div>
+                        <div className="subscription-detail-row"><Calendar size={14} /><span className="detail-label">Started</span><span className="detail-value">{formatDate(sub.started_at)}</span></div>
+                        <div className="subscription-detail-row"><Calendar size={14} /><span className="detail-label">Expires</span><span className="detail-value">{formatDate(sub.expires_at)}</span></div>
+                        <div className="subscription-detail-row highlight"><Clock size={14} /><span className="detail-label">Remaining</span><span className={`detail-value ${daysRemaining <= 7 ? 'warning' : ''}`}>{daysRemaining > 0 ? `${daysRemaining}d` : 'Expired'}</span></div>
                       </div>
-                    )}
-                  </motion.div>
-                );
-              })}
-            </div>
+                      {sub.status === 'active' && (
+                        <div className="subscription-actions">
+                          <button className="extend-btn" onClick={() => { setExtendingSubId(sub.id); setShowExtendModal(true); }}><Plus size={14} /><span>Extend</span></button>
+                          <button className="cancel-sub-btn" onClick={() => handleCancelSubscription(sub.id)}><Trash2 size={14} /><span>Cancel</span></button>
+                        </div>
+                      )}
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
           </>
         )}
 
@@ -622,21 +655,24 @@ export default function AdminScreen({ onNavigate }: Props) {
           <>
             <div className="admin-stats">
               <div className="stat-card"><span className="stat-number">{functionStatuses.length}</span><span className="stat-label">Functions</span></div>
-              <div className="stat-card"><span className="stat-number">{functionStatuses.filter(s => s.lastRun?.status === 'success').length}</span><span className="stat-label">✅ Healthy</span></div>
-              <div className="stat-card"><span className="stat-number">{functionStatuses.filter(s => s.lastRun?.status === 'error').length}</span><span className="stat-label">❌ Errors</span></div>
+              <div className="stat-card"><span className="stat-number">{functionStatuses.filter(s => s.lastRun?.status === 'success').length}</span><span className="stat-label">Healthy</span></div>
+              <div className="stat-card"><span className="stat-number">{functionStatuses.filter(s => s.lastRun?.status === 'error').length}</span><span className="stat-label">Errors</span></div>
               <div className="stat-card"><span className="stat-number">{recentLogs.length}</span><span className="stat-label">Recent Logs</span></div>
             </div>
-            <button className="add-subscription-btn" onClick={handleCleanupLogs} style={{ marginBottom: '16px' }}><Trash2 size={16} /><span>Cleanup Old Logs (30+ days)</span></button>
+            <button className="add-subscription-btn" onClick={handleCleanupLogs} style={{ marginBottom: '14px' }}>
+              <Trash2 size={16} /><span>Cleanup Logs Older Than 30 Days</span>
+            </button>
+
             <div className="admin-users-list">
               {functionStatuses.map((func) => {
                 const isHealthy = func.lastRun?.status === 'success';
                 const hasError = func.lastRun?.status === 'error';
                 const noData = !func.lastRun;
                 return (
-                  <motion.div key={func.name} className={`admin-user-card ${isHealthy ? 'status-success' : hasError ? 'status-error' : 'status-unknown'}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+                  <motion.div key={func.name} className={`admin-user-card ${isHealthy ? 'status-success' : hasError ? 'status-error' : 'status-unknown'}`} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
                     <div className="user-info">
                       <div className="user-avatar" style={{ background: isHealthy ? '#10b981' : hasError ? '#ef4444' : '#6b7280' }}>
-                        {isHealthy ? <CheckCircle size={24} /> : hasError ? <XCircle size={24} /> : <AlertCircle size={24} />}
+                        {isHealthy ? <CheckCircle size={22} color="#100b06" /> : hasError ? <XCircle size={22} color="#100b06" /> : <AlertCircle size={22} color="#100b06" />}
                       </div>
                       <div className="user-details">
                         <h3>{func.name}</h3>
@@ -644,7 +680,7 @@ export default function AdminScreen({ onNavigate }: Props) {
                       </div>
                     </div>
                     <div className="user-credits" style={{ marginTop: '12px' }}>
-                      <div className="credit-item"><span className="credit-label">Status:</span><span className={`credit-amount ${isHealthy ? 'text-success' : hasError ? 'text-error' : ''}`}>{isHealthy ? '✅ SUCCESS' : hasError ? ' ERROR' : noData ? '⚠️ NO DATA' : '???'}</span></div>
+                      <div className="credit-item"><span className="credit-label">Status:</span><span className={`credit-amount ${isHealthy ? 'text-success' : hasError ? 'text-error' : ''}`}>{isHealthy ? '✅ SUCCESS' : hasError ? '❌ ERROR' : noData ? '⚠️ NO DATA' : '???'}</span></div>
                       <div className="credit-item"><span className="credit-label">Success Rate:</span><span className="credit-amount">{func.successRate.toFixed(0)}%</span></div>
                       <div className="credit-item"><span className="credit-label">Total Runs:</span><span className="credit-amount">{func.totalRuns}</span></div>
                       <div className="credit-item"><span className="credit-label">Avg Response:</span><span className="credit-amount">{func.avgResponseTime}ms</span></div>
@@ -657,10 +693,13 @@ export default function AdminScreen({ onNavigate }: Props) {
                 );
               })}
             </div>
+
             <div style={{ marginTop: '24px' }}>
-              <h3 style={{ color: '#D9B66F', marginBottom: '12px' }}>📝 Recent 20 Logs</h3>
+              <h3 style={{ color: '#D9B66F', marginBottom: '12px', fontSize: '14px' }}>📝 Recent 20 Logs</h3>
               <div className="admin-users-list">
-                {recentLogs.length === 0 ? <p style={{ textAlign: 'center', opacity: 0.7, padding: '20px' }}>No logs available</p> : recentLogs.map((log) => (
+                {recentLogs.length === 0 ? (
+                  <p style={{ textAlign: 'center', opacity: 0.7, padding: '20px' }}>No logs available</p>
+                ) : recentLogs.map((log) => (
                   <motion.div key={log.id} className={`admin-user-card ${log.status === 'success' ? 'status-success' : 'status-error'}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ padding: '10px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -683,17 +722,17 @@ export default function AdminScreen({ onNavigate }: Props) {
         {activeTab === 'analytics' && (
           <>
             <div className="analytics-overview-grid">
-              <motion.div className="analytics-overview-card blue" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}><Users size={20} /><div className="analytics-info"><span className="analytics-number">{analyticsOverview?.total_users || 0}</span><span className="analytics-label">Total Users</span></div></motion.div>
-              <motion.div className="analytics-overview-card green" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}><Activity size={20} /><div className="analytics-info"><span className="analytics-number">{analyticsOverview?.active_today || 0}</span><span className="analytics-label">Active Today</span></div></motion.div>
-              <motion.div className="analytics-overview-card gold" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}><Crown size={20} /><div className="analytics-info"><span className="analytics-number">{analyticsOverview?.premium_users || 0}</span><span className="analytics-label">Premium</span></div></motion.div>
-              <motion.div className="analytics-overview-card orange" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}><Flame size={20} /><div className="analytics-info"><span className="analytics-number">{analyticsOverview?.avg_streak || 0}</span><span className="analytics-label">Avg Streak</span></div></motion.div>
-              <motion.div className="analytics-overview-card purple" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}><BarChart3 size={20} /><div className="analytics-info"><span className="analytics-number">{analyticsOverview?.total_readings || 0}</span><span className="analytics-label">Readings</span></div></motion.div>
-              <motion.div className="analytics-overview-card emerald" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}><DollarSign size={20} /><div className="analytics-info"><span className="analytics-number">${(analyticsOverview?.total_revenue || 0).toFixed(2)}</span><span className="analytics-label">Revenue</span></div></motion.div>
+              <motion.div className="analytics-overview-card blue" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}><Users size={19} /><div className="analytics-info"><span className="analytics-number">{analyticsOverview?.total_users || 0}</span><span className="analytics-label">Total Users</span></div></motion.div>
+              <motion.div className="analytics-overview-card green" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}><Activity size={19} /><div className="analytics-info"><span className="analytics-number">{analyticsOverview?.active_today || 0}</span><span className="analytics-label">Active Today</span></div></motion.div>
+              <motion.div className="analytics-overview-card gold" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}><Crown size={19} /><div className="analytics-info"><span className="analytics-number">{analyticsOverview?.premium_users || 0}</span><span className="analytics-label">Premium</span></div></motion.div>
+              <motion.div className="analytics-overview-card orange" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}><Flame size={19} /><div className="analytics-info"><span className="analytics-number">{analyticsOverview?.avg_streak || 0}</span><span className="analytics-label">Avg Streak</span></div></motion.div>
+              <motion.div className="analytics-overview-card purple" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}><BarChart3 size={19} /><div className="analytics-info"><span className="analytics-number">{analyticsOverview?.total_readings || 0}</span><span className="analytics-label">Readings</span></div></motion.div>
+              <motion.div className="analytics-overview-card emerald" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}><DollarSign size={19} /><div className="analytics-info"><span className="analytics-number">${(analyticsOverview?.total_revenue || 0).toFixed(2)}</span><span className="analytics-label">Revenue</span></div></motion.div>
             </div>
-            <motion.button className="view-full-analytics-btn" onClick={() => onNavigate?.('user-analytics')} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
-              <TrendingUp size={20} />
+            <motion.button className="view-full-analytics-btn" onClick={() => onNavigate?.('user-analytics')} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+              <TrendingUp size={19} />
               <div className="btn-content"><span className="btn-title">View Full Analytics</span><span className="btn-subtitle">Detailed user statistics, sessions & reading history</span></div>
-              <ArrowLeft size={20} style={{ transform: 'rotate(180deg)' }} />
+              <ArrowLeft size={18} style={{ transform: 'rotate(180deg)', opacity: 0.7 }} />
             </motion.button>
           </>
         )}
@@ -701,7 +740,7 @@ export default function AdminScreen({ onNavigate }: Props) {
         {activeTab === 'quests' && (
           <>
             <div className="admin-stats">
-              <div className="stat-card"><span className="stat-number">{quests.length}</span><span className="stat-label">Total Quests</span></div>
+              <div className="stat-card"><span className="stat-number">{quests.length}</span><span className="stat-label">Total</span></div>
               <div className="stat-card"><span className="stat-number">{quests.filter(q => q.quest_type === 'daily').length}</span><span className="stat-label">Daily</span></div>
               <div className="stat-card"><span className="stat-number">{quests.filter(q => q.quest_type === 'weekly').length}</span><span className="stat-label">Weekly</span></div>
               <div className="stat-card"><span className="stat-number">{quests.filter(q => q.quest_type === 'milestone').length}</span><span className="stat-label">Milestone</span></div>
@@ -712,91 +751,78 @@ export default function AdminScreen({ onNavigate }: Props) {
               setNewQuest({ title: '', description: '', action_type: 'draw_daily_card', target_count: 1, reward_xp: 10, reward_coins: 5, quest_type: 'daily', is_active: true });
               setShowAddQuest(true);
               addDebugLog('info', 'UI', 'Opening Add Quest modal');
-            }} style={{ marginBottom: '16px' }}>
+            }} style={{ marginBottom: '14px' }}>
               <Plus size={16} /><span>Add New Quest</span>
             </button>
 
-            <div className="admin-users-list">
-              {quests.length === 0 && (
-                <div className="debug-warning" style={{ padding: '20px', textAlign: 'center' }}>⚠️ No quests found. Click "Add New Quest" to create one.</div>
-              )}
-              {quests.map((quest) => (
-                <motion.div key={quest.id} className={`admin-user-card ${quest.is_active ? 'status-success' : 'status-unknown'}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-                  <div className="user-info">
-                    <div className="user-avatar" style={{ background: quest.is_active ? '#10b981' : '#6b7280' }}><Trophy size={24} /></div>
-                    <div className="user-details">
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                        <h3>{quest.title}</h3>
-                        <span style={{ 
-                          fontSize: '9px', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold', textTransform: 'uppercase',
-                          background: quest.quest_type === 'daily' ? 'rgba(59, 130, 246, 0.2)' : quest.quest_type === 'weekly' ? 'rgba(168, 85, 247, 0.2)' : 'rgba(245, 158, 11, 0.2)',
-                          color: quest.quest_type === 'daily' ? '#60a5fa' : quest.quest_type === 'weekly' ? '#c084fc' : '#fbbf24'
-                        }}>
-                          {quest.quest_type}
-                        </span>
+            {quests.length === 0 ? (
+              <EmptyState icon={Trophy} title="No quests yet" hint='Tap "Add New Quest" to create one.' />
+            ) : (
+              <div className="admin-users-list">
+                {quests.map((quest) => (
+                  <motion.div key={quest.id} className={`admin-user-card ${quest.is_active ? 'status-success' : 'status-unknown'}`} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+                    <div className="user-info">
+                      <div className="user-avatar" style={{ background: quest.is_active ? '#10b981' : '#6b7280' }}><Trophy size={20} color="#100b06" /></div>
+                      <div className="user-details">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' }}>
+                          <h3>{quest.title}</h3>
+                          <span style={{ 
+                            fontSize: '9px', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold', textTransform: 'uppercase',
+                            background: quest.quest_type === 'daily' ? 'rgba(59, 130, 246, 0.2)' : quest.quest_type === 'weekly' ? 'rgba(168, 85, 247, 0.2)' : 'rgba(245, 158, 11, 0.2)',
+                            color: quest.quest_type === 'daily' ? '#60a5fa' : quest.quest_type === 'weekly' ? '#c084fc' : '#fbbf24'
+                          }}>
+                            {quest.quest_type}
+                          </span>
+                        </div>
+                        <p style={{ fontSize: '11px', opacity: 0.7 }}>{quest.description || 'No description'}</p>
                       </div>
-                      <p style={{ fontSize: '11px', opacity: 0.7 }}>{quest.description || 'No description'}</p>
                     </div>
-                  </div>
-                  <div className="user-credits" style={{ marginTop: '12px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
-                    <div className="credit-item" style={{ textAlign: 'center', background: 'rgba(96, 165, 250, 0.1)', padding: '6px', borderRadius: '6px' }}>
-                      <span className="credit-label" style={{ display: 'block', fontSize: '9px', marginBottom: '2px' }}>Action</span>
-                      <span className="credit-amount" style={{ color: '#60a5fa', fontSize: '10px', wordBreak: 'break-all' }}>{quest.action_type}</span>
+                    <div className="user-credits" style={{ marginTop: '12px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+                      <div className="credit-item" style={{ textAlign: 'center', background: 'rgba(96, 165, 250, 0.1)', padding: '6px', borderRadius: '6px' }}>
+                        <span className="credit-label" style={{ display: 'block', fontSize: '9px', marginBottom: '2px' }}>Action</span>
+                        <span className="credit-amount" style={{ color: '#60a5fa', fontSize: '10px', wordBreak: 'break-all' }}>{quest.action_type}</span>
+                      </div>
+                      <div className="credit-item" style={{ textAlign: 'center', background: 'rgba(255, 255, 255, 0.05)', padding: '6px', borderRadius: '6px' }}>
+                        <span className="credit-label" style={{ display: 'block', fontSize: '9px', marginBottom: '2px' }}>Target</span>
+                        <span className="credit-amount" style={{ fontSize: '14px', fontWeight: 'bold' }}>{quest.target_count}</span>
+                      </div>
+                      <div className="credit-item" style={{ textAlign: 'center', background: 'rgba(167, 139, 250, 0.1)', padding: '6px', borderRadius: '6px' }}>
+                        <span className="credit-label" style={{ display: 'block', fontSize: '9px', marginBottom: '2px' }}>XP</span>
+                        <span className="credit-amount" style={{ color: '#a78bfa', fontSize: '14px', fontWeight: 'bold' }}>{quest.reward_xp}</span>
+                      </div>
+                      <div className="credit-item" style={{ textAlign: 'center', background: 'rgba(251, 191, 36, 0.1)', padding: '6px', borderRadius: '6px' }}>
+                        <span className="credit-label" style={{ display: 'block', fontSize: '9px', marginBottom: '2px' }}>Coins</span>
+                        <span className="credit-amount" style={{ color: '#fbbf24', fontSize: '14px', fontWeight: 'bold' }}>{quest.reward_coins}</span>
+                      </div>
                     </div>
-                    <div className="credit-item" style={{ textAlign: 'center', background: 'rgba(255, 255, 255, 0.05)', padding: '6px', borderRadius: '6px' }}>
-                      <span className="credit-label" style={{ display: 'block', fontSize: '9px', marginBottom: '2px' }}>Target</span>
-                      <span className="credit-amount" style={{ fontSize: '14px', fontWeight: 'bold' }}>{quest.target_count}</span>
+                    <div className="subscription-actions" style={{ marginTop: '12px' }}>
+                      <button className="extend-btn" onClick={() => handleUpdateQuest(quest.id)}><Edit2 size={14} /><span>Edit</span></button>
+                      <button className="cancel-sub-btn" onClick={() => handleToggleQuest(quest.id, quest.is_active)} style={{ background: quest.is_active ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)', borderColor: quest.is_active ? '#ef4444' : '#10b981', color: quest.is_active ? '#ef4444' : '#10b981' }}>
+                        {quest.is_active ? 'Disable' : 'Enable'}
+                      </button>
+                      <button className="cancel-sub-btn" onClick={() => handleDeleteQuest(quest.id)}><Trash2 size={14} /><span>Delete</span></button>
                     </div>
-                    <div className="credit-item" style={{ textAlign: 'center', background: 'rgba(167, 139, 250, 0.1)', padding: '6px', borderRadius: '6px' }}>
-                      <span className="credit-label" style={{ display: 'block', fontSize: '9px', marginBottom: '2px' }}>XP</span>
-                      <span className="credit-amount" style={{ color: '#a78bfa', fontSize: '14px', fontWeight: 'bold' }}>{quest.reward_xp}</span>
-                    </div>
-                    <div className="credit-item" style={{ textAlign: 'center', background: 'rgba(251, 191, 36, 0.1)', padding: '6px', borderRadius: '6px' }}>
-                      <span className="credit-label" style={{ display: 'block', fontSize: '9px', marginBottom: '2px' }}>Coins</span>
-                      <span className="credit-amount" style={{ color: '#fbbf24', fontSize: '14px', fontWeight: 'bold' }}>{quest.reward_coins}</span>
-                    </div>
-                  </div>
-                  <div className="subscription-actions" style={{ marginTop: '12px' }}>
-                    <button className="extend-btn" onClick={() => handleUpdateQuest(quest.id)}><Edit2 size={14} /><span>Edit</span></button>
-                    <button className="cancel-sub-btn" onClick={() => handleToggleQuest(quest.id, quest.is_active)} style={{ background: quest.is_active ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)', borderColor: quest.is_active ? '#ef4444' : '#10b981', color: quest.is_active ? '#ef4444' : '#10b981' }}>
-                      {quest.is_active ? 'Disable' : 'Enable'}
-                    </button>
-                    <button className="cancel-sub-btn" onClick={() => handleDeleteQuest(quest.id)}><Trash2 size={14} /><span>Delete</span></button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </>
         )}
 
         {activeTab === 'notifications' && (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            style={{
-              background: 'rgba(26, 21, 16, 0.8)',
-              border: '1px solid rgba(197, 160, 89, 0.2)',
-              borderRadius: '16px',
-              overflow: 'hidden'
-            }}
-          >
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
             <NotificationSettingsAdmin />
           </motion.div>
         )}
 
         {activeTab === 'horoscope-monitor' && (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
             <HoroscopeMonitor />
           </motion.div>
         )}
       </div>
 
-      {/* 🆕 2-რიგიანი ბადე ქვედა მენიუსთვის - 8 ღილაკი (4x2) */}
+      {/* Bottom nav — fixed 4×2 grid, no scroll */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(4, 1fr)',
@@ -812,16 +838,7 @@ export default function AdminScreen({ onNavigate }: Props) {
         zIndex: 9999,
         backdropFilter: 'blur(10px)'
       }}>
-        {[
-          { id: 'credits', icon: Key, label: 'Credits' },
-          { id: 'subscriptions', icon: Crown, label: 'Subs' },
-          { id: 'monitoring', icon: Activity, label: 'Monitor' },
-          { id: 'analytics', icon: BarChart3, label: 'Analytics' },
-          { id: 'quests', icon: Trophy, label: 'Quests' },
-          { id: 'notifications', icon: Bell, label: 'Notify' },
-          { id: 'horoscope-monitor', icon: Moon, label: 'Horoscope' },
-          { id: 'ai', icon: Zap, label: 'AI', isExternal: true }
-        ].map((tab) => (
+        {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => tab.isExternal ? onNavigate?.('ai-management') : setActiveTab(tab.id as any)}
