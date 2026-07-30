@@ -4,14 +4,17 @@
    BASE STYLES
    ============================================ */
 .horoscope-screen {
-  position: relative;
+  position: fixed; /* ✅ განახლებული: ფარავს ქვედა ნავიგაციას */
+  inset: 0;
   width: 100%;
-  min-height: 100vh;
+  height: 100vh;
   background: #0a0600;
+  overflow-y: auto; /* ✅ განახლებული: საშუალებას იძლევა შიგნით იყოს სქროლი */
   overflow-x: hidden;
   font-family: 'Cormorant Garamond', serif;
   color: #F7F3EB;
   padding-bottom: 70px;
+  z-index: 50; /* ✅ განახლებული: უზრუნველყოფს, რომ იყოს ქვედა ნავიგაციის თავზე */
 }
 
 .cosmic-background {
@@ -721,7 +724,6 @@
   border-color: rgba(217, 182, 111, 0.3);
 }
 
-/* ✅ აუცილებელი დამატება: ფერადი ხატულების ფონისთვის */
 .rf-lucky-icon-wrapper {
   width: 36px;
   height: 36px;
