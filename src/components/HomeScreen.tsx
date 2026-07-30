@@ -203,7 +203,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     lastQuery: null, lastResponse: null, economyData: null, queryHistory: []
   });
   
-  // 🆕 ენერჯი ტრანზაქციების სია დებაგ პანელისთვის
   const [energyTransactions, setEnergyTransactions] = useState<any[]>([]);
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
@@ -329,33 +328,6 @@ End of Debug Report
     }
   };
 
-  const testEconomyInitialization = async () => {
-    if (!user || !supabase) {
-      addDebugLog('error', 'TEST', 'No user or supabase available for test');
-      return;
-    }
-    addDebugLog('info', 'TEST', 'Starting manual economy initialization test...');
-    try {
-      await supabase.from('user_economy').delete().eq('user_id', user.id);
-      addDebugLog('info', 'TEST', 'Existing record deleted for testing.');
-      const { error: fetchError } = await supabase.from('user_economy').select('user_id').eq('user_id', user.id).single();
-      if (fetchError && fetchError.code === 'PGRST116') {
-        addDebugLog('warning', 'TEST', 'No record found (PGRST116). Creating new one...');
-        const { error: insertError } = await supabase.from('user_economy').insert({
-          user_id: user.id, cosmic_coins: 0, xp: 0, level: 1, cosmic_focus: 20, max_focus: 20,
-          current_streak: 0, longest_streak: 0, last_active_date: new Date().toISOString().split('T')[0], last_daily_claim: null
-        });
-        if (insertError) throw new Error(insertError.message);
-        addDebugLog('success', 'TEST', '✅ SUCCESS: New economy record created automatically!');
-        setEconomy({ cosmic_coins: 0, xp: 0, level: 1, current_streak: 0, cosmic_focus: 20, max_focus: 20 });
-        setDbStatus('connected');
-        setEconomyLoadStatus('success');
-      }
-    } catch (err: any) {
-      addDebugLog('error', 'TEST', `❌ FAILED: ${err.message}`);
-    }
-  };
-
   const testAddCoins = async (amount: number) => {
     if (!user || !supabase) return;
     addDebugLog('info', 'TEST', `🪙 Adding ${amount} coins...`);
@@ -393,7 +365,6 @@ End of Debug Report
     }
   };
 
-  // 🆕 ენერჯის დამატების ტესტი
   const testAddEnergy = async (amount: number) => {
     if (!user || !supabase) return;
     addDebugLog('info', 'ENERGY_TEST', `⚡ Adding ${amount} energy...`);
@@ -417,7 +388,6 @@ End of Debug Report
     }
   };
 
-  // 🆕 ენერჯის დახარჯვის ტესტი
   const testSpendEnergy = async (amount: number) => {
     if (!user || !supabase) return;
     addDebugLog('info', 'ENERGY_TEST', `⚡ Spending ${amount} energy...`);
@@ -464,7 +434,6 @@ End of Debug Report
     }
   };
 
-  // 🆕 ენერჯი დებაგ მონაცემების ჩატვირთვა
   const loadEnergyDebugData = async () => {
     if (!user || !supabase) return;
     try {
@@ -504,7 +473,7 @@ End of Debug Report
       }
     }
     setEconomyLoadStatus('success');
-    loadEnergyDebugData(); // 🆕 განაახლე ენერჯი ტრანზაქციებიც
+    loadEnergyDebugData();
   };
 
   const loadQuests = async () => {
@@ -582,7 +551,6 @@ End of Debug Report
     if (user) loadQuests();
   }, [user]);
 
-  // ⚡ Function: გამოთვალოს რეალური energy რეგენერაციის ჩათვლით
   const calculateRealEnergy = async () => {
     if (!user || !supabase) return;
 
@@ -629,7 +597,6 @@ End of Debug Report
     }
   };
 
-  // ⚡ Function: შეამოწმოს და დახარჯოს energy
   const checkAndSpendEnergy = async (readingType: string, requiredEnergy: number): Promise<boolean> => {
     if (!user || !supabase) return false;
 
@@ -723,7 +690,6 @@ End of Debug Report
     loadEconomy();
   }, [user]);
 
-  // ⚡ Periodic energy regeneration check
   useEffect(() => {
     if (user) {
       calculateRealEnergy();
@@ -830,7 +796,6 @@ End of Debug Report
   const handleQuickAction = async (action: string) => {
     addDebugLog('info', 'NAVIGATION', 'Quick action clicked', { action });
     
-    // ⚡ Energy spending checks for premium readings
     if (action === 'CelticCross') {
       const canProceed = await checkAndSpendEnergy('celtic_cross', 6);
       if (canProceed) onNavigate?.('celtic-cross');
@@ -1163,7 +1128,6 @@ End of Debug Report
                 <button onClick={() => setShowDebug(false)} style={{ padding: '2px 6px', background: '#ef4444', border: 'none', borderRadius: '4px', color: '#fff', cursor: 'pointer', fontSize: '8px' }}>✕</button>
               </div>
               
-              {/* DB Connection */}
               <div style={{ marginBottom: '12px', padding: '8px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
                 <div style={{ marginBottom: '6px', color: '#3b82f6', fontWeight: 'bold' }}>🗄️ DATABASE CONNECTION</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
@@ -1173,7 +1137,6 @@ End of Debug Report
                 <div style={{ fontSize: '9px', color: '#94a3b8' }}>User ID: {user?.id?.slice(0, 8)}...</div>
               </div>
 
-              {/* 💰 Economy */}
               <div style={{ marginBottom: '12px', padding: '8px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
                 <div style={{ marginBottom: '6px', color: '#10b981', fontWeight: 'bold' }}>💰 ECONOMY (FROM DB)</div>
                 {dbDebugInfo.economyData ? (
@@ -1188,7 +1151,6 @@ End of Debug Report
                 )}
               </div>
 
-              {/* 🆕 ⚡ ENERGY DEBUG */}
               <div style={{ marginBottom: '12px', padding: '8px', background: 'rgba(251, 191, 36, 0.1)', borderRadius: '8px', border: '1px solid rgba(251, 191, 36, 0.3)' }}>
                 <div style={{ marginBottom: '6px', color: '#fbbf24', fontWeight: 'bold' }}>⚡ ENERGY DEBUG</div>
                 {dbDebugInfo.economyData ? (
@@ -1203,7 +1165,6 @@ End of Debug Report
                 )}
               </div>
 
-              {/* Last Query */}
               {dbDebugInfo.lastQuery && (
                 <div style={{ marginBottom: '12px', padding: '8px', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
                   <div style={{ marginBottom: '6px', color: '#8b5cf6', fontWeight: 'bold' }}>📡 LAST QUERY</div>
@@ -1218,11 +1179,9 @@ End of Debug Report
                 </div>
               )}
 
-              {/* 🆕 🧪 QUICK TESTS (with Energy) */}
               <div style={{ marginBottom: '12px', padding: '8px', background: 'rgba(245, 158, 11, 0.1)', borderRadius: '8px', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
                 <div style={{ marginBottom: '6px', color: '#f59e0b', fontWeight: 'bold' }}>🧪 QUICK TESTS</div>
                 
-                {/* Energy Tests */}
                 <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '6px' }}>
                   <button onClick={() => testAddEnergy(5)} style={{ padding: '4px 8px', background: '#fbbf24', border: 'none', borderRadius: '4px', color: '#000', cursor: 'pointer', fontSize: '9px', fontWeight: 'bold' }}>+5 ⚡</button>
                   <button onClick={() => testAddEnergy(10)} style={{ padding: '4px 8px', background: '#f59e0b', border: 'none', borderRadius: '4px', color: '#000', cursor: 'pointer', fontSize: '9px', fontWeight: 'bold' }}>+10 ⚡</button>
@@ -1230,7 +1189,6 @@ End of Debug Report
                   <button onClick={calculateRealEnergy} style={{ padding: '4px 8px', background: '#3b82f6', border: 'none', borderRadius: '4px', color: '#fff', cursor: 'pointer', fontSize: '9px', fontWeight: 'bold' }}>🔄 Force Regen</button>
                 </div>
 
-                {/* Coin/XP Tests */}
                 <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '6px' }}>
                   <button onClick={() => testAddCoins(10)} style={{ padding: '4px 8px', background: 'rgba(251, 191, 36, 0.3)', border: '1px solid #fbbf24', borderRadius: '4px', color: '#fbbf24', cursor: 'pointer', fontSize: '9px', fontWeight: 'bold' }}>+10 🪙</button>
                   <button onClick={() => testAddXP(50)} style={{ padding: '4px 8px', background: 'rgba(167, 139, 250, 0.3)', border: '1px solid #a78bfa', borderRadius: '4px', color: '#a78bfa', cursor: 'pointer', fontSize: '9px', fontWeight: 'bold' }}>+50 ⭐</button>
@@ -1239,7 +1197,6 @@ End of Debug Report
                 <button onClick={reloadFromDatabase} style={{ width: '100%', padding: '6px', background: '#3b82f6', border: 'none', borderRadius: '4px', color: '#fff', cursor: 'pointer', fontSize: '9px', fontWeight: 'bold' }}>🔄 RELOAD ALL FROM DB</button>
               </div>
 
-              {/* System Actions */}
               <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '12px' }}>
                 <button onClick={checkDatabaseStatus} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(16, 185, 129, 0.3)', border: '1px solid #10b981', borderRadius: '6px', color: '#10b981', cursor: 'pointer', fontSize: '9px' }}>🩺 CHECK DB</button>
                 <button onClick={refreshUserDataDebug} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(59, 130, 246, 0.3)', border: '1px solid #3b82f6', borderRadius: '6px', color: '#3b82f6', cursor: 'pointer', fontSize: '9px' }}>🔄 REFRESH USER</button>
@@ -1247,7 +1204,6 @@ End of Debug Report
                 <button onClick={handleLogoutAndReset} style={{ flex: '1', minWidth: '80px', padding: '4px 8px', background: 'rgba(239, 68, 68, 0.3)', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontSize: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}><LogOut size={12} /> LOGOUT</button>
               </div>
 
-              {/* Copy/Clear */}
               <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
                 <button onClick={copyAllDebugInfo} style={{ flex: 1, padding: '6px', background: copySuccess ? 'rgba(16, 185, 129, 0.3)' : 'rgba(96, 165, 250, 0.3)', border: `1px solid ${copySuccess ? '#10b981' : '#60a5fa'}`, borderRadius: '6px', color: copySuccess ? '#10b981' : '#60a5fa', cursor: 'pointer', fontSize: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                   <Copy size={12} /> {copySuccess ? 'COPIED!' : 'COPY ALL'}
@@ -1255,7 +1211,6 @@ End of Debug Report
                 <button onClick={() => setDebugLogs([])} style={{ flex: 1, padding: '6px', background: 'rgba(239, 68, 68, 0.3)', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontSize: '9px' }}>🗑️ CLEAR LOGS</button>
               </div>
 
-              {/* 🆕 ⚡ RECENT ENERGY TX */}
               {energyTransactions.length > 0 && (
                 <div style={{ marginBottom: '12px' }}>
                   <div style={{ marginBottom: '6px', color: '#f472b6', fontWeight: 'bold' }}>⚡ RECENT ENERGY TX ({energyTransactions.length})</div>
@@ -1276,7 +1231,6 @@ End of Debug Report
                 </div>
               )}
 
-              {/* Query History */}
               {dbDebugInfo.queryHistory.length > 0 && (
                 <div style={{ marginBottom: '12px' }}>
                   <div style={{ marginBottom: '6px', color: '#f472b6', fontWeight: 'bold' }}>📜 QUERY HISTORY ({dbDebugInfo.queryHistory.length})</div>
@@ -1292,7 +1246,6 @@ End of Debug Report
                 </div>
               )}
 
-              {/* Logs */}
               <div>
                 <div style={{ marginBottom: '6px', color: '#f472b6', fontWeight: 'bold' }}>📝 LOGS ({debugLogs.length})</div>
                 <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
