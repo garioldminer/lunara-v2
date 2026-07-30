@@ -87,7 +87,15 @@ interface Toast {
   type: 'success' | 'error' | 'info';
 }
 
-const TABS = [
+// ✅ გამოსწორებული ტიპი: isExternal არის ოფციონალური (?)
+type TabItem = {
+  id: 'credits' | 'subscriptions' | 'monitoring' | 'analytics' | 'quests' | 'notifications' | 'horoscope-monitor' | 'ai';
+  icon: any;
+  label: string;
+  isExternal?: boolean;
+};
+
+const TABS: TabItem[] = [
   { id: 'credits', icon: Key, label: 'Credits' },
   { id: 'subscriptions', icon: Crown, label: 'Subs' },
   { id: 'monitoring', icon: Activity, label: 'Monitor' },
@@ -96,7 +104,7 @@ const TABS = [
   { id: 'notifications', icon: Bell, label: 'Notify' },
   { id: 'horoscope-monitor', icon: Moon, label: 'Horoscope' },
   { id: 'ai', icon: Zap, label: 'AI', isExternal: true }
-] as const;
+];
 
 function ToastNotification({ toast, onClose }: { toast: Toast; onClose: () => void }) {
   useEffect(() => {
@@ -159,7 +167,7 @@ export default function AdminScreen({ onNavigate }: Props) {
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [editingFeature, setEditingFeature] = useState<string>('');
   const [newAmount, setNewAmount] = useState(0);
-  const [activeTab, setActiveTab] = useState<typeof TABS[number]['id']>('credits');
+  const [activeTab, setActiveTab] = useState<'credits' | 'subscriptions' | 'monitoring' | 'analytics' | 'quests' | 'notifications' | 'horoscope-monitor'>('credits');
 
   const [showAddSubscription, setShowAddSubscription] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string>('');
