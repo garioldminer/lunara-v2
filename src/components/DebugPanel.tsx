@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { 
   Bug, X, CheckCircle, XCircle, RefreshCw, Copy, Check, 
-  Database, Zap, FileJson, Terminal 
+  Database, Zap, FileJson, Terminal, User 
 } from 'lucide-react';
 
 interface DebugPanelProps {
@@ -11,6 +11,7 @@ interface DebugPanelProps {
   dbDebugInfo: any;
   debugLogs: any[];
   dbStatus: string;
+  activeSubscription: any; // ✅ დამატებულია
   setDebugLogs: React.Dispatch<React.SetStateAction<any[]>>;
   checkDatabaseStatus: () => void;
   refreshUserDataDebug: () => void;
@@ -23,7 +24,7 @@ interface DebugPanelProps {
   reloadFromDatabase: () => void;
 }
 
-type TabType = 'overview' | 'actions' | 'logs' | 'raw';
+type TabType = 'overview' | 'profile_banner' | 'actions' | 'logs' | 'raw';
 
 export default function DebugPanel({
   showDebug,
@@ -32,6 +33,7 @@ export default function DebugPanel({
   dbDebugInfo,
   debugLogs,
   dbStatus,
+  activeSubscription, // ✅ დამატებულია
   setDebugLogs,
   checkDatabaseStatus,
   refreshUserDataDebug,
@@ -75,6 +77,7 @@ export default function DebugPanel({
 
   const tabs: { id: TabType; label: string; icon: any }[] = [
     { id: 'overview', label: 'Overview', icon: Database },
+    { id: 'profile_banner', label: 'Banner', icon: User }, // ✅ ახალი ტაბი
     { id: 'actions', label: 'Actions', icon: Zap },
     { id: 'logs', label: 'Logs', icon: Terminal },
     { id: 'raw', label: 'Raw Data', icon: FileJson },
@@ -82,7 +85,6 @@ export default function DebugPanel({
 
   return (
     <>
-      {/* ✅ ღილაკი ყოველთვის ჩანს */}
       <button 
         onClick={() => setShowDebug(!showDebug)} 
         style={{ 
@@ -98,7 +100,6 @@ export default function DebugPanel({
         {showDebug ? <X size={24} /> : <Bug size={24} />}
       </button>
 
-      {/* ✅ პანელი მხოლოდ მაშინ ჩანს, როცა showDebug არის true */}
       {showDebug && (
         <div style={{ 
           position: 'fixed', bottom: '80px', right: '20px', zIndex: 10000, 
@@ -121,17 +122,17 @@ export default function DebugPanel({
             </button>
           </div>
 
-          <div style={{ display: 'flex', borderBottom: '1px solid rgba(255, 229, 102, 0.2)', background: 'rgba(0,0,0,0.3)' }}>
+          <div style={{ display: 'flex', borderBottom: '1px solid rgba(255, 229, 102, 0.2)', background: 'rgba(0,0,0,0.3)', overflowX: 'auto' }}>
             {tabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 style={{
-                  flex: 1, padding: '10px 4px', background: 'none', border: 'none',
+                  flex: 1, minWidth: '60px', padding: '10px 4px', background: 'none', border: 'none',
                   borderBottom: activeTab === tab.id ? '2px solid #fbbf24' : '2px solid transparent',
                   color: activeTab === tab.id ? '#fbbf24' : '#94a3b8',
                   cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
-                  fontSize: '10px', fontWeight: 'bold', transition: 'all 0.2s'
+                  fontSize: '9px', fontWeight: 'bold', transition: 'all 0.2s', whiteSpace: 'nowrap'
                 }}
               >
                 <tab.icon size={14} />
@@ -141,6 +142,52 @@ export default function DebugPanel({
           </div>
 
           <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
+            
+            {/* ✅ ახალი ტაბი: Profile Banner Debug */}
+            {activeTab === 'profile_banner' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
+                  <div style={{ marginBottom: '8px', color: '#60a5fa', fontWeight: 'bold', fontSize: '11px', display: 'flex', justifyContent: 'space-between' }}>
+                    👤 USER INFO <CopyBtn text={JSON.stringify(user, null, 2)} id="banner-user" />
+                  </div>
+                  <div style={{ fontSize: '11px', marginBottom: '4px' }}>Name: <strong>{user?.display_name || 'N/A'}</strong></div>
+                  <div style={{ fontSize: '11px', marginBottom: '4px' }}>Username: <strong>{user?.username || 'N/A'}</strong></div>
+                  <div style={{ fontSize: '11px', wordBreak: 'break-all' }}>ID: <strong>{user?.id || 'N/A'}</strong></div>
+                </div>
+
+                <div style={{ padding: '12px', background: 'rgba(251, 191, 36, 0.1)', borderRadius: '8px', border: '1px solid rgba(251, 191, 36, 0.3)' }}>
+                  <div style={{ marginBottom: '8px', color: '#fbbf24', fontWeight: 'bold', fontSize: '11px', display: 'flex', justifyContent: 'space-between' }}>
+                    💎 ECONOMY & STATS <CopyBtn text={JSON.stringify(dbDebugInfo.economyData, null, 2)} id="banner-economy" />
+                  </div>
+                  {dbDebugInfo.economyData ? (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '11px' }}>
+                      <div>🪙 Coins: <strong>{dbDebugInfo.economyData.cosmic_coins}</strong></div>
+                      <div>⚡ Energy: <strong>{dbDebugInfo.economyData.cosmic_focus} / {dbDebugInfo.economyData.max_focus}</strong></div>
+                      <div>⭐ Level: <strong>{dbDebugInfo.economyData.level}</strong></div>
+                      <div>🔥 Streak: <strong>{dbDebugInfo.economyData.current_streak}</strong></div>
+                    </div>
+                  ) : (
+                    <div style={{ color: '#64748b', fontSize: '11px' }}>No economy data loaded</div>
+                  )}
+                </div>
+
+                <div style={{ padding: '12px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                  <div style={{ marginBottom: '8px', color: '#10b981', fontWeight: 'bold', fontSize: '11px' }}>
+                    👑 SUBSCRIPTION STATUS
+                  </div>
+                  {activeSubscription ? (
+                    <div style={{ fontSize: '11px' }}>
+                      <div style={{ marginBottom: '4px' }}>Status: <strong style={{ color: '#10b981' }}>ACTIVE</strong></div>
+                      <div style={{ marginBottom: '4px' }}>Plan: <strong>{activeSubscription.plan_name || 'N/A'}</strong></div>
+                      <div>Expires: <strong>{activeSubscription.expires_at ? new Date(activeSubscription.expires_at).toLocaleDateString() : 'N/A'}</strong></div>
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: '11px', color: '#94a3b8' }}>No active subscription (Free Tier)</div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {activeTab === 'overview' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.3)' }}>

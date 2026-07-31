@@ -1032,7 +1032,7 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* ✅ აქ არის შეცვლილი პირობა: წაშლილია კონკრეტული ID-ის შემოწმება */}
+      {/* ✅ აქ არის დამატებული activeSubscription={activeSubscription} */}
       {isUserAdmin && (
         <DebugPanel
           showDebug={showDebug}
@@ -1041,6 +1041,7 @@ export default function HomeScreen({ onNavigate }: Props) {
           dbDebugInfo={dbDebugInfo}
           debugLogs={debugLogs}
           dbStatus={dbStatus}
+          activeSubscription={activeSubscription}
           setDebugLogs={setDebugLogs}
           checkDatabaseStatus={checkDatabaseStatus}
           refreshUserDataDebug={refreshUserDataDebug}
