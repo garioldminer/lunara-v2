@@ -93,7 +93,7 @@ export default function DebugPanel({
           cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.5)', zIndex: 10001,
           transition: 'background 0.3s ease'
         }}
-        title="Open Debug Panel"
+        title="Open Debug Panell"
       >
         <Bug size={24} />
       </button>
