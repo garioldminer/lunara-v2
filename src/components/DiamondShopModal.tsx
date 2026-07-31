@@ -34,6 +34,12 @@ export default function DiamondShopModal({ isOpen, onClose, userId, onSuccess }:
       return;
     }
 
+    // ✅ დამატებულია შემოწმება: თუ supabase null-ია, შევაჩეროთ პროცესი
+    if (!supabase) {
+      alert('სისტემური შეცდომა: მონაცემთა ბაზასთან კავშირი ვერ მოხერხდა.');
+      return;
+    }
+
     setIsLoading(pkg.id);
     try {
       const { data, error } = await supabase.functions.invoke('create-diamond-invoice', {
