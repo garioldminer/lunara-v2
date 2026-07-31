@@ -532,7 +532,7 @@ export default function HomeScreen({ onNavigate }: Props) {
     await calculateRealEnergy();
     
     if ((economy.cosmic_focus || 0) < requiredEnergy) {
-      showToast(`Not enough energy! You need ${requiredEnergy}⚡, but you have ${economy.cosmic_focus}⚡. Use coins to refill!`, 'error');
+      showToast(`Not enough energy! You need ${requiredEnergy}⚡, but you have ${economy.cosmic_focus}⚡. Use diamonds to refill!`, 'error');
       return false;
     }
     
@@ -569,7 +569,7 @@ export default function HomeScreen({ onNavigate }: Props) {
     const gain = 10;
 
     if (economy.cosmic_coins < cost) {
-      showToast(`Not enough coins! You need ${cost} 💎 to refill +${gain}⚡`, 'error');
+      showToast(`Not enough diamonds! You need ${cost} 💎 to refill +${gain}⚡`, 'error');
       return;
     }
 
@@ -581,8 +581,14 @@ export default function HomeScreen({ onNavigate }: Props) {
         p_energy_gain: gain
       });
 
-      if (error || !data?.success) {
-        showToast(data?.error || 'Failed to refill energy', 'error');
+      console.log('🔍 Refill response:', { data, error });
+
+      if (error) {
+        console.error('❌ RPC Error:', error);
+        showToast(`Failed to refill: ${error.message}`, 'error');
+      } else if (!data?.success) {
+        console.error('❌ Function returned error:', data);
+        showToast(`Failed to refill: ${data?.error || 'Unknown error'}`, 'error');
       } else {
         setEconomy(prev => ({
           ...prev,
@@ -592,7 +598,8 @@ export default function HomeScreen({ onNavigate }: Props) {
         showToast(`Successfully refilled +${gain}⚡ for ${cost} 💎!`, 'success');
       }
     } catch (err: any) {
-      showToast('Network error during refill', 'error');
+      console.error('❌ Exception:', err);
+      showToast(`Network error: ${err.message}`, 'error');
     } finally {
       setIsClaiming(false);
     }
@@ -884,7 +891,7 @@ export default function HomeScreen({ onNavigate }: Props) {
                   border: 'none', color: '#C5A059', display: 'flex', alignItems: 'center', justifyContent: 'center', 
                   cursor: isClaiming ? 'not-allowed' : 'pointer', fontSize: '12px', fontWeight: 'bold', flexShrink: 0 
                 }}
-                title="Refill 10 Energy for 50 Coins"
+                title="Refill 10 Energy for 50 Diamonds"
               >
                 {isClaiming ? '...' : '+'}
               </button>
