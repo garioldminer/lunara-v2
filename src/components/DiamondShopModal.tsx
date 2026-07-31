@@ -29,41 +29,81 @@ export default function DiamondShopModal({ isOpen, onClose, userId, onSuccess }:
   if (!isOpen) return null;
 
   const handleBuy = async (pkg: Package) => {
+    console.log('💎 [SHOP DEBUG] Starting purchase process:', pkg);
+    
     if (!(window as any).Telegram?.WebApp) {
+      console.error('❌ [SHOP DEBUG] Telegram WebApp not available');
       alert('ეს ფუნქცია მხოლოდ Telegram-შია ხელმისაწვდომი.');
       return;
     }
 
-    // ✅ დამატებულია შემოწმება: თუ supabase null-ია, შევაჩეროთ პროცესი
     if (!supabase) {
+      console.error('❌ [SHOP DEBUG] Supabase client is null');
       alert('სისტემური შეცდომა: მონაცემთა ბაზასთან კავშირი ვერ მოხერხდა.');
       return;
     }
 
+    console.log('✅ [SHOP DEBUG] Pre-flight checks passed');
+    console.log(' User ID:', userId);
+    console.log('📦 Package:', pkg);
+
     setIsLoading(pkg.id);
+    
     try {
+      console.log('🔄 [SHOP DEBUG] Calling create-diamond-invoice function...');
+      
+      const requestBody = {
+        user_id: userId,
+        coins_amount: pkg.coins,
+        stars_amount: pkg.stars,
+        description: `${pkg.coins} დიამონდის შეძენა`
+      };
+      
+      console.log('📤 [SHOP DEBUG] Request body:', JSON.stringify(requestBody, null, 2));
+
       const { data, error } = await supabase.functions.invoke('create-diamond-invoice', {
-        body: {
-          user_id: userId,
-          coins_amount: pkg.coins,
-          stars_amount: pkg.stars,
-          description: `${pkg.coins} დიამონდის შეძენა`
-        }
+        body: requestBody
       });
 
-      if (error || !data?.invoice_url) {
-        throw new Error('ინვოისის შექმნა ვერ მოხერხდა');
+      console.log('📥 [SHOP DEBUG] Response received:', { data, error });
+
+      if (error) {
+        console.error('❌ [SHOP DEBUG] Edge Function error:', error);
+        throw new Error(`Edge Function error: ${error.message}`);
       }
 
+      if (!data?.invoice_url) {
+        console.error('❌ [SHOP DEBUG] No invoice_url in response:', data);
+        throw new Error('ინვოისის შექმნა ვერ მოხერხდა - არ არის invoice_url');
+      }
+
+      console.log('✅ [SHOP DEBUG] Invoice URL received:', data.invoice_url);
+      console.log('🚀 [SHOP DEBUG] Opening Telegram invoice...');
+
       const tg = (window as any).Telegram.WebApp;
+      
       tg.openInvoice(data.invoice_url, async (status: string) => {
+        console.log('💳 [SHOP DEBUG] Invoice status:', status);
+        
         if (status === 'paid') {
+          console.log('✅ [SHOP DEBUG] Payment successful!');
+          console.log('🔄 [SHOP DEBUG] Calling onSuccess callback...');
           onSuccess();
+        } else if (status === 'cancelled') {
+          console.log('⚠️ [SHOP DEBUG] Payment cancelled by user');
+        } else if (status === 'failed') {
+          console.error(' [SHOP DEBUG] Payment failed');
         }
+        
         setIsLoading(null);
       });
+      
     } catch (err) {
-      console.error('Shop Error:', err);
+      console.error('💥 [SHOP DEBUG] Exception caught:', err);
+      console.error('Error details:', {
+        message: err instanceof Error ? err.message : 'Unknown error',
+        stack: err instanceof Error ? err.stack : undefined
+      });
       alert('შეცდომა მაღაზიასთან დაკავშირებით. სცადეთ მოგვიანებით.');
       setIsLoading(null);
     }
