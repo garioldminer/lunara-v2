@@ -1,4 +1,8 @@
-import { Bug, X, CheckCircle, XCircle, RefreshCw, Copy, LogOut } from 'lucide-react';
+import { useState } from 'react';
+import { 
+  Bug, X, CheckCircle, XCircle, RefreshCw, Copy, Check, 
+  Database, Zap, FileJson, Terminal 
+} from 'lucide-react';
 
 interface DebugPanelProps {
   showDebug: boolean;
@@ -21,6 +25,8 @@ interface DebugPanelProps {
   reloadFromDatabase: () => void;
 }
 
+type TabType = 'overview' | 'actions' | 'logs' | 'raw';
+
 export default function DebugPanel({
   showDebug,
   setShowDebug,
@@ -28,7 +34,6 @@ export default function DebugPanel({
   dbDebugInfo,
   debugLogs,
   dbStatus,
-  copySuccess,
   copyAllDebugInfo,
   setDebugLogs,
   checkDatabaseStatus,
@@ -41,140 +46,185 @@ export default function DebugPanel({
   testCompleteQuest,
   reloadFromDatabase,
 }: DebugPanelProps) {
+  const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const [copiedItem, setCopiedItem] = useState<string | null>(null);
+
+  const handleCopy = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedItem(id);
+    setTimeout(() => setCopiedItem(null), 2000);
+  };
+
+  const CopyBtn = ({ text, id }: { text: string; id: string }) => (
+    <button
+      onClick={() => handleCopy(text, id)}
+      style={{
+        background: 'none',
+        border: '1px solid rgba(255,255,255,0.2)',
+        borderRadius: '4px',
+        padding: '4px',
+        color: copiedItem === id ? '#10b981' : '#94a3b8',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        transition: 'all 0.2s'
+      }}
+      title="Copy to clipboard"
+    >
+      {copiedItem === id ? <Check size={14} /> : <Copy size={14} />}
+    </button>
+  );
+
+  if (!showDebug) return null;
+
+  const tabs: { id: TabType; label: string; icon: any }[] = [
+    { id: 'overview', label: 'Overview', icon: Database },
+    { id: 'actions', label: 'Actions', icon: Zap },
+    { id: 'logs', label: 'Logs', icon: Terminal },
+    { id: 'raw', label: 'Raw Data', icon: FileJson },
+  ];
+
   return (
     <>
-      {/* ✅ ეს ღილაკი ყოველთვის ჩანს, რათა პანელის გახსნა/დახურვა შეძლო */}
+      {/* Toggle Button */}
       <button 
         onClick={() => setShowDebug(!showDebug)} 
         style={{ 
-          position: 'fixed', 
-          bottom: '20px', 
-          right: '20px', 
-          width: '50px', 
-          height: '50px', 
-          borderRadius: '50%', 
-          background: showDebug ? '#ef4444' : '#3b82f6', // წითელი თუ ღიაა, ლურჯი თუ დახურულია
-          border: '3px solid rgba(255,255,255,0.3)', 
-          color: '#fff', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          cursor: 'pointer', 
-          boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
-          zIndex: 10001,
+          position: 'fixed', bottom: '20px', right: '20px', width: '50px', height: '50px', 
+          borderRadius: '50%', background: '#3b82f6', border: '3px solid rgba(255,255,255,0.3)', 
+          color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', 
+          cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.5)', zIndex: 10001,
           transition: 'background 0.3s ease'
         }}
-        title={showDebug ? 'Close Debug Panel' : 'Open Debug Panel'}
+        title="Open Debug Panel"
       >
         <Bug size={24} />
       </button>
 
-      {/* ✅ თავად პანელი ჩანს მხოლოდ მაშინ, როცა showDebug არის true */}
-      {showDebug && (
+      {/* Main Panel */}
+      <div style={{ 
+        position: 'fixed', bottom: '80px', right: '20px', zIndex: 10000, 
+        width: '450px', maxWidth: '90vw', maxHeight: '70vh', 
+        background: 'rgba(10, 6, 0, 0.98)', border: '2px solid rgba(255, 229, 102, 0.5)',
+        borderRadius: '16px', boxShadow: '0 8px 32px rgba(0,0,0,0.8)',
+        fontFamily: 'monospace', fontSize: '11px', color: '#ffe566',
+        display: 'flex', flexDirection: 'column'
+      }}>
+        {/* Header */}
         <div style={{ 
-          position: 'fixed', 
-          bottom: '80px', 
-          right: '20px', 
-          zIndex: 10000, 
-          maxWidth: '450px', 
-          maxHeight: '70vh', 
-          overflow: 'auto',
-          background: 'rgba(10, 6, 0, 0.98)',
-          border: '2px solid rgba(255, 229, 102, 0.5)',
-          borderRadius: '16px',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.8)',
-          fontFamily: 'monospace',
-          fontSize: '10px',
-          color: '#ffe566'
+          padding: '12px 16px', borderBottom: '1px solid rgba(255, 229, 102, 0.3)', 
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          background: 'rgba(10, 6, 0, 0.98)', borderRadius: '14px 14px 0 0'
         }}>
-          <div style={{ 
-            padding: '12px 16px', 
-            borderBottom: '1px solid rgba(255, 229, 102, 0.3)', 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            position: 'sticky',
-            top: 0,
-            background: 'rgba(10, 6, 0, 0.98)',
-            zIndex: 1
-          }}>
-            <strong style={{ fontSize: '14px', color: '#ffe566', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Bug size={16} /> ADMIN DEBUG
-            </strong>
-            <button 
-              onClick={() => setShowDebug(false)} 
-              style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
+          <strong style={{ fontSize: '14px', color: '#ffe566', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Bug size={16} /> ADMIN DEBUG
+          </strong>
+          <button onClick={() => setShowDebug(false)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}>
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Tabs */}
+        <div style={{ display: 'flex', borderBottom: '1px solid rgba(255, 229, 102, 0.2)', background: 'rgba(0,0,0,0.3)' }}>
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                flex: 1, padding: '10px 4px', background: 'none', border: 'none',
+                borderBottom: activeTab === tab.id ? '2px solid #fbbf24' : '2px solid transparent',
+                color: activeTab === tab.id ? '#fbbf24' : '#94a3b8',
+                cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
+                fontSize: '10px', fontWeight: 'bold', transition: 'all 0.2s'
+              }}
             >
-              <X size={18} />
+              <tab.icon size={14} />
+              {tab.label}
             </button>
-          </div>
+          ))}
+        </div>
+
+        {/* Content Area */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
           
-          <div style={{ padding: '16px' }}>
-            {/* Database Status */}
-            <div style={{ marginBottom: '16px', padding: '12px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
-              <div style={{ marginBottom: '8px', color: '#60a5fa', fontWeight: 'bold', fontSize: '11px' }}>🗄️ DATABASE CONNECTION</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                {dbStatus === 'connected' ? <CheckCircle size={14} color="#10b981" /> : dbStatus === 'error' ? <XCircle size={14} color="#ef4444" /> : <RefreshCw size={14} color="#fbbf24" />}
-                <span>Status: <strong style={{ color: dbStatus === 'connected' ? '#10b981' : dbStatus === 'error' ? '#ef4444' : '#fbbf24' }}>{dbStatus.toUpperCase()}</strong></span>
-              </div>
-              <div style={{ fontSize: '10px', color: '#94a3b8' }}>User ID: {user?.id?.slice(0, 8)}...</div>
-            </div>
-
-            {/* Economy Status */}
-            <div style={{ marginBottom: '16px', padding: '12px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
-              <div style={{ marginBottom: '8px', color: '#10b981', fontWeight: 'bold', fontSize: '11px' }}>💰 ECONOMY STATE</div>
-              {dbDebugInfo.economyData ? (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                  <div style={{ fontSize: '11px' }}>🪙 Coins: <strong>{dbDebugInfo.economyData.cosmic_coins}</strong></div>
-                  <div style={{ fontSize: '11px' }}>⭐ XP: <strong>{dbDebugInfo.economyData.xp}</strong></div>
-                  <div style={{ fontSize: '11px' }}>🎯 Level: <strong>{dbDebugInfo.economyData.level}</strong></div>
-                  <div style={{ fontSize: '11px' }}>🔥 Streak: <strong>{dbDebugInfo.economyData.current_streak}</strong></div>
-                  <div style={{ fontSize: '11px', gridColumn: '1 / -1' }}>⚡ Energy: <strong>{dbDebugInfo.economyData.cosmic_focus || 0} / {dbDebugInfo.economyData.max_focus || 20}</strong></div>
+          {/* TAB 1: OVERVIEW */}
+          {activeTab === 'overview' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
+                <div style={{ marginBottom: '8px', color: '#60a5fa', fontWeight: 'bold', fontSize: '11px', display: 'flex', justifyContent: 'space-between' }}>
+                  🗄️ DATABASE <CopyBtn text={`Status: ${dbStatus}\nUser: ${user?.id}`} id="db-overview" />
                 </div>
-              ) : (
-                <div style={{ color: '#64748b', fontSize: '11px' }}>No data loaded yet</div>
-              )}
-            </div>
-
-            {/* Quick Actions */}
-            <div style={{ marginBottom: '16px' }}>
-              <div style={{ marginBottom: '8px', color: '#fbbf24', fontWeight: 'bold', fontSize: '11px' }}>🧪 QUICK TESTS</div>
-              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '8px' }}>
-                <button onClick={() => testAddEnergy(5)} style={{ padding: '6px 10px', background: '#fbbf24', border: 'none', borderRadius: '6px', color: '#000', cursor: 'pointer', fontSize: '10px', fontWeight: 'bold' }}>+5 ⚡</button>
-                <button onClick={() => testAddEnergy(10)} style={{ padding: '6px 10px', background: '#f59e0b', border: 'none', borderRadius: '6px', color: '#000', cursor: 'pointer', fontSize: '10px', fontWeight: 'bold' }}>+10 ⚡</button>
-                <button onClick={() => testSpendEnergy(2)} style={{ padding: '6px 10px', background: '#ef4444', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 'bold' }}>Spend 2 ⚡</button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                  {dbStatus === 'connected' ? <CheckCircle size={14} color="#10b981" /> : dbStatus === 'error' ? <XCircle size={14} color="#ef4444" /> : <RefreshCw size={14} color="#fbbf24" />}
+                  <span>Status: <strong style={{ color: dbStatus === 'connected' ? '#10b981' : dbStatus === 'error' ? '#ef4444' : '#fbbf24' }}>{dbStatus.toUpperCase()}</strong></span>
+                </div>
+                <div style={{ fontSize: '10px', color: '#94a3b8' }}>User ID: {user?.id}</div>
               </div>
-              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '8px' }}>
-                <button onClick={() => testAddCoins(10)} style={{ padding: '6px 10px', background: 'rgba(251, 191, 36, 0.2)', border: '1px solid #fbbf24', borderRadius: '6px', color: '#fbbf24', cursor: 'pointer', fontSize: '10px', fontWeight: 'bold' }}>+10 🪙</button>
-                <button onClick={() => testAddXP(50)} style={{ padding: '6px 10px', background: 'rgba(167, 139, 250, 0.2)', border: '1px solid #a78bfa', borderRadius: '6px', color: '#a78bfa', cursor: 'pointer', fontSize: '10px', fontWeight: 'bold' }}>+50 ⭐</button>
+
+              <div style={{ padding: '12px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                <div style={{ marginBottom: '8px', color: '#10b981', fontWeight: 'bold', fontSize: '11px', display: 'flex', justifyContent: 'space-between' }}>
+                  💰 ECONOMY STATE <CopyBtn text={JSON.stringify(dbDebugInfo.economyData, null, 2)} id="economy-overview" />
+                </div>
+                {dbDebugInfo.economyData ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                    <div style={{ fontSize: '11px' }}>🪙 Coins: <strong>{dbDebugInfo.economyData.cosmic_coins}</strong></div>
+                    <div style={{ fontSize: '11px' }}>⭐ XP: <strong>{dbDebugInfo.economyData.xp}</strong></div>
+                    <div style={{ fontSize: '11px' }}>🎯 Level: <strong>{dbDebugInfo.economyData.level}</strong></div>
+                    <div style={{ fontSize: '11px' }}>🔥 Streak: <strong>{dbDebugInfo.economyData.current_streak}</strong></div>
+                    <div style={{ fontSize: '11px', gridColumn: '1 / -1' }}>⚡ Energy: <strong>{dbDebugInfo.economyData.cosmic_focus || 0} / {dbDebugInfo.economyData.max_focus || 20}</strong></div>
+                  </div>
+                ) : (
+                  <div style={{ color: '#64748b', fontSize: '11px' }}>No data loaded yet</div>
+                )}
               </div>
-              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                <button onClick={reloadFromDatabase} style={{ flex: 1, padding: '8px', background: '#3b82f6', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 'bold' }}>🔄 RELOAD DB</button>
-                <button onClick={testCompleteQuest} style={{ flex: 1, padding: '8px', background: '#10b981', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 'bold' }}>🎯 TEST QUEST</button>
+            </div>
+          )}
+
+          {/* TAB 2: ACTIONS */}
+          {activeTab === 'actions' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div>
+                <div style={{ marginBottom: '8px', color: '#fbbf24', fontWeight: 'bold', fontSize: '11px' }}>🧪 ECONOMY TESTS</div>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                  <button onClick={() => testAddEnergy(5)} style={{ padding: '8px 12px', background: '#fbbf24', border: 'none', borderRadius: '6px', color: '#000', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}>+5 ⚡</button>
+                  <button onClick={() => testAddEnergy(10)} style={{ padding: '8px 12px', background: '#f59e0b', border: 'none', borderRadius: '6px', color: '#000', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}>+10 ⚡</button>
+                  <button onClick={() => testSpendEnergy(2)} style={{ padding: '8px 12px', background: '#ef4444', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}>Spend 2 ⚡</button>
+                </div>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  <button onClick={() => testAddCoins(10)} style={{ padding: '8px 12px', background: 'rgba(251, 191, 36, 0.2)', border: '1px solid #fbbf24', borderRadius: '6px', color: '#fbbf24', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}>+10 🪙</button>
+                  <button onClick={() => testAddXP(50)} style={{ padding: '8px 12px', background: 'rgba(167, 139, 250, 0.2)', border: '1px solid #a78bfa', borderRadius: '6px', color: '#a78bfa', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}>+50 ⭐</button>
+                </div>
+              </div>
+
+              <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '16px' }}>
+                <div style={{ marginBottom: '8px', color: '#60a5fa', fontWeight: 'bold', fontSize: '11px' }}>⚙️ SYSTEM ACTIONS</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                  <button onClick={reloadFromDatabase} style={{ padding: '10px', background: '#3b82f6', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}>🔄 RELOAD DB</button>
+                  <button onClick={testCompleteQuest} style={{ padding: '10px', background: '#10b981', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold' }}>🎯 TEST QUEST</button>
+                  <button onClick={checkDatabaseStatus} style={{ padding: '10px', background: 'rgba(16, 185, 129, 0.2)', border: '1px solid #10b981', borderRadius: '6px', color: '#10b981', cursor: 'pointer', fontSize: '11px' }}>🩺 CHECK DB</button>
+                  <button onClick={refreshUserDataDebug} style={{ padding: '10px', background: 'rgba(59, 130, 246, 0.2)', border: '1px solid #3b82f6', borderRadius: '6px', color: '#3b82f6', cursor: 'pointer', fontSize: '11px' }}>🔄 REFRESH USER</button>
+                </div>
+                <button onClick={handleLogoutAndReset} style={{ width: '100%', marginTop: '8px', padding: '10px', background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                  <X size={14} /> LOGOUT & RESET
+                </button>
               </div>
             </div>
+          )}
 
-            {/* System Actions */}
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '16px' }}>
-              <button onClick={checkDatabaseStatus} style={{ flex: 1, padding: '6px', background: 'rgba(16, 185, 129, 0.2)', border: '1px solid #10b981', borderRadius: '6px', color: '#10b981', cursor: 'pointer', fontSize: '10px' }}>🩺 CHECK DB</button>
-              <button onClick={refreshUserDataDebug} style={{ flex: 1, padding: '6px', background: 'rgba(59, 130, 246, 0.2)', border: '1px solid #3b82f6', borderRadius: '6px', color: '#3b82f6', cursor: 'pointer', fontSize: '10px' }}>🔄 REFRESH USER</button>
-              <button onClick={handleLogoutAndReset} style={{ flex: 1, padding: '6px', background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}><LogOut size={12} /> LOGOUT</button>
-            </div>
-
-            {/* Copy / Clear */}
-            <div style={{ display: 'flex', gap: '6px', marginBottom: '16px' }}>
-              <button onClick={copyAllDebugInfo} style={{ flex: 1, padding: '8px', background: copySuccess ? 'rgba(16, 185, 129, 0.3)' : 'rgba(96, 165, 250, 0.2)', border: `1px solid ${copySuccess ? '#10b981' : '#60a5fa'}`, borderRadius: '6px', color: copySuccess ? '#10b981' : '#60a5fa', cursor: 'pointer', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                <Copy size={12} /> {copySuccess ? 'COPIED!' : 'COPY ALL'}
-              </button>
-              <button onClick={() => setDebugLogs([])} style={{ flex: 1, padding: '8px', background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontSize: '10px' }}>🗑️ CLEAR LOGS</button>
-            </div>
-
-            {/* Logs List */}
-            <div>
-              <div style={{ marginBottom: '8px', color: '#f472b6', fontWeight: 'bold', fontSize: '11px' }}>📝 LOGS ({debugLogs.length})</div>
-              <div style={{ maxHeight: '200px', overflowY: 'auto', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', padding: '8px' }}>
-                {debugLogs.length === 0 && <div style={{ color: '#64748b', fontSize: '11px', textAlign: 'center' }}>No logs yet.</div>}
-                {debugLogs.slice(0, 30).map((log: any, i: number) => (
+          {/* TAB 3: LOGS */}
+          {activeTab === 'logs' && (
+            <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+              <div style={{ marginBottom: '8px', color: '#f472b6', fontWeight: 'bold', fontSize: '11px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                📝 LOGS ({debugLogs.length})
+                <div style={{ display: 'flex', gap: '4px' }}>
+                  <CopyBtn text={debugLogs.map(l => `[${l.timestamp}] ${l.category}: ${l.message}`).join('\n')} id="logs-text" />
+                  <button onClick={() => setDebugLogs([])} style={{ background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', borderRadius: '4px', color: '#ef4444', cursor: 'pointer', padding: '4px 8px', fontSize: '10px' }}>Clear</button>
+                </div>
+              </div>
+              <div style={{ flex: 1, overflowY: 'auto', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', padding: '8px', maxHeight: '350px' }}>
+                {debugLogs.length === 0 && <div style={{ color: '#64748b', fontSize: '11px', textAlign: 'center', padding: '20px' }}>No logs yet.</div>}
+                {debugLogs.slice(0, 50).map((log: any, i: number) => (
                   <div key={i} style={{ padding: '6px', marginBottom: '4px', background: 'rgba(0,0,0,0.4)', borderRadius: '4px', borderLeft: `3px solid ${log.type === 'error' ? '#ef4444' : log.type === 'success' ? '#10b981' : log.type === 'warning' ? '#fbbf24' : '#60a5fa'}` }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
                       <span style={{ color: '#64748b', fontSize: '9px' }}>{log.timestamp}</span>
@@ -185,9 +235,30 @@ export default function DebugPanel({
                 ))}
               </div>
             </div>
-          </div>
+          )}
+
+          {/* TAB 4: RAW DATA */}
+          {activeTab === 'raw' && (
+            <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+              <div style={{ marginBottom: '8px', color: '#a78bfa', fontWeight: 'bold', fontSize: '11px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                📦 RAW JSON DATA
+                <CopyBtn text={JSON.stringify({ user: { id: user?.id }, economy: dbDebugInfo.economyData, lastQuery: dbDebugInfo.lastQuery }, null, 2)} id="raw-json" />
+              </div>
+              <pre style={{ 
+                flex: 1, overflow: 'auto', background: 'rgba(0,0,0,0.5)', borderRadius: '8px', padding: '12px', 
+                fontSize: '9px', color: '#e2e8f0', maxHeight: '350px', border: '1px solid rgba(255,255,255,0.1)'
+              }}>
+                {JSON.stringify({
+                  user: { id: user?.id, name: user?.display_name },
+                  economy: dbDebugInfo.economyData,
+                  lastQuery: dbDebugInfo.lastQuery
+                }, null, 2)}
+              </pre>
+            </div>
+          )}
+
         </div>
-      )}
+      </div>
     </>
   );
 }
