@@ -565,32 +565,38 @@ export default function HomeScreen({ onNavigate }: Props) {
   const handleRefillEnergy = async () => {
     if (!user || !supabase) return;
     
-    const cost = 50;
-    const gain = 10;
+    const maxEnergy = economy.max_focus || 20;
+    const currentEnergy = economy.cosmic_focus || 0;
+    const energyNeeded = maxEnergy - currentEnergy;
 
-    // ✅ ახალი შემოწმება: თუ ენერგია უკვე სავსეა, არაფერი მოხდეს
-    if ((economy.cosmic_focus || 0) >= (economy.max_focus || 20)) {
-      addDebugLog('warning', 'ENERGY_REFILL', `⚠️ Blocked: Energy is already full (${economy.cosmic_focus}/${economy.max_focus})`);
+    // 1. თუ ენერგია უკვე სავსეა, არაფერი მოხდეს
+    if (energyNeeded <= 0) {
       showToast('ენერგია უკვე სავსეა! შევსება არ არის საჭირო.', 'info');
       return;
     }
 
-    addDebugLog('info', 'ENERGY_REFILL', `🔍 Step 1: Initiating refill. Required: ${cost}💎, Gain: ${gain}⚡`);
+    // 2. ჭკვიანი ლოგიკა: ვავსებთ მაქსიმუმ 10-ს, ან იმდენს რამდენიც აკლია (თუ 10-ზე ნაკლებია)
+    const energyToAdd = Math.min(10, energyNeeded);
+    
+    // 3. ფასის პროპორციული გამოთვლა: 1 ენერგია = 5 დიამონდი
+    const cost = energyToAdd * 5;
+
+    addDebugLog('info', 'ENERGY_REFILL', `🔍 Step 1: Calculating refill. Needed: ${energyNeeded}⚡, Adding: ${energyToAdd}⚡, Cost: ${cost}💎`);
 
     if (economy.cosmic_coins < cost) {
       addDebugLog('error', 'ENERGY_REFILL', `❌ Step 1 Failed: Insufficient diamonds. Have: ${economy.cosmic_coins}, Need: ${cost}`);
-      showToast(`არ გყოფნის დიამონდები! გჭირდება ${cost} 💎 ენერგიის შესავსებად.`, 'error');
+      showToast(`არ გყოფნის დიამონდები! გჭირდება ${cost} 💎 ${energyToAdd}⚡ ენერგიის შესაძენად.`, 'error');
       return;
     }
 
     setIsClaiming(true);
-    addDebugLog('info', 'ENERGY_REFILL', `⏳ Step 2: Calling Supabase RPC 'refill_energy_with_coins'...`);
+    addDebugLog('info', 'ENERGY_REFILL', `⏳ Step 2: Calling Supabase RPC with dynamic values (Cost: ${cost}, Gain: ${energyToAdd})...`);
     
     try {
       const { data, error } = await supabase.rpc('refill_energy_with_coins', {
         p_user_id: user.id,
         p_coin_cost: cost,
-        p_energy_gain: gain
+        p_energy_gain: energyToAdd
       });
 
       if (error) {
@@ -600,7 +606,7 @@ export default function HomeScreen({ onNavigate }: Props) {
         addDebugLog('error', 'ENERGY_REFILL', `❌ Step 3 Failed: Function returned error`, data);
         showToast(`შევსება ვერ მოხერხდა: ${data?.error || 'უცნობი შეცდომა'}`, 'error');
       } else {
-        addDebugLog('success', 'ENERGY_REFILL', `✅ Step 3 Success: RPC returned new_coins: ${data.new_coins}, new_energy: ${data.new_energy}`, data);
+        addDebugLog('success', 'ENERGY_REFILL', `✅ Step 3 Success: Bought ${energyToAdd}⚡ for ${cost}💎`, data);
         
         setEconomy(prev => {
           const newState = { ...prev, cosmic_coins: data.new_coins, cosmic_focus: data.new_energy };
@@ -608,7 +614,7 @@ export default function HomeScreen({ onNavigate }: Props) {
           return newState;
         });
         
-        showToast(`წარმატებით შეივსო +${gain}⚡ ენერგია ${cost} 💎-ის სანაცვლოდ!`, 'success');
+        showToast(`წარმატებით შეიძინე +${energyToAdd}⚡ ენერგია ${cost} 💎-ის სანაცვლოდ!`, 'success');
         addDebugLog('success', 'ENERGY_REFILL', `🎉 Step 5: Refill process completed successfully!`);
       }
     } catch (err: any) {
@@ -896,9 +902,13 @@ export default function HomeScreen({ onNavigate }: Props) {
                 {economy.cosmic_focus || 0}/{economy.max_focus || 20}
               </span>
               
-              {/* ✅ განახლებული ღილაკი: მოწმდება არის თუ არა ენერგია სავსე */}
+              {/* ✅ განახლებული ღილაკი: დინამიური ფასი და რაოდენობა */}
               {(() => {
                 const isEnergyFull = (economy.cosmic_focus || 0) >= (economy.max_focus || 20);
+                const energyNeeded = (economy.max_focus || 20) - (economy.cosmic_focus || 0);
+                const energyToAdd = Math.min(10, energyNeeded);
+                const cost = energyToAdd * 5;
+                
                 return (
                   <button 
                     className="add-btn" 
@@ -913,7 +923,7 @@ export default function HomeScreen({ onNavigate }: Props) {
                       cursor: (isClaiming || isEnergyFull) ? 'not-allowed' : 'pointer', 
                       fontSize: '12px', fontWeight: 'bold', flexShrink: 0 
                     }}
-                    title={isEnergyFull ? "ენერგია უკვე სავსეა!" : "შეავსე 10 ენერგია 50 დიამონდად"}
+                    title={isEnergyFull ? "ენერგია უკვე სავსეა!" : `შეიძინე ${energyToAdd}⚡ ენერგია ${cost} 💎-ად`}
                   >
                     {isClaiming ? '...' : (isEnergyFull ? '✓' : '+')}
                   </button>
