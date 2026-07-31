@@ -197,9 +197,7 @@ export default function HomeScreen({ onNavigate }: Props) {
   // Debug State
   const [showDebug, setShowDebug] = useState(false);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
-  // ✅ აქ არის გამოსწორებული: დამატებულია set ფუნქციები
   const [dbStatus, setDbStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
-  const [economyLoadStatus, setEconomyLoadStatus] = useState<'pending' | 'loading' | 'success' | 'error'>('pending');
   const [dbDebugInfo, setDbDebugInfo] = useState<DatabaseDebugInfo>({
     lastQuery: null, lastResponse: null, economyData: null, queryHistory: []
   });
@@ -610,7 +608,6 @@ export default function HomeScreen({ onNavigate }: Props) {
         addDebugLog('error', 'ECONOMY', 'Supabase client is null');
         return;
       }
-      setEconomyLoadStatus('loading');
       setDbStatus('connecting');
       addDebugLog('info', 'ECONOMY', '📡 Starting economy data load', { userId: user.id });
       try {
@@ -618,13 +615,11 @@ export default function HomeScreen({ onNavigate }: Props) {
         const { data, error } = await supabase.from('user_economy').select('cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus').eq('user_id', user.id).single();
         if (error) {
           setDbStatus('error');
-          setEconomyLoadStatus('error');
           addToDbDebugHistory('user_economy', 'SELECT', queryParams, null, error);
           addDebugLog('error', 'ECONOMY', '❌ Database query failed', { error: error.message, code: error.code, details: error.details });
           return;
         }
         setDbStatus('connected');
-        setEconomyLoadStatus('success');
         addToDbDebugHistory('user_economy', 'SELECT', queryParams, data);
         setDbDebugInfo(prev => ({ ...prev, economyData: data }));
         addDebugLog('success', 'ECONOMY', '✅ Economy data loaded successfully', data);
@@ -646,7 +641,6 @@ export default function HomeScreen({ onNavigate }: Props) {
         }
       } catch (error: any) {
         setDbStatus('error');
-        setEconomyLoadStatus('error');
         addDebugLog('error', 'ECONOMY', '💥 Exception during economy load', { message: error.message, stack: error.stack });
       }
     };
