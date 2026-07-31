@@ -1,18 +1,29 @@
 import { useState } from 'react';
 import { 
   Bug, X, CheckCircle, XCircle, RefreshCw, Copy, Check, 
-  Database, Zap, FileJson, Terminal, User 
+  Database, Zap, FileJson, Terminal, User, ListChecks 
 } from 'lucide-react';
 
 interface DebugPanelProps {
   showDebug: boolean;
   setShowDebug: (show: boolean) => void;
   user: any;
-  economy: any; // ✅ დამატებულია ცოცხალი ეკონომიკის სტეიტი
+  economy: any;
   dbDebugInfo: any;
   debugLogs: any[];
   dbStatus: string;
   activeSubscription: any;
+  // Quests & Actions State
+  questsLoading: boolean;
+  dailyQuests: any[];
+  activeDailyQuest: any;
+  isClaimingQuest: boolean;
+  timeLeft: string;
+  showQuestModal: boolean;
+  rewardClaimed: boolean;
+  isClaiming: boolean;
+  currentStreak: number;
+  // Actions
   setDebugLogs: React.Dispatch<React.SetStateAction<any[]>>;
   checkDatabaseStatus: () => void;
   refreshUserDataDebug: () => void;
@@ -25,17 +36,26 @@ interface DebugPanelProps {
   reloadFromDatabase: () => void;
 }
 
-type TabType = 'overview' | 'profile_banner' | 'actions' | 'logs' | 'raw';
+type TabType = 'overview' | 'profile_banner' | 'quests_actions' | 'actions' | 'logs' | 'raw';
 
 export default function DebugPanel({
   showDebug,
   setShowDebug,
   user,
-  economy, // ✅ მიღება
+  economy,
   dbDebugInfo,
   debugLogs,
   dbStatus,
   activeSubscription,
+  questsLoading,
+  dailyQuests,
+  activeDailyQuest,
+  isClaimingQuest,
+  timeLeft,
+  showQuestModal,
+  rewardClaimed,
+  isClaiming,
+  currentStreak,
   setDebugLogs,
   checkDatabaseStatus,
   refreshUserDataDebug,
@@ -80,6 +100,7 @@ export default function DebugPanel({
   const tabs: { id: TabType; label: string; icon: any }[] = [
     { id: 'overview', label: 'Overview', icon: Database },
     { id: 'profile_banner', label: 'Banner', icon: User },
+    { id: 'quests_actions', label: 'Quests & Actions', icon: ListChecks }, // ✅ ახალი ტაბი
     { id: 'actions', label: 'Actions', icon: Zap },
     { id: 'logs', label: 'Logs', icon: Terminal },
     { id: 'raw', label: 'Raw Data', icon: FileJson },
@@ -145,6 +166,39 @@ export default function DebugPanel({
 
           <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
             
+            {/* ✅ ახალი ტაბი: Quests & Actions */}
+            {activeTab === 'quests_actions' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {/* Daily Quests Section */}
+                <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
+                  <div style={{ marginBottom: '8px', color: '#60a5fa', fontWeight: 'bold', fontSize: '11px' }}>
+                    📜 DAILY QUESTS BANNER
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '11px' }}>
+                    <div>🔄 Loading: <strong>{questsLoading ? 'Yes' : 'No'}</strong></div>
+                    <div>⏳ Time Left: <strong>{timeLeft}</strong></div>
+                    <div>📋 Total Quests: <strong>{dailyQuests.length}</strong></div>
+                    <div>🎯 Active Quest: <strong>{activeDailyQuest ? (activeDailyQuest.quest?.title || 'Yes') : 'None'}</strong></div>
+                    <div>⚠️ Is Claiming: <strong>{isClaimingQuest ? 'Yes' : 'No'}</strong></div>
+                    <div>🪟 Modal Open: <strong>{showQuestModal ? 'Yes' : 'No'}</strong></div>
+                  </div>
+                </div>
+
+                {/* Action Buttons Section */}
+                <div style={{ padding: '12px', background: 'rgba(251, 191, 36, 0.1)', borderRadius: '8px', border: '1px solid rgba(251, 191, 36, 0.3)' }}>
+                  <div style={{ marginBottom: '8px', color: '#fbbf24', fontWeight: 'bold', fontSize: '11px' }}>
+                    ⚡ ACTION BUTTONS (RIGHT SIDE)
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '11px' }}>
+                    <div>🎁 Reward Claimed: <strong>{rewardClaimed ? 'Yes' : 'No'}</strong></div>
+                    <div>🔄 Is Claiming: <strong>{isClaiming ? 'Yes' : 'No'}</strong></div>
+                    <div>🔥 Current Streak: <strong>{currentStreak}</strong></div>
+                    <div>👑 Subscription: <strong>{activeSubscription ? (activeSubscription.plan_name || 'Active') : 'None'}</strong></div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {activeTab === 'profile_banner' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
@@ -160,7 +214,6 @@ export default function DebugPanel({
                   <div style={{ marginBottom: '8px', color: '#fbbf24', fontWeight: 'bold', fontSize: '11px', display: 'flex', justifyContent: 'space-between' }}>
                     💎 ECONOMY & STATS (LIVE) <CopyBtn text={JSON.stringify(economy, null, 2)} id="banner-economy" />
                   </div>
-                  {/* ✅ აქ ვიყენებთ ცოცხალ economy სტეიტს და არა dbDebugInfo-ს */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '11px' }}>
                     <div>🪙 Coins: <strong>{economy?.cosmic_coins || 0}</strong></div>
                     <div>⚡ Energy: <strong>{economy?.cosmic_focus || 0} / {economy?.max_focus || 20}</strong></div>
@@ -267,7 +320,7 @@ export default function DebugPanel({
                 }}>
                   {JSON.stringify({
                     user: { id: user?.id, name: user?.display_name },
-                    economy: economy, // ✅ აქაც ცოცხალი სტეიტი
+                    economy: economy,
                     lastQuery: dbDebugInfo.lastQuery
                   }, null, 2)}
                 </pre>

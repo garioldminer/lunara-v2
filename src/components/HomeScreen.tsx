@@ -1032,7 +1032,7 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* ✅ აქ არის დამატებული economy={economy} */}
+      {/* ✅ აქ არის დამატებული ყველა ახალი პროპსი Quests & Actions ტაბისთვის */}
       {isUserAdmin && (
         <DebugPanel
           showDebug={showDebug}
@@ -1043,6 +1043,15 @@ export default function HomeScreen({ onNavigate }: Props) {
           debugLogs={debugLogs}
           dbStatus={dbStatus}
           activeSubscription={activeSubscription}
+          questsLoading={questsLoading}
+          dailyQuests={dailyQuests}
+          activeDailyQuest={activeDailyQuest}
+          isClaimingQuest={isClaimingQuest}
+          timeLeft={timeLeft}
+          showQuestModal={showQuestModal}
+          rewardClaimed={rewardClaimed}
+          isClaiming={isClaiming}
+          currentStreak={currentStreak}
           setDebugLogs={setDebugLogs}
           checkDatabaseStatus={checkDatabaseStatus}
           refreshUserDataDebug={refreshUserDataDebug}
