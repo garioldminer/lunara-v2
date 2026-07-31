@@ -6,9 +6,7 @@ interface DebugPanelProps {
   user: any;
   dbDebugInfo: any;
   debugLogs: any[];
-  energyTransactions: any[];
   dbStatus: string;
-  lastDbQuery: any;
   copySuccess: boolean;
   copyAllDebugInfo: () => void;
   setDebugLogs: React.Dispatch<React.SetStateAction<any[]>>;
@@ -29,9 +27,7 @@ export default function DebugPanel({
   user,
   dbDebugInfo,
   debugLogs,
-  energyTransactions,
   dbStatus,
-  lastDbQuery,
   copySuccess,
   copyAllDebugInfo,
   setDebugLogs,
