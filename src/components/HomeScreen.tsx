@@ -197,7 +197,7 @@ export default function HomeScreen({ onNavigate }: Props) {
   // Debug State
   const [showDebug, setShowDebug] = useState(false);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
-  const [dbStatus] = useState<'connecting' | 'connected' | 'error'>('connected'); // ✅ წაშლილია setDbStatus
+  const [dbStatus] = useState<'connecting' | 'connected' | 'error'>('connected');
   const [dbDebugInfo, setDbDebugInfo] = useState<DatabaseDebugInfo>({
     lastQuery: null, lastResponse: null, economyData: null, queryHistory: []
   });
@@ -1032,7 +1032,8 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {isUserAdmin && user?.id === 'c9dbe3be-5c02-4034-8bfd-1d693eb02754' && (
+      {/* ✅ აქ არის შეცვლილი პირობა: წაშლილია კონკრეტული ID-ის შემოწმება */}
+      {isUserAdmin && (
         <DebugPanel
           showDebug={showDebug}
           setShowDebug={setShowDebug}
