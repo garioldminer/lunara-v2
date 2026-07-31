@@ -197,7 +197,7 @@ export default function HomeScreen({ onNavigate }: Props) {
   // Debug State
   const [showDebug, setShowDebug] = useState(false);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
-  const [dbStatus, setDbStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
+  const [dbStatus] = useState<'connecting' | 'connected' | 'error'>('connected'); // ✅ წაშლილია setDbStatus
   const [dbDebugInfo, setDbDebugInfo] = useState<DatabaseDebugInfo>({
     lastQuery: null, lastResponse: null, economyData: null, queryHistory: []
   });
