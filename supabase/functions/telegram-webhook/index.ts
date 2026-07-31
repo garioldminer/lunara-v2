@@ -2,6 +2,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const BOT_TOKEN = Deno.env.get("TELEGRAM_BOT_TOKEN");
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,26 +19,27 @@ serve(async (req) => {
     const update = await req.json();
     console.log("📥 Webhook received:", JSON.stringify(update, null, 2));
 
+    // 1. Pre-checkout query-ს დამოწმება
     if (update.pre_checkout_query) {
-      const preCheckoutQuery = update.pre_checkout_query;
       await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerPreCheckoutQuery`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pre_checkout_query_id: preCheckoutQuery.id, ok: true }),
+        body: JSON.stringify({
+          pre_checkout_query_id: update.pre_checkout_query.id,
+          ok: true,
+        }),
       });
       return new Response("OK", { status: 200, headers: { "Content-Type": "application/json" } });
     }
 
+    // 2. წარმატებული გადახდის დამუშავება
     if (update.message?.successful_payment) {
       const payment = update.message.successful_payment;
       const payloadStr = payment.invoice_payload;
-
+      
       console.log("💰 Successful payment payload:", payloadStr);
 
-      const supabase = createClient(
-        Deno.env.get("SUPABASE_URL") ?? "",
-        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-      );
+      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
       let parsedPayload;
       try {
@@ -50,7 +53,7 @@ serve(async (req) => {
         const userId = parsedPayload.user_id;
         const coinsToAdd = parsedPayload.coins;
 
-        // 1. მიმდინარე ბალანსის მიღება
+        // მიმდინარე ბალანსის მიღება
         const { data: currentEconomy, error: econError } = await supabase
           .from("user_economy")
           .select("cosmic_coins")
@@ -73,7 +76,7 @@ serve(async (req) => {
           }
         }
 
-        // 2. შეძენის ლოგირება (purchases ცხრილში)
+        // შეძენის ლოგირება
         await supabase.from("purchases").insert({
           user_id: userId,
           feature_id: "diamonds",
@@ -82,7 +85,7 @@ serve(async (req) => {
           purchased_at: new Date().toISOString(),
         }).catch(err => console.error("Failed to log purchase:", err));
 
-        // 3. მომხმარებლისთვის შეტყობინების გაგზავნა
+        // მომხმარებლისთვის შეტყობინების გაგზავნა
         await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
