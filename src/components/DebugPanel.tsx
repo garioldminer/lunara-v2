@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bug, X, CheckCircle, XCircle, RefreshCw, Copy, Check, Activity, Settings, Terminal } from 'lucide-react';
+import { Bug, X, CheckCircle, Activity, Settings, Terminal, Copy, Check } from 'lucide-react';
 
 interface DebugPanelProps {
   showDebug: boolean;
@@ -128,6 +128,7 @@ export default function DebugPanel({
               </div>
               <div>Status: <strong style={{ color: dbStatus === 'connected' ? '#10b981' : '#ef4444' }}>{dbStatus.toUpperCase()}</strong></div>
               <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '4px' }}>User ID: {user?.id}</div>
+              <div style={{ fontSize: '10px', color: '#94a3b8' }}>Queries Logged: <strong>{dbDebugInfo.queryHistory?.length || 0}</strong></div>
             </div>
           </div>
         )}
@@ -173,7 +174,15 @@ export default function DebugPanel({
                 <button onClick={() => testAddXP(100)} style={{ padding: '8px', background: '#3b82f6', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}>+100 XP</button>
               </div>
             </div>
-            <button onClick={reloadFromDatabase} style={{ width: '100%', padding: '10px', background: '#10b981', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}>🔄 RELOAD DB</button>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+              <button onClick={reloadFromDatabase} style={{ padding: '10px', background: '#10b981', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}>🔄 RELOAD DB</button>
+              <button onClick={testCompleteQuest} style={{ padding: '10px', background: '#8b5cf6', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}>🎯 TEST QUEST</button>
+              <button onClick={checkDatabaseStatus} style={{ padding: '10px', background: '#3b82f6', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}>🩺 CHECK DB</button>
+              <button onClick={refreshUserDataDebug} style={{ padding: '10px', background: '#0ea5e9', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}>🔄 REFRESH USER</button>
+            </div>
+            <button onClick={handleLogoutAndReset} style={{ width: '100%', padding: '10px', background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <X size={14} style={{ marginRight: '4px' }} /> LOGOUT & RESET
+            </button>
           </div>
         )}
 
@@ -183,17 +192,25 @@ export default function DebugPanel({
               <div style={{ color: '#f472b6', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Terminal size={14} /> LOGS ({debugLogs.length})
               </div>
-              <button 
-                onClick={handleCopyLogs} 
-                style={{ 
-                  padding: '6px 10px', background: copySuccess ? 'rgba(16, 185, 129, 0.3)' : 'rgba(96, 165, 250, 0.2)', 
-                  border: `1px solid ${copySuccess ? '#10b981' : '#60a5fa'}`, borderRadius: '6px', 
-                  color: copySuccess ? '#10b981' : '#60a5fa', cursor: 'pointer', fontSize: '10px', fontWeight: 'bold',
-                  display: 'flex', alignItems: 'center', gap: '4px'
-                }}
-              >
-                <Copy size={12} /> {copySuccess ? 'Copied!' : 'Copy All'}
-              </button>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <button 
+                  onClick={() => setDebugLogs([])} 
+                  style={{ padding: '6px 10px', background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontSize: '10px', fontWeight: 'bold' }}
+                >
+                  Clear
+                </button>
+                <button 
+                  onClick={handleCopyLogs} 
+                  style={{ 
+                    padding: '6px 10px', background: copySuccess ? 'rgba(16, 185, 129, 0.3)' : 'rgba(96, 165, 250, 0.2)', 
+                    border: `1px solid ${copySuccess ? '#10b981' : '#60a5fa'}`, borderRadius: '6px', 
+                    color: copySuccess ? '#10b981' : '#60a5fa', cursor: 'pointer', fontSize: '10px', fontWeight: 'bold',
+                    display: 'flex', alignItems: 'center', gap: '4px'
+                  }}
+                >
+                  {copySuccess ? <Check size={12} /> : <Copy size={12} />} {copySuccess ? 'Copied!' : 'Copy All'}
+                </button>
+              </div>
             </div>
             <div style={{ flex: 1, overflowY: 'auto', background: 'rgba(0,0,0,0.5)', borderRadius: '8px', padding: '8px' }}>
               {debugLogs.length === 0 && <div style={{ color: '#64748b', fontSize: '11px', textAlign: 'center', padding: '20px' }}>No logs yet. Try an action!</div>}
