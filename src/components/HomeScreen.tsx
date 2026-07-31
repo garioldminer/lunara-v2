@@ -532,7 +532,8 @@ export default function HomeScreen({ onNavigate }: Props) {
     await calculateRealEnergy();
     
     if ((economy.cosmic_focus || 0) < requiredEnergy) {
-      showToast(`Not enough energy! Need ${requiredEnergy}⚡, have ${economy.cosmic_focus}⚡`, 'error');
+      // ✅ გაუმჯობესებული შეტყობინება
+      showToast(`Not enough energy! You need ${requiredEnergy}⚡, but you have ${economy.cosmic_focus}⚡. Use coins to refill!`, 'error');
       return false;
     }
     
@@ -544,7 +545,7 @@ export default function HomeScreen({ onNavigate }: Props) {
     
     if (error) {
       console.error('❌ Error spending energy:', error);
-      showToast('Failed to spend energy', 'error');
+      showToast('Failed to spend energy. Please try again.', 'error');
       return false;
     }
     
@@ -562,6 +563,43 @@ export default function HomeScreen({ onNavigate }: Props) {
     return true;
   };
 
+  // ✅ ახალი ფუნქცია: ენერგიის შევსება მონეტებით
+  const handleRefillEnergy = async () => {
+    if (!user || !supabase) return;
+    
+    const cost = 50;
+    const gain = 10;
+
+    if (economy.cosmic_coins < cost) {
+      showToast(`Not enough coins! You need ${cost} 💎 to refill +${gain}⚡`, 'error');
+      return;
+    }
+
+    setIsClaiming(true);
+    try {
+      const { data, error } = await supabase.rpc('refill_energy_with_coins', {
+        p_user_id: user.id,
+        p_coin_cost: cost,
+        p_energy_gain: gain
+      });
+
+      if (error || !data?.success) {
+        showToast(data?.error || 'Failed to refill energy', 'error');
+      } else {
+        setEconomy(prev => ({
+          ...prev,
+          cosmic_coins: data.new_coins,
+          cosmic_focus: data.new_energy
+        }));
+        showToast(`Successfully refilled +${gain}⚡ for ${cost} 💎!`, 'success');
+      }
+    } catch (err: any) {
+      showToast('Network error during refill', 'error');
+    } finally {
+      setIsClaiming(false);
+    }
+  };
+
   useEffect(() => {
     const loadEconomy = async () => {
       if (!user) {
@@ -572,14 +610,21 @@ export default function HomeScreen({ onNavigate }: Props) {
         addDebugLog('error', 'ECONOMY', 'Supabase client is null');
         return;
       }
+      setEconomyLoadStatus('loading');
+      setDbStatus('connecting');
       addDebugLog('info', 'ECONOMY', '📡 Starting economy data load', { userId: user.id });
       try {
         const queryParams = { table: 'user_economy', columns: 'cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus', userId: user.id };
         const { data, error } = await supabase.from('user_economy').select('cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus').eq('user_id', user.id).single();
         if (error) {
+          setDbStatus('error');
+          setEconomyLoadStatus('error');
+          addToDbDebugHistory('user_economy', 'SELECT', queryParams, null, error);
           addDebugLog('error', 'ECONOMY', '❌ Database query failed', { error: error.message, code: error.code, details: error.details });
           return;
         }
+        setDbStatus('connected');
+        setEconomyLoadStatus('success');
         addToDbDebugHistory('user_economy', 'SELECT', queryParams, data);
         setDbDebugInfo(prev => ({ ...prev, economyData: data }));
         addDebugLog('success', 'ECONOMY', '✅ Economy data loaded successfully', data);
@@ -600,6 +645,8 @@ export default function HomeScreen({ onNavigate }: Props) {
           addDebugLog('warning', 'ECONOMY', '⚠️ No economy data found for user');
         }
       } catch (error: any) {
+        setDbStatus('error');
+        setEconomyLoadStatus('error');
         addDebugLog('error', 'ECONOMY', '💥 Exception during economy load', { message: error.message, stack: error.stack });
       }
     };
@@ -831,14 +878,21 @@ export default function HomeScreen({ onNavigate }: Props) {
             <div className="resource energy" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(251, 191, 36, 0.15)', padding: '4px 10px', borderRadius: '20px', border: '1px solid rgba(251, 191, 36, 0.3)', height: '22px' }}>
               <Zap size={12} className="resource-icon energy-icon" style={{ color: '#fbbf24', flexShrink: 0 }} />
               <span className="value" style={{ fontSize: '12px', fontWeight: '600', color: '#fff', textAlign: 'center' }}>
-                {economy.cosmic_focus || 0}/20
+                {economy.cosmic_focus || 0}/{economy.max_focus || 20}
               </span>
               <button 
                 className="add-btn" 
-                onClick={() => showToast('Energy packs coming soon!', 'info')}
-                style={{ width: '18px', height: '18px', borderRadius: '50%', background: 'rgba(197, 160, 89, 0.3)', border: 'none', color: '#C5A059', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', flexShrink: 0 }}
+                onClick={handleRefillEnergy}
+                disabled={isClaiming}
+                style={{ 
+                  width: '18px', height: '18px', borderRadius: '50%', 
+                  background: isClaiming ? 'rgba(150,150,150,0.3)' : 'rgba(197, 160, 89, 0.3)', 
+                  border: 'none', color: '#C5A059', display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                  cursor: isClaiming ? 'not-allowed' : 'pointer', fontSize: '12px', fontWeight: 'bold', flexShrink: 0 
+                }}
+                title="Refill 10 Energy for 50 Coins"
               >
-                +
+                {isClaiming ? '...' : '+'}
               </button>
             </div>
           </div>
@@ -1032,7 +1086,6 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* ✅ აქ არის დამატებული ყველა ახალი პროპსი Quests & Actions ტაბისთვის */}
       {isUserAdmin && (
         <DebugPanel
           showDebug={showDebug}
