@@ -1122,12 +1122,10 @@ End of Debug Report
           showDebug={showDebug}
           setShowDebug={setShowDebug}
           user={user}
-          economy={economy}
           dbDebugInfo={dbDebugInfo}
           debugLogs={debugLogs}
           energyTransactions={energyTransactions}
           dbStatus={dbStatus}
-          economyLoadStatus={economyLoadStatus}
           lastDbQuery={lastDbQuery}
           copySuccess={copySuccess}
           copyAllDebugInfo={copyAllDebugInfo}
