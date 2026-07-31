@@ -198,8 +198,6 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [showDebug, setShowDebug] = useState(false);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
   const [dbStatus, setDbStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
-  const [economyLoadStatus, setEconomyLoadStatus] = useState<'pending' | 'loading' | 'success' | 'error'>('pending');
-  const [lastDbQuery, setLastDbQuery] = useState<any>(null);
   const [dbDebugInfo, setDbDebugInfo] = useState<DatabaseDebugInfo>({
     lastQuery: null, lastResponse: null, economyData: null, queryHistory: []
   });
@@ -388,7 +386,6 @@ export default function HomeScreen({ onNavigate }: Props) {
 
   const reloadFromDatabase = async () => {
     addDebugLog('info', 'DB', '🔄 Reloading all data from database...');
-    setEconomyLoadStatus('pending');
     if (user && supabase) {
       const { data, error } = await supabase.from('user_economy').select('cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus, energy_boost_multiplier, last_energy_update').eq('user_id', user.id).single();
       if (!error && data) {
@@ -406,7 +403,6 @@ export default function HomeScreen({ onNavigate }: Props) {
         addDebugLog('success', 'DB', '✅ Data reloaded successfully');
       }
     }
-    setEconomyLoadStatus('success');
   };
 
   const loadQuests = async () => {
@@ -570,31 +566,20 @@ export default function HomeScreen({ onNavigate }: Props) {
     const loadEconomy = async () => {
       if (!user) {
         addDebugLog('warning', 'ECONOMY', 'Cannot load economy - no user');
-        setEconomyLoadStatus('pending');
         return;
       }
       if (!supabase) {
         addDebugLog('error', 'ECONOMY', 'Supabase client is null');
-        setEconomyLoadStatus('error');
         return;
       }
-      setEconomyLoadStatus('loading');
-      setDbStatus('connecting');
       addDebugLog('info', 'ECONOMY', '📡 Starting economy data load', { userId: user.id });
       try {
         const queryParams = { table: 'user_economy', columns: 'cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus', userId: user.id };
-        setLastDbQuery(queryParams);
-        addToDbDebugHistory('user_economy', 'SELECT', queryParams, 'PENDING');
         const { data, error } = await supabase.from('user_economy').select('cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus').eq('user_id', user.id).single();
         if (error) {
-          setDbStatus('error');
-          setEconomyLoadStatus('error');
-          addToDbDebugHistory('user_economy', 'SELECT', queryParams, null, error);
           addDebugLog('error', 'ECONOMY', '❌ Database query failed', { error: error.message, code: error.code, details: error.details });
           return;
         }
-        setDbStatus('connected');
-        setEconomyLoadStatus('success');
         addToDbDebugHistory('user_economy', 'SELECT', queryParams, data);
         setDbDebugInfo(prev => ({ ...prev, economyData: data }));
         addDebugLog('success', 'ECONOMY', '✅ Economy data loaded successfully', data);
@@ -615,8 +600,6 @@ export default function HomeScreen({ onNavigate }: Props) {
           addDebugLog('warning', 'ECONOMY', '⚠️ No economy data found for user');
         }
       } catch (error: any) {
-        setDbStatus('error');
-        setEconomyLoadStatus('error');
         addDebugLog('error', 'ECONOMY', '💥 Exception during economy load', { message: error.message, stack: error.stack });
       }
     };
