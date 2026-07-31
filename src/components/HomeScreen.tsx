@@ -204,7 +204,6 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [dbDebugInfo, setDbDebugInfo] = useState<DatabaseDebugInfo>({
     lastQuery: null, lastResponse: null, economyData: null, queryHistory: []
   });
-  const [energyTransactions, setEnergyTransactions] = useState<any[]>([]);
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     setToast({ message, type });
@@ -382,7 +381,6 @@ End of Debug Report
       setEconomy(prev => ({ ...prev, cosmic_focus: data.new_energy }));
       addDebugLog('success', 'ENERGY_TEST', `✅ Added ${amount} energy. New: ${data.new_energy}`);
       showToast(`Added ${amount} ⚡ Energy!`, 'success');
-      loadEnergyDebugData();
     } catch (err: any) {
       addDebugLog('error', 'ENERGY_TEST', `❌ Failed: ${err.message}`);
       showToast('Failed to add energy', 'error');
@@ -404,7 +402,6 @@ End of Debug Report
       setEconomy(prev => ({ ...prev, cosmic_focus: data.new_energy }));
       addDebugLog('success', 'ENERGY_TEST', `✅ Spent ${amount} energy. Remaining: ${data.new_energy}`);
       showToast(`Spent ${amount} ⚡ Energy! Remaining: ${data.new_energy}`, 'success');
-      loadEnergyDebugData();
     } catch (err: any) {
       addDebugLog('error', 'ENERGY_TEST', `❌ Failed: ${err.message}`);
       showToast(err.message || 'Failed to spend energy', 'error');
@@ -435,24 +432,6 @@ End of Debug Report
     }
   };
 
-  const loadEnergyDebugData = async () => {
-    if (!user || !supabase) return;
-    try {
-      const { data: txData, error } = await supabase
-        .from('energy_transactions')
-        .select('amount, transaction_type, reference_id, balance_after, created_at')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(10);
-      
-      if (!error && txData) {
-        setEnergyTransactions(txData);
-      }
-    } catch (err: any) {
-      console.error('Failed to load energy transactions:', err);
-    }
-  };
-
   const reloadFromDatabase = async () => {
     addDebugLog('info', 'DB', '🔄 Reloading all data from database...');
     setEconomyLoadStatus('pending');
@@ -474,7 +453,6 @@ End of Debug Report
       }
     }
     setEconomyLoadStatus('success');
-    loadEnergyDebugData();
   };
 
   const loadQuests = async () => {
@@ -1124,9 +1102,7 @@ End of Debug Report
           user={user}
           dbDebugInfo={dbDebugInfo}
           debugLogs={debugLogs}
-          energyTransactions={energyTransactions}
           dbStatus={dbStatus}
-          lastDbQuery={lastDbQuery}
           copySuccess={copySuccess}
           copyAllDebugInfo={copyAllDebugInfo}
           setDebugLogs={setDebugLogs}
