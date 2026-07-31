@@ -568,12 +568,17 @@ export default function HomeScreen({ onNavigate }: Props) {
     const cost = 50;
     const gain = 10;
 
+    addDebugLog('info', 'ENERGY_REFILL', `🔍 Step 1: Initiating refill. Required: ${cost}💎, Gain: ${gain}⚡`);
+
     if (economy.cosmic_coins < cost) {
+      addDebugLog('error', 'ENERGY_REFILL', `❌ Step 1 Failed: Insufficient diamonds. Have: ${economy.cosmic_coins}, Need: ${cost}`);
       showToast(`Not enough diamonds! You need ${cost} 💎 to refill +${gain}⚡`, 'error');
       return;
     }
 
     setIsClaiming(true);
+    addDebugLog('info', 'ENERGY_REFILL', `⏳ Step 2: Calling Supabase RPC 'refill_energy_with_coins'...`);
+    
     try {
       const { data, error } = await supabase.rpc('refill_energy_with_coins', {
         p_user_id: user.id,
@@ -581,24 +586,26 @@ export default function HomeScreen({ onNavigate }: Props) {
         p_energy_gain: gain
       });
 
-      console.log('🔍 Refill response:', { data, error });
-
       if (error) {
-        console.error('❌ RPC Error:', error);
+        addDebugLog('error', 'ENERGY_REFILL', `❌ Step 3 Failed: RPC Error`, error);
         showToast(`Failed to refill: ${error.message}`, 'error');
       } else if (!data?.success) {
-        console.error('❌ Function returned error:', data);
+        addDebugLog('error', 'ENERGY_REFILL', `❌ Step 3 Failed: Function returned error`, data);
         showToast(`Failed to refill: ${data?.error || 'Unknown error'}`, 'error');
       } else {
-        setEconomy(prev => ({
-          ...prev,
-          cosmic_coins: data.new_coins,
-          cosmic_focus: data.new_energy
-        }));
+        addDebugLog('success', 'ENERGY_REFILL', `✅ Step 3 Success: RPC returned new_coins: ${data.new_coins}, new_energy: ${data.new_energy}`, data);
+        
+        setEconomy(prev => {
+          const newState = { ...prev, cosmic_coins: data.new_coins, cosmic_focus: data.new_energy };
+          addDebugLog('info', 'ENERGY_REFILL', `🔄 Step 4: Updating local state`, newState);
+          return newState;
+        });
+        
         showToast(`Successfully refilled +${gain}⚡ for ${cost} 💎!`, 'success');
+        addDebugLog('success', 'ENERGY_REFILL', `🎉 Step 5: Refill process completed successfully!`);
       }
     } catch (err: any) {
-      console.error('❌ Exception:', err);
+      addDebugLog('error', 'ENERGY_REFILL', `💥 Step 3 Exception: ${err.message}`, err);
       showToast(`Network error: ${err.message}`, 'error');
     } finally {
       setIsClaiming(false);
