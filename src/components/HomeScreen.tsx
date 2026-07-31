@@ -568,11 +568,18 @@ export default function HomeScreen({ onNavigate }: Props) {
     const cost = 50;
     const gain = 10;
 
+    // ✅ ახალი შემოწმება: თუ ენერგია უკვე სავსეა, არაფერი მოხდეს
+    if ((economy.cosmic_focus || 0) >= (economy.max_focus || 20)) {
+      addDebugLog('warning', 'ENERGY_REFILL', `⚠️ Blocked: Energy is already full (${economy.cosmic_focus}/${economy.max_focus})`);
+      showToast('ენერგია უკვე სავსეა! შევსება არ არის საჭირო.', 'info');
+      return;
+    }
+
     addDebugLog('info', 'ENERGY_REFILL', `🔍 Step 1: Initiating refill. Required: ${cost}💎, Gain: ${gain}⚡`);
 
     if (economy.cosmic_coins < cost) {
       addDebugLog('error', 'ENERGY_REFILL', `❌ Step 1 Failed: Insufficient diamonds. Have: ${economy.cosmic_coins}, Need: ${cost}`);
-      showToast(`Not enough diamonds! You need ${cost} 💎 to refill +${gain}⚡`, 'error');
+      showToast(`არ გყოფნის დიამონდები! გჭირდება ${cost} 💎 ენერგიის შესავსებად.`, 'error');
       return;
     }
 
@@ -588,10 +595,10 @@ export default function HomeScreen({ onNavigate }: Props) {
 
       if (error) {
         addDebugLog('error', 'ENERGY_REFILL', `❌ Step 3 Failed: RPC Error`, error);
-        showToast(`Failed to refill: ${error.message}`, 'error');
+        showToast(`შევსება ვერ მოხერხდა: ${error.message}`, 'error');
       } else if (!data?.success) {
         addDebugLog('error', 'ENERGY_REFILL', `❌ Step 3 Failed: Function returned error`, data);
-        showToast(`Failed to refill: ${data?.error || 'Unknown error'}`, 'error');
+        showToast(`შევსება ვერ მოხერხდა: ${data?.error || 'უცნობი შეცდომა'}`, 'error');
       } else {
         addDebugLog('success', 'ENERGY_REFILL', `✅ Step 3 Success: RPC returned new_coins: ${data.new_coins}, new_energy: ${data.new_energy}`, data);
         
@@ -601,12 +608,12 @@ export default function HomeScreen({ onNavigate }: Props) {
           return newState;
         });
         
-        showToast(`Successfully refilled +${gain}⚡ for ${cost} 💎!`, 'success');
+        showToast(`წარმატებით შეივსო +${gain}⚡ ენერგია ${cost} 💎-ის სანაცვლოდ!`, 'success');
         addDebugLog('success', 'ENERGY_REFILL', `🎉 Step 5: Refill process completed successfully!`);
       }
     } catch (err: any) {
       addDebugLog('error', 'ENERGY_REFILL', `💥 Step 3 Exception: ${err.message}`, err);
-      showToast(`Network error: ${err.message}`, 'error');
+      showToast(`ქსელის შეცდომა: ${err.message}`, 'error');
     } finally {
       setIsClaiming(false);
     }
@@ -888,20 +895,30 @@ export default function HomeScreen({ onNavigate }: Props) {
               <span className="value" style={{ fontSize: '12px', fontWeight: '600', color: '#fff', textAlign: 'center' }}>
                 {economy.cosmic_focus || 0}/{economy.max_focus || 20}
               </span>
-              <button 
-                className="add-btn" 
-                onClick={handleRefillEnergy}
-                disabled={isClaiming}
-                style={{ 
-                  width: '18px', height: '18px', borderRadius: '50%', 
-                  background: isClaiming ? 'rgba(150,150,150,0.3)' : 'rgba(197, 160, 89, 0.3)', 
-                  border: 'none', color: '#C5A059', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                  cursor: isClaiming ? 'not-allowed' : 'pointer', fontSize: '12px', fontWeight: 'bold', flexShrink: 0 
-                }}
-                title="Refill 10 Energy for 50 Diamonds"
-              >
-                {isClaiming ? '...' : '+'}
-              </button>
+              
+              {/* ✅ განახლებული ღილაკი: მოწმდება არის თუ არა ენერგია სავსე */}
+              {(() => {
+                const isEnergyFull = (economy.cosmic_focus || 0) >= (economy.max_focus || 20);
+                return (
+                  <button 
+                    className="add-btn" 
+                    onClick={handleRefillEnergy}
+                    disabled={isClaiming || isEnergyFull}
+                    style={{ 
+                      width: '18px', height: '18px', borderRadius: '50%', 
+                      background: (isClaiming || isEnergyFull) ? 'rgba(150,150,150,0.3)' : 'rgba(197, 160, 89, 0.3)', 
+                      border: 'none', 
+                      color: (isClaiming || isEnergyFull) ? '#666' : '#C5A059', 
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                      cursor: (isClaiming || isEnergyFull) ? 'not-allowed' : 'pointer', 
+                      fontSize: '12px', fontWeight: 'bold', flexShrink: 0 
+                    }}
+                    title={isEnergyFull ? "ენერგია უკვე სავსეა!" : "შეავსე 10 ენერგია 50 დიამონდად"}
+                  >
+                    {isClaiming ? '...' : (isEnergyFull ? '✓' : '+')}
+                  </button>
+                );
+              })()}
             </div>
           </div>
         </div>
