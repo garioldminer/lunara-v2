@@ -1,15 +1,13 @@
-import { CheckCircle, XCircle, RefreshCw, Copy, LogOut, Bug, X } from 'lucide-react';
+import { CheckCircle, XCircle, RefreshCw, Copy, LogOut, Bug } from 'lucide-react';
 
 interface DebugPanelProps {
   showDebug: boolean;
   setShowDebug: (show: boolean) => void;
   user: any;
-  economy: any;
   dbDebugInfo: any;
   debugLogs: any[];
   energyTransactions: any[];
   dbStatus: string;
-  economyLoadStatus: string;
   lastDbQuery: any;
   copySuccess: boolean;
   copyAllDebugInfo: () => void;
@@ -29,12 +27,10 @@ export default function DebugPanel({
   showDebug,
   setShowDebug,
   user,
-  economy,
   dbDebugInfo,
   debugLogs,
   energyTransactions,
   dbStatus,
-  economyLoadStatus,
   lastDbQuery,
   copySuccess,
   copyAllDebugInfo,

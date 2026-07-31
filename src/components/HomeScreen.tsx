@@ -11,7 +11,7 @@ import { getTelegramUser } from '../lib/telegramAuth';
 import { getOrCreateUser } from '../lib/userService';
 import { loadUserQuests, trackQuestProgress, type QuestProgress } from '../lib/questService';
 import { 
-  Gem, Zap, Trophy, Flame, X,
+  Gem, Zap, Trophy, Flame, X, CheckCircle,
   Sparkles, LayoutGrid, Moon, Hash, 
   Crown, Scroll, ChevronRight, Gift, Shield, Infinity, RefreshCw
 } from 'lucide-react';
