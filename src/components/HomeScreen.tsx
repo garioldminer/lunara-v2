@@ -197,7 +197,9 @@ export default function HomeScreen({ onNavigate }: Props) {
   // Debug State
   const [showDebug, setShowDebug] = useState(false);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
-  const [dbStatus] = useState<'connecting' | 'connected' | 'error'>('connected');
+  // ✅ აქ არის გამოსწორებული: დამატებულია set ფუნქციები
+  const [dbStatus, setDbStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
+  const [economyLoadStatus, setEconomyLoadStatus] = useState<'pending' | 'loading' | 'success' | 'error'>('pending');
   const [dbDebugInfo, setDbDebugInfo] = useState<DatabaseDebugInfo>({
     lastQuery: null, lastResponse: null, economyData: null, queryHistory: []
   });
@@ -532,7 +534,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     await calculateRealEnergy();
     
     if ((economy.cosmic_focus || 0) < requiredEnergy) {
-      // ✅ გაუმჯობესებული შეტყობინება
       showToast(`Not enough energy! You need ${requiredEnergy}⚡, but you have ${economy.cosmic_focus}⚡. Use coins to refill!`, 'error');
       return false;
     }
@@ -563,7 +564,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     return true;
   };
 
-  // ✅ ახალი ფუნქცია: ენერგიის შევსება მონეტებით
   const handleRefillEnergy = async () => {
     if (!user || !supabase) return;
     
