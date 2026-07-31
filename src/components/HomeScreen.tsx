@@ -1032,12 +1032,13 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* ✅ აქ არის დამატებული activeSubscription={activeSubscription} */}
+      {/* ✅ აქ არის დამატებული economy={economy} */}
       {isUserAdmin && (
         <DebugPanel
           showDebug={showDebug}
           setShowDebug={setShowDebug}
           user={user}
+          economy={economy}
           dbDebugInfo={dbDebugInfo}
           debugLogs={debugLogs}
           dbStatus={dbStatus}

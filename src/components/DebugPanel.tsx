@@ -8,10 +8,11 @@ interface DebugPanelProps {
   showDebug: boolean;
   setShowDebug: (show: boolean) => void;
   user: any;
+  economy: any; // ✅ დამატებულია ცოცხალი ეკონომიკის სტეიტი
   dbDebugInfo: any;
   debugLogs: any[];
   dbStatus: string;
-  activeSubscription: any; // ✅ დამატებულია
+  activeSubscription: any;
   setDebugLogs: React.Dispatch<React.SetStateAction<any[]>>;
   checkDatabaseStatus: () => void;
   refreshUserDataDebug: () => void;
@@ -30,10 +31,11 @@ export default function DebugPanel({
   showDebug,
   setShowDebug,
   user,
+  economy, // ✅ მიღება
   dbDebugInfo,
   debugLogs,
   dbStatus,
-  activeSubscription, // ✅ დამატებულია
+  activeSubscription,
   setDebugLogs,
   checkDatabaseStatus,
   refreshUserDataDebug,
@@ -77,7 +79,7 @@ export default function DebugPanel({
 
   const tabs: { id: TabType; label: string; icon: any }[] = [
     { id: 'overview', label: 'Overview', icon: Database },
-    { id: 'profile_banner', label: 'Banner', icon: User }, // ✅ ახალი ტაბი
+    { id: 'profile_banner', label: 'Banner', icon: User },
     { id: 'actions', label: 'Actions', icon: Zap },
     { id: 'logs', label: 'Logs', icon: Terminal },
     { id: 'raw', label: 'Raw Data', icon: FileJson },
@@ -143,7 +145,6 @@ export default function DebugPanel({
 
           <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
             
-            {/* ✅ ახალი ტაბი: Profile Banner Debug */}
             {activeTab === 'profile_banner' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
@@ -157,18 +158,15 @@ export default function DebugPanel({
 
                 <div style={{ padding: '12px', background: 'rgba(251, 191, 36, 0.1)', borderRadius: '8px', border: '1px solid rgba(251, 191, 36, 0.3)' }}>
                   <div style={{ marginBottom: '8px', color: '#fbbf24', fontWeight: 'bold', fontSize: '11px', display: 'flex', justifyContent: 'space-between' }}>
-                    💎 ECONOMY & STATS <CopyBtn text={JSON.stringify(dbDebugInfo.economyData, null, 2)} id="banner-economy" />
+                    💎 ECONOMY & STATS (LIVE) <CopyBtn text={JSON.stringify(economy, null, 2)} id="banner-economy" />
                   </div>
-                  {dbDebugInfo.economyData ? (
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '11px' }}>
-                      <div>🪙 Coins: <strong>{dbDebugInfo.economyData.cosmic_coins}</strong></div>
-                      <div>⚡ Energy: <strong>{dbDebugInfo.economyData.cosmic_focus} / {dbDebugInfo.economyData.max_focus}</strong></div>
-                      <div>⭐ Level: <strong>{dbDebugInfo.economyData.level}</strong></div>
-                      <div>🔥 Streak: <strong>{dbDebugInfo.economyData.current_streak}</strong></div>
-                    </div>
-                  ) : (
-                    <div style={{ color: '#64748b', fontSize: '11px' }}>No economy data loaded</div>
-                  )}
+                  {/* ✅ აქ ვიყენებთ ცოცხალ economy სტეიტს და არა dbDebugInfo-ს */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '11px' }}>
+                    <div>🪙 Coins: <strong>{economy?.cosmic_coins || 0}</strong></div>
+                    <div>⚡ Energy: <strong>{economy?.cosmic_focus || 0} / {economy?.max_focus || 20}</strong></div>
+                    <div>⭐ Level: <strong>{economy?.level || 1}</strong></div>
+                    <div>🔥 Streak: <strong>{economy?.current_streak || 0}</strong></div>
+                  </div>
                 </div>
 
                 <div style={{ padding: '12px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
@@ -199,23 +197,6 @@ export default function DebugPanel({
                     <span>Status: <strong style={{ color: dbStatus === 'connected' ? '#10b981' : dbStatus === 'error' ? '#ef4444' : '#fbbf24' }}>{dbStatus.toUpperCase()}</strong></span>
                   </div>
                   <div style={{ fontSize: '10px', color: '#94a3b8' }}>User ID: {user?.id}</div>
-                </div>
-
-                <div style={{ padding: '12px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
-                  <div style={{ marginBottom: '8px', color: '#10b981', fontWeight: 'bold', fontSize: '11px', display: 'flex', justifyContent: 'space-between' }}>
-                    💰 ECONOMY STATE <CopyBtn text={JSON.stringify(dbDebugInfo.economyData, null, 2)} id="economy-overview" />
-                  </div>
-                  {dbDebugInfo.economyData ? (
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                      <div style={{ fontSize: '11px' }}>🪙 Coins: <strong>{dbDebugInfo.economyData.cosmic_coins}</strong></div>
-                      <div style={{ fontSize: '11px' }}>⭐ XP: <strong>{dbDebugInfo.economyData.xp}</strong></div>
-                      <div style={{ fontSize: '11px' }}>🎯 Level: <strong>{dbDebugInfo.economyData.level}</strong></div>
-                      <div style={{ fontSize: '11px' }}>🔥 Streak: <strong>{dbDebugInfo.economyData.current_streak}</strong></div>
-                      <div style={{ fontSize: '11px', gridColumn: '1 / -1' }}>⚡ Energy: <strong>{dbDebugInfo.economyData.cosmic_focus || 0} / {dbDebugInfo.economyData.max_focus || 20}</strong></div>
-                    </div>
-                  ) : (
-                    <div style={{ color: '#64748b', fontSize: '11px' }}>No data loaded yet</div>
-                  )}
                 </div>
               </div>
             )}
@@ -278,7 +259,7 @@ export default function DebugPanel({
               <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                 <div style={{ marginBottom: '8px', color: '#a78bfa', fontWeight: 'bold', fontSize: '11px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   📦 RAW JSON DATA
-                  <CopyBtn text={JSON.stringify({ user: { id: user?.id }, economy: dbDebugInfo.economyData, lastQuery: dbDebugInfo.lastQuery }, null, 2)} id="raw-json" />
+                  <CopyBtn text={JSON.stringify({ user: { id: user?.id }, economy: economy, lastQuery: dbDebugInfo.lastQuery }, null, 2)} id="raw-json" />
                 </div>
                 <pre style={{ 
                   flex: 1, overflow: 'auto', background: 'rgba(0,0,0,0.5)', borderRadius: '8px', padding: '12px', 
@@ -286,7 +267,7 @@ export default function DebugPanel({
                 }}>
                   {JSON.stringify({
                     user: { id: user?.id, name: user?.display_name },
-                    economy: dbDebugInfo.economyData,
+                    economy: economy, // ✅ აქაც ცოცხალი სტეიტი
                     lastQuery: dbDebugInfo.lastQuery
                   }, null, 2)}
                 </pre>
