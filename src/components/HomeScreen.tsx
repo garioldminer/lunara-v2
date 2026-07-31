@@ -16,6 +16,7 @@ import {
   Crown, Scroll, ChevronRight, Gift, Shield, Infinity, RefreshCw
 } from 'lucide-react';
 import DebugPanel from './DebugPanel';
+import DiamondShopModal from './DiamondShopModal'; // ✅ დამატებულია
 import './HomeScreen.css';
 
 const getXPToNextLevel = (level: number): number => {
@@ -193,7 +194,8 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [showLevelUpModal, setShowLevelUpModal] = useState(false);
   const [leveledUpTo, setLeveledUpTo] = useState<number>(1);
   const [toast, setToast] = useState<Toast | null>(null);
-  
+  const [isShopOpen, setIsShopOpen] = useState(false); // ✅ დამატებულია მაღაზიისთვის
+
   // Debug State
   const [showDebug, setShowDebug] = useState(false);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
@@ -569,16 +571,12 @@ export default function HomeScreen({ onNavigate }: Props) {
     const currentEnergy = economy.cosmic_focus || 0;
     const energyNeeded = maxEnergy - currentEnergy;
 
-    // 1. თუ ენერგია უკვე სავსეა, არაფერი მოხდეს
     if (energyNeeded <= 0) {
       showToast('ენერგია უკვე სავსეა! შევსება არ არის საჭირო.', 'info');
       return;
     }
 
-    // 2. ჭკვიანი ლოგიკა: ვავსებთ მაქსიმუმ 10-ს, ან იმდენს რამდენიც აკლია (თუ 10-ზე ნაკლებია)
     const energyToAdd = Math.min(10, energyNeeded);
-    
-    // 3. ფასის პროპორციული გამოთვლა: 1 ენერგია = 5 დიამონდი
     const cost = energyToAdd * 5;
 
     addDebugLog('info', 'ENERGY_REFILL', `🔍 Step 1: Calculating refill. Needed: ${energyNeeded}⚡, Adding: ${energyToAdd}⚡, Cost: ${cost}💎`);
@@ -894,7 +892,15 @@ export default function HomeScreen({ onNavigate }: Props) {
             <div className="resource gems" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(147, 112, 219, 0.15)', padding: '4px 10px', borderRadius: '20px', border: '1px solid rgba(147, 112, 219, 0.3)', height: '22px' }}>
               <Gem size={12} className="resource-icon gem-icon" style={{ color: '#9370db', flexShrink: 0 }} />
               <span className="value" style={{ fontSize: '12px', fontWeight: '600', color: '#fff', textAlign: 'center' }}>{economy.cosmic_coins.toLocaleString()}</span>
-              <button className="add-btn" style={{ width: '18px', height: '18px', borderRadius: '50%', background: 'rgba(197, 160, 89, 0.3)', border: 'none', color: '#C5A059', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', flexShrink: 0 }}>+</button>
+              {/* ✅ განახლებული ღილაკი: ხსნის მაღაზიის მოდალს */}
+              <button 
+                className="add-btn" 
+                onClick={() => setIsShopOpen(true)}
+                style={{ width: '18px', height: '18px', borderRadius: '50%', background: 'rgba(197, 160, 89, 0.3)', border: 'none', color: '#C5A059', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', flexShrink: 0 }}
+                title="შეიძინე დიამონდები"
+              >
+                +
+              </button>
             </div>
             <div className="resource energy" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(251, 191, 36, 0.15)', padding: '4px 10px', borderRadius: '20px', border: '1px solid rgba(251, 191, 36, 0.3)', height: '22px' }}>
               <Zap size={12} className="resource-icon energy-icon" style={{ color: '#fbbf24', flexShrink: 0 }} />
@@ -902,7 +908,6 @@ export default function HomeScreen({ onNavigate }: Props) {
                 {economy.cosmic_focus || 0}/{economy.max_focus || 20}
               </span>
               
-              {/* ✅ განახლებული ღილაკი: დინამიური ფასი და რაოდენობა */}
               {(() => {
                 const isEnergyFull = (economy.cosmic_focus || 0) >= (economy.max_focus || 20);
                 const energyNeeded = (economy.max_focus || 20) - (economy.cosmic_focus || 0);
@@ -1120,6 +1125,20 @@ export default function HomeScreen({ onNavigate }: Props) {
           ))}
         </div>
       </div>
+
+      {/* ✅ დამატებულია დიამონდების მაღაზიის მოდალი */}
+      {isShopOpen && user && (
+        <DiamondShopModal 
+          isOpen={isShopOpen} 
+          onClose={() => setIsShopOpen(false)} 
+          userId={user.id}
+          onSuccess={() => {
+            setIsShopOpen(false);
+            showToast('დიამონდები წარმატებით დაგერიცხა!', 'success');
+            reloadFromDatabase();
+          }}
+        />
+      )}
 
       {isUserAdmin && (
         <DebugPanel
