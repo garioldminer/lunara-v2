@@ -11,8 +11,6 @@ interface DebugPanelProps {
   dbDebugInfo: any;
   debugLogs: any[];
   dbStatus: string;
-  copySuccess: boolean;
-  copyAllDebugInfo: () => void;
   setDebugLogs: React.Dispatch<React.SetStateAction<any[]>>;
   checkDatabaseStatus: () => void;
   refreshUserDataDebug: () => void;
@@ -34,7 +32,6 @@ export default function DebugPanel({
   dbDebugInfo,
   debugLogs,
   dbStatus,
-  copyAllDebugInfo,
   setDebugLogs,
   checkDatabaseStatus,
   refreshUserDataDebug,
@@ -87,7 +84,6 @@ export default function DebugPanel({
 
   return (
     <>
-      {/* Toggle Button */}
       <button 
         onClick={() => setShowDebug(!showDebug)} 
         style={{ 
@@ -102,7 +98,6 @@ export default function DebugPanel({
         <Bug size={24} />
       </button>
 
-      {/* Main Panel */}
       <div style={{ 
         position: 'fixed', bottom: '80px', right: '20px', zIndex: 10000, 
         width: '450px', maxWidth: '90vw', maxHeight: '70vh', 
@@ -111,7 +106,6 @@ export default function DebugPanel({
         fontFamily: 'monospace', fontSize: '11px', color: '#ffe566',
         display: 'flex', flexDirection: 'column'
       }}>
-        {/* Header */}
         <div style={{ 
           padding: '12px 16px', borderBottom: '1px solid rgba(255, 229, 102, 0.3)', 
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -125,7 +119,6 @@ export default function DebugPanel({
           </button>
         </div>
 
-        {/* Tabs */}
         <div style={{ display: 'flex', borderBottom: '1px solid rgba(255, 229, 102, 0.2)', background: 'rgba(0,0,0,0.3)' }}>
           {tabs.map(tab => (
             <button
@@ -145,10 +138,7 @@ export default function DebugPanel({
           ))}
         </div>
 
-        {/* Content Area */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
-          
-          {/* TAB 1: OVERVIEW */}
           {activeTab === 'overview' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
@@ -181,7 +171,6 @@ export default function DebugPanel({
             </div>
           )}
 
-          {/* TAB 2: ACTIONS */}
           {activeTab === 'actions' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
@@ -212,13 +201,12 @@ export default function DebugPanel({
             </div>
           )}
 
-          {/* TAB 3: LOGS */}
           {activeTab === 'logs' && (
             <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
               <div style={{ marginBottom: '8px', color: '#f472b6', fontWeight: 'bold', fontSize: '11px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 📝 LOGS ({debugLogs.length})
                 <div style={{ display: 'flex', gap: '4px' }}>
-                  <CopyBtn text={debugLogs.map(l => `[${l.timestamp}] ${l.category}: ${l.message}`).join('\n')} id="logs-text" />
+                  <CopyBtn text={debugLogs.map((l: any) => `[${l.timestamp}] ${l.category}: ${l.message}`).join('\n')} id="logs-text" />
                   <button onClick={() => setDebugLogs([])} style={{ background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', borderRadius: '4px', color: '#ef4444', cursor: 'pointer', padding: '4px 8px', fontSize: '10px' }}>Clear</button>
                 </div>
               </div>
@@ -237,7 +225,6 @@ export default function DebugPanel({
             </div>
           )}
 
-          {/* TAB 4: RAW DATA */}
           {activeTab === 'raw' && (
             <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
               <div style={{ marginBottom: '8px', color: '#a78bfa', fontWeight: 'bold', fontSize: '11px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -256,7 +243,6 @@ export default function DebugPanel({
               </pre>
             </div>
           )}
-
         </div>
       </div>
     </>

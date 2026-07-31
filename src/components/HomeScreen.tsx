@@ -200,7 +200,6 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [dbStatus, setDbStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
   const [economyLoadStatus, setEconomyLoadStatus] = useState<'pending' | 'loading' | 'success' | 'error'>('pending');
   const [lastDbQuery, setLastDbQuery] = useState<any>(null);
-  const [copySuccess, setCopySuccess] = useState(false);
   const [dbDebugInfo, setDbDebugInfo] = useState<DatabaseDebugInfo>({
     lastQuery: null, lastResponse: null, economyData: null, queryHistory: []
   });
@@ -224,51 +223,6 @@ export default function HomeScreen({ onNavigate }: Props) {
       ...prev, lastQuery: { table, operation, params }, lastResponse: result || error,
       queryHistory: [historyEntry, ...prev.queryHistory].slice(0, 20)
     }));
-  };
-
-  const copyAllDebugInfo = async () => {
-    const debugText = `
-🔧 LUNARA DEBUG REPORT
-📅 ${new Date().toLocaleString()}
-
-👤 USER INFO:
-   ID: ${user?.id || 'N/A'}
-   Name: ${user?.display_name || 'N/A'}
-
-💰 ECONOMY STATE:
-   Coins: ${economy.cosmic_coins}
-   XP: ${economy.xp}
-   Level: ${economy.level}
-   Streak: ${currentStreak}
-   Energy: ${economy.cosmic_focus}/20
-
-📊 STATUS:
-   Database: ${dbStatus.toUpperCase()}
-   Economy Load: ${economyLoadStatus.toUpperCase()}
-
-🗄️ LAST DB QUERY:
-   Table: ${lastDbQuery?.table || 'N/A'}
-   User ID: ${lastDbQuery?.userId || 'N/A'}
-
-📝 LOGS (${debugLogs.length} total):
-${debugLogs.slice(0, 20).map(log => `
-[${log.timestamp}] ${log.category.toUpperCase()} (${log.type})
-   ${log.message}
-   ${log.data ? JSON.stringify(log.data, null, 2) : ''}
-`).join('\n')}
-
----
-End of Debug Report
-`.trim();
-
-    try {
-      await navigator.clipboard.writeText(debugText);
-      setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-      showToast('Failed to copy to clipboard', 'error');
-    }
   };
 
   const checkDatabaseStatus = async () => {
@@ -1103,8 +1057,6 @@ End of Debug Report
           dbDebugInfo={dbDebugInfo}
           debugLogs={debugLogs}
           dbStatus={dbStatus}
-          copySuccess={copySuccess}
-          copyAllDebugInfo={copyAllDebugInfo}
           setDebugLogs={setDebugLogs}
           checkDatabaseStatus={checkDatabaseStatus}
           refreshUserDataDebug={refreshUserDataDebug}
