@@ -46,6 +46,7 @@ serve(async (req) => {
         parsedPayload = JSON.parse(payloadStr);
       } catch (e) {
         console.error("❌ Failed to parse payload:", payloadStr);
+        return new Response("OK", { status: 200, headers: { "Content-Type": "application/json" } });
       }
 
       // 🌟 დიამონდების შეძენის დამუშავება
@@ -76,45 +77,57 @@ serve(async (req) => {
           }
         }
 
-        // შეძენის ლოგირება
-        await supabase.from("purchases").insert({
+        // ✅ შეძენის ლოგირება (გასწორებულია .catch()-ის გარეშე)
+        const { error: purchaseLogError } = await supabase.from("purchases").insert({
           user_id: userId,
           feature_id: "diamonds",
           stars: payment.total_amount, 
           telegram_charge_id: payment.telegram_payment_charge_id,
           purchased_at: new Date().toISOString(),
-        }).catch(err => console.error("Failed to log purchase:", err));
+        });
+        
+        if (purchaseLogError) {
+          console.error("Failed to log purchase:", purchaseLogError);
+        }
 
-        // მომხმარებლისთვის შეტყობინების გაგზავნა
-        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            chat_id: update.message.chat.id,
-            text: `🎉 წარმატებით შეიძინე ${coinsToAdd} დიამონდი! ისინი უკვე შენს ანგარიშზეა.`,
-          }),
-        }).catch(err => console.error("Failed to send message:", err));
+        // ✅ მომხმარებლისთვის შეტყობინების გაგზავნა (გასწორებულია try/catch-ით)
+        try {
+          await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              chat_id: update.message.chat.id,
+              text: `🎉 წარმატებით შეიძინე ${coinsToAdd} დიამონდი! ისინი უკვე შენს ანგარიშზეა.`,
+            }),
+          });
+        } catch (msgErr) {
+          console.error("Failed to send message:", msgErr);
+        }
 
         return new Response("OK", { status: 200, headers: { "Content-Type": "application/json" } });
       }
 
       // --- არსებული INVOICE ლოგიკა (პრემიუმისთვის) ---
-      const { data: invoice, error } = await supabase
+      const { data: invoice, error: invoiceError } = await supabase
         .from("invoices")
         .select("*")
         .eq("payload", payloadStr)
         .single();
 
-      if (error || !invoice) {
+      if (invoiceError || !invoice) {
         console.error("❌ Invoice not found for payload:", payloadStr);
         return new Response("OK", { status: 200, headers: { "Content-Type": "application/json" } });
       }
 
-      await supabase.from("invoices").update({
+      const { error: updateInvoiceError } = await supabase.from("invoices").update({
         status: "paid",
         telegram_charge_id: payment.telegram_payment_charge_id,
         paid_at: new Date().toISOString(),
       }).eq("id", invoice.id);
+
+      if (updateInvoiceError) {
+        console.error("❌ Failed to update invoice:", updateInvoiceError);
+      }
 
       if (invoice.feature_id.startsWith("subscription_")) {
         const tier = invoice.feature_id === "subscription_monthly" ? "monthly" : 
@@ -124,7 +137,7 @@ serve(async (req) => {
         else if (tier === "yearly") expiresAt.setFullYear(expiresAt.getFullYear() + 1);
         else expiresAt.setFullYear(2099);
 
-        await supabase.from("subscriptions").insert({
+        const { error: subInsertError } = await supabase.from("subscriptions").insert({
           user_id: invoice.user_id,
           tier,
           started_at: new Date().toISOString(),
@@ -132,14 +145,17 @@ serve(async (req) => {
           is_active: true,
           telegram_payment_charge_id: payment.telegram_payment_charge_id,
         });
+        if (subInsertError) console.error("❌ Failed to insert subscription:", subInsertError);
+
       } else {
-        await supabase.from("purchases").insert({
+        const { error: purchaseInsertError } = await supabase.from("purchases").insert({
           user_id: invoice.user_id,
           feature_id: invoice.feature_id,
           stars: invoice.stars,
           telegram_charge_id: payment.telegram_payment_charge_id,
           purchased_at: new Date().toISOString(),
         });
+        if (purchaseInsertError) console.error("❌ Failed to insert purchase:", purchaseInsertError);
       }
 
       return new Response("OK", { status: 200, headers: { "Content-Type": "application/json" } });
