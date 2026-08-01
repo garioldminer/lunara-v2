@@ -1126,12 +1126,13 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* ✅ დამატებულია დიამონდების მაღაზიის მოდალი */}
+      {/* ✅ დამატებულია დიამონდების მაღაზიის მოდალი (გასწორებული isAdmin-ით) */}
       {isShopOpen && user && (
         <DiamondShopModal 
           isOpen={isShopOpen} 
           onClose={() => setIsShopOpen(false)} 
           userId={user.id}
+          isAdmin={isUserAdmin}
           onSuccess={() => {
             setIsShopOpen(false);
             showToast('დიამონდები წარმატებით დაგერიცხა!', 'success');
