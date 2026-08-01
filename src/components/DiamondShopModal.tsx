@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Gem, Sparkles, Terminal } from 'lucide-react';
+import { X, Gem, Sparkles, Bug } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface Package {
@@ -11,39 +11,40 @@ interface Package {
 }
 
 const packages: Package[] = [
-  { id: 'small', coins: 50, stars: 50, label: 'მცირე პაკეტი' },
-  { id: 'medium', coins: 120, stars: 100, label: 'საშუალო პაკეტი', isPopular: true },
-  { id: 'large', coins: 300, stars: 200, label: 'დიდი პაკეტი' },
+  { id: 'small', coins: 50, stars: 50, label: 'Small Pack' },
+  { id: 'medium', coins: 120, stars: 100, label: 'Medium Pack', isPopular: true },
+  { id: 'large', coins: 300, stars: 200, label: 'Large Pack' },
 ];
 
 interface DiamondShopModalProps {
   isOpen: boolean;
   onClose: () => void;
   userId: string;
+  isAdmin: boolean;
   onSuccess: () => void;
 }
 
-export default function DiamondShopModal({ isOpen, onClose, userId, onSuccess }: DiamondShopModalProps) {
+export default function DiamondShopModal({ isOpen, onClose, userId, isAdmin, onSuccess }: DiamondShopModalProps) {
   const [isLoading, setIsLoading] = useState<string | null>(null);
   const [debugLogs, setDebugLogs] = useState<string[]>([]);
-  const [showDebug, setShowDebug] = useState(true);
+  const [showDebug, setShowDebug] = useState(false);
 
   if (!isOpen) return null;
 
   const addLog = (message: string) => {
     const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
     setDebugLogs(prev => [...prev, `[${timestamp}] ${message}`]);
-    console.log(`[SHOP] ${message}`);
   };
 
   const handleBuy = async (pkg: Package) => {
     setDebugLogs([]);
-    addLog(' Starting purchase process...');
-    addLog(`📦 Package: ${pkg.label} (${pkg.coins} 💎 for ${pkg.stars} ⭐)`);
+    setShowDebug(true);
+    addLog('🚀 Starting purchase process...');
+    addLog(`📦 Package: ${pkg.label} (${pkg.coins}  for ${pkg.stars} ⭐)`);
     
     if (!(window as any).Telegram?.WebApp) {
       addLog('❌ ERROR: Telegram WebApp not available');
-      alert('ეს ფუნქცია მხოლოდ Telegram-შია ხელმისაწვდომი.');
+      alert('This feature is only available in Telegram.');
       return;
     }
 
@@ -51,7 +52,7 @@ export default function DiamondShopModal({ isOpen, onClose, userId, onSuccess }:
 
     if (!supabase) {
       addLog('❌ ERROR: Supabase client is null');
-      alert('სისტემური შეცდომა: მონაცემთა ბაზასთან კავშირი ვერ მოხერხდა.');
+      alert('System error: Cannot connect to database.');
       return;
     }
 
@@ -67,7 +68,7 @@ export default function DiamondShopModal({ isOpen, onClose, userId, onSuccess }:
         user_id: userId,
         coins_amount: pkg.coins,
         stars_amount: pkg.stars,
-        description: `${pkg.coins} დიამონდის შეძენა`
+        description: `Purchase ${pkg.coins} diamonds`
       };
       
       addLog(`📤 Request: ${JSON.stringify(requestBody)}`);
@@ -84,7 +85,7 @@ export default function DiamondShopModal({ isOpen, onClose, userId, onSuccess }:
       if (!data?.invoice_url) {
         addLog(`❌ No invoice_url in response`);
         addLog(`Response: ${JSON.stringify(data)}`);
-        throw new Error('ინვოისის შექმნა ვერ მოხერხდა');
+        throw new Error('Failed to create invoice');
       }
 
       addLog(`✅ Invoice URL received`);
@@ -97,7 +98,7 @@ export default function DiamondShopModal({ isOpen, onClose, userId, onSuccess }:
         
         if (status === 'paid') {
           addLog(`✅ Payment successful!`);
-          addLog(` Calling onSuccess...`);
+          addLog(`🔄 Calling onSuccess...`);
           onSuccess();
         } else if (status === 'cancelled') {
           addLog(`⚠️ Payment cancelled by user`);
@@ -111,7 +112,7 @@ export default function DiamondShopModal({ isOpen, onClose, userId, onSuccess }:
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Unknown error';
       addLog(`💥 Exception: ${errorMsg}`);
-      alert(`შეცდომა: ${errorMsg}`);
+      alert(`Error: ${errorMsg}`);
       setIsLoading(null);
     }
   };
@@ -139,8 +140,8 @@ export default function DiamondShopModal({ isOpen, onClose, userId, onSuccess }:
               <Gem size={32} color="#C5A059" />
             </div>
           </div>
-          <h2 style={{ color: '#fff', fontSize: '22px', fontWeight: 'bold', margin: 0 }}>დიამონდების მაღაზია</h2>
-          <p style={{ color: '#94a3b8', fontSize: '13px', marginTop: '8px' }}>შეიძინე დიამონდები Telegram Stars-ით</p>
+          <h2 style={{ color: '#fff', fontSize: '22px', fontWeight: 'bold', margin: 0 }}>Diamond Shop</h2>
+          <p style={{ color: '#94a3b8', fontSize: '13px', marginTop: '8px' }}>Purchase diamonds with Telegram Stars</p>
         </div>
 
         <div style={{ padding: '0 20px 20px 20px' }}>
@@ -164,7 +165,7 @@ export default function DiamondShopModal({ isOpen, onClose, userId, onSuccess }:
                     background: '#C5A059', color: '#000', fontSize: '9px',
                     padding: '2px 6px', borderBottomLeftRadius: '8px', fontWeight: 'bold'
                   }}>
-                    პოპულარული
+                    POPULAR
                   </div>
                 )}
                 
@@ -187,63 +188,75 @@ export default function DiamondShopModal({ isOpen, onClose, userId, onSuccess }:
 
           {isLoading && (
             <div style={{ textAlign: 'center', marginTop: '16px', color: '#C5A059', fontSize: '13px' }}>
-              იტვირთება ინვოისი...
+              Creating invoice...
             </div>
           )}
         </div>
 
-        {/* Debug Panel - Always visible */}
-        <div style={{ 
-          borderTop: '1px solid rgba(197, 160, 89, 0.3)',
-          background: 'rgba(0,0,0,0.5)',
-          padding: '12px'
-        }}>
+        {/* Admin Debug Panel - Only visible for admins */}
+        {isAdmin && (
           <div style={{ 
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
-            marginBottom: '8px', cursor: 'pointer'
-          }} onClick={() => setShowDebug(!showDebug)}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#f472b6', fontSize: '13px', fontWeight: 'bold' }}>
-              <Terminal size={14} />
-              <span>Debug Logs ({debugLogs.length})</span>
-            </div>
-            <button 
-              onClick={(e) => { e.stopPropagation(); setDebugLogs([]); }}
-              style={{ 
-                background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', 
-                borderRadius: '4px', color: '#ef4444', cursor: 'pointer', 
-                padding: '3px 8px', fontSize: '11px'
-              }}
-            >
-              Clear
-            </button>
-          </div>
-          
-          {showDebug && (
+            borderTop: '1px solid rgba(197, 160, 89, 0.3)',
+            background: 'rgba(0,0,0,0.5)',
+            padding: '12px'
+          }}>
             <div style={{ 
-              background: 'rgba(0,0,0,0.6)', borderRadius: '8px', padding: '8px', 
-              maxHeight: '200px', overflowY: 'auto', fontFamily: 'monospace', fontSize: '10px'
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
+              marginBottom: '8px'
             }}>
-              {debugLogs.length === 0 ? (
-                <div style={{ color: '#64748b', textAlign: 'center', padding: '10px' }}>
-                  No logs yet. Click a package to start...
-                </div>
-              ) : (
-                debugLogs.map((log, i) => (
-                  <div key={i} style={{ 
-                    padding: '4px', marginBottom: '2px', 
-                    background: 'rgba(255,255,255,0.05)', borderRadius: '4px',
-                    color: log.includes('ERROR') || log.includes('❌') ? '#f87171' :
-                           log.includes('✅') ? '#4ade80' :
-                           log.includes('⚠️') ? '#fbbf24' : '#e2e8f0',
-                    wordBreak: 'break-word'
-                  }}>
-                    {log}
-                  </div>
-                ))
-              )}
+              <button
+                onClick={() => setShowDebug(!showDebug)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '6px',
+                  background: showDebug ? 'rgba(244, 114, 182, 0.2)' : 'rgba(244, 114, 182, 0.1)',
+                  border: '1px solid #f472b6',
+                  borderRadius: '8px', padding: '8px 12px',
+                  color: '#f472b6', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold'
+                }}
+              >
+                <Bug size={14} />
+                <span>Debug Logs ({debugLogs.length})</span>
+              </button>
+              
+              <button 
+                onClick={() => setDebugLogs([])}
+                style={{ 
+                  background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', 
+                  borderRadius: '6px', color: '#ef4444', cursor: 'pointer', 
+                  padding: '6px 10px', fontSize: '11px', fontWeight: 'bold'
+                }}
+              >
+                Clear
+              </button>
             </div>
-          )}
-        </div>
+            
+            {showDebug && (
+              <div style={{ 
+                background: 'rgba(0,0,0,0.6)', borderRadius: '8px', padding: '8px', 
+                maxHeight: '200px', overflowY: 'auto', fontFamily: 'monospace', fontSize: '10px'
+              }}>
+                {debugLogs.length === 0 ? (
+                  <div style={{ color: '#64748b', textAlign: 'center', padding: '10px' }}>
+                    No logs yet. Click a package to start...
+                  </div>
+                ) : (
+                  debugLogs.map((log, i) => (
+                    <div key={i} style={{ 
+                      padding: '4px', marginBottom: '2px', 
+                      background: 'rgba(255,255,255,0.05)', borderRadius: '4px',
+                      color: log.includes('ERROR') || log.includes('❌') ? '#f87171' :
+                             log.includes('✅') ? '#4ade80' :
+                             log.includes('⚠️') ? '#fbbf24' : '#e2e8f0',
+                      wordBreak: 'break-word'
+                    }}>
+                      {log}
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
