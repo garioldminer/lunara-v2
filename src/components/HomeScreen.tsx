@@ -198,11 +198,11 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [toast, setToast] = useState<Toast | null>(null);
   const [isShopOpen, setIsShopOpen] = useState(false);
   
-  // ✅ ახალი State ცვლადები მოდალებისთვის
+  // Modal states
   const [showStreakModal, setShowStreakModal] = useState(false);
   const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
   
-  // ✅ ახალი State ცვლადი XP ტესტირების ლოგებისთვის
+  // XP testing logs state
   const [xpTestLogs, setXpTestLogs] = useState<string[]>([]);
 
   // Debug State
@@ -416,7 +416,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     }
   };
 
-  // ✅ ახალი ფუნქცია: XP-ის დამატება ავტომატური ლეველის გადათვლით
   const testAddXPWithLevel = async (amount: number) => {
     if (!user || !supabase) return;
     const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
@@ -444,7 +443,6 @@ export default function HomeScreen({ onNavigate }: Props) {
         setXpTestLogs(prev => [...prev, logMsg]);
         addDebugLog('success', 'XP_TEST', logMsg, data);
         
-        // განაახლე ლოკალური სტეიტი ბაზიდან
         await reloadFromDatabase();
         
         if (data.leveled_up) {
@@ -461,7 +459,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     }
   };
 
-  // ✅ ახალი ფუნქცია: ლეველის ძალით გადათვლა ბაზიდან
   const forceRecalcLevel = async () => {
     if (!user || !supabase) return;
     const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
@@ -469,7 +466,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     addDebugLog('info', 'XP_TEST', '🔄 Force recalculating level...');
     
     try {
-      // გამოვიძახოთ RPC 0 XP-ით, რაც მხოლოდ ლეველს გადაითვლის
       const { data, error } = await supabase.rpc('add_xp_and_recalc_level', {
         p_user_id: user.id,
         p_xp_amount: 0
@@ -655,7 +651,7 @@ export default function HomeScreen({ onNavigate }: Props) {
     const energyNeeded = maxEnergy - currentEnergy;
 
     if (energyNeeded <= 0) {
-      showToast('ენერგია უკვე სავსეა! შევსება არ არის საჭირო.', 'info');
+      showToast('Energy is already full! No refill needed.', 'info');
       return;
     }
 
@@ -666,7 +662,7 @@ export default function HomeScreen({ onNavigate }: Props) {
 
     if (economy.cosmic_coins < cost) {
       addDebugLog('error', 'ENERGY_REFILL', `❌ Step 1 Failed: Insufficient diamonds. Have: ${economy.cosmic_coins}, Need: ${cost}`);
-      showToast(`არ გყოფნის დიამონდები! გჭირდება ${cost} 💎 ${energyToAdd}⚡ ენერგიის შესაძენად.`, 'error');
+      showToast(`Not enough diamonds! You need ${cost} 💎 to buy ${energyToAdd}⚡ energy.`, 'error');
       return;
     }
 
@@ -682,10 +678,10 @@ export default function HomeScreen({ onNavigate }: Props) {
 
       if (error) {
         addDebugLog('error', 'ENERGY_REFILL', `❌ Step 3 Failed: RPC Error`, error);
-        showToast(`შევსება ვერ მოხერხდა: ${error.message}`, 'error');
+        showToast(`Refill failed: ${error.message}`, 'error');
       } else if (!data?.success) {
         addDebugLog('error', 'ENERGY_REFILL', `❌ Step 3 Failed: Function returned error`, data);
-        showToast(`შევსება ვერ მოხერხდა: ${data?.error || 'უცნობი შეცდომა'}`, 'error');
+        showToast(`Refill failed: ${data?.error || 'Unknown error'}`, 'error');
       } else {
         addDebugLog('success', 'ENERGY_REFILL', `✅ Step 3 Success: Bought ${energyToAdd}⚡ for ${cost}💎`, data);
         
@@ -695,12 +691,12 @@ export default function HomeScreen({ onNavigate }: Props) {
           return newState;
         });
         
-        showToast(`წარმატებით შეიძინე +${energyToAdd}⚡ ენერგია ${cost} 💎-ის სანაცვლოდ!`, 'success');
+        showToast(`Successfully bought +${energyToAdd}⚡ Energy for ${cost} 💎!`, 'success');
         addDebugLog('success', 'ENERGY_REFILL', `🎉 Step 5: Refill process completed successfully!`);
       }
     } catch (err: any) {
       addDebugLog('error', 'ENERGY_REFILL', `💥 Step 3 Exception: ${err.message}`, err);
-      showToast(`ქსელის შეცდომა: ${err.message}`, 'error');
+      showToast(`Network error: ${err.message}`, 'error');
     } finally {
       setIsClaiming(false);
     }
@@ -979,7 +975,7 @@ export default function HomeScreen({ onNavigate }: Props) {
                 className="add-btn" 
                 onClick={() => setIsShopOpen(true)}
                 style={{ width: '18px', height: '18px', borderRadius: '50%', background: 'rgba(197, 160, 89, 0.3)', border: 'none', color: '#C5A059', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', flexShrink: 0 }}
-                title="შეიძინე დიამონდები"
+                title="Buy Diamonds"
               >
                 +
               </button>
@@ -1010,7 +1006,7 @@ export default function HomeScreen({ onNavigate }: Props) {
                       cursor: (isClaiming || isEnergyFull) ? 'not-allowed' : 'pointer', 
                       fontSize: '12px', fontWeight: 'bold', flexShrink: 0 
                     }}
-                    title={isEnergyFull ? "ენერგია უკვე სავსეა!" : `შეიძინე ${energyToAdd}⚡ ენერგია ${cost} 💎-ად`}
+                    title={isEnergyFull ? "Energy is already full!" : `Buy ${energyToAdd}⚡ Energy for ${cost} 💎`}
                   >
                     {isClaiming ? '...' : (isEnergyFull ? '✓' : '+')}
                   </button>
@@ -1064,7 +1060,6 @@ export default function HomeScreen({ onNavigate }: Props) {
           </div>
         </div>
 
-        {/* ✅ განახლებული 4 ღილაკის პანელი */}
         <div className="action-buttons-panel" style={{ flex: '0 0 calc(40% - 2px)', minWidth: 0, background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)', border: '1px solid #332a1a', borderRadius: '14px', padding: '6px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)', display: 'flex' }}>
           <div className="action-grid-vertical" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: '4px', width: '100%', height: '100%' }}>
             <button className={`action-btn-vertical ${rewardClaimed ? 'claimed' : ''}`} onClick={handleClaimReward} disabled={rewardClaimed || isClaiming} style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: (rewardClaimed || isClaiming) ? 'not-allowed' : 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%', opacity: (rewardClaimed || isClaiming) ? 0.7 : 1 }}>
@@ -1220,7 +1215,7 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* ✅ დიამონდების მაღაზიის მოდალი */}
+      {/* Diamond Shop Modal */}
       {isShopOpen && user && (
         <DiamondShopModal 
           isOpen={isShopOpen} 
@@ -1229,13 +1224,13 @@ export default function HomeScreen({ onNavigate }: Props) {
           isAdmin={isUserAdmin}
           onSuccess={() => {
             setIsShopOpen(false);
-            showToast('დიამონდები წარმატებით დაგერიცხა!', 'success');
+            showToast('Diamonds successfully added!', 'success');
             reloadFromDatabase();
           }}
         />
       )}
 
-      {/* ✅ ახალი მოდალები: Streak & Leaderboard */}
+      {/* Streak & Leaderboard Modals */}
       <StreakModal 
         isOpen={showStreakModal} 
         onClose={() => setShowStreakModal(false)} 

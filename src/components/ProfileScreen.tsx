@@ -13,7 +13,7 @@ interface Props {
 }
 
 // ==========================================
-// დინამიური მონაცემების ჰელპერები
+// Dynamic data helpers
 // ==========================================
 const ZODIAC_DATA: Record<string, { symbol: string; element: string; planet: string }> = {
   Aries: { symbol: '♈', element: 'Fire', planet: 'Mars' },
@@ -71,7 +71,7 @@ const timeAgo = (dateString: string) => {
 };
 
 // ==========================================
-// ლეველის ლოგიკა
+// Level logic
 // ==========================================
 const getXPToNextLevel = (level: number): number => {
   if (level === 1) return 100;
@@ -104,7 +104,7 @@ const getLevelFromTotalXP = (totalXP: number) => {
 };
 
 // ==========================================
-// ინტერფეისები
+// Interfaces
 // ==========================================
 interface Achievement {
   id: string;
@@ -174,7 +174,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
     moonPhase: true
   });
 
-  // 🆕 გაფართოებული დებაგინგის სტეიტები
+  // 🆕 Extended debugging states
   const [showDebug, setShowDebug] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [lastDbAction, setLastDbAction] = useState<string>('None');
@@ -182,6 +182,9 @@ export default function ProfileScreen({ onNavigate }: Props) {
   const [isTestingNotification, setIsTestingNotification] = useState(false);
   const [testResult, setTestResult] = useState<any>(null);
   const [isTgDetected, setIsTgDetected] = useState(false);
+  
+  // 🆕 Economy state to ensure we get the latest XP and Level
+  const [economyData, setEconomyData] = useState<any>(null);
 
   const { user, setUser, loading } = useUser();
   const { settings, updateSetting } = useSettings();
@@ -192,9 +195,25 @@ export default function ProfileScreen({ onNavigate }: Props) {
       setIsUserAdmin(true);
     }
     
-    // შევამოწმოთ Telegram WebApp-ის არსებობა
     const tg = (window as any).Telegram?.WebApp;
     setIsTgDetected(!!tg);
+  }, [user]);
+
+  // 🆕 Fetch latest economy data (XP and Level) to match HomeScreen
+  useEffect(() => {
+    const loadEconomy = async () => {
+      if (!user || !supabase) return;
+      const { data, error } = await supabase
+        .from('user_economy')
+        .select('xp, level, cosmic_coins, current_streak')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (!error && data) {
+        setEconomyData(data);
+      }
+    };
+    loadEconomy();
   }, [user]);
 
   useEffect(() => {
@@ -251,7 +270,9 @@ export default function ProfileScreen({ onNavigate }: Props) {
     loadPreferences();
   }, [user]);
 
-  const userLevelData = user ? getLevelFromTotalXP(user.xp || 0) : { level: 1, currentLevelXP: 0, xpToNext: 100 };
+  // 🆕 Use economyData XP if available, otherwise fallback to user.xp
+  const currentXP = economyData?.xp ?? user?.xp ?? 0;
+  const userLevelData = getLevelFromTotalXP(currentXP);
   
   const userData = user ? {
     displayName: user.display_name || 'User',
@@ -267,8 +288,8 @@ export default function ProfileScreen({ onNavigate }: Props) {
     xpToNext: userLevelData.xpToNext,
     avatar: user.display_name?.charAt(0).toUpperCase() || 'U',
     currentPlan: user.current_plan || 'FREE',
-    gems: user.gems || 0,
-    streak: user.streak || 0,
+    gems: economyData?.cosmic_coins ?? user?.gems ?? 0,
+    streak: economyData?.current_streak ?? user?.streak ?? 0,
     readingsCount: (user as any).readings_count || 0,
     cardsCollected: (user as any).cards_collected || 0,
   } : null;
@@ -310,7 +331,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
         window.location.href = '/';
       } catch (error) {
         console.error('❌ Error logging out:', error);
-        alert('გასვლა ვერ მოხერხდა.');
+        alert('Logout failed.'); // Translated to English
       }
     }
   };
@@ -398,7 +419,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
     }
   };
 
-  // 🆕 გაუმჯობესებული ტესტური შეტყობინების გაგზავნა (ანონიმური გასაღებით)
+  // 🆕 Improved test notification sending (with anon key)
   const testSendNotification = async () => {
     if (!user || !supabase) {
       setTestResult({ success: false, error: 'No user or supabase instance' });
@@ -410,7 +431,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
     console.log('🧪 Starting notification test...');
 
     try {
-      // ვიღებთ anon key-ს პირდაპირ supabase ობიექტიდან
       const supabaseClient = supabase as any;
       const anonKey = supabaseClient.supabaseKey;
 
@@ -422,11 +442,11 @@ export default function ProfileScreen({ onNavigate }: Props) {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'apikey': anonKey // ვიყენებთ apikey ჰედერს Authorization Bearer-ის ნაცვლად
+            'apikey': anonKey
           },
           body: JSON.stringify({
             user_id: user.id,
-            message: '🎉 გილოცავ! ტესტი წარმატებულია. Push Notifications მუშაობს!',
+            message: '🎉 Congratulations! Test successful. Push Notifications are working!',
             type: 'general'
           })
         }
@@ -780,7 +800,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
         )}
       </div>
 
-      {/* 🆕 გაფართოებული და დახვეწილი Debug Panel */}
+      {/* 🆕 Extended and refined Debug Panel */}
       {isUserAdmin && showDebug && (
         <div className="debug-panel">
           <div className="debug-head">
