@@ -1241,7 +1241,8 @@ export default function HomeScreen({ onNavigate }: Props) {
         <LeaderboardModal 
           isOpen={showLeaderboardModal} 
           onClose={() => setShowLeaderboardModal(false)} 
-          currentUserId={user.id} 
+          currentUserId={user.id}
+          isAdmin={isUserAdmin}
         />
       )}
 

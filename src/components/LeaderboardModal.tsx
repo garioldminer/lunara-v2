@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sparkles } from 'lucide-react';
+import { X, Sparkles, Bug, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface LeaderboardModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentUserId: string;
+  isAdmin?: boolean; // 🆕 Added for admin-only debug access
 }
 
 interface LeaderboardUser {
@@ -17,13 +18,16 @@ interface LeaderboardUser {
   rank: number;
 }
 
-// The 12 zodiac glyphs, used to build the rotating celestial ring in the header.
 const ZODIAC_GLYPHS = ['♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓'];
 
-export default function LeaderboardModal({ isOpen, onClose, currentUserId }: LeaderboardModalProps) {
+export default function LeaderboardModal({ isOpen, onClose, currentUserId, isAdmin = false }: LeaderboardModalProps) {
   const [leaders, setLeaders] = useState<LeaderboardUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [userRank, setUserRank] = useState<number | null>(null);
+  
+  // 🆕 Debug states
+  const [showDebug, setShowDebug] = useState(false);
+  const [debugData, setDebugData] = useState<any>(null);
 
   useEffect(() => {
     if (isOpen) fetchLeaderboard();
@@ -37,9 +41,7 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
 
     setLoading(true);
     try {
-      console.log('🔍 Fetching leaderboard data...');
-
-      // 1. Fetch top 10 users from user_economy (ordered by level, then xp)
+      // 1. Fetch top 10 users from user_economy
       const { data: economyData, error: economyError } = await supabase
         .from('user_economy')
         .select('user_id, xp, level')
@@ -47,7 +49,21 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
         .order('xp', { ascending: false })
         .limit(10);
 
-      console.log('📦 Economy data:', economyData, 'Error:', economyError);
+      // 2. Fetch display names for these users separately
+      const userIds = economyData?.map((item: any) => item.user_id) || [];
+      const { data: usersData, error: usersError } = await supabase
+        .from('users')
+        .select('id, display_name')
+        .in('id', userIds);
+
+      // 🆕 Save raw data for the debug panel
+      setDebugData({
+        economyData,
+        economyError,
+        usersData,
+        usersError,
+        currentUserId
+      });
 
       if (economyError) throw economyError;
       if (!economyData || economyData.length === 0) {
@@ -56,15 +72,6 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
         setLoading(false);
         return;
       }
-
-      // 2. Fetch display names for these users separately (avoids Foreign Key join issues)
-      const userIds = economyData.map((item: any) => item.user_id);
-      const { data: usersData, error: usersError } = await supabase
-        .from('users')
-        .select('id, display_name')
-        .in('id', userIds);
-
-      console.log('📦 Users data:', usersData, 'Error:', usersError);
 
       // 3. Create a map of user_id -> display_name
       const nameMap: Record<string, string> = {};
@@ -85,7 +92,7 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
 
       setLeaders(formattedLeaders);
 
-      // 5. Calculate current user's exact rank in the entire database
+      // 5. Calculate current user's exact rank
       const { data: currentUserData } = await supabase
         .from('user_economy')
         .select('xp, level')
@@ -106,12 +113,12 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
 
     } catch (err) {
       console.error('❌ Leaderboard fetch error:', err);
+      setDebugData((prev: any) => ({ ...prev, fetchError: err }));
     } finally {
       setLoading(false);
     }
   };
 
-  // Rank 1-3 get a celestial body glyph instead of a generic medal.
   const getRankStyles = (rank: number) => {
     if (rank === 1) return {
       bg: 'linear-gradient(135deg, rgba(251, 191, 36, 0.18), rgba(197, 160, 89, 0.08))',
@@ -212,7 +219,6 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
                 <X size={16} />
               </button>
 
-              {/* Celestial ring */}
               <div style={{ position: 'relative', width: 72, height: 72, margin: '0 auto 12px auto' }}>
                 <motion.div
                   animate={{ rotate: 360 }}
@@ -357,7 +363,6 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
                       )}
 
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        {/* Rank badge */}
                         <div
                           style={{
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -371,7 +376,6 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
                           {styles.glyph ?? leader.rank}
                         </div>
 
-                        {/* User info */}
                         <div>
                           <div style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>
                             {leader.display_name}
@@ -382,7 +386,6 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
                         </div>
                       </div>
 
-                      {/* XP */}
                       <div style={{ textAlign: 'right' }}>
                         <div style={{ fontSize: '13px', fontWeight: 700, color: '#ffe566' }}>
                           {leader.xp.toLocaleString()}
@@ -392,6 +395,53 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
                     </motion.div>
                   );
                 })
+              )}
+
+              {/* 🆕 ADMIN ONLY DEBUG PANEL */}
+              {isAdmin && debugData && (
+                <div style={{ marginTop: '16px', borderTop: '1px solid rgba(239, 68, 68, 0.3)', paddingTop: '12px' }}>
+                  <button
+                    onClick={() => setShowDebug(!showDebug)}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      padding: '8px',
+                      background: 'rgba(239, 68, 68, 0.1)',
+                      border: '1px solid rgba(239, 68, 68, 0.3)',
+                      borderRadius: '8px',
+                      color: '#ef4444',
+                      fontSize: '11px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <Bug size={12} />
+                    {showDebug ? 'Hide Debug Data' : 'Show Debug Data'}
+                    {showDebug ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                  </button>
+
+                  {showDebug && (
+                    <div style={{
+                      marginTop: '8px',
+                      padding: '8px',
+                      background: 'rgba(0,0,0,0.6)',
+                      border: '1px solid rgba(239, 68, 68, 0.2)',
+                      borderRadius: '8px',
+                      maxHeight: '200px',
+                      overflowY: 'auto',
+                      fontFamily: 'monospace',
+                      fontSize: '10px',
+                      color: '#fca5a5'
+                    }}>
+                      <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                        {JSON.stringify(debugData, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
 
