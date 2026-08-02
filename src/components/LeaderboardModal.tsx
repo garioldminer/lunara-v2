@@ -37,31 +37,65 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
 
     setLoading(true);
     try {
+      // 1. Fetch data from user_economy and join with users table to get display_name
+      // 2. Order by level (descending), then by xp (descending)
       const { data, error } = await supabase
-        .from('users')
-        .select('id, display_name, xp, level')
+        .from('user_economy')
+        .select(`
+          user_id,
+          xp,
+          level,
+          users (
+            display_name
+          )
+        `)
+        .order('level', { ascending: false })
         .order('xp', { ascending: false })
         .limit(10);
 
       if (error) throw error;
 
-      const formattedLeaders = (data || []).map((user: any, index: number) => ({
-        id: user.id,
-        display_name: user.display_name || 'Seeker',
-        level: user.level || 1,
-        xp: user.xp || 0,
+      // 3. Format the data for the modal
+      const formattedLeaders = (data || []).map((item: any, index: number) => ({
+        id: item.user_id,
+        display_name: item.users?.display_name || 'Seeker',
+        level: item.level || 1,
+        xp: item.xp || 0,
         rank: index + 1
       }));
 
       setLeaders(formattedLeaders);
 
-      const userCurrentXp = data?.find((u: any) => u.id === currentUserId)?.xp || 0;
+      // 4. Calculate current user's exact rank in the entire database
+      let userCurrentXp = 0;
+      let userCurrentLevel = 1;
+
+      const currentUserData = data?.find((item: any) => item.user_id === currentUserId);
+      if (currentUserData) {
+        userCurrentXp = currentUserData.xp || 0;
+        userCurrentLevel = currentUserData.level || 1;
+      } else {
+        // If not in top 10, fetch their specific data to calculate rank accurately
+        const { data: userData } = await supabase
+          .from('user_economy')
+          .select('xp, level')
+          .eq('user_id', currentUserId)
+          .single();
+        
+        if (userData) {
+          userCurrentXp = userData.xp || 0;
+          userCurrentLevel = userData.level || 1;
+        }
+      }
+
+      // Count how many people are ahead of the user (higher level, or same level but higher XP)
       const { count } = await supabase
-        .from('users')
+        .from('user_economy')
         .select('*', { count: 'exact', head: true })
-        .gt('xp', userCurrentXp);
+        .or(`level.gt.${userCurrentLevel},and(level.eq.${userCurrentLevel},xp.gt.${userCurrentXp})`);
 
       setUserRank(count !== null ? count + 1 : 99);
+
     } catch (err) {
       console.error('Leaderboard fetch error:', err);
     } finally {
@@ -120,7 +154,7 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '16px', // შემცირებულია 20px-დან
+            padding: '16px',
             background: 'rgba(0,0,0,0.85)',
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)'
@@ -135,9 +169,9 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
             style={{
               position: 'relative',
               width: '100%',
-              maxWidth: '360px', // შემცირებულია 380px-დან
+              maxWidth: '360px',
               maxHeight: '85vh',
-              borderRadius: '20px', // შემცირებულია 24px-დან
+              borderRadius: '20px',
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
@@ -150,7 +184,7 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
             <div
               style={{
                 position: 'relative',
-                padding: '24px 20px 20px 20px', // შემცირებული padding
+                padding: '24px 20px 20px 20px',
                 textAlign: 'center',
                 flexShrink: 0,
                 overflow: 'hidden',
@@ -167,11 +201,11 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
                   display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}
               >
-                <X size={16} /> {/* შემცირებულია 18-დან */}
+                <X size={16} />
               </button>
 
               {/* Celestial ring */}
-              <div style={{ position: 'relative', width: 72, height: 72, margin: '0 auto 12px auto' }}> {/* შემცირებულია 96-დან */}
+              <div style={{ position: 'relative', width: 72, height: 72, margin: '0 auto 12px auto' }}>
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
@@ -186,7 +220,7 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
                           position: 'absolute', inset: 0,
                           display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
                           transform: `rotate(${angle}deg)`,
-                          fontSize: 10, // შემცირებულია 11-დან
+                          fontSize: 10,
                           color: 'rgba(251, 191, 36, 0.55)'
                         }}
                       >
@@ -206,20 +240,20 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
                   }}
                   transition={{ duration: 3.2, repeat: Infinity }}
                   style={{
-                    position: 'absolute', inset: 16, borderRadius: '50%', // შემცირებულია 20-დან
+                    position: 'absolute', inset: 16, borderRadius: '50%',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     background: 'radial-gradient(circle at 35% 30%, #ffe9a8, #fbbf24 55%, #a06f0c)',
                     border: '1px solid rgba(251, 191, 36, 0.6)'
                   }}
                 >
-                  <Sparkles size={22} style={{ color: '#3a2a05' }} /> {/* შემცირებულია 26-დან */}
+                  <Sparkles size={22} style={{ color: '#3a2a05' }} />
                 </motion.div>
               </div>
 
               <h2
                 style={{
                   margin: '0 0 6px 0',
-                  fontSize: '20px', // შემცირებულია 24px-დან
+                  fontSize: '20px',
                   fontWeight: 700,
                   letterSpacing: '0.3px',
                   color: '#ffe566',
@@ -247,7 +281,7 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
             </div>
 
             {/* List */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}> {/* შემცირებული padding და gap */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
               {loading ? (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 0' }}>
                   <motion.span
@@ -294,7 +328,7 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
                       style={{
                         position: 'relative',
                         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                        padding: '10px 12px', // შემცირებული padding
+                        padding: '10px 12px',
                         borderRadius: '12px',
                         background: styles.bg,
                         border: isCurrentUser ? '1px solid rgba(147, 112, 219, 0.5)' : styles.border,
@@ -319,7 +353,7 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
                         <div
                           style={{
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            width: '36px', height: '36px', borderRadius: '50%', // შემცირებული ზომა
+                            width: '36px', height: '36px', borderRadius: '50%',
                             fontWeight: 700, fontSize: '13px', flexShrink: 0,
                             background: styles.badgeBg,
                             color: styles.glyphColor,
