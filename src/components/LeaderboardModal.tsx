@@ -123,7 +123,7 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* ჰედერი */}
+            {/* Header Section */}
             <div 
               className="relative pt-8 pb-6 px-6 text-center flex-shrink-0"
               style={{ 
@@ -170,7 +170,7 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
                   textShadow: '0 0 20px rgba(255, 229, 102, 0.3)'
                 }}
               >
-                ლიდერბორდი
+                Leaderboard
               </h2>
               
               {userRank && (
@@ -181,13 +181,13 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
                     border: '1px solid rgba(197, 160, 89, 0.3)'
                   }}
                 >
-                  <span className="text-xs" style={{ color: '#b3a68c' }}>თქვენი ადგილი:</span>
+                  <span className="text-xs" style={{ color: '#b3a68c' }}>Your Rank:</span>
                   <span className="text-sm font-bold" style={{ color: '#ffe566' }}>#{userRank}</span>
                 </div>
               )}
             </div>
 
-            {/* მომხმარებლების სია */}
+            {/* Users List */}
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2">
               {loading ? (
                 <div className="flex flex-col items-center justify-center py-12">
@@ -197,12 +197,12 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
                     className="w-8 h-8 rounded-full border-2 border-t-transparent mb-3"
                     style={{ borderColor: '#C5A059', borderTopColor: 'transparent' }}
                   />
-                  <p className="text-sm" style={{ color: '#94a3b8' }}>ლიდერები იტვირთება...</p>
+                  <p className="text-sm" style={{ color: '#94a3b8' }}>Loading leaders...</p>
                 </div>
               ) : leaders.length === 0 ? (
                 <div className="text-center py-12">
                   <Trophy size={40} className="mx-auto mb-3" style={{ color: '#4b5563' }} />
-                  <p className="text-sm" style={{ color: '#94a3b8' }}>ჯერ არავინ არ არის</p>
+                  <p className="text-sm" style={{ color: '#94a3b8' }}>No seekers yet</p>
                 </div>
               ) : (
                 leaders.map((leader, index) => {
@@ -232,12 +232,12 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
                             color: '#fff'
                           }}
                         >
-                          ეს შენ ხარ
+                          YOU
                         </div>
                       )}
 
                       <div className="flex items-center gap-3">
-                        {/* რეიტინგის ბეჯი */}
+                        {/* Rank Badge */}
                         <div 
                           className="flex items-center justify-center w-10 h-10 rounded-full font-bold text-sm flex-shrink-0"
                           style={{ 
@@ -249,7 +249,7 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
                           {leader.rank <= 3 ? styles.icon : leader.rank}
                         </div>
                         
-                        {/* მომხმარებლის ინფო */}
+                        {/* User Info */}
                         <div>
                           <div className="text-sm font-bold flex items-center gap-1.5" style={{ color: '#fff' }}>
                             {leader.display_name}
@@ -275,7 +275,7 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
               )}
             </div>
 
-            {/* ქვედა ღილაკი */}
+            {/* Bottom Button */}
             <div className="p-4 flex-shrink-0" style={{ borderTop: '1px solid rgba(197, 160, 89, 0.15)' }}>
               <button 
                 onClick={onClose}
@@ -286,7 +286,7 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
                   boxShadow: '0 4px 20px rgba(197, 160, 89, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
                 }}
               >
-                დახურვა
+                Close
               </button>
             </div>
           </motion.div>

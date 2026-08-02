@@ -44,7 +44,7 @@ export default function StreakModal({ isOpen, onClose, currentStreak }: StreakMo
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* ზედა ნაწილი - ჰედერი გრადიენტით */}
+            {/* Header Section */}
             <div 
               className="relative pt-8 pb-6 px-6 text-center"
               style={{ 
@@ -91,19 +91,19 @@ export default function StreakModal({ isOpen, onClose, currentStreak }: StreakMo
                   textShadow: '0 0 20px rgba(255, 229, 102, 0.3)'
                 }}
               >
-                {currentStreak} {currentStreak === 1 ? 'დღე' : 'დღე'}
+                {currentStreak} Day{currentStreak !== 1 ? 's' : ''} Streak!
               </h2>
               <p className="text-sm" style={{ color: '#b3a68c' }}>
-                მიჯრით დღეების რაოდენობა
+                Consecutive days of activity
               </p>
             </div>
 
-            {/* პროგრესი შემდეგ ჯილდომდე */}
+            {/* Progress to next reward */}
             {nextMilestone && (
               <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(197, 160, 89, 0.15)' }}>
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-xs font-semibold" style={{ color: '#C5A059' }}>
-                    შემდეგი ჯილდო: {nextMilestone.days} დღე
+                    Next reward: {nextMilestone.days} days
                   </span>
                   <span className="text-xs" style={{ color: '#94a3b8' }}>
                     {currentStreak}/{nextMilestone.days}
@@ -124,7 +124,7 @@ export default function StreakModal({ isOpen, onClose, currentStreak }: StreakMo
               </div>
             )}
 
-            {/* ჯილდოების სია */}
+            {/* Milestones List */}
             <div className="px-4 py-4 space-y-2 max-h-[40vh] overflow-y-auto">
               {milestones.map((milestone, index) => (
                 <motion.div 
@@ -161,11 +161,11 @@ export default function StreakModal({ isOpen, onClose, currentStreak }: StreakMo
                     </div>
                     <div>
                       <div className="text-sm font-bold flex items-center gap-1" style={{ color: '#fff' }}>
-                        {milestone.days} დღე
+                        {milestone.days} Days
                         {milestone.isSpecial && <Sparkles size={12} style={{ color: '#FFD700' }} />}
                       </div>
                       <div className="text-xs" style={{ color: '#94a3b8' }}>
-                        {milestone.claimed ? 'უკვე მიღებულია' : 'ჯერ არ მიგიღწევია'}
+                        {milestone.claimed ? 'Claimed' : 'Locked'}
                       </div>
                     </div>
                   </div>
@@ -179,7 +179,7 @@ export default function StreakModal({ isOpen, onClose, currentStreak }: StreakMo
               ))}
             </div>
 
-            {/* ქვედა ღილაკი */}
+            {/* Bottom Button */}
             <div className="p-4" style={{ borderTop: '1px solid rgba(197, 160, 89, 0.15)' }}>
               <button 
                 onClick={onClose}
@@ -190,7 +190,7 @@ export default function StreakModal({ isOpen, onClose, currentStreak }: StreakMo
                   boxShadow: '0 4px 20px rgba(197, 160, 89, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
                 }}
               >
-                გავაგრძელო სტრიქის შენარჩუნება
+                Keep the Streak Alive
               </button>
             </div>
           </motion.div>
