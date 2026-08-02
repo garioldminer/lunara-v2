@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sparkles, Bug, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, Sparkles, Bug, ChevronDown, ChevronUp, Copy, Check } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface LeaderboardModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentUserId: string;
-  isAdmin?: boolean; // 🆕 Added for admin-only debug access
+  isAdmin?: boolean;
 }
 
 interface LeaderboardUser {
@@ -25,9 +25,9 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId, isAdm
   const [loading, setLoading] = useState(true);
   const [userRank, setUserRank] = useState<number | null>(null);
   
-  // 🆕 Debug states
   const [showDebug, setShowDebug] = useState(false);
   const [debugData, setDebugData] = useState<any>(null);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   useEffect(() => {
     if (isOpen) fetchLeaderboard();
@@ -41,7 +41,6 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId, isAdm
 
     setLoading(true);
     try {
-      // 1. Fetch top 10 users from user_economy
       const { data: economyData, error: economyError } = await supabase
         .from('user_economy')
         .select('user_id, xp, level')
@@ -49,31 +48,21 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId, isAdm
         .order('xp', { ascending: false })
         .limit(10);
 
-      // 2. Fetch display names for these users separately
       const userIds = economyData?.map((item: any) => item.user_id) || [];
       const { data: usersData, error: usersError } = await supabase
         .from('users')
         .select('id, display_name')
         .in('id', userIds);
 
-      // 🆕 Save raw data for the debug panel
-      setDebugData({
-        economyData,
-        economyError,
-        usersData,
-        usersError,
-        currentUserId
-      });
-
       if (economyError) throw economyError;
       if (!economyData || economyData.length === 0) {
         setLeaders([]);
         setUserRank(null);
+        setDebugData({ economyData, economyError, usersData, usersError, currentUserId, leadersCount: 0 });
         setLoading(false);
         return;
       }
 
-      // 3. Create a map of user_id -> display_name
       const nameMap: Record<string, string> = {};
       if (usersData) {
         usersData.forEach((u: any) => {
@@ -81,7 +70,6 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId, isAdm
         });
       }
 
-      // 4. Combine the data
       const formattedLeaders: LeaderboardUser[] = economyData.map((item: any, index: number) => ({
         id: item.user_id,
         display_name: nameMap[item.user_id] || 'Seeker',
@@ -92,7 +80,17 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId, isAdm
 
       setLeaders(formattedLeaders);
 
-      // 5. Calculate current user's exact rank
+      // ვინახავთ საბოლოო მასივს, რომ დავინახოთ რას აპირებს კომპონენტი დაარენდერებას
+      setDebugData({
+        economyData,
+        economyError,
+        usersData,
+        usersError,
+        currentUserId,
+        leadersCount: formattedLeaders.length,
+        leaders: formattedLeaders 
+      });
+
       const { data: currentUserData } = await supabase
         .from('user_economy')
         .select('xp, level')
@@ -116,6 +114,17 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId, isAdm
       setDebugData((prev: any) => ({ ...prev, fetchError: err }));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCopyDebug = async () => {
+    if (!debugData) return;
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(debugData, null, 2));
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy debug data:', err);
     }
   };
 
@@ -195,7 +204,6 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId, isAdm
               boxShadow: '0 25px 80px rgba(0,0,0,0.9), 0 0 40px rgba(197, 160, 89, 0.1)'
             }}
           >
-            {/* Header */}
             <div
               style={{
                 position: 'relative',
@@ -294,7 +302,6 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId, isAdm
               )}
             </div>
 
-            {/* List */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
               {loading ? (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 0' }}>
@@ -397,40 +404,63 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId, isAdm
                 })
               )}
 
-              {/* 🆕 ADMIN ONLY DEBUG PANEL */}
               {isAdmin && debugData && (
                 <div style={{ marginTop: '16px', borderTop: '1px solid rgba(239, 68, 68, 0.3)', paddingTop: '12px' }}>
-                  <button
-                    onClick={() => setShowDebug(!showDebug)}
-                    style={{
-                      width: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px',
-                      padding: '8px',
-                      background: 'rgba(239, 68, 68, 0.1)',
-                      border: '1px solid rgba(239, 68, 68, 0.3)',
-                      borderRadius: '8px',
-                      color: '#ef4444',
-                      fontSize: '11px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <Bug size={12} />
-                    {showDebug ? 'Hide Debug Data' : 'Show Debug Data'}
-                    {showDebug ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                    <button
+                      onClick={() => setShowDebug(!showDebug)}
+                      style={{
+                        flex: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        padding: '8px',
+                        background: 'rgba(239, 68, 68, 0.1)',
+                        border: '1px solid rgba(239, 68, 68, 0.3)',
+                        borderRadius: '8px',
+                        color: '#ef4444',
+                        fontSize: '11px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <Bug size={12} />
+                      {showDebug ? 'Hide Debug' : 'Show Debug'}
+                      {showDebug ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                    </button>
+                    
+                    <button
+                      onClick={handleCopyDebug}
+                      style={{
+                        flex: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        padding: '8px',
+                        background: copySuccess ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.1)',
+                        border: `1px solid ${copySuccess ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.3)'}`,
+                        borderRadius: '8px',
+                        color: copySuccess ? '#10b981' : '#ef4444',
+                        fontSize: '11px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      {copySuccess ? <Check size={12} /> : <Copy size={12} />}
+                      {copySuccess ? 'Copied!' : 'Copy Logs'}
+                    </button>
+                  </div>
 
                   {showDebug && (
                     <div style={{
-                      marginTop: '8px',
                       padding: '8px',
                       background: 'rgba(0,0,0,0.6)',
                       border: '1px solid rgba(239, 68, 68, 0.2)',
                       borderRadius: '8px',
-                      maxHeight: '200px',
+                      maxHeight: '250px',
                       overflowY: 'auto',
                       fontFamily: 'monospace',
                       fontSize: '10px',
@@ -445,7 +475,6 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId, isAdm
               )}
             </div>
 
-            {/* Footer */}
             <div style={{ padding: '12px 16px 16px 16px', flexShrink: 0, borderTop: '1px solid rgba(197, 160, 89, 0.15)' }}>
               <button
                 onClick={onClose}
