@@ -16,7 +16,9 @@ import {
   Crown, Scroll, ChevronRight, Gift, Shield, Infinity, RefreshCw
 } from 'lucide-react';
 import DebugPanel from './DebugPanel';
-import DiamondShopModal from './DiamondShopModal'; // ✅ დამატებულია
+import DiamondShopModal from './DiamondShopModal';
+import StreakModal from './StreakModal';
+import LeaderboardModal from './LeaderboardModal';
 import './HomeScreen.css';
 
 const getXPToNextLevel = (level: number): number => {
@@ -194,7 +196,11 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [showLevelUpModal, setShowLevelUpModal] = useState(false);
   const [leveledUpTo, setLeveledUpTo] = useState<number>(1);
   const [toast, setToast] = useState<Toast | null>(null);
-  const [isShopOpen, setIsShopOpen] = useState(false); // ✅ დამატებულია მაღაზიისთვის
+  const [isShopOpen, setIsShopOpen] = useState(false);
+  
+  // ✅ ახალი State ცვლადები მოდალებისთვის
+  const [showStreakModal, setShowStreakModal] = useState(false);
+  const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
 
   // Debug State
   const [showDebug, setShowDebug] = useState(false);
@@ -892,7 +898,6 @@ export default function HomeScreen({ onNavigate }: Props) {
             <div className="resource gems" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(147, 112, 219, 0.15)', padding: '4px 10px', borderRadius: '20px', border: '1px solid rgba(147, 112, 219, 0.3)', height: '22px' }}>
               <Gem size={12} className="resource-icon gem-icon" style={{ color: '#9370db', flexShrink: 0 }} />
               <span className="value" style={{ fontSize: '12px', fontWeight: '600', color: '#fff', textAlign: 'center' }}>{economy.cosmic_coins.toLocaleString()}</span>
-              {/* ✅ განახლებული ღილაკი: ხსნის მაღაზიის მოდალს */}
               <button 
                 className="add-btn" 
                 onClick={() => setIsShopOpen(true)}
@@ -982,6 +987,7 @@ export default function HomeScreen({ onNavigate }: Props) {
           </div>
         </div>
 
+        {/* ✅ განახლებული 4 ღილაკის პანელი */}
         <div className="action-buttons-panel" style={{ flex: '0 0 calc(40% - 2px)', minWidth: 0, background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)', border: '1px solid #332a1a', borderRadius: '14px', padding: '6px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)', display: 'flex' }}>
           <div className="action-grid-vertical" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: '4px', width: '100%', height: '100%' }}>
             <button className={`action-btn-vertical ${rewardClaimed ? 'claimed' : ''}`} onClick={handleClaimReward} disabled={rewardClaimed || isClaiming} style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: (rewardClaimed || isClaiming) ? 'not-allowed' : 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%', opacity: (rewardClaimed || isClaiming) ? 0.7 : 1 }}>
@@ -995,14 +1001,25 @@ export default function HomeScreen({ onNavigate }: Props) {
               )}
               {!rewardClaimed && !isClaiming && <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>50</div>}
             </button>
-            <button className="action-btn-vertical streak-btn-v" style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%' }}>
+            
+            <button 
+              className="action-btn-vertical streak-btn-v" 
+              onClick={() => setShowStreakModal(true)}
+              style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%' }}
+            >
               <Flame size={22} style={{ filter: 'drop-shadow(0 0 6px #ff6b35)', color: '#ff6b35', width: '20px', height: '20px' }} />
               <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>{currentStreak}</div>
             </button>
-            <button className="action-btn-vertical rank-btn-v" style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%' }}>
+            
+            <button 
+              className="action-btn-vertical rank-btn-v" 
+              onClick={() => setShowLeaderboardModal(true)}
+              style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%' }}
+            >
               <Trophy size={22} style={{ filter: 'drop-shadow(0 0 6px #ffd700)', color: '#ffd700', width: '20px', height: '20px' }} />
               <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>TOP</div>
             </button>
+            
             <button className={`action-btn-vertical ${activeSubscription ? 'subscription-btn-v' : 'upgrade-btn-v'}`} onClick={() => onNavigate && onNavigate(activeSubscription ? 'subscription' : 'pricing')} style={{ background: activeSubscription ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 165, 0, 0.05) 100%)' : 'rgba(255, 255, 255, 0.03)', border: activeSubscription ? '1px solid rgba(255, 215, 0, 0.4)' : '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%' }}>
               {activeSubscription ? (
                 <><Infinity size={22} style={{ filter: 'drop-shadow(0 0 6px #FFD700)', color: '#FFD700', width: '20px', height: '20px' }} /><div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>VIP</div></>
@@ -1126,7 +1143,7 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* ✅ დამატებულია დიამონდების მაღაზიის მოდალი (გასწორებული isAdmin-ით) */}
+      {/* ✅ დიამონდების მაღაზიის მოდალი */}
       {isShopOpen && user && (
         <DiamondShopModal 
           isOpen={isShopOpen} 
@@ -1138,6 +1155,21 @@ export default function HomeScreen({ onNavigate }: Props) {
             showToast('დიამონდები წარმატებით დაგერიცხა!', 'success');
             reloadFromDatabase();
           }}
+        />
+      )}
+
+      {/* ✅ ახალი მოდალები: Streak & Leaderboard */}
+      <StreakModal 
+        isOpen={showStreakModal} 
+        onClose={() => setShowStreakModal(false)} 
+        currentStreak={currentStreak} 
+      />
+
+      {user && (
+        <LeaderboardModal 
+          isOpen={showLeaderboardModal} 
+          onClose={() => setShowLeaderboardModal(false)} 
+          currentUserId={user.id} 
         />
       )}
 
