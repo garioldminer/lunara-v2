@@ -37,28 +37,47 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
 
     setLoading(true);
     try {
-      // 1. Fetch data from user_economy and join with users table to get display_name
-      // 2. Order by level (descending), then by xp (descending)
-      const { data, error } = await supabase
+      console.log('🔍 Fetching leaderboard data...');
+
+      // 1. Fetch top 10 users from user_economy (ordered by level, then xp)
+      const { data: economyData, error: economyError } = await supabase
         .from('user_economy')
-        .select(`
-          user_id,
-          xp,
-          level,
-          users (
-            display_name
-          )
-        `)
+        .select('user_id, xp, level')
         .order('level', { ascending: false })
         .order('xp', { ascending: false })
         .limit(10);
 
-      if (error) throw error;
+      console.log('📦 Economy data:', economyData, 'Error:', economyError);
 
-      // 3. Format the data for the modal
-      const formattedLeaders = (data || []).map((item: any, index: number) => ({
+      if (economyError) throw economyError;
+      if (!economyData || economyData.length === 0) {
+        setLeaders([]);
+        setUserRank(null);
+        setLoading(false);
+        return;
+      }
+
+      // 2. Fetch display names for these users separately (avoids Foreign Key join issues)
+      const userIds = economyData.map((item: any) => item.user_id);
+      const { data: usersData, error: usersError } = await supabase
+        .from('users')
+        .select('id, display_name')
+        .in('id', userIds);
+
+      console.log('📦 Users data:', usersData, 'Error:', usersError);
+
+      // 3. Create a map of user_id -> display_name
+      const nameMap: Record<string, string> = {};
+      if (usersData) {
+        usersData.forEach((u: any) => {
+          nameMap[u.id] = u.display_name || 'Seeker';
+        });
+      }
+
+      // 4. Combine the data
+      const formattedLeaders: LeaderboardUser[] = economyData.map((item: any, index: number) => ({
         id: item.user_id,
-        display_name: item.users?.display_name || 'Seeker',
+        display_name: nameMap[item.user_id] || 'Seeker',
         level: item.level || 1,
         xp: item.xp || 0,
         rank: index + 1
@@ -66,38 +85,27 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
 
       setLeaders(formattedLeaders);
 
-      // 4. Calculate current user's exact rank in the entire database
-      let userCurrentXp = 0;
-      let userCurrentLevel = 1;
+      // 5. Calculate current user's exact rank in the entire database
+      const { data: currentUserData } = await supabase
+        .from('user_economy')
+        .select('xp, level')
+        .eq('user_id', currentUserId)
+        .single();
 
-      const currentUserData = data?.find((item: any) => item.user_id === currentUserId);
       if (currentUserData) {
-        userCurrentXp = currentUserData.xp || 0;
-        userCurrentLevel = currentUserData.level || 1;
-      } else {
-        // If not in top 10, fetch their specific data to calculate rank accurately
-        const { data: userData } = await supabase
+        const userCurrentXp = currentUserData.xp || 0;
+        const userCurrentLevel = currentUserData.level || 1;
+
+        const { count } = await supabase
           .from('user_economy')
-          .select('xp, level')
-          .eq('user_id', currentUserId)
-          .single();
-        
-        if (userData) {
-          userCurrentXp = userData.xp || 0;
-          userCurrentLevel = userData.level || 1;
-        }
+          .select('*', { count: 'exact', head: true })
+          .or(`level.gt.${userCurrentLevel},and(level.eq.${userCurrentLevel},xp.gt.${userCurrentXp})`);
+
+        setUserRank(count !== null ? count + 1 : 99);
       }
 
-      // Count how many people are ahead of the user (higher level, or same level but higher XP)
-      const { count } = await supabase
-        .from('user_economy')
-        .select('*', { count: 'exact', head: true })
-        .or(`level.gt.${userCurrentLevel},and(level.eq.${userCurrentLevel},xp.gt.${userCurrentXp})`);
-
-      setUserRank(count !== null ? count + 1 : 99);
-
     } catch (err) {
-      console.error('Leaderboard fetch error:', err);
+      console.error('❌ Leaderboard fetch error:', err);
     } finally {
       setLoading(false);
     }
