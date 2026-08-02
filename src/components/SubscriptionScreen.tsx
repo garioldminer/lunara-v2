@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Crown, Calendar, XCircle, CheckCircle, Infinity, AlertTriangle, Gem } from 'lucide-react';
+// ✅ გასწორებულია: Infinity იმპორტირებულია როგორც InfinityIcon, რათა არ შეერიოს JS-ის გლობალურ Infinity რიცხვს
+import { ArrowLeft, Crown, Calendar, XCircle, CheckCircle, Infinity as InfinityIcon, AlertTriangle, Gem } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { getActiveSubscription, getUserSubscriptions, cancelSubscription, formatExpirationDate, Subscription } from '../lib/subscriptionService';
 import './SubscriptionScreen.css';
@@ -15,6 +16,7 @@ function CelestialRing({ size = 88, children }: { size?: number; children: React
     <div className="celestial-ring-wrap" style={{ width: size, height: size }}>
       <motion.div
         animate={{ rotate: 360 }}
+        // ✅ აქ Infinity ახლა სწორად მიუთითებს JavaScript-ის გლობალურ რიცხვზე (უსასრულობა)
         transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
         className="celestial-ring"
       >
@@ -132,7 +134,8 @@ export default function SubscriptionScreen({ onNavigate }: Props) {
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="active-badge">
-            <Infinity size={16} />
+            {/* ✅ გასწორებულია: InfinityIcon-ის გამოყენება */}
+            <InfinityIcon size={16} />
             <span>ACTIVE</span>
           </div>
 
