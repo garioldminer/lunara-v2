@@ -1,5 +1,4 @@
-import React from 'react';
-import { X, Flame, Gift, Calendar } from 'lucide-react';
+import { X, Flame, Calendar } from 'lucide-react';
 
 interface StreakModalProps {
   isOpen: boolean;

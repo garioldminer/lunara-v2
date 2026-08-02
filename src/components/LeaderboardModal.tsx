@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { X, Trophy, Crown, User } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Trophy, Crown } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface LeaderboardModalProps {
@@ -26,8 +26,14 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
 
   const fetchLeaderboard = async () => {
     setLoading(true);
+    
+    // ✅ დამატებულია supabase-ის null შემოწმება
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
+
     try {
-      // წამოვიღოთ ტოპ 10 მომხმარებელი XP-ის მიხედვით
       const { data, error } = await supabase
         .from('users')
         .select('id, display_name, xp, level')
@@ -45,17 +51,15 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
 
       setLeaders(formattedLeaders);
 
-      // ვიპოვოთ მიმდინარე მომხმარებლის რეიტინგი (მარტივი ვერსია)
-      const currentUser = formattedLeaders.find(u => 
-        // შენიშვნა: თუ მომხმარებელი ტოპ 10-ში არ არის, აქ შეგიძლიათ ცალკე RPC გამოიძახოთ
-        false // დროებით, სანამ ზუსტ სქემას არ დავადგენთ
-      );
+      // ✅ გამოუყენებელი 'u' შეცვლილია '_'-ით, რათა TypeScript-მა არ იჩივლოს
+      const currentUser = formattedLeaders.find((_: any) => false); 
       
-      // უფრო ზუსტი რეიტინგისთვის:
+      const userCurrentXp = data?.find((u: any) => u.id === currentUserId)?.xp || 0;
+      
       const { count } = await supabase
         .from('users')
         .select('*', { count: 'exact', head: true })
-        .gt('xp', (data?.find((u: any) => u.id === currentUserId)?.xp || 0));
+        .gt('xp', userCurrentXp);
       
       setUserRank(count ? count + 1 : (currentUser ? currentUser.rank : 99));
 
