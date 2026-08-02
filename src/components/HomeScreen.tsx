@@ -201,6 +201,9 @@ export default function HomeScreen({ onNavigate }: Props) {
   // ✅ ახალი State ცვლადები მოდალებისთვის
   const [showStreakModal, setShowStreakModal] = useState(false);
   const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
+  
+  // ✅ ახალი State ცვლადი XP ტესტირების ლოგებისთვის
+  const [xpTestLogs, setXpTestLogs] = useState<string[]>([]);
 
   // Debug State
   const [showDebug, setShowDebug] = useState(false);
@@ -410,6 +413,80 @@ export default function HomeScreen({ onNavigate }: Props) {
         setDbDebugInfo(prev => ({ ...prev, economyData: data }));
         addDebugLog('success', 'DB', '✅ Data reloaded successfully');
       }
+    }
+  };
+
+  // ✅ ახალი ფუნქცია: XP-ის დამატება ავტომატური ლეველის გადათვლით
+  const testAddXPWithLevel = async (amount: number) => {
+    if (!user || !supabase) return;
+    const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
+    setXpTestLogs(prev => [...prev, `[${timestamp}] Adding ${amount} XP via RPC...`]);
+    addDebugLog('info', 'XP_TEST', `🧪 Adding ${amount} XP with auto-level...`);
+    
+    try {
+      const { data, error } = await supabase.rpc('add_xp_and_recalc_level', {
+        p_user_id: user.id,
+        p_xp_amount: amount
+      });
+
+      if (error) {
+        setXpTestLogs(prev => [...prev, `[${timestamp}] ❌ ERROR: ${error.message}`]);
+        addDebugLog('error', 'XP_TEST', `❌ RPC Error: ${error.message}`);
+        showToast('XP test failed', 'error');
+        return;
+      }
+
+      if (data?.success) {
+        const logMsg = data.leveled_up 
+          ? `[${timestamp}] 🎉 LEVEL UP! ${data.old_level} → ${data.new_level} | Total XP: ${data.total_xp}`
+          : `[${timestamp}] ✅ +${amount} XP | Total: ${data.total_xp} | Level: ${data.new_level} | Next: ${data.xp_to_next} XP`;
+        
+        setXpTestLogs(prev => [...prev, logMsg]);
+        addDebugLog('success', 'XP_TEST', logMsg, data);
+        
+        // განაახლე ლოკალური სტეიტი ბაზიდან
+        await reloadFromDatabase();
+        
+        if (data.leveled_up) {
+          showToast(`Level Up! You are now Level ${data.new_level}!`, 'success');
+        } else {
+          showToast(`+${amount} XP added successfully`, 'success');
+        }
+      } else {
+        setXpTestLogs(prev => [...prev, `[${timestamp}] ❌ ${data?.error || 'Unknown error'}`]);
+      }
+    } catch (err: any) {
+      setXpTestLogs(prev => [...prev, `[${timestamp}] 💥 Exception: ${err.message}`]);
+      addDebugLog('error', 'XP_TEST', `💥 Exception: ${err.message}`);
+    }
+  };
+
+  // ✅ ახალი ფუნქცია: ლეველის ძალით გადათვლა ბაზიდან
+  const forceRecalcLevel = async () => {
+    if (!user || !supabase) return;
+    const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
+    setXpTestLogs(prev => [...prev, `[${timestamp}] 🔄 Force recalculating level from DB...`]);
+    addDebugLog('info', 'XP_TEST', '🔄 Force recalculating level...');
+    
+    try {
+      // გამოვიძახოთ RPC 0 XP-ით, რაც მხოლოდ ლეველს გადაითვლის
+      const { data, error } = await supabase.rpc('add_xp_and_recalc_level', {
+        p_user_id: user.id,
+        p_xp_amount: 0
+      });
+
+      if (error) {
+        setXpTestLogs(prev => [...prev, `[${timestamp}] ❌ ERROR: ${error.message}`]);
+        return;
+      }
+
+      if (data?.success) {
+        setXpTestLogs(prev => [...prev, `[${timestamp}] ✅ Level recalculated: ${data.new_level} | XP: ${data.total_xp} | Next: ${data.xp_to_next} XP`]);
+        await reloadFromDatabase();
+        showToast(`Level verified: ${data.new_level}`, 'info');
+      }
+    } catch (err: any) {
+      setXpTestLogs(prev => [...prev, `[${timestamp}] 💥 Exception: ${err.message}`]);
     }
   };
 
@@ -1202,6 +1279,9 @@ export default function HomeScreen({ onNavigate }: Props) {
           testSpendEnergy={testSpendEnergy}
           testCompleteQuest={testCompleteQuest}
           reloadFromDatabase={reloadFromDatabase}
+          testAddXPWithLevel={testAddXPWithLevel}
+          forceRecalcLevel={forceRecalcLevel}
+          xpTestLogs={xpTestLogs}
         />
       )}
     </div>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bug, X, CheckCircle, Activity, Settings, Terminal, Copy, Check } from 'lucide-react';
+import { Bug, X, CheckCircle, Activity, Settings, Terminal, Copy, Check, Zap, TrendingUp, RotateCcw } from 'lucide-react';
 
 interface DebugPanelProps {
   showDebug: boolean;
@@ -29,16 +29,21 @@ interface DebugPanelProps {
   testSpendEnergy: (amount: number) => void;
   testCompleteQuest: () => void;
   reloadFromDatabase: () => void;
+  // ✅ ახალი props XP სისტემისთვის
+  testAddXPWithLevel: (amount: number) => void;
+  forceRecalcLevel: () => void;
+  xpTestLogs: string[];
 }
 
-type TabType = 'overview' | 'quests' | 'actions' | 'logs';
+type TabType = 'overview' | 'quests' | 'actions' | 'xp' | 'logs';
 
 export default function DebugPanel({
   showDebug, setShowDebug, user, economy, dbDebugInfo, debugLogs, dbStatus,
   activeSubscription, questsLoading, dailyQuests, activeDailyQuest, isClaimingQuest,
   timeLeft, showQuestModal, rewardClaimed, isClaiming, currentStreak, setDebugLogs,
   checkDatabaseStatus, refreshUserDataDebug, handleLogoutAndReset, testAddCoins,
-  testAddXP, testAddEnergy, testSpendEnergy, testCompleteQuest, reloadFromDatabase
+  testAddXP, testAddEnergy, testSpendEnergy, testCompleteQuest, reloadFromDatabase,
+  testAddXPWithLevel, forceRecalcLevel, xpTestLogs
 }: DebugPanelProps) {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [copySuccess, setCopySuccess] = useState(false);
@@ -53,16 +58,38 @@ export default function DebugPanel({
     setTimeout(() => setCopySuccess(false), 2000);
   };
 
+  // XP Level thresholds (იგივე ლოგიკა, რაც ბაზაში)
+  const getXPToNextLevel = (level: number): number => {
+    if (level === 1) return 100;
+    if (level === 2) return 250;
+    if (level === 3) return 500;
+    if (level === 4) return 1000;
+    if (level === 5) return 2000;
+    return Math.floor(2000 * Math.pow(1.8, level - 5));
+  };
+
+  const xpToNext = getXPToNextLevel(economy.level || 1);
+  const currentLevelXP = (() => {
+    let remaining = economy.xp || 0;
+    let lvl = 1;
+    while (lvl < (economy.level || 1)) {
+      remaining -= getXPToNextLevel(lvl);
+      lvl++;
+    }
+    return Math.max(0, remaining);
+  })();
+  const xpPercent = Math.min((currentLevelXP / xpToNext) * 100, 100);
+
   const tabs = [
     { id: 'overview' as TabType, label: 'Overview', icon: Activity },
     { id: 'quests' as TabType, label: 'Quests', icon: CheckCircle },
     { id: 'actions' as TabType, label: 'Actions', icon: Settings },
+    { id: 'xp' as TabType, label: 'XP System', icon: Zap },
     { id: 'logs' as TabType, label: 'Logs', icon: Terminal },
   ];
 
   return (
     <>
-      {/* ✅ ეს ღილაკი ყოველთვის ჩანს, მიუხედავად იმისა, პანელი ღიაა თუ დახურული */}
       <button 
         onClick={() => setShowDebug(!showDebug)} 
         style={{ 
@@ -78,7 +105,6 @@ export default function DebugPanel({
         {showDebug ? <X size={24} /> : <Bug size={24} />}
       </button>
 
-      {/* ✅ პანელი ჩანს მხოლოდ მაშინ, როცა showDebug არის true */}
       {showDebug && (
         <div style={{ 
           position: 'fixed', bottom: '80px', right: '10px', left: '10px', zIndex: 10000, 
@@ -103,21 +129,21 @@ export default function DebugPanel({
           </div>
 
           {/* Tabs */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px', padding: '12px', borderBottom: '1px solid rgba(255, 229, 102, 0.2)', background: 'rgba(0,0,0,0.3)' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px', padding: '10px 12px', borderBottom: '1px solid rgba(255, 229, 102, 0.2)', background: 'rgba(0,0,0,0.3)' }}>
             {tabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 style={{
-                  flex: '1 1 40%', minWidth: '80px', padding: '8px', 
+                  flex: '1 1 30%', minWidth: '60px', padding: '6px 4px', 
                   background: activeTab === tab.id ? 'rgba(255, 229, 102, 0.2)' : 'transparent',
                   border: activeTab === tab.id ? '1px solid rgba(255, 229, 102, 0.5)' : '1px solid transparent',
                   borderRadius: '8px', color: activeTab === tab.id ? '#ffe566' : '#94a3b8',
-                  cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
-                  fontSize: '10px', fontWeight: 'bold', transition: 'all 0.2s'
+                  cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px',
+                  fontSize: '9px', fontWeight: 'bold', transition: 'all 0.2s'
                 }}
               >
-                <tab.icon size={16} />
+                <tab.icon size={14} />
                 {tab.label}
               </button>
             ))}
@@ -200,6 +226,117 @@ export default function DebugPanel({
                 <button onClick={handleLogoutAndReset} style={{ width: '100%', padding: '10px', background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <X size={14} style={{ marginRight: '4px' }} /> LOGOUT & RESET
                 </button>
+              </div>
+            )}
+
+            {/* ✅ ახალი ტაბი: XP SYSTEM */}
+            {activeTab === 'xp' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                
+                {/* Live Stats */}
+                <div style={{ padding: '12px', background: 'rgba(251, 191, 36, 0.1)', borderRadius: '8px', border: '1px solid rgba(251, 191, 36, 0.3)' }}>
+                  <div style={{ marginBottom: '8px', color: '#fbbf24', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <TrendingUp size={14} /> LIVE XP STATS
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
+                    <div>⭐ Level: <strong style={{ color: '#ffe566', fontSize: '14px' }}>{economy.level}</strong></div>
+                    <div>📊 Total XP: <strong style={{ color: '#ffe566' }}>{economy.xp}</strong></div>
+                    <div>📈 Level XP: <strong>{currentLevelXP}/{xpToNext}</strong></div>
+                    <div>🎯 Next Lvl: <strong>{xpToNext - currentLevelXP} XP</strong></div>
+                  </div>
+                  {/* XP Progress Bar */}
+                  <div style={{ height: '8px', borderRadius: '4px', background: 'rgba(255,255,255,0.1)', overflow: 'hidden' }}>
+                    <div style={{ 
+                      height: '100%', 
+                      width: `${xpPercent}%`, 
+                      background: 'linear-gradient(90deg, #fbbf24, #ffe566)', 
+                      borderRadius: '4px',
+                      transition: 'width 0.5s ease',
+                      boxShadow: '0 0 8px rgba(251, 191, 36, 0.5)'
+                    }} />
+                  </div>
+                  <div style={{ fontSize: '9px', color: '#94a3b8', marginTop: '4px', textAlign: 'right' }}>
+                    {xpPercent.toFixed(1)}% to Level {(economy.level || 1) + 1}
+                  </div>
+                </div>
+
+                {/* Level Thresholds Reference */}
+                <div style={{ padding: '12px', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
+                  <div style={{ marginBottom: '8px', color: '#a78bfa', fontWeight: 'bold', fontSize: '12px' }}>📋 LEVEL THRESHOLDS</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px', fontSize: '10px' }}>
+                    {[1,2,3,4,5,6,7].map(lvl => (
+                      <div key={lvl} style={{ 
+                        padding: '4px 6px', borderRadius: '4px',
+                        background: (economy.level || 1) >= lvl ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.03)',
+                        border: (economy.level || 1) === lvl ? '1px solid #10b981' : '1px solid transparent',
+                        color: (economy.level || 1) >= lvl ? '#10b981' : '#94a3b8'
+                      }}>
+                        L{lvl}: {getXPToNextLevel(lvl)} XP
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Test Actions */}
+                <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
+                  <div style={{ marginBottom: '8px', color: '#60a5fa', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Zap size={14} /> ADD XP (with Auto Level)
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '6px' }}>
+                    {[50, 100, 500, 2000].map(amount => (
+                      <button 
+                        key={amount}
+                        onClick={() => testAddXPWithLevel(amount)} 
+                        style={{ 
+                          padding: '8px 4px', 
+                          background: amount >= 500 ? 'linear-gradient(135deg, #fbbf24, #d97706)' : '#3b82f6', 
+                          border: 'none', borderRadius: '6px', 
+                          color: amount >= 500 ? '#000' : '#fff', 
+                          cursor: 'pointer', fontWeight: 'bold', fontSize: '11px'
+                        }}
+                      >
+                        +{amount}
+                      </button>
+                    ))}
+                  </div>
+                  <button 
+                    onClick={forceRecalcLevel} 
+                    style={{ 
+                      width: '100%', marginTop: '8px', padding: '10px', 
+                      background: 'rgba(239, 68, 68, 0.2)', border: '1px solid rgba(239, 68, 68, 0.4)', 
+                      borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
+                    }}
+                  >
+                    <RotateCcw size={12} /> Force Recalculate Level from DB
+                  </button>
+                </div>
+
+                {/* XP Test Logs */}
+                <div style={{ padding: '12px', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <div style={{ marginBottom: '8px', color: '#f472b6', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Terminal size={14} /> XP TEST LOGS ({xpTestLogs.length})
+                  </div>
+                  <div style={{ maxHeight: '150px', overflowY: 'auto', background: 'rgba(0,0,0,0.5)', borderRadius: '6px', padding: '6px' }}>
+                    {xpTestLogs.length === 0 ? (
+                      <div style={{ color: '#64748b', fontSize: '10px', textAlign: 'center', padding: '12px' }}>
+                        No XP tests yet. Click a button above!
+                      </div>
+                    ) : (
+                      xpTestLogs.slice().reverse().map((log, i) => (
+                        <div key={i} style={{ 
+                          padding: '4px 6px', marginBottom: '3px', fontSize: '10px',
+                          background: 'rgba(255,255,255,0.03)', borderRadius: '4px',
+                          color: log.includes('LEVEL UP') ? '#10b981' : 
+                                 log.includes('ERROR') ? '#ef4444' : '#e2e8f0',
+                          fontWeight: log.includes('LEVEL UP') ? 'bold' : 'normal'
+                        }}>
+                          {log}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 
