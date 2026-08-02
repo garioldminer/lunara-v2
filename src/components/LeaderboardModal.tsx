@@ -47,7 +47,7 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
 
       const formattedLeaders = (data || []).map((user: any, index: number) => ({
         id: user.id,
-        display_name: user.display_name || 'მაძიებელი',
+        display_name: user.display_name || 'Seeker',
         level: user.level || 1,
         xp: user.xp || 0,
         rank: index + 1
@@ -70,8 +70,8 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
   };
 
   // Rank 1-3 get a celestial body glyph instead of a generic medal.
-  // Sun = 1st, Moon = 2nd, a single star = 3rd — this maps naturally onto
-  // LUNARA's existing astrology vocabulary instead of borrowing sports iconography.
+  // Sun = 1st, Moon = 2nd, a single star = 3rd — maps onto LUNARA's existing
+  // astrology vocabulary instead of borrowing sports iconography.
   const getRankStyles = (rank: number) => {
     if (rank === 1) return {
       bg: 'linear-gradient(135deg, rgba(251, 191, 36, 0.18), rgba(197, 160, 89, 0.08))',
@@ -114,63 +114,80 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)' }}
           onClick={onClose}
+          style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            zIndex: 10005,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+            background: 'rgba(0,0,0,0.85)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)'
+          }}
         >
           <motion.div
             initial={{ scale: 0.85, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.85, opacity: 0, y: 20 }}
             transition={{ type: 'spring', damping: 26, stiffness: 320 }}
-            className="relative w-full max-w-sm rounded-3xl overflow-hidden flex flex-col"
+            onClick={(e) => e.stopPropagation()}
             style={{
+              position: 'relative',
+              width: '100%',
+              maxWidth: '380px',
+              maxHeight: '85vh',
+              borderRadius: '24px',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
               background: 'linear-gradient(180deg, #171209 0%, #0c0a06 100%)',
               border: '1px solid rgba(197, 160, 89, 0.35)',
-              boxShadow: '0 25px 80px rgba(0,0,0,0.9), 0 0 40px rgba(197, 160, 89, 0.1)',
-              maxHeight: '90vh'
+              boxShadow: '0 25px 80px rgba(0,0,0,0.9), 0 0 40px rgba(197, 160, 89, 0.1)'
             }}
-            onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
             <div
-              className="relative pt-8 pb-7 px-6 text-center flex-shrink-0 overflow-hidden"
               style={{
+                position: 'relative',
+                padding: '32px 24px 28px 24px',
+                textAlign: 'center',
+                flexShrink: 0,
+                overflow: 'hidden',
                 background: 'radial-gradient(120% 100% at 50% 0%, rgba(197, 160, 89, 0.16) 0%, rgba(15,12,8,0) 65%)',
                 borderBottom: '1px solid rgba(197, 160, 89, 0.18)'
               }}
             >
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 p-2 rounded-full transition-all hover:scale-110 z-10"
                 style={{
-                  background: 'rgba(0,0,0,0.4)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  color: '#94a3b8'
+                  position: 'absolute', top: '16px', right: '16px', zIndex: 10,
+                  padding: '8px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)',
+                  background: 'rgba(0,0,0,0.4)', color: '#94a3b8', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}
               >
                 <X size={18} />
               </button>
 
               {/* Celestial ring — the signature element: a slow-turning zodiac wheel
-                  behind a still central glyph, echoing LUNARA's astrology theme
-                  instead of a generic trophy icon. */}
-              <div
-                className="relative mx-auto mb-4"
-                style={{ width: 96, height: 96 }}
-              >
+                  behind a still central glyph, echoing LUNARA's astrology theme. */}
+              <div style={{ position: 'relative', width: 96, height: 96, margin: '0 auto 16px auto' }}>
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
-                  className="absolute inset-0"
+                  style={{ position: 'absolute', inset: 0 }}
                 >
                   {ZODIAC_GLYPHS.map((glyph, i) => {
                     const angle = (360 / ZODIAC_GLYPHS.length) * i;
                     return (
                       <span
                         key={glyph}
-                        className="absolute inset-0 flex items-start justify-center"
                         style={{
+                          position: 'absolute', inset: 0,
+                          display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
                           transform: `rotate(${angle}deg)`,
                           fontSize: 11,
                           color: 'rgba(251, 191, 36, 0.55)'
@@ -191,9 +208,9 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
                     ]
                   }}
                   transition={{ duration: 3.2, repeat: Infinity }}
-                  className="absolute rounded-full flex items-center justify-center"
                   style={{
-                    inset: 20,
+                    position: 'absolute', inset: 20, borderRadius: '50%',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
                     background: 'radial-gradient(circle at 35% 30%, #ffe9a8, #fbbf24 55%, #a06f0c)',
                     border: '1px solid rgba(251, 191, 36, 0.6)'
                   }}
@@ -203,34 +220,38 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
               </div>
 
               <h2
-                className="text-2xl font-bold mb-2 tracking-wide"
                 style={{
+                  margin: '0 0 10px 0',
+                  fontSize: '24px',
+                  fontWeight: 700,
+                  letterSpacing: '0.3px',
                   color: '#ffe566',
                   fontFamily: 'Georgia, serif',
                   textShadow: '0 0 20px rgba(255, 229, 102, 0.3)'
                 }}
               >
-                ვარსკვლავთა რეიტინგი
+                Celestial Rankings
               </h2>
 
               {userRank && (
                 <div
-                  className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full"
                   style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '8px',
+                    padding: '6px 16px', borderRadius: '999px',
                     background: 'rgba(197, 160, 89, 0.15)',
                     border: '1px solid rgba(197, 160, 89, 0.3)'
                   }}
                 >
-                  <span className="text-xs" style={{ color: '#b3a68c' }}>შენი ადგილი:</span>
-                  <span className="text-sm font-bold" style={{ color: '#ffe566' }}>#{userRank}</span>
+                  <span style={{ fontSize: '12px', color: '#b3a68c' }}>Your Rank:</span>
+                  <span style={{ fontSize: '14px', fontWeight: 700, color: '#ffe566' }}>#{userRank}</span>
                 </div>
               )}
             </div>
 
             {/* List */}
-            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2">
+            <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {loading ? (
-                <div className="flex flex-col items-center justify-center py-12">
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 0' }}>
                   <motion.span
                     animate={{ rotate: 360 }}
                     transition={{ duration: 2.4, repeat: Infinity, ease: 'linear' }}
@@ -238,11 +259,11 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
                   >
                     ☾
                   </motion.span>
-                  <p className="text-sm mt-3" style={{ color: '#94a3b8' }}>რეიტინგი იტვირთება...</p>
+                  <p style={{ fontSize: '13px', marginTop: '12px', color: '#94a3b8' }}>Loading rankings...</p>
                 </div>
               ) : leaders.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="relative mx-auto mb-4" style={{ width: 90, height: 60 }}>
+                <div style={{ textAlign: 'center', padding: '48px 0' }}>
+                  <div style={{ margin: '0 auto 16px auto', width: 90, height: 60 }}>
                     <svg viewBox="0 0 90 60" width="90" height="60">
                       <g stroke="rgba(197, 160, 89, 0.35)" strokeWidth="1">
                         <line x1="10" y1="45" x2="30" y2="15" />
@@ -259,7 +280,7 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
                       </g>
                     </svg>
                   </div>
-                  <p className="text-sm" style={{ color: '#94a3b8' }}>ჯერ არავინ დაუტოვებია კვალი</p>
+                  <p style={{ fontSize: '13px', color: '#94a3b8' }}>No one has left their mark yet</p>
                 </div>
               ) : (
                 leaders.map((leader, index) => {
@@ -272,29 +293,35 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
-                      className="flex items-center justify-between p-3 rounded-xl transition-all relative"
                       style={{
+                        position: 'relative',
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        padding: '12px', borderRadius: '14px',
                         background: styles.bg,
-                        border: isCurrentUser
-                          ? '1px solid rgba(147, 112, 219, 0.5)'
-                          : styles.border,
+                        border: isCurrentUser ? '1px solid rgba(147, 112, 219, 0.5)' : styles.border,
                         boxShadow: isCurrentUser ? '0 0 15px rgba(147, 112, 219, 0.2)' : 'none'
                       }}
                     >
                       {isCurrentUser && (
                         <div
-                          className="absolute -top-2 right-3 px-2 py-0.5 rounded text-[9px] font-bold"
-                          style={{ background: '#9370db', color: '#fff' }}
+                          style={{
+                            position: 'absolute', top: '-8px', right: '12px',
+                            padding: '2px 8px', borderRadius: '4px',
+                            fontSize: '9px', fontWeight: 700,
+                            background: '#9370db', color: '#fff'
+                          }}
                         >
-                          შენ
+                          YOU
                         </div>
                       )}
 
-                      <div className="flex items-center gap-3">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         {/* Rank badge */}
                         <div
-                          className="flex items-center justify-center w-10 h-10 rounded-full font-bold text-sm flex-shrink-0"
                           style={{
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            width: '40px', height: '40px', borderRadius: '50%',
+                            fontWeight: 700, fontSize: '14px', flexShrink: 0,
                             background: styles.badgeBg,
                             color: styles.glyphColor,
                             boxShadow: styles.badgeGlow
@@ -305,21 +332,21 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
 
                         {/* User info */}
                         <div>
-                          <div className="text-sm font-bold" style={{ color: '#fff' }}>
+                          <div style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>
                             {leader.display_name}
                           </div>
-                          <div className="text-xs" style={{ color: '#94a3b8' }}>
-                            დონე {leader.level}
+                          <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+                            Level {leader.level}
                           </div>
                         </div>
                       </div>
 
                       {/* XP */}
-                      <div className="text-right">
-                        <div className="text-sm font-bold" style={{ color: '#ffe566' }}>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '14px', fontWeight: 700, color: '#ffe566' }}>
                           {leader.xp.toLocaleString()}
                         </div>
-                        <div className="text-[10px]" style={{ color: '#94a3b8' }}>XP</div>
+                        <div style={{ fontSize: '10px', color: '#94a3b8' }}>XP</div>
                       </div>
                     </motion.div>
                   );
@@ -328,17 +355,18 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
             </div>
 
             {/* Footer */}
-            <div className="p-4 flex-shrink-0" style={{ borderTop: '1px solid rgba(197, 160, 89, 0.15)' }}>
+            <div style={{ padding: '16px', flexShrink: 0, borderTop: '1px solid rgba(197, 160, 89, 0.15)' }}>
               <button
                 onClick={onClose}
-                className="w-full py-3.5 rounded-xl font-bold text-sm tracking-wide transition-all hover:scale-[1.02] active:scale-[0.98]"
                 style={{
+                  width: '100%', padding: '14px', borderRadius: '12px', border: 'none',
+                  fontSize: '14px', fontWeight: 700, letterSpacing: '0.3px', cursor: 'pointer',
                   background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)',
                   color: '#0f0c08',
                   boxShadow: '0 4px 20px rgba(197, 160, 89, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
                 }}
               >
-                დახურვა
+                Close
               </button>
             </div>
           </motion.div>

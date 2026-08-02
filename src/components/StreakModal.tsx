@@ -16,108 +16,127 @@ export default function StreakModal({ isOpen, onClose, currentStreak }: StreakMo
   ];
 
   const nextMilestone = milestones.find(m => !m.claimed);
-  const progressToNext = nextMilestone 
-    ? Math.min((currentStreak / nextMilestone.days) * 100, 100) 
-    : 100;
+  const progressToNext = nextMilestone ? Math.min((currentStreak / nextMilestone.days) * 100, 100) : 100;
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)' }}
           onClick={onClose}
+          style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            zIndex: 10005,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+            background: 'rgba(0,0,0,0.85)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)'
+          }}
         >
-          <motion.div 
-            initial={{ scale: 0.8, opacity: 0, y: 20 }}
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.8, opacity: 0, y: 20 }}
+            exit={{ scale: 0.9, opacity: 0, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-sm rounded-3xl overflow-hidden"
-            style={{ 
-              background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)',
-              border: '1px solid rgba(197, 160, 89, 0.4)',
-              boxShadow: '0 25px 80px rgba(0,0,0,0.9), 0 0 40px rgba(255, 107, 53, 0.15), inset 0 1px 0 rgba(255,255,255,0.05)'
-            }}
             onClick={(e) => e.stopPropagation()}
+            style={{
+              position: 'relative',
+              width: '100%',
+              maxWidth: '380px',
+              maxHeight: '85vh',
+              borderRadius: '24px',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)',
+              border: '1px solid rgba(197, 160, 89, 0.3)',
+              boxShadow: '0 25px 80px rgba(0,0,0,0.9), 0 0 40px rgba(197, 160, 89, 0.1)'
+            }}
           >
-            {/* Header Section */}
-            <div 
-              className="relative pt-8 pb-6 px-6 text-center"
-              style={{ 
-                background: 'linear-gradient(135deg, rgba(255, 107, 53, 0.15) 0%, rgba(197, 160, 89, 0.1) 100%)',
+            {/* Header */}
+            <div
+              style={{
+                position: 'relative',
+                padding: '32px 24px 24px 24px',
+                textAlign: 'center',
+                flexShrink: 0,
                 borderBottom: '1px solid rgba(197, 160, 89, 0.2)'
               }}
             >
-              <button 
+              <button
                 onClick={onClose}
-                className="absolute top-4 right-4 p-2 rounded-full transition-all hover:scale-110"
-                style={{ 
-                  background: 'rgba(0,0,0,0.4)', 
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  color: '#94a3b8'
+                style={{
+                  position: 'absolute', top: '16px', right: '16px', zIndex: 10,
+                  padding: '8px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)',
+                  background: 'rgba(0,0,0,0.4)', color: '#94a3b8', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}
               >
                 <X size={18} />
               </button>
 
-              <motion.div 
-                animate={{ 
+              <motion.div
+                animate={{
                   scale: [1, 1.1, 1],
-                  filter: [
-                    'drop-shadow(0 0 15px rgba(255, 107, 53, 0.6))',
-                    'drop-shadow(0 0 25px rgba(255, 107, 53, 0.9))',
-                    'drop-shadow(0 0 15px rgba(255, 107, 53, 0.6))'
+                  boxShadow: [
+                    '0 0 16px rgba(255, 107, 53, 0.45)',
+                    '0 0 28px rgba(255, 107, 53, 0.7)',
+                    '0 0 16px rgba(255, 107, 53, 0.45)'
                   ]
                 }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4"
-                style={{ 
-                  background: 'linear-gradient(135deg, rgba(255, 107, 53, 0.3), rgba(255, 165, 0, 0.2))',
+                style={{
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  width: '80px', height: '80px', borderRadius: '50%', marginBottom: '16px',
+                  background: 'rgba(255, 107, 53, 0.18)',
                   border: '2px solid rgba(255, 107, 53, 0.5)'
                 }}
               >
                 <Flame size={40} style={{ color: '#ff6b35' }} />
               </motion.div>
 
-              <h2 
-                className="text-3xl font-bold mb-2 tracking-wide" 
-                style={{ 
-                  color: '#ffe566', 
+              <h2
+                style={{
+                  margin: '0 0 8px 0',
+                  fontSize: '26px',
+                  fontWeight: 700,
+                  color: '#ffe566',
                   fontFamily: 'Georgia, serif',
                   textShadow: '0 0 20px rgba(255, 229, 102, 0.3)'
                 }}
               >
                 {currentStreak} Day{currentStreak !== 1 ? 's' : ''} Streak!
               </h2>
-              <p className="text-sm" style={{ color: '#b3a68c' }}>
+              <p style={{ margin: 0, fontSize: '13px', color: '#b3a68c' }}>
                 Consecutive days of activity
               </p>
             </div>
 
-            {/* Progress to next reward */}
+            {/* Progress Bar */}
             {nextMilestone && (
-              <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(197, 160, 89, 0.15)' }}>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs font-semibold" style={{ color: '#C5A059' }}>
+              <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(197, 160, 89, 0.15)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: '#C5A059' }}>
                     Next reward: {nextMilestone.days} days
                   </span>
-                  <span className="text-xs" style={{ color: '#94a3b8' }}>
+                  <span style={{ fontSize: '11px', color: '#94a3b8' }}>
                     {currentStreak}/{nextMilestone.days}
                   </span>
                 </div>
-                <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)' }}>
-                  <motion.div 
+                <div style={{ height: '8px', borderRadius: '999px', overflow: 'hidden', background: 'rgba(255,255,255,0.05)' }}>
+                  <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${progressToNext}%` }}
                     transition={{ duration: 1, ease: 'easeOut' }}
-                    className="h-full rounded-full"
-                    style={{ 
-                      background: 'linear-gradient(90deg, #ff6b35, #ffe566)',
-                      boxShadow: '0 0 10px rgba(255, 229, 102, 0.5)'
+                    style={{
+                      height: '100%', borderRadius: '999px',
+                      background: 'linear-gradient(90deg, #ff6b35, #ffe566)'
                     }}
                   />
                 </div>
@@ -125,53 +144,52 @@ export default function StreakModal({ isOpen, onClose, currentStreak }: StreakMo
             )}
 
             {/* Milestones List */}
-            <div className="px-4 py-4 space-y-2 max-h-[40vh] overflow-y-auto">
+            <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '40vh' }}>
               {milestones.map((milestone, index) => (
-                <motion.div 
+                <motion.div
                   key={index}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="flex items-center justify-between p-3 rounded-xl transition-all"
-                  style={{ 
-                    background: milestone.claimed 
-                      ? 'rgba(16, 185, 129, 0.1)' 
-                      : milestone.isSpecial 
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '12px', borderRadius: '14px', border: '1px solid',
+                    background: milestone.claimed
+                      ? 'rgba(16, 185, 129, 0.1)'
+                      : milestone.isSpecial
                         ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(197, 160, 89, 0.05))'
                         : 'rgba(255, 255, 255, 0.02)',
-                    border: milestone.claimed 
-                      ? '1px solid rgba(16, 185, 129, 0.3)' 
+                    borderColor: milestone.claimed
+                      ? 'rgba(16, 185, 129, 0.3)'
                       : milestone.isSpecial
-                        ? '1px solid rgba(255, 215, 0, 0.3)'
-                        : '1px solid rgba(255, 255, 255, 0.06)',
+                        ? 'rgba(255, 215, 0, 0.3)'
+                        : 'rgba(255, 255, 255, 0.06)',
                     opacity: milestone.claimed ? 0.6 : 1
                   }}
                 >
-                  <div className="flex items-center gap-3">
-                    <div 
-                      className="flex items-center justify-center w-10 h-10 rounded-full text-lg"
-                      style={{ 
-                        background: milestone.claimed 
-                          ? 'rgba(16, 185, 129, 0.2)' 
-                          : 'rgba(197, 160, 89, 0.15)',
-                        border: `1px solid ${milestone.claimed ? 'rgba(16, 185, 129, 0.4)' : 'rgba(197, 160, 89, 0.3)'}`
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        width: '40px', height: '40px', borderRadius: '50%', fontSize: '18px',
+                        background: 'rgba(197, 160, 89, 0.15)',
+                        border: '1px solid rgba(197, 160, 89, 0.3)'
                       }}
                     >
                       {milestone.claimed ? '✅' : milestone.icon}
                     </div>
                     <div>
-                      <div className="text-sm font-bold flex items-center gap-1" style={{ color: '#fff' }}>
-                        {milestone.days} Days
-                        {milestone.isSpecial && <Sparkles size={12} style={{ color: '#FFD700' }} />}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '14px', fontWeight: 700, color: '#fff' }}>
+                        {milestone.days} Days {milestone.isSpecial && <Sparkles size={12} style={{ color: '#FFD700' }} />}
                       </div>
-                      <div className="text-xs" style={{ color: '#94a3b8' }}>
+                      <div style={{ fontSize: '11px', color: '#94a3b8' }}>
                         {milestone.claimed ? 'Claimed' : 'Locked'}
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <Gem size={14} style={{ color: milestone.claimed ? '#10b981' : '#ffe566' }} />
-                    <span className="text-sm font-bold" style={{ color: milestone.claimed ? '#10b981' : '#ffe566' }}>
+                    <span style={{ fontSize: '14px', fontWeight: 700, color: milestone.claimed ? '#10b981' : '#ffe566' }}>
                       {milestone.reward}
                     </span>
                   </div>
@@ -180,11 +198,12 @@ export default function StreakModal({ isOpen, onClose, currentStreak }: StreakMo
             </div>
 
             {/* Bottom Button */}
-            <div className="p-4" style={{ borderTop: '1px solid rgba(197, 160, 89, 0.15)' }}>
-              <button 
+            <div style={{ padding: '16px', flexShrink: 0, borderTop: '1px solid rgba(197, 160, 89, 0.15)' }}>
+              <button
                 onClick={onClose}
-                className="w-full py-3.5 rounded-xl font-bold text-sm tracking-wide transition-all hover:scale-[1.02] active:scale-[0.98]"
-                style={{ 
+                style={{
+                  width: '100%', padding: '14px', borderRadius: '12px', border: 'none',
+                  fontSize: '14px', fontWeight: 700, letterSpacing: '0.3px', cursor: 'pointer',
                   background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)',
                   color: '#0f0c08',
                   boxShadow: '0 4px 20px rgba(197, 160, 89, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
