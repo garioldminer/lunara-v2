@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Flame, Calendar, Gem, Sparkles } from 'lucide-react';
+import { X, Flame, Gem, Sparkles } from 'lucide-react';
 
 interface StreakModalProps {
   isOpen: boolean;
