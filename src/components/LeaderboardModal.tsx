@@ -70,8 +70,6 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
   };
 
   // Rank 1-3 get a celestial body glyph instead of a generic medal.
-  // Sun = 1st, Moon = 2nd, a single star = 3rd — maps onto LUNARA's existing
-  // astrology vocabulary instead of borrowing sports iconography.
   const getRankStyles = (rank: number) => {
     if (rank === 1) return {
       bg: 'linear-gradient(135deg, rgba(251, 191, 36, 0.18), rgba(197, 160, 89, 0.08))',
@@ -122,24 +120,24 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '20px',
+            padding: '16px', // შემცირებულია 20px-დან
             background: 'rgba(0,0,0,0.85)',
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)'
           }}
         >
           <motion.div
-            initial={{ scale: 0.85, opacity: 0, y: 20 }}
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.85, opacity: 0, y: 20 }}
+            exit={{ scale: 0.9, opacity: 0, y: 20 }}
             transition={{ type: 'spring', damping: 26, stiffness: 320 }}
             onClick={(e) => e.stopPropagation()}
             style={{
               position: 'relative',
               width: '100%',
-              maxWidth: '380px',
+              maxWidth: '360px', // შემცირებულია 380px-დან
               maxHeight: '85vh',
-              borderRadius: '24px',
+              borderRadius: '20px', // შემცირებულია 24px-დან
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
@@ -152,7 +150,7 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
             <div
               style={{
                 position: 'relative',
-                padding: '32px 24px 28px 24px',
+                padding: '24px 20px 20px 20px', // შემცირებული padding
                 textAlign: 'center',
                 flexShrink: 0,
                 overflow: 'hidden',
@@ -163,18 +161,17 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
               <button
                 onClick={onClose}
                 style={{
-                  position: 'absolute', top: '16px', right: '16px', zIndex: 10,
-                  padding: '8px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)',
+                  position: 'absolute', top: '12px', right: '12px', zIndex: 10,
+                  padding: '6px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)',
                   background: 'rgba(0,0,0,0.4)', color: '#94a3b8', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}
               >
-                <X size={18} />
+                <X size={16} /> {/* შემცირებულია 18-დან */}
               </button>
 
-              {/* Celestial ring — the signature element: a slow-turning zodiac wheel
-                  behind a still central glyph, echoing LUNARA's astrology theme. */}
-              <div style={{ position: 'relative', width: 96, height: 96, margin: '0 auto 16px auto' }}>
+              {/* Celestial ring */}
+              <div style={{ position: 'relative', width: 72, height: 72, margin: '0 auto 12px auto' }}> {/* შემცირებულია 96-დან */}
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
@@ -189,7 +186,7 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
                           position: 'absolute', inset: 0,
                           display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
                           transform: `rotate(${angle}deg)`,
-                          fontSize: 11,
+                          fontSize: 10, // შემცირებულია 11-დან
                           color: 'rgba(251, 191, 36, 0.55)'
                         }}
                       >
@@ -202,27 +199,27 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
                 <motion.div
                   animate={{
                     boxShadow: [
-                      '0 0 14px rgba(251, 191, 36, 0.45)',
-                      '0 0 26px rgba(251, 191, 36, 0.75)',
-                      '0 0 14px rgba(251, 191, 36, 0.45)'
+                      '0 0 10px rgba(251, 191, 36, 0.45)',
+                      '0 0 20px rgba(251, 191, 36, 0.75)',
+                      '0 0 10px rgba(251, 191, 36, 0.45)'
                     ]
                   }}
                   transition={{ duration: 3.2, repeat: Infinity }}
                   style={{
-                    position: 'absolute', inset: 20, borderRadius: '50%',
+                    position: 'absolute', inset: 16, borderRadius: '50%', // შემცირებულია 20-დან
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     background: 'radial-gradient(circle at 35% 30%, #ffe9a8, #fbbf24 55%, #a06f0c)',
                     border: '1px solid rgba(251, 191, 36, 0.6)'
                   }}
                 >
-                  <Sparkles size={26} style={{ color: '#3a2a05' }} />
+                  <Sparkles size={22} style={{ color: '#3a2a05' }} /> {/* შემცირებულია 26-დან */}
                 </motion.div>
               </div>
 
               <h2
                 style={{
-                  margin: '0 0 10px 0',
-                  fontSize: '24px',
+                  margin: '0 0 6px 0',
+                  fontSize: '20px', // შემცირებულია 24px-დან
                   fontWeight: 700,
                   letterSpacing: '0.3px',
                   color: '#ffe566',
@@ -236,35 +233,36 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
               {userRank && (
                 <div
                   style={{
-                    display: 'inline-flex', alignItems: 'center', gap: '8px',
-                    padding: '6px 16px', borderRadius: '999px',
+                    display: 'inline-flex', alignItems: 'center', gap: '6px',
+                    padding: '4px 12px',
+                    borderRadius: '999px',
                     background: 'rgba(197, 160, 89, 0.15)',
                     border: '1px solid rgba(197, 160, 89, 0.3)'
                   }}
                 >
-                  <span style={{ fontSize: '12px', color: '#b3a68c' }}>Your Rank:</span>
-                  <span style={{ fontSize: '14px', fontWeight: 700, color: '#ffe566' }}>#{userRank}</span>
+                  <span style={{ fontSize: '11px', color: '#b3a68c' }}>Your Rank:</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffe566' }}>#{userRank}</span>
                 </div>
               )}
             </div>
 
             {/* List */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}> {/* შემცირებული padding და gap */}
               {loading ? (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 0' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 0' }}>
                   <motion.span
                     animate={{ rotate: 360 }}
                     transition={{ duration: 2.4, repeat: Infinity, ease: 'linear' }}
-                    style={{ fontSize: 26, color: '#C5A059', display: 'inline-block' }}
+                    style={{ fontSize: 22, color: '#C5A059', display: 'inline-block' }}
                   >
                     ☾
                   </motion.span>
-                  <p style={{ fontSize: '13px', marginTop: '12px', color: '#94a3b8' }}>Loading rankings...</p>
+                  <p style={{ fontSize: '12px', marginTop: '8px', color: '#94a3b8' }}>Loading rankings...</p>
                 </div>
               ) : leaders.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '48px 0' }}>
-                  <div style={{ margin: '0 auto 16px auto', width: 90, height: 60 }}>
-                    <svg viewBox="0 0 90 60" width="90" height="60">
+                <div style={{ textAlign: 'center', padding: '32px 0' }}>
+                  <div style={{ margin: '0 auto 12px auto', width: 70, height: 45 }}>
+                    <svg viewBox="0 0 90 60" width="100%" height="100%">
                       <g stroke="rgba(197, 160, 89, 0.35)" strokeWidth="1">
                         <line x1="10" y1="45" x2="30" y2="15" />
                         <line x1="30" y1="15" x2="55" y2="25" />
@@ -280,7 +278,7 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
                       </g>
                     </svg>
                   </div>
-                  <p style={{ fontSize: '13px', color: '#94a3b8' }}>No one has left their mark yet</p>
+                  <p style={{ fontSize: '12px', color: '#94a3b8' }}>No one has left their mark yet</p>
                 </div>
               ) : (
                 leaders.map((leader, index) => {
@@ -290,13 +288,14 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
                   return (
                     <motion.div
                       key={leader.id}
-                      initial={{ opacity: 0, x: -20 }}
+                      initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
                       style={{
                         position: 'relative',
                         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                        padding: '12px', borderRadius: '14px',
+                        padding: '10px 12px', // შემცირებული padding
+                        borderRadius: '12px',
                         background: styles.bg,
                         border: isCurrentUser ? '1px solid rgba(147, 112, 219, 0.5)' : styles.border,
                         boxShadow: isCurrentUser ? '0 0 15px rgba(147, 112, 219, 0.2)' : 'none'
@@ -305,9 +304,9 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
                       {isCurrentUser && (
                         <div
                           style={{
-                            position: 'absolute', top: '-8px', right: '12px',
-                            padding: '2px 8px', borderRadius: '4px',
-                            fontSize: '9px', fontWeight: 700,
+                            position: 'absolute', top: '-6px', right: '10px',
+                            padding: '2px 6px', borderRadius: '4px',
+                            fontSize: '8px', fontWeight: 700,
                             background: '#9370db', color: '#fff'
                           }}
                         >
@@ -315,13 +314,13 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
                         </div>
                       )}
 
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         {/* Rank badge */}
                         <div
                           style={{
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            width: '40px', height: '40px', borderRadius: '50%',
-                            fontWeight: 700, fontSize: '14px', flexShrink: 0,
+                            width: '36px', height: '36px', borderRadius: '50%', // შემცირებული ზომა
+                            fontWeight: 700, fontSize: '13px', flexShrink: 0,
                             background: styles.badgeBg,
                             color: styles.glyphColor,
                             boxShadow: styles.badgeGlow
@@ -332,10 +331,10 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
 
                         {/* User info */}
                         <div>
-                          <div style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>
+                          <div style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>
                             {leader.display_name}
                           </div>
-                          <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+                          <div style={{ fontSize: '10px', color: '#94a3b8' }}>
                             Level {leader.level}
                           </div>
                         </div>
@@ -343,10 +342,10 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
 
                       {/* XP */}
                       <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '14px', fontWeight: 700, color: '#ffe566' }}>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#ffe566' }}>
                           {leader.xp.toLocaleString()}
                         </div>
-                        <div style={{ fontSize: '10px', color: '#94a3b8' }}>XP</div>
+                        <div style={{ fontSize: '9px', color: '#94a3b8' }}>XP</div>
                       </div>
                     </motion.div>
                   );
@@ -355,15 +354,15 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId }: Lea
             </div>
 
             {/* Footer */}
-            <div style={{ padding: '16px', flexShrink: 0, borderTop: '1px solid rgba(197, 160, 89, 0.15)' }}>
+            <div style={{ padding: '12px 16px 16px 16px', flexShrink: 0, borderTop: '1px solid rgba(197, 160, 89, 0.15)' }}>
               <button
                 onClick={onClose}
                 style={{
-                  width: '100%', padding: '14px', borderRadius: '12px', border: 'none',
-                  fontSize: '14px', fontWeight: 700, letterSpacing: '0.3px', cursor: 'pointer',
+                  width: '100%', padding: '12px', borderRadius: '10px', border: 'none',
+                  fontSize: '13px', fontWeight: 700, letterSpacing: '0.3px', cursor: 'pointer',
                   background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)',
                   color: '#0f0c08',
-                  boxShadow: '0 4px 20px rgba(197, 160, 89, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
+                  boxShadow: '0 4px 15px rgba(197, 160, 89, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
                 }}
               >
                 Close
