@@ -1,9 +1,36 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Crown, Calendar, XCircle, CheckCircle, Infinity, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Crown, Calendar, XCircle, CheckCircle, Infinity, AlertTriangle, Gem } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { getActiveSubscription, getUserSubscriptions, cancelSubscription, formatExpirationDate, Subscription } from '../lib/subscriptionService';
 import './SubscriptionScreen.css';
+
+// The 12 zodiac glyphs used to build the rotating celestial ring — the same
+// signature element used in the Leaderboard and Streak modals, so premium
+// status reads as part of LUNARA's astrology world rather than generic UI.
+const ZODIAC_GLYPHS = ['♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓'];
+
+function CelestialRing({ size = 88, children }: { size?: number; children: React.ReactNode }) {
+  return (
+    <div className="celestial-ring-wrap" style={{ width: size, height: size }}>
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
+        className="celestial-ring"
+      >
+        {ZODIAC_GLYPHS.map((glyph, i) => {
+          const angle = (360 / ZODIAC_GLYPHS.length) * i;
+          return (
+            <span key={glyph} className="celestial-glyph" style={{ transform: `rotate(${angle}deg)` }}>
+              {glyph}
+            </span>
+          );
+        })}
+      </motion.div>
+      <div className="celestial-center">{children}</div>
+    </div>
+  );
+}
 
 interface Props {
   onNavigate?: (screen: string) => void;
@@ -26,13 +53,13 @@ export default function SubscriptionScreen({ onNavigate }: Props) {
 
   const loadSubscriptionData = async () => {
     if (!user) return;
-    
+
     setLoading(true);
     const [active, history] = await Promise.all([
       getActiveSubscription(user.id),
       getUserSubscriptions(user.id)
     ]);
-    
+
     setActiveSubscription(active);
     setSubscriptionHistory(history);
     setLoading(false);
@@ -40,22 +67,22 @@ export default function SubscriptionScreen({ onNavigate }: Props) {
 
   const handleCancelSubscription = async () => {
     if (!user) return;
-    
+
     setCancelling(true);
     const success = await cancelSubscription(user.id);
-    
+
     if (success) {
       setCancelSuccess(true);
       setShowCancelConfirm(false);
-      
-      // განაახლე მონაცემები
+
+      // Refresh data
       await loadSubscriptionData();
-      
+
       setTimeout(() => {
         setCancelSuccess(false);
       }, 3000);
     }
-    
+
     setCancelling(false);
   };
 
@@ -63,7 +90,7 @@ export default function SubscriptionScreen({ onNavigate }: Props) {
     return (
       <div className="subscription-screen">
         <div className="subscription-loading">
-          <div className="loading-spinner"></div>
+          <span className="loading-moon">☾</span>
           <p>Loading subscription...</p>
         </div>
       </div>
@@ -109,12 +136,14 @@ export default function SubscriptionScreen({ onNavigate }: Props) {
             <span>ACTIVE</span>
           </div>
 
-          <div className="subscription-plan-icon">💎</div>
-          
+          <CelestialRing>
+            <Gem size={30} style={{ color: '#ffe9a8' }} />
+          </CelestialRing>
+
           <h2 className="subscription-plan-name">
             Premium {activeSubscription.plan_type === 'monthly' ? 'Monthly' : 'Yearly'}
           </h2>
-          
+
           <p className="subscription-plan-description">
             Unlimited readings + AI Insights
           </p>
@@ -202,10 +231,12 @@ export default function SubscriptionScreen({ onNavigate }: Props) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <div className="no-subscription-icon">👑</div>
+          <CelestialRing size={80}>
+            <Crown size={28} style={{ color: '#ffe9a8' }} />
+          </CelestialRing>
           <h2>No Active Subscription</h2>
           <p>Unlock unlimited readings and premium features</p>
-          
+
           <button
             className="subscribe-btn"
             onClick={() => onNavigate?.('pricing')}
@@ -252,7 +283,10 @@ export default function SubscriptionScreen({ onNavigate }: Props) {
 
       {/* Cancel Confirmation Modal */}
       {showCancelConfirm && (
-        <div className="cancel-modal-overlay" onClick={() => !cancelling && setShowCancelConfirm(false)}>
+        <div
+          className="cancel-modal-overlay"
+          onClick={() => !cancelling && setShowCancelConfirm(false)}
+        >
           <motion.div
             className="cancel-modal"
             initial={{ opacity: 0, scale: 0.9 }}
