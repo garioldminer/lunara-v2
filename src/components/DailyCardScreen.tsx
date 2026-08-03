@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Heart, Briefcase, Star, Share2, Lock, Bookmark, BookOpen, ArrowLeft } from 'lucide-react';
 import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards';
@@ -22,6 +22,299 @@ interface DailyReading {
   question?: string;
 }
 
+// ============================================
+// 🌌 COSMIC BACKGROUND COMPONENT
+// ============================================
+function CosmicBackground() {
+  // ვარსკვლავების გენერაცია
+  const stars = useMemo(() => Array.from({ length: 60 }, (_, i) => ({
+    id: i,
+    left: `${Math.random() * 100}%`,
+    top: `${Math.random() * 100}%`,
+    size: Math.random() * 2.5 + 0.5,
+    opacity: Math.random() * 0.8 + 0.2,
+    delay: `${Math.random() * 5}s`,
+    duration: 2 + Math.random() * 4
+  })), []);
+
+  // ზოდიაქოს სიმბოლოები
+  const zodiacSymbols = useMemo(() => [
+    { symbol: '♈', left: '8%', top: '15%', size: 18, delay: 0 },
+    { symbol: '♉', left: '85%', top: '25%', size: 16, delay: 1 },
+    { symbol: '♊', left: '12%', top: '75%', size: 20, delay: 2 },
+    { symbol: '♋', left: '88%', top: '70%', size: 17, delay: 0.5 },
+    { symbol: '', left: '5%', top: '45%', size: 19, delay: 1.5 },
+    { symbol: '♍', left: '92%', top: '50%', size: 16, delay: 2.5 },
+    { symbol: '♎', left: '50%', top: '5%', size: 18, delay: 0.8 },
+    { symbol: '♏', left: '50%', top: '92%', size: 17, delay: 1.8 },
+  ], []);
+
+  // ტაროს მინი-სიმბოლოები
+  const tarotSymbols = useMemo(() => [
+    { symbol: '✦', left: '20%', top: '30%', size: 14, delay: 0 },
+    { symbol: '☽', left: '75%', top: '40%', size: 16, delay: 1 },
+    { symbol: '', left: '30%', top: '85%', size: 13, delay: 2 },
+    { symbol: '☀', left: '70%', top: '15%', size: 15, delay: 0.5 },
+    { symbol: '🌙', left: '15%', top: '60%', size: 14, delay: 1.5 },
+    { symbol: '✧', left: '82%', top: '85%', size: 12, delay: 2.5 },
+  ], []);
+
+  // პლანეტები
+  const planets = useMemo(() => [
+    { left: '25%', top: '20%', size: 8, ringSize: 14, color: '#a78bfa', delay: 0 },
+    { left: '78%', top: '60%', size: 6, ringSize: 11, color: '#fbbf24', delay: 1 },
+    { left: '40%', top: '75%', size: 7, ringSize: 12, color: '#60a5fa', delay: 2 },
+  ], []);
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0, left: 0, right: 0, bottom: 0,
+      zIndex: 0,
+      overflow: 'hidden',
+      pointerEvents: 'none'
+    }}>
+      {/* ღრმა კოსმიური gradient */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        background: `
+          radial-gradient(ellipse at 20% 30%, rgba(80, 40, 120, 0.3) 0%, transparent 50%),
+          radial-gradient(ellipse at 80% 70%, rgba(40, 20, 80, 0.3) 0%, transparent 50%),
+          radial-gradient(ellipse at 50% 50%, rgba(100, 50, 150, 0.15) 0%, transparent 60%),
+          radial-gradient(ellipse at 50% 0%, rgba(197, 160, 89, 0.08) 0%, transparent 40%),
+          linear-gradient(180deg, #0a0515 0%, #050310 50%, #020108 100%)
+        `
+      }} />
+
+      {/* გალაქტიკის ნისლი 1 - იისფერი */}
+      <motion.div
+        animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
+        transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          position: 'absolute',
+          top: '10%',
+          left: '10%',
+          width: '50%',
+          height: '40%',
+          background: 'radial-gradient(ellipse at center, rgba(120, 60, 180, 0.15) 0%, transparent 70%)',
+          filter: 'blur(40px)'
+        }}
+      />
+
+      {/* გალაქტიკის ნისლი 2 - ურჯი */}
+      <motion.div
+        animate={{ x: [0, -25, 0], y: [0, 15, 0] }}
+        transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          position: 'absolute',
+          bottom: '20%',
+          right: '10%',
+          width: '45%',
+          height: '35%',
+          background: 'radial-gradient(ellipse at center, rgba(60, 40, 150, 0.12) 0%, transparent 70%)',
+          filter: 'blur(35px)'
+        }}
+      />
+
+      {/* გალაქტიკის ნისლი 3 - ოქროსფერი აქცენტი */}
+      <motion.div
+        animate={{ x: [0, 20, 0], y: [0, 10, 0] }}
+        transition={{ duration: 30, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          position: 'absolute',
+          top: '40%',
+          left: '30%',
+          width: '40%',
+          height: '30%',
+          background: 'radial-gradient(ellipse at center, rgba(197, 160, 89, 0.08) 0%, transparent 70%)',
+          filter: 'blur(30px)'
+        }}
+      />
+
+      {/* ვარსკვლავები */}
+      {stars.map((star) => (
+        <motion.div
+          key={`star-${star.id}`}
+          animate={{ 
+            opacity: [star.opacity, star.opacity * 0.2, star.opacity],
+            scale: [1, 1.4, 1]
+          }}
+          transition={{ 
+            duration: star.duration, 
+            repeat: Infinity, 
+            delay: star.delay,
+            ease: "easeInOut"
+          }}
+          style={{
+            position: 'absolute',
+            left: star.left,
+            top: star.top,
+            width: `${star.size}px`,
+            height: `${star.size}px`,
+            borderRadius: '50%',
+            background: star.size > 2 ? '#ffffff' : 'rgba(255, 255, 255, 0.8)',
+            boxShadow: star.size > 2 
+              ? '0 0 8px rgba(255, 255, 255, 0.9), 0 0 16px rgba(255, 255, 255, 0.5)' 
+              : '0 0 4px rgba(255, 255, 255, 0.6)',
+          }}
+        />
+      ))}
+
+      {/* მთვარე - ზედა მარცხენივ */}
+      <motion.div
+        animate={{ y: [0, -5, 0], rotate: [0, 2, 0] }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          position: 'absolute',
+          top: '8%',
+          left: '6%',
+          width: '50px',
+          height: '50px',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle at 35% 35%, #f1f5f9 0%, #cbd5e1 40%, #64748b 100%)',
+          boxShadow: '0 0 30px rgba(203, 213, 225, 0.4), 0 0 60px rgba(203, 213, 225, 0.2), inset -8px -4px 0 rgba(0,0,0,0.3)',
+        }}
+      >
+        {/* მთვარის კრატერები */}
+        <div style={{ position: 'absolute', top: '30%', left: '25%', width: '8px', height: '8px', borderRadius: '50%', background: 'rgba(100, 116, 139, 0.4)' }} />
+        <div style={{ position: 'absolute', top: '55%', left: '50%', width: '6px', height: '6px', borderRadius: '50%', background: 'rgba(100, 116, 139, 0.3)' }} />
+      </motion.div>
+
+      {/* მზე - ზედა მარჯვნივ */}
+      <motion.div
+        animate={{ y: [0, 5, 0], scale: [1, 1.05, 1] }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          position: 'absolute',
+          top: '12%',
+          right: '8%',
+          width: '40px',
+          height: '40px',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle at 35% 35%, #fef3c7 0%, #fbbf24 40%, #d97706 100%)',
+          boxShadow: '0 0 40px rgba(251, 191, 36, 0.6), 0 0 80px rgba(251, 191, 36, 0.3), 0 0 120px rgba(251, 191, 36, 0.15)',
+        }}
+      />
+
+      {/* პლანეტები */}
+      {planets.map((planet, i) => (
+        <motion.div
+          key={`planet-${i}`}
+          animate={{ y: [0, -8, 0], x: [0, 5, 0] }}
+          transition={{ duration: 10 + i * 2, repeat: Infinity, ease: "easeInOut", delay: planet.delay }}
+          style={{
+            position: 'absolute',
+            left: planet.left,
+            top: planet.top,
+            width: `${planet.size}px`,
+            height: `${planet.size}px`,
+            borderRadius: '50%',
+            background: planet.color,
+            boxShadow: `0 0 15px ${planet.color}80`,
+          }}
+        >
+          {/* პლანეტის ring */}
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%) rotateX(75deg)',
+            width: `${planet.ringSize}px`,
+            height: `${planet.ringSize}px`,
+            borderRadius: '50%',
+            border: `1.5px solid ${planet.color}60`,
+          }} />
+        </motion.div>
+      ))}
+
+      {/* ზოდიაქოს სიმბოლოები */}
+      {zodiacSymbols.map((z, i) => (
+        <motion.div
+          key={`zodiac-${i}`}
+          animate={{ 
+            y: [0, -10, 0],
+            opacity: [0.15, 0.3, 0.15]
+          }}
+          transition={{ 
+            duration: 12 + i, 
+            repeat: Infinity, 
+            ease: "easeInOut",
+            delay: z.delay
+          }}
+          style={{
+            position: 'absolute',
+            left: z.left,
+            top: z.top,
+            fontSize: `${z.size}px`,
+            color: 'rgba(197, 160, 89, 0.25)',
+            textShadow: '0 0 10px rgba(197, 160, 89, 0.3)',
+            fontWeight: 300,
+          }}
+        >
+          {z.symbol}
+        </motion.div>
+      ))}
+
+      {/* ტაროს მინი-სიმბოლოები */}
+      {tarotSymbols.map((s, i) => (
+        <motion.div
+          key={`tarot-${i}`}
+          animate={{ 
+            y: [0, 12, 0],
+            rotate: [0, 5, 0],
+            opacity: [0.2, 0.4, 0.2]
+          }}
+          transition={{ 
+            duration: 8 + i * 2, 
+            repeat: Infinity, 
+            ease: "easeInOut",
+            delay: s.delay
+          }}
+          style={{
+            position: 'absolute',
+            left: s.left,
+            top: s.top,
+            fontSize: `${s.size}px`,
+            color: 'rgba(251, 191, 36, 0.3)',
+            textShadow: '0 0 8px rgba(251, 191, 36, 0.4)',
+          }}
+        >
+          {s.symbol}
+        </motion.div>
+      ))}
+
+      {/* Shooting Star - იშვიათი ეფექტი */}
+      <motion.div
+        animate={{ 
+          x: ['-100px', '400px'],
+          y: ['50px', '200px'],
+          opacity: [0, 1, 0]
+        }}
+        transition={{ 
+          duration: 3, 
+          repeat: Infinity, 
+          repeatDelay: 15,
+          ease: "easeOut"
+        }}
+        style={{
+          position: 'absolute',
+          top: '20%',
+          left: '10%',
+          width: '80px',
+          height: '2px',
+          background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent)',
+          boxShadow: '0 0 10px rgba(255, 255, 255, 0.6)',
+          transform: 'rotate(-15deg)',
+        }}
+      />
+    </div>
+  );
+}
+
+// ============================================
+// MAIN COMPONENT
+// ============================================
 export default function DailyCardScreen({ onNavigate }: Props) {
   const [dailyReading, setDailyReading] = useState<DailyReading | null>(null);
   const [stage, setStage] = useState<'selecting' | 'revealing' | 'revealed'>('selecting');
@@ -122,8 +415,13 @@ export default function DailyCardScreen({ onNavigate }: Props) {
 
   if (!dailyReading) {
     return (
-      <div style={{ minHeight: '100vh', background: 'radial-gradient(ellipse at 50% 0%, #14101c 0%, #0a0600 55%, #07050a 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C5A059' }}>
-        <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}><Sparkles size={32} /></motion.div>
+      <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden' }}>
+        <CosmicBackground />
+        <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', color: '#C5A059' }}>
+          <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}>
+            <Sparkles size={32} />
+          </motion.div>
+        </div>
       </div>
     );
   }
@@ -132,21 +430,9 @@ export default function DailyCardScreen({ onNavigate }: Props) {
   const meaning = isReversed ? card.reversed_meaning : card.meaning;
   const keywords = isReversed ? card.reversed_keywords : card.keywords;
 
-  // ✅ კოსმიური ვარსკვლავების გენერაცია
-  const stars = Array.from({ length: 35 }, (_, i) => ({
-    id: i,
-    left: `${Math.random() * 100}%`,
-    top: `${Math.random() * 100}%`,
-    size: Math.random() * 2.5 + 0.5,
-    opacity: Math.random() * 0.7 + 0.3,
-    animationDelay: `${Math.random() * 4}s`,
-    duration: 2 + Math.random() * 3
-  }));
-
   const containerStyle: React.CSSProperties = {
     minHeight: '100vh',
-    // ✅ კოსმიური gradient მთლიანი გვერდისთვის
-    background: 'radial-gradient(ellipse at 50% 30%, rgba(40, 20, 70, 0.4) 0%, rgba(20, 10, 40, 0.3) 30%, rgba(10, 6, 20, 0.6) 60%, #050408 100%)',
+    position: 'relative',
     color: '#fff',
     paddingTop: 'calc(70px + env(safe-area-inset-top, 0px))',
     paddingBottom: 'calc(20px + env(safe-area-inset-bottom, 0px))',
@@ -156,73 +442,35 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     flexDirection: 'column',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     overflowY: 'auto',
-    WebkitOverflowScrolling: 'touch',
-    position: 'relative'
+    WebkitOverflowScrolling: 'touch'
   };
 
   const actionBtnStyle: React.CSSProperties = {
     width: '48px', height: '48px', borderRadius: '50%',
-    background: 'rgba(10, 8, 20, 0.6)',
-    border: '1px solid rgba(197, 160, 89, 0.3)',
-    backdropFilter: 'blur(8px)',
+    background: 'rgba(10, 8, 20, 0.5)',
+    border: '1px solid rgba(197, 160, 89, 0.4)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     color: '#C5A059', cursor: 'pointer',
-    transition: 'all 0.2s ease'
+    transition: 'all 0.2s ease',
+    boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
   };
 
   return (
     <div style={containerStyle}>
-      {/* ✅ კოსმიური ვარსკვლავები მთლიან ფონზე */}
-      {stars.map((star) => (
-        <motion.div
-          key={star.id}
-          animate={{ 
-            opacity: [star.opacity, star.opacity * 0.2, star.opacity],
-            scale: [1, 1.3, 1]
-          }}
-          transition={{ 
-            duration: star.duration, 
-            repeat: Infinity, 
-            delay: star.animationDelay,
-            ease: "easeInOut"
-          }}
-          style={{
-            position: 'absolute',
-            left: star.left,
-            top: star.top,
-            width: `${star.size}px`,
-            height: `${star.size}px`,
-            borderRadius: '50%',
-            background: star.size > 1.8 ? 'rgba(255, 255, 255, 0.9)' : 'rgba(197, 160, 89, 0.7)',
-            boxShadow: star.size > 1.8 ? '0 0 6px rgba(255, 255, 255, 0.8)' : '0 0 3px rgba(197, 160, 89, 0.5)',
-            pointerEvents: 'none',
-            zIndex: 0
-          }}
-        />
-      ))}
-
-      {/* კოსმიური ნისლის ეფექტი */}
-      <div style={{
-        position: 'absolute',
-        top: '10%',
-        left: '20%',
-        width: '60%',
-        height: '40%',
-        background: 'radial-gradient(ellipse at center, rgba(100, 50, 150, 0.12) 0%, transparent 70%)',
-        filter: 'blur(30px)',
-        pointerEvents: 'none',
-        zIndex: 0
-      }} />
+      {/* 🌌 კოსმიური ფონი */}
+      <CosmicBackground />
 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingLeft: '5px', paddingRight: '5px', position: 'relative', zIndex: 1 }}>
         <button 
           onClick={() => onNavigate?.('home')}
-          style={{ background: 'rgba(10, 8, 20, 0.6)', border: '1px solid rgba(197, 160, 89, 0.3)', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C5A059', cursor: 'pointer', backdropFilter: 'blur(8px)' }}
+          style={{ background: 'rgba(10, 8, 20, 0.5)', border: '1px solid rgba(197, 160, 89, 0.4)', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C5A059', cursor: 'pointer', backdropFilter: 'blur(12px)' }}
         >
           <ArrowLeft size={20} />
         </button>
-        <div style={{ fontSize: '11px', color: '#94a3b8', letterSpacing: '1px', textTransform: 'uppercase' }}>
+        <div style={{ fontSize: '11px', color: '#94a3b8', letterSpacing: '1px', textTransform: 'uppercase', background: 'rgba(10, 8, 20, 0.4)', padding: '6px 12px', borderRadius: '20px', backdropFilter: 'blur(8px)' }}>
           {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
         </div>
         <div style={{ width: '40px' }} />
@@ -231,22 +479,22 @@ export default function DailyCardScreen({ onNavigate }: Props) {
       <AnimatePresence mode="wait">
         {stage === 'selecting' && (
           <motion.div key="selecting" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} style={{ padding: '0 10px', position: 'relative', zIndex: 1 }}>
-            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+            <div style={{ textAlign: 'center', marginBottom: '20px', background: 'rgba(10, 8, 20, 0.4)', padding: '20px', borderRadius: '16px', backdropFilter: 'blur(12px)', border: '1px solid rgba(197, 160, 89, 0.15)' }}>
               <div style={{ fontSize: '40px', marginBottom: '8px' }}>🔮</div>
               <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#C5A059' }}>Set Your Intention</h2>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
               {(['general', 'love', 'career', 'custom'] as FocusArea[]).map((focus) => (
-                <motion.button key={focus} whileTap={{ scale: 0.96 }} onClick={() => handleFocusSelect(focus)} style={{ padding: '14px', background: selectedFocus === focus ? 'rgba(197, 160, 89, 0.15)' : 'rgba(255,255,255,0.03)', border: selectedFocus === focus ? '1.5px solid #C5A059' : '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                <motion.button key={focus} whileTap={{ scale: 0.96 }} onClick={() => handleFocusSelect(focus)} style={{ padding: '14px', background: selectedFocus === focus ? 'rgba(197, 160, 89, 0.2)' : 'rgba(10, 8, 20, 0.5)', border: selectedFocus === focus ? '1.5px solid #C5A059' : '1px solid rgba(197, 160, 89, 0.2)', borderRadius: '10px', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', cursor: 'pointer', backdropFilter: 'blur(8px)' }}>
                   <div style={{ color: selectedFocus === focus ? '#C5A059' : '#94a3b8' }}>{getFocusIcon(focus)}</div>
                   <span style={{ fontSize: '13px', fontWeight: '600' }}>{focus.charAt(0).toUpperCase() + focus.slice(1)}</span>
                 </motion.button>
               ))}
             </div>
             {showQuestionInput && (
-              <textarea value={customQuestion} onChange={(e) => setCustomQuestion(e.target.value)} placeholder="Your question..." style={{ width: '100%', marginTop: '12px', padding: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(197, 160, 89, 0.3)', borderRadius: '10px', color: '#fff', fontSize: '13px', minHeight: '60px', boxSizing: 'border-box' }} />
+              <textarea value={customQuestion} onChange={(e) => setCustomQuestion(e.target.value)} placeholder="Your question..." style={{ width: '100%', marginTop: '12px', padding: '12px', background: 'rgba(10, 8, 20, 0.6)', border: '1px solid rgba(197, 160, 89, 0.3)', borderRadius: '10px', color: '#fff', fontSize: '13px', minHeight: '60px', boxSizing: 'border-box', backdropFilter: 'blur(8px)' }} />
             )}
-            <motion.button whileTap={{ scale: 0.98 }} onClick={handleReveal} style={{ width: '100%', marginTop: '16px', padding: '14px', background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)', border: 'none', borderRadius: '10px', color: '#0f0c08', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}>
+            <motion.button whileTap={{ scale: 0.98 }} onClick={handleReveal} style={{ width: '100%', marginTop: '16px', padding: '14px', background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)', border: 'none', borderRadius: '10px', color: '#0f0c08', fontSize: '15px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 4px 20px rgba(197, 160, 89, 0.4)' }}>
               Reveal My Card
             </motion.button>
           </motion.div>
@@ -263,12 +511,12 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         {stage === 'revealed' && (
           <motion.div key="revealed" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} style={{ display: 'flex', flexDirection: 'column', flex: 1, position: 'relative', zIndex: 1 }}>
             
-            {/* ✅ კარტი + მარჯვენა სვეტი - ჩარჩოს გარეშე, პირდაპირ კოსმიურ ფონზე */}
+            {/* კარტი + მარჯვენა სვეტი */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
               
-              {/* ✅ ბარათი - პირდაპირ კოსმიურ ფონზე */}
+              {/* ბარათი - ტივტივებს კოსმოსში */}
               <motion.div
-                animate={{ y: [0, -8, 0] }}
+                animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                 style={{
                   width: '220px',
@@ -276,13 +524,11 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                   borderRadius: '12px',
                   overflow: 'hidden',
                   position: 'relative',
-                  // ✅ კარტის კანტი
                   border: '2px solid rgba(197, 160, 89, 0.8)',
                   boxShadow: isReversed 
-                    ? '0 0 35px rgba(167, 139, 250, 0.5), 0 10px 25px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.5)' 
-                    : '0 0 35px rgba(197, 160, 89, 0.5), 0 10px 25px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.5)',
+                    ? '0 0 40px rgba(167, 139, 250, 0.6), 0 0 80px rgba(167, 139, 250, 0.3), 0 10px 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.5)' 
+                    : '0 0 40px rgba(197, 160, 89, 0.6), 0 0 80px rgba(197, 160, 89, 0.3), 0 10px 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.5)',
                   transform: isReversed ? 'rotate(180deg)' : 'rotate(0deg)',
-                  // ✅ ფონი კარტის უკან (contain-ის შემთხვევაში)
                   background: 'radial-gradient(ellipse at center, rgba(40, 20, 60, 0.3) 0%, rgba(5, 5, 10, 0.95) 100%)'
                 }}
               >
@@ -290,12 +536,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                   <img 
                     src={card.image_url} 
                     alt={card.name} 
-                    style={{ 
-                      width: '100%', 
-                      height: '100%', 
-                      objectFit: 'contain',
-                      display: 'block'
-                    }} 
+                    style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} 
                   />
                 ) : (
                   <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #2a2215, #1a1510)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
@@ -313,18 +554,12 @@ export default function DailyCardScreen({ onNavigate }: Props) {
               </motion.div>
 
               {/* მარჯვენა სვეტი */}
-              <div style={{ 
-                width: '48px', 
-                display: 'flex', 
-                flexDirection: 'column', 
-                gap: '14px', 
-                marginLeft: '12px'
-              }}>
-                <motion.button whileTap={{ scale: 0.9 }} onClick={() => !hasPremium && onNavigate?.('pricing')} style={{ ...actionBtnStyle, background: hasPremium ? 'rgba(16, 185, 129, 0.15)' : 'rgba(255, 215, 0, 0.1)', borderColor: hasPremium ? 'rgba(16, 185, 129, 0.4)' : 'rgba(255, 215, 0, 0.4)', color: hasPremium ? '#10b981' : '#FFD700' }}>
+              <div style={{ width: '48px', display: 'flex', flexDirection: 'column', gap: '14px', marginLeft: '12px' }}>
+                <motion.button whileTap={{ scale: 0.9 }} onClick={() => !hasPremium && onNavigate?.('pricing')} style={{ ...actionBtnStyle, background: hasPremium ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 215, 0, 0.15)', borderColor: hasPremium ? 'rgba(16, 185, 129, 0.5)' : 'rgba(255, 215, 0, 0.5)', color: hasPremium ? '#10b981' : '#FFD700' }}>
                   {hasPremium ? <Sparkles size={20} /> : <Lock size={18} />}
                 </motion.button>
 
-                <motion.button whileTap={{ scale: 0.9 }} onClick={() => setIsBookmarked(!isBookmarked)} style={{ ...actionBtnStyle, color: isBookmarked ? '#C5A059' : '#94a3b8', background: isBookmarked ? 'rgba(197, 160, 89, 0.15)' : 'rgba(10, 8, 20, 0.6)' }}>
+                <motion.button whileTap={{ scale: 0.9 }} onClick={() => setIsBookmarked(!isBookmarked)} style={{ ...actionBtnStyle, color: isBookmarked ? '#C5A059' : '#94a3b8' }}>
                   <Bookmark size={20} fill={isBookmarked ? '#C5A059' : 'none'} />
                 </motion.button>
 
@@ -340,14 +575,16 @@ export default function DailyCardScreen({ onNavigate }: Props) {
 
             {/* ქვედა ბანერი */}
             <div style={{ 
-              background: 'rgba(10, 8, 20, 0.7)', 
-              border: '1px solid rgba(197, 160, 89, 0.15)', 
+              background: 'rgba(10, 8, 20, 0.6)', 
+              border: '1px solid rgba(197, 160, 89, 0.2)', 
               borderRadius: '16px', 
               padding: '16px', 
-              backdropFilter: 'blur(12px)',
+              backdropFilter: 'blur(15px)',
+              WebkitBackdropFilter: 'blur(15px)',
               marginLeft: '5px',
               marginRight: '5px',
-              marginBottom: '5px'
+              marginBottom: '5px',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
             }}>
               <div style={{ textAlign: 'center', marginBottom: '12px' }}>
                 <div style={{ fontSize: '11px', color: '#94a3b8', letterSpacing: '1px', textTransform: 'uppercase' }}>{getCardMeta(card)}</div>
@@ -358,14 +595,14 @@ export default function DailyCardScreen({ onNavigate }: Props) {
               <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent, rgba(197, 160, 89, 0.3), transparent)', margin: '12px 0' }} />
 
               <div style={{ marginBottom: '12px' }}>
-                <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.5', color: 'rgba(255, 255, 255, 0.85)', fontStyle: 'italic', textAlign: 'center' }}>
+                <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.5', color: 'rgba(255, 255, 255, 0.9)', fontStyle: 'italic', textAlign: 'center' }}>
                   "{meaning}"
                 </p>
               </div>
 
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center' }}>
                 {keywords.map((keyword: string, idx: number) => (
-                  <span key={idx} style={{ background: 'rgba(197, 160, 89, 0.1)', color: '#e2e8f0', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '500', border: '1px solid rgba(197, 160, 89, 0.2)' }}>
+                  <span key={idx} style={{ background: 'rgba(197, 160, 89, 0.15)', color: '#e2e8f0', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '500', border: '1px solid rgba(197, 160, 89, 0.25)' }}>
                     {keyword}
                   </span>
                 ))}
