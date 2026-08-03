@@ -935,10 +935,12 @@ export default function HomeScreen({ onNavigate }: Props) {
       minHeight: '100vh',
       background: 'radial-gradient(ellipse at 50% 0%, #1a1225 0%, #0c0a12 45%, #07050a 100%)',
       color: '#f5f0e6',
-      padding: '0 12px 28px',
+      /* Telegram Mobile header (~60-70px) + safe area */
+      padding: 'calc(70px + env(safe-area-inset-top, 0px)) 12px calc(28px + env(safe-area-inset-bottom, 0px)) 12px',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       position: 'relative',
-      overflowX: 'hidden'
+      overflowX: 'hidden',
+      boxSizing: 'border-box'
     }}>
       {/* Ambient cosmic glow */}
       <div style={{
@@ -958,7 +960,7 @@ export default function HomeScreen({ onNavigate }: Props) {
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        style={{ paddingTop: '14px', marginBottom: '14px', position: 'relative', zIndex: 2 }}
+        style={{ marginBottom: '14px', position: 'relative', zIndex: 2 }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', height: '56px' }}>
           {/* Avatar + XP Ring */}

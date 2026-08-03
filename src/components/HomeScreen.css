@@ -40,6 +40,12 @@
     -webkit-tap-highlight-color: transparent;
     box-sizing: border-box;
     position: relative;
+  
+    /* Telegram Mobile header (~70px) + system safe areas */
+    padding-top: calc(70px + env(safe-area-inset-top, 0px));
+    padding-left: var(--screen-padding);
+    padding-right: var(--screen-padding);
+    padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
   }
   
   /* Soft ambient glow (fallback if inline is missing) */
@@ -835,10 +841,11 @@
     }
   }
   
-  /* Safe area support for Telegram */
-  @supports (padding-bottom: env(safe-area-inset-bottom)) {
+  /* Extra safety for Telegram / iOS safe areas */
+  @supports (padding: max(0px)) {
     .home-screen {
-      padding-bottom: calc(28px + env(safe-area-inset-bottom));
+      padding-top: max(70px, calc(70px + env(safe-area-inset-top, 0px)));
+      padding-bottom: max(28px, calc(28px + env(safe-area-inset-bottom, 0px)));
     }
   }
   
