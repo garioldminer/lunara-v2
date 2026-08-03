@@ -26,12 +26,11 @@ interface DailyReading {
 }
 
 // ============================================
-// 🪐 PLANET COMPONENT
+// 🪐 PLANET COMPONENT - უფრო დიდი და რეალისტური
 // ============================================
 function Planet({ position, size, color, ringColor, speed = 1 }: any) {
   const meshRef = useRef<THREE.Group>(null);
   
-  // ✅ ამოღებულია გამოუყენებელი 'state' პარამეტრი
   useFrame(() => {
     if (meshRef.current) {
       meshRef.current.rotation.y += 0.005 * speed;
@@ -41,22 +40,36 @@ function Planet({ position, size, color, ringColor, speed = 1 }: any) {
   return (
     <Float speed={2} rotationIntensity={0.3} floatIntensity={0.5}>
       <group ref={meshRef} position={position}>
+        {/* პლანეტის სხეული - გაცილებით დიდი */}
         <mesh>
-          <sphereGeometry args={[size, 32, 32]} />
+          <sphereGeometry args={[size, 64, 64]} />
           <meshStandardMaterial 
             color={color} 
             emissive={color}
-            emissiveIntensity={0.2}
+            emissiveIntensity={0.3}
+            roughness={0.7}
+            metalness={0.3}
           />
         </mesh>
         
+        {/* ატმოსფერო */}
+        <mesh scale={[1.1, 1.1, 1.1]}>
+          <sphereGeometry args={[size, 32, 32]} />
+          <meshBasicMaterial 
+            color={color} 
+            transparent 
+            opacity={0.1}
+          />
+        </mesh>
+        
+        {/* რგოლი (თუ არის) - უფრო დიდი და ხილული */}
         {ringColor && (
-          <mesh rotation={[Math.PI / 2.5, 0, 0]}>
-            <ringGeometry args={[size * 1.4, size * 2, 64]} />
+          <mesh rotation={[Math.PI / 2.2, 0, 0]}>
+            <ringGeometry args={[size * 1.5, size * 2.5, 128]} />
             <meshStandardMaterial 
               color={ringColor} 
               transparent 
-              opacity={0.6}
+              opacity={0.8}
               side={THREE.DoubleSide}
             />
           </mesh>
@@ -67,7 +80,7 @@ function Planet({ position, size, color, ringColor, speed = 1 }: any) {
 }
 
 // ============================================
-// ☄️ COMET COMPONENT
+// ☄️ COMET COMPONENT - უფრო დიდი და კაშკაშა
 // ============================================
 function Comet() {
   const cometRef = useRef<THREE.Group>(null);
@@ -82,104 +95,170 @@ function Comet() {
 
   return (
     <group ref={cometRef}>
+      {/* კომეტის თავი - დიდი და კაშკაშა */}
       <mesh>
-        <sphereGeometry args={[0.5, 16, 16]} />
+        <sphereGeometry args={[1.5, 32, 32]} />
         <meshBasicMaterial color="#ffffff" />
       </mesh>
-      <mesh position={[-3, 0, 0]} rotation={[0, 0, 0.2]}>
-        <coneGeometry args={[0.8, 6, 8]} />
-        <meshBasicMaterial color="#a78bfa" transparent opacity={0.6} />
+      {/* შიდა ნათება */}
+      <mesh>
+        <sphereGeometry args={[2, 16, 16]} />
+        <meshBasicMaterial color="#a78bfa" transparent opacity={0.4} />
+      </mesh>
+      {/* კუდი - გაცილებით დიდი */}
+      <mesh position={[-8, 0, 0]} rotation={[0, 0, 0.2]}>
+        <coneGeometry args={[2, 15, 16]} />
+        <meshBasicMaterial color="#60a5fa" transparent opacity={0.7} />
+      </mesh>
+      <mesh position={[-12, 0, 0]} rotation={[0, 0, 0.15]}>
+        <coneGeometry args={[3, 12, 16]} />
+        <meshBasicMaterial color="#a78bfa" transparent opacity={0.4} />
       </mesh>
     </group>
   );
 }
 
 // ============================================
-// 🌌 ENHANCED COSMIC SCENE
+// 🌌 NEBULA CLOUD - ნისლეულის ღრუბელი
+// ============================================
+function NebulaCloud({ position, color, size }: any) {
+  return (
+    <Float speed={1} rotationIntensity={0.2} floatIntensity={0.3}>
+      <mesh position={position}>
+        <sphereGeometry args={[size, 32, 32]} />
+        <meshBasicMaterial 
+          color={color} 
+          transparent 
+          opacity={0.15}
+        />
+      </mesh>
+    </Float>
+  );
+}
+
+// ============================================
+// 🌌 ENHANCED COSMIC SCENE - ბევრად უფრო ხილული
 // ============================================
 function CosmicScene() {
   return (
     <>
+      {/* ღრმა კოსმოსის ფონი */}
       <color attach="background" args={['#020205']} />
       
+      {/* კაშკაშა ვარსკვლავები - ბევრად უფრო დიდი და ხილული */}
       <Stars 
         radius={100}
         depth={60}
-        count={8000}
-        factor={6}
-        saturation={0.5}
+        count={10000}
+        factor={8}
+        saturation={0.8}
         fade
         speed={0.5}
       />
       
+      {/* ქროსფერი კოსმიური მტვერი - უფრო დიდი */}
       <DreiSparkles 
-        count={400}
-        scale={15}
-        size={3}
+        count={600}
+        scale={20}
+        size={5}
         speed={0.3}
-        opacity={0.7}
+        opacity={0.8}
         color="#fbbf24"
       />
       
+      {/* იისფერი ნისლეული - უფრო დიდი */}
       <DreiSparkles 
-        count={300}
-        scale={12}
-        size={4}
+        count={400}
+        scale={15}
+        size={6}
         speed={0.2}
-        opacity={0.5}
+        opacity={0.6}
         color="#a78bfa"
       />
       
+      {/* ლურჯი ვარსკვლავური ნისლი */}
       <DreiSparkles 
-        count={250}
-        scale={10}
-        size={2}
+        count={350}
+        scale={12}
+        size={4}
         speed={0.4}
-        opacity={0.6}
+        opacity={0.7}
         color="#60a5fa"
       />
       
+      {/* ვარდისფერი ნისლეული */}
+      <DreiSparkles 
+        count={300}
+        scale={18}
+        size={5}
+        speed={0.25}
+        opacity={0.5}
+        color="#f472b6"
+      />
+      
+      {/* ნისლეულის ღრუბლები */}
+      <NebulaCloud position={[-25, 15, -40]} color="#8b5cf6" size={12} />
+      <NebulaCloud position={[30, -10, -35]} color="#3b82f6" size={10} />
+      <NebulaCloud position={[-15, -20, -45]} color="#ec4899" size={8} />
+      
+      {/*  პლანეტები - გაცილებით დიდი და ხილული */}
+      
+      {/* სატურნი - დიდი ოქროსფერი რგოლით */}
       <Planet 
-        position={[-15, 8, -20]}
-        size={1.5}
+        position={[-25, 12, -30]}
+        size={4}
         color="#fbbf24"
         ringColor="#f59e0b"
         speed={0.5}
       />
       
+      {/* მარსი - დიდი წითელი */}
       <Planet 
-        position={[18, -5, -25]}
-        size={1.2}
+        position={[28, -8, -35]}
+        size={3.5}
         color="#ef4444"
         ringColor={null}
         speed={0.8}
       />
       
+      {/* დედამიწა - დიდი ლურჯი */}
       <Planet 
-        position={[-20, -8, -15]}
-        size={1}
+        position={[-30, -12, -25]}
+        size={3}
         color="#3b82f6"
         ringColor={null}
         speed={1}
       />
       
+      {/* იუპიტერი - ძალიან დიდი */}
       <Planet 
-        position={[22, 10, -30]}
-        size={2.5}
+        position={[35, 15, -40]}
+        size={6}
         color="#f97316"
         ringColor={null}
         speed={0.3}
       />
       
+      {/* ნეპტუნი - ლურჯი */}
+      <Planet 
+        position={[-20, 20, -45]}
+        size={3.5}
+        color="#60a5fa"
+        ringColor={null}
+        speed={0.6}
+      />
+      
+      {/* ☄️ კომეტა */}
       <Comet />
       
+      {/* 🌙 მთვარე - დიდი */}
       <Float speed={3} rotationIntensity={0.2} floatIntensity={0.3}>
-        <mesh position={[12, 12, -18]}>
-          <sphereGeometry args={[0.8, 32, 32]} />
+        <mesh position={[20, 18, -25]}>
+          <sphereGeometry args={[2, 32, 32]} />
           <meshStandardMaterial 
             color="#e5e7eb"
             emissive="#9ca3af"
-            emissiveIntensity={0.1}
+            emissiveIntensity={0.2}
           />
         </mesh>
       </Float>
@@ -267,7 +346,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
   const handleShare = () => {
     if (!dailyReading) return;
     const { card, isReversed } = dailyReading;
-    const shareText = `🔮 My Daily Card: ${card.name}${isReversed ? ' (Reversed)' : ''}\n\n"${isReversed ? card.reversed_meaning : card.meaning}"\n\nDraw your own card on Lunara App! ✨`;
+    const shareText = ` My Daily Card: ${card.name}${isReversed ? ' (Reversed)' : ''}\n\n"${isReversed ? card.reversed_meaning : card.meaning}"\n\nDraw your own card on Lunara App! ✨`;
     const tg = (window as any).Telegram?.WebApp;
     if (tg?.openTelegramLink) tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(window.location.href || '')}&text=${encodeURIComponent(shareText)}`);
     else navigator.clipboard.writeText(shareText).then(() => alert('Copied to clipboard!'));
@@ -340,7 +419,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
       <Canvas 
         dpr={[1, 1.5]} 
         style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, pointerEvents: 'none' }}
-        camera={{ position: [0, 0, 20], fov: 60 }}
+        camera={{ position: [0, 0, 25], fov: 60 }}
       >
         <CosmicScene />
       </Canvas>
