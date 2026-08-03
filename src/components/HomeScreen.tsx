@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { useUser } from '../context/UserContext';
 import { useTranslation } from '../i18n/TranslationContext';
-import { tarotCards, SUITS } from '../data/tarotCards';
+import { tarotCards, SUITS, CARD_BACK_URL } from '../data/tarotCards'; // ✅ დამატებულია CARD_BACK_URL
 import { isAdmin } from '../lib/adminService';
 import { getActiveSubscription } from '../lib/subscriptionService';
 import { supabase } from '../lib/supabase';
@@ -181,6 +181,7 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [timeLeft, setTimeLeft] = useState('14:32:18');
   const [dailyCard, setDailyCard] = useState<typeof tarotCards[0] | null>(null);
   const [isDailyReversed, setIsDailyReversed] = useState(false);
+  const [isDailyRevealed, setIsDailyRevealed] = useState(false); // ✅ ახალი სტეიტი
   const [currentStreak, setCurrentStreak] = useState(0);
   const [isUserAdmin, setIsUserAdmin] = useState(false);
   const [activeSubscription, setActiveSubscription] = useState<any>(null);
@@ -198,14 +199,10 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [toast, setToast] = useState<Toast | null>(null);
   const [isShopOpen, setIsShopOpen] = useState(false);
   
-  // Modal states
   const [showStreakModal, setShowStreakModal] = useState(false);
   const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
-  
-  // XP testing logs state
   const [xpTestLogs, setXpTestLogs] = useState<string[]>([]);
 
-  // Debug State
   const [showDebug, setShowDebug] = useState(false);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
   const [dbStatus, setDbStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
@@ -352,7 +349,7 @@ export default function HomeScreen({ onNavigate }: Props) {
 
   const testSpendEnergy = async (amount: number) => {
     if (!user || !supabase) return;
-    addDebugLog('info', 'ENERGY_TEST', ` Spending ${amount} energy...`);
+    addDebugLog('info', 'ENERGY_TEST', `⚡ Spending ${amount} energy...`);
     try {
       const { data, error } = await supabase.rpc('spend_energy', {
         user_uuid: user.id,
@@ -462,7 +459,7 @@ export default function HomeScreen({ onNavigate }: Props) {
   const forceRecalcLevel = async () => {
     if (!user || !supabase) return;
     const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
-    setXpTestLogs(prev => [...prev, `[${timestamp}]  Force recalculating level from DB...`]);
+    setXpTestLogs(prev => [...prev, `[${timestamp}] 🔄 Force recalculating level from DB...`]);
     addDebugLog('info', 'XP_TEST', '🔄 Force recalculating level...');
     
     try {
@@ -677,13 +674,13 @@ export default function HomeScreen({ onNavigate }: Props) {
       });
 
       if (error) {
-        addDebugLog('error', 'ENERGY_REFILL', ` Step 3 Failed: RPC Error`, error);
+        addDebugLog('error', 'ENERGY_REFILL', `❌ Step 3 Failed: RPC Error`, error);
         showToast(`Refill failed: ${error.message}`, 'error');
       } else if (!data?.success) {
         addDebugLog('error', 'ENERGY_REFILL', `❌ Step 3 Failed: Function returned error`, data);
         showToast(`Refill failed: ${data?.error || 'Unknown error'}`, 'error');
       } else {
-        addDebugLog('success', 'ENERGY_REFILL', `✅ Step 3 Success: Bought ${energyToAdd}⚡ for ${cost}`, data);
+        addDebugLog('success', 'ENERGY_REFILL', `✅ Step 3 Success: Bought ${energyToAdd}⚡ for ${cost}💎`, data);
         
         setEconomy(prev => {
           const newState = { ...prev, cosmic_coins: data.new_coins, cosmic_focus: data.new_energy };
@@ -739,7 +736,7 @@ export default function HomeScreen({ onNavigate }: Props) {
           };
           setEconomy(economyData);
           setCurrentStreak(economyData.current_streak);
-          addDebugLog('info', 'STATE', ' Economy state updated', economyData);
+          addDebugLog('info', 'STATE', '💰 Economy state updated', economyData);
         } else {
           addDebugLog('warning', 'ECONOMY', '⚠️ No economy data found for user');
         }
@@ -759,6 +756,7 @@ export default function HomeScreen({ onNavigate }: Props) {
     }
   }, [user]);
 
+  // ✅ განახლებული ლოგიკა: ინახავს isRevealed: false-ს ახალი ბარათისთვის
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
     const stored = localStorage.getItem('dailyCard');
@@ -767,6 +765,7 @@ export default function HomeScreen({ onNavigate }: Props) {
       if (parsed.date === today) {
         setDailyCard(parsed.card);
         setIsDailyReversed(parsed.isReversed);
+        setIsDailyRevealed(parsed.isRevealed || false); // ✅ ამოწმებს გახსნილია თუ არა
         addDebugLog('info', 'DAILY_CARD', 'Loaded from localStorage', parsed);
         return;
       }
@@ -775,11 +774,31 @@ export default function HomeScreen({ onNavigate }: Props) {
     const cardIndex = dayOfYear % tarotCards.length;
     const card = tarotCards[cardIndex];
     const isReversed = Math.random() < 0.5;
-    const newReading = { card, isReversed, date: today };
+    const newReading = { card, isReversed, date: today, isRevealed: false }; // ✅ isRevealed: false
     localStorage.setItem('dailyCard', JSON.stringify(newReading));
     setDailyCard(card);
     setIsDailyReversed(isReversed);
+    setIsDailyRevealed(false);
     addDebugLog('info', 'DAILY_CARD', 'Generated new daily card', { cardName: card.name, isReversed });
+  }, []);
+
+  // ✅ ავტომატურად ამოწმებს localStorage-ს, როცა მომხმარებელი ბრუნდება DailyCardScreen-იდან
+  useEffect(() => {
+    const checkRevealStatus = () => {
+      const stored = localStorage.getItem('dailyCard');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const today = new Date().toISOString().split('T')[0];
+        if (parsed.date === today && parsed.isRevealed) {
+          setIsDailyRevealed(true);
+        }
+      }
+    };
+    
+    window.addEventListener('focus', checkRevealStatus);
+    checkRevealStatus();
+    
+    return () => window.removeEventListener('focus', checkRevealStatus);
   }, []);
 
   const getDayOfYear = (date: Date): number => {
@@ -1164,49 +1183,113 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       )}
 
-      <div className="card-of-day-banner clickable-card" onClick={() => onNavigate && onNavigate('daily-card')} style={{ background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)', border: '1px solid #332a1a', borderRadius: '16px', padding: '12px', marginBottom: '2px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)', position: 'relative', overflow: 'visible', cursor: 'pointer' }}>
+      {/* ✅ განახლებული ბანერი: Shimmer, TAP და Muted ეფექტებით */}
+      <motion.div 
+        className="card-of-day-banner clickable-card" 
+        onClick={() => onNavigate && onNavigate('daily-card')} 
+        style={{ 
+          background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)', 
+          border: '1px solid #332a1a', 
+          borderRadius: '16px', 
+          padding: '12px', 
+          marginBottom: '2px', 
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)', 
+          position: 'relative', 
+          overflow: 'visible', 
+          cursor: 'pointer' 
+        }}
+      >
         <div className="card-of-day-content" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '0' }}>
           <div className="card-half-left" style={{ flex: '0 0 45%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px 0' }}>
-            <div className="card-image-3d-wrapper" style={{ position: 'relative', width: 'clamp(110px, 28vw, 140px)', aspectRatio: '2/3', perspective: '800px', margin: '-16px 0' }}>
+            
+            <motion.div 
+              className="card-image-3d-wrapper" 
+              animate={!isDailyRevealed ? { y: [0, -5, 0] } : {}}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              style={{ position: 'relative', width: 'clamp(110px, 28vw, 140px)', aspectRatio: '2/3', perspective: '800px', margin: '-16px 0' }}
+            >
               <div className="card-image-tilted" style={{ position: 'relative', width: '100%', height: '100%', transform: 'rotateY(-5deg) rotateX(2deg) rotate(3deg)', transition: 'transform 0.4s ease', zIndex: 2, transformStyle: 'preserve-3d' }}>
-                {dailyCard?.image_url ? (
-                  <img src={dailyCard.image_url} alt={dailyCardName} className="card-image-large" style={{ transform: isDailyReversed ? 'rotate(183deg)' : 'rotate(3deg)', width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px', border: '2px solid #C5A059', boxShadow: '0 2px 4px rgba(0,0,0,0.4), 0 8px 16px rgba(0,0,0,0.5), 0 16px 32px rgba(0,0,0,0.6), 0 0 20px rgba(197,160,89,0.3)' }} />
+                
+                {!isDailyRevealed ? (
+                  <div style={{ position: 'relative', width: '100%', height: '100%', borderRadius: '8px', border: '2px solid #C5A059', boxShadow: '0 2px 4px rgba(0,0,0,0.4), 0 8px 16px rgba(0,0,0,0.5), 0 16px 32px rgba(0,0,0,0.6), 0 0 20px rgba(197,160,89,0.3)', overflow: 'hidden' }}>
+                    <img 
+                      src={CARD_BACK_URL} 
+                      alt="Card Back" 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} 
+                    />
+                    <motion.div
+                      animate={{ x: ['-150%', '150%'] }}
+                      transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 3, ease: "easeInOut" }}
+                      style={{
+                        position: 'absolute', top: 0, left: 0, width: '50%', height: '100%',
+                        background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent)',
+                        transform: 'skewX(-20deg)', pointerEvents: 'none'
+                      }}
+                    />
+                    <div style={{
+                      position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                      background: 'rgba(10, 8, 20, 0.7)', backdropFilter: 'blur(4px)',
+                      padding: '6px 16px', borderRadius: '20px', border: '1px solid rgba(197, 160, 89, 0.6)',
+                      color: '#C5A059', fontSize: '11px', fontWeight: '700', letterSpacing: '2px',
+                      textTransform: 'uppercase', boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+                    }}>
+                      TAP
+                    </div>
+                  </div>
                 ) : (
-                  <div className="card-placeholder-large" style={{ transform: 'rotate(3deg)', width: '100%', height: '100%', background: 'linear-gradient(135deg, #2a2215, #1a1510)', borderRadius: '8px', border: '2px solid #C5A059', boxShadow: '0 2px 4px rgba(0,0,0,0.4), 0 8px 16px rgba(0,0,0,0.5), 0 16px 32px rgba(0,0,0,0.6), 0 0 20px rgba(197,160,89,0.3)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                    <span style={{ fontSize: '14px', fontWeight: 700, color: '#C5A059' }}>{dailyCardNumber}</span>
-                    <div style={{ fontSize: '28px', filter: 'drop-shadow(0 0 10px rgba(197, 160, 89, 0.6))' }}>✦</div>
-                    <span style={{ fontSize: '10px', fontWeight: 700, color: '#C5A059', textAlign: 'center', padding: '0 6px' }}>{dailyCardName}</span>
+                  <div style={{ position: 'relative', width: '100%', height: '100%', borderRadius: '8px', border: '2px solid #C5A059', boxShadow: '0 2px 4px rgba(0,0,0,0.4), 0 8px 16px rgba(0,0,0,0.5), 0 16px 32px rgba(0,0,0,0.6)', overflow: 'hidden' }}>
+                    <img 
+                      src={dailyCard?.image_url} 
+                      alt={dailyCardName} 
+                      style={{ 
+                        width: '100%', height: '100%', objectFit: 'cover', display: 'block',
+                        filter: 'grayscale(30%) opacity(0.85)',
+                        transform: isDailyReversed ? 'rotate(180deg)' : 'rotate(0deg)'
+                      }} 
+                    />
                   </div>
                 )}
-                {isDailyReversed && (
+                
+                {isDailyReversed && isDailyRevealed && (
                   <div className="card-reversed-indicator-large" style={{ position: 'absolute', top: '5px', right: '5px', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 900, zIndex: 3, background: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)', color: '#fff', border: '2px solid #fff', boxShadow: '0 0 0 2px rgba(167,139,250,0.5), 0 4px 12px rgba(167,139,250,0.8), 0 0 20px rgba(167,139,250,0.6)' }}>
                     <span>R</span>
                   </div>
                 )}
               </div>
               <div className="card-3d-shadow" style={{ position: 'absolute', bottom: '-6px', left: '10%', width: '80%', height: '14px', background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.6) 0%, transparent 70%)', filter: 'blur(6px)', zIndex: 1, opacity: 0.7 }}></div>
-            </div>
+            </motion.div>
           </div>
+          
           <div className="card-half-right" style={{ flex: '0 0 55%', paddingLeft: '12px', display: 'flex', alignItems: 'center' }}>
             <div className="card-info-section" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '4px', width: '100%', minWidth: 0 }}>
-              <div style={{ fontSize: '9px', color: '#C5A059', letterSpacing: '2px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 600 }}>{t('home.cardOfTheDay')}</div>
-              <h3 style={{ margin: 0, fontSize: '16px', color: '#C5A059', letterSpacing: '0.5px', fontWeight: 700, lineHeight: 1.2 }}>{dailyCardName}</h3>
-              <p style={{ margin: 0, fontSize: '11px', color: 'rgba(255,255,255,0.7)', fontStyle: 'italic', lineHeight: 1.3 }}>"{dailyCardMeaning}"</p>
-              {dailyCardElement && <p style={{ margin: 0, fontSize: '10px', color: '#888' }}>{dailyCardElement}</p>}
-              <button className="read-guidance-btn" style={{ background: 'transparent', border: '1px solid #C5A059', color: '#C5A059', padding: '5px 10px', borderRadius: '6px', fontSize: '9px', fontWeight: 700, cursor: 'pointer', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '4px', alignSelf: 'flex-start' }}>
-                {t('home.readGuidance')} <ChevronRight size={14} />
-              </button>
+              {!isDailyRevealed ? (
+                <>
+                  <div style={{ fontSize: '9px', color: '#C5A059', letterSpacing: '2px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 600 }}>{t('home.cardOfTheDay')}</div>
+                  <h3 style={{ margin: 0, fontSize: '16px', color: '#C5A059', letterSpacing: '0.5px', fontWeight: 700, lineHeight: 1.2 }}>Mystery Awaits</h3>
+                  <p style={{ margin: 0, fontSize: '11px', color: 'rgba(255,255,255,0.7)', fontStyle: 'italic', lineHeight: 1.3 }}>Tap to reveal your guidance for today</p>
+                </>
+              ) : (
+                <>
+                  <div style={{ fontSize: '9px', color: '#C5A059', letterSpacing: '2px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 600 }}>{t('home.cardOfTheDay')}</div>
+                  <h3 style={{ margin: 0, fontSize: '16px', color: '#C5A059', letterSpacing: '0.5px', fontWeight: 700, lineHeight: 1.2 }}>{dailyCardName}</h3>
+                  <p style={{ margin: 0, fontSize: '11px', color: 'rgba(255,255,255,0.7)', fontStyle: 'italic', lineHeight: 1.3 }}>"{dailyCardMeaning}"</p>
+                  {dailyCardElement && <p style={{ margin: 0, fontSize: '10px', color: '#888' }}>{dailyCardElement}</p>}
+                  <button className="read-guidance-btn" style={{ background: 'transparent', border: '1px solid #C5A059', color: '#C5A059', padding: '5px 10px', borderRadius: '6px', fontSize: '9px', fontWeight: 700, cursor: 'pointer', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '4px', alignSelf: 'flex-start' }}>
+                    View Details <ChevronRight size={14} />
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       <div className="quick-access" style={{ marginBottom: '8px', width: '100%' }}>
         <div className="quick-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
           {quickActions.map((action, index) => (
             <button key={index} className={`quick-item ${action.isPremium ? 'premium-item' : ''} ${action.action === 'Admin' ? 'admin-item' : ''} ${(action as any).isServices ? 'services-item' : ''}`} style={{ '--glow-color': action.color, background: action.isPremium ? 'linear-gradient(135deg, rgba(197, 160, 89, 0.15) 0%, rgba(139, 105, 20, 0.1) 100%)' : (action as any).isServices ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 165, 0, 0.08) 100%)' : '#1a1510', border: action.isPremium ? '1px solid rgba(197, 160, 89, 0.4)' : (action as any).isServices ? '1px solid rgba(255, 215, 0, 0.4)' : '1px solid #2a2215', borderRadius: '12px', padding: 'clamp(8px, 2.5vw, 12px) 4px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', color: '#fff', cursor: 'pointer', position: 'relative', overflow: 'hidden' } as React.CSSProperties} onClick={() => handleQuickAction(action.action)}>
               {action.isPremium && <div style={{ position: 'absolute', top: '-4px', right: '-4px', background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', boxShadow: '0 2px 8px rgba(197, 160, 89, 0.5)', zIndex: 10 }}>💎</div>}
-              {(action as any).isServices && <div style={{ position: 'absolute', top: '-4px', right: '-4px', background: 'linear-gradient(135deg, #FFD700 0%, #FF8C00 100%)', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', boxShadow: '0 2px 8px rgba(255, 215, 0, 0.5)', zIndex: 10, animation: 'paywallPulse 2s ease-in-out infinite' }}>️</div>}
+              {(action as any).isServices && <div style={{ position: 'absolute', top: '-4px', right: '-4px', background: 'linear-gradient(135deg, #FFD700 0%, #FF8C00 100%)', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', boxShadow: '0 2px 8px rgba(255, 215, 0, 0.5)', zIndex: 10, animation: 'paywallPulse 2s ease-in-out infinite' }}>🛍️</div>}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1, filter: `drop-shadow(0 0 6px ${action.color})`, color: action.color }}>{action.icon}</div>
               <span style={{ fontSize: '10px', color: '#fff', fontWeight: 600, textAlign: 'center', lineHeight: 1.1 }}>{action.label}</span>
               {action.sublabel && <span style={{ fontSize: '9px', color: '#b3a68c', textAlign: 'center', lineHeight: 1.1 }}>{action.sublabel}</span>}
@@ -1215,7 +1298,6 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* Diamond Shop Modal */}
       {isShopOpen && user && (
         <DiamondShopModal 
           isOpen={isShopOpen} 
@@ -1230,7 +1312,6 @@ export default function HomeScreen({ onNavigate }: Props) {
         />
       )}
 
-      {/* Streak & Leaderboard Modals */}
       <StreakModal 
         isOpen={showStreakModal} 
         onClose={() => setShowStreakModal(false)} 

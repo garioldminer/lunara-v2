@@ -22,10 +22,11 @@ interface DailyReading {
   date: string;
   focusArea: FocusArea;
   question?: string;
+  isRevealed?: boolean; // ✅ დამატებულია Home Screen-თან სინქრონიზაციისთვის
 }
 
 // ============================================
-//  PROCEDURAL STAR FIELD
+//  PROCEDURAL STAR FIELD (მოძრავი)
 // ============================================
 function StarField() {
   const starsRef = useRef<THREE.Points>(null);
@@ -38,8 +39,6 @@ function StarField() {
     
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
-      
-      // სფერული განაწილება
       const radius = 50 + Math.random() * 100;
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(2 * Math.random() - 1);
@@ -48,54 +47,34 @@ function StarField() {
       positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
       positions[i3 + 2] = radius * Math.cos(phi);
       
-      // ვარსკვლავის ფერი (თეთრი, ლურჯი, ყვითელი, ნარინჯისფერი)
       const starType = Math.random();
       if (starType < 0.6) {
-        // თეთრი/ყვითელი
-        colors[i3] = 1.0;
-        colors[i3 + 1] = 0.95 + Math.random() * 0.05;
-        colors[i3 + 2] = 0.8 + Math.random() * 0.2;
+        colors[i3] = 1.0; colors[i3 + 1] = 0.95 + Math.random() * 0.05; colors[i3 + 2] = 0.8 + Math.random() * 0.2;
       } else if (starType < 0.85) {
-        // ლურჯი
-        colors[i3] = 0.7 + Math.random() * 0.3;
-        colors[i3 + 1] = 0.8 + Math.random() * 0.2;
-        colors[i3 + 2] = 1.0;
+        colors[i3] = 0.7 + Math.random() * 0.3; colors[i3 + 1] = 0.8 + Math.random() * 0.2; colors[i3 + 2] = 1.0;
       } else {
-        // ნარინჯისფერი/წითელი
-        colors[i3] = 1.0;
-        colors[i3 + 1] = 0.6 + Math.random() * 0.2;
-        colors[i3 + 2] = 0.4 + Math.random() * 0.2;
+        colors[i3] = 1.0; colors[i3 + 1] = 0.6 + Math.random() * 0.2; colors[i3 + 2] = 0.4 + Math.random() * 0.2;
       }
       
-      // სიკაშკაშის ექსპონენციალური განაწილება
       const brightness = Math.log(1 - Math.random()) * -0.5;
       sizes[i] = brightness * 2;
     }
-    
     return { positions, colors, sizes };
   }, []);
+
+  useFrame((state, delta) => {
+    if (starsRef.current) {
+      starsRef.current.rotation.y += delta * 0.015;
+      starsRef.current.rotation.x += delta * 0.005;
+    }
+  });
 
   return (
     <points ref={starsRef}>
       <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={positions.length / 3}
-          array={positions}
-          itemSize={3}
-        />
-        <bufferAttribute
-          attach="attributes-color"
-          count={colors.length / 3}
-          array={colors}
-          itemSize={3}
-        />
-        <bufferAttribute
-          attach="attributes-size"
-          count={sizes.length}
-          array={sizes}
-          itemSize={1}
-        />
+        <bufferAttribute attach="attributes-position" count={positions.length / 3} array={positions} itemSize={3} />
+        <bufferAttribute attach="attributes-color" count={colors.length / 3} array={colors} itemSize={3} />
+        <bufferAttribute attach="attributes-size" count={sizes.length} array={sizes} itemSize={1} />
       </bufferGeometry>
       <pointsMaterial
         size={0.5}
@@ -111,7 +90,7 @@ function StarField() {
 }
 
 // ============================================
-//  NEBULA WITH PERLIN NOISE
+//  NEBULA WITH PERLIN NOISE (მოძრავი)
 // ============================================
 function Nebula({ position, color, scale = 30, opacity = 0.3 }: any) {
   const meshRef = useRef<THREE.Mesh>(null);
@@ -123,9 +102,12 @@ function Nebula({ position, color, scale = 30, opacity = 0.3 }: any) {
     uOpacity: { value: opacity }
   }), [color, scale, opacity]);
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
     if (meshRef.current) {
-      (meshRef.current.material as THREE.ShaderMaterial).uniforms.uTime.value = state.clock.elapsedTime * 0.1;
+      const material = meshRef.current.material as THREE.ShaderMaterial;
+      material.uniforms.uTime.value += delta * 0.1;
+      meshRef.current.rotation.z += delta * 0.02;
+      meshRef.current.rotation.y += delta * 0.01;
     }
   });
 
@@ -144,7 +126,6 @@ function Nebula({ position, color, scale = 30, opacity = 0.3 }: any) {
     uniform float uOpacity;
     varying vec2 vUv;
 
-    // Simplex 3D noise
     vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
     vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
     vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
@@ -163,10 +144,7 @@ function Nebula({ position, color, scale = 30, opacity = 0.3 }: any) {
       vec3 x2 = x0 - i2 + C.yyy;
       vec3 x3 = x0 - D.yyy;
       i = mod289(i);
-      vec4 p = permute(permute(permute(
-                i.z + vec4(0.0, i1.z, i2.z, 1.0))
-              + i.y + vec4(0.0, i1.y, i2.y, 1.0))
-              + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+      vec4 p = permute(permute(permute(i.z + vec4(0.0, i1.z, i2.z, 1.0)) + i.y + vec4(0.0, i1.y, i2.y, 1.0)) + i.x + vec4(0.0, i1.x, i2.x, 1.0));
       float n_ = 0.142857142857;
       vec3 ns = n_ * D.wyz - D.xzx;
       vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
@@ -193,41 +171,29 @@ function Nebula({ position, color, scale = 30, opacity = 0.3 }: any) {
       return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
     }
 
-    // Fractal Brownian Motion
     float fbm(vec3 p) {
       float value = 0.0;
       float amplitude = 0.5;
       float frequency = 1.0;
-      
       for (int i = 0; i < 5; i++) {
         value += amplitude * snoise(p * frequency);
         amplitude *= 0.5;
         frequency *= 2.0;
       }
-      
       return value;
     }
 
     void main() {
       vec3 p = vec3(vUv * uScale, uTime);
-      
-      // Multi-octave noise for nebula structure
       float n1 = fbm(p);
       float n2 = fbm(p * 1.5 + 100.0);
       float n3 = fbm(p * 2.0 + 200.0);
-      
       float noise = (n1 + n2 * 0.5 + n3 * 0.25) / 1.75;
       noise = noise * 0.5 + 0.5;
-      
-      // Density falloff
       float density = pow(noise, 2.0);
-      
-      // Edge softening
       float edgeFade = 1.0 - smoothstep(0.3, 0.7, length(vUv - 0.5));
-      
       vec3 finalColor = uColor * density * edgeFade;
       float alpha = density * edgeFade * uOpacity;
-      
       gl_FragColor = vec4(finalColor, alpha);
     }
   `;
@@ -249,86 +215,44 @@ function Nebula({ position, color, scale = 30, opacity = 0.3 }: any) {
 }
 
 // ============================================
-// ✨ BRIGHT STARS WITH GLOW
+// ✨ BRIGHT STARS WITH GLOW (მოძრავი)
 // ============================================
 function BrightStars() {
+  const groupRef = useRef<THREE.Group>(null);
+
   const stars = useMemo(() => {
-    const data: Array<{
-      position: [number, number, number];
-      coreColor: [number, number, number];
-      haloColor: [number, number, number];
-      size: number;
-    }> = [];
-    
+    const data: Array<{ position: [number, number, number]; coreColor: [number, number, number]; haloColor: [number, number, number]; size: number }> = [];
     for (let i = 0; i < 200; i++) {
       const x = (Math.random() - 0.5) * 80;
       const y = (Math.random() - 0.5) * 80;
       const z = (Math.random() - 0.5) * 80 - 30;
-      
-      // Random star color
       const colorType = Math.random();
-      let coreColor: [number, number, number];
-      let haloColor: [number, number, number];
+      let coreColor: [number, number, number], haloColor: [number, number, number];
       
-      if (colorType < 0.4) {
-        // White/yellow star
-        coreColor = [1.0, 0.95, 0.8];
-        haloColor = [1.0, 0.9, 0.7];
-      } else if (colorType < 0.7) {
-        // Blue star
-        coreColor = [0.8, 0.9, 1.0];
-        haloColor = [0.6, 0.8, 1.0];
-      } else {
-        // Orange/red star
-        coreColor = [1.0, 0.7, 0.5];
-        haloColor = [1.0, 0.5, 0.3];
-      }
+      if (colorType < 0.4) { coreColor = [1.0, 0.95, 0.8]; haloColor = [1.0, 0.9, 0.7]; }
+      else if (colorType < 0.7) { coreColor = [0.8, 0.9, 1.0]; haloColor = [0.6, 0.8, 1.0]; }
+      else { coreColor = [1.0, 0.7, 0.5]; haloColor = [1.0, 0.5, 0.3]; }
       
-      const size = Math.random() * 0.5 + 0.3;
-      
-      data.push({
-        position: [x, y, z],
-        coreColor,
-        haloColor,
-        size
-      });
+      data.push({ position: [x, y, z], coreColor, haloColor, size: Math.random() * 0.5 + 0.3 });
     }
-    
     return data;
   }, []);
 
-  return (
-    <group>
-      {stars.map((star, i) => (
-        <StarWithGlow
-          key={i}
-          position={star.position}
-          coreColor={star.coreColor}
-          haloColor={star.haloColor}
-          size={star.size}
-        />
-      ))}
-    </group>
-  );
-}
+  useFrame((state, delta) => {
+    if (groupRef.current) {
+      groupRef.current.rotation.y += delta * 0.01;
+      groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.2) * 1.5;
+    }
+  });
 
-function StarWithGlow({ position, coreColor, haloColor, size }: any) {
   return (
-    <group position={position}>
-      {/* Core */}
-      <mesh>
-        <sphereGeometry args={[size * 0.3, 16, 16]} />
-        <meshBasicMaterial color={coreColor} />
-      </mesh>
-      {/* Halo */}
-      <mesh>
-        <sphereGeometry args={[size, 16, 16]} />
-        <meshBasicMaterial
-          color={haloColor}
-          transparent={true}
-          opacity={0.3}
-        />
-      </mesh>
+    <group ref={groupRef}>
+      {stars.map((star, i) => (
+        <group key={i} position={star.position}>
+          <mesh><sphereGeometry args={[star.size * 0.3, 16, 16]} /><meshBasicMaterial color={star.coreColor} /></mesh>
+          <mesh><sphereGeometry args={[star.size, 16, 16]} /><meshBasicMaterial color={star.haloColor} transparent={true} opacity={0.3} /></mesh>
+        </group>
+      ))}
     </group>
   );
 }
@@ -339,46 +263,14 @@ function StarWithGlow({ position, coreColor, haloColor, size }: any) {
 function CosmicScene() {
   return (
     <>
-      {/* ღრმა კოსმოსის ფონი */}
       <color attach="background" args={['#000002']} />
-      
-      {/* პროცედურული ვარსკვლავების ველი */}
       <StarField />
-      
-      {/* ნათელი ვარსკვლავები сияние-ით */}
       <BrightStars />
-      
-      {/* ფერადი ნისლეულები */}
-      <Nebula 
-        position={[-30, 15, -50]} 
-        color="#3b82f6" 
-        scale={25}
-        opacity={0.25}
-      />
-      <Nebula 
-        position={[35, -10, -45]} 
-        color="#ec4899" 
-        scale={30}
-        opacity={0.2}
-      />
-      <Nebula 
-        position={[0, 25, -55]} 
-        color="#8b5cf6" 
-        scale={28}
-        opacity={0.2}
-      />
-      <Nebula 
-        position={[-25, -20, -40]} 
-        color="#10b981" 
-        scale={22}
-        opacity={0.15}
-      />
-      <Nebula 
-        position={[40, 20, -60]} 
-        color="#f59e0b" 
-        scale={20}
-        opacity={0.18}
-      />
+      <Nebula position={[-30, 15, -50]} color="#3b82f6" scale={25} opacity={0.25} />
+      <Nebula position={[35, -10, -45]} color="#ec4899" scale={30} opacity={0.2} />
+      <Nebula position={[0, 25, -55]} color="#8b5cf6" scale={28} opacity={0.2} />
+      <Nebula position={[-25, -20, -40]} color="#10b981" scale={22} opacity={0.15} />
+      <Nebula position={[40, 20, -60]} color="#f59e0b" scale={20} opacity={0.18} />
     </>
   );
 }
@@ -407,7 +299,8 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         setDailyReading(parsed);
         setSelectedFocus(parsed.focusArea || 'general');
         if (parsed.focusArea === 'custom' && parsed.question) setCustomQuestion(parsed.question);
-        setStage('revealed');
+        // ✅ თუ უკვე გახსნილია, პირდაპირ revealed სტეიჯზე გადადის
+        setStage(parsed.isRevealed ? 'revealed' : 'selecting');
         return;
       }
     }
@@ -422,9 +315,16 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     const today = getTodayDate();
     const dayOfYear = getDayOfYear(new Date());
     const card = tarotCards[dayOfYear % tarotCards.length];
-    const newReading: DailyReading = { card, isReversed: Math.random() < 0.5, date: today, focusArea: 'general' };
+    const newReading: DailyReading = { 
+      card, 
+      isReversed: Math.random() < 0.5, 
+      date: today, 
+      focusArea: 'general',
+      isRevealed: false // ✅ ახალი ბარათი თავიდან გაუხსნელია
+    };
     localStorage.setItem('dailyCard', JSON.stringify(newReading));
     setDailyReading(newReading);
+    setStage('selecting');
   };
 
   const getDayOfYear = (date: Date): number => {
@@ -444,7 +344,15 @@ export default function DailyCardScreen({ onNavigate }: Props) {
       (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('medium');
     }
     setStage('revealing');
-    const updatedReading = { ...dailyReading, focusArea: selectedFocus, question: selectedFocus === 'custom' ? customQuestion : undefined };
+    
+    // ✅ აქ ვამატებთ isRevealed: true-ს, რათა Home Screen-მა იცოდეს, რომ ბარათი გახსნილია
+    const updatedReading = { 
+      ...dailyReading, 
+      focusArea: selectedFocus, 
+      question: selectedFocus === 'custom' ? customQuestion : undefined,
+      isRevealed: true 
+    };
+    
     setDailyReading(updatedReading);
     localStorage.setItem('dailyCard', JSON.stringify(updatedReading));
 
@@ -541,7 +449,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         <CosmicScene />
       </Canvas>
 
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingLeft: '5px', paddingRight: '5px', position: 'relative', zIndex: 1 }}>
         <button 
           onClick={() => onNavigate?.('home')}
@@ -589,37 +496,19 @@ export default function DailyCardScreen({ onNavigate }: Props) {
 
         {stage === 'revealed' && (
           <motion.div key="revealed" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} style={{ display: 'flex', flexDirection: 'column', flex: 1, position: 'relative', zIndex: 1 }}>
-            
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
-              
               <motion.div
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                 style={{
-                  width: '220px',
-                  height: '330px',
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  position: 'relative',
+                  width: '220px', height: '330px', borderRadius: '12px', overflow: 'hidden', position: 'relative',
                   border: '2px solid rgba(197, 160, 89, 0.9)',
-                  boxShadow: isReversed 
-                    ? '0 0 40px rgba(167, 139, 250, 0.6), 0 0 80px rgba(167, 139, 250, 0.3), 0 10px 30px rgba(0,0,0,0.8)' 
-                    : '0 0 40px rgba(197, 160, 89, 0.6), 0 0 80px rgba(197, 160, 89, 0.3), 0 10px 30px rgba(0,0,0,0.8)',
+                  boxShadow: isReversed ? '0 0 40px rgba(167, 139, 250, 0.6), 0 0 80px rgba(167, 139, 250, 0.3), 0 10px 30px rgba(0,0,0,0.8)' : '0 0 40px rgba(197, 160, 89, 0.6), 0 0 80px rgba(197, 160, 89, 0.3), 0 10px 30px rgba(0,0,0,0.8)',
                   transform: isReversed ? 'rotate(180deg)' : 'rotate(0deg)',
                   background: '#0a0600'
                 }}
               >
-                <img 
-                  src={card.image_url} 
-                  alt={card.name} 
-                  style={{ 
-                    width: '100%', 
-                    height: '100%', 
-                    objectFit: 'cover',
-                    display: 'block'
-                  }} 
-                />
-
+                <img src={card.image_url} alt={card.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                 {isReversed && (
                   <div style={{ position: 'absolute', top: '12px', right: '12px', width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '900', background: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)', color: '#fff', border: '2px solid #fff', boxShadow: '0 0 10px rgba(167,139,250,0.8)', transform: isReversed ? 'rotate(-180deg)' : 'rotate(0deg)' }}>
                     R
@@ -631,47 +520,28 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                 <motion.button whileTap={{ scale: 0.9 }} onClick={() => !hasPremium && onNavigate?.('pricing')} style={{ ...actionBtnStyle, background: hasPremium ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 215, 0, 0.15)', borderColor: hasPremium ? 'rgba(16, 185, 129, 0.5)' : 'rgba(255, 215, 0, 0.5)', color: hasPremium ? '#10b981' : '#FFD700' }}>
                   {hasPremium ? <Sparkles size={20} /> : <Lock size={18} />}
                 </motion.button>
-
                 <motion.button whileTap={{ scale: 0.9 }} onClick={() => setIsBookmarked(!isBookmarked)} style={{ ...actionBtnStyle, color: isBookmarked ? '#C5A059' : '#94a3b8' }}>
                   <Bookmark size={20} fill={isBookmarked ? '#C5A059' : 'none'} />
                 </motion.button>
-
                 <motion.button whileTap={{ scale: 0.9 }} onClick={handleShare} style={actionBtnStyle}>
                   <Share2 size={20} />
                 </motion.button>
-
                 <motion.button whileTap={{ scale: 0.9 }} onClick={() => onNavigate?.('reading-history')} style={actionBtnStyle} title="Reading History">
                   <BookOpen size={20} />
                 </motion.button>
               </div>
             </div>
 
-            <div style={{ 
-              background: 'rgba(10, 8, 20, 0.6)', 
-              border: '1px solid rgba(197, 160, 89, 0.2)', 
-              borderRadius: '16px', 
-              padding: '16px', 
-              backdropFilter: 'blur(15px)',
-              WebkitBackdropFilter: 'blur(15px)',
-              marginLeft: '5px',
-              marginRight: '5px',
-              marginBottom: '5px',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
-            }}>
+            <div style={{ background: 'rgba(10, 8, 20, 0.6)', border: '1px solid rgba(197, 160, 89, 0.2)', borderRadius: '16px', padding: '16px', backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)', marginLeft: '5px', marginRight: '5px', marginBottom: '5px', boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>
               <div style={{ textAlign: 'center', marginBottom: '12px' }}>
                 <div style={{ fontSize: '11px', color: '#94a3b8', letterSpacing: '1px', textTransform: 'uppercase' }}>{getCardMeta(card)}</div>
                 <h2 style={{ margin: '4px 0', fontSize: '22px', color: '#C5A059', fontWeight: '700' }}>{card.name}</h2>
                 {isReversed && <span style={{ fontSize: '10px', color: '#a78bfa', fontWeight: '700', letterSpacing: '0.5px' }}>REVERSED POSITION</span>}
               </div>
-
               <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent, rgba(197, 160, 89, 0.3), transparent)', margin: '12px 0' }} />
-
               <div style={{ marginBottom: '12px' }}>
-                <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.5', color: 'rgba(255, 255, 255, 0.9)', fontStyle: 'italic', textAlign: 'center' }}>
-                  "{meaning}"
-                </p>
+                <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.5', color: 'rgba(255, 255, 255, 0.9)', fontStyle: 'italic', textAlign: 'center' }}>"{meaning}"</p>
               </div>
-
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center' }}>
                 {keywords.map((keyword: string, idx: number) => (
                   <span key={idx} style={{ background: 'rgba(197, 160, 89, 0.15)', color: '#e2e8f0', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '500', border: '1px solid rgba(197, 160, 89, 0.25)' }}>
