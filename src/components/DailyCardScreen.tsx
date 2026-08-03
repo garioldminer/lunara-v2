@@ -22,7 +22,7 @@ interface DailyReading {
   date: string;
   focusArea: FocusArea;
   question?: string;
-  isRevealed?: boolean; // ✅ დამატებულია Home Screen-თან სინქრონიზაციისთვის
+  isRevealed?: boolean;
 }
 
 // ============================================
@@ -62,7 +62,7 @@ function StarField() {
     return { positions, colors, sizes };
   }, []);
 
-  useFrame((state, delta) => {
+  useFrame((_state, delta) => {
     if (starsRef.current) {
       starsRef.current.rotation.y += delta * 0.015;
       starsRef.current.rotation.x += delta * 0.005;
@@ -238,10 +238,10 @@ function BrightStars() {
     return data;
   }, []);
 
-  useFrame((state, delta) => {
+  useFrame((_state, delta) => {
     if (groupRef.current) {
       groupRef.current.rotation.y += delta * 0.01;
-      groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.2) * 1.5;
+      groupRef.current.position.y = Math.sin(groupRef.current.userData.clock || 0) * 1.5;
     }
   });
 
@@ -299,7 +299,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         setDailyReading(parsed);
         setSelectedFocus(parsed.focusArea || 'general');
         if (parsed.focusArea === 'custom' && parsed.question) setCustomQuestion(parsed.question);
-        // ✅ თუ უკვე გახსნილია, პირდაპირ revealed სტეიჯზე გადადის
         setStage(parsed.isRevealed ? 'revealed' : 'selecting');
         return;
       }
@@ -320,7 +319,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
       isReversed: Math.random() < 0.5, 
       date: today, 
       focusArea: 'general',
-      isRevealed: false // ✅ ახალი ბარათი თავიდან გაუხსნელია
+      isRevealed: false 
     };
     localStorage.setItem('dailyCard', JSON.stringify(newReading));
     setDailyReading(newReading);
@@ -345,7 +344,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     }
     setStage('revealing');
     
-    // ✅ აქ ვამატებთ isRevealed: true-ს, რათა Home Screen-მა იცოდეს, რომ ბარათი გახსნილია
     const updatedReading = { 
       ...dailyReading, 
       focusArea: selectedFocus, 

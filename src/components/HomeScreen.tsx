@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { useUser } from '../context/UserContext';
 import { useTranslation } from '../i18n/TranslationContext';
-import { tarotCards, SUITS, CARD_BACK_URL } from '../data/tarotCards'; // ✅ დამატებულია CARD_BACK_URL
+import { tarotCards, SUITS, CARD_BACK_URL } from '../data/tarotCards';
 import { isAdmin } from '../lib/adminService';
 import { getActiveSubscription } from '../lib/subscriptionService';
 import { supabase } from '../lib/supabase';
@@ -181,7 +181,7 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [timeLeft, setTimeLeft] = useState('14:32:18');
   const [dailyCard, setDailyCard] = useState<typeof tarotCards[0] | null>(null);
   const [isDailyReversed, setIsDailyReversed] = useState(false);
-  const [isDailyRevealed, setIsDailyRevealed] = useState(false); // ✅ ახალი სტეიტი
+  const [isDailyRevealed, setIsDailyRevealed] = useState(false);
   const [currentStreak, setCurrentStreak] = useState(0);
   const [isUserAdmin, setIsUserAdmin] = useState(false);
   const [activeSubscription, setActiveSubscription] = useState<any>(null);
@@ -756,7 +756,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     }
   }, [user]);
 
-  // ✅ განახლებული ლოგიკა: ინახავს isRevealed: false-ს ახალი ბარათისთვის
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
     const stored = localStorage.getItem('dailyCard');
@@ -765,7 +764,7 @@ export default function HomeScreen({ onNavigate }: Props) {
       if (parsed.date === today) {
         setDailyCard(parsed.card);
         setIsDailyReversed(parsed.isReversed);
-        setIsDailyRevealed(parsed.isRevealed || false); // ✅ ამოწმებს გახსნილია თუ არა
+        setIsDailyRevealed(parsed.isRevealed || false);
         addDebugLog('info', 'DAILY_CARD', 'Loaded from localStorage', parsed);
         return;
       }
@@ -774,7 +773,7 @@ export default function HomeScreen({ onNavigate }: Props) {
     const cardIndex = dayOfYear % tarotCards.length;
     const card = tarotCards[cardIndex];
     const isReversed = Math.random() < 0.5;
-    const newReading = { card, isReversed, date: today, isRevealed: false }; // ✅ isRevealed: false
+    const newReading = { card, isReversed, date: today, isRevealed: false };
     localStorage.setItem('dailyCard', JSON.stringify(newReading));
     setDailyCard(card);
     setIsDailyReversed(isReversed);
@@ -782,7 +781,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     addDebugLog('info', 'DAILY_CARD', 'Generated new daily card', { cardName: card.name, isReversed });
   }, []);
 
-  // ✅ ავტომატურად ამოწმებს localStorage-ს, როცა მომხმარებელი ბრუნდება DailyCardScreen-იდან
   useEffect(() => {
     const checkRevealStatus = () => {
       const stored = localStorage.getItem('dailyCard');
@@ -1183,7 +1181,6 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       )}
 
-      {/* ✅ განახლებული ბანერი: Shimmer, TAP და Muted ეფექტებით */}
       <motion.div 
         className="card-of-day-banner clickable-card" 
         onClick={() => onNavigate && onNavigate('daily-card')} 
