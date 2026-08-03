@@ -23,48 +23,32 @@ interface DailyReading {
 }
 
 // ============================================
-// 🌌 COSMIC BACKGROUND COMPONENT
+//  REALISTIC COSMIC BACKGROUND
 // ============================================
 function CosmicBackground() {
-  // ვარსკვლავების გენერაცია
-  const stars = useMemo(() => Array.from({ length: 60 }, (_, i) => ({
+  // ვარსკვლავები - რეალისტური ფერებით (ვარსკვლავებს სხვადასხვა ფერი აქვთ ტემპერატურის მიხედვით)
+  const stars = useMemo(() => Array.from({ length: 80 }, (_, i) => {
+    const colors = ['#ffffff', '#ffe9c4', '#c4d4ff', '#ffd4a3', '#a3c4ff', '#ffcccc'];
+    return {
+      id: i,
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+      size: Math.random() * 2 + 0.3,
+      opacity: Math.random() * 0.8 + 0.2,
+      delay: `${Math.random() * 5}s`,
+      duration: 2 + Math.random() * 4,
+      color: colors[Math.floor(Math.random() * colors.length)]
+    };
+  }), []);
+
+  // ძალიან პატარა ვარსკვლავები (ვარსკვლავური მტვერი)
+  const starDust = useMemo(() => Array.from({ length: 120 }, (_, i) => ({
     id: i,
     left: `${Math.random() * 100}%`,
     top: `${Math.random() * 100}%`,
-    size: Math.random() * 2.5 + 0.5,
-    opacity: Math.random() * 0.8 + 0.2,
-    delay: `${Math.random() * 5}s`,
-    duration: 2 + Math.random() * 4
+    size: Math.random() * 0.8 + 0.2,
+    opacity: Math.random() * 0.5 + 0.1
   })), []);
-
-  // ზოდიაქოს სიმბოლოები
-  const zodiacSymbols = useMemo(() => [
-    { symbol: '♈', left: '8%', top: '15%', size: 18, delay: 0 },
-    { symbol: '♉', left: '85%', top: '25%', size: 16, delay: 1 },
-    { symbol: '♊', left: '12%', top: '75%', size: 20, delay: 2 },
-    { symbol: '♋', left: '88%', top: '70%', size: 17, delay: 0.5 },
-    { symbol: '', left: '5%', top: '45%', size: 19, delay: 1.5 },
-    { symbol: '♍', left: '92%', top: '50%', size: 16, delay: 2.5 },
-    { symbol: '♎', left: '50%', top: '5%', size: 18, delay: 0.8 },
-    { symbol: '♏', left: '50%', top: '92%', size: 17, delay: 1.8 },
-  ], []);
-
-  // ტაროს მინი-სიმბოლოები
-  const tarotSymbols = useMemo(() => [
-    { symbol: '✦', left: '20%', top: '30%', size: 14, delay: 0 },
-    { symbol: '☽', left: '75%', top: '40%', size: 16, delay: 1 },
-    { symbol: '', left: '30%', top: '85%', size: 13, delay: 2 },
-    { symbol: '☀', left: '70%', top: '15%', size: 15, delay: 0.5 },
-    { symbol: '🌙', left: '15%', top: '60%', size: 14, delay: 1.5 },
-    { symbol: '✧', left: '82%', top: '85%', size: 12, delay: 2.5 },
-  ], []);
-
-  // პლანეტები
-  const planets = useMemo(() => [
-    { left: '25%', top: '20%', size: 8, ringSize: 14, color: '#a78bfa', delay: 0 },
-    { left: '78%', top: '60%', size: 6, ringSize: 11, color: '#fbbf24', delay: 1 },
-    { left: '40%', top: '75%', size: 7, ringSize: 12, color: '#60a5fa', delay: 2 },
-  ], []);
 
   return (
     <div style={{
@@ -79,15 +63,15 @@ function CosmicBackground() {
         position: 'absolute',
         inset: 0,
         background: `
-          radial-gradient(ellipse at 20% 30%, rgba(80, 40, 120, 0.3) 0%, transparent 50%),
-          radial-gradient(ellipse at 80% 70%, rgba(40, 20, 80, 0.3) 0%, transparent 50%),
-          radial-gradient(ellipse at 50% 50%, rgba(100, 50, 150, 0.15) 0%, transparent 60%),
+          radial-gradient(ellipse at 20% 30%, rgba(60, 30, 100, 0.4) 0%, transparent 50%),
+          radial-gradient(ellipse at 80% 70%, rgba(30, 20, 80, 0.3) 0%, transparent 50%),
+          radial-gradient(ellipse at 50% 50%, rgba(80, 40, 120, 0.15) 0%, transparent 60%),
           radial-gradient(ellipse at 50% 0%, rgba(197, 160, 89, 0.08) 0%, transparent 40%),
-          linear-gradient(180deg, #0a0515 0%, #050310 50%, #020108 100%)
+          linear-gradient(180deg, #080415 0%, #040210 50%, #010008 100%)
         `
       }} />
 
-      {/* გალაქტიკის ნისლი 1 - იისფერი */}
+      {/* გალაქტიკის ნისლები (Nebula) */}
       <motion.div
         animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
         transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
@@ -97,12 +81,11 @@ function CosmicBackground() {
           left: '10%',
           width: '50%',
           height: '40%',
-          background: 'radial-gradient(ellipse at center, rgba(120, 60, 180, 0.15) 0%, transparent 70%)',
+          background: 'radial-gradient(ellipse at center, rgba(100, 50, 180, 0.2) 0%, rgba(60, 30, 120, 0.1) 40%, transparent 70%)',
           filter: 'blur(40px)'
         }}
       />
 
-      {/* გალაქტიკის ნისლი 2 - ურჯი */}
       <motion.div
         animate={{ x: [0, -25, 0], y: [0, 15, 0] }}
         transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
@@ -112,12 +95,11 @@ function CosmicBackground() {
           right: '10%',
           width: '45%',
           height: '35%',
-          background: 'radial-gradient(ellipse at center, rgba(60, 40, 150, 0.12) 0%, transparent 70%)',
+          background: 'radial-gradient(ellipse at center, rgba(50, 30, 150, 0.15) 0%, rgba(30, 20, 100, 0.08) 40%, transparent 70%)',
           filter: 'blur(35px)'
         }}
       />
 
-      {/* გალაქტიკის ნისლი 3 - ოქროსფერი აქცენტი */}
       <motion.div
         animate={{ x: [0, 20, 0], y: [0, 10, 0] }}
         transition={{ duration: 30, repeat: Infinity, ease: "easeInOut" }}
@@ -127,18 +109,35 @@ function CosmicBackground() {
           left: '30%',
           width: '40%',
           height: '30%',
-          background: 'radial-gradient(ellipse at center, rgba(197, 160, 89, 0.08) 0%, transparent 70%)',
+          background: 'radial-gradient(ellipse at center, rgba(197, 160, 89, 0.06) 0%, transparent 70%)',
           filter: 'blur(30px)'
         }}
       />
 
-      {/* ვარსკვლავები */}
+      {/* ვარსკვლავური მტვერი (ძალიან პატარა ვარსკვლავები) */}
+      {starDust.map((star) => (
+        <div
+          key={`dust-${star.id}`}
+          style={{
+            position: 'absolute',
+            left: star.left,
+            top: star.top,
+            width: `${star.size}px`,
+            height: `${star.size}px`,
+            borderRadius: '50%',
+            background: '#ffffff',
+            opacity: star.opacity
+          }}
+        />
+      ))}
+
+      {/* კაშკაშა ვარსკვლავები */}
       {stars.map((star) => (
         <motion.div
           key={`star-${star.id}`}
           animate={{ 
-            opacity: [star.opacity, star.opacity * 0.2, star.opacity],
-            scale: [1, 1.4, 1]
+            opacity: [star.opacity, star.opacity * 0.3, star.opacity],
+            scale: [1, 1.3, 1]
           }}
           transition={{ 
             duration: star.duration, 
@@ -153,138 +152,243 @@ function CosmicBackground() {
             width: `${star.size}px`,
             height: `${star.size}px`,
             borderRadius: '50%',
-            background: star.size > 2 ? '#ffffff' : 'rgba(255, 255, 255, 0.8)',
-            boxShadow: star.size > 2 
-              ? '0 0 8px rgba(255, 255, 255, 0.9), 0 0 16px rgba(255, 255, 255, 0.5)' 
-              : '0 0 4px rgba(255, 255, 255, 0.6)',
+            background: star.color,
+            boxShadow: star.size > 1.5 
+              ? `0 0 8px ${star.color}, 0 0 16px ${star.color}80` 
+              : `0 0 4px ${star.color}80`,
           }}
         />
       ))}
 
-      {/* მთვარე - ზედა მარცხენივ */}
+      {/* 🌙 რეალისტური მთვარე SVG-ით */}
       <motion.div
-        animate={{ y: [0, -5, 0], rotate: [0, 2, 0] }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        animate={{ y: [0, -6, 0], rotate: [0, 1, 0] }}
+        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
         style={{
           position: 'absolute',
           top: '8%',
           left: '6%',
-          width: '50px',
-          height: '50px',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle at 35% 35%, #f1f5f9 0%, #cbd5e1 40%, #64748b 100%)',
-          boxShadow: '0 0 30px rgba(203, 213, 225, 0.4), 0 0 60px rgba(203, 213, 225, 0.2), inset -8px -4px 0 rgba(0,0,0,0.3)',
+          width: '60px',
+          height: '60px',
         }}
       >
-        {/* მთვარის კრატერები */}
-        <div style={{ position: 'absolute', top: '30%', left: '25%', width: '8px', height: '8px', borderRadius: '50%', background: 'rgba(100, 116, 139, 0.4)' }} />
-        <div style={{ position: 'absolute', top: '55%', left: '50%', width: '6px', height: '6px', borderRadius: '50%', background: 'rgba(100, 116, 139, 0.3)' }} />
+        <svg width="60" height="60" viewBox="0 0 60 60">
+          <defs>
+            <radialGradient id="moonGrad" cx="35%" cy="35%">
+              <stop offset="0%" stopColor="#f8f9fa" />
+              <stop offset="40%" stopColor="#e9ecef" />
+              <stop offset="70%" stopColor="#ced4da" />
+              <stop offset="100%" stopColor="#adb5bd" />
+            </radialGradient>
+            <filter id="moonGlow">
+              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+              <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+          {/* მთვარის glow */}
+          <circle cx="30" cy="30" r="28" fill="rgba(203, 213, 225, 0.15)" filter="url(#moonGlow)" />
+          {/* მთვარის სხეული */}
+          <circle cx="30" cy="30" r="24" fill="url(#moonGrad)" />
+          {/* კრატერები */}
+          <circle cx="22" cy="25" r="4" fill="rgba(100, 116, 139, 0.3)" />
+          <circle cx="35" cy="32" r="3" fill="rgba(100, 116, 139, 0.25)" />
+          <circle cx="28" cy="38" r="2.5" fill="rgba(100, 116, 139, 0.2)" />
+          <circle cx="38" cy="22" r="2" fill="rgba(100, 116, 139, 0.3)" />
+          <circle cx="20" cy="35" r="1.5" fill="rgba(100, 116, 139, 0.25)" />
+          {/* Mare (მუქი აქები) */}
+          <ellipse cx="25" cy="28" rx="8" ry="6" fill="rgba(100, 116, 139, 0.15)" />
+          <ellipse cx="35" cy="35" rx="6" ry="4" fill="rgba(100, 116, 139, 0.12)" />
+        </svg>
       </motion.div>
 
-      {/* მზე - ზედა მარჯვნივ */}
+      {/* ️ რეალისტური მზე SVG-ით */}
       <motion.div
-        animate={{ y: [0, 5, 0], scale: [1, 1.05, 1] }}
-        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        animate={{ y: [0, 5, 0], scale: [1, 1.03, 1] }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
         style={{
           position: 'absolute',
           top: '12%',
           right: '8%',
+          width: '50px',
+          height: '50px',
+        }}
+      >
+        <svg width="50" height="50" viewBox="0 0 50 50">
+          <defs>
+            <radialGradient id="sunGrad" cx="40%" cy="40%">
+              <stop offset="0%" stopColor="#ffffff" />
+              <stop offset="20%" stopColor="#fef3c7" />
+              <stop offset="50%" stopColor="#fbbf24" />
+              <stop offset="80%" stopColor="#f59e0b" />
+              <stop offset="100%" stopColor="#d97706" />
+            </radialGradient>
+            <filter id="sunGlow">
+              <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+              <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+          {/* მზის corona (გარე ნათება) */}
+          <circle cx="25" cy="25" r="24" fill="rgba(251, 191, 36, 0.1)" filter="url(#sunGlow)" />
+          <circle cx="25" cy="25" r="20" fill="rgba(251, 191, 36, 0.2)" />
+          {/* მზის სხეული */}
+          <circle cx="25" cy="25" r="16" fill="url(#sunGrad)" />
+        </svg>
+      </motion.div>
+
+      {/*  სატურნი (პლანეტა ring-ით) */}
+      <motion.div
+        animate={{ y: [0, -8, 0], x: [0, 4, 0] }}
+        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          position: 'absolute',
+          top: '65%',
+          right: '12%',
           width: '40px',
           height: '40px',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle at 35% 35%, #fef3c7 0%, #fbbf24 40%, #d97706 100%)',
-          boxShadow: '0 0 40px rgba(251, 191, 36, 0.6), 0 0 80px rgba(251, 191, 36, 0.3), 0 0 120px rgba(251, 191, 36, 0.15)',
         }}
-      />
+      >
+        <svg width="40" height="40" viewBox="0 0 40 40">
+          <defs>
+            <radialGradient id="saturnGrad" cx="40%" cy="40%">
+              <stop offset="0%" stopColor="#fde68a" />
+              <stop offset="50%" stopColor="#fbbf24" />
+              <stop offset="100%" stopColor="#d97706" />
+            </radialGradient>
+          </defs>
+          {/* Ring (უკანა ნაწილი) */}
+          <ellipse cx="20" cy="20" rx="18" ry="6" fill="none" stroke="rgba(251, 191, 36, 0.3)" strokeWidth="2" />
+          {/* პლანეტის სხეული */}
+          <circle cx="20" cy="20" r="10" fill="url(#saturnGrad)" />
+          {/* Ring (წინა ნაწილი) */}
+          <ellipse cx="20" cy="20" rx="18" ry="6" fill="none" stroke="rgba(251, 191, 36, 0.5)" strokeWidth="2" strokeDasharray="0 18 36" />
+        </svg>
+      </motion.div>
 
-      {/* პლანეტები */}
-      {planets.map((planet, i) => (
-        <motion.div
-          key={`planet-${i}`}
-          animate={{ y: [0, -8, 0], x: [0, 5, 0] }}
-          transition={{ duration: 10 + i * 2, repeat: Infinity, ease: "easeInOut", delay: planet.delay }}
-          style={{
-            position: 'absolute',
-            left: planet.left,
-            top: planet.top,
-            width: `${planet.size}px`,
-            height: `${planet.size}px`,
-            borderRadius: '50%',
-            background: planet.color,
-            boxShadow: `0 0 15px ${planet.color}80`,
-          }}
-        >
-          {/* პლანეტის ring */}
-          <div style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%) rotateX(75deg)',
-            width: `${planet.ringSize}px`,
-            height: `${planet.ringSize}px`,
-            borderRadius: '50%',
-            border: `1.5px solid ${planet.color}60`,
-          }} />
-        </motion.div>
-      ))}
+      {/* 🌍 დედამიწა */}
+      <motion.div
+        animate={{ y: [0, 6, 0], rotate: [0, -2, 0] }}
+        transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          position: 'absolute',
+          top: '75%',
+          left: '15%',
+          width: '30px',
+          height: '30px',
+        }}
+      >
+        <svg width="30" height="30" viewBox="0 0 30 30">
+          <defs>
+            <radialGradient id="earthGrad" cx="40%" cy="40%">
+              <stop offset="0%" stopColor="#60a5fa" />
+              <stop offset="40%" stopColor="#3b82f6" />
+              <stop offset="70%" stopColor="#1e40af" />
+              <stop offset="100%" stopColor="#1e3a8a" />
+            </radialGradient>
+          </defs>
+          <circle cx="15" cy="15" r="14" fill="url(#earthGrad)" />
+          {/* კონტინენტები */}
+          <path d="M 10 8 Q 12 10 11 13 Q 9 14 8 12 Q 7 10 10 8" fill="rgba(34, 197, 94, 0.4)" />
+          <path d="M 18 12 Q 20 14 19 17 Q 17 18 16 16 Q 15 14 18 12" fill="rgba(34, 197, 94, 0.3)" />
+          <path d="M 12 18 Q 14 20 13 22 Q 11 23 10 21 Q 9 19 12 18" fill="rgba(34, 197, 94, 0.35)" />
+        </svg>
+      </motion.div>
 
-      {/* ზოდიაქოს სიმბოლოები */}
-      {zodiacSymbols.map((z, i) => (
-        <motion.div
-          key={`zodiac-${i}`}
-          animate={{ 
-            y: [0, -10, 0],
-            opacity: [0.15, 0.3, 0.15]
-          }}
-          transition={{ 
-            duration: 12 + i, 
-            repeat: Infinity, 
-            ease: "easeInOut",
-            delay: z.delay
-          }}
-          style={{
-            position: 'absolute',
-            left: z.left,
-            top: z.top,
-            fontSize: `${z.size}px`,
-            color: 'rgba(197, 160, 89, 0.25)',
-            textShadow: '0 0 10px rgba(197, 160, 89, 0.3)',
-            fontWeight: 300,
-          }}
-        >
-          {z.symbol}
-        </motion.div>
-      ))}
+      {/* 🔴 მარსი */}
+      <motion.div
+        animate={{ y: [0, -5, 0], x: [0, -3, 0] }}
+        transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          position: 'absolute',
+          top: '25%',
+          right: '20%',
+          width: '25px',
+          height: '25px',
+        }}
+      >
+        <svg width="25" height="25" viewBox="0 0 25 25">
+          <defs>
+            <radialGradient id="marsGrad" cx="40%" cy="40%">
+              <stop offset="0%" stopColor="#fca5a5" />
+              <stop offset="50%" stopColor="#ef4444" />
+              <stop offset="100%" stopColor="#991b1b" />
+            </radialGradient>
+          </defs>
+          <circle cx="12.5" cy="12.5" r="11" fill="url(#marsGrad)" />
+          {/* ედაპირის დეტალები */}
+          <circle cx="10" cy="11" r="2" fill="rgba(127, 29, 29, 0.3)" />
+          <circle cx="15" cy="14" r="1.5" fill="rgba(127, 29, 29, 0.25)" />
+        </svg>
+      </motion.div>
 
-      {/* ტაროს მინი-სიმბოლოები */}
-      {tarotSymbols.map((s, i) => (
-        <motion.div
-          key={`tarot-${i}`}
-          animate={{ 
-            y: [0, 12, 0],
-            rotate: [0, 5, 0],
-            opacity: [0.2, 0.4, 0.2]
-          }}
-          transition={{ 
-            duration: 8 + i * 2, 
-            repeat: Infinity, 
-            ease: "easeInOut",
-            delay: s.delay
-          }}
-          style={{
-            position: 'absolute',
-            left: s.left,
-            top: s.top,
-            fontSize: `${s.size}px`,
-            color: 'rgba(251, 191, 36, 0.3)',
-            textShadow: '0 0 8px rgba(251, 191, 36, 0.4)',
-          }}
-        >
-          {s.symbol}
-        </motion.div>
-      ))}
+      {/*  კომეტა კუდით */}
+      <motion.div
+        animate={{ 
+          x: ['-150px', '500px'],
+          y: ['80px', '250px'],
+          opacity: [0, 1, 1, 0]
+        }}
+        transition={{ 
+          duration: 4, 
+          repeat: Infinity, 
+          repeatDelay: 20,
+          ease: "easeOut"
+        }}
+        style={{
+          position: 'absolute',
+          top: '15%',
+          left: '5%',
+        }}
+      >
+        <svg width="100" height="30" viewBox="0 0 100 30">
+          <defs>
+            <linearGradient id="cometTail" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="rgba(255, 255, 255, 0)" />
+              <stop offset="70%" stopColor="rgba(255, 255, 255, 0.3)" />
+              <stop offset="100%" stopColor="rgba(255, 255, 255, 0.8)" />
+            </linearGradient>
+          </defs>
+          {/* კუდი */}
+          <path d="M 0 15 Q 40 15 80 15" stroke="url(#cometTail)" strokeWidth="3" fill="none" />
+          {/* თავი */}
+          <circle cx="85" cy="15" r="4" fill="#ffffff" />
+          <circle cx="85" cy="15" r="6" fill="rgba(255, 255, 255, 0.3)" />
+        </svg>
+      </motion.div>
 
-      {/* Shooting Star - იშვიათი ეფექტი */}
+      {/* 🌌 შორეული გალაქტიკა */}
+      <motion.div
+        animate={{ rotate: [0, 360] }}
+        transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
+        style={{
+          position: 'absolute',
+          top: '45%',
+          left: '75%',
+          width: '80px',
+          height: '80px',
+          opacity: 0.15,
+        }}
+      >
+        <svg width="80" height="80" viewBox="0 0 80 80">
+          <defs>
+            <radialGradient id="galaxyGrad" cx="50%" cy="50%">
+              <stop offset="0%" stopColor="rgba(255, 255, 255, 0.8)" />
+              <stop offset="30%" stopColor="rgba(200, 180, 255, 0.4)" />
+              <stop offset="60%" stopColor="rgba(150, 130, 200, 0.2)" />
+              <stop offset="100%" stopColor="rgba(100, 80, 150, 0)" />
+            </radialGradient>
+          </defs>
+          <ellipse cx="40" cy="40" rx="35" ry="15" fill="url(#galaxyGrad)" transform="rotate(-30 40 40)" />
+          <ellipse cx="40" cy="40" rx="35" ry="15" fill="url(#galaxyGrad)" transform="rotate(30 40 40)" />
+        </svg>
+      </motion.div>
+
+      {/* Shooting Star */}
       <motion.div
         animate={{ 
           x: ['-100px', '400px'],
@@ -294,17 +398,17 @@ function CosmicBackground() {
         transition={{ 
           duration: 3, 
           repeat: Infinity, 
-          repeatDelay: 15,
+          repeatDelay: 18,
           ease: "easeOut"
         }}
         style={{
           position: 'absolute',
           top: '20%',
           left: '10%',
-          width: '80px',
+          width: '100px',
           height: '2px',
-          background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent)',
-          boxShadow: '0 0 10px rgba(255, 255, 255, 0.6)',
+          background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent)',
+          boxShadow: '0 0 10px rgba(255, 255, 255, 0.7)',
           transform: 'rotate(-15deg)',
         }}
       />
@@ -459,7 +563,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
 
   return (
     <div style={containerStyle}>
-      {/* 🌌 კოსმიური ფონი */}
       <CosmicBackground />
 
       {/* Header */}
@@ -511,10 +614,8 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         {stage === 'revealed' && (
           <motion.div key="revealed" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} style={{ display: 'flex', flexDirection: 'column', flex: 1, position: 'relative', zIndex: 1 }}>
             
-            {/* კარტი + მარჯვენა სვეტი */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
               
-              {/* ბარათი - ტივტივებს კოსმოსში */}
               <motion.div
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
@@ -553,7 +654,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                 )}
               </motion.div>
 
-              {/* მარჯვენა სვეტი */}
               <div style={{ width: '48px', display: 'flex', flexDirection: 'column', gap: '14px', marginLeft: '12px' }}>
                 <motion.button whileTap={{ scale: 0.9 }} onClick={() => !hasPremium && onNavigate?.('pricing')} style={{ ...actionBtnStyle, background: hasPremium ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 215, 0, 0.15)', borderColor: hasPremium ? 'rgba(16, 185, 129, 0.5)' : 'rgba(255, 215, 0, 0.5)', color: hasPremium ? '#10b981' : '#FFD700' }}>
                   {hasPremium ? <Sparkles size={20} /> : <Lock size={18} />}
@@ -573,7 +673,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
               </div>
             </div>
 
-            {/* ქვედა ბანერი */}
             <div style={{ 
               background: 'rgba(10, 8, 20, 0.6)', 
               border: '1px solid rgba(197, 160, 89, 0.2)', 
