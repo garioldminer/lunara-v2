@@ -1,39 +1,47 @@
-.daily-card-screen {
+/* ============================================
+   DAILY CARD SCREEN - PREMIUM POLISH
+   ============================================ */
+
+   .daily-card-screen {
     width: 100%;
     min-height: 100vh;
-    background: linear-gradient(180deg, #0a0600 0%, #1a0f05 50%, #0a0600 100%);
+    background: radial-gradient(ellipse at 50% 0%, #14101c 0%, #0a0600 55%, #07050a 100%);
     color: #fff;
     font-family: 'Georgia', serif;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 70px 4px 100px 4px;
+    padding: 70px 16px calc(100px + env(safe-area-inset-bottom, 0px)) 16px;
+    -webkit-overflow-scrolling: touch;
   }
   
+  /* ============================================
+     HEADER
+     ============================================ */
   .daily-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 14px;
-    margin-bottom: 8px;
+    padding: 0 8px;
+    margin-bottom: 24px;
   }
   
   .daily-back-btn {
     background: rgba(197, 160, 89, 0.1);
     border: 1px solid rgba(197, 160, 89, 0.3);
     color: #C5A059;
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
   }
   
-  .daily-back-btn:hover {
+  .daily-back-btn:hover, .daily-back-btn:active {
     background: rgba(197, 160, 89, 0.2);
-    transform: scale(1.05);
+    transform: scale(0.95);
   }
   
   .daily-header-center {
@@ -48,34 +56,26 @@
     font-size: 10px;
     color: #C5A059;
     opacity: 0.6;
-    letter-spacing: 2px;
+    letter-spacing: 3px;
   }
   
   .daily-title {
-    font-size: 16px;
+    font-size: 18px;
     color: #C5A059;
     margin: 0;
-    letter-spacing: 3px;
+    letter-spacing: 2px;
     text-transform: uppercase;
-    font-style: italic;
-    font-weight: 400;
+    font-weight: 700;
   }
   
   .daily-date {
-    font-size: 11px;
-    color: rgba(255, 255, 255, 0.6);
-    letter-spacing: 1px;
+    font-size: 12px;
+    color: #94a3b8;
+    letter-spacing: 0.5px;
   }
   
   .daily-header-spacer {
-    width: 36px;
-  }
-  
-  .daily-card-section {
-    padding: 30px 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    width: 44px;
   }
   
   /* ============================================
@@ -86,31 +86,41 @@
     flex-direction: column;
     align-items: center;
     gap: 20px;
-    padding: 20px 0;
+    padding: 32px 24px;
     width: 100%;
-    max-width: 400px;
+    max-width: 480px;
+    margin: 0 auto;
+    background: rgba(26, 21, 16, 0.6);
+    border: 1px solid rgba(197, 160, 89, 0.15);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
   
   .daily-question-icon {
     font-size: 48px;
-    filter: drop-shadow(0 0 20px rgba(197, 160, 89, 0.4));
+    filter: drop-shadow(0 0 15px rgba(197, 160, 89, 0.4));
     animation: float 3s ease-in-out infinite;
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
   }
   
   .daily-question-title {
     font-size: 22px;
     color: #C5A059;
     margin: 0;
-    letter-spacing: 2px;
-    font-weight: 400;
-    font-style: italic;
+    letter-spacing: 1px;
+    font-weight: 700;
     text-align: center;
   }
   
   .daily-question-text {
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.7);
-    line-height: 1.7;
+    color: #94a3b8;
+    line-height: 1.6;
     margin: 0;
     text-align: center;
     max-width: 320px;
@@ -120,14 +130,14 @@
      QUESTION DISPLAY
      ============================================ */
   .daily-question-display {
-    background: rgba(197, 160, 89, 0.08);
-    border: 1px solid rgba(197, 160, 89, 0.3);
+    background: rgba(197, 160, 89, 0.05);
+    border: 1px solid rgba(197, 160, 89, 0.2);
     border-radius: 12px;
     padding: 16px 20px;
-    margin-bottom: 8px;
+    margin-bottom: 24px;
     text-align: center;
-    max-width: 400px;
     width: 100%;
+    max-width: 400px;
   }
   
   .daily-question-label {
@@ -141,34 +151,43 @@
   }
   
   .daily-question-text-display {
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.9);
+    font-size: 15px;
+    color: #e2e8f0;
     font-style: italic;
-    line-height: 1.6;
+    line-height: 1.5;
     margin: 0;
   }
   
   /* ============================================
-     HIDDEN CARD - რეალური Card Back Image-ით
+     HIDDEN CARD (Card Back)
      ============================================ */
   .daily-card-hidden {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 24px;
+    width: 100%;
   }
   
   .daily-card-back {
     width: 240px;
     height: 360px;
-    border-radius: 12px;
+    border-radius: 16px;
     overflow: hidden;
     border: 2px solid #C5A059;
-    box-shadow: 
-      0 10px 30px rgba(197, 160, 89, 0.3),
-      0 0 50px rgba(197, 160, 89, 0.1);
-    animation: float 3s ease-in-out infinite;
-    background: linear-gradient(135deg, #1a0f2e 0%, #2d1b4e 100%);
+    box-shadow: 0 0 40px rgba(197, 160, 89, 0.2), 0 10px 30px rgba(0,0,0,0.5);
+    animation: pulse-glow 3s ease-in-out infinite;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+  }
+  
+  .daily-card-back:hover {
+    transform: scale(1.02);
+  }
+  
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 30px rgba(197, 160, 89, 0.2), 0 10px 30px rgba(0,0,0,0.5); }
+    50% { box-shadow: 0 0 50px rgba(197, 160, 89, 0.4), 0 10px 30px rgba(0,0,0,0.5); }
   }
   
   .daily-card-back-image {
@@ -180,37 +199,37 @@
     -webkit-user-drag: none;
   }
   
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-  }
-  
   .daily-tap-hint {
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+    color: #94a3b8;
     font-style: italic;
     margin: 0;
+    letter-spacing: 0.5px;
   }
   
   .daily-reveal-btn {
     background: linear-gradient(135deg, #C5A059 0%, #8B6914 100%);
-    border: 1px solid #C5A059;
-    border-radius: 30px;
-    padding: 14px 36px;
-    color: #0a0600;
+    border: none;
+    border-radius: 12px;
+    padding: 16px 40px;
+    color: #0f0c08;
     font-family: 'Georgia', serif;
     font-size: 14px;
     font-weight: 700;
-    letter-spacing: 2px;
+    letter-spacing: 1px;
     text-transform: uppercase;
     cursor: pointer;
-    transition: all 0.3s;
-    box-shadow: 0 4px 20px rgba(197, 160, 89, 0.4);
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 20px rgba(197, 160, 89, 0.3);
   }
   
   .daily-reveal-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 25px rgba(197, 160, 89, 0.5);
+    box-shadow: 0 6px 25px rgba(197, 160, 89, 0.4);
+  }
+  
+  .daily-reveal-btn:active {
+    transform: translateY(0) scale(0.98);
   }
   
   /* ============================================
@@ -222,26 +241,24 @@
     align-items: center;
     gap: 24px;
     width: 100%;
-    max-width: 400px;
+    max-width: 480px;
+    padding-bottom: 40px;
   }
   
   .daily-card-image-wrapper {
     position: relative;
     width: 240px;
     height: 360px;
-    border-radius: 12px;
+    border-radius: 16px;
     overflow: hidden;
     border: 2px solid #C5A059;
-    box-shadow: 
-      0 10px 30px rgba(197, 160, 89, 0.3),
-      0 0 50px rgba(197, 160, 89, 0.1);
+    box-shadow: 0 0 40px rgba(197, 160, 89, 0.3), 0 10px 30px rgba(0,0,0,0.6);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
   }
   
   .daily-card-image-wrapper.reversed {
     border-color: #a78bfa;
-    box-shadow: 
-      0 10px 30px rgba(167, 139, 250, 0.3),
-      0 0 50px rgba(167, 139, 250, 0.1);
+    box-shadow: 0 0 40px rgba(167, 139, 250, 0.3), 0 10px 30px rgba(0,0,0,0.6);
   }
   
   .daily-card-image {
@@ -249,7 +266,6 @@
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
   .daily-card-placeholder {
@@ -264,80 +280,109 @@
   }
   
   .daily-placeholder-num {
-    font-size: 48px;
+    font-size: 32px;
     color: #C5A059;
     font-weight: 700;
-    letter-spacing: 2px;
   }
   
   .daily-placeholder-name {
     font-size: 16px;
-    color: rgba(255, 255, 255, 0.7);
+    color: #C5A059;
+    font-weight: 700;
     text-align: center;
+    padding: 0 16px;
   }
   
+  /* 🆕 განახლებული წრიული Reversed ბეჯი */
   .daily-reversed-badge {
     position: absolute;
     top: 12px;
     right: 12px;
-    background: rgba(167, 139, 250, 0.9);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 900;
+    z-index: 10;
+    background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
     color: #fff;
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px rgba(167,139,250,0.5), 0 4px 12px rgba(167,139,250,0.8);
+    animation: badge-pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
   }
   
+  @keyframes badge-pop {
+    0% { transform: scale(0); }
+    100% { transform: scale(1); }
+  }
+  
+  /* ============================================
+     CARD INFO PANEL
+     ============================================ */
   .daily-card-info {
     width: 100%;
-    text-align: center;
+    background: rgba(26, 21, 16, 0.8);
+    border: 1px solid rgba(197, 160, 89, 0.2);
+    border-radius: 20px;
+    padding: 24px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
   
   .daily-card-number {
-    font-size: 14px;
-    color: #C5A059;
-    letter-spacing: 3px;
-    margin-bottom: 8px;
-    font-weight: 600;
+    font-size: 12px;
+    color: #94a3b8;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
   }
   
   .daily-card-name {
     font-size: 26px;
     color: #C5A059;
-    margin: 0 0 4px;
-    letter-spacing: 2px;
+    margin: 0 0 8px;
+    letter-spacing: 0.5px;
     font-weight: 700;
+    text-align: center;
   }
   
   .daily-reversed-label {
-    font-size: 12px;
+    display: inline-block;
+    background: rgba(167, 139, 250, 0.15);
     color: #a78bfa;
-    font-style: italic;
-    margin-bottom: 8px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    border: 1px solid rgba(167, 139, 250, 0.3);
+    margin-bottom: 12px;
   }
   
   .daily-card-meta {
-    font-size: 11px;
-    color: rgba(255, 255, 255, 0.6);
+    font-size: 12px;
+    color: #94a3b8;
     text-transform: uppercase;
-    letter-spacing: 1.5px;
+    letter-spacing: 1px;
     margin: 0 0 20px;
+    text-align: center;
   }
   
   .daily-ornament-line {
     font-size: 12px;
     color: #C5A059;
-    opacity: 0.5;
-    letter-spacing: 2px;
+    opacity: 0.4;
+    letter-spacing: 4px;
     margin: 20px 0;
+    text-align: center;
   }
   
   .daily-meaning-section,
   .daily-keywords-section {
     margin-bottom: 24px;
-    text-align: left;
   }
   
   .daily-section-title {
@@ -346,14 +391,18 @@
     margin: 0 0 10px;
     letter-spacing: 1.5px;
     text-transform: uppercase;
-    font-weight: 600;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
   
   .daily-meaning-text {
-    font-size: 14px;
+    font-size: 15px;
     color: rgba(255, 255, 255, 0.85);
     line-height: 1.7;
     margin: 0;
+    font-style: italic;
   }
   
   .daily-keywords {
@@ -364,55 +413,57 @@
   
   .daily-keyword-tag {
     background: rgba(197, 160, 89, 0.1);
-    border: 1px solid rgba(197, 160, 89, 0.3);
-    border-radius: 16px;
+    border: 1px solid rgba(197, 160, 89, 0.2);
+    border-radius: 20px;
     padding: 6px 14px;
-    font-size: 11px;
-    color: #C5A059;
-    letter-spacing: 0.5px;
+    font-size: 12px;
+    color: #e2e8f0;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+  
+  .daily-keyword-tag:hover {
+    background: rgba(197, 160, 89, 0.2);
+    border-color: rgba(197, 160, 89, 0.4);
   }
   
   .daily-message {
     background: rgba(197, 160, 89, 0.05);
-    border: 1px solid rgba(197, 160, 89, 0.2);
-    border-radius: 16px;
-    padding: 20px;
-    margin-top: 20px;
+    border: 1px solid rgba(197, 160, 89, 0.15);
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 8px;
   }
   
   .daily-message-text {
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.8);
-    line-height: 1.7;
+    font-size: 14px;
+    color: #b3a68c;
+    line-height: 1.6;
     margin: 0;
-    font-style: italic;
+    text-align: center;
   }
   
   /* ============================================
      NEW QUESTION BUTTON
      ============================================ */
   .daily-new-question-btn {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(197, 160, 89, 0.3);
-    border-radius: 24px;
-    padding: 10px 20px;
+    border-radius: 12px;
+    padding: 14px 20px;
     color: #C5A059;
     font-family: 'Georgia', serif;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
+    letter-spacing: 0.5px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
     margin-top: 24px;
     width: 100%;
-    max-width: 240px;
-    margin-left: auto;
-    margin-right: auto;
   }
   
   .daily-new-question-btn:hover {
@@ -422,14 +473,18 @@
   }
   
   .daily-new-question-btn:active {
-    transform: translateY(0);
+    transform: translateY(0) scale(0.98);
   }
   
+  /* ============================================
+     LOADING STATE
+     ============================================ */
   .loading {
     display: flex;
     align-items: center;
     justify-content: center;
     min-height: 100vh;
     font-size: 16px;
-    color: rgba(255, 255, 255, 0.6);
+    color: #C5A059;
+    letter-spacing: 2px;
   }
