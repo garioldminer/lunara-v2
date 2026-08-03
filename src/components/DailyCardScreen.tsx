@@ -23,10 +23,10 @@ interface DailyReading {
 }
 
 // ============================================
-//  REALISTIC COSMIC BACKGROUND
+// 🌌 REALISTIC COSMIC BACKGROUND
 // ============================================
 function CosmicBackground() {
-  // ვარსკვლავები - რეალისტური ფერებით (ვარსკვლავებს სხვადასხვა ფერი აქვთ ტემპერატურის მიხედვით)
+  // ვარსკვლავები - რეალისტური ფერებით (ტემპერატურის მიხედვით)
   const stars = useMemo(() => Array.from({ length: 80 }, (_, i) => {
     const colors = ['#ffffff', '#ffe9c4', '#c4d4ff', '#ffd4a3', '#a3c4ff', '#ffcccc'];
     return {
@@ -35,13 +35,13 @@ function CosmicBackground() {
       top: `${Math.random() * 100}%`,
       size: Math.random() * 2 + 0.3,
       opacity: Math.random() * 0.8 + 0.2,
-      delay: `${Math.random() * 5}s`,
+      delay: Math.random() * 5, // ✅ შესწორებულია: ახლა არის რიცხვი (წამები)
       duration: 2 + Math.random() * 4,
       color: colors[Math.floor(Math.random() * colors.length)]
     };
   }), []);
 
-  // ძალიან პატარა ვარსკვლავები (ვარსკვლავური მტვერი)
+  // ვარსკვლავური მტვერი (ძალიან პატარა ვარსკვლავები)
   const starDust = useMemo(() => Array.from({ length: 120 }, (_, i) => ({
     id: i,
     left: `${Math.random() * 100}%`,
@@ -114,7 +114,7 @@ function CosmicBackground() {
         }}
       />
 
-      {/* ვარსკვლავური მტვერი (ძალიან პატარა ვარსკვლავები) */}
+      {/* ვარსკვლავური მტვერი */}
       {starDust.map((star) => (
         <div
           key={`dust-${star.id}`}
@@ -142,7 +142,7 @@ function CosmicBackground() {
           transition={{ 
             duration: star.duration, 
             repeat: Infinity, 
-            delay: star.delay,
+            delay: star.delay, // ✅ ახლა სწორად არის რიცხვი
             ease: "easeInOut"
           }}
           style={{
@@ -188,23 +188,19 @@ function CosmicBackground() {
               </feMerge>
             </filter>
           </defs>
-          {/* მთვარის glow */}
           <circle cx="30" cy="30" r="28" fill="rgba(203, 213, 225, 0.15)" filter="url(#moonGlow)" />
-          {/* მთვარის სხეული */}
           <circle cx="30" cy="30" r="24" fill="url(#moonGrad)" />
-          {/* კრატერები */}
           <circle cx="22" cy="25" r="4" fill="rgba(100, 116, 139, 0.3)" />
           <circle cx="35" cy="32" r="3" fill="rgba(100, 116, 139, 0.25)" />
           <circle cx="28" cy="38" r="2.5" fill="rgba(100, 116, 139, 0.2)" />
           <circle cx="38" cy="22" r="2" fill="rgba(100, 116, 139, 0.3)" />
           <circle cx="20" cy="35" r="1.5" fill="rgba(100, 116, 139, 0.25)" />
-          {/* Mare (მუქი აქები) */}
           <ellipse cx="25" cy="28" rx="8" ry="6" fill="rgba(100, 116, 139, 0.15)" />
           <ellipse cx="35" cy="35" rx="6" ry="4" fill="rgba(100, 116, 139, 0.12)" />
         </svg>
       </motion.div>
 
-      {/* ️ რეალისტური მზე SVG-ით */}
+      {/* ☀️ რეალისტური მზე SVG-ით */}
       <motion.div
         animate={{ y: [0, 5, 0], scale: [1, 1.03, 1] }}
         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
@@ -233,15 +229,13 @@ function CosmicBackground() {
               </feMerge>
             </filter>
           </defs>
-          {/* მზის corona (გარე ნათება) */}
           <circle cx="25" cy="25" r="24" fill="rgba(251, 191, 36, 0.1)" filter="url(#sunGlow)" />
           <circle cx="25" cy="25" r="20" fill="rgba(251, 191, 36, 0.2)" />
-          {/* მზის სხეული */}
           <circle cx="25" cy="25" r="16" fill="url(#sunGrad)" />
         </svg>
       </motion.div>
 
-      {/*  სატურნი (პლანეტა ring-ით) */}
+      {/* 🪐 სატურნი (პლანეტა ring-ით) */}
       <motion.div
         animate={{ y: [0, -8, 0], x: [0, 4, 0] }}
         transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
@@ -261,11 +255,8 @@ function CosmicBackground() {
               <stop offset="100%" stopColor="#d97706" />
             </radialGradient>
           </defs>
-          {/* Ring (უკანა ნაწილი) */}
           <ellipse cx="20" cy="20" rx="18" ry="6" fill="none" stroke="rgba(251, 191, 36, 0.3)" strokeWidth="2" />
-          {/* პლანეტის სხეული */}
           <circle cx="20" cy="20" r="10" fill="url(#saturnGrad)" />
-          {/* Ring (წინა ნაწილი) */}
           <ellipse cx="20" cy="20" rx="18" ry="6" fill="none" stroke="rgba(251, 191, 36, 0.5)" strokeWidth="2" strokeDasharray="0 18 36" />
         </svg>
       </motion.div>
@@ -292,7 +283,6 @@ function CosmicBackground() {
             </radialGradient>
           </defs>
           <circle cx="15" cy="15" r="14" fill="url(#earthGrad)" />
-          {/* კონტინენტები */}
           <path d="M 10 8 Q 12 10 11 13 Q 9 14 8 12 Q 7 10 10 8" fill="rgba(34, 197, 94, 0.4)" />
           <path d="M 18 12 Q 20 14 19 17 Q 17 18 16 16 Q 15 14 18 12" fill="rgba(34, 197, 94, 0.3)" />
           <path d="M 12 18 Q 14 20 13 22 Q 11 23 10 21 Q 9 19 12 18" fill="rgba(34, 197, 94, 0.35)" />
@@ -320,13 +310,12 @@ function CosmicBackground() {
             </radialGradient>
           </defs>
           <circle cx="12.5" cy="12.5" r="11" fill="url(#marsGrad)" />
-          {/* ედაპირის დეტალები */}
           <circle cx="10" cy="11" r="2" fill="rgba(127, 29, 29, 0.3)" />
           <circle cx="15" cy="14" r="1.5" fill="rgba(127, 29, 29, 0.25)" />
         </svg>
       </motion.div>
 
-      {/*  კომეტა კუდით */}
+      {/* ☄️ კომეტა კუდით */}
       <motion.div
         animate={{ 
           x: ['-150px', '500px'],
@@ -353,9 +342,7 @@ function CosmicBackground() {
               <stop offset="100%" stopColor="rgba(255, 255, 255, 0.8)" />
             </linearGradient>
           </defs>
-          {/* კუდი */}
           <path d="M 0 15 Q 40 15 80 15" stroke="url(#cometTail)" strokeWidth="3" fill="none" />
-          {/* თავი */}
           <circle cx="85" cy="15" r="4" fill="#ffffff" />
           <circle cx="85" cy="15" r="6" fill="rgba(255, 255, 255, 0.3)" />
         </svg>
