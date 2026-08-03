@@ -74,7 +74,8 @@ function ToastNotification({ toast, onClose }: { toast: Toast; onClose: () => vo
           color: '#fff', padding: '16px 20px', borderRadius: '16px',
           boxShadow: '0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1)',
           display: 'flex', alignItems: 'center', gap: '12px', fontSize: '14px', fontWeight: '600',
-          maxWidth: '400px', width: '100%', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.1)', pointerEvents: 'auto'
+          maxWidth: '400px', width: '100%', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.1)', pointerEvents: 'auto',
+          position: 'relative'
         }}
       >
         <span style={{ fontSize: '20px', flexShrink: 0 }}>
@@ -892,20 +893,20 @@ export default function HomeScreen({ onNavigate }: Props) {
   };
 
   const quickActions = [
-    { icon: <Sparkles size={28} />, label: t('home.quickAccess.daily'), sublabel: t('home.quickAccess.card'), color: '#C5A059', action: 'Daily' },
-    { icon: <LayoutGrid size={28} />, label: t('home.quickAccess.threeCards'), sublabel: t('home.quickAccess.reading'), color: '#a78bfa', action: '3Cards' },
-    { icon: <Moon size={28} />, label: t('home.quickAccess.tarot'), sublabel: t('home.quickAccess.draw'), color: '#60a5fa', action: 'Tarot' },
-    { icon: <Hash size={28} />, label: t('home.quickAccess.cards'), sublabel: t('home.quickAccess.gallery'), color: '#fbbf24', action: 'Cards' },
-    { icon: <Scroll size={28} />, label: t('home.quickAccess.history'), sublabel: t('home.quickAccess.readings'), color: '#34d399', action: 'History' },
-    { icon: <Crown size={28} />, label: t('home.quickAccess.celtic'), sublabel: t('home.quickAccess.cross'), color: '#C5A059', action: 'CelticCross', isPremium: true },
-    { icon: <span style={{ fontSize: '28px' }}>🐎</span>, label: t('home.quickAccess.horseshoe'), sublabel: t('home.quickAccess.sevenCards'), color: '#fb923c', action: 'Horseshoe', isPremium: true },
-    { icon: <span style={{ fontSize: '28px' }}>❤️</span>, label: t('home.quickAccess.love'), sublabel: t('home.quickAccess.spread'), color: '#f472b6', action: 'Relationship', isPremium: true },
-    { icon: <Sparkles size={28} />, label: t('home.quickAccess.horoscope'), sublabel: t('home.quickAccess.daily'), color: '#C5A059', action: 'Horoscope' },
-    { icon: <Sparkles size={28} />, label: t('home.quickAccess.services'), sublabel: t('home.quickAccess.shop'), color: '#FFD700', action: 'Services', isServices: true },
+    { icon: <Sparkles size={26} />, label: t('home.quickAccess.daily'), sublabel: t('home.quickAccess.card'), color: '#C5A059', action: 'Daily' },
+    { icon: <LayoutGrid size={26} />, label: t('home.quickAccess.threeCards'), sublabel: t('home.quickAccess.reading'), color: '#a78bfa', action: '3Cards' },
+    { icon: <Moon size={26} />, label: t('home.quickAccess.tarot'), sublabel: t('home.quickAccess.draw'), color: '#60a5fa', action: 'Tarot' },
+    { icon: <Hash size={26} />, label: t('home.quickAccess.cards'), sublabel: t('home.quickAccess.gallery'), color: '#fbbf24', action: 'Cards' },
+    { icon: <Scroll size={26} />, label: t('home.quickAccess.history'), sublabel: t('home.quickAccess.readings'), color: '#34d399', action: 'History' },
+    { icon: <Crown size={26} />, label: t('home.quickAccess.celtic'), sublabel: t('home.quickAccess.cross'), color: '#C5A059', action: 'CelticCross', isPremium: true },
+    { icon: <span style={{ fontSize: '26px' }}>🐎</span>, label: t('home.quickAccess.horseshoe'), sublabel: t('home.quickAccess.sevenCards'), color: '#fb923c', action: 'Horseshoe', isPremium: true },
+    { icon: <span style={{ fontSize: '26px' }}>❤️</span>, label: t('home.quickAccess.love'), sublabel: t('home.quickAccess.spread'), color: '#f472b6', action: 'Relationship', isPremium: true },
+    { icon: <Sparkles size={26} />, label: t('home.quickAccess.horoscope'), sublabel: t('home.quickAccess.daily'), color: '#C5A059', action: 'Horoscope' },
+    { icon: <Sparkles size={26} />, label: t('home.quickAccess.services'), sublabel: t('home.quickAccess.shop'), color: '#FFD700', action: 'Services', isServices: true },
   ];
 
   if (isUserAdmin) {
-    quickActions.push({ icon: <Shield size={28} />, label: t('home.quickAccess.admin'), sublabel: t('home.quickAccess.panel'), color: '#ef4444', action: 'Admin' });
+    quickActions.push({ icon: <Shield size={26} />, label: t('home.quickAccess.admin'), sublabel: t('home.quickAccess.panel'), color: '#ef4444', action: 'Admin' });
   }
 
   const dailyCardName = dailyCard?.name || 'THE FOOL';
@@ -914,7 +915,7 @@ export default function HomeScreen({ onNavigate }: Props) {
   const dailyCardElement = dailyCard ? getCardMeta(dailyCard) : '';
   const userLevelData = getLevelFromTotalXP(economy.xp);
   const xpPercent = Math.min((userLevelData.currentLevelXP / userLevelData.xpToNext) * 100, 100);
-  const circumference = 2 * Math.PI * 22; 
+  const circumference = 2 * Math.PI * 23; 
   const strokeDashoffset = circumference - (xpPercent / 100) * circumference;
 
   const getQuestIcon = (actionType: string) => {
@@ -930,179 +931,437 @@ export default function HomeScreen({ onNavigate }: Props) {
   };
 
   return (
-    <div className="home-screen">
+    <div className="home-screen" style={{
+      minHeight: '100vh',
+      background: 'radial-gradient(ellipse at 50% 0%, #1a1225 0%, #0c0a12 45%, #07050a 100%)',
+      color: '#f5f0e6',
+      padding: '0 12px 28px',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      position: 'relative',
+      overflowX: 'hidden'
+    }}>
+      {/* Ambient cosmic glow */}
+      <div style={{
+        position: 'fixed', top: '-18%', left: '50%', transform: 'translateX(-50%)',
+        width: '160%', height: '55%',
+        background: 'radial-gradient(ellipse, rgba(197,160,89,0.07) 0%, transparent 70%)',
+        pointerEvents: 'none', zIndex: 0
+      }} />
+
       <AnimatePresence>
         {toast && <ToastNotification toast={toast} onClose={() => setToast(null)} />}
         {showLevelUpModal && <LevelUpModal level={leveledUpTo} onClose={() => setShowLevelUpModal(false)} t={t} />}
       </AnimatePresence>
 
-      <div className="user-header">
-        <div className="user-main-row" style={{ alignItems: 'center', height: '52px', display: 'flex', justifyContent: 'space-between' }}>
-          <div className="avatar-section clickable-avatar" onClick={() => onNavigate?.('profile')} style={{ position: 'relative', width: '52px', height: '52px', flexShrink: 0 }}>
-            <svg className="xp-circular-progress" width="52" height="52" viewBox="0 0 52 52" style={{ position: 'absolute', top: 0, left: 0 }}>
-              <circle className="xp-circle-bg" cx="26" cy="26" r="22" fill="none" stroke="#e9d5ff" strokeWidth="4" />
-              <circle className="xp-circle-progress" cx="26" cy="26" r="22" fill="none" stroke="#7c3aed" strokeWidth="4" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} transform="rotate(-90 26 26)" />
+      {/* ===================== USER HEADER ===================== */}
+      <motion.div 
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        style={{ paddingTop: '14px', marginBottom: '14px', position: 'relative', zIndex: 2 }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', height: '56px' }}>
+          {/* Avatar + XP Ring */}
+          <div 
+            onClick={() => onNavigate?.('profile')} 
+            style={{ position: 'relative', width: '54px', height: '54px', flexShrink: 0, cursor: 'pointer' }}
+          >
+            <svg width="54" height="54" viewBox="0 0 54 54" style={{ position: 'absolute', inset: 0 }}>
+              <circle cx="27" cy="27" r="23" fill="none" stroke="rgba(197,160,89,0.15)" strokeWidth="3.5" />
+              <circle 
+                cx="27" cy="27" r="23" fill="none" 
+                stroke="url(#xpGradient)" 
+                strokeWidth="3.5" 
+                strokeLinecap="round"
+                strokeDasharray={circumference} 
+                strokeDashoffset={strokeDashoffset}
+                transform="rotate(-90 27 27)"
+                style={{ filter: 'drop-shadow(0 0 6px rgba(167,139,250,0.45))' }}
+              />
+              <defs>
+                <linearGradient id="xpGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#a78bfa" />
+                  <stop offset="100%" stopColor="#C5A059" />
+                </linearGradient>
+              </defs>
             </svg>
-            <div style={{ position: 'absolute', top: '6px', left: '6px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', fontWeight: 'bold', background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)', borderRadius: '50%', color: '#0f0c08', zIndex: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
+            
+            <div style={{
+              position: 'absolute', top: '7px', left: '7px',
+              width: '40px', height: '40px',
+              borderRadius: '50%',
+              background: 'linear-gradient(145deg, #C5A059 0%, #8B6914 100%)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '16px', fontWeight: 700, color: '#0f0c08',
+              boxShadow: '0 4px 14px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
+            }}>
               {user?.display_name?.charAt(0).toUpperCase() || 'U'}
             </div>
-            <div style={{ position: 'absolute', bottom: '2px', left: '2px', background: 'linear-gradient(135deg, #fbbf24, #d97706)', color: '#0f0c08', borderRadius: '6px', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold', zIndex: 3, boxShadow: '0 2px 6px rgba(0,0,0,0.4), 0 0 0 1.5px #1a1510', border: '1.5px solid #1a1510' }}>
+
+            <div style={{
+              position: 'absolute', bottom: '0', left: '0',
+              background: 'linear-gradient(135deg, #fbbf24, #d97706)',
+              color: '#0f0c08',
+              borderRadius: '8px',
+              minWidth: '20px', height: '20px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '11px', fontWeight: 800,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
+              border: '1.5px solid #1a1510',
+              zIndex: 3
+            }}>
               {userLevelData.level}
             </div>
+
             {activeSubscription && (
-              <div style={{ position: 'absolute', bottom: '2px', right: '2px', background: 'linear-gradient(135deg, #a78bfa, #7c3aed)', color: '#fff', borderRadius: '6px', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3, boxShadow: '0 2px 6px rgba(0,0,0,0.4), 0 0 0 1.5px #1a1510', border: '1.5px solid #1a1510' }}>
-                <Crown size={10} style={{ filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.5))' }} />
+              <div style={{
+                position: 'absolute', bottom: '0', right: '0',
+                background: 'linear-gradient(135deg, #a78bfa, #7c3aed)',
+                borderRadius: '8px', width: '20px', height: '20px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
+                border: '1.5px solid #1a1510',
+                zIndex: 3
+              }}>
+                <Crown size={11} color="#fff" />
               </div>
             )}
           </div>
-          
-          <div className="user-info-section" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '52px', marginLeft: '12px', flex: 1, minWidth: 0 }}>
-            <h2 className="username" style={{ margin: 0, fontSize: '18px', lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+
+          {/* Name + Premium */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h2 style={{ 
+              margin: 0, 
+              fontSize: '17px', 
+              fontWeight: 700, 
+              letterSpacing: '-0.2px',
+              whiteSpace: 'nowrap', 
+              overflow: 'hidden', 
+              textOverflow: 'ellipsis',
+              color: '#f8f4ec'
+            }}>
               {user?.display_name || 'LunaraSeeker'}
             </h2>
             {activeSubscription && (
-              <div className="premium-status-badge" onClick={() => onNavigate?.('subscription')} style={{ marginTop: '4px', alignSelf: 'flex-start' }}>
-                <Infinity size={10} /><span>PREMIUM</span>
+              <div 
+                onClick={() => onNavigate?.('subscription')}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  marginTop: '3px',
+                  background: 'linear-gradient(90deg, rgba(167,139,250,0.2), rgba(197,160,89,0.15))',
+                  border: '1px solid rgba(167,139,250,0.35)',
+                  borderRadius: '20px',
+                  padding: '2px 8px',
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  color: '#c4b5fd',
+                  letterSpacing: '0.5px',
+                  cursor: 'pointer'
+                }}
+              >
+                <Infinity size={10} /> PREMIUM
               </div>
             )}
           </div>
-          
-          <div className="user-resources" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '48px', gap: '4px', flexShrink: 0 }}>
-            <div className="resource gems" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(147, 112, 219, 0.15)', padding: '4px 10px', borderRadius: '20px', border: '1px solid rgba(147, 112, 219, 0.3)', height: '22px' }}>
-              <Gem size={12} className="resource-icon gem-icon" style={{ color: '#9370db', flexShrink: 0 }} />
-              <span className="value" style={{ fontSize: '12px', fontWeight: '600', color: '#fff', textAlign: 'center' }}>{economy.cosmic_coins.toLocaleString()}</span>
+
+          {/* Resources */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', flexShrink: 0 }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              background: 'rgba(147,112,219,0.12)',
+              border: '1px solid rgba(147,112,219,0.25)',
+              borderRadius: '20px',
+              padding: '4px 8px 4px 10px',
+              height: '26px'
+            }}>
+              <Gem size={13} color="#b794f4" />
+              <span style={{ fontSize: '12px', fontWeight: 700, color: '#fff', minWidth: '28px', textAlign: 'right' }}>
+                {economy.cosmic_coins.toLocaleString()}
+              </span>
               <button 
-                className="add-btn" 
                 onClick={() => setIsShopOpen(true)}
-                style={{ width: '18px', height: '18px', borderRadius: '50%', background: 'rgba(197, 160, 89, 0.3)', border: 'none', color: '#C5A059', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', flexShrink: 0 }}
-                title="Buy Diamonds"
-              >
-                +
-              </button>
+                style={{
+                  width: '18px', height: '18px', borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #C5A059, #a68b3c)',
+                  border: 'none', color: '#0f0c08',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '13px', fontWeight: 800, cursor: 'pointer',
+                  boxShadow: '0 2px 6px rgba(197,160,89,0.4)'
+                }}
+              >+</button>
             </div>
-            <div className="resource energy" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(251, 191, 36, 0.15)', padding: '4px 10px', borderRadius: '20px', border: '1px solid rgba(251, 191, 36, 0.3)', height: '22px' }}>
-              <Zap size={12} className="resource-icon energy-icon" style={{ color: '#fbbf24', flexShrink: 0 }} />
-              <span className="value" style={{ fontSize: '12px', fontWeight: '600', color: '#fff', textAlign: 'center' }}>
+
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              background: 'rgba(251,191,36,0.1)',
+              border: '1px solid rgba(251,191,36,0.22)',
+              borderRadius: '20px',
+              padding: '4px 8px 4px 10px',
+              height: '26px'
+            }}>
+              <Zap size={13} color="#fbbf24" />
+              <span style={{ fontSize: '12px', fontWeight: 700, color: '#fff', minWidth: '36px', textAlign: 'right' }}>
                 {economy.cosmic_focus || 0}/{economy.max_focus || 20}
               </span>
-              
               {(() => {
                 const isEnergyFull = (economy.cosmic_focus || 0) >= (economy.max_focus || 20);
                 const energyNeeded = (economy.max_focus || 20) - (economy.cosmic_focus || 0);
                 const energyToAdd = Math.min(10, energyNeeded);
                 const cost = energyToAdd * 5;
-                
                 return (
                   <button 
-                    className="add-btn" 
                     onClick={handleRefillEnergy}
                     disabled={isClaiming || isEnergyFull}
-                    style={{ 
-                      width: '18px', height: '18px', borderRadius: '50%', 
-                      background: (isClaiming || isEnergyFull) ? 'rgba(150,150,150,0.3)' : 'rgba(197, 160, 89, 0.3)', 
-                      border: 'none', 
-                      color: (isClaiming || isEnergyFull) ? '#666' : '#C5A059', 
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                      cursor: (isClaiming || isEnergyFull) ? 'not-allowed' : 'pointer', 
-                      fontSize: '12px', fontWeight: 'bold', flexShrink: 0 
+                    style={{
+                      width: '18px', height: '18px', borderRadius: '50%',
+                      background: isEnergyFull 
+                        ? 'rgba(100,100,100,0.3)' 
+                        : 'linear-gradient(135deg, #C5A059, #a68b3c)',
+                      border: 'none',
+                      color: isEnergyFull ? '#666' : '#0f0c08',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '13px', fontWeight: 800,
+                      cursor: isEnergyFull ? 'not-allowed' : 'pointer',
+                      boxShadow: isEnergyFull ? 'none' : '0 2px 6px rgba(197,160,89,0.4)'
                     }}
-                    title={isEnergyFull ? "Energy is already full!" : `Buy ${energyToAdd}⚡ Energy for ${cost} 💎`}
+                    title={isEnergyFull ? "Energy full" : `Buy ${energyToAdd}⚡ for ${cost}💎`}
                   >
-                    {isClaiming ? '...' : (isEnergyFull ? '✓' : '+')}
+                    {isClaiming ? '…' : isEnergyFull ? '✓' : '+'}
                   </button>
                 );
               })()}
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="quests-and-actions-split" style={{ display: 'flex', flexDirection: 'row', gap: '2px', marginBottom: '2px', width: '100%', alignItems: 'stretch' }}>
-        <div className="daily-quests-compact" style={{ flex: '0 0 60%', minWidth: 0, background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)', border: '1px solid #332a1a', borderRadius: '14px', padding: '8px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)', display: 'flex', flexDirection: 'column', cursor: 'pointer' }} onClick={() => setShowQuestModal(true)}>
-          <div className="quests-header-compact" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', padding: '0 2px' }}>
-            <h3 style={{ margin: 0, fontSize: '9px', color: '#C5A059', letterSpacing: '1px', fontWeight: 700, textTransform: 'uppercase' }}>{t('home.dailyQuests')}</h3>
-            <span style={{ fontSize: '9px', color: '#b3a68c', fontFamily: 'monospace' }}>{timeLeft}</span>
+      {/* ===================== QUESTS + ACTIONS ===================== */}
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05, duration: 0.4 }}
+        style={{ display: 'flex', gap: '8px', marginBottom: '12px', position: 'relative', zIndex: 2 }}
+      >
+        {/* Daily Quests */}
+        <div 
+          onClick={() => setShowQuestModal(true)}
+          style={{
+            flex: '1 1 58%',
+            background: 'linear-gradient(160deg, rgba(26,21,16,0.95) 0%, rgba(15,12,8,0.98) 100%)',
+            border: '1px solid rgba(197,160,89,0.18)',
+            borderRadius: '16px',
+            padding: '10px 12px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
+            cursor: 'pointer',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+        >
+          <div style={{
+            position: 'absolute', top: 0, left: 0, right: 0, height: '1px',
+            background: 'linear-gradient(90deg, transparent, rgba(197,160,89,0.4), transparent)'
+          }} />
+          
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '1.2px', color: '#C5A059', textTransform: 'uppercase' }}>
+              {t('home.dailyQuests')}
+            </span>
+            <span style={{ fontSize: '10px', fontFamily: 'monospace', color: 'rgba(197,160,89,0.7)' }}>
+              {timeLeft}
+            </span>
           </div>
-          <div className="quest-list-compact" style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, justifyContent: 'center' }}>
-            {questsLoading ? (
-              <div style={{ textAlign: 'center', color: '#b3a68c', fontSize: '9px', padding: '10px' }}>{t('home.loading')}</div>
-            ) : dailyQuests.length === 0 ? (
-              <div style={{ textAlign: 'center', color: '#b3a68c', fontSize: '9px', padding: '10px' }}>{t('home.noQuests')}</div>
-            ) : activeDailyQuest ? (
-              <div className="quest-item-compact" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 6px', background: activeDailyQuest.isClaimable ? 'rgba(16, 185, 129, 0.1)' : 'rgba(197, 160, 89, 0.05)', borderRadius: '6px', border: `1px solid ${activeDailyQuest.isClaimable ? 'rgba(16, 185, 129, 0.3)' : 'rgba(197, 160, 89, 0.08)'}` }}>
-                <div className="quest-icon-compact" style={{ color: activeDailyQuest.isClaimable ? '#10b981' : '#C5A059', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '16px', height: '16px' }}>
-                  {getQuestIcon(activeDailyQuest.quest?.action_type || '')}
+
+          {questsLoading ? (
+            <div style={{ textAlign: 'center', color: '#8a7f6a', fontSize: '11px', padding: '12px 0' }}>
+              {t('home.loading')}
+            </div>
+          ) : activeDailyQuest ? (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              background: activeDailyQuest.isClaimable ? 'rgba(16,185,129,0.08)' : 'rgba(197,160,89,0.06)',
+              borderRadius: '10px',
+              padding: '8px 10px',
+              border: `1px solid ${activeDailyQuest.isClaimable ? 'rgba(16,185,129,0.25)' : 'rgba(197,160,89,0.12)'}`
+            }}>
+              <div style={{ color: activeDailyQuest.isClaimable ? '#10b981' : '#C5A059', flexShrink: 0 }}>
+                {getQuestIcon(activeDailyQuest.quest?.action_type || '')}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ 
+                  fontSize: '12px', fontWeight: 600, color: '#f0e9d9',
+                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '4px'
+                }}>
+                  {activeDailyQuest.quest?.title || t('home.quest')}
                 </div>
-                <div className="quest-info-compact" style={{ flex: 1, minWidth: 0 }}>
-                  <span className="quest-name-compact" style={{ fontSize: '9px', color: '#fff', fontWeight: 500, display: 'block', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {activeDailyQuest.quest?.title || t('home.quest')}
-                  </span>
-                  <div className="quest-progress-compact" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <div className="progress-bar-compact" style={{ flex: 1, height: '3px', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '2px', overflow: 'hidden' }}>
-                      <div className="progress-fill-compact" style={{ width: `${Math.min((activeDailyQuest.current_progress / (activeDailyQuest.quest?.target_count || 1)) * 100, 100)}%`, height: '100%', background: activeDailyQuest.isClaimable ? '#10b981' : 'linear-gradient(90deg, #C5A059, #ffe566)', borderRadius: '2px', boxShadow: '0 0 4px rgba(197, 160, 89, 0.5)' }}></div>
-                    </div>
-                    <span style={{ fontSize: '8px', color: '#b3a68c', minWidth: '18px' }}>{activeDailyQuest.current_progress}/{activeDailyQuest.quest?.target_count}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div style={{ flex: 1, height: '4px', background: 'rgba(255,255,255,0.08)', borderRadius: '2px', overflow: 'hidden' }}>
+                    <div style={{
+                      width: `${Math.min((activeDailyQuest.current_progress / (activeDailyQuest.quest?.target_count || 1)) * 100, 100)}%`,
+                      height: '100%',
+                      background: activeDailyQuest.isClaimable ? '#10b981' : 'linear-gradient(90deg, #C5A059, #e8c96a)',
+                      borderRadius: '2px',
+                      boxShadow: '0 0 8px rgba(197,160,89,0.4)'
+                    }} />
                   </div>
-                </div>
-                <div className="quest-reward-compact" style={{ fontSize: '9px', color: activeDailyQuest.isClaimable ? '#10b981' : '#C5A059', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '1px', flexShrink: 0 }}>
-                  {activeDailyQuest.isClaimable ? (
-                    <button onClick={(e) => { e.stopPropagation(); handleClaimQuest(activeDailyQuest); }} disabled={isClaimingQuest} style={{ background: '#10b981', border: 'none', borderRadius: '4px', color: '#fff', padding: '2px 6px', fontSize: '8px', fontWeight: 'bold', cursor: isClaimingQuest ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}>
-                      {isClaimingQuest ? <RefreshCw size={10} className="spin" /> : t('home.claim')}
-                    </button>
-                  ) : (
-                    <><Gem size={9} /> +{activeDailyQuest.quest?.reward_coins}</>
-                  )}
+                  <span style={{ fontSize: '10px', color: '#9a8f7a', minWidth: '22px' }}>
+                    {activeDailyQuest.current_progress}/{activeDailyQuest.quest?.target_count}
+                  </span>
                 </div>
               </div>
+              {activeDailyQuest.isClaimable ? (
+                <button 
+                  onClick={(e) => { e.stopPropagation(); handleClaimQuest(activeDailyQuest); }}
+                  disabled={isClaimingQuest}
+                  style={{
+                    background: 'linear-gradient(135deg, #10b981, #059669)',
+                    border: 'none', borderRadius: '6px', color: '#fff',
+                    padding: '4px 8px', fontSize: '10px', fontWeight: 700,
+                    cursor: isClaimingQuest ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  {isClaimingQuest ? <RefreshCw size={11} className="spin" /> : t('home.claim')}
+                </button>
+              ) : (
+                <div style={{ fontSize: '11px', color: '#C5A059', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '2px' }}>
+                  <Gem size={11} /> +{activeDailyQuest.quest?.reward_coins}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', color: '#10b981', fontSize: '12px', padding: '12px 0', fontWeight: 600 }}>
+              {t('home.allComplete')}
+            </div>
+          )}
+        </div>
+
+        {/* Action Buttons */}
+        <div style={{
+          flex: '0 0 38%',
+          background: 'linear-gradient(160deg, rgba(26,21,16,0.95) 0%, rgba(15,12,8,0.98) 100%)',
+          border: '1px solid rgba(197,160,89,0.18)',
+          borderRadius: '16px',
+          padding: '8px',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gridTemplateRows: '1fr 1fr',
+          gap: '6px'
+        }}>
+          <button
+            onClick={handleClaimReward}
+            disabled={rewardClaimed || isClaiming}
+            style={{
+              background: rewardClaimed ? 'rgba(255,255,255,0.03)' : 'linear-gradient(145deg, rgba(197,160,89,0.12), rgba(197,160,89,0.05))',
+              border: '1px solid rgba(197,160,89,0.2)',
+              borderRadius: '12px',
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+              position: 'relative',
+              opacity: (rewardClaimed || isClaiming) ? 0.6 : 1,
+              cursor: (rewardClaimed || isClaiming) ? 'not-allowed' : 'pointer'
+            }}
+          >
+            {isClaiming ? (
+              <RefreshCw size={20} color="#C5A059" className="spin" />
             ) : (
-              <div style={{ textAlign: 'center', color: '#10b981', fontSize: '9px', padding: '10px' }}>{t('home.allComplete')}</div>
+              <Gift size={20} color="#C5A059" style={{ filter: 'drop-shadow(0 0 8px rgba(197,160,89,0.5))' }} />
             )}
-          </div>
-        </div>
+            {!rewardClaimed && !isClaiming && (
+              <span style={{
+                position: 'absolute', bottom: '4px', right: '4px',
+                background: '#C5A059', color: '#0a0600',
+                fontSize: '9px', fontWeight: 800,
+                padding: '1px 4px', borderRadius: '4px'
+              }}>50</span>
+            )}
+          </button>
 
-        <div className="action-buttons-panel" style={{ flex: '0 0 calc(40% - 2px)', minWidth: 0, background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)', border: '1px solid #332a1a', borderRadius: '14px', padding: '6px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)', display: 'flex' }}>
-          <div className="action-grid-vertical" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: '4px', width: '100%', height: '100%' }}>
-            <button className={`action-btn-vertical ${rewardClaimed ? 'claimed' : ''}`} onClick={handleClaimReward} disabled={rewardClaimed || isClaiming} style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: (rewardClaimed || isClaiming) ? 'not-allowed' : 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%', opacity: (rewardClaimed || isClaiming) ? 0.7 : 1 }}>
-              {isClaiming ? (
-                <svg className="animate-spin" style={{ width: '20px', height: '20px', color: '#C5A059' }} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              ) : (
-                <Gift size={22} style={{ filter: 'drop-shadow(0 0 6px #C5A059)', color: '#C5A059', width: '20px', height: '20px' }} />
-              )}
-              {!rewardClaimed && !isClaiming && <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>50</div>}
-            </button>
-            
-            <button 
-              className="action-btn-vertical streak-btn-v" 
-              onClick={() => setShowStreakModal(true)}
-              style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%' }}
-            >
-              <Flame size={22} style={{ filter: 'drop-shadow(0 0 6px #ff6b35)', color: '#ff6b35', width: '20px', height: '20px' }} />
-              <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>{currentStreak}</div>
-            </button>
-            
-            <button 
-              className="action-btn-vertical rank-btn-v" 
-              onClick={() => setShowLeaderboardModal(true)}
-              style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%' }}
-            >
-              <Trophy size={22} style={{ filter: 'drop-shadow(0 0 6px #ffd700)', color: '#ffd700', width: '20px', height: '20px' }} />
-              <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>TOP</div>
-            </button>
-            
-            <button className={`action-btn-vertical ${activeSubscription ? 'subscription-btn-v' : 'upgrade-btn-v'}`} onClick={() => onNavigate && onNavigate(activeSubscription ? 'subscription' : 'pricing')} style={{ background: activeSubscription ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 165, 0, 0.05) 100%)' : 'rgba(255, 255, 255, 0.03)', border: activeSubscription ? '1px solid rgba(255, 215, 0, 0.4)' : '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%' }}>
-              {activeSubscription ? (
-                <><Infinity size={22} style={{ filter: 'drop-shadow(0 0 6px #FFD700)', color: '#FFD700', width: '20px', height: '20px' }} /><div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>VIP</div></>
-              ) : (
-                <><Crown size={22} style={{ filter: 'drop-shadow(0 0 6px #a78bfa)', color: '#a78bfa', width: '20px', height: '20px' }} /><div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>PRO</div></>
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
+          <button
+            onClick={() => setShowStreakModal(true)}
+            style={{
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,107,53,0.2)',
+              borderRadius: '12px',
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+              position: 'relative',
+              cursor: 'pointer'
+            }}
+          >
+            <Flame size={20} color="#ff6b35" style={{ filter: 'drop-shadow(0 0 8px rgba(255,107,53,0.5))' }} />
+            <span style={{
+              position: 'absolute', bottom: '4px', right: '4px',
+              background: 'rgba(255,107,53,0.9)', color: '#fff',
+              fontSize: '9px', fontWeight: 800,
+              padding: '1px 4px', borderRadius: '4px'
+            }}>{currentStreak}</span>
+          </button>
 
+          <button
+            onClick={() => setShowLeaderboardModal(true)}
+            style={{
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,215,0,0.2)',
+              borderRadius: '12px',
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+              position: 'relative',
+              cursor: 'pointer'
+            }}
+          >
+            <Trophy size={20} color="#ffd700" style={{ filter: 'drop-shadow(0 0 8px rgba(255,215,0,0.45))' }} />
+            <span style={{
+              position: 'absolute', bottom: '4px', right: '4px',
+              background: 'rgba(255,215,0,0.9)', color: '#0a0600',
+              fontSize: '9px', fontWeight: 800,
+              padding: '1px 4px', borderRadius: '4px'
+            }}>TOP</span>
+          </button>
+
+          <button
+            onClick={() => onNavigate?.(activeSubscription ? 'subscription' : 'pricing')}
+            style={{
+              background: activeSubscription 
+                ? 'linear-gradient(145deg, rgba(255,215,0,0.12), rgba(255,165,0,0.06))'
+                : 'rgba(255,255,255,0.03)',
+              border: activeSubscription 
+                ? '1px solid rgba(255,215,0,0.35)' 
+                : '1px solid rgba(167,139,250,0.25)',
+              borderRadius: '12px',
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+              position: 'relative',
+              cursor: 'pointer'
+            }}
+          >
+            {activeSubscription ? (
+              <>
+                <Infinity size={20} color="#FFD700" style={{ filter: 'drop-shadow(0 0 8px rgba(255,215,0,0.5))' }} />
+                <span style={{
+                  position: 'absolute', bottom: '4px', right: '4px',
+                  background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+                  color: '#0a0600', fontSize: '9px', fontWeight: 800,
+                  padding: '1px 4px', borderRadius: '4px'
+                }}>VIP</span>
+              </>
+            ) : (
+              <>
+                <Crown size={20} color="#a78bfa" style={{ filter: 'drop-shadow(0 0 8px rgba(167,139,250,0.5))' }} />
+                <span style={{
+                  position: 'absolute', bottom: '4px', right: '4px',
+                  background: 'rgba(167,139,250,0.9)', color: '#fff',
+                  fontSize: '9px', fontWeight: 800,
+                  padding: '1px 4px', borderRadius: '4px'
+                }}>PRO</span>
+              </>
+            )}
+          </button>
+        </div>
+      </motion.div>
+
+      {/* ===================== QUEST MODAL ===================== */}
       {showQuestModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setShowQuestModal(false)}>
           <div style={{ background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)', border: '1px solid #332a1a', borderRadius: '16px', width: '100%', maxWidth: '400px', maxHeight: '80vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }} onClick={(e) => e.stopPropagation()}>
@@ -1164,59 +1423,228 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       )}
 
-      <div className="card-of-day-banner clickable-card" onClick={() => onNavigate && onNavigate('daily-card')} style={{ background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)', border: '1px solid #332a1a', borderRadius: '16px', padding: '12px', marginBottom: '2px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)', position: 'relative', overflow: 'visible', cursor: 'pointer' }}>
-        <div className="card-of-day-content" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '0' }}>
-          <div className="card-half-left" style={{ flex: '0 0 45%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px 0' }}>
-            {/* ✅ გაზრდილი კარტის კონტეინერი - გადასცდება ბანერის კიდეებს */}
-            <div className="card-image-3d-wrapper" style={{ position: 'relative', width: 'clamp(110px, 28vw, 140px)', aspectRatio: '2/3', perspective: '800px', margin: '-12px 0' }}>
-              <div className="card-image-tilted" style={{ position: 'relative', width: '100%', height: '100%', transform: 'rotateY(-5deg) rotateX(2deg) rotate(3deg)', transition: 'transform 0.4s ease', zIndex: 2, transformStyle: 'preserve-3d' }}>
-                {dailyCard?.image_url ? (
-                  <img src={dailyCard.image_url} alt={dailyCardName} className="card-image-large" style={{ transform: isDailyReversed ? 'rotate(183deg)' : 'rotate(3deg)', width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px', border: '2px solid #C5A059', boxShadow: '0 2px 4px rgba(0,0,0,0.4), 0 8px 16px rgba(0,0,0,0.5), 0 16px 32px rgba(0,0,0,0.6), 0 0 20px rgba(197,160,89,0.3)' }} />
-                ) : (
-                  <div className="card-placeholder-large" style={{ transform: 'rotate(3deg)', width: '100%', height: '100%', background: 'linear-gradient(135deg, #2a2215, #1a1510)', borderRadius: '8px', border: '2px solid #C5A059', boxShadow: '0 2px 4px rgba(0,0,0,0.4), 0 8px 16px rgba(0,0,0,0.5), 0 16px 32px rgba(0,0,0,0.6), 0 0 20px rgba(197,160,89,0.3)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                    <span style={{ fontSize: '14px', fontWeight: 700, color: '#C5A059' }}>{dailyCardNumber}</span>
-                    <div style={{ fontSize: '28px', filter: 'drop-shadow(0 0 10px rgba(197, 160, 89, 0.6))' }}>✦</div>
-                    <span style={{ fontSize: '10px', fontWeight: 700, color: '#C5A059', textAlign: 'center', padding: '0 6px' }}>{dailyCardName}</span>
-                  </div>
-                )}
-                {isDailyReversed && (
-                  <div className="card-reversed-indicator-large" style={{ position: 'absolute', top: '5px', right: '5px', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 900, zIndex: 3, background: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)', color: '#fff', border: '2px solid #fff', boxShadow: '0 0 0 2px rgba(167,139,250,0.5), 0 4px 12px rgba(167,139,250,0.8), 0 0 20px rgba(167,139,250,0.6)' }}>
-                    <span>R</span>
-                  </div>
-                )}
-              </div>
-              <div className="card-3d-shadow" style={{ position: 'absolute', bottom: '-6px', left: '10%', width: '80%', height: '14px', background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.6) 0%, transparent 70%)', filter: 'blur(6px)', zIndex: 1, opacity: 0.7 }}></div>
+      {/* ===================== CARD OF THE DAY ===================== */}
+      <motion.div
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1, duration: 0.45 }}
+        onClick={() => onNavigate?.('daily-card')}
+        style={{
+          background: 'linear-gradient(160deg, rgba(26,21,16,0.97) 0%, rgba(12,10,8,0.99) 100%)',
+          border: '1px solid rgba(197,160,89,0.22)',
+          borderRadius: '18px',
+          padding: '14px',
+          marginBottom: '14px',
+          boxShadow: '0 12px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(197,160,89,0.05)',
+          cursor: 'pointer',
+          position: 'relative',
+          overflow: 'hidden',
+          zIndex: 2
+        }}
+      >
+        <div style={{
+          position: 'absolute', top: 0, left: '10%', right: '10%', height: '1px',
+          background: 'linear-gradient(90deg, transparent, rgba(197,160,89,0.5), transparent)'
+        }} />
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ flex: '0 0 42%', display: 'flex', justifyContent: 'center', perspective: '900px' }}>
+            <div style={{
+              width: 'clamp(92px, 26vw, 118px)',
+              aspectRatio: '2/3',
+              position: 'relative',
+              transform: 'rotateY(-6deg) rotateX(3deg) rotate(2deg)',
+              transition: 'transform 0.35s ease'
+            }}>
+              {dailyCard?.image_url ? (
+                <img 
+                  src={dailyCard.image_url} 
+                  alt={dailyCardName}
+                  style={{
+                    width: '100%', height: '100%',
+                    objectFit: 'cover',
+                    borderRadius: '10px',
+                    border: '2px solid #C5A059',
+                    boxShadow: '0 4px 8px rgba(0,0,0,0.4), 0 12px 24px rgba(0,0,0,0.5), 0 0 28px rgba(197,160,89,0.25)',
+                    transform: isDailyReversed ? 'rotate(180deg)' : 'none'
+                  }}
+                />
+              ) : (
+                <div style={{
+                  width: '100%', height: '100%',
+                  background: 'linear-gradient(145deg, #2a2218, #1a1510)',
+                  borderRadius: '10px',
+                  border: '2px solid #C5A059',
+                  display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', justifyContent: 'center',
+                  gap: '6px',
+                  boxShadow: '0 12px 28px rgba(0,0,0,0.5), 0 0 24px rgba(197,160,89,0.2)'
+                }}>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#C5A059' }}>{dailyCardNumber}</span>
+                  <div style={{ fontSize: '26px', filter: 'drop-shadow(0 0 12px rgba(197,160,89,0.6))' }}>✦</div>
+                  <span style={{ fontSize: '10px', fontWeight: 700, color: '#C5A059', textAlign: 'center', padding: '0 6px' }}>
+                    {dailyCardName}
+                  </span>
+                </div>
+              )}
+
+              {isDailyReversed && (
+                <div style={{
+                  position: 'absolute', top: '6px', right: '6px',
+                  width: '22px', height: '22px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #a78bfa, #7c3aed)',
+                  color: '#fff',
+                  fontSize: '11px', fontWeight: 900,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  border: '1.5px solid #fff',
+                  boxShadow: '0 0 12px rgba(167,139,250,0.7)'
+                }}>R</div>
+              )}
             </div>
           </div>
-          <div className="card-half-right" style={{ flex: '0 0 55%', paddingLeft: '12px', display: 'flex', alignItems: 'center' }}>
-            <div className="card-info-section" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '4px', width: '100%', minWidth: 0 }}>
-              <div style={{ fontSize: '9px', color: '#C5A059', letterSpacing: '2px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 600 }}>{t('home.cardOfTheDay')}</div>
-              <h3 style={{ margin: 0, fontSize: '16px', color: '#C5A059', letterSpacing: '0.5px', fontWeight: 700, lineHeight: 1.2 }}>{dailyCardName}</h3>
-              <p style={{ margin: 0, fontSize: '11px', color: 'rgba(255,255,255,0.7)', fontStyle: 'italic', lineHeight: 1.3 }}>"{dailyCardMeaning}"</p>
-              {dailyCardElement && <p style={{ margin: 0, fontSize: '10px', color: '#888' }}>{dailyCardElement}</p>}
-              <button className="read-guidance-btn" style={{ background: 'transparent', border: '1px solid #C5A059', color: '#C5A059', padding: '5px 10px', borderRadius: '6px', fontSize: '9px', fontWeight: 700, cursor: 'pointer', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '4px', alignSelf: 'flex-start' }}>
-                {t('home.readGuidance')} <ChevronRight size={14} />
-              </button>
+
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ 
+              fontSize: '10px', letterSpacing: '1.8px', color: 'rgba(197,160,89,0.75)',
+              textTransform: 'uppercase', fontWeight: 600, marginBottom: '4px'
+            }}>
+              {t('home.cardOfTheDay')}
+            </div>
+            <h3 style={{ 
+              margin: '0 0 6px', fontSize: '18px', fontWeight: 750, color: '#C5A059',
+              letterSpacing: '0.3px', lineHeight: 1.2
+            }}>
+              {dailyCardName}
+            </h3>
+            <p style={{ 
+              margin: '0 0 6px', fontSize: '12px', color: 'rgba(245,240,230,0.7)',
+              fontStyle: 'italic', lineHeight: 1.35
+            }}>
+              "{dailyCardMeaning}"
+            </p>
+            {dailyCardElement && (
+              <p style={{ margin: '0 0 10px', fontSize: '11px', color: '#8a7f6a' }}>
+                {dailyCardElement}
+              </p>
+            )}
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: '4px',
+              background: 'transparent',
+              border: '1px solid rgba(197,160,89,0.45)',
+              color: '#C5A059',
+              padding: '5px 11px',
+              borderRadius: '8px',
+              fontSize: '11px',
+              fontWeight: 700,
+              letterSpacing: '0.3px'
+            }}>
+              {t('home.readGuidance')} <ChevronRight size={13} />
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="quick-access" style={{ marginBottom: '8px', width: '100%' }}>
-        <div className="quick-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
+      {/* ===================== QUICK ACCESS ===================== */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15, duration: 0.45 }}
+        style={{ position: 'relative', zIndex: 2 }}
+      >
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: '8px'
+        }}>
           {quickActions.map((action, index) => (
-            <button key={index} className={`quick-item ${action.isPremium ? 'premium-item' : ''} ${action.action === 'Admin' ? 'admin-item' : ''} ${(action as any).isServices ? 'services-item' : ''}`} style={{ '--glow-color': action.color, background: action.isPremium ? 'linear-gradient(135deg, rgba(197, 160, 89, 0.15) 0%, rgba(139, 105, 20, 0.1) 100%)' : (action as any).isServices ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 165, 0, 0.08) 100%)' : '#1a1510', border: action.isPremium ? '1px solid rgba(197, 160, 89, 0.4)' : (action as any).isServices ? '1px solid rgba(255, 215, 0, 0.4)' : '1px solid #2a2215', borderRadius: '12px', padding: 'clamp(8px, 2.5vw, 12px) 4px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', color: '#fff', cursor: 'pointer', position: 'relative', overflow: 'hidden' } as React.CSSProperties} onClick={() => handleQuickAction(action.action)}>
-              {action.isPremium && <div style={{ position: 'absolute', top: '-4px', right: '-4px', background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', boxShadow: '0 2px 8px rgba(197, 160, 89, 0.5)', zIndex: 10 }}>💎</div>}
-              {(action as any).isServices && <div style={{ position: 'absolute', top: '-4px', right: '-4px', background: 'linear-gradient(135deg, #FFD700 0%, #FF8C00 100%)', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', boxShadow: '0 2px 8px rgba(255, 215, 0, 0.5)', zIndex: 10, animation: 'paywallPulse 2s ease-in-out infinite' }}>🛍️</div>}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1, filter: `drop-shadow(0 0 6px ${action.color})`, color: action.color }}>{action.icon}</div>
-              <span style={{ fontSize: '10px', color: '#fff', fontWeight: 600, textAlign: 'center', lineHeight: 1.1 }}>{action.label}</span>
-              {action.sublabel && <span style={{ fontSize: '9px', color: '#b3a68c', textAlign: 'center', lineHeight: 1.1 }}>{action.sublabel}</span>}
-            </button>
+            <motion.button
+              key={index}
+              whileTap={{ scale: 0.94 }}
+              onClick={() => handleQuickAction(action.action)}
+              style={{
+                background: action.isPremium 
+                  ? 'linear-gradient(160deg, rgba(197,160,89,0.14) 0%, rgba(139,105,20,0.08) 100%)'
+                  : (action as any).isServices
+                    ? 'linear-gradient(160deg, rgba(255,215,0,0.12) 0%, rgba(255,165,0,0.06) 100%)'
+                    : 'linear-gradient(160deg, rgba(26,21,16,0.9) 0%, rgba(15,12,8,0.95) 100%)',
+                border: action.isPremium 
+                  ? '1px solid rgba(197,160,89,0.35)'
+                  : (action as any).isServices
+                    ? '1px solid rgba(255,215,0,0.35)'
+                    : '1px solid rgba(255,255,255,0.06)',
+                borderRadius: '14px',
+                padding: '12px 6px 10px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '5px',
+                color: '#fff',
+                cursor: 'pointer',
+                position: 'relative',
+                overflow: 'hidden',
+                boxShadow: '0 4px 14px rgba(0,0,0,0.25)'
+              }}
+            >
+              {action.isPremium && (
+                <div style={{
+                  position: 'absolute', top: '-5px', right: '-5px',
+                  background: 'linear-gradient(135deg, #C5A059, #8B6914)',
+                  width: '22px', height: '22px',
+                  borderRadius: '50%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '11px',
+                  boxShadow: '0 2px 8px rgba(197,160,89,0.5)',
+                  zIndex: 2
+                }}>💎</div>
+              )}
+              {(action as any).isServices && (
+                <div style={{
+                  position: 'absolute', top: '-5px', right: '-5px',
+                  background: 'linear-gradient(135deg, #FFD700, #FF8C00)',
+                  width: '22px', height: '22px',
+                  borderRadius: '50%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '11px',
+                  boxShadow: '0 2px 8px rgba(255,215,0,0.45)',
+                  zIndex: 2
+                }}>🛍️</div>
+              )}
+
+              <div style={{ 
+                color: action.color,
+                filter: `drop-shadow(0 0 8px ${action.color}66)`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                {action.icon}
+              </div>
+              <span style={{ 
+                fontSize: '11px', 
+                fontWeight: 650, 
+                textAlign: 'center',
+                lineHeight: 1.15,
+                color: '#f5f0e6'
+              }}>
+                {action.label}
+              </span>
+              {action.sublabel && (
+                <span style={{ 
+                  fontSize: '9.5px', 
+                  color: 'rgba(179,166,140,0.85)',
+                  textAlign: 'center',
+                  lineHeight: 1.1
+                }}>
+                  {action.sublabel}
+                </span>
+              )}
+            </motion.button>
           ))}
         </div>
-      </div>
+      </motion.div>
 
-      {/* Diamond Shop Modal */}
+      {/* ===================== MODALS ===================== */}
       {isShopOpen && user && (
         <DiamondShopModal 
           isOpen={isShopOpen} 
@@ -1231,7 +1659,6 @@ export default function HomeScreen({ onNavigate }: Props) {
         />
       )}
 
-      {/* Streak & Leaderboard Modals */}
       <StreakModal 
         isOpen={showStreakModal} 
         onClose={() => setShowStreakModal(false)} 
