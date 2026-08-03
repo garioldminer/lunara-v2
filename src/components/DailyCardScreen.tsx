@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, RotateCcw, Sparkles, Heart, Briefcase, Star, Share2, Lock } from 'lucide-react';
+import { ArrowLeft, Sparkles, Heart, Briefcase, Star, Share2, Lock } from 'lucide-react';
 import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards';
 import { saveReading } from '../lib/readingService';
 import { logReading } from '../lib/adminService';
@@ -155,12 +155,9 @@ export default function DailyCardScreen({ onNavigate }: Props) {
   };
 
   const handleNewReading = () => {
-    localStorage.removeItem('dailyCard');
-    generateDailyCard();
-    setStage('selecting');
-    setSelectedFocus('general');
-    setCustomQuestion('');
-    setShowQuestionInput(false);
+    // For a true "Daily Card" experience, we prevent unlimited rerolls to avoid quest exploitation.
+    // We simply navigate back to the home screen. The card will automatically refresh tomorrow.
+    onNavigate?.('home');
   };
 
   const handleShare = () => {
@@ -168,13 +165,19 @@ export default function DailyCardScreen({ onNavigate }: Props) {
 
     const { card, isReversed } = dailyReading;
     const meaning = isReversed ? card.reversed_meaning : card.meaning;
-    const shareText = `🔮 My Daily Card: ${card.name}${isReversed ? ' (Reversed)' : ''}\n\n"${meaning}"\n\n#LunaraApp #DailyTarot`;
+    const shareText = `🔮 My Daily Card: ${card.name}${isReversed ? ' (Reversed)' : ''}\n\n"${meaning}"\n\nDraw your own card on Lunara App! ✨`;
 
-    if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp?.openTelegramLink) {
-      (window as any).Telegram.WebApp.openTelegramLink(`https://t.me/share/url?url=&text=${encodeURIComponent(shareText)}`);
-    } else {
-      navigator.clipboard.writeText(shareText);
-      alert('Card details copied to clipboard!');
+    if (typeof window !== 'undefined') {
+      const tg = (window as any).Telegram?.WebApp;
+      if (tg?.openTelegramLink) {
+        tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(window.location.href || '')}&text=${encodeURIComponent(shareText)}`);
+      } else {
+        navigator.clipboard.writeText(shareText).then(() => {
+          alert('Card details copied to clipboard!');
+        }).catch(() => {
+          alert('Could not copy to clipboard.');
+        });
+      }
     }
   };
 
@@ -545,8 +548,8 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                     onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(197, 160, 89, 0.1)'; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'; }}
                   >
-                    <RotateCcw size={16} />
-                    <span>New Card</span>
+                    <ArrowLeft size={16} />
+                    <span>Return Home</span>
                   </button>
                 </div>
               </div>
