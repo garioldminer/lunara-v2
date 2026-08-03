@@ -1,29 +1,35 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, RotateCcw, Sparkles } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Sparkles, Heart, Briefcase, Star, Share2, Lock } from 'lucide-react';
 import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards';
-import QuestionInput from './QuestionInput';
 import { saveReading } from '../lib/readingService';
 import { logReading } from '../lib/adminService';
 import { trackQuestProgress } from '../lib/questService';
 import { useUser } from '../context/UserContext';
+import { getActiveSubscription } from '../lib/subscriptionService';
 
 interface Props {
   onNavigate?: (screen: string) => void;
 }
 
+type FocusArea = 'general' | 'love' | 'career' | 'custom';
+
 interface DailyReading {
   card: TarotCard;
   isReversed: boolean;
   date: string;
+  focusArea: FocusArea;
   question?: string;
 }
 
 export default function DailyCardScreen({ onNavigate }: Props) {
   const [dailyReading, setDailyReading] = useState<DailyReading | null>(null);
-  const [isRevealed, setIsRevealed] = useState(false);
-  const [showQuestion, setShowQuestion] = useState(true);
+  const [stage, setStage] = useState<'selecting' | 'revealing' | 'revealed'>('selecting');
+  const [selectedFocus, setSelectedFocus] = useState<FocusArea>('general');
+  const [customQuestion, setCustomQuestion] = useState('');
+  const [showQuestionInput, setShowQuestionInput] = useState(false);
   const { user } = useUser();
+  const [hasPremium, setHasPremium] = useState(false);
 
   const getTodayDate = () => {
     const today = new Date();
@@ -38,17 +44,25 @@ export default function DailyCardScreen({ onNavigate }: Props) {
       const parsed: DailyReading = JSON.parse(stored);
       if (parsed.date === today) {
         setDailyReading(parsed);
-        if (parsed.question) {
-          setIsRevealed(true);
-          setShowQuestion(false);
-        } else {
-          setShowQuestion(true);
+        setSelectedFocus(parsed.focusArea || 'general');
+        if (parsed.focusArea === 'custom' && parsed.question) {
+          setCustomQuestion(parsed.question);
         }
+        setStage('revealed');
         return;
       }
     }
+
     generateDailyCard();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      getActiveSubscription(user.id).then(sub => {
+        setHasPremium(!!sub);
+      });
+    }
+  }, [user]);
 
   const generateDailyCard = () => {
     const today = getTodayDate();
@@ -57,7 +71,13 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     const card = tarotCards[cardIndex];
     const isReversed = Math.random() < 0.5;
     
-    const newReading: DailyReading = { card, isReversed, date: today };
+    const newReading: DailyReading = {
+      card,
+      isReversed,
+      date: today,
+      focusArea: 'general'
+    };
+    
     localStorage.setItem('dailyCard', JSON.stringify(newReading));
     setDailyReading(newReading);
   };
@@ -69,52 +89,93 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     return Math.floor(diff / oneDay);
   };
 
-  const handleQuestionSubmit = (question: string) => {
-    if (dailyReading) {
-      const updatedReading = { ...dailyReading, question };
-      setDailyReading(updatedReading);
-      localStorage.setItem('dailyCard', JSON.stringify(updatedReading));
+  const handleFocusSelect = (focus: FocusArea) => {
+    setSelectedFocus(focus);
+    if (focus === 'custom') {
+      setShowQuestionInput(true);
+    } else {
+      setShowQuestionInput(false);
     }
-    setShowQuestion(false);
   };
 
   const handleReveal = async () => {
-    setIsRevealed(true);
-    
-    if (user && dailyReading) {
-      await saveReading({
-        user_id: user.id,
-        reading_type: 'daily',
-        question: dailyReading.question,
-        cards: [{ id: dailyReading.card.id, name: dailyReading.card.name, is_reversed: dailyReading.isReversed }]
-      });
+    if (!dailyReading) return;
 
-      try {
-        await logReading(user.id, 'daily_card', [dailyReading.card.id], `${dailyReading.card.name}${dailyReading.isReversed ? ' (Reversed)' : ''}`);
-        console.log('✅ [Reading] Daily card logged:', dailyReading.card.name);
-      } catch (error) {
-        console.error('❌ [Reading] Error logging daily card:', error);
-      }
-
-      try {
-        const reward = await trackQuestProgress(user.id, 'draw_daily_card', 1);
-        if (reward) {
-          console.log(`🎉 Quest Completed! Reward: ${reward.coins} coins, ${reward.xp} XP`);
-        }
-      } catch (error) {
-        console.error('❌ [Quest] Error updating daily card quest:', error);
-      }
+    // Trigger Haptic Feedback
+    if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp?.HapticFeedback) {
+      (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('medium');
     }
+
+    setStage('revealing');
+
+    // Update reading with focus area
+    const updatedReading = {
+      ...dailyReading,
+      focusArea: selectedFocus,
+      question: selectedFocus === 'custom' ? customQuestion : undefined
+    };
+    setDailyReading(updatedReading);
+    localStorage.setItem('dailyCard', JSON.stringify(updatedReading));
+
+    // Wait for animation
+    setTimeout(async () => {
+      setStage('revealed');
+
+      // Save to database
+      if (user) {
+        try {
+          await saveReading({
+            user_id: user.id,
+            reading_type: 'daily',
+            question: updatedReading.question,
+            cards: [{
+              id: updatedReading.card.id,
+              name: updatedReading.card.name,
+              is_reversed: updatedReading.isReversed
+            }]
+          });
+
+          await logReading(
+            user.id,
+            'daily_card',
+            [updatedReading.card.id],
+            `${updatedReading.card.name}${updatedReading.isReversed ? ' (Reversed)' : ''}`
+          );
+
+          // Track quest progress
+          const reward = await trackQuestProgress(user.id, 'draw_daily_card', 1);
+          if (reward) {
+            console.log(`🎉 Quest Completed! Reward: ${reward.coins} coins, ${reward.xp} XP`);
+          }
+        } catch (error) {
+          console.error('❌ Error saving daily reading:', error);
+        }
+      }
+    }, 1500);
   };
 
-  const handleNewQuestion = () => {
-    if (dailyReading) {
-      const updatedReading = { ...dailyReading, question: undefined };
-      setDailyReading(updatedReading);
-      localStorage.setItem('dailyCard', JSON.stringify(updatedReading));
+  const handleNewReading = () => {
+    localStorage.removeItem('dailyCard');
+    generateDailyCard();
+    setStage('selecting');
+    setSelectedFocus('general');
+    setCustomQuestion('');
+    setShowQuestionInput(false);
+  };
+
+  const handleShare = () => {
+    if (!dailyReading) return;
+
+    const { card, isReversed } = dailyReading;
+    const meaning = isReversed ? card.reversed_meaning : card.meaning;
+    const shareText = `🔮 My Daily Card: ${card.name}${isReversed ? ' (Reversed)' : ''}\n\n"${meaning}"\n\n#LunaraApp #DailyTarot`;
+
+    if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp?.openTelegramLink) {
+      (window as any).Telegram.WebApp.openTelegramLink(`https://t.me/share/url?url=&text=${encodeURIComponent(shareText)}`);
+    } else {
+      navigator.clipboard.writeText(shareText);
+      alert('Card details copied to clipboard!');
     }
-    setIsRevealed(false);
-    setShowQuestion(true);
   };
 
   const getCardMeta = (card: TarotCard) => {
@@ -123,9 +184,31 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     return 'Minor Arcana';
   };
 
+  const getFocusIcon = (focus: FocusArea) => {
+    switch (focus) {
+      case 'love': return <Heart size={20} />;
+      case 'career': return <Briefcase size={20} />;
+      case 'custom': return <Sparkles size={20} />;
+      default: return <Star size={20} />;
+    }
+  };
+
+  const getFocusTitle = (focus: FocusArea) => {
+    switch (focus) {
+      case 'love': return 'Love & Relationships';
+      case 'career': return 'Career & Finance';
+      case 'custom': return 'Your Question';
+      default: return 'General Energy';
+    }
+  };
+
   if (!dailyReading) {
     return (
-      <div style={{ minHeight: '100vh', background: 'radial-gradient(ellipse at 50% 0%, #14101c 0%, #0a0600 55%, #07050a 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C5A059' }}>
+      <div style={{ 
+        minHeight: '100vh', 
+        background: 'radial-gradient(ellipse at 50% 0%, #14101c 0%, #0a0600 55%, #07050a 100%)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C5A059' 
+      }}>
         <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}>
           <Sparkles size={32} />
         </motion.div>
@@ -133,7 +216,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     );
   }
 
-  const { card, isReversed, question } = dailyReading;
+  const { card, isReversed } = dailyReading;
   const meaning = isReversed ? card.reversed_meaning : card.meaning;
   const keywords = isReversed ? card.reversed_keywords : card.keywords;
 
@@ -169,91 +252,140 @@ export default function DailyCardScreen({ onNavigate }: Props) {
 
       <div style={{ width: '100%', maxWidth: '480px', flex: 1, display: 'flex', flexDirection: 'column' }}>
         <AnimatePresence mode="wait">
-          {showQuestion ? (
+          {/* STAGE 1: SELECTING FOCUS */}
+          {stage === 'selecting' && (
             <motion.div
-              key="question"
+              key="selecting"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.5 }}
-              style={{ 
-                textAlign: 'center', padding: '32px 24px', background: 'rgba(26, 21, 16, 0.6)',
-                border: '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '20px', backdropFilter: 'blur(10px)'
-              }}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px', padding: '20px 0' }}
             >
-              <div style={{ fontSize: '48px', marginBottom: '16px', filter: 'drop-shadow(0 0 15px rgba(197, 160, 89, 0.4))' }}>🔮</div>
-              <h2 style={{ fontSize: '22px', fontWeight: '700', color: '#C5A059', marginBottom: '8px' }}>Ask Your Question</h2>
-              <p style={{ fontSize: '14px', color: '#94a3b8', marginBottom: '24px', lineHeight: '1.5' }}>
-                Take a moment to focus on what you'd like guidance about today.
-              </p>
-              <div style={{ maxWidth: '400px', margin: '0 auto' }}>
-                <QuestionInput onSubmit={handleQuestionSubmit} />
+              <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+                <div style={{ fontSize: '48px', marginBottom: '16px', filter: 'drop-shadow(0 0 15px rgba(197, 160, 89, 0.4))' }}>🔮</div>
+                <h2 style={{ fontSize: '22px', fontWeight: '700', color: '#C5A059', marginBottom: '8px' }}>Set Your Intention</h2>
+                <p style={{ fontSize: '14px', color: '#94a3b8', lineHeight: '1.6', maxWidth: '320px', margin: '0 auto' }}>
+                  Choose a focus area for your daily guidance
+                </p>
               </div>
-            </motion.div>
-          ) : !isRevealed ? (
-            <motion.div 
-              key="hidden"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.1 }}
-              transition={{ duration: 0.5 }}
-              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, padding: '20px' }}
-            >
-              {question && (
-                <div style={{ 
-                  marginBottom: '24px', padding: '16px', background: 'rgba(197, 160, 89, 0.05)', 
-                  border: '1px solid rgba(197, 160, 89, 0.2)', borderRadius: '12px', width: '100%', textAlign: 'center'
-                }}>
-                  <span style={{ fontSize: '11px', color: '#C5A059', textTransform: 'uppercase', letterSpacing: '1px', display: 'block', marginBottom: '8px' }}>Your Question</span>
-                  <p style={{ fontSize: '15px', color: '#e2e8f0', fontStyle: 'italic', margin: 0 }}>"{question}"</p>
-                </div>
+
+              <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {(['general', 'love', 'career', 'custom'] as FocusArea[]).map((focus) => (
+                  <motion.button
+                    key={focus}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => handleFocusSelect(focus)}
+                    style={{
+                      width: '100%', padding: '16px 20px',
+                      background: selectedFocus === focus ? 'rgba(197, 160, 89, 0.15)' : 'rgba(255, 255, 255, 0.03)',
+                      border: selectedFocus === focus ? '2px solid #C5A059' : '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: '12px', color: '#fff',
+                      display: 'flex', alignItems: 'center', gap: '12px',
+                      cursor: 'pointer', transition: 'all 0.2s',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <div style={{ color: selectedFocus === focus ? '#C5A059' : '#94a3b8' }}>
+                      {getFocusIcon(focus)}
+                    </div>
+                    <span style={{ fontSize: '15px', fontWeight: '600', flex: 1 }}>{getFocusTitle(focus)}</span>
+                    {selectedFocus === focus && (
+                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#C5A059' }} />
+                    )}
+                  </motion.button>
+                ))}
+              </div>
+
+              {showQuestionInput && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  style={{ width: '100%' }}
+                >
+                  <textarea
+                    value={customQuestion}
+                    onChange={(e) => setCustomQuestion(e.target.value)}
+                    placeholder="What would you like guidance on?"
+                    style={{
+                      width: '100%', padding: '16px', background: 'rgba(255, 255, 255, 0.05)',
+                      border: '1px solid rgba(197, 160, 89, 0.3)', borderRadius: '12px',
+                      color: '#fff', fontSize: '14px', fontFamily: 'inherit',
+                      resize: 'none', minHeight: '80px', outline: 'none'
+                    }}
+                  />
+                </motion.div>
               )}
-              
-              <motion.div 
+
+              <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleReveal}
-                style={{ 
-                  width: '240px', height: '360px', borderRadius: '16px', overflow: 'hidden', 
-                  boxShadow: '0 0 40px rgba(197, 160, 89, 0.2), 0 10px 30px rgba(0,0,0,0.5)',
-                  cursor: 'pointer', border: '2px solid #C5A059', position: 'relative'
+                style={{
+                  width: '100%', padding: '18px',
+                  background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)',
+                  border: 'none', borderRadius: '12px',
+                  color: '#0f0c08', fontSize: '16px', fontWeight: '700',
+                  letterSpacing: '1px', textTransform: 'uppercase',
+                  cursor: 'pointer', boxShadow: '0 4px 20px rgba(197, 160, 89, 0.4)',
+                  marginTop: '16px'
+                }}
+              >
+                Reveal My Card
+              </motion.button>
+            </motion.div>
+          )}
+
+          {/* STAGE 2: REVEALING (ANIMATION) */}
+          {stage === 'revealing' && (
+            <motion.div
+              key="revealing"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, padding: '40px 0' }}
+            >
+              <motion.div
+                initial={{ rotateY: 0 }}
+                animate={{ rotateY: 180 }}
+                transition={{ duration: 1.5, ease: 'easeInOut' }}
+                style={{
+                  width: '240px', height: '360px', borderRadius: '16px', overflow: 'hidden',
+                  boxShadow: '0 0 60px rgba(197, 160, 89, 0.5), 0 10px 40px rgba(0,0,0,0.8)',
+                  border: '2px solid #C5A059', transformStyle: 'preserve-3d'
                 }}
               >
                 <img src={CARD_BACK_URL} alt="Card Back" style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(197, 160, 89, 0.1), transparent)', pointerEvents: 'none' }} />
               </motion.div>
-              
-              <p style={{ marginTop: '24px', fontSize: '14px', color: '#94a3b8', letterSpacing: '0.5px' }}>
-                Tap the card to reveal your destiny
+              <p style={{ marginTop: '32px', fontSize: '16px', color: '#C5A059', letterSpacing: '2px', textTransform: 'uppercase' }}>
+                Revealing...
               </p>
             </motion.div>
-          ) : (
-            <motion.div 
+          )}
+
+          {/* STAGE 3: REVEALED */}
+          {stage === 'revealed' && (
+            <motion.div
               key="revealed"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingBottom: '40px' }}
             >
-              {question && (
-                <div style={{ 
-                  marginBottom: '20px', padding: '12px 20px', background: 'rgba(197, 160, 89, 0.05)', 
-                  border: '1px solid rgba(197, 160, 89, 0.2)', borderRadius: '20px', textAlign: 'center', maxWidth: '100%'
-                }}>
-                  <span style={{ fontSize: '10px', color: '#C5A059', textTransform: 'uppercase', letterSpacing: '1px' }}>Your Question</span>
-                  <p style={{ fontSize: '14px', color: '#e2e8f0', fontStyle: 'italic', margin: '4px 0 0 0' }}>"{question}"</p>
-                </div>
-              )}
-
+              {/* Card Display */}
               <div style={{ position: 'relative', marginBottom: '24px' }}>
                 <motion.div
                   initial={{ rotateY: 90, opacity: 0 }}
-                  animate={{ rotateY: isReversed ? 180 : 0, opacity: 1 }}
+                  animate={{ rotateY: 0, opacity: 1 }}
                   transition={{ duration: 0.8, ease: 'easeOut' }}
                   style={{ 
                     width: '240px', height: '360px', borderRadius: '16px', overflow: 'hidden', 
-                    boxShadow: '0 0 40px rgba(197, 160, 89, 0.3), 0 10px 30px rgba(0,0,0,0.6)',
-                    border: '2px solid #C5A059', transformStyle: 'preserve-3d',
+                    boxShadow: isReversed 
+                      ? '0 0 40px rgba(167, 139, 250, 0.3), 0 10px 30px rgba(0,0,0,0.6)'
+                      : '0 0 40px rgba(197, 160, 89, 0.3), 0 10px 30px rgba(0,0,0,0.6)',
+                    border: `2px solid ${isReversed ? '#a78bfa' : '#C5A059'}`,
                     transform: isReversed ? 'rotate(180deg)' : 'rotate(0deg)'
                   }}
                 >
@@ -274,8 +406,8 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                     animate={{ scale: 1 }}
                     transition={{ delay: 0.5, type: 'spring' }}
                     style={{ 
-                      position: 'absolute', top: '12px', right: '12px', width: '28px', height: '28px', borderRadius: '50%', 
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '900', zIndex: 10, 
+                      position: 'absolute', top: '12px', right: '12px', width: '32px', height: '32px', borderRadius: '50%', 
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: '900', zIndex: 10, 
                       background: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)', color: '#fff', border: '2px solid #fff', 
                       boxShadow: '0 0 0 2px rgba(167,139,250,0.5), 0 4px 12px rgba(167,139,250,0.8)' 
                     }}
@@ -285,10 +417,37 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                 )}
               </div>
 
-              <div style={{ width: '100%', background: 'rgba(26, 21, 16, 0.8)', border: '1px solid rgba(197, 160, 89, 0.2)', borderRadius: '20px', padding: '24px', backdropFilter: 'blur(10px)' }}>
+              {/* Focus Area Badge */}
+              {selectedFocus !== 'general' && (
+                <div style={{ 
+                  marginBottom: '20px', padding: '8px 16px', background: 'rgba(197, 160, 89, 0.1)', 
+                  border: '1px solid rgba(197, 160, 89, 0.3)', borderRadius: '20px',
+                  display: 'flex', alignItems: 'center', gap: '8px'
+                }}>
+                  {getFocusIcon(selectedFocus)}
+                  <span style={{ fontSize: '12px', color: '#C5A059', fontWeight: '600' }}>{getFocusTitle(selectedFocus)}</span>
+                </div>
+              )}
+
+              {/* Custom Question Display */}
+              {selectedFocus === 'custom' && customQuestion && (
+                <div style={{ 
+                  marginBottom: '20px', padding: '12px 20px', background: 'rgba(197, 160, 89, 0.05)', 
+                  border: '1px solid rgba(197, 160, 89, 0.2)', borderRadius: '12px', textAlign: 'center', maxWidth: '100%'
+                }}>
+                  <span style={{ fontSize: '10px', color: '#C5A059', textTransform: 'uppercase', letterSpacing: '1px' }}>Your Question</span>
+                  <p style={{ fontSize: '14px', color: '#e2e8f0', fontStyle: 'italic', margin: '4px 0 0 0' }}>"{customQuestion}"</p>
+                </div>
+              )}
+
+              {/* Card Info Panel */}
+              <div style={{ 
+                width: '100%', background: 'rgba(26, 21, 16, 0.8)', border: '1px solid rgba(197, 160, 89, 0.2)', 
+                borderRadius: '20px', padding: '24px', backdropFilter: 'blur(10px)' 
+              }}>
                 <div style={{ textAlign: 'center', marginBottom: '16px' }}>
                   <div style={{ fontSize: '12px', color: '#94a3b8', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '4px' }}>{getCardMeta(card)}</div>
-                  <h2 style={{ margin: 0, fontSize: '24px', color: '#C5A059', fontWeight: '700', letterSpacing: '0.5px' }}>{card.name}</h2>
+                  <h2 style={{ margin: 0, fontSize: '26px', color: '#C5A059', fontWeight: '700', letterSpacing: '0.5px' }}>{card.name}</h2>
                   {isReversed && (
                     <span style={{ 
                       display: 'inline-block', marginTop: '8px', background: 'rgba(167, 139, 250, 0.15)', color: '#a78bfa', 
@@ -303,16 +462,16 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                 <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent, rgba(197, 160, 89, 0.3), transparent)', margin: '20px 0' }} />
 
                 <div style={{ marginBottom: '20px' }}>
-                  <h3 style={{ fontSize: '13px', color: '#C5A059', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Sparkles size={14} /> {isReversed ? 'Reversed Meaning' : 'Meaning'}
+                  <h3 style={{ fontSize: '12px', color: '#C5A059', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '10px', fontWeight: '700' }}>
+                    {isReversed ? 'Reversed Meaning' : 'Meaning'}
                   </h3>
-                  <p style={{ margin: 0, fontSize: '15px', lineHeight: '1.6', color: 'rgba(255, 255, 255, 0.85)', fontStyle: 'italic' }}>
+                  <p style={{ margin: 0, fontSize: '15px', lineHeight: '1.7', color: 'rgba(255, 255, 255, 0.85)', fontStyle: 'italic' }}>
                     "{meaning}"
                   </p>
                 </div>
 
                 <div style={{ marginBottom: '24px' }}>
-                  <h3 style={{ fontSize: '13px', color: '#C5A059', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Keywords</h3>
+                  <h3 style={{ fontSize: '12px', color: '#C5A059', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '12px', fontWeight: '700' }}>Keywords</h3>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {keywords.map((keyword: string, idx: number) => (
                       <span key={idx} style={{ 
@@ -325,29 +484,71 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                   </div>
                 </div>
 
-                <div style={{ background: 'rgba(197, 160, 89, 0.05)', border: '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '12px', padding: '16px', marginBottom: '24px' }}>
-                  <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.5', color: '#b3a68c', textAlign: 'center' }}>
-                    {isReversed 
-                      ? `Today's energy invites you to reflect on ${keywords[0]}. Consider where you might be holding back or need to approach situations differently.`
-                      : `Today's energy supports ${keywords[0]}. Embrace this quality as you move through your day.`
-                    }
-                  </p>
-                </div>
+                {/* Premium Upsell */}
+                {!hasPremium && (
+                  <div style={{ 
+                    background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 165, 0, 0.05))',
+                    border: '1px solid rgba(255, 215, 0, 0.3)', borderRadius: '12px', padding: '16px',
+                    marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px'
+                  }}>
+                    <div style={{ 
+                      width: '40px', height: '40px', borderRadius: '50%', 
+                      background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      boxShadow: '0 0 15px rgba(255, 215, 0, 0.4)'
+                    }}>
+                      <Lock size={18} style={{ color: '#0f0c08' }} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '13px', fontWeight: '700', color: '#FFD700', marginBottom: '4px' }}>AI Deep Dive</div>
+                      <div style={{ fontSize: '11px', color: '#94a3b8' }}>Unlock personalized insights for this card</div>
+                    </div>
+                    <button 
+                      onClick={() => onNavigate?.('pricing')}
+                      style={{
+                        padding: '8px 16px', background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+                        border: 'none', borderRadius: '8px', color: '#0f0c08',
+                        fontSize: '11px', fontWeight: '700', cursor: 'pointer',
+                        boxShadow: '0 2px 10px rgba(255, 215, 0, 0.3)'
+                      }}
+                    >
+                      Unlock
+                    </button>
+                  </div>
+                )}
 
-                <button 
-                  onClick={handleNewQuestion}
-                  style={{
-                    width: '100%', padding: '14px', background: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(197, 160, 89, 0.3)', borderRadius: '12px', color: '#C5A059',
-                    fontSize: '14px', fontWeight: '600', cursor: 'pointer', display: 'flex',
-                    alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s'
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(197, 160, 89, 0.1)'; e.currentTarget.style.transform = 'scale(1.02)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'; e.currentTarget.style.transform = 'scale(1)'; }}
-                >
-                  <RotateCcw size={16} />
-                  <span>Ask New Question</span>
-                </button>
+                {/* Action Buttons */}
+                <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+                  <button 
+                    onClick={handleShare}
+                    style={{
+                      flex: 1, padding: '14px', background: 'rgba(197, 160, 89, 0.1)',
+                      border: '1px solid rgba(197, 160, 89, 0.3)', borderRadius: '12px', color: '#C5A059',
+                      fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'flex',
+                      alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(197, 160, 89, 0.2)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(197, 160, 89, 0.1)'; }}
+                  >
+                    <Share2 size={16} />
+                    <span>Share</span>
+                  </button>
+
+                  <button 
+                    onClick={handleNewReading}
+                    style={{
+                      flex: 1, padding: '14px', background: 'rgba(255, 255, 255, 0.05)',
+                      border: '1px solid rgba(197, 160, 89, 0.3)', borderRadius: '12px', color: '#C5A059',
+                      fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'flex',
+                      alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(197, 160, 89, 0.1)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'; }}
+                  >
+                    <RotateCcw size={16} />
+                    <span>New Card</span>
+                  </button>
+                </div>
               </div>
             </motion.div>
           )}
