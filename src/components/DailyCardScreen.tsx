@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-// ✅ დავამატეთ ArrowLeft და BookOpen
 import { Sparkles, Heart, Briefcase, Star, Share2, Lock, Bookmark, BookOpen, ArrowLeft } from 'lucide-react';
 import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards';
 import { saveReading } from '../lib/readingService';
@@ -160,7 +159,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
 
   return (
     <div style={containerStyle}>
-      {/* ✅ აღდგენილი Header უკან დაბრუნების ღილაკით მარცხნივ */}
+      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingLeft: '5px', paddingRight: '5px' }}>
         <button 
           onClick={() => onNavigate?.('home')}
@@ -171,7 +170,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         <div style={{ fontSize: '11px', color: '#94a3b8', letterSpacing: '1px', textTransform: 'uppercase' }}>
           {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
         </div>
-        <div style={{ width: '40px' }} /> {/* Spacer ჰედერის დასაბალანსებლად */}
+        <div style={{ width: '40px' }} />
       </div>
 
       <AnimatePresence mode="wait">
@@ -211,23 +210,26 @@ export default function DailyCardScreen({ onNavigate }: Props) {
             
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
               
-              {/* 3D Portal Frame */}
+              {/* ✅ 1. მისტიური 3D Portal Frame */}
               <div style={{
                 flex: 1,
-                background: 'radial-gradient(circle at center, #1a1510 0%, #050403 100%)',
-                boxShadow: 'inset 0 0 40px rgba(0,0,0,0.9), inset 0 0 15px rgba(197, 160, 89, 0.15), 0 10px 30px rgba(0,0,0,0.5)',
+                // ღრმა, კოსმიური გრადიენტი მისტიური ეფექტისთვის
+                background: 'radial-gradient(circle at 50% 40%, rgba(60, 40, 80, 0.3) 0%, rgba(20, 15, 10, 0.8) 50%, #050403 100%)',
+                // გაძლიერებული შიდა ჩრდილები სიღრმის ილუზიისთვის
+                boxShadow: 'inset 0 0 60px rgba(0,0,0,1), inset 0 0 25px rgba(197, 160, 89, 0.15), 0 10px 30px rgba(0,0,0,0.6)',
                 border: '1px solid rgba(197, 160, 89, 0.25)',
                 borderRadius: '16px',
-                padding: '16px',
+                padding: '20px', // ოდნავ მეტი padding სივრცისთვის
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 position: 'relative',
                 minHeight: '340px'
               }}>
+                {/* ✅ 2. ბარათი ლამაზი, თხელი კანტით */}
                 <motion.div
                   animate={{ y: [0, -8, 0] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }} // უფრო ნელი, მისტიური ტივტივი
                   style={{
                     width: '100%',
                     maxWidth: '220px',
@@ -235,14 +237,16 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                     borderRadius: '12px',
                     overflow: 'hidden',
                     position: 'relative',
+                    // ელეგანტური თხელი ოქროსფერი კანტი შავი არტეფაქტების დასაფარად + შიდა ჩრდილი
+                    border: '1.5px solid rgba(197, 160, 89, 0.7)',
                     boxShadow: isReversed 
-                      ? '0 0 35px rgba(167, 139, 250, 0.4), 0 10px 20px rgba(0,0,0,0.6)' 
-                      : '0 0 35px rgba(197, 160, 89, 0.4), 0 10px 20px rgba(0,0,0,0.6)',
+                      ? '0 0 30px rgba(167, 139, 250, 0.4), 0 10px 20px rgba(0,0,0,0.8), inset 0 0 15px rgba(0,0,0,0.6)' 
+                      : '0 0 30px rgba(197, 160, 89, 0.4), 0 10px 20px rgba(0,0,0,0.8), inset 0 0 15px rgba(0,0,0,0.6)',
                     transform: isReversed ? 'rotate(180deg)' : 'rotate(0deg)'
                   }}
                 >
                   {card.image_url ? (
-                    <img src={card.image_url} alt={card.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src={card.image_url} alt={card.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                   ) : (
                     <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #2a2215, #1a1510)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                       <span style={{ fontSize: '20px', fontWeight: '700', color: '#C5A059' }}>{card.number}</span>
@@ -259,7 +263,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                 )}
               </div>
 
-              {/* ✅ განახლებული მარჯვენა სვეტი: Home-ის მაგივრად History (BookOpen) */}
+              {/* მარჯვენა სვეტი */}
               <div style={{ 
                 width: '48px', 
                 display: 'flex', 
@@ -267,36 +271,34 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                 gap: '14px', 
                 marginLeft: '12px'
               }}>
-                {/* Premium AI Button */}
                 <motion.button whileTap={{ scale: 0.9 }} onClick={() => !hasPremium && onNavigate?.('pricing')} style={{ ...actionBtnStyle, background: hasPremium ? 'rgba(16, 185, 129, 0.15)' : 'rgba(255, 215, 0, 0.1)', borderColor: hasPremium ? 'rgba(16, 185, 129, 0.4)' : 'rgba(255, 215, 0, 0.4)', color: hasPremium ? '#10b981' : '#FFD700' }}>
                   {hasPremium ? <Sparkles size={20} /> : <Lock size={18} />}
                 </motion.button>
 
-                {/* Bookmark Button */}
                 <motion.button whileTap={{ scale: 0.9 }} onClick={() => setIsBookmarked(!isBookmarked)} style={{ ...actionBtnStyle, color: isBookmarked ? '#C5A059' : '#94a3b8', background: isBookmarked ? 'rgba(197, 160, 89, 0.15)' : 'rgba(26, 21, 16, 0.6)' }}>
                   <Bookmark size={20} fill={isBookmarked ? '#C5A059' : 'none'} />
                 </motion.button>
 
-                {/* Share Button */}
                 <motion.button whileTap={{ scale: 0.9 }} onClick={handleShare} style={actionBtnStyle}>
                   <Share2 size={20} />
                 </motion.button>
 
-                {/* ✅ ახალი: Reading History / Journal Button */}
                 <motion.button whileTap={{ scale: 0.9 }} onClick={() => onNavigate?.('reading-history')} style={actionBtnStyle} title="Reading History">
                   <BookOpen size={20} />
                 </motion.button>
               </div>
             </div>
 
-            {/* ქვედა ტექსტური ბლოკი */}
+            {/* ✅ 3. ქვედა ბანერი ზუსტად 5px დაშორებით კიდეებიდან */}
             <div style={{ 
-              background: 'rgba(26, 21, 16, 0.6)', 
+              background: 'rgba(26, 21, 16, 0.7)', 
               border: '1px solid rgba(197, 160, 89, 0.15)', 
               borderRadius: '16px', 
               padding: '16px', 
-              backdropFilter: 'blur(10px)',
-              marginLeft: '5px', marginRight: '5px'
+              backdropFilter: 'blur(12px)',
+              marginLeft: '5px',  // ✅ ზუსტად 5px მარცხნივ
+              marginRight: '5px', // ✅ ზუსტად 5px მარჯვნივ
+              marginBottom: '5px'
             }}>
               <div style={{ textAlign: 'center', marginBottom: '12px' }}>
                 <div style={{ fontSize: '11px', color: '#94a3b8', letterSpacing: '1px', textTransform: 'uppercase' }}>{getCardMeta(card)}</div>
