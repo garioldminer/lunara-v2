@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Heart, Briefcase, Star, Share2, Lock, Bookmark, BookOpen, ArrowLeft } from 'lucide-react';
+import { Canvas } from '@react-three/fiber';
+import { Stars, Sparkles as DreiSparkles, Float } from '@react-three/drei';
 import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards';
 import { saveReading } from '../lib/readingService';
 import { logReading } from '../lib/adminService';
@@ -23,383 +25,45 @@ interface DailyReading {
 }
 
 // ============================================
-// 🌌 REALISTIC COSMIC BACKGROUND
+// 🌌 3D REALISTIC COSMIC BACKGROUND
 // ============================================
-function CosmicBackground() {
-  // ვარსკვლავები - რეალისტური ფერებით (ტემპერატურის მიხედვით)
-  const stars = useMemo(() => Array.from({ length: 80 }, (_, i) => {
-    const colors = ['#ffffff', '#ffe9c4', '#c4d4ff', '#ffd4a3', '#a3c4ff', '#ffcccc'];
-    return {
-      id: i,
-      left: `${Math.random() * 100}%`,
-      top: `${Math.random() * 100}%`,
-      size: Math.random() * 2 + 0.3,
-      opacity: Math.random() * 0.8 + 0.2,
-      delay: Math.random() * 5, // ✅ შესწორებულია: ახლა არის რიცხვი (წამები)
-      duration: 2 + Math.random() * 4,
-      color: colors[Math.floor(Math.random() * colors.length)]
-    };
-  }), []);
-
-  // ვარსკვლავური მტვერი (ძალიან პატარა ვარსკვლავები)
-  const starDust = useMemo(() => Array.from({ length: 120 }, (_, i) => ({
-    id: i,
-    left: `${Math.random() * 100}%`,
-    top: `${Math.random() * 100}%`,
-    size: Math.random() * 0.8 + 0.2,
-    opacity: Math.random() * 0.5 + 0.1
-  })), []);
-
+function CosmicScene() {
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0, left: 0, right: 0, bottom: 0,
-      zIndex: 0,
-      overflow: 'hidden',
-      pointerEvents: 'none'
-    }}>
-      {/* ღრმა კოსმიური gradient */}
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        background: `
-          radial-gradient(ellipse at 20% 30%, rgba(60, 30, 100, 0.4) 0%, transparent 50%),
-          radial-gradient(ellipse at 80% 70%, rgba(30, 20, 80, 0.3) 0%, transparent 50%),
-          radial-gradient(ellipse at 50% 50%, rgba(80, 40, 120, 0.15) 0%, transparent 60%),
-          radial-gradient(ellipse at 50% 0%, rgba(197, 160, 89, 0.08) 0%, transparent 40%),
-          linear-gradient(180deg, #080415 0%, #040210 50%, #010008 100%)
-        `
-      }} />
-
-      {/* გალაქტიკის ნისლები (Nebula) */}
-      <motion.div
-        animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
-        transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-        style={{
-          position: 'absolute',
-          top: '10%',
-          left: '10%',
-          width: '50%',
-          height: '40%',
-          background: 'radial-gradient(ellipse at center, rgba(100, 50, 180, 0.2) 0%, rgba(60, 30, 120, 0.1) 40%, transparent 70%)',
-          filter: 'blur(40px)'
-        }}
+    <>
+      {/* ღრმა კოსმოსის ფონი */}
+      <color attach="background" args={['#050510']} />
+      
+      {/* 5000+ რეალისტური ვარსკვლავი სიღრმით და მოციმციმე ეფექტით */}
+      <Stars 
+        radius={100} 
+        depth={50} 
+        count={5000} 
+        factor={4} 
+        saturation={0} 
+        fade 
+        speed={1} 
       />
-
-      <motion.div
-        animate={{ x: [0, -25, 0], y: [0, 15, 0] }}
-        transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-        style={{
-          position: 'absolute',
-          bottom: '20%',
-          right: '10%',
-          width: '45%',
-          height: '35%',
-          background: 'radial-gradient(ellipse at center, rgba(50, 30, 150, 0.15) 0%, rgba(30, 20, 100, 0.08) 40%, transparent 70%)',
-          filter: 'blur(35px)'
-        }}
+      
+      {/* ოქროსფერი კოსმიური მტვერი */}
+      <DreiSparkles 
+        count={300} 
+        scale={12} 
+        size={2} 
+        speed={0.4} 
+        opacity={0.6} 
+        color="#c5a059" 
       />
-
-      <motion.div
-        animate={{ x: [0, 20, 0], y: [0, 10, 0] }}
-        transition={{ duration: 30, repeat: Infinity, ease: "easeInOut" }}
-        style={{
-          position: 'absolute',
-          top: '40%',
-          left: '30%',
-          width: '40%',
-          height: '30%',
-          background: 'radial-gradient(ellipse at center, rgba(197, 160, 89, 0.06) 0%, transparent 70%)',
-          filter: 'blur(30px)'
-        }}
+      
+      {/* იისფერი მაგიური ნისლეული */}
+      <DreiSparkles 
+        count={200} 
+        scale={8} 
+        size={3} 
+        speed={0.2} 
+        opacity={0.4} 
+        color="#a78bfa" 
       />
-
-      {/* ვარსკვლავური მტვერი */}
-      {starDust.map((star) => (
-        <div
-          key={`dust-${star.id}`}
-          style={{
-            position: 'absolute',
-            left: star.left,
-            top: star.top,
-            width: `${star.size}px`,
-            height: `${star.size}px`,
-            borderRadius: '50%',
-            background: '#ffffff',
-            opacity: star.opacity
-          }}
-        />
-      ))}
-
-      {/* კაშკაშა ვარსკვლავები */}
-      {stars.map((star) => (
-        <motion.div
-          key={`star-${star.id}`}
-          animate={{ 
-            opacity: [star.opacity, star.opacity * 0.3, star.opacity],
-            scale: [1, 1.3, 1]
-          }}
-          transition={{ 
-            duration: star.duration, 
-            repeat: Infinity, 
-            delay: star.delay, // ✅ ახლა სწორად არის რიცხვი
-            ease: "easeInOut"
-          }}
-          style={{
-            position: 'absolute',
-            left: star.left,
-            top: star.top,
-            width: `${star.size}px`,
-            height: `${star.size}px`,
-            borderRadius: '50%',
-            background: star.color,
-            boxShadow: star.size > 1.5 
-              ? `0 0 8px ${star.color}, 0 0 16px ${star.color}80` 
-              : `0 0 4px ${star.color}80`,
-          }}
-        />
-      ))}
-
-      {/* 🌙 რეალისტური მთვარე SVG-ით */}
-      <motion.div
-        animate={{ y: [0, -6, 0], rotate: [0, 1, 0] }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        style={{
-          position: 'absolute',
-          top: '8%',
-          left: '6%',
-          width: '60px',
-          height: '60px',
-        }}
-      >
-        <svg width="60" height="60" viewBox="0 0 60 60">
-          <defs>
-            <radialGradient id="moonGrad" cx="35%" cy="35%">
-              <stop offset="0%" stopColor="#f8f9fa" />
-              <stop offset="40%" stopColor="#e9ecef" />
-              <stop offset="70%" stopColor="#ced4da" />
-              <stop offset="100%" stopColor="#adb5bd" />
-            </radialGradient>
-            <filter id="moonGlow">
-              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-              <feMerge>
-                <feMergeNode in="coloredBlur"/>
-                <feMergeNode in="SourceGraphic"/>
-              </feMerge>
-            </filter>
-          </defs>
-          <circle cx="30" cy="30" r="28" fill="rgba(203, 213, 225, 0.15)" filter="url(#moonGlow)" />
-          <circle cx="30" cy="30" r="24" fill="url(#moonGrad)" />
-          <circle cx="22" cy="25" r="4" fill="rgba(100, 116, 139, 0.3)" />
-          <circle cx="35" cy="32" r="3" fill="rgba(100, 116, 139, 0.25)" />
-          <circle cx="28" cy="38" r="2.5" fill="rgba(100, 116, 139, 0.2)" />
-          <circle cx="38" cy="22" r="2" fill="rgba(100, 116, 139, 0.3)" />
-          <circle cx="20" cy="35" r="1.5" fill="rgba(100, 116, 139, 0.25)" />
-          <ellipse cx="25" cy="28" rx="8" ry="6" fill="rgba(100, 116, 139, 0.15)" />
-          <ellipse cx="35" cy="35" rx="6" ry="4" fill="rgba(100, 116, 139, 0.12)" />
-        </svg>
-      </motion.div>
-
-      {/* ☀️ რეალისტური მზე SVG-ით */}
-      <motion.div
-        animate={{ y: [0, 5, 0], scale: [1, 1.03, 1] }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        style={{
-          position: 'absolute',
-          top: '12%',
-          right: '8%',
-          width: '50px',
-          height: '50px',
-        }}
-      >
-        <svg width="50" height="50" viewBox="0 0 50 50">
-          <defs>
-            <radialGradient id="sunGrad" cx="40%" cy="40%">
-              <stop offset="0%" stopColor="#ffffff" />
-              <stop offset="20%" stopColor="#fef3c7" />
-              <stop offset="50%" stopColor="#fbbf24" />
-              <stop offset="80%" stopColor="#f59e0b" />
-              <stop offset="100%" stopColor="#d97706" />
-            </radialGradient>
-            <filter id="sunGlow">
-              <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-              <feMerge>
-                <feMergeNode in="coloredBlur"/>
-                <feMergeNode in="SourceGraphic"/>
-              </feMerge>
-            </filter>
-          </defs>
-          <circle cx="25" cy="25" r="24" fill="rgba(251, 191, 36, 0.1)" filter="url(#sunGlow)" />
-          <circle cx="25" cy="25" r="20" fill="rgba(251, 191, 36, 0.2)" />
-          <circle cx="25" cy="25" r="16" fill="url(#sunGrad)" />
-        </svg>
-      </motion.div>
-
-      {/* 🪐 სატურნი (პლანეტა ring-ით) */}
-      <motion.div
-        animate={{ y: [0, -8, 0], x: [0, 4, 0] }}
-        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-        style={{
-          position: 'absolute',
-          top: '65%',
-          right: '12%',
-          width: '40px',
-          height: '40px',
-        }}
-      >
-        <svg width="40" height="40" viewBox="0 0 40 40">
-          <defs>
-            <radialGradient id="saturnGrad" cx="40%" cy="40%">
-              <stop offset="0%" stopColor="#fde68a" />
-              <stop offset="50%" stopColor="#fbbf24" />
-              <stop offset="100%" stopColor="#d97706" />
-            </radialGradient>
-          </defs>
-          <ellipse cx="20" cy="20" rx="18" ry="6" fill="none" stroke="rgba(251, 191, 36, 0.3)" strokeWidth="2" />
-          <circle cx="20" cy="20" r="10" fill="url(#saturnGrad)" />
-          <ellipse cx="20" cy="20" rx="18" ry="6" fill="none" stroke="rgba(251, 191, 36, 0.5)" strokeWidth="2" strokeDasharray="0 18 36" />
-        </svg>
-      </motion.div>
-
-      {/* 🌍 დედამიწა */}
-      <motion.div
-        animate={{ y: [0, 6, 0], rotate: [0, -2, 0] }}
-        transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
-        style={{
-          position: 'absolute',
-          top: '75%',
-          left: '15%',
-          width: '30px',
-          height: '30px',
-        }}
-      >
-        <svg width="30" height="30" viewBox="0 0 30 30">
-          <defs>
-            <radialGradient id="earthGrad" cx="40%" cy="40%">
-              <stop offset="0%" stopColor="#60a5fa" />
-              <stop offset="40%" stopColor="#3b82f6" />
-              <stop offset="70%" stopColor="#1e40af" />
-              <stop offset="100%" stopColor="#1e3a8a" />
-            </radialGradient>
-          </defs>
-          <circle cx="15" cy="15" r="14" fill="url(#earthGrad)" />
-          <path d="M 10 8 Q 12 10 11 13 Q 9 14 8 12 Q 7 10 10 8" fill="rgba(34, 197, 94, 0.4)" />
-          <path d="M 18 12 Q 20 14 19 17 Q 17 18 16 16 Q 15 14 18 12" fill="rgba(34, 197, 94, 0.3)" />
-          <path d="M 12 18 Q 14 20 13 22 Q 11 23 10 21 Q 9 19 12 18" fill="rgba(34, 197, 94, 0.35)" />
-        </svg>
-      </motion.div>
-
-      {/* 🔴 მარსი */}
-      <motion.div
-        animate={{ y: [0, -5, 0], x: [0, -3, 0] }}
-        transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }}
-        style={{
-          position: 'absolute',
-          top: '25%',
-          right: '20%',
-          width: '25px',
-          height: '25px',
-        }}
-      >
-        <svg width="25" height="25" viewBox="0 0 25 25">
-          <defs>
-            <radialGradient id="marsGrad" cx="40%" cy="40%">
-              <stop offset="0%" stopColor="#fca5a5" />
-              <stop offset="50%" stopColor="#ef4444" />
-              <stop offset="100%" stopColor="#991b1b" />
-            </radialGradient>
-          </defs>
-          <circle cx="12.5" cy="12.5" r="11" fill="url(#marsGrad)" />
-          <circle cx="10" cy="11" r="2" fill="rgba(127, 29, 29, 0.3)" />
-          <circle cx="15" cy="14" r="1.5" fill="rgba(127, 29, 29, 0.25)" />
-        </svg>
-      </motion.div>
-
-      {/* ☄️ კომეტა კუდით */}
-      <motion.div
-        animate={{ 
-          x: ['-150px', '500px'],
-          y: ['80px', '250px'],
-          opacity: [0, 1, 1, 0]
-        }}
-        transition={{ 
-          duration: 4, 
-          repeat: Infinity, 
-          repeatDelay: 20,
-          ease: "easeOut"
-        }}
-        style={{
-          position: 'absolute',
-          top: '15%',
-          left: '5%',
-        }}
-      >
-        <svg width="100" height="30" viewBox="0 0 100 30">
-          <defs>
-            <linearGradient id="cometTail" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="rgba(255, 255, 255, 0)" />
-              <stop offset="70%" stopColor="rgba(255, 255, 255, 0.3)" />
-              <stop offset="100%" stopColor="rgba(255, 255, 255, 0.8)" />
-            </linearGradient>
-          </defs>
-          <path d="M 0 15 Q 40 15 80 15" stroke="url(#cometTail)" strokeWidth="3" fill="none" />
-          <circle cx="85" cy="15" r="4" fill="#ffffff" />
-          <circle cx="85" cy="15" r="6" fill="rgba(255, 255, 255, 0.3)" />
-        </svg>
-      </motion.div>
-
-      {/* 🌌 შორეული გალაქტიკა */}
-      <motion.div
-        animate={{ rotate: [0, 360] }}
-        transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
-        style={{
-          position: 'absolute',
-          top: '45%',
-          left: '75%',
-          width: '80px',
-          height: '80px',
-          opacity: 0.15,
-        }}
-      >
-        <svg width="80" height="80" viewBox="0 0 80 80">
-          <defs>
-            <radialGradient id="galaxyGrad" cx="50%" cy="50%">
-              <stop offset="0%" stopColor="rgba(255, 255, 255, 0.8)" />
-              <stop offset="30%" stopColor="rgba(200, 180, 255, 0.4)" />
-              <stop offset="60%" stopColor="rgba(150, 130, 200, 0.2)" />
-              <stop offset="100%" stopColor="rgba(100, 80, 150, 0)" />
-            </radialGradient>
-          </defs>
-          <ellipse cx="40" cy="40" rx="35" ry="15" fill="url(#galaxyGrad)" transform="rotate(-30 40 40)" />
-          <ellipse cx="40" cy="40" rx="35" ry="15" fill="url(#galaxyGrad)" transform="rotate(30 40 40)" />
-        </svg>
-      </motion.div>
-
-      {/* Shooting Star */}
-      <motion.div
-        animate={{ 
-          x: ['-100px', '400px'],
-          y: ['50px', '200px'],
-          opacity: [0, 1, 0]
-        }}
-        transition={{ 
-          duration: 3, 
-          repeat: Infinity, 
-          repeatDelay: 18,
-          ease: "easeOut"
-        }}
-        style={{
-          position: 'absolute',
-          top: '20%',
-          left: '10%',
-          width: '100px',
-          height: '2px',
-          background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent)',
-          boxShadow: '0 0 10px rgba(255, 255, 255, 0.7)',
-          transform: 'rotate(-15deg)',
-        }}
-      />
-    </div>
+    </>
   );
 }
 
@@ -506,8 +170,10 @@ export default function DailyCardScreen({ onNavigate }: Props) {
 
   if (!dailyReading) {
     return (
-      <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden' }}>
-        <CosmicBackground />
+      <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', background: '#050510' }}>
+        <Canvas dpr={[1, 1.5]} style={{ position: 'absolute', inset: 0 }}>
+          <CosmicScene />
+        </Canvas>
         <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', color: '#C5A059' }}>
           <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}>
             <Sparkles size={32} />
@@ -533,7 +199,8 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     flexDirection: 'column',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     overflowY: 'auto',
-    WebkitOverflowScrolling: 'touch'
+    WebkitOverflowScrolling: 'touch',
+    background: '#050510' // Fallback ფონი
   };
 
   const actionBtnStyle: React.CSSProperties = {
@@ -550,7 +217,13 @@ export default function DailyCardScreen({ onNavigate }: Props) {
 
   return (
     <div style={containerStyle}>
-      <CosmicBackground />
+      {/* 🌌 3D კოსმიური ფონი მთლიან ეკრანზე */}
+      <Canvas 
+        dpr={[1, 1.5]} 
+        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, pointerEvents: 'none' }}
+      >
+        <CosmicScene />
+      </Canvas>
 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingLeft: '5px', paddingRight: '5px', position: 'relative', zIndex: 1 }}>
@@ -569,13 +242,13 @@ export default function DailyCardScreen({ onNavigate }: Props) {
       <AnimatePresence mode="wait">
         {stage === 'selecting' && (
           <motion.div key="selecting" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} style={{ padding: '0 10px', position: 'relative', zIndex: 1 }}>
-            <div style={{ textAlign: 'center', marginBottom: '20px', background: 'rgba(10, 8, 20, 0.4)', padding: '20px', borderRadius: '16px', backdropFilter: 'blur(12px)', border: '1px solid rgba(197, 160, 89, 0.15)' }}>
+            <div style={{ textAlign: 'center', marginBottom: '20px', background: 'rgba(10, 8, 20, 0.6)', padding: '20px', borderRadius: '16px', backdropFilter: 'blur(12px)', border: '1px solid rgba(197, 160, 89, 0.15)' }}>
               <div style={{ fontSize: '40px', marginBottom: '8px' }}>🔮</div>
               <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#C5A059' }}>Set Your Intention</h2>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
               {(['general', 'love', 'career', 'custom'] as FocusArea[]).map((focus) => (
-                <motion.button key={focus} whileTap={{ scale: 0.96 }} onClick={() => handleFocusSelect(focus)} style={{ padding: '14px', background: selectedFocus === focus ? 'rgba(197, 160, 89, 0.2)' : 'rgba(10, 8, 20, 0.5)', border: selectedFocus === focus ? '1.5px solid #C5A059' : '1px solid rgba(197, 160, 89, 0.2)', borderRadius: '10px', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', cursor: 'pointer', backdropFilter: 'blur(8px)' }}>
+                <motion.button key={focus} whileTap={{ scale: 0.96 }} onClick={() => handleFocusSelect(focus)} style={{ padding: '14px', background: selectedFocus === focus ? 'rgba(197, 160, 89, 0.2)' : 'rgba(10, 8, 20, 0.6)', border: selectedFocus === focus ? '1.5px solid #C5A059' : '1px solid rgba(197, 160, 89, 0.2)', borderRadius: '10px', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', cursor: 'pointer', backdropFilter: 'blur(8px)' }}>
                   <div style={{ color: selectedFocus === focus ? '#C5A059' : '#94a3b8' }}>{getFocusIcon(focus)}</div>
                   <span style={{ fontSize: '13px', fontWeight: '600' }}>{focus.charAt(0).toUpperCase() + focus.slice(1)}</span>
                 </motion.button>
@@ -592,8 +265,8 @@ export default function DailyCardScreen({ onNavigate }: Props) {
 
         {stage === 'revealing' && (
           <motion.div key="revealing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, position: 'relative', zIndex: 1 }}>
-            <motion.div initial={{ rotateY: 0 }} animate={{ rotateY: 180 }} transition={{ duration: 1.2 }} style={{ width: '220px', height: '308px', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 0 50px rgba(197, 160, 89, 0.4)', border: '2px solid #C5A059' }}>
-              <img src={CARD_BACK_URL} alt="Card Back" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <motion.div initial={{ rotateY: 0 }} animate={{ rotateY: 180 }} transition={{ duration: 1.2 }} style={{ width: '220px', height: '330px', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 0 50px rgba(197, 160, 89, 0.4)', border: '2px solid #C5A059' }}>
+              <img src={CARD_BACK_URL} alt="Card Back" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             </motion.div>
           </motion.div>
         )}
@@ -603,39 +276,37 @@ export default function DailyCardScreen({ onNavigate }: Props) {
             
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
               
+              {/* ✅ იდეალური კარტის ჩარჩო - შავი ზოლების გარეშე */}
               <motion.div
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                 style={{
                   width: '220px',
-                  height: '308px',
+                  height: '330px', // სტანდარტული ტაროს პროპორცია (2:3)
                   borderRadius: '12px',
-                  overflow: 'hidden',
+                  overflow: 'hidden', // ✅ ეს ჭრის სურათს ზუსტად ჩარჩოს ზღვარზე
                   position: 'relative',
-                  border: '2px solid rgba(197, 160, 89, 0.8)',
+                  border: '2px solid rgba(197, 160, 89, 0.9)', // ✅ თხელი, ლამაზი ოქროსფერი კანტი
                   boxShadow: isReversed 
-                    ? '0 0 40px rgba(167, 139, 250, 0.6), 0 0 80px rgba(167, 139, 250, 0.3), 0 10px 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.5)' 
-                    : '0 0 40px rgba(197, 160, 89, 0.6), 0 0 80px rgba(197, 160, 89, 0.3), 0 10px 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.5)',
+                    ? '0 0 40px rgba(167, 139, 250, 0.6), 0 0 80px rgba(167, 139, 250, 0.3), 0 10px 30px rgba(0,0,0,0.8)' 
+                    : '0 0 40px rgba(197, 160, 89, 0.6), 0 0 80px rgba(197, 160, 89, 0.3), 0 10px 30px rgba(0,0,0,0.8)',
                   transform: isReversed ? 'rotate(180deg)' : 'rotate(0deg)',
-                  background: 'radial-gradient(ellipse at center, rgba(40, 20, 60, 0.3) 0%, rgba(5, 5, 10, 0.95) 100%)'
+                  background: '#0a0600'
                 }}
               >
-                {card.image_url ? (
-                  <img 
-                    src={card.image_url} 
-                    alt={card.name} 
-                    style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} 
-                  />
-                ) : (
-                  <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #2a2215, #1a1510)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '20px', fontWeight: '700', color: '#C5A059' }}>{card.number}</span>
-                    <span style={{ fontSize: '32px' }}>✦</span>
-                    <span style={{ fontSize: '14px', fontWeight: '700', color: '#C5A059', textAlign: 'center' }}>{card.name}</span>
-                  </div>
-                )}
+                <img 
+                  src={card.image_url} 
+                  alt={card.name} 
+                  style={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    objectFit: 'cover', // ✅ სურათი ავსებს მთელ სივრცეს, არ ტოვებს შავ ზოლებს
+                    display: 'block' // ✅ შლის inline ელემენტებისგან გამოწვეულ მიკრო-ნაპრალებს
+                  }} 
+                />
 
                 {isReversed && (
-                  <div style={{ position: 'absolute', top: '12px', right: '12px', width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '900', background: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)', color: '#fff', border: '2px solid #fff', boxShadow: '0 0 10px rgba(167,139,250,0.8)' }}>
+                  <div style={{ position: 'absolute', top: '12px', right: '12px', width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '900', background: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)', color: '#fff', border: '2px solid #fff', boxShadow: '0 0 10px rgba(167,139,250,0.8)', transform: isReversed ? 'rotate(-180deg)' : 'rotate(0deg)' }}>
                     R
                   </div>
                 )}
