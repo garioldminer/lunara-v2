@@ -157,6 +157,16 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     transition: 'all 0.2s ease'
   };
 
+  // ✅ ვარსკვლავების გენერაცია მისტიური ეფექტისთვის
+  const stars = Array.from({ length: 20 }, (_, i) => ({
+    id: i,
+    left: `${Math.random() * 100}%`,
+    top: `${Math.random() * 100}%`,
+    size: Math.random() * 2 + 1,
+    opacity: Math.random() * 0.7 + 0.3,
+    animationDelay: `${Math.random() * 3}s`
+  }));
+
   return (
     <div style={containerStyle}>
       {/* Header */}
@@ -177,7 +187,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         {stage === 'selecting' && (
           <motion.div key="selecting" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} style={{ padding: '0 10px' }}>
             <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-              <div style={{ fontSize: '40px', marginBottom: '8px' }}>🔮</div>
+              <div style={{ fontSize: '40px', marginBottom: '8px' }}></div>
               <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#C5A059' }}>Set Your Intention</h2>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
@@ -210,26 +220,67 @@ export default function DailyCardScreen({ onNavigate }: Props) {
             
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
               
-              {/* ✅ 1. მისტიური 3D Portal Frame */}
+              {/* ✅ 1. მისტიური 3D Portal Frame - კოსმიური ეფექტით */}
               <div style={{
                 flex: 1,
-                // ღრმა, კოსმიური გრადიენტი მისტიური ეფექტისთვის
-                background: 'radial-gradient(circle at 50% 40%, rgba(60, 40, 80, 0.3) 0%, rgba(20, 15, 10, 0.8) 50%, #050403 100%)',
-                // გაძლიერებული შიდა ჩრდილები სიღრმის ილუზიისთვის
-                boxShadow: 'inset 0 0 60px rgba(0,0,0,1), inset 0 0 25px rgba(197, 160, 89, 0.15), 0 10px 30px rgba(0,0,0,0.6)',
+                // კოსმიური gradient - რმა იისფერი/ლურჯი/შავი
+                background: 'radial-gradient(ellipse at 50% 50%, rgba(40, 20, 60, 0.4) 0%, rgba(20, 10, 30, 0.6) 40%, rgba(5, 5, 10, 0.9) 100%)',
+                boxShadow: 'inset 0 0 60px rgba(0,0,0,0.95), inset 0 0 30px rgba(100, 50, 150, 0.2), 0 10px 30px rgba(0,0,0,0.6)',
                 border: '1px solid rgba(197, 160, 89, 0.25)',
                 borderRadius: '16px',
-                padding: '20px', // ოდნავ მეტი padding სივრცისთვის
+                padding: '20px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 position: 'relative',
-                minHeight: '340px'
+                minHeight: '340px',
+                overflow: 'hidden' // ვარსკვლავებისთვის
               }}>
-                {/* ✅ 2. ბარათი ლამაზი, თხელი კანტით */}
+                
+                {/* ✅ ვარსკვლავები და კოსმიური ნაწილაკები */}
+                {stars.map((star) => (
+                  <motion.div
+                    key={star.id}
+                    animate={{ 
+                      opacity: [star.opacity, star.opacity * 0.3, star.opacity],
+                      scale: [1, 1.2, 1]
+                    }}
+                    transition={{ 
+                      duration: 2 + Math.random() * 2, 
+                      repeat: Infinity, 
+                      delay: star.animationDelay,
+                      ease: "easeInOut"
+                    }}
+                    style={{
+                      position: 'absolute',
+                      left: star.left,
+                      top: star.top,
+                      width: `${star.size}px`,
+                      height: `${star.size}px`,
+                      borderRadius: '50%',
+                      background: star.size > 2 ? 'rgba(255, 255, 255, 0.9)' : 'rgba(197, 160, 89, 0.6)',
+                      boxShadow: star.size > 2 ? '0 0 4px rgba(255, 255, 255, 0.8)' : '0 0 2px rgba(197, 160, 89, 0.4)',
+                      pointerEvents: 'none'
+                    }}
+                  />
+                ))}
+
+                {/* კოსმიური ნისლის ეფექტი */}
+                <div style={{
+                  position: 'absolute',
+                  top: '20%',
+                  left: '10%',
+                  width: '80%',
+                  height: '60%',
+                  background: 'radial-gradient(ellipse at center, rgba(100, 50, 150, 0.15) 0%, transparent 70%)',
+                  filter: 'blur(20px)',
+                  pointerEvents: 'none'
+                }} />
+
+                {/* ✅ 2. ბარათი - პროპორციული და კანტიანად */}
                 <motion.div
                   animate={{ y: [0, -8, 0] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }} // უფრო ნელი, მისტიური ტივტივი
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                   style={{
                     width: '100%',
                     maxWidth: '220px',
@@ -237,16 +288,28 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                     borderRadius: '12px',
                     overflow: 'hidden',
                     position: 'relative',
-                    // ელეგანტური თხელი ოქროსფერი კანტი შავი არტეფაქტების დასაფარად + შიდა ჩრდილი
-                    border: '1.5px solid rgba(197, 160, 89, 0.7)',
+                    // ✅ კარტის კანტი - შავი არტეფაქტების დასაფარად
+                    border: '2px solid rgba(197, 160, 89, 0.8)',
                     boxShadow: isReversed 
-                      ? '0 0 30px rgba(167, 139, 250, 0.4), 0 10px 20px rgba(0,0,0,0.8), inset 0 0 15px rgba(0,0,0,0.6)' 
-                      : '0 0 30px rgba(197, 160, 89, 0.4), 0 10px 20px rgba(0,0,0,0.8), inset 0 0 15px rgba(0,0,0,0.6)',
-                    transform: isReversed ? 'rotate(180deg)' : 'rotate(0deg)'
+                      ? '0 0 30px rgba(167, 139, 250, 0.5), 0 10px 20px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.5)' 
+                      : '0 0 30px rgba(197, 160, 89, 0.5), 0 10px 20px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.5)',
+                    transform: isReversed ? 'rotate(180deg)' : 'rotate(0deg)',
+                    // ✅ ფონი კარტის უკან - იგივე რაც ჩარჩოს შიდა ფონი
+                    background: 'radial-gradient(ellipse at center, rgba(40, 20, 60, 0.3) 0%, rgba(5, 5, 10, 0.95) 100%)'
                   }}
                 >
+                  {/* ✅ კარტის სურათი contain-ით, რომ პროპორცია შენარჩუნდეს */}
                   {card.image_url ? (
-                    <img src={card.image_url} alt={card.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    <img 
+                      src={card.image_url} 
+                      alt={card.name} 
+                      style={{ 
+                        width: '100%', 
+                        height: '100%', 
+                        objectFit: 'contain', // ✅ contain ნაცვლად cover-ის
+                        display: 'block'
+                      }} 
+                    />
                   ) : (
                     <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #2a2215, #1a1510)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                       <span style={{ fontSize: '20px', fontWeight: '700', color: '#C5A059' }}>{card.number}</span>
@@ -289,15 +352,15 @@ export default function DailyCardScreen({ onNavigate }: Props) {
               </div>
             </div>
 
-            {/* ✅ 3. ქვედა ბანერი ზუსტად 5px დაშორებით კიდეებიდან */}
+            {/* ქვედა ბანერი */}
             <div style={{ 
               background: 'rgba(26, 21, 16, 0.7)', 
               border: '1px solid rgba(197, 160, 89, 0.15)', 
               borderRadius: '16px', 
               padding: '16px', 
               backdropFilter: 'blur(12px)',
-              marginLeft: '5px',  // ✅ ზუსტად 5px მარცხნივ
-              marginRight: '5px', // ✅ ზუსტად 5px მარჯვნივ
+              marginLeft: '5px',
+              marginRight: '5px',
               marginBottom: '5px'
             }}>
               <div style={{ textAlign: 'center', marginBottom: '12px' }}>
