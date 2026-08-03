@@ -132,9 +132,21 @@ export default function DailyCardScreen({ onNavigate }: Props) {
   const meaning = isReversed ? card.reversed_meaning : card.meaning;
   const keywords = isReversed ? card.reversed_keywords : card.keywords;
 
+  // ✅ კოსმიური ვარსკვლავების გენერაცია
+  const stars = Array.from({ length: 35 }, (_, i) => ({
+    id: i,
+    left: `${Math.random() * 100}%`,
+    top: `${Math.random() * 100}%`,
+    size: Math.random() * 2.5 + 0.5,
+    opacity: Math.random() * 0.7 + 0.3,
+    animationDelay: `${Math.random() * 4}s`,
+    duration: 2 + Math.random() * 3
+  }));
+
   const containerStyle: React.CSSProperties = {
     minHeight: '100vh',
-    background: 'radial-gradient(ellipse at 50% 0%, #14101c 0%, #0a0600 55%, #07050a 100%)',
+    // ✅ კოსმიური gradient მთლიანი გვერდისთვის
+    background: 'radial-gradient(ellipse at 50% 30%, rgba(40, 20, 70, 0.4) 0%, rgba(20, 10, 40, 0.3) 30%, rgba(10, 6, 20, 0.6) 60%, #050408 100%)',
     color: '#fff',
     paddingTop: 'calc(70px + env(safe-area-inset-top, 0px))',
     paddingBottom: 'calc(20px + env(safe-area-inset-bottom, 0px))',
@@ -144,12 +156,13 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     flexDirection: 'column',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     overflowY: 'auto',
-    WebkitOverflowScrolling: 'touch'
+    WebkitOverflowScrolling: 'touch',
+    position: 'relative'
   };
 
   const actionBtnStyle: React.CSSProperties = {
     width: '48px', height: '48px', borderRadius: '50%',
-    background: 'rgba(26, 21, 16, 0.6)',
+    background: 'rgba(10, 8, 20, 0.6)',
     border: '1px solid rgba(197, 160, 89, 0.3)',
     backdropFilter: 'blur(8px)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -157,23 +170,55 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     transition: 'all 0.2s ease'
   };
 
-  // ✅ ვარსკვლავების გენერაცია მისტიური ეფექტისთვის
-  const stars = Array.from({ length: 20 }, (_, i) => ({
-    id: i,
-    left: `${Math.random() * 100}%`,
-    top: `${Math.random() * 100}%`,
-    size: Math.random() * 2 + 1,
-    opacity: Math.random() * 0.7 + 0.3,
-    animationDelay: `${Math.random() * 3}s`
-  }));
-
   return (
     <div style={containerStyle}>
+      {/* ✅ კოსმიური ვარსკვლავები მთლიან ფონზე */}
+      {stars.map((star) => (
+        <motion.div
+          key={star.id}
+          animate={{ 
+            opacity: [star.opacity, star.opacity * 0.2, star.opacity],
+            scale: [1, 1.3, 1]
+          }}
+          transition={{ 
+            duration: star.duration, 
+            repeat: Infinity, 
+            delay: star.animationDelay,
+            ease: "easeInOut"
+          }}
+          style={{
+            position: 'absolute',
+            left: star.left,
+            top: star.top,
+            width: `${star.size}px`,
+            height: `${star.size}px`,
+            borderRadius: '50%',
+            background: star.size > 1.8 ? 'rgba(255, 255, 255, 0.9)' : 'rgba(197, 160, 89, 0.7)',
+            boxShadow: star.size > 1.8 ? '0 0 6px rgba(255, 255, 255, 0.8)' : '0 0 3px rgba(197, 160, 89, 0.5)',
+            pointerEvents: 'none',
+            zIndex: 0
+          }}
+        />
+      ))}
+
+      {/* კოსმიური ნისლის ეფექტი */}
+      <div style={{
+        position: 'absolute',
+        top: '10%',
+        left: '20%',
+        width: '60%',
+        height: '40%',
+        background: 'radial-gradient(ellipse at center, rgba(100, 50, 150, 0.12) 0%, transparent 70%)',
+        filter: 'blur(30px)',
+        pointerEvents: 'none',
+        zIndex: 0
+      }} />
+
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingLeft: '5px', paddingRight: '5px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingLeft: '5px', paddingRight: '5px', position: 'relative', zIndex: 1 }}>
         <button 
           onClick={() => onNavigate?.('home')}
-          style={{ background: 'rgba(197, 160, 89, 0.1)', border: '1px solid rgba(197, 160, 89, 0.3)', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C5A059', cursor: 'pointer' }}
+          style={{ background: 'rgba(10, 8, 20, 0.6)', border: '1px solid rgba(197, 160, 89, 0.3)', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C5A059', cursor: 'pointer', backdropFilter: 'blur(8px)' }}
         >
           <ArrowLeft size={20} />
         </button>
@@ -185,9 +230,9 @@ export default function DailyCardScreen({ onNavigate }: Props) {
 
       <AnimatePresence mode="wait">
         {stage === 'selecting' && (
-          <motion.div key="selecting" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} style={{ padding: '0 10px' }}>
+          <motion.div key="selecting" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} style={{ padding: '0 10px', position: 'relative', zIndex: 1 }}>
             <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-              <div style={{ fontSize: '40px', marginBottom: '8px' }}></div>
+              <div style={{ fontSize: '40px', marginBottom: '8px' }}>🔮</div>
               <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#C5A059' }}>Set Your Intention</h2>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
@@ -208,7 +253,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         )}
 
         {stage === 'revealing' && (
-          <motion.div key="revealing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+          <motion.div key="revealing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, position: 'relative', zIndex: 1 }}>
             <motion.div initial={{ rotateY: 0 }} animate={{ rotateY: 180 }} transition={{ duration: 1.2 }} style={{ width: '220px', height: '308px', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 0 50px rgba(197, 160, 89, 0.4)', border: '2px solid #C5A059' }}>
               <img src={CARD_BACK_URL} alt="Card Back" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </motion.div>
@@ -216,115 +261,56 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         )}
 
         {stage === 'revealed' && (
-          <motion.div key="revealed" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+          <motion.div key="revealed" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} style={{ display: 'flex', flexDirection: 'column', flex: 1, position: 'relative', zIndex: 1 }}>
             
+            {/* ✅ კარტი + მარჯვენა სვეტი - ჩარჩოს გარეშე, პირდაპირ კოსმიურ ფონზე */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
               
-              {/* ✅ 1. მისტიური 3D Portal Frame - კოსმიური ეფექტით */}
-              <div style={{
-                flex: 1,
-                // კოსმიური gradient - რმა იისფერი/ლურჯი/შავი
-                background: 'radial-gradient(ellipse at 50% 50%, rgba(40, 20, 60, 0.4) 0%, rgba(20, 10, 30, 0.6) 40%, rgba(5, 5, 10, 0.9) 100%)',
-                boxShadow: 'inset 0 0 60px rgba(0,0,0,0.95), inset 0 0 30px rgba(100, 50, 150, 0.2), 0 10px 30px rgba(0,0,0,0.6)',
-                border: '1px solid rgba(197, 160, 89, 0.25)',
-                borderRadius: '16px',
-                padding: '20px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                position: 'relative',
-                minHeight: '340px',
-                overflow: 'hidden' // ვარსკვლავებისთვის
-              }}>
-                
-                {/* ✅ ვარსკვლავები და კოსმიური ნაწილაკები */}
-                {stars.map((star) => (
-                  <motion.div
-                    key={star.id}
-                    animate={{ 
-                      opacity: [star.opacity, star.opacity * 0.3, star.opacity],
-                      scale: [1, 1.2, 1]
-                    }}
-                    transition={{ 
-                      duration: 2 + Math.random() * 2, 
-                      repeat: Infinity, 
-                      delay: star.animationDelay,
-                      ease: "easeInOut"
-                    }}
-                    style={{
-                      position: 'absolute',
-                      left: star.left,
-                      top: star.top,
-                      width: `${star.size}px`,
-                      height: `${star.size}px`,
-                      borderRadius: '50%',
-                      background: star.size > 2 ? 'rgba(255, 255, 255, 0.9)' : 'rgba(197, 160, 89, 0.6)',
-                      boxShadow: star.size > 2 ? '0 0 4px rgba(255, 255, 255, 0.8)' : '0 0 2px rgba(197, 160, 89, 0.4)',
-                      pointerEvents: 'none'
-                    }}
+              {/* ✅ ბარათი - პირდაპირ კოსმიურ ფონზე */}
+              <motion.div
+                animate={{ y: [0, -8, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                style={{
+                  width: '220px',
+                  height: '308px',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  position: 'relative',
+                  // ✅ კარტის კანტი
+                  border: '2px solid rgba(197, 160, 89, 0.8)',
+                  boxShadow: isReversed 
+                    ? '0 0 35px rgba(167, 139, 250, 0.5), 0 10px 25px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.5)' 
+                    : '0 0 35px rgba(197, 160, 89, 0.5), 0 10px 25px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.5)',
+                  transform: isReversed ? 'rotate(180deg)' : 'rotate(0deg)',
+                  // ✅ ფონი კარტის უკან (contain-ის შემთხვევაში)
+                  background: 'radial-gradient(ellipse at center, rgba(40, 20, 60, 0.3) 0%, rgba(5, 5, 10, 0.95) 100%)'
+                }}
+              >
+                {card.image_url ? (
+                  <img 
+                    src={card.image_url} 
+                    alt={card.name} 
+                    style={{ 
+                      width: '100%', 
+                      height: '100%', 
+                      objectFit: 'contain',
+                      display: 'block'
+                    }} 
                   />
-                ))}
-
-                {/* კოსმიური ნისლის ეფექტი */}
-                <div style={{
-                  position: 'absolute',
-                  top: '20%',
-                  left: '10%',
-                  width: '80%',
-                  height: '60%',
-                  background: 'radial-gradient(ellipse at center, rgba(100, 50, 150, 0.15) 0%, transparent 70%)',
-                  filter: 'blur(20px)',
-                  pointerEvents: 'none'
-                }} />
-
-                {/* ✅ 2. ბარათი - პროპორციული და კანტიანად */}
-                <motion.div
-                  animate={{ y: [0, -8, 0] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                  style={{
-                    width: '100%',
-                    maxWidth: '220px',
-                    aspectRatio: '5/7',
-                    borderRadius: '12px',
-                    overflow: 'hidden',
-                    position: 'relative',
-                    // ✅ კარტის კანტი - შავი არტეფაქტების დასაფარად
-                    border: '2px solid rgba(197, 160, 89, 0.8)',
-                    boxShadow: isReversed 
-                      ? '0 0 30px rgba(167, 139, 250, 0.5), 0 10px 20px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.5)' 
-                      : '0 0 30px rgba(197, 160, 89, 0.5), 0 10px 20px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.5)',
-                    transform: isReversed ? 'rotate(180deg)' : 'rotate(0deg)',
-                    // ✅ ფონი კარტის უკან - იგივე რაც ჩარჩოს შიდა ფონი
-                    background: 'radial-gradient(ellipse at center, rgba(40, 20, 60, 0.3) 0%, rgba(5, 5, 10, 0.95) 100%)'
-                  }}
-                >
-                  {/* ✅ კარტის სურათი contain-ით, რომ პროპორცია შენარჩუნდეს */}
-                  {card.image_url ? (
-                    <img 
-                      src={card.image_url} 
-                      alt={card.name} 
-                      style={{ 
-                        width: '100%', 
-                        height: '100%', 
-                        objectFit: 'contain', // ✅ contain ნაცვლად cover-ის
-                        display: 'block'
-                      }} 
-                    />
-                  ) : (
-                    <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #2a2215, #1a1510)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '20px', fontWeight: '700', color: '#C5A059' }}>{card.number}</span>
-                      <span style={{ fontSize: '32px' }}>✦</span>
-                      <span style={{ fontSize: '14px', fontWeight: '700', color: '#C5A059', textAlign: 'center' }}>{card.name}</span>
-                    </div>
-                  )}
-                </motion.div>
+                ) : (
+                  <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #2a2215, #1a1510)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '20px', fontWeight: '700', color: '#C5A059' }}>{card.number}</span>
+                    <span style={{ fontSize: '32px' }}>✦</span>
+                    <span style={{ fontSize: '14px', fontWeight: '700', color: '#C5A059', textAlign: 'center' }}>{card.name}</span>
+                  </div>
+                )}
 
                 {isReversed && (
                   <div style={{ position: 'absolute', top: '12px', right: '12px', width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '900', background: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)', color: '#fff', border: '2px solid #fff', boxShadow: '0 0 10px rgba(167,139,250,0.8)' }}>
                     R
                   </div>
                 )}
-              </div>
+              </motion.div>
 
               {/* მარჯვენა სვეტი */}
               <div style={{ 
@@ -338,7 +324,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                   {hasPremium ? <Sparkles size={20} /> : <Lock size={18} />}
                 </motion.button>
 
-                <motion.button whileTap={{ scale: 0.9 }} onClick={() => setIsBookmarked(!isBookmarked)} style={{ ...actionBtnStyle, color: isBookmarked ? '#C5A059' : '#94a3b8', background: isBookmarked ? 'rgba(197, 160, 89, 0.15)' : 'rgba(26, 21, 16, 0.6)' }}>
+                <motion.button whileTap={{ scale: 0.9 }} onClick={() => setIsBookmarked(!isBookmarked)} style={{ ...actionBtnStyle, color: isBookmarked ? '#C5A059' : '#94a3b8', background: isBookmarked ? 'rgba(197, 160, 89, 0.15)' : 'rgba(10, 8, 20, 0.6)' }}>
                   <Bookmark size={20} fill={isBookmarked ? '#C5A059' : 'none'} />
                 </motion.button>
 
@@ -354,7 +340,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
 
             {/* ქვედა ბანერი */}
             <div style={{ 
-              background: 'rgba(26, 21, 16, 0.7)', 
+              background: 'rgba(10, 8, 20, 0.7)', 
               border: '1px solid rgba(197, 160, 89, 0.15)', 
               borderRadius: '16px', 
               padding: '16px', 
