@@ -1,8 +1,9 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Heart, Briefcase, Star, Share2, Lock, Bookmark, BookOpen, ArrowLeft } from 'lucide-react';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { Stars, Sparkles as DreiSparkles, Float } from '@react-three/drei';
+import * as THREE from 'three';
 import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards';
 import { saveReading } from '../lib/readingService';
 import { logReading } from '../lib/adminService';
@@ -25,44 +26,179 @@ interface DailyReading {
 }
 
 // ============================================
-// 🌌 3D REALISTIC COSMIC BACKGROUND
+// 🪐 PLANET COMPONENT
+// ============================================
+function Planet({ position, size, color, ringColor, speed = 1 }: any) {
+  const meshRef = useRef<THREE.Group>(null);
+  
+  useFrame((state) => {
+    if (meshRef.current) {
+      meshRef.current.rotation.y += 0.005 * speed;
+    }
+  });
+
+  return (
+    <Float speed={2} rotationIntensity={0.3} floatIntensity={0.5}>
+      <group ref={meshRef} position={position}>
+        {/* პლანეტის სხეული */}
+        <mesh>
+          <sphereGeometry args={[size, 32, 32]} />
+          <meshStandardMaterial 
+            color={color} 
+            emissive={color}
+            emissiveIntensity={0.2}
+          />
+        </mesh>
+        
+        {/* რგოლი (თუ არის) */}
+        {ringColor && (
+          <mesh rotation={[Math.PI / 2.5, 0, 0]}>
+            <ringGeometry args={[size * 1.4, size * 2, 64]} />
+            <meshStandardMaterial 
+              color={ringColor} 
+              transparent 
+              opacity={0.6}
+              side={THREE.DoubleSide}
+            />
+          </mesh>
+        )}
+      </group>
+    </Float>
+  );
+}
+
+// ============================================
+// ️ COMET COMPONENT
+// ============================================
+function Comet() {
+  const cometRef = useRef<THREE.Group>(null);
+  
+  useFrame((state) => {
+    if (cometRef.current) {
+      cometRef.current.position.x = Math.sin(state.clock.elapsedTime * 0.1) * 50;
+      cometRef.current.position.z = Math.cos(state.clock.elapsedTime * 0.1) * 50 - 30;
+      cometRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.05) * 10;
+    }
+  });
+
+  return (
+    <group ref={cometRef}>
+      {/* კომეტის თავი */}
+      <mesh>
+        <sphereGeometry args={[0.5, 16, 16]} />
+        <meshBasicMaterial color="#ffffff" />
+      </mesh>
+      {/* კუდი */}
+      <mesh position={[-3, 0, 0]} rotation={[0, 0, 0.2]}>
+        <coneGeometry args={[0.8, 6, 8]} />
+        <meshBasicMaterial color="#a78bfa" transparent opacity={0.6} />
+      </mesh>
+    </group>
+  );
+}
+
+// ============================================
+// 🌌 ENHANCED COSMIC SCENE
 // ============================================
 function CosmicScene() {
   return (
     <>
       {/* ღრმა კოსმოსის ფონი */}
-      <color attach="background" args={['#050510']} />
+      <color attach="background" args={['#020205']} />
       
-      {/* 5000+ რეალისტური ვარსკვლავი სიღრმით და მოციმციმე ეფექტით */}
+      {/* კაშკაშა ვარსკვლავები - ბევრი და ხილული */}
       <Stars 
-        radius={100} 
-        depth={50} 
-        count={5000} 
-        factor={4} 
-        saturation={0} 
-        fade 
-        speed={1} 
+        radius={100}
+        depth={60}
+        count={8000}
+        factor={6}
+        saturation={0.5}
+        fade
+        speed={0.5}
       />
       
       {/* ოქროსფერი კოსმიური მტვერი */}
       <DreiSparkles 
-        count={300} 
-        scale={12} 
-        size={2} 
-        speed={0.4} 
-        opacity={0.6} 
-        color="#c5a059" 
+        count={400}
+        scale={15}
+        size={3}
+        speed={0.3}
+        opacity={0.7}
+        color="#fbbf24"
       />
       
-      {/* იისფერი მაგიური ნისლეული */}
+      {/* იისფერი ნისლეული */}
       <DreiSparkles 
-        count={200} 
-        scale={8} 
-        size={3} 
-        speed={0.2} 
-        opacity={0.4} 
-        color="#a78bfa" 
+        count={300}
+        scale={12}
+        size={4}
+        speed={0.2}
+        opacity={0.5}
+        color="#a78bfa"
       />
+      
+      {/* ლურჯი ვარსკვლავური ნისლი */}
+      <DreiSparkles 
+        count={250}
+        scale={10}
+        size={2}
+        speed={0.4}
+        opacity={0.6}
+        color="#60a5fa"
+      />
+      
+      {/*  პლანეტები სხვადასხვა პოზიციაზე */}
+      
+      {/* სატურნი (ოქროსფერი რგოლით) */}
+      <Planet 
+        position={[-15, 8, -20]}
+        size={1.5}
+        color="#fbbf24"
+        ringColor="#f59e0b"
+        speed={0.5}
+      />
+      
+      {/* მარსი (წითელი) */}
+      <Planet 
+        position={[18, -5, -25]}
+        size={1.2}
+        color="#ef4444"
+        ringColor={null}
+        speed={0.8}
+      />
+      
+      {/* დედამიწა (ლურჯი) */}
+      <Planet 
+        position={[-20, -8, -15]}
+        size={1}
+        color="#3b82f6"
+        ringColor={null}
+        speed={1}
+      />
+      
+      {/* იუპიტერი (დიდი, ნარინჯისფერი) */}
+      <Planet 
+        position={[22, 10, -30]}
+        size={2.5}
+        color="#f97316"
+        ringColor={null}
+        speed={0.3}
+      />
+      
+      {/* ☄️ კომეტა */}
+      <Comet />
+      
+      {/*  მთვარე (დედამიწის მსგავსი) */}
+      <Float speed={3} rotationIntensity={0.2} floatIntensity={0.3}>
+        <mesh position={[12, 12, -18]}>
+          <sphereGeometry args={[0.8, 32, 32]} />
+          <meshStandardMaterial 
+            color="#e5e7eb"
+            emissive="#9ca3af"
+            emissiveIntensity={0.1}
+          />
+        </mesh>
+      </Float>
     </>
   );
 }
@@ -170,7 +306,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
 
   if (!dailyReading) {
     return (
-      <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', background: '#050510' }}>
+      <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', background: '#020205' }}>
         <Canvas dpr={[1, 1.5]} style={{ position: 'absolute', inset: 0 }}>
           <CosmicScene />
         </Canvas>
@@ -200,7 +336,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     overflowY: 'auto',
     WebkitOverflowScrolling: 'touch',
-    background: '#050510' // Fallback ფონი
+    background: '#020205'
   };
 
   const actionBtnStyle: React.CSSProperties = {
@@ -217,10 +353,11 @@ export default function DailyCardScreen({ onNavigate }: Props) {
 
   return (
     <div style={containerStyle}>
-      {/* 🌌 3D კოსმიური ფონი მთლიან ეკრანზე */}
+      {/* 🌌 3D კოსმიური ფონი */}
       <Canvas 
         dpr={[1, 1.5]} 
         style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, pointerEvents: 'none' }}
+        camera={{ position: [0, 0, 20], fov: 60 }}
       >
         <CosmicScene />
       </Canvas>
@@ -276,17 +413,16 @@ export default function DailyCardScreen({ onNavigate }: Props) {
             
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
               
-              {/* ✅ იდეალური კარტის ჩარჩო - შავი ზოლების გარეშე */}
               <motion.div
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                 style={{
                   width: '220px',
-                  height: '330px', // სტანდარტული ტაროს პროპორცია (2:3)
+                  height: '330px',
                   borderRadius: '12px',
-                  overflow: 'hidden', // ✅ ეს ჭრის სურათს ზუსტად ჩარჩოს ზღვარზე
+                  overflow: 'hidden',
                   position: 'relative',
-                  border: '2px solid rgba(197, 160, 89, 0.9)', // ✅ თხელი, ლამაზი ოქროსფერი კანტი
+                  border: '2px solid rgba(197, 160, 89, 0.9)',
                   boxShadow: isReversed 
                     ? '0 0 40px rgba(167, 139, 250, 0.6), 0 0 80px rgba(167, 139, 250, 0.3), 0 10px 30px rgba(0,0,0,0.8)' 
                     : '0 0 40px rgba(197, 160, 89, 0.6), 0 0 80px rgba(197, 160, 89, 0.3), 0 10px 30px rgba(0,0,0,0.8)',
@@ -300,8 +436,8 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                   style={{ 
                     width: '100%', 
                     height: '100%', 
-                    objectFit: 'cover', // ✅ სურათი ავსებს მთელ სივრცეს, არ ტოვებს შავ ზოლებს
-                    display: 'block' // ✅ შლის inline ელემენტებისგან გამოწვეულ მიკრო-ნაპრალებს
+                    objectFit: 'cover',
+                    display: 'block'
                   }} 
                 />
 
