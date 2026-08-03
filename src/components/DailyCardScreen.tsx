@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Heart, Briefcase, Star, Share2, Lock, Bookmark, BookOpen, ArrowLeft } from 'lucide-react';
 import { Canvas, useFrame } from '@react-three/fiber';
@@ -31,7 +31,8 @@ interface DailyReading {
 function Planet({ position, size, color, ringColor, speed = 1 }: any) {
   const meshRef = useRef<THREE.Group>(null);
   
-  useFrame((state) => {
+  // ✅ ამოღებულია გამოუყენებელი 'state' პარამეტრი
+  useFrame(() => {
     if (meshRef.current) {
       meshRef.current.rotation.y += 0.005 * speed;
     }
@@ -40,7 +41,6 @@ function Planet({ position, size, color, ringColor, speed = 1 }: any) {
   return (
     <Float speed={2} rotationIntensity={0.3} floatIntensity={0.5}>
       <group ref={meshRef} position={position}>
-        {/* პლანეტის სხეული */}
         <mesh>
           <sphereGeometry args={[size, 32, 32]} />
           <meshStandardMaterial 
@@ -50,7 +50,6 @@ function Planet({ position, size, color, ringColor, speed = 1 }: any) {
           />
         </mesh>
         
-        {/* რგოლი (თუ არის) */}
         {ringColor && (
           <mesh rotation={[Math.PI / 2.5, 0, 0]}>
             <ringGeometry args={[size * 1.4, size * 2, 64]} />
@@ -68,7 +67,7 @@ function Planet({ position, size, color, ringColor, speed = 1 }: any) {
 }
 
 // ============================================
-// ️ COMET COMPONENT
+// ☄️ COMET COMPONENT
 // ============================================
 function Comet() {
   const cometRef = useRef<THREE.Group>(null);
@@ -83,12 +82,10 @@ function Comet() {
 
   return (
     <group ref={cometRef}>
-      {/* კომეტის თავი */}
       <mesh>
         <sphereGeometry args={[0.5, 16, 16]} />
         <meshBasicMaterial color="#ffffff" />
       </mesh>
-      {/* კუდი */}
       <mesh position={[-3, 0, 0]} rotation={[0, 0, 0.2]}>
         <coneGeometry args={[0.8, 6, 8]} />
         <meshBasicMaterial color="#a78bfa" transparent opacity={0.6} />
@@ -103,10 +100,8 @@ function Comet() {
 function CosmicScene() {
   return (
     <>
-      {/* ღრმა კოსმოსის ფონი */}
       <color attach="background" args={['#020205']} />
       
-      {/* კაშკაშა ვარსკვლავები - ბევრი და ხილული */}
       <Stars 
         radius={100}
         depth={60}
@@ -117,7 +112,6 @@ function CosmicScene() {
         speed={0.5}
       />
       
-      {/* ოქროსფერი კოსმიური მტვერი */}
       <DreiSparkles 
         count={400}
         scale={15}
@@ -127,7 +121,6 @@ function CosmicScene() {
         color="#fbbf24"
       />
       
-      {/* იისფერი ნისლეული */}
       <DreiSparkles 
         count={300}
         scale={12}
@@ -137,7 +130,6 @@ function CosmicScene() {
         color="#a78bfa"
       />
       
-      {/* ლურჯი ვარსკვლავური ნისლი */}
       <DreiSparkles 
         count={250}
         scale={10}
@@ -147,9 +139,6 @@ function CosmicScene() {
         color="#60a5fa"
       />
       
-      {/*  პლანეტები სხვადასხვა პოზიციაზე */}
-      
-      {/* სატურნი (ოქროსფერი რგოლით) */}
       <Planet 
         position={[-15, 8, -20]}
         size={1.5}
@@ -158,7 +147,6 @@ function CosmicScene() {
         speed={0.5}
       />
       
-      {/* მარსი (წითელი) */}
       <Planet 
         position={[18, -5, -25]}
         size={1.2}
@@ -167,7 +155,6 @@ function CosmicScene() {
         speed={0.8}
       />
       
-      {/* დედამიწა (ლურჯი) */}
       <Planet 
         position={[-20, -8, -15]}
         size={1}
@@ -176,7 +163,6 @@ function CosmicScene() {
         speed={1}
       />
       
-      {/* იუპიტერი (დიდი, ნარინჯისფერი) */}
       <Planet 
         position={[22, 10, -30]}
         size={2.5}
@@ -185,10 +171,8 @@ function CosmicScene() {
         speed={0.3}
       />
       
-      {/* ☄️ კომეტა */}
       <Comet />
       
-      {/*  მთვარე (დედამიწის მსგავსი) */}
       <Float speed={3} rotationIntensity={0.2} floatIntensity={0.3}>
         <mesh position={[12, 12, -18]}>
           <sphereGeometry args={[0.8, 32, 32]} />
@@ -353,7 +337,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
 
   return (
     <div style={containerStyle}>
-      {/* 🌌 3D კოსმიური ფონი */}
       <Canvas 
         dpr={[1, 1.5]} 
         style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, pointerEvents: 'none' }}
