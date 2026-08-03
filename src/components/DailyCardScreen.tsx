@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Sparkles, Heart, Briefcase, Star, Share2, Lock, Bookmark, Home } from 'lucide-react';
+// ✅ დავამატეთ ArrowLeft და BookOpen
+import { Sparkles, Heart, Briefcase, Star, Share2, Lock, Bookmark, BookOpen, ArrowLeft } from 'lucide-react';
 import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards';
 import { saveReading } from '../lib/readingService';
 import { logReading } from '../lib/adminService';
@@ -132,15 +133,14 @@ export default function DailyCardScreen({ onNavigate }: Props) {
   const meaning = isReversed ? card.reversed_meaning : card.meaning;
   const keywords = isReversed ? card.reversed_keywords : card.keywords;
 
-  // ✅ 5px დაშორება ეკრანის კიდეებიდან (Telegram Safe Area-ს გათვალისწინებით)
   const containerStyle: React.CSSProperties = {
     minHeight: '100vh',
     background: 'radial-gradient(ellipse at 50% 0%, #14101c 0%, #0a0600 55%, #07050a 100%)',
     color: '#fff',
     paddingTop: 'calc(70px + env(safe-area-inset-top, 0px))',
     paddingBottom: 'calc(20px + env(safe-area-inset-bottom, 0px))',
-    paddingLeft: '5px', // ✅ ზუსტად 5px მარცხნივ
-    paddingRight: '5px', // ✅ ზუსტად 5px მარჯვნივ
+    paddingLeft: '5px',
+    paddingRight: '5px',
     display: 'flex',
     flexDirection: 'column',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -148,7 +148,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     WebkitOverflowScrolling: 'touch'
   };
 
-  // მარჯვენა სვეტის ღილაკის სტილი
   const actionBtnStyle: React.CSSProperties = {
     width: '48px', height: '48px', borderRadius: '50%',
     background: 'rgba(26, 21, 16, 0.6)',
@@ -161,18 +160,23 @@ export default function DailyCardScreen({ onNavigate }: Props) {
 
   return (
     <div style={containerStyle}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px', paddingLeft: '10px' }}>
-        <h1 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#C5A059', letterSpacing: '2px', textTransform: 'uppercase' }}>Daily Card</h1>
-        <div style={{ fontSize: '11px', color: '#94a3b8', marginLeft: '12px' }}>
-          {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+      {/* ✅ აღდგენილი Header უკან დაბრუნების ღილაკით მარცხნივ */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingLeft: '5px', paddingRight: '5px' }}>
+        <button 
+          onClick={() => onNavigate?.('home')}
+          style={{ background: 'rgba(197, 160, 89, 0.1)', border: '1px solid rgba(197, 160, 89, 0.3)', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C5A059', cursor: 'pointer' }}
+        >
+          <ArrowLeft size={20} />
+        </button>
+        <div style={{ fontSize: '11px', color: '#94a3b8', letterSpacing: '1px', textTransform: 'uppercase' }}>
+          {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
         </div>
+        <div style={{ width: '40px' }} /> {/* Spacer ჰედერის დასაბალანსებლად */}
       </div>
 
       <AnimatePresence mode="wait">
         {stage === 'selecting' && (
           <motion.div key="selecting" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} style={{ padding: '0 10px' }}>
-            {/* ... (შენი არჩევის ეკრანი უცვლელი რჩება, აქ შემოკლებულია სივრცისთვის) ... */}
             <div style={{ textAlign: 'center', marginBottom: '20px' }}>
               <div style={{ fontSize: '40px', marginBottom: '8px' }}>🔮</div>
               <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#C5A059' }}>Set Your Intention</h2>
@@ -202,39 +206,35 @@ export default function DailyCardScreen({ onNavigate }: Props) {
           </motion.div>
         )}
 
-        {/* ✅ STAGE 3: REVEALED - 3D PORTAL & SIDE ACTIONS */}
         {stage === 'revealed' && (
           <motion.div key="revealed" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
             
-            {/* ზედა ნაწილი: 3D პორტალი (მარცხნივ) + ღილაკები (მარჯვნივ) */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
               
-              {/* 1. 3D PORTAL FRAME (მარცხენა მხარე, იკავებს დარჩენილ სივრცეს) */}
+              {/* 3D Portal Frame */}
               <div style={{
                 flex: 1,
                 background: 'radial-gradient(circle at center, #1a1510 0%, #050403 100%)',
                 boxShadow: 'inset 0 0 40px rgba(0,0,0,0.9), inset 0 0 15px rgba(197, 160, 89, 0.15), 0 10px 30px rgba(0,0,0,0.5)',
                 border: '1px solid rgba(197, 160, 89, 0.25)',
                 borderRadius: '16px',
-                padding: '16px', // ეს ქმნის "ჩაღრმავებულ" სივრცეს
+                padding: '16px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 position: 'relative',
                 minHeight: '340px'
               }}>
-                {/* Floating Card */}
                 <motion.div
                   animate={{ y: [0, -8, 0] }}
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                   style={{
                     width: '100%',
                     maxWidth: '220px',
-                    aspectRatio: '5/7', // ბანქოს კლასიკური პროპორცია
+                    aspectRatio: '5/7',
                     borderRadius: '12px',
                     overflow: 'hidden',
                     position: 'relative',
-                    // ✅ Glow ეფექტი
                     boxShadow: isReversed 
                       ? '0 0 35px rgba(167, 139, 250, 0.4), 0 10px 20px rgba(0,0,0,0.6)' 
                       : '0 0 35px rgba(197, 160, 89, 0.4), 0 10px 20px rgba(0,0,0,0.6)',
@@ -250,8 +250,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                       <span style={{ fontSize: '14px', fontWeight: '700', color: '#C5A059', textAlign: 'center' }}>{card.name}</span>
                     </div>
                   )}
-                  
-                  {/* Reversed Badge (ბრუნვის მიუხედავად, ბეჯი ყოველთვის სწორად უნდა იყოს, ამიტომ ის card-ის გარეთ, მაგრამ portal-ის შიგნით არ უნდა იყოს, ან უნდა დაბრუნდეს. მარტივი გზა: badge დავტოვოთ ზემოთ მარჯვნივ) */}
                 </motion.div>
 
                 {isReversed && (
@@ -261,13 +259,13 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                 )}
               </div>
 
-              {/* 2. RIGHT ACTION COLUMN (მარჯვენა მხარე, 5px დაშორებით კიდიდან) */}
+              {/* ✅ განახლებული მარჯვენა სვეტი: Home-ის მაგივრად History (BookOpen) */}
               <div style={{ 
                 width: '48px', 
                 display: 'flex', 
                 flexDirection: 'column', 
                 gap: '14px', 
-                marginLeft: '12px' // დაშორება პორტალსა და ღილაკებს შორის
+                marginLeft: '12px'
               }}>
                 {/* Premium AI Button */}
                 <motion.button whileTap={{ scale: 0.9 }} onClick={() => !hasPremium && onNavigate?.('pricing')} style={{ ...actionBtnStyle, background: hasPremium ? 'rgba(16, 185, 129, 0.15)' : 'rgba(255, 215, 0, 0.1)', borderColor: hasPremium ? 'rgba(16, 185, 129, 0.4)' : 'rgba(255, 215, 0, 0.4)', color: hasPremium ? '#10b981' : '#FFD700' }}>
@@ -284,14 +282,14 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                   <Share2 size={20} />
                 </motion.button>
 
-                {/* Home Button */}
-                <motion.button whileTap={{ scale: 0.9 }} onClick={() => onNavigate?.('home')} style={actionBtnStyle}>
-                  <Home size={20} />
+                {/* ✅ ახალი: Reading History / Journal Button */}
+                <motion.button whileTap={{ scale: 0.9 }} onClick={() => onNavigate?.('reading-history')} style={actionBtnStyle} title="Reading History">
+                  <BookOpen size={20} />
                 </motion.button>
               </div>
             </div>
 
-            {/* ქვედა ნაწილი: ტექსტური ინფორმაცია (სქროლის გარეშე, კომპაქტურად) */}
+            {/* ქვედა ტექსტური ბლოკი */}
             <div style={{ 
               background: 'rgba(26, 21, 16, 0.6)', 
               border: '1px solid rgba(197, 160, 89, 0.15)', 
