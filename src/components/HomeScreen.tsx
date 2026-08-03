@@ -1167,7 +1167,8 @@ export default function HomeScreen({ onNavigate }: Props) {
       <div className="card-of-day-banner clickable-card" onClick={() => onNavigate && onNavigate('daily-card')} style={{ background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)', border: '1px solid #332a1a', borderRadius: '16px', padding: '12px', marginBottom: '2px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)', position: 'relative', overflow: 'visible', cursor: 'pointer' }}>
         <div className="card-of-day-content" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '0' }}>
           <div className="card-half-left" style={{ flex: '0 0 45%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px 0' }}>
-            <div className="card-image-3d-wrapper" style={{ position: 'relative', width: 'clamp(80px, 22vw, 110px)', aspectRatio: '2/3', perspective: '800px' }}>
+            {/* ✅ გაზრდილი კარტის კონტეინერი - გადასცდება ბანერის კიდეებს */}
+            <div className="card-image-3d-wrapper" style={{ position: 'relative', width: 'clamp(110px, 28vw, 140px)', aspectRatio: '2/3', perspective: '800px', margin: '-12px 0' }}>
               <div className="card-image-tilted" style={{ position: 'relative', width: '100%', height: '100%', transform: 'rotateY(-5deg) rotateX(2deg) rotate(3deg)', transition: 'transform 0.4s ease', zIndex: 2, transformStyle: 'preserve-3d' }}>
                 {dailyCard?.image_url ? (
                   <img src={dailyCard.image_url} alt={dailyCardName} className="card-image-large" style={{ transform: isDailyReversed ? 'rotate(183deg)' : 'rotate(3deg)', width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px', border: '2px solid #C5A059', boxShadow: '0 2px 4px rgba(0,0,0,0.4), 0 8px 16px rgba(0,0,0,0.5), 0 16px 32px rgba(0,0,0,0.6), 0 0 20px rgba(197,160,89,0.3)' }} />
