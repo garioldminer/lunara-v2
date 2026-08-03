@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Heart, Briefcase, Star, Share2, Lock, Bookmark, BookOpen, ArrowLeft } from 'lucide-react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards';
 import { saveReading } from '../lib/readingService';
@@ -56,7 +56,7 @@ function StarField() {
         colors[i3 + 1] = 0.95 + Math.random() * 0.05;
         colors[i3 + 2] = 0.8 + Math.random() * 0.2;
       } else if (starType < 0.85) {
-        // ურჯი
+        // ლურჯი
         colors[i3] = 0.7 + Math.random() * 0.3;
         colors[i3 + 1] = 0.8 + Math.random() * 0.2;
         colors[i3 + 2] = 1.0;
@@ -463,7 +463,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
   const handleShare = () => {
     if (!dailyReading) return;
     const { card, isReversed } = dailyReading;
-    const shareText = ` My Daily Card: ${card.name}${isReversed ? ' (Reversed)' : ''}\n\n"${isReversed ? card.reversed_meaning : card.meaning}"\n\nDraw your own card on Lunara App! ✨`;
+    const shareText = `🔮 My Daily Card: ${card.name}${isReversed ? ' (Reversed)' : ''}\n\n"${isReversed ? card.reversed_meaning : card.meaning}"\n\nDraw your own card on Lunara App! ✨`;
     const tg = (window as any).Telegram?.WebApp;
     if (tg?.openTelegramLink) tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(window.location.href || '')}&text=${encodeURIComponent(shareText)}`);
     else navigator.clipboard.writeText(shareText).then(() => alert('Copied to clipboard!'));
