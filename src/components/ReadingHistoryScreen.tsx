@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Calendar, Sparkles, LayoutGrid, X, Heart, Share2, Bug, RefreshCw, Trash2, Shield } from 'lucide-react';
+import { ArrowLeft, Calendar, Sparkles, LayoutGrid, X, Heart, Share2, Bug, RefreshCw, Trash2, Shield, Copy, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { getUserReadings } from '../lib/readingService';
 import { isAdmin } from '../lib/adminService';
@@ -27,6 +27,35 @@ interface Reading {
   created_at: string;
 }
 
+// Debug Log Type
+type LogType = 'info' | 'success' | 'error' | 'api' | 'db' | 'ui';
+
+interface DebugLog {
+  id: number;
+  timestamp: string;
+  type: LogType;
+  message: string;
+  data?: any;
+}
+
+const logColors: Record<LogType, string> = {
+  info: '#60a5fa',
+  success: '#10b981',
+  error: '#ef4444',
+  api: '#a78bfa',
+  db: '#f472b6',
+  ui: '#fbbf24'
+};
+
+const logIcons: Record<LogType, string> = {
+  info: 'ℹ️',
+  success: '✅',
+  error: '❌',
+  api: '',
+  db: '🗄️',
+  ui: '🎯'
+};
+
 export default function ReadingHistoryScreen({ onNavigate }: Props) {
   const { user } = useUser();
   const [readings, setReadings] = useState<Reading[]>([]);
@@ -34,60 +63,102 @@ export default function ReadingHistoryScreen({ onNavigate }: Props) {
   const [filter, setFilter] = useState<'all' | 'daily' | 'three-card'>('all');
   const [selectedReading, setSelectedReading] = useState<Reading | null>(null);
   const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
-  
-  // 🐛 Debug States - მხოლოდ ადმინისტრატორისთვის
-  const [showDebug, setShowDebug] = useState(false);
-  const [debugError, setDebugError] = useState<string | null>(null);
   const [isUserAdmin, setIsUserAdmin] = useState(false);
+  
+  // Debug Panel States
+  const [showDebug, setShowDebug] = useState(false);
+  const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
+  const [logFilter, setLogFilter] = useState<LogType | 'all'>('all');
+  const [expandedLog, setExpandedLog] = useState<number | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  // Helper: Add Debug Log
+  const addLog = (type: LogType, message: string, data?: any) => {
+    const log: DebugLog = {
+      id: Date.now() + Math.random(),
+      timestamp: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      type,
+      message,
+      data
+    };
+    setDebugLogs(prev => [log, ...prev].slice(0, 100));
+    console.log(`[${type.toUpperCase()}] ${message}`, data || '');
+  };
 
   useEffect(() => {
+    addLog('info', 'ReadingHistoryScreen mounted');
+    
     if (user) {
-      // შევამოწმოთ არის თუ არა მომხმარებელი ადმინი
+      addLog('success', 'User found in context', { userId: user.id, name: user.display_name });
+      
       isAdmin(user.id).then(admin => {
         setIsUserAdmin(admin);
-        console.log('🔐 Admin status:', admin);
+        addLog('info', 'Admin check completed', { isAdmin: admin });
       }).catch(err => {
-        console.error('❌ Admin check failed:', err);
+        addLog('error', 'Admin check failed', err);
       });
       
       loadReadings();
       loadBookmarks();
     } else {
+      addLog('error', 'No user found in context');
       setLoading(false);
-      setDebugError('No user found in context');
     }
   }, [user]);
 
   const loadReadings = async () => {
-    if (!user) return;
+    if (!user) {
+      addLog('warning', 'loadReadings called without user');
+      return;
+    }
+    
     setLoading(true);
-    setDebugError(null);
+    addLog('api', 'Fetching readings from Supabase', { userId: user.id, limit: 100 });
+    
     try {
-      console.log('🔍 Fetching readings for user:', user.id);
+      const startTime = Date.now();
       const data = await getUserReadings(user.id, 100);
-      console.log('✅ Readings fetched:', data.length);
+      const duration = Date.now() - startTime;
+      
+      addLog('db', 'Readings fetched successfully', { 
+        count: data.length, 
+        duration: `${duration}ms`,
+        sample: data.slice(0, 2)
+      });
+      
       setReadings(data);
     } catch (error: any) {
-      console.error('❌ Failed to load readings:', error);
-      setDebugError(error.message || 'Failed to fetch readings');
+      addLog('error', 'Failed to load readings', { 
+        error: error.message, 
+        stack: error.stack 
+      });
     } finally {
       setLoading(false);
+      addLog('info', 'Loading finished', { finalCount: readings.length });
     }
   };
 
   const loadBookmarks = () => {
+    addLog('info', 'Loading bookmarks from localStorage');
     const stored = localStorage.getItem('bookmarked_readings');
     if (stored) {
-      setBookmarkedIds(new Set(JSON.parse(stored)));
+      const parsed = JSON.parse(stored);
+      setBookmarkedIds(new Set(parsed));
+      addLog('success', 'Bookmarks loaded', { count: parsed.length });
+    } else {
+      addLog('info', 'No bookmarks found in localStorage');
     }
   };
 
   const toggleBookmark = (readingId: string) => {
+    addLog('ui', 'Toggling bookmark', { readingId, currentBookmarks: [...bookmarkedIds] });
     const newSet = new Set(bookmarkedIds);
     if (newSet.has(readingId)) {
       newSet.delete(readingId);
+      addLog('info', 'Bookmark removed', { readingId });
     } else {
       newSet.add(readingId);
+      addLog('success', 'Bookmark added', { readingId });
     }
     setBookmarkedIds(newSet);
     localStorage.setItem('bookmarked_readings', JSON.stringify([...newSet]));
@@ -136,28 +207,57 @@ export default function ReadingHistoryScreen({ onNavigate }: Props) {
   };
 
   const handleShare = (reading: Reading) => {
+    addLog('ui', 'Share button clicked', { readingId: reading.id });
     const text = `My ${getReadingTypeLabel(reading.reading_type)}: ${reading.cards.map(c => c.name).join(', ')}`;
     if (navigator.share) {
       navigator.share({ title: 'My Tarot Reading', text });
+      addLog('success', 'Share dialog opened');
     } else {
       navigator.clipboard.writeText(text);
+      addLog('success', 'Copied to clipboard', { text });
       alert('Copied to clipboard!');
     }
   };
 
-  const clearDebugData = () => {
-    localStorage.removeItem('bookmarked_readings');
-    setBookmarkedIds(new Set());
-    setReadings([]);
-    loadReadings();
+  const copyAllLogs = () => {
+    const text = debugLogs.map(l => `[${l.timestamp}] [${l.type.toUpperCase()}] ${l.message}${l.data ? '\n' + JSON.stringify(l.data, null, 2) : ''}`).join('\n\n');
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    addLog('info', 'All logs copied to clipboard');
   };
+
+  const clearLogs = () => {
+    setDebugLogs([]);
+    addLog('info', 'Debug logs cleared');
+  };
+
+  const testSupabaseConnection = async () => {
+    addLog('api', 'Testing Supabase connection...');
+    try {
+      const { supabase } = await import('../lib/supabase');
+      const startTime = Date.now();
+      const { data, error } = await supabase.from('users').select('id').limit(1);
+      const duration = Date.now() - startTime;
+      
+      if (error) {
+        addLog('error', 'Supabase connection failed', { error: error.message, duration: `${duration}ms` });
+      } else {
+        addLog('success', 'Supabase connection successful', { data, duration: `${duration}ms` });
+      }
+    } catch (err: any) {
+      addLog('error', 'Supabase test failed', { error: err.message });
+    }
+  };
+
+  const filteredLogs = logFilter === 'all' ? debugLogs : debugLogs.filter(l => l.type === logFilter);
 
   return (
     <div className="reading-history-screen">
       {/* Header */}
       <div className="rh-header">
         {onNavigate && (
-          <button className="rh-back-btn" onClick={() => onNavigate('home')}>
+          <button className="rh-back-btn" onClick={() => { addLog('ui', 'Navigate back to home'); onNavigate('home'); }}>
             <ArrowLeft size={20} />
           </button>
         )}
@@ -171,13 +271,13 @@ export default function ReadingHistoryScreen({ onNavigate }: Props) {
 
       {/* Filter Tabs */}
       <div className="rh-filter-tabs">
-        <button className={`rh-filter-tab ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>
+        <button className={`rh-filter-tab ${filter === 'all' ? 'active' : ''}`} onClick={() => { setFilter('all'); addLog('ui', 'Filter changed to: all'); }}>
           All ({readings.length})
         </button>
-        <button className={`rh-filter-tab ${filter === 'daily' ? 'active' : ''}`} onClick={() => setFilter('daily')}>
+        <button className={`rh-filter-tab ${filter === 'daily' ? 'active' : ''}`} onClick={() => { setFilter('daily'); addLog('ui', 'Filter changed to: daily'); }}>
           Daily ({readings.filter(r => r.reading_type === 'daily').length})
         </button>
-        <button className={`rh-filter-tab ${filter === 'three-card' ? 'active' : ''}`} onClick={() => setFilter('three-card')}>
+        <button className={`rh-filter-tab ${filter === 'three-card' ? 'active' : ''}`} onClick={() => { setFilter('three-card'); addLog('ui', 'Filter changed to: three-card'); }}>
           3-Card ({readings.filter(r => r.reading_type === 'three-card').length})
         </button>
       </div>
@@ -197,7 +297,7 @@ export default function ReadingHistoryScreen({ onNavigate }: Props) {
               {filter === 'all' ? "Start your journey by drawing your first card!" : `No ${getReadingTypeLabel(filter).toLowerCase()} readings found.`}
             </p>
             {onNavigate && (
-              <button className="rh-empty-btn" onClick={() => onNavigate('daily-card')}>
+              <button className="rh-empty-btn" onClick={() => { addLog('ui', 'Navigate to daily-card'); onNavigate('daily-card'); }}>
                 Draw Your First Card
               </button>
             )}
@@ -211,7 +311,7 @@ export default function ReadingHistoryScreen({ onNavigate }: Props) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                onClick={() => setSelectedReading(reading)}
+                onClick={() => { setSelectedReading(reading); addLog('ui', 'Reading selected', { id: reading.id, type: reading.reading_type }); }}
               >
                 <div className="rh-card-header">
                   <div className="rh-card-type">
@@ -269,29 +369,30 @@ export default function ReadingHistoryScreen({ onNavigate }: Props) {
         )}
       </div>
 
-      {/* 🐛 ADMIN-ONLY DEBUG PANEL */}
+      {/* 🐛 SELF-CONTAINED DEBUG PANEL */}
       {isUserAdmin && (
-        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999 }}>
+        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999, fontFamily: 'monospace' }}>
           <button 
             onClick={() => setShowDebug(!showDebug)}
             style={{
               width: '100%',
-              padding: '8px',
-              background: showDebug ? '#ef4444' : 'rgba(0,0,0,0.8)',
+              padding: '10px',
+              background: showDebug ? '#ef4444' : 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)',
               color: '#fff',
               border: 'none',
-              borderTop: '1px solid #333',
+              borderTop: '2px solid #C5A059',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',
               fontSize: '12px',
               fontWeight: 'bold',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              letterSpacing: '1px'
             }}
           >
             <Bug size={14} />
-            {showDebug ? 'HIDE DEBUG' : 'SHOW DEBUG PANEL'}
+            {showDebug ? 'HIDE DEBUG' : `DEBUG (${debugLogs.filter(l => l.type === 'error').length > 0 ? `${debugLogs.filter(l => l.type === 'error').length} ERR` : `${debugLogs.length} LOGS`})`}
           </button>
 
           <AnimatePresence>
@@ -300,59 +401,157 @@ export default function ReadingHistoryScreen({ onNavigate }: Props) {
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3 }}
                 style={{
-                  background: 'rgba(15, 12, 8, 0.95)',
+                  background: 'rgba(10, 6, 0, 0.98)',
                   backdropFilter: 'blur(10px)',
                   borderTop: '2px solid #C5A059',
-                  padding: '16px',
-                  fontSize: '11px',
-                  fontFamily: 'monospace',
-                  color: '#e2e8f0',
-                  maxHeight: '50vh',
-                  overflowY: 'auto'
+                  maxHeight: '70vh',
+                  overflow: 'hidden',
+                  display: 'flex',
+                  flexDirection: 'column'
                 }}
               >
-                <h4 style={{ color: '#C5A059', margin: '0 0 8px 0', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Shield size={14} /> ADMIN DEBUG CONSOLE
-                </h4>
-                
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
-                  <div>👤 User ID: <span style={{ color: '#10b981' }}>{user?.id?.substring(0, 8) || 'NULL'}...</span></div>
-                  <div> Admin: <span style={{ color: '#10b981' }}>YES</span></div>
-                  <div>⏳ Loading: <span style={{ color: loading ? '#fbbf24' : '#10b981' }}>{loading ? 'YES' : 'NO'}</span></div>
-                  <div>📚 Total Readings: <span style={{ color: '#60a5fa' }}>{readings.length}</span></div>
-                  <div>🔍 Filtered: <span style={{ color: '#60a5fa' }}>{filteredReadings.length}</span></div>
-                  <div>❤️ Bookmarked: <span style={{ color: '#f472b6' }}>{bookmarkedIds.size}</span></div>
-                  <div>⚙️ Filter: <span style={{ color: '#fbbf24' }}>{filter}</span></div>
-                  <div> LocalStorage: <span style={{ color: '#a78bfa' }}>{localStorage.getItem('bookmarked_readings') ? 'YES' : 'NO'}</span></div>
-                </div>
-                
-                {debugError && (
-                  <div style={{ background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', padding: '8px', borderRadius: '4px', color: '#fca5a5', marginBottom: '12px' }}>
-                    ❌ ERROR: {debugError}
+                {/* Header */}
+                <div style={{ padding: '12px', borderBottom: '1px solid rgba(197, 160, 89, 0.3)', background: 'rgba(197, 160, 89, 0.1)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#C5A059', fontWeight: 'bold', fontSize: '13px' }}>
+                      <Shield size={16} />
+                      ADMIN DEBUG CONSOLE
+                    </div>
+                    <button 
+                      onClick={() => setShowDebug(false)}
+                      style={{ background: 'none', border: 'none', color: '#C5A059', cursor: 'pointer', padding: '4px' }}
+                    >
+                      <X size={18} />
+                    </button>
                   </div>
-                )}
 
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button 
-                    onClick={loadReadings}
-                    style={{ flex: 1, padding: '8px', background: '#C5A059', color: '#0a0600', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
-                  >
-                    <RefreshCw size={12} /> Refresh Data
-                  </button>
-                  <button 
-                    onClick={clearDebugData}
-                    style={{ flex: 1, padding: '8px', background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', border: '1px solid #ef4444', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
-                  >
-                    <Trash2 size={12} /> Clear Local
-                  </button>
+                  {/* Status Grid */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', fontSize: '10px', marginBottom: '8px' }}>
+                    <div> User: <span style={{ color: '#10b981' }}>{user?.id?.substring(0, 8) || 'NULL'}...</span></div>
+                    <div>🔐 Admin: <span style={{ color: '#10b981' }}>YES</span></div>
+                    <div>⏳ Loading: <span style={{ color: loading ? '#fbbf24' : '#10b981' }}>{loading ? 'YES' : 'NO'}</span></div>
+                    <div>📚 Total: <span style={{ color: '#60a5fa' }}>{readings.length}</span></div>
+                    <div>🔍 Filtered: <span style={{ color: '#60a5fa' }}>{filteredReadings.length}</span></div>
+                    <div>❤️ Bookmarked: <span style={{ color: '#f472b6' }}>{bookmarkedIds.size}</span></div>
+                    <div>⚙️ Filter: <span style={{ color: '#fbbf24' }}>{filter}</span></div>
+                    <div>💾 LocalStorage: <span style={{ color: '#a78bfa' }}>{localStorage.getItem('bookmarked_readings') ? 'YES' : 'NO'}</span></div>
+                  </div>
+
+                  {/* Log Filter Tabs */}
+                  <div style={{ display: 'flex', gap: '4px', overflowX: 'auto', paddingBottom: '4px', marginBottom: '8px' }}>
+                    {(['all', 'info', 'success', 'error', 'api', 'db', 'ui'] as const).map(type => (
+                      <button
+                        key={type}
+                        onClick={() => setLogFilter(type)}
+                        style={{
+                          padding: '4px 8px',
+                          background: logFilter === type ? logColors[type] : 'rgba(255,255,255,0.1)',
+                          color: logFilter === type ? '#000' : '#fff',
+                          border: 'none',
+                          borderRadius: '4px',
+                          fontSize: '9px',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                          textTransform: 'uppercase'
+                        }}
+                      >
+                        {type} ({type === 'all' ? debugLogs.length : debugLogs.filter(l => l.type === type).length})
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button 
+                      onClick={copyAllLogs}
+                      style={{ flex: 1, padding: '6px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
+                    >
+                      {copied ? <><CheckCircle size={10} /> Copied!</> : <><Copy size={10} /> Copy All</>}
+                    </button>
+                    <button 
+                      onClick={clearLogs}
+                      style={{ flex: 1, padding: '6px', background: 'rgba(239, 68, 68, 0.3)', color: '#ef4444', border: '1px solid #ef4444', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
+                    >
+                      <Trash2 size={10} /> Clear
+                    </button>
+                    <button 
+                      onClick={loadReadings}
+                      style={{ flex: 1, padding: '6px', background: '#C5A059', color: '#0a0600', border: 'none', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
+                    >
+                      <RefreshCw size={10} /> Refresh
+                    </button>
+                    <button 
+                      onClick={testSupabaseConnection}
+                      style={{ flex: 1, padding: '6px', background: '#a78bfa', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
+                    >
+                      🌐 Test API
+                    </button>
+                  </div>
+                </div>
+
+                {/* Logs List */}
+                <div style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
+                  {filteredLogs.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '20px', color: '#666', fontSize: '11px' }}>
+                      No logs yet...
+                    </div>
+                  ) : (
+                    filteredLogs.map(log => (
+                      <div 
+                        key={log.id}
+                        style={{ 
+                          padding: '8px', 
+                          marginBottom: '4px', 
+                          background: 'rgba(255,255,255,0.03)', 
+                          borderLeft: `3px solid ${logColors[log.type]}`,
+                          borderRadius: '4px',
+                          cursor: log.data ? 'pointer' : 'default'
+                        }}
+                        onClick={() => log.data && setExpandedLog(expandedLog === log.id ? null : log.id)}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', fontSize: '10px' }}>
+                          <span style={{ flexShrink: 0 }}>{logIcons[log.type]}</span>
+                          <span style={{ color: '#666', flexShrink: 0, fontSize: '9px' }}>{log.timestamp}</span>
+                          <span style={{ color: logColors[log.type], fontWeight: 'bold', flexShrink: 0, fontSize: '9px', textTransform: 'uppercase' }}>
+                            [{log.type}]
+                          </span>
+                          <span style={{ color: '#e2e8f0', flex: 1, lineHeight: 1.4 }}>
+                            {log.message}
+                          </span>
+                          {log.data && (
+                            <span style={{ flexShrink: 0, color: '#666' }}>
+                              {expandedLog === log.id ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                            </span>
+                          )}
+                        </div>
+                        
+                        {log.data && expandedLog === log.id && (
+                          <div style={{ 
+                            marginTop: '6px', 
+                            padding: '6px', 
+                            background: 'rgba(0,0,0,0.5)', 
+                            borderRadius: '4px', 
+                            fontSize: '9px', 
+                            color: '#a78bfa',
+                            overflowX: 'auto',
+                            whiteSpace: 'pre-wrap',
+                            wordBreak: 'break-word'
+                          }}>
+                            {typeof log.data === 'string' ? log.data : JSON.stringify(log.data, null, 2)}
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
       )}
-      {/* END ADMIN DEBUG PANEL */}
 
       {/* Detail Modal */}
       <AnimatePresence>
@@ -362,7 +561,7 @@ export default function ReadingHistoryScreen({ onNavigate }: Props) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setSelectedReading(null)}
+            onClick={() => { setSelectedReading(null); addLog('ui', 'Modal closed'); }}
           >
             <motion.div
               className="rh-modal-content"
@@ -377,7 +576,7 @@ export default function ReadingHistoryScreen({ onNavigate }: Props) {
                   {getReadingTypeIcon(selectedReading.reading_type)}
                   <span>{getReadingTypeLabel(selectedReading.reading_type)}</span>
                 </div>
-                <button className="rh-modal-close" onClick={() => setSelectedReading(null)}>
+                <button className="rh-modal-close" onClick={() => { setSelectedReading(null); addLog('ui', 'Modal closed via X button'); }}>
                   <X size={20} />
                 </button>
               </div>
