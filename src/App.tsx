@@ -43,28 +43,18 @@ class ErrorBoundary extends React.Component<
     super(props);
     this.state = { hasError: false, errorMessage: '', errorStack: '' };
   }
-
   static getDerivedStateFromError(error: Error) {
     return { hasError: true, errorMessage: error.message, errorStack: error.stack || '' };
-  }
-
+    }
   componentDidCatch(error: Error, errorInfo: any) {
     console.error('🚨 ERROR BOUNDARY:', error, errorInfo);
   }
-
   render() {
     if (this.state.hasError) {
       return (
         <div style={{ padding: '20px', background: '#1a0a0a', color: '#ff6b6b', margin: '10px', borderRadius: '12px', fontFamily: 'monospace', fontSize: '11px', maxHeight: '80vh', overflowY: 'auto' }}>
           <h2 style={{ color: '#ff4444', marginBottom: '10px' }}>🚨 React Error</h2>
-          <div style={{ background: '#000', padding: '10px', borderRadius: '6px', border: '1px solid #ff4444', marginBottom: '10px' }}>
-            <strong style={{ color: '#ffaa00' }}>Error Message:</strong>
-            <pre style={{ color: '#ff6b6b', whiteSpace: 'pre-wrap', wordBreak: 'break-word', marginTop: '5px', fontSize: '10px' }}>{this.state.errorMessage}</pre>
-          </div>
-          <div style={{ background: '#000', padding: '10px', borderRadius: '6px', border: '1px solid #666', marginBottom: '10px' }}>
-            <strong style={{ color: '#ffaa00' }}>Stack Trace:</strong>
-            <pre style={{ color: '#aaa', whiteSpace: 'pre-wrap', wordBreak: 'break-word', marginTop: '5px', fontSize: '9px' }}>{this.state.errorStack}</pre>
-          </div>
+          <pre style={{ color: '#ff6b6b', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{this.state.errorMessage}</pre>
           <button onClick={() => window.location.reload()} style={{ marginTop: '15px', padding: '10px 20px', background: '#ff4444', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', width: '100%' }}>🔄 Reload App</button>
         </div>
       );
@@ -73,13 +63,8 @@ class ErrorBoundary extends React.Component<
   }
 }
 
-type Screen = 
-  | 'splash' | 'welcome' | 'zodiac' | 'first-reading' | 'home' | 'cards' | 'reading' 
-  | 'astro' | 'horoscope' | 'sign-selection' | 'profile' | 'card-fan' | 'card-detail' 
-  | 'daily-card' | 'three-card-reading' | 'reading-history' | 'celtic-cross' | 'horseshoe' 
-  | 'relationship' | 'admin' | 'user-analytics' | 'ai-management' | 'subscription' | 'services';
+type Screen = 'splash' | 'welcome' | 'zodiac' | 'first-reading' | 'home' | 'cards' | 'reading' | 'astro' | 'horoscope' | 'sign-selection' | 'profile' | 'card-fan' | 'card-detail' | 'daily-card' | 'three-card-reading' | 'reading-history' | 'celtic-cross' | 'horseshoe' | 'relationship' | 'admin' | 'user-analytics' | 'ai-management' | 'subscription' | 'services';
 
-// 🆕 ჭკვიანური დებაგ პანელი
 function SmartDebugPanel() {
   const [isOpen, setIsOpen] = useState(false);
   const [authStatus, setAuthStatus] = useState<'pending' | 'success' | 'error'>('pending');
@@ -87,14 +72,12 @@ function SmartDebugPanel() {
   const [tgAvailable, setTgAvailable] = useState(false);
   const [hasInitData, setHasInitData] = useState(false);
   const [supabaseUid, setSupabaseUid] = useState<string | null>(null);
+  const [edgeError, setEdgeError] = useState<string | null>(null);
 
   useEffect(() => {
     const tg = (window as any).Telegram?.WebApp;
     setTgAvailable(!!tg);
     setHasInitData(!!tg?.initData);
-
-    console.log('🔍 [SmartDebug] Telegram available:', !!tg);
-    console.log('🔍 [SmartDebug] Has initData:', !!tg?.initData);
 
     const checkAuth = async () => {
       if (!supabase) {
@@ -120,10 +103,26 @@ function SmartDebugPanel() {
         setAuthStatus('error');
         setAuthMessage(`Exception: ${err.message}`);
       }
+
+      // ვკითხულობთ Edge Function-ის შეცდომას თუ არსებობს
+      const authErr = (window as any).__AUTH_ERROR;
+      if (authErr) {
+        setEdgeError(authErr);
+      }
     };
 
     checkAuth();
-  }, []);
+    
+    // პერიოდულად ვამოწმებთ, ხომ არ შეიცვალა შეცდომა
+    const interval = setInterval(() => {
+      const authErr = (window as any).__AUTH_ERROR;
+      if (authErr && authErr !== edgeError) {
+        setEdgeError(authErr);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [edgeError]);
 
   const getStatusColor = () => {
     if (authStatus === 'success') return '#10b981';
@@ -136,19 +135,11 @@ function SmartDebugPanel() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         style={{
-          width: '100%',
-          padding: '10px',
+          width: '100%', padding: '10px',
           background: isOpen ? '#ef4444' : 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)',
-          color: '#fff',
-          border: 'none',
-          borderTop: '2px solid #C5A059',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '8px',
-          fontSize: '12px',
-          fontWeight: 'bold',
-          cursor: 'pointer'
+          color: '#fff', border: 'none', borderTop: '2px solid #C5A059',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+          fontSize: '12px', fontWeight: 'bold', cursor: 'pointer'
         }}
       >
         🐞 {isOpen ? 'HIDE DEBUG' : 'SMART DEBUG'}
@@ -156,14 +147,9 @@ function SmartDebugPanel() {
 
       {isOpen && (
         <div style={{
-          background: 'rgba(10, 6, 0, 0.98)',
-          backdropFilter: 'blur(10px)',
-          borderTop: '2px solid #C5A059',
-          padding: '16px',
-          fontSize: '11px',
-          color: '#e2e8f0',
-          maxHeight: '60vh',
-          overflowY: 'auto'
+          background: 'rgba(10, 6, 0, 0.98)', backdropFilter: 'blur(10px)',
+          borderTop: '2px solid #C5A059', padding: '16px', fontSize: '11px',
+          color: '#e2e8f0', maxHeight: '60vh', overflowY: 'auto'
         }}>
           <h4 style={{ color: '#C5A059', margin: '0 0 12px 0', fontSize: '13px' }}>🔍 SMART DEBUG STATUS</h4>
 
@@ -172,19 +158,16 @@ function SmartDebugPanel() {
               <span>📱 Telegram WebApp:</span>
               <span style={{ color: tgAvailable ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>{tgAvailable ? 'YES ✅' : 'NO ❌'}</span>
             </div>
-
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px' }}>
               <span>🔐 Has initData:</span>
               <span style={{ color: hasInitData ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>{hasInitData ? 'YES ✅' : 'NO ❌'}</span>
             </div>
-
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px' }}>
               <span>🔑 Supabase Auth:</span>
               <span style={{ color: getStatusColor(), fontWeight: 'bold' }}>
                 {authStatus === 'success' ? 'ACTIVE ✅' : authStatus === 'error' ? 'INACTIVE ❌' : 'PENDING ⏳'}
               </span>
             </div>
-
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px' }}>
               <span>👤 auth.uid():</span>
               <span style={{ color: supabaseUid ? '#10b981' : '#ef4444', fontWeight: 'bold', fontSize: '10px' }}>
@@ -193,32 +176,21 @@ function SmartDebugPanel() {
             </div>
           </div>
 
+          {edgeError && (
+            <div style={{ padding: '10px', background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', borderRadius: '6px', marginBottom: '12px' }}>
+              <div style={{ color: '#ef4444', fontWeight: 'bold', marginBottom: '4px' }}>🚨 EDGE FUNCTION ERROR:</div>
+              <div style={{ color: '#fca5a5', fontSize: '11px', wordBreak: 'break-word' }}>{edgeError}</div>
+            </div>
+          )}
+
           <div style={{ padding: '10px', background: 'rgba(0,0,0,0.5)', borderRadius: '6px', marginBottom: '12px' }}>
             <div style={{ color: '#94a3b8', fontSize: '10px', marginBottom: '4px' }}>Auth Message:</div>
             <div style={{ color: getStatusColor(), fontSize: '11px' }}>{authMessage}</div>
           </div>
 
-          <div style={{ padding: '10px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', borderRadius: '6px' }}>
-            <div style={{ color: '#ef4444', fontWeight: 'bold', marginBottom: '4px' }}>⚠️ DIAGNOSIS:</div>
-            {!tgAvailable && <div style={{ color: '#fca5a5', fontSize: '10px' }}>• Telegram WebApp არ არის ხელმისაწვდომი. ხსნი ბრაუზერში?</div>}
-            {tgAvailable && !hasInitData && <div style={{ color: '#fca5a5', fontSize: '10px' }}>• initData არ არის. Telegram ქეში პრობლემა? სცადე ?v=2 URL-ში.</div>}
-            {hasInitData && authStatus !== 'success' && <div style={{ color: '#fca5a5', fontSize: '10px' }}>• initData არის, მაგრამ Auth სესია არ არის. Edge Function არ გამოიძახება ან ვერ მუშაობს.</div>}
-            {authStatus === 'success' && <div style={{ color: '#10b981', fontSize: '10px' }}>✅ ყველაფერი მუშაობს! RLS ჩართვა შეგიძლია.</div>}
-          </div>
-
           <button
             onClick={() => window.location.reload()}
-            style={{
-              width: '100%',
-              padding: '10px',
-              background: '#C5A059',
-              color: '#0a0600',
-              border: 'none',
-              borderRadius: '6px',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              marginTop: '8px'
-            }}
+            style={{ width: '100%', padding: '10px', background: '#C5A059', color: '#0a0600', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', marginTop: '8px' }}
           >
             🔄 Reload & Recheck
           </button>
@@ -230,29 +202,23 @@ function SmartDebugPanel() {
 
 function UserLoader({ onReady }: { onReady: () => void }) {
   const { setUser, setLoading } = useUser();
-
   useEffect(() => {
     async function loadUser() {
       console.log('🔵 [UserLoader] Starting user load & auth...');
-      
       try {
         let tgUser = await initializeTelegramAuth();
-        
         if (!tgUser) {
-          console.warn('⚠️ [UserLoader] Edge Auth failed or not in Telegram. Using fallback.');
+          console.warn('⚠️ [UserLoader] Edge Auth failed. Using fallback.');
           tgUser = getTelegramUser();
         }
-        
         if (!tgUser) {
           console.error('❌ [UserLoader] No Telegram user found at all.');
           setLoading(false);
           onReady();
           return;
         }
-
-        console.log('🔵 [UserLoader] Auth successful. Loading user data from Supabase...');
+        console.log('🔵 [UserLoader] Loading user data from Supabase...');
         const user = await getOrCreateUser(tgUser);
-        
         if (user) {
           setUser(user);
           console.log('✅ [UserLoader] User saved to context!');
@@ -264,10 +230,8 @@ function UserLoader({ onReady }: { onReady: () => void }) {
         onReady();
       }
     }
-
     loadUser();
   }, [setUser, setLoading, onReady]);
-
   return null;
 }
 
@@ -290,29 +254,20 @@ function AppContent() {
   useEffect(() => {
     if (!user) return;
     const updateLastActive = async () => {
-      try {
-        await updateUserLastActive(user.id);
-      } catch (error) {
-        console.error('❌ [LastActive] Error:', error);
-      }
+      try { await updateUserLastActive(user.id); } 
+      catch (error) { console.error('❌ [LastActive] Error:', error); }
     };
     updateLastActive();
     const interval = setInterval(updateLastActive, 5 * 60 * 1000);
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') updateLastActive();
     });
-    return () => {
-      clearInterval(interval);
-    };
+    return () => { clearInterval(interval); };
   }, [user]);
 
   const goTo = (screen: Screen) => setCurrentScreen(screen);
-
-  const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
-    goTo(tab as Screen);
-  };
-
+  const handleTabChange = (tab: string) => { setActiveTab(tab); goTo(tab as Screen); };
+  
   const handleHoroscopeNavigate = (screen: string) => {
     if (screen === 'horoscope') {
       if (!user?.sun_sign) { goTo('sign-selection'); return; }
@@ -341,14 +296,10 @@ function AppContent() {
   };
 
   const handleUserReady = () => setUserReady(true);
-
   const handleSplashFinish = () => {
     if (!userReady) {
       const checkInterval = setInterval(() => {
-        if (userReady) {
-          clearInterval(checkInterval);
-          handleSplashFinish();
-        }
+        if (userReady) { clearInterval(checkInterval); handleSplashFinish(); }
       }, 100);
       return;
     }
@@ -368,7 +319,6 @@ function AppContent() {
   return (
     <div className="app-container">
       {!userReady && <UserLoader onReady={handleUserReady} />}
-
       {currentScreen === 'splash' && <SplashScreen onFinish={handleSplashFinish} />}
       {currentScreen === 'welcome' && <OnboardingWelcome onFinish={() => goTo('zodiac')} />}
       {currentScreen === 'zodiac' && <OnboardingZodiac onFinish={() => goTo('first-reading')} />}
@@ -394,7 +344,6 @@ function AppContent() {
       {currentScreen === 'subscription' && <SubscriptionScreen onNavigate={handleNavigate} />}
       {currentScreen === 'services' && <ServicesScreen onNavigate={handleNavigate} />}
 
-      {/* 🆕 ჭკვიანური დებაგ პანელი */}
       <SmartDebugPanel />
     </div>
   );

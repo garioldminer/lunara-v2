@@ -32,12 +32,11 @@ export async function initializeTelegramAuth(): Promise<TelegramUser | null> {
     }
 
     console.log('🔄 ავტორიზაცია Supabase Edge Function-ის მეშვეობით...');
-    console.log('🔍 initData length:', tg.initData.length);
     
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     if (!supabaseUrl) {
+      (window as any).__AUTH_ERROR = 'შეცდომა: VITE_SUPABASE_URL არ არის მითითებული';
       console.error('❌ VITE_SUPABASE_URL გარემოს ცვლადი ვერ მოიძებნა');
-      alert('შეცდომა: VITE_SUPABASE_URL არ არის მითითებული (.env ფაილში)');
       return null;
     }
 
@@ -55,14 +54,15 @@ export async function initializeTelegramAuth(): Promise<TelegramUser | null> {
     console.log('📥 Edge Function response body:', result);
 
     if (!result.success || !result.session) {
-      console.error('❌ Edge Function-ის ავტორიზაცია ვერ მოხერხდა:', result.error);
-      alert(`Edge Function შეცდომა:\n${result.error || 'Unknown error'}`);
+      const errorMsg = result.error || 'Unknown Edge Function error';
+      (window as any).__AUTH_ERROR = `Edge Function შეცდომა: ${errorMsg}`;
+      console.error('❌ Edge Function-ის ავტორიზაცია ვერ მოხერხდა:', errorMsg);
       return null;
     }
 
     if (!supabase) {
+      (window as any).__AUTH_ERROR = 'შეცდომა: Supabase კლიენტი არ არის ინიციალიზებული';
       console.error('❌ Supabase კლიენტი არ არის ინიციალიზებული');
-      alert('შეცდომა: Supabase კლიენტი არ არის ინიციალიზებული');
       return null;
     }
 
@@ -73,19 +73,19 @@ export async function initializeTelegramAuth(): Promise<TelegramUser | null> {
     });
 
     if (error) {
+      (window as any).__AUTH_ERROR = `სესიის შეცდომა: ${error.message}`;
       console.error('❌ Supabase სესიის დაყენება ვერ მოხერხდა:', error);
-      alert(`სესიის შეცდომა:\n${error.message}`);
       return null;
     }
 
-    console.log('✅ Supabase Auth სესია წარმატებით დამყარდა! auth.uid() ახლა აქტიურია.');
-    alert('✅ ავტორიზაცია წარმატებულია!');
+    console.log('✅ Supabase Auth სესია წარმატებით დამყარდა! auth.uid() ახლა აქტიურა.');
+    (window as any).__AUTH_ERROR = null; // წარმატების შემთხვევაში ვშლით შეცდომას
     
     return tg.initDataUnsafe.user as TelegramUser;
 
   } catch (err: any) {
+    (window as any).__AUTH_ERROR = `კრიტიკული შეცდომა: ${err.message}`;
     console.error('❌ შეცდომა initializeTelegramAuth-ში:', err);
-    alert(`კრიტიკული შეცდომა:\n${err.message}`);
     return null;
   }
 }
