@@ -1,4 +1,4 @@
-// Telegram WebApp-ის მონაცემების ამოღება
+import { supabase } from './supabase';
 
 export interface TelegramUser {
   id: number;
@@ -9,37 +9,57 @@ export interface TelegramUser {
   language_code?: string;
 }
 
-// Mock user ტესტირებისთვის (როცა Telegram SDK არ არის)
-const MOCK_USER: TelegramUser = {
-  id: 123456789,
-  first_name: 'Test',
-  last_name: 'User',
-  username: 'test_user',
-  photo_url: undefined,
-  language_code: 'en',
-};
-
-export function getTelegramUser(): TelegramUser | null {
+export async function initializeTelegramAuth(): Promise<TelegramUser | null> {
   try {
     const tg = (window as any).Telegram?.WebApp;
     
-    if (!tg) {
-      console.warn('⚠️ Telegram SDK not found - using mock');
-      return MOCK_USER;
+    // თუ Telegram-ის გარეთ ვართ (მაგ. ბრაუზერში ტესტირებისას), ვაბრუნებთ null-ს
+    // რადგან Edge Function-ს სჭირდება რეალური initData HMAC ვერიფიკაციისთვის.
+    if (!tg || !tg.initData) {
+      console.warn('⚠️ Telegram SDK ან initData ვერ მოიძებნა. Edge Function ვერ შესრულდება.');
+      return null;
     }
 
-    const user = tg.initDataUnsafe?.user;
+    console.log('🔄 ავტორიზაცია Supabase Edge Function-ის მეშვეობით...');
     
-    if (!user) {
-      console.warn('⚠️ No Telegram user - using mock');
-      return MOCK_USER;
+    // 1. ვგზავნით initData-ს ჩვენს Edge Function-ში
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/telegram-auth`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        // შენიშვნა: აქ Authorization ჰედერი არ გვჭირდება, რადგან ფუნქცია anon მოთხოვნებსაც იღებს
+        // და უსაფრთხოებას HMAC ვერიფიკაცია უზრუნველყოფს.
+      },
+      body: JSON.stringify({ initData: tg.initData }),
+    });
+
+    const result = await response.json();
+
+    if (!result.success || !result.session) {
+      console.error('❌ Edge Function-ის ავტორიზაცია ვერ მოხერხდა:', result.error);
+      return null;
     }
 
-    console.log('✅ Telegram user loaded:', user);
-    return user as TelegramUser;
+    // 2. ვაყენებთ Supabase-ის ავტორიზებულ სესიას! 
+    // ამის შემდეგ supabase.auth.getUser() დააბრუნებს მომხმარებელს და auth.uid() იმუშავებს.
+    const { error } = await supabase.auth.setSession({
+      access_token: result.session.access_token,
+      refresh_token: result.session.refresh_token,
+    });
+
+    if (error) {
+      console.error('❌ Supabase სესიის დაყენება ვერ მოხერხდა:', error);
+      return null;
+    }
+
+    console.log('✅ Supabase Auth სესია წარმატებით დამყარდა! auth.uid() ახლა აქტიურია.');
+    
+    // ვაბრუნებთ Telegram-ის მომხმარებლის ობიექტს UI-სთვის გამოსაყენებლად
+    return tg.initDataUnsafe.user as TelegramUser;
+
   } catch (err) {
-    console.error('❌ Error:', err);
-    return MOCK_USER;
+    console.error('❌ შეცდომა initializeTelegramAuth-ში:', err);
+    return null;
   }
 }
 
@@ -51,11 +71,8 @@ export function getTelegramWebApp() {
   }
 }
 
-// Telegram-ის მონაცემებიდან Supabase user-ის ობიექტის შექმნა
 export function createUserDataFromTelegram(tgUser: TelegramUser) {
-  console.log('🔍 Creating user data from Telegram:', tgUser);
-  
-  const userData = {
+  return {
     telegram_id: tgUser.id,
     username: tgUser.username || null,
     display_name: tgUser.first_name + (tgUser.last_name ? ' ' + tgUser.last_name : ''),
@@ -73,9 +90,6 @@ export function createUserDataFromTelegram(tgUser: TelegramUser) {
     gems: 100,
     streak: 0,
     current_plan: 'FREE',
-    onboarding_completed: false, // ✅ ახალი field
+    onboarding_completed: false,
   };
-  
-  console.log('✅ User data created:', userData);
-  return userData;
 }
