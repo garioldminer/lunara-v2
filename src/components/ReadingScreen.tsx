@@ -1,23 +1,97 @@
 import { useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { ArrowLeft, Sparkles, Layers, Compass, Heart, Briefcase, Crown } from 'lucide-react';
+import { useUser } from '../context/UserContext';
+import { getActiveSubscription } from '../lib/subscriptionService';
 import './ReadingScreen.css';
 
 interface Props {
   onNavigate?: (screen: string) => void;
 }
 
-export default function ReadingScreen({ onNavigate }: Props) {
-  useEffect(() => {
-    console.log('🔮 ReadingScreen mounted');
-    console.log('onNavigate available:', !!onNavigate);
-  }, [onNavigate]);
+interface SpreadOption {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  isPremium: boolean;
+  navigateTo: string;
+}
 
-  const handleSpreadClick = (spreadName: string) => {
-    console.log(`Spread selected: ${spreadName}`);
-    // მომავალში: onNavigate && onNavigate('reading-detail');
+export default function ReadingScreen({ onNavigate }: Props) {
+  const { user } = useUser();
+  const [hasPremium, setHasPremium] = useState(false);
+
+  useEffect(() => {
+    console.log(' ReadingScreen mounted');
+    if (user) {
+      getActiveSubscription(user.id).then(sub => setHasPremium(!!sub));
+    }
+  }, [user, onNavigate]);
+
+  const spreads: SpreadOption[] = [
+    {
+      id: 'single',
+      title: 'Single Card',
+      description: 'Quick answer to your question',
+      icon: <Sparkles size={24} />,
+      isPremium: false,
+      navigateTo: 'daily-card'
+    },
+    {
+      id: 'three-card',
+      title: '3-Card Spread',
+      description: 'Past · Present · Future',
+      icon: <Layers size={24} />,
+      isPremium: false,
+      navigateTo: 'three-card-reading'
+    },
+    {
+      id: 'celtic-cross',
+      title: 'Celtic Cross',
+      description: '10 cards · Full analysis',
+      icon: <Compass size={24} />,
+      isPremium: true,
+      navigateTo: 'celtic-cross'
+    },
+    {
+      id: 'love',
+      title: 'Love Spread',
+      description: 'Relationship guidance',
+      icon: <Heart size={24} />,
+      isPremium: true,
+      navigateTo: 'relationship'
+    },
+    {
+      id: 'career',
+      title: 'Career Spread',
+      description: 'Professional path',
+      icon: <Briefcase size={24} />,
+      isPremium: true,
+      navigateTo: 'career'
+    }
+  ];
+
+  const handleSpreadClick = (spread: SpreadOption) => {
+    if (spread.isPremium && !hasPremium) {
+      // Haptic feedback if available
+      if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp?.HapticFeedback) {
+        (window as any).Telegram.WebApp.HapticFeedback.notificationOccurred('warning');
+      }
+      onNavigate?.('pricing');
+      return;
+    }
+
+    if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp?.HapticFeedback) {
+      (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('light');
+    }
+
+    onNavigate?.(spread.navigateTo);
   };
 
   return (
-    <div className="screen-container reading">
+    <div className="reading-screen">
+      {/* Particles Background */}
       <div className="particles-container">
         {[...Array(15)].map((_, i) => (
           <div
@@ -35,71 +109,59 @@ export default function ReadingScreen({ onNavigate }: Props) {
         ))}
       </div>
 
-      <div className="content-scroll">
-        <div className="header-section">
-          <h1 className="page-title">✦ CHOOSE YOUR SPREAD ✦</h1>
-          <p className="page-subtitle">Select a reading type</p>
+      {/* Header */}
+      <div className="rs-header">
+        {onNavigate && (
+          <button className="rs-back-btn" onClick={() => onNavigate('home')}>
+            <ArrowLeft size={20} />
+          </button>
+        )}
+        <div className="rs-header-center">
+          <div className="rs-ornament">✦</div>
+          <h1 className="rs-title">Choose Your Spread</h1>
+          <div className="rs-ornament">✦</div>
         </div>
+        <div className="rs-header-spacer" />
+      </div>
+
+      {/* Content */}
+      <div className="rs-content">
+        <p className="rs-subtitle">Select a reading type to begin your journey</p>
 
         <div className="spreads-list">
-          <div 
-            className="spread-item"
-            onClick={() => handleSpreadClick('Single Card')}
-          >
-            <div className="spread-icon">🎴</div>
-            <div className="spread-info">
-              <h3 className="spread-title">Single Card</h3>
-              <p className="spread-desc">Quick answer to your question</p>
-            </div>
-          </div>
-
-          <div 
-            className="spread-item"
-            onClick={() => handleSpreadClick('3-Card Spread')}
-          >
-            <div className="spread-icon">🔮</div>
-            <div className="spread-info">
-              <h3 className="spread-title">3-Card Spread</h3>
-              <p className="spread-desc">Past · Present · Future</p>
-            </div>
-          </div>
-
-          <div 
-            className="spread-item premium"
-            onClick={() => handleSpreadClick('Celtic Cross')}
-          >
-            <div className="spread-icon">✨</div>
-            <div className="spread-info">
-              <h3 className="spread-title">Celtic Cross</h3>
-              <p className="spread-desc">10 cards · Full analysis</p>
-            </div>
-            <div className="premium-badge">👑</div>
-          </div>
-
-          <div 
-            className="spread-item premium"
-            onClick={() => handleSpreadClick('Love Spread')}
-          >
-            <div className="spread-icon">💕</div>
-            <div className="spread-info">
-              <h3 className="spread-title">Love Spread</h3>
-              <p className="spread-desc">Relationship guidance</p>
-            </div>
-            <div className="premium-badge">👑</div>
-          </div>
-
-          <div 
-            className="spread-item premium"
-            onClick={() => handleSpreadClick('Career Spread')}
-          >
-            <div className="spread-icon">💼</div>
-            <div className="spread-info">
-              <h3 className="spread-title">Career Spread</h3>
-              <p className="spread-desc">Professional path</p>
-            </div>
-            <div className="premium-badge">👑</div>
-          </div>
+          {spreads.map((spread, index) => (
+            <motion.div
+              key={spread.id}
+              className={`spread-item ${spread.isPremium ? 'premium' : ''}`}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+              onClick={() => handleSpreadClick(spread)}
+            >
+              <div className="spread-icon-wrapper">
+                {spread.icon}
+              </div>
+              <div className="spread-info">
+                <h3 className="spread-title">{spread.title}</h3>
+                <p className="spread-desc">{spread.description}</p>
+              </div>
+              {spread.isPremium && (
+                <div className="premium-badge">
+                  <Crown size={16} />
+                </div>
+              )}
+            </motion.div>
+          ))}
         </div>
+
+        {!hasPremium && (
+          <div className="rs-premium-cta">
+            <p>Unlock all spreads with Premium</p>
+            <button onClick={() => onNavigate?.('pricing')}>
+              Upgrade Now
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
