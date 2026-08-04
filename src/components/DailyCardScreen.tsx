@@ -9,7 +9,6 @@ import { logReading } from '../lib/adminService';
 import { trackQuestProgress } from '../lib/questService';
 import { useUser } from '../context/UserContext';
 import { getActiveSubscription } from '../lib/subscriptionService';
-import { isAdmin } from '../lib/adminService';
 import { supabase } from '../lib/supabase';
 
 interface Props {
@@ -280,6 +279,9 @@ export default function DailyCardScreen({ onNavigate }: Props) {
   const [authUid, setAuthUid] = useState<string | null>(null);
   const [authStatus, setAuthStatus] = useState<'checking' | 'active' | 'inactive'>('checking');
 
+  // 🆕 Admin Telegram ID
+  const ADMIN_TELEGRAM_ID = 1436756556;
+
   const getTodayDate = () => new Date().toISOString().split('T')[0];
 
   // Helper: Add Debug Log
@@ -332,10 +334,16 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     if (user) {
       addLog('success', 'User found in context', { userId: user.id, name: user.display_name });
       
-      isAdmin(user.id).then(admin => {
-        setIsUserAdmin(admin);
-        addLog('info', 'Admin check completed', { isAdmin: admin });
-      }).catch(err => addLog('error', 'Admin check failed', err));
+      // Admin check by Telegram ID
+      const tg = (window as any).Telegram?.WebApp;
+      const tgUserId = tg?.initDataUnsafe?.user?.id;
+      const isAdminByTgId = tgUserId === ADMIN_TELEGRAM_ID;
+      setIsUserAdmin(isAdminByTgId);
+      addLog('info', 'Admin check completed', { 
+        isAdmin: isAdminByTgId, 
+        tgUserId, 
+        authUid: user.id 
+      });
       
       getActiveSubscription(user.id).then(sub => {
         setHasPremium(!!sub);
@@ -742,145 +750,139 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         )}
       </AnimatePresence>
 
-      {/* 🐛 ADMIN DEBUG PANEL */}
+      {/* 🐛 FLOATING DEBUG PANEL (მხოლოდ ადმინისთვის) */}
       {isUserAdmin && (
-        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999, fontFamily: 'monospace' }}>
+        <div style={{ position: 'fixed', right: 0, top: '50%', transform: 'translateY(-50%)', zIndex: 9999, fontFamily: 'monospace' }}>
           <button 
             onClick={() => setShowDebug(!showDebug)}
             style={{
-              width: '100%',
-              padding: '10px',
-              background: showDebug ? '#ef4444' : 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)',
-              color: '#fff',
+              width: '50px',
+              height: '50px',
+              background: showDebug ? '#ef4444' : 'rgba(197, 160, 89, 0.9)',
               border: 'none',
-              borderTop: '2px solid #C5A059',
+              borderRadius: '8px 0 0 8px',
+              color: '#fff',
+              cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '8px',
-              fontSize: '12px',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              letterSpacing: '1px'
+              boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+              fontSize: '20px'
             }}
           >
-            <Bug size={14} />
-            {showDebug ? 'HIDE DEBUG' : `DEBUG (${debugLogs.filter(l => l.type === 'error').length > 0 ? `${debugLogs.filter(l => l.type === 'error').length} ERR` : `${debugLogs.length} LOGS`})`}
+            {showDebug ? '✕' : '🐛'}
           </button>
 
-          <AnimatePresence>
-            {showDebug && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                style={{
-                  background: 'rgba(10, 6, 0, 0.98)',
-                  backdropFilter: 'blur(10px)',
-                  borderTop: '2px solid #C5A059',
-                  maxHeight: '70vh',
-                  overflow: 'hidden',
-                  display: 'flex',
-                  flexDirection: 'column'
-                }}
-              >
-                <div style={{ padding: '12px', borderBottom: '1px solid rgba(197, 160, 89, 0.3)', background: 'rgba(197, 160, 89, 0.1)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#C5A059', fontWeight: 'bold', fontSize: '13px' }}>
-                      <Shield size={16} />
-                      ADMIN DEBUG CONSOLE
-                    </div>
-                  </div>
-
-                  {/* 🆕 Auth Status */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', fontSize: '10px', marginBottom: '8px' }}>
-                    <div>🔑 Auth: <span style={{ color: authStatus === 'active' ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>{authStatus === 'active' ? 'ACTIVE ✅' : 'INACTIVE ❌'}</span></div>
-                    <div>👤 UID: <span style={{ color: authUid ? '#10b981' : '#ef4444', fontSize: '9px' }}>{authUid ? `${authUid.substring(0, 8)}...` : 'NULL'}</span></div>
-                    <div>📊 Stage: <span style={{ color: '#fbbf24' }}>{stage}</span></div>
-                    <div>💾 Saved: <span style={{ color: isReadingSaved ? '#10b981' : '#ef4444' }}>{isReadingSaved ? 'YES ✅' : 'NO ❌'}</span></div>
-                    <div> Card: <span style={{ color: '#60a5fa' }}>{card.name}</span></div>
-                    <div>🔄 Reversed: <span style={{ color: '#a78bfa' }}>{isReversed ? 'YES' : 'NO'}</span></div>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '4px', overflowX: 'auto', paddingBottom: '4px', marginBottom: '8px' }}>
-                    {(['all', 'info', 'success', 'error', 'warning', 'api', 'db', 'ui'] as const).map(type => (
-                      <button
-                        key={type}
-                        onClick={() => setLogFilter(type)}
-                        style={{
-                          padding: '4px 8px',
-                          background: logFilter === type ? (type === 'all' ? '#C5A059' : logColors[type]) : 'rgba(255,255,255,0.1)',
-                          color: logFilter === type ? '#000' : '#fff',
-                          border: 'none',
-                          borderRadius: '4px',
-                          fontSize: '9px',
-                          fontWeight: 'bold',
-                          cursor: 'pointer',
-                          whiteSpace: 'nowrap',
-                          textTransform: 'uppercase'
-                        }}
-                      >
-                        {type} ({type === 'all' ? debugLogs.length : debugLogs.filter(l => l.type === type).length})
-                      </button>
-                    ))}
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    <button onClick={copyAllLogs} style={{ flex: 1, padding: '6px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                      {copied ? <><CheckCircle size={10} /> Copied!</> : <><Copy size={10} /> Copy All</>}
-                    </button>
-                    <button onClick={clearLogs} style={{ flex: 1, padding: '6px', background: 'rgba(239, 68, 68, 0.3)', color: '#ef4444', border: '1px solid #ef4444', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                      <Trash2 size={10} /> Clear
-                    </button>
-                    <button onClick={testSaveReading} style={{ flex: 1, padding: '6px', background: '#C5A059', color: '#0a0600', border: 'none', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                      <RefreshCw size={10} /> Test Save
-                    </button>
+          {showDebug && (
+            <div style={{
+              position: 'absolute',
+              right: '50px',
+              top: '0',
+              width: '350px',
+              maxHeight: '80vh',
+              background: 'rgba(10, 6, 0, 0.98)',
+              backdropFilter: 'blur(10px)',
+              border: '2px solid #C5A059',
+              borderRadius: '8px',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column'
+            }}>
+              <div style={{ padding: '12px', borderBottom: '1px solid rgba(197, 160, 89, 0.3)', background: 'rgba(197, 160, 89, 0.1)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#C5A059', fontWeight: 'bold', fontSize: '13px' }}>
+                    <Shield size={16} />
+                    ADMIN DEBUG CONSOLE
                   </div>
                 </div>
 
-                <div style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
-                  {filteredLogs.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '20px', color: '#666', fontSize: '11px' }}>No logs yet...</div>
-                  ) : (
-                    filteredLogs.map(log => (
-                      <div 
-                        key={log.id}
-                        style={{ 
-                          padding: '8px', 
-                          marginBottom: '4px', 
-                          background: 'rgba(255,255,255,0.03)', 
-                          borderLeft: `3px solid ${logColors[log.type]}`,
-                          borderRadius: '4px',
-                          cursor: log.data ? 'pointer' : 'default'
-                        }}
-                        onClick={() => log.data && setExpandedLog(expandedLog === log.id ? null : log.id)}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', fontSize: '10px' }}>
-                          <span style={{ flexShrink: 0 }}>{logIcons[log.type]}</span>
-                          <span style={{ color: '#666', flexShrink: 0, fontSize: '9px' }}>{log.timestamp}</span>
-                          <span style={{ color: logColors[log.type], fontWeight: 'bold', flexShrink: 0, fontSize: '9px', textTransform: 'uppercase' }}>
-                            [{log.type}]
+                {/* 🆕 Auth Status */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', fontSize: '10px', marginBottom: '8px' }}>
+                  <div> Auth: <span style={{ color: authStatus === 'active' ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>{authStatus === 'active' ? 'ACTIVE ✅' : 'INACTIVE ❌'}</span></div>
+                  <div>👤 UID: <span style={{ color: authUid ? '#10b981' : '#ef4444', fontSize: '9px' }}>{authUid ? `${authUid.substring(0, 8)}...` : 'NULL'}</span></div>
+                  <div>📊 Stage: <span style={{ color: '#fbbf24' }}>{stage}</span></div>
+                  <div>💾 Saved: <span style={{ color: isReadingSaved ? '#10b981' : '#ef4444' }}>{isReadingSaved ? 'YES ✅' : 'NO ❌'}</span></div>
+                  <div>🃏 Card: <span style={{ color: '#60a5fa' }}>{card.name}</span></div>
+                  <div>🔄 Reversed: <span style={{ color: '#a78bfa' }}>{isReversed ? 'YES' : 'NO'}</span></div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '4px', overflowX: 'auto', paddingBottom: '4px', marginBottom: '8px' }}>
+                  {(['all', 'info', 'success', 'error', 'warning', 'api', 'db', 'ui'] as const).map(type => (
+                    <button
+                      key={type}
+                      onClick={() => setLogFilter(type)}
+                      style={{
+                        padding: '4px 8px',
+                        background: logFilter === type ? (type === 'all' ? '#C5A059' : logColors[type]) : 'rgba(255,255,255,0.1)',
+                        color: logFilter === type ? '#000' : '#fff',
+                        border: 'none',
+                        borderRadius: '4px',
+                        fontSize: '9px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                        textTransform: 'uppercase'
+                      }}
+                    >
+                      {type} ({type === 'all' ? debugLogs.length : debugLogs.filter(l => l.type === type).length})
+                    </button>
+                  ))}
+                </div>
+
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <button onClick={copyAllLogs} style={{ flex: 1, padding: '6px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                    {copied ? <><CheckCircle size={10} /> Copied!</> : <><Copy size={10} /> Copy All</>}
+                  </button>
+                  <button onClick={clearLogs} style={{ flex: 1, padding: '6px', background: 'rgba(239, 68, 68, 0.3)', color: '#ef4444', border: '1px solid #ef4444', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                    <Trash2 size={10} /> Clear
+                  </button>
+                  <button onClick={testSaveReading} style={{ flex: 1, padding: '6px', background: '#C5A059', color: '#0a0600', border: 'none', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                    <RefreshCw size={10} /> Test Save
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
+                {filteredLogs.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '20px', color: '#666', fontSize: '11px' }}>No logs yet...</div>
+                ) : (
+                  filteredLogs.map(log => (
+                    <div 
+                      key={log.id}
+                      style={{ 
+                        padding: '8px', 
+                        marginBottom: '4px', 
+                        background: 'rgba(255,255,255,0.03)', 
+                        borderLeft: `3px solid ${logColors[log.type]}`,
+                        borderRadius: '4px',
+                        cursor: log.data ? 'pointer' : 'default'
+                      }}
+                      onClick={() => log.data && setExpandedLog(expandedLog === log.id ? null : log.id)}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', fontSize: '10px' }}>
+                        <span style={{ flexShrink: 0 }}>{logIcons[log.type]}</span>
+                        <span style={{ color: '#666', flexShrink: 0, fontSize: '9px' }}>{log.timestamp}</span>
+                        <span style={{ color: logColors[log.type], fontWeight: 'bold', flexShrink: 0, fontSize: '9px', textTransform: 'uppercase' }}>
+                          [{log.type}]
+                        </span>
+                        <span style={{ color: '#e2e8f0', flex: 1, lineHeight: 1.4 }}>{log.message}</span>
+                        {log.data && (
+                          <span style={{ flexShrink: 0, color: '#666' }}>
+                            {expandedLog === log.id ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                           </span>
-                          <span style={{ color: '#e2e8f0', flex: 1, lineHeight: 1.4 }}>{log.message}</span>
-                          {log.data && (
-                            <span style={{ flexShrink: 0, color: '#666' }}>
-                              {expandedLog === log.id ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                            </span>
-                          )}
-                        </div>
-                        {log.data && expandedLog === log.id && (
-                          <div style={{ marginTop: '6px', padding: '6px', background: 'rgba(0,0,0,0.5)', borderRadius: '4px', fontSize: '9px', color: '#a78bfa', overflowX: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                            {typeof log.data === 'string' ? log.data : JSON.stringify(log.data, null, 2)}
-                          </div>
                         )}
                       </div>
-                    ))
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                      {log.data && expandedLog === log.id && (
+                        <div style={{ marginTop: '6px', padding: '6px', background: 'rgba(0,0,0,0.5)', borderRadius: '4px', fontSize: '9px', color: '#a78bfa', overflowX: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                          {typeof log.data === 'string' ? log.data : JSON.stringify(log.data, null, 2)}
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
