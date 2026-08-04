@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Sparkles, Layers, Compass, Heart, Briefcase, Crown } from 'lucide-react';
 import { useUser } from '../context/UserContext';
@@ -23,7 +23,7 @@ export default function ReadingScreen({ onNavigate }: Props) {
   const [hasPremium, setHasPremium] = useState(false);
 
   useEffect(() => {
-    console.log(' ReadingScreen mounted');
+    console.log('🔮 ReadingScreen mounted');
     if (user) {
       getActiveSubscription(user.id).then(sub => setHasPremium(!!sub));
     }

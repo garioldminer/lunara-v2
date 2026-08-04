@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, RotateCcw, Lock, Star } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Lock, Star, Heart } from 'lucide-react';
 import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards';
 import QuestionInput from './QuestionInput';
 import PremiumPaywall from './PremiumPaywall';
@@ -127,7 +127,6 @@ export default function RelationshipReadingScreen({ onNavigate }: Props) {
           }))
         });
 
-        // 🆕 ეტაპი 3: ჩაწერა reading_history ცხრილში
         try {
           logReading(
             user.id,
@@ -197,7 +196,7 @@ export default function RelationshipReadingScreen({ onNavigate }: Props) {
           </button>
         )}
         <div className="rr-header-center">
-          <div className="rr-ornament">❤️</div>
+          <div className="rr-ornament">✦</div>
           <h1 className="rr-title">Relationship</h1>
           <div className="rr-ornament">✦</div>
         </div>
@@ -211,7 +210,9 @@ export default function RelationshipReadingScreen({ onNavigate }: Props) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <div className="rr-intro-icon">❤️</div>
+          <div className="rr-intro-icon">
+            <Heart size={48} className="rr-heart-icon" />
+          </div>
           <h2 className="rr-intro-title">Love & Connection</h2>
           <p className="rr-intro-text">
             The Relationship spread reveals 6 key aspects of your love life: your energy, your partner's energy, your connection, challenges, strengths, and the future of your relationship.
@@ -237,7 +238,9 @@ export default function RelationshipReadingScreen({ onNavigate }: Props) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <div className="rr-question-icon">💕</div>
+          <div className="rr-question-icon">
+            <Heart size={40} className="rr-heart-icon" />
+          </div>
           <h2 className="rr-question-title">Ask About Your Relationship</h2>
           <p className="rr-question-text">
             Focus on your partner or relationship. The cards will reveal deep insights about your connection.
