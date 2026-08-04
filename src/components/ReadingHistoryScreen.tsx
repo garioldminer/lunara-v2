@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Calendar, Sparkles, LayoutGrid, X, Heart, Share2 } from 'lucide-react';
+import { ArrowLeft, Calendar, Sparkles, LayoutGrid, X, Heart, Share2, Bug, RefreshCw, Trash2, Shield } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { getUserReadings } from '../lib/readingService';
+import { isAdmin } from '../lib/adminService';
 import { tarotCards } from '../data/tarotCards';
 import './ReadingHistoryScreen.css';
 
@@ -33,22 +34,42 @@ export default function ReadingHistoryScreen({ onNavigate }: Props) {
   const [filter, setFilter] = useState<'all' | 'daily' | 'three-card'>('all');
   const [selectedReading, setSelectedReading] = useState<Reading | null>(null);
   const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
+  
+  // 🐛 Debug States - მხოლოდ ადმინისტრატორისთვის
+  const [showDebug, setShowDebug] = useState(false);
+  const [debugError, setDebugError] = useState<string | null>(null);
+  const [isUserAdmin, setIsUserAdmin] = useState(false);
 
   useEffect(() => {
     if (user) {
+      // შევამოწმოთ არის თუ არა მომხმარებელი ადმინი
+      isAdmin(user.id).then(admin => {
+        setIsUserAdmin(admin);
+        console.log('🔐 Admin status:', admin);
+      }).catch(err => {
+        console.error('❌ Admin check failed:', err);
+      });
+      
       loadReadings();
       loadBookmarks();
+    } else {
+      setLoading(false);
+      setDebugError('No user found in context');
     }
   }, [user]);
 
   const loadReadings = async () => {
     if (!user) return;
     setLoading(true);
+    setDebugError(null);
     try {
+      console.log('🔍 Fetching readings for user:', user.id);
       const data = await getUserReadings(user.id, 100);
+      console.log('✅ Readings fetched:', data.length);
       setReadings(data);
-    } catch (error) {
-      console.error('Failed to load readings:', error);
+    } catch (error: any) {
+      console.error('❌ Failed to load readings:', error);
+      setDebugError(error.message || 'Failed to fetch readings');
     } finally {
       setLoading(false);
     }
@@ -124,8 +145,16 @@ export default function ReadingHistoryScreen({ onNavigate }: Props) {
     }
   };
 
+  const clearDebugData = () => {
+    localStorage.removeItem('bookmarked_readings');
+    setBookmarkedIds(new Set());
+    setReadings([]);
+    loadReadings();
+  };
+
   return (
     <div className="reading-history-screen">
+      {/* Header */}
       <div className="rh-header">
         {onNavigate && (
           <button className="rh-back-btn" onClick={() => onNavigate('home')}>
@@ -140,6 +169,7 @@ export default function ReadingHistoryScreen({ onNavigate }: Props) {
         <div className="rh-header-spacer" />
       </div>
 
+      {/* Filter Tabs */}
       <div className="rh-filter-tabs">
         <button className={`rh-filter-tab ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>
           All ({readings.length})
@@ -152,6 +182,7 @@ export default function ReadingHistoryScreen({ onNavigate }: Props) {
         </button>
       </div>
 
+      {/* Content */}
       <div className="rh-content">
         {loading ? (
           <div className="rh-loading">
@@ -238,6 +269,92 @@ export default function ReadingHistoryScreen({ onNavigate }: Props) {
         )}
       </div>
 
+      {/* 🐛 ADMIN-ONLY DEBUG PANEL */}
+      {isUserAdmin && (
+        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999 }}>
+          <button 
+            onClick={() => setShowDebug(!showDebug)}
+            style={{
+              width: '100%',
+              padding: '8px',
+              background: showDebug ? '#ef4444' : 'rgba(0,0,0,0.8)',
+              color: '#fff',
+              border: 'none',
+              borderTop: '1px solid #333',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              fontSize: '12px',
+              fontWeight: 'bold',
+              cursor: 'pointer'
+            }}
+          >
+            <Bug size={14} />
+            {showDebug ? 'HIDE DEBUG' : 'SHOW DEBUG PANEL'}
+          </button>
+
+          <AnimatePresence>
+            {showDebug && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                style={{
+                  background: 'rgba(15, 12, 8, 0.95)',
+                  backdropFilter: 'blur(10px)',
+                  borderTop: '2px solid #C5A059',
+                  padding: '16px',
+                  fontSize: '11px',
+                  fontFamily: 'monospace',
+                  color: '#e2e8f0',
+                  maxHeight: '50vh',
+                  overflowY: 'auto'
+                }}
+              >
+                <h4 style={{ color: '#C5A059', margin: '0 0 8px 0', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Shield size={14} /> ADMIN DEBUG CONSOLE
+                </h4>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+                  <div>👤 User ID: <span style={{ color: '#10b981' }}>{user?.id?.substring(0, 8) || 'NULL'}...</span></div>
+                  <div> Admin: <span style={{ color: '#10b981' }}>YES</span></div>
+                  <div>⏳ Loading: <span style={{ color: loading ? '#fbbf24' : '#10b981' }}>{loading ? 'YES' : 'NO'}</span></div>
+                  <div>📚 Total Readings: <span style={{ color: '#60a5fa' }}>{readings.length}</span></div>
+                  <div>🔍 Filtered: <span style={{ color: '#60a5fa' }}>{filteredReadings.length}</span></div>
+                  <div>❤️ Bookmarked: <span style={{ color: '#f472b6' }}>{bookmarkedIds.size}</span></div>
+                  <div>⚙️ Filter: <span style={{ color: '#fbbf24' }}>{filter}</span></div>
+                  <div> LocalStorage: <span style={{ color: '#a78bfa' }}>{localStorage.getItem('bookmarked_readings') ? 'YES' : 'NO'}</span></div>
+                </div>
+                
+                {debugError && (
+                  <div style={{ background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', padding: '8px', borderRadius: '4px', color: '#fca5a5', marginBottom: '12px' }}>
+                    ❌ ERROR: {debugError}
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button 
+                    onClick={loadReadings}
+                    style={{ flex: 1, padding: '8px', background: '#C5A059', color: '#0a0600', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
+                  >
+                    <RefreshCw size={12} /> Refresh Data
+                  </button>
+                  <button 
+                    onClick={clearDebugData}
+                    style={{ flex: 1, padding: '8px', background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', border: '1px solid #ef4444', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
+                  >
+                    <Trash2 size={12} /> Clear Local
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
+      {/* END ADMIN DEBUG PANEL */}
+
+      {/* Detail Modal */}
       <AnimatePresence>
         {selectedReading && (
           <motion.div
