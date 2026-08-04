@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Heart, Briefcase, Star, Share2, Lock, Bookmark, BookOpen, ArrowLeft, Bug, Shield, RefreshCw, Copy, CheckCircle, ChevronDown, ChevronUp, Trash2, X } from 'lucide-react';
+import { Sparkles, Heart, Briefcase, Star, Share2, Lock, Bookmark, BookOpen, ArrowLeft, Bug, Shield, RefreshCw, Copy, CheckCircle, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards';
@@ -10,6 +10,7 @@ import { trackQuestProgress } from '../lib/questService';
 import { useUser } from '../context/UserContext';
 import { getActiveSubscription } from '../lib/subscriptionService';
 import { isAdmin } from '../lib/adminService';
+import { supabase } from '../lib/supabase';
 
 interface Props {
   onNavigate?: (screen: string) => void;
@@ -52,7 +53,7 @@ const logIcons: Record<LogType, string> = {
   warning: '⚠️',
   api: '🌐',
   db: '🗄️',
-  ui: '🎯'
+  ui: ''
 };
 
 // ============================================
@@ -265,7 +266,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isUserAdmin, setIsUserAdmin] = useState(false);
   
-  // 🆕 ავტომატური შენახვის სტატუსი
   const [isReadingSaved, setIsReadingSaved] = useState(false);
   const [saveAttempted, setSaveAttempted] = useState(false);
   
@@ -275,6 +275,10 @@ export default function DailyCardScreen({ onNavigate }: Props) {
   const [logFilter, setLogFilter] = useState<LogType | 'all'>('all');
   const [expandedLog, setExpandedLog] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
+  
+  // 🆕 Auth Status
+  const [authUid, setAuthUid] = useState<string | null>(null);
+  const [authStatus, setAuthStatus] = useState<'checking' | 'active' | 'inactive'>('checking');
 
   const getTodayDate = () => new Date().toISOString().split('T')[0];
 
@@ -291,11 +295,42 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     console.log(`[${type.toUpperCase()}] ${message}`, data || '');
   };
 
+  //  Check Supabase Auth Status
+  useEffect(() => {
+    const checkAuth = async () => {
+      if (!supabase) {
+        setAuthStatus('inactive');
+        addLog('error', 'Supabase not initialized');
+        return;
+      }
+
+      try {
+        const { data: { user: authUser }, error } = await supabase.auth.getUser();
+        if (error) {
+          setAuthStatus('inactive');
+          addLog('error', 'Auth error', { message: error.message });
+        } else if (authUser) {
+          setAuthStatus('active');
+          setAuthUid(authUser.id);
+          addLog('success', 'Supabase Auth active', { uid: authUser.id });
+        } else {
+          setAuthStatus('inactive');
+          addLog('error', 'No active session');
+        }
+      } catch (err: any) {
+        setAuthStatus('inactive');
+        addLog('error', 'Auth check failed', { message: err.message });
+      }
+    };
+
+    checkAuth();
+  }, []);
+
   useEffect(() => {
     addLog('info', 'DailyCardScreen mounted');
     
     if (user) {
-      addLog('success', 'User found', { userId: user.id, name: user.display_name });
+      addLog('success', 'User found in context', { userId: user.id, name: user.display_name });
       
       isAdmin(user.id).then(admin => {
         setIsUserAdmin(admin);
@@ -307,7 +342,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         addLog('info', 'Subscription check', { hasPremium: !!sub });
       });
     } else {
-      addLog('error', 'No user found');
+      addLog('error', 'No user in context');
     }
   }, [user]);
 
@@ -328,7 +363,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         if (parsed.isRevealed) {
           addLog('success', 'Card already revealed, going to revealed stage');
           setStage('revealed');
-          // 🆕 ავტომატური შენახვის შემოწმება
           checkAndSaveReading(parsed);
         } else {
           addLog('info', 'Card not yet revealed, going to selecting stage');
@@ -344,7 +378,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     generateDailyCard();
   }, []);
 
-  // 🆕 ავტომატური შენახვის ფუნქცია
   const checkAndSaveReading = async (reading: DailyReading) => {
     if (!user || saveAttempted) {
       addLog('info', 'Skipping save check', { hasUser: !!user, alreadyAttempted: saveAttempted });
@@ -355,7 +388,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     addLog('api', 'Checking if reading already saved in Supabase');
     
     try {
-      // შევამოწმოთ, არის თუ არა ეს ბარათი უკვე შენახული
       const existingReadings = await getUserReadings(user.id, 100);
       const todayReadings = existingReadings.filter(r => {
         const readingDate = new Date(r.created_at).toISOString().split('T')[0];
@@ -370,7 +402,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         return;
       }
       
-      // არ არის შენახული - შევინახოთ
       addLog('api', 'Saving reading to Supabase', { card: reading.card.name });
       const saveResult = await saveReading({ 
         user_id: user.id, 
@@ -482,7 +513,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     if (!dailyReading) return;
     addLog('ui', 'Share button clicked');
     const { card, isReversed } = dailyReading;
-    const shareText = `🔮 My Daily Card: ${card.name}${isReversed ? ' (Reversed)' : ''}\n\n"${isReversed ? card.reversed_meaning : card.meaning}"\n\nDraw your own card on Lunara App! ✨`;
+    const shareText = ` My Daily Card: ${card.name}${isReversed ? ' (Reversed)' : ''}\n\n"${isReversed ? card.reversed_meaning : card.meaning}"\n\nDraw your own card on Lunara App! ✨`;
     const tg = (window as any).Telegram?.WebApp;
     if (tg?.openTelegramLink) {
       tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(window.location.href || '')}&text=${encodeURIComponent(shareText)}`);
@@ -510,7 +541,8 @@ export default function DailyCardScreen({ onNavigate }: Props) {
   };
 
   const copyAllLogs = () => {
-    const text = debugLogs.map(l => `[${l.timestamp}] [${l.type.toUpperCase()}] ${l.message}${l.data ? '\n' + JSON.stringify(l.data, null, 2) : ''}`).join('\n\n');
+    const authInfo = `Auth Status: ${authStatus}\nAuth UID: ${authUid || 'NULL'}\nUser ID: ${user?.id || 'NULL'}\n\n`;
+    const text = authInfo + debugLogs.map(l => `[${l.timestamp}] [${l.type.toUpperCase()}] ${l.message}${l.data ? '\n' + JSON.stringify(l.data, null, 2) : ''}`).join('\n\n');
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -622,7 +654,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         {stage === 'selecting' && (
           <motion.div key="selecting" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} style={{ padding: '0 10px', position: 'relative', zIndex: 1 }}>
             <div style={{ textAlign: 'center', marginBottom: '20px', background: 'rgba(10, 8, 20, 0.6)', padding: '20px', borderRadius: '16px', backdropFilter: 'blur(12px)', border: '1px solid rgba(197, 160, 89, 0.15)' }}>
-              <div style={{ fontSize: '40px', marginBottom: '8px' }}>🔮</div>
+              <div style={{ fontSize: '40px', marginBottom: '8px' }}></div>
               <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#C5A059' }}>Set Your Intention</h2>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
@@ -759,16 +791,14 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                       <Shield size={16} />
                       ADMIN DEBUG CONSOLE
                     </div>
-                    <button onClick={() => setShowDebug(false)} style={{ background: 'none', border: 'none', color: '#C5A059', cursor: 'pointer', padding: '4px' }}>
-                      <X size={18} />
-                    </button>
                   </div>
 
+                  {/* 🆕 Auth Status */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', fontSize: '10px', marginBottom: '8px' }}>
-                    <div> User: <span style={{ color: '#10b981' }}>{user?.id?.substring(0, 8) || 'NULL'}...</span></div>
-                    <div>🔐 Admin: <span style={{ color: '#10b981' }}>YES</span></div>
-                    <div> Stage: <span style={{ color: '#fbbf24' }}>{stage}</span></div>
-                    <div>💾 Saved: <span style={{ color: isReadingSaved ? '#10b981' : '#ef4444' }}>{isReadingSaved ? 'YES' : 'NO'}</span></div>
+                    <div>🔑 Auth: <span style={{ color: authStatus === 'active' ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>{authStatus === 'active' ? 'ACTIVE ✅' : 'INACTIVE ❌'}</span></div>
+                    <div>👤 UID: <span style={{ color: authUid ? '#10b981' : '#ef4444', fontSize: '9px' }}>{authUid ? `${authUid.substring(0, 8)}...` : 'NULL'}</span></div>
+                    <div>📊 Stage: <span style={{ color: '#fbbf24' }}>{stage}</span></div>
+                    <div>💾 Saved: <span style={{ color: isReadingSaved ? '#10b981' : '#ef4444' }}>{isReadingSaved ? 'YES ✅' : 'NO ❌'}</span></div>
                     <div> Card: <span style={{ color: '#60a5fa' }}>{card.name}</span></div>
                     <div>🔄 Reversed: <span style={{ color: '#a78bfa' }}>{isReversed ? 'YES' : 'NO'}</span></div>
                   </div>
