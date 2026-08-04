@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Heart, Briefcase, Star, Share2, Lock, Bookmark, BookOpen, ArrowLeft, Bug, Shield, RefreshCw, Copy, CheckCircle, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { Sparkles, Heart, Briefcase, Star, Share2, Lock, Bookmark, BookOpen, ArrowLeft, Bug, Shield, RefreshCw, Copy, CheckCircle, ChevronDown, ChevronUp, Trash2, X } from 'lucide-react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards';
@@ -16,7 +16,7 @@ interface Props {
 }
 
 type FocusArea = 'general' | 'love' | 'career' | 'custom';
-type LogType = 'info' | 'success' | 'error' | 'api' | 'db' | 'ui';
+type LogType = 'info' | 'success' | 'error' | 'warning' | 'api' | 'db' | 'ui';
 
 interface DailyReading {
   card: TarotCard;
@@ -39,15 +39,17 @@ const logColors: Record<LogType, string> = {
   info: '#60a5fa',
   success: '#10b981',
   error: '#ef4444',
+  warning: '#fbbf24',
   api: '#a78bfa',
   db: '#f472b6',
-  ui: '#fbbf24'
+  ui: '#f59e0b'
 };
 
 const logIcons: Record<LogType, string> = {
   info: 'ℹ️',
   success: '✅',
   error: '❌',
+  warning: '⚠️',
   api: '🌐',
   db: '🗄️',
   ui: '🎯'
@@ -267,7 +269,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
   const [isReadingSaved, setIsReadingSaved] = useState(false);
   const [saveAttempted, setSaveAttempted] = useState(false);
   
-  //  Debug Panel States
+  // Debug Panel States
   const [showDebug, setShowDebug] = useState(false);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
   const [logFilter, setLogFilter] = useState<LogType | 'all'>('all');
@@ -708,7 +710,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         )}
       </AnimatePresence>
 
-      {/*  ADMIN DEBUG PANEL */}
+      {/* 🐛 ADMIN DEBUG PANEL */}
       {isUserAdmin && (
         <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999, fontFamily: 'monospace' }}>
           <button 
@@ -772,7 +774,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                   </div>
 
                   <div style={{ display: 'flex', gap: '4px', overflowX: 'auto', paddingBottom: '4px', marginBottom: '8px' }}>
-                    {(['all', 'info', 'success', 'error', 'api', 'db', 'ui'] as const).map(type => (
+                    {(['all', 'info', 'success', 'error', 'warning', 'api', 'db', 'ui'] as const).map(type => (
                       <button
                         key={type}
                         onClick={() => setLogFilter(type)}
