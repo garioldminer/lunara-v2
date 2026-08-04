@@ -13,7 +13,7 @@ import { loadUserQuests, trackQuestProgress, type QuestProgress } from '../lib/q
 import { 
   Gem, Zap, Trophy, Flame, X, CheckCircle,
   Sparkles, LayoutGrid, Moon, Hash, 
-  Crown, Scroll, ChevronRight, Gift, Shield, Infinity, RefreshCw
+  Crown, Scroll, ChevronRight, Gift, Shield, Infinity as InfinityIcon, RefreshCw
 } from 'lucide-react';
 import DebugPanel from './DebugPanel';
 import DiamondShopModal from './DiamondShopModal';
@@ -926,7 +926,6 @@ export default function HomeScreen({ onNavigate }: Props) {
   }
 
   const dailyCardName = dailyCard?.name || 'THE FOOL';
-  // ✅ წაშლილია გამოუყენებელი dailyCardNumber ცვლადი
   const dailyCardMeaning = isDailyReversed ? (dailyCard?.reversed_keywords?.[0] || 'Reflection') : (dailyCard?.keywords?.[0] || 'New Beginnings');
   const dailyCardElement = dailyCard ? getCardMeta(dailyCard) : '';
   const userLevelData = getLevelFromTotalXP(economy.xp);
@@ -934,7 +933,6 @@ export default function HomeScreen({ onNavigate }: Props) {
   const circumference = 2 * Math.PI * 22; 
   const strokeDashoffset = circumference - (xpPercent / 100) * circumference;
 
-  // ✅ დამატებულია React.ReactNode დაბრუნების ტიპი TS შეცდომის მოსაგვარებლად
   const getQuestIcon = (actionType: string): React.ReactNode => {
     switch (actionType) {
       case 'draw_daily_card': return <Scroll size={16} />;
@@ -980,7 +978,8 @@ export default function HomeScreen({ onNavigate }: Props) {
             </h2>
             {activeSubscription && (
               <div className="premium-status-badge" onClick={() => onNavigate?.('subscription')} style={{ marginTop: '4px', alignSelf: 'flex-start' }}>
-                <Infinity size={10} /><span>PREMIUM</span>
+                {/* ✅ შესწორებულია: InfinityIcon-ის გამოყენება */}
+                <InfinityIcon size={10} /><span>PREMIUM</span>
               </div>
             )}
           </div>
@@ -1024,7 +1023,7 @@ export default function HomeScreen({ onNavigate }: Props) {
                       cursor: (isClaiming || isEnergyFull) ? 'not-allowed' : 'pointer', 
                       fontSize: '12px', fontWeight: 'bold', flexShrink: 0 
                     }}
-                    title={isEnergyFull ? "Energy is already full!" : `Buy ${energyToAdd}⚡ Energy for ${cost} 💎`}
+                    title={isEnergyFull ? "Energy is already full" : `Buy ${energyToAdd}⚡ Energy for ${cost} 💎`}
                   >
                     {isClaiming ? '...' : (isEnergyFull ? '✓' : '+')}
                   </button>
@@ -1112,7 +1111,8 @@ export default function HomeScreen({ onNavigate }: Props) {
             
             <button className={`action-btn-vertical ${activeSubscription ? 'subscription-btn-v' : 'upgrade-btn-v'}`} onClick={() => onNavigate && onNavigate(activeSubscription ? 'subscription' : 'pricing')} style={{ background: activeSubscription ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 165, 0, 0.05) 100%)' : 'rgba(255, 255, 255, 0.03)', border: activeSubscription ? '1px solid rgba(255, 215, 0, 0.4)' : '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%' }}>
               {activeSubscription ? (
-                <><Infinity size={22} style={{ filter: 'drop-shadow(0 0 6px #FFD700)', color: '#FFD700', width: '20px', height: '20px' }} /><div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>VIP</div></>
+                // ✅ შესწორებულია: InfinityIcon-ის გამოყენება
+                <><InfinityIcon size={22} style={{ filter: 'drop-shadow(0 0 6px #FFD700)', color: '#FFD700', width: '20px', height: '20px' }} /><div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>VIP</div></>
               ) : (
                 <><Crown size={22} style={{ filter: 'drop-shadow(0 0 6px #a78bfa)', color: '#a78bfa', width: '20px', height: '20px' }} /><div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>PRO</div></>
               )}
