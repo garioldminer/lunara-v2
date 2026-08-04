@@ -28,7 +28,9 @@ export async function initializeTelegramAuth(): Promise<TelegramUser | null> {
     const tg = (window as any).Telegram?.WebApp;
     
     if (!tg || !tg.initData) {
-      console.warn('⚠️ Telegram SDK ან initData ვერ მოიძებნა. Edge Function ვერ შესრულდება.');
+      console.warn('⚠️ Telegram SDK ან initData ვერ მოიძებნა.');
+      // დროებითი Alert, რომ ზუსტად დავინახოთ პრობლემა
+      alert('⚠️ ვერ ვპოულობ Telegram initData-ს. დარწმუნდით, რომ აპს ხსნით Telegram-ის მობილურ აპლიკაციაში და არა ბრაუზერში ან Desktop ვერსიაში!');
       return null;
     }
 
