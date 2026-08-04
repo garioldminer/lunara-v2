@@ -28,7 +28,7 @@ interface Reading {
 }
 
 // Debug Log Type
-type LogType = 'info' | 'success' | 'error' | 'api' | 'db' | 'ui';
+type LogType = 'info' | 'success' | 'error' | 'warning' | 'api' | 'db' | 'ui';
 
 interface DebugLog {
   id: number;
@@ -42,16 +42,18 @@ const logColors: Record<LogType, string> = {
   info: '#60a5fa',
   success: '#10b981',
   error: '#ef4444',
+  warning: '#fbbf24',
   api: '#a78bfa',
   db: '#f472b6',
-  ui: '#fbbf24'
+  ui: '#f59e0b'
 };
 
 const logIcons: Record<LogType, string> = {
   info: 'ℹ️',
   success: '✅',
   error: '❌',
-  api: '',
+  warning: '⚠️',
+  api: '🌐',
   db: '🗄️',
   ui: '🎯'
 };
@@ -236,6 +238,10 @@ export default function ReadingHistoryScreen({ onNavigate }: Props) {
     addLog('api', 'Testing Supabase connection...');
     try {
       const { supabase } = await import('../lib/supabase');
+      if (!supabase) {
+        addLog('error', 'Supabase client is null');
+        return;
+      }
       const startTime = Date.now();
       const { data, error } = await supabase.from('users').select('id').limit(1);
       const duration = Date.now() - startTime;
@@ -441,13 +447,13 @@ export default function ReadingHistoryScreen({ onNavigate }: Props) {
 
                   {/* Log Filter Tabs */}
                   <div style={{ display: 'flex', gap: '4px', overflowX: 'auto', paddingBottom: '4px', marginBottom: '8px' }}>
-                    {(['all', 'info', 'success', 'error', 'api', 'db', 'ui'] as const).map(type => (
+                    {(['all', 'info', 'success', 'error', 'warning', 'api', 'db', 'ui'] as const).map(type => (
                       <button
                         key={type}
                         onClick={() => setLogFilter(type)}
                         style={{
                           padding: '4px 8px',
-                          background: logFilter === type ? logColors[type] : 'rgba(255,255,255,0.1)',
+                          background: logFilter === type ? (type === 'all' ? '#C5A059' : logColors[type]) : 'rgba(255,255,255,0.1)',
                           color: logFilter === type ? '#000' : '#fff',
                           border: 'none',
                           borderRadius: '4px',
