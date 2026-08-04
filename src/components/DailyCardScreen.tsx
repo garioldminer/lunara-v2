@@ -62,6 +62,7 @@ function StarField() {
     return { positions, colors, sizes };
   }, []);
 
+  // ✅ შესწორებულია: '_state' გამოიყენება გამოუყენებელი პარამეტრის აღსანიშნავად
   useFrame((_state, delta) => {
     if (starsRef.current) {
       starsRef.current.rotation.y += delta * 0.015;
@@ -102,7 +103,8 @@ function Nebula({ position, color, scale = 30, opacity = 0.3 }: any) {
     uOpacity: { value: opacity }
   }), [color, scale, opacity]);
 
-  useFrame((state, delta) => {
+  // ✅ შესწორებულია: '_state' გამოიყენება გამოუყენებელი პარამეტრის აღსანიშნავად
+  useFrame((_state, delta) => {
     if (meshRef.current) {
       const material = meshRef.current.material as THREE.ShaderMaterial;
       material.uniforms.uTime.value += delta * 0.1;
@@ -238,7 +240,7 @@ function BrightStars() {
     return data;
   }, []);
 
-  // ✅ გამოსწორებულია: ვიყენებთ state.clock.elapsedTime-ს გლუვი ანიმაციისთვის
+  // ✅ აქ 'state' რჩება, რადგან ის რეალურად გამოიყენება (state.clock.elapsedTime)
   useFrame((state, delta) => {
     if (groupRef.current) {
       groupRef.current.rotation.y += delta * 0.01;
