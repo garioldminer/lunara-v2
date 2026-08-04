@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Calendar, Sparkles, LayoutGrid, X, Heart, Share2, Trash2 } from 'lucide-react';
+import { ArrowLeft, Calendar, Sparkles, LayoutGrid, X, Heart, Share2 } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { getUserReadings } from '../lib/readingService';
 import { tarotCards } from '../data/tarotCards';
@@ -126,7 +126,6 @@ export default function ReadingHistoryScreen({ onNavigate }: Props) {
 
   return (
     <div className="reading-history-screen">
-      {/* Header */}
       <div className="rh-header">
         {onNavigate && (
           <button className="rh-back-btn" onClick={() => onNavigate('home')}>
@@ -141,29 +140,18 @@ export default function ReadingHistoryScreen({ onNavigate }: Props) {
         <div className="rh-header-spacer" />
       </div>
 
-      {/* Filter Tabs */}
       <div className="rh-filter-tabs">
-        <button
-          className={`rh-filter-tab ${filter === 'all' ? 'active' : ''}`}
-          onClick={() => setFilter('all')}
-        >
+        <button className={`rh-filter-tab ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>
           All ({readings.length})
         </button>
-        <button
-          className={`rh-filter-tab ${filter === 'daily' ? 'active' : ''}`}
-          onClick={() => setFilter('daily')}
-        >
+        <button className={`rh-filter-tab ${filter === 'daily' ? 'active' : ''}`} onClick={() => setFilter('daily')}>
           Daily ({readings.filter(r => r.reading_type === 'daily').length})
         </button>
-        <button
-          className={`rh-filter-tab ${filter === 'three-card' ? 'active' : ''}`}
-          onClick={() => setFilter('three-card')}
-        >
+        <button className={`rh-filter-tab ${filter === 'three-card' ? 'active' : ''}`} onClick={() => setFilter('three-card')}>
           3-Card ({readings.filter(r => r.reading_type === 'three-card').length})
         </button>
       </div>
 
-      {/* Content */}
       <div className="rh-content">
         {loading ? (
           <div className="rh-loading">
@@ -175,15 +163,10 @@ export default function ReadingHistoryScreen({ onNavigate }: Props) {
             <div className="rh-empty-icon">📖</div>
             <h3 className="rh-empty-title">No readings yet</h3>
             <p className="rh-empty-text">
-              {filter === 'all'
-                ? "Start your journey by drawing your first card!"
-                : `No ${getReadingTypeLabel(filter).toLowerCase()} readings found.`}
+              {filter === 'all' ? "Start your journey by drawing your first card!" : `No ${getReadingTypeLabel(filter).toLowerCase()} readings found.`}
             </p>
             {onNavigate && (
-              <button
-                className="rh-empty-btn"
-                onClick={() => onNavigate('daily-card')}
-              >
+              <button className="rh-empty-btn" onClick={() => onNavigate('daily-card')}>
                 Draw Your First Card
               </button>
             )}
@@ -199,7 +182,6 @@ export default function ReadingHistoryScreen({ onNavigate }: Props) {
                 transition={{ delay: index * 0.05 }}
                 onClick={() => setSelectedReading(reading)}
               >
-                {/* Card Header */}
                 <div className="rh-card-header">
                   <div className="rh-card-type">
                     <span className="rh-type-icon">{getReadingTypeIcon(reading.reading_type)}</span>
@@ -211,28 +193,19 @@ export default function ReadingHistoryScreen({ onNavigate }: Props) {
                   </div>
                 </div>
 
-                {/* Question */}
                 {reading.question && (
                   <div className="rh-card-question">
                     <p className="rh-question-text">"{reading.question}"</p>
                   </div>
                 )}
 
-                {/* Cards Preview */}
                 <div className="rh-cards-preview">
                   {reading.cards.map((card, idx) => {
                     const cardImage = getCardImage(card.name);
                     return (
-                      <div
-                        key={idx}
-                        className={`rh-mini-card ${card.is_reversed ? 'reversed' : ''}`}
-                      >
+                      <div key={idx} className={`rh-mini-card ${card.is_reversed ? 'reversed' : ''}`}>
                         {cardImage ? (
-                          <img
-                            src={cardImage}
-                            alt={card.name}
-                            className="rh-mini-card-image"
-                          />
+                          <img src={cardImage} alt={card.name} className="rh-mini-card-image" />
                         ) : (
                           <div className="rh-mini-card-placeholder">
                             <span className="rh-mini-card-name">{card.name}</span>
@@ -240,19 +213,14 @@ export default function ReadingHistoryScreen({ onNavigate }: Props) {
                         )}
                         <div className="rh-mini-card-info">
                           <span className="rh-mini-card-name">{card.name}</span>
-                          {card.is_reversed && (
-                            <span className="rh-mini-reversed">R</span>
-                          )}
+                          {card.is_reversed && <span className="rh-mini-reversed">R</span>}
                         </div>
-                        {card.position && (
-                          <span className="rh-mini-position">{card.position}</span>
-                        )}
+                        {card.position && <span className="rh-mini-position">{card.position}</span>}
                       </div>
                     );
                   })}
                 </div>
 
-                {/* Action Buttons */}
                 <div className="rh-card-actions" onClick={(e) => e.stopPropagation()}>
                   <button
                     className={`rh-action-btn ${bookmarkedIds.has(reading.id) ? 'bookmarked' : ''}`}
@@ -270,7 +238,6 @@ export default function ReadingHistoryScreen({ onNavigate }: Props) {
         )}
       </div>
 
-      {/* Detail Modal */}
       <AnimatePresence>
         {selectedReading && (
           <motion.div
@@ -293,10 +260,7 @@ export default function ReadingHistoryScreen({ onNavigate }: Props) {
                   {getReadingTypeIcon(selectedReading.reading_type)}
                   <span>{getReadingTypeLabel(selectedReading.reading_type)}</span>
                 </div>
-                <button
-                  className="rh-modal-close"
-                  onClick={() => setSelectedReading(null)}
-                >
+                <button className="rh-modal-close" onClick={() => setSelectedReading(null)}>
                   <X size={20} />
                 </button>
               </div>
@@ -304,11 +268,7 @@ export default function ReadingHistoryScreen({ onNavigate }: Props) {
               <div className="rh-modal-date">
                 <Calendar size={14} />
                 <span>{new Date(selectedReading.created_at).toLocaleString('en-US', {
-                  month: 'long',
-                  day: 'numeric',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
+                  month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
                 })}</span>
               </div>
 
