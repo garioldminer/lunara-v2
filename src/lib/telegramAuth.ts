@@ -32,6 +32,7 @@ export async function initializeTelegramAuth(): Promise<TelegramUser | null> {
     }
 
     console.log('🔄 ავტორიზაცია Supabase Edge Function-ის მეშვეობით...');
+    console.log('🔍 initData length:', tg.initData.length);
     
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     if (!supabaseUrl) {
@@ -42,14 +43,30 @@ export async function initializeTelegramAuth(): Promise<TelegramUser | null> {
 
     const functionUrl = `${supabaseUrl}/functions/v1/telegram-auth`;
     console.log('📡 Sending request to:', functionUrl);
+    console.log(' Request method: POST');
+    console.log('📡 Request headers: Content-Type: application/json');
 
-    const response = await fetch(functionUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ initData: tg.initData }),
-    });
+    // ვცდილობთ fetch-ს დეტალური ლოგინგით
+    let response;
+    try {
+      response = await fetch(functionUrl, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ initData: tg.initData }),
+      });
+      console.log('📥 Response received, status:', response.status);
+      console.log('📥 Response headers:', Object.fromEntries(response.headers.entries()));
+    } catch (fetchError: any) {
+      console.error('❌ Fetch failed completely:', fetchError);
+      console.error('❌ Fetch error name:', fetchError.name);
+      console.error('❌ Fetch error message:', fetchError.message);
+      (window as any).__AUTH_ERROR = `ქსელის შეცდომა: ${fetchError.message}. Edge Function-თან კავშირი ვერ მოხერხდა.`;
+      return null;
+    }
 
-    console.log('📥 Edge Function response status:', response.status);
     const result = await response.json();
     console.log('📥 Edge Function response body:', result);
 
@@ -79,7 +96,7 @@ export async function initializeTelegramAuth(): Promise<TelegramUser | null> {
     }
 
     console.log('✅ Supabase Auth სესია წარმატებით დამყარდა! auth.uid() ახლა აქტიურა.');
-    (window as any).__AUTH_ERROR = null; // წარმატების შემთხვევაში ვშლით შეცდომას
+    (window as any).__AUTH_ERROR = null;
     
     return tg.initDataUnsafe.user as TelegramUser;
 
