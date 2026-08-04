@@ -1,20 +1,22 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Heart, Briefcase, Star, Share2, Lock, Bookmark, BookOpen, ArrowLeft } from 'lucide-react';
+import { Sparkles, Heart, Briefcase, Star, Share2, Lock, Bookmark, BookOpen, ArrowLeft, Bug, Shield, RefreshCw, Copy, CheckCircle, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards';
-import { saveReading } from '../lib/readingService';
+import { saveReading, getUserReadings } from '../lib/readingService';
 import { logReading } from '../lib/adminService';
 import { trackQuestProgress } from '../lib/questService';
 import { useUser } from '../context/UserContext';
 import { getActiveSubscription } from '../lib/subscriptionService';
+import { isAdmin } from '../lib/adminService';
 
 interface Props {
   onNavigate?: (screen: string) => void;
 }
 
 type FocusArea = 'general' | 'love' | 'career' | 'custom';
+type LogType = 'info' | 'success' | 'error' | 'api' | 'db' | 'ui';
 
 interface DailyReading {
   card: TarotCard;
@@ -25,8 +27,34 @@ interface DailyReading {
   isRevealed?: boolean;
 }
 
+interface DebugLog {
+  id: number;
+  timestamp: string;
+  type: LogType;
+  message: string;
+  data?: any;
+}
+
+const logColors: Record<LogType, string> = {
+  info: '#60a5fa',
+  success: '#10b981',
+  error: '#ef4444',
+  api: '#a78bfa',
+  db: '#f472b6',
+  ui: '#fbbf24'
+};
+
+const logIcons: Record<LogType, string> = {
+  info: 'ℹ️',
+  success: '✅',
+  error: '❌',
+  api: '🌐',
+  db: '🗄️',
+  ui: '🎯'
+};
+
 // ============================================
-//  PROCEDURAL STAR FIELD (მოძრავი)
+//  PROCEDURAL STAR FIELD
 // ============================================
 function StarField() {
   const starsRef = useRef<THREE.Points>(null);
@@ -76,21 +104,13 @@ function StarField() {
         <bufferAttribute attach="attributes-color" count={colors.length / 3} array={colors} itemSize={3} />
         <bufferAttribute attach="attributes-size" count={sizes.length} array={sizes} itemSize={1} />
       </bufferGeometry>
-      <pointsMaterial
-        size={0.5}
-        vertexColors={true}
-        transparent={true}
-        opacity={0.8}
-        sizeAttenuation={true}
-        blending={THREE.AdditiveBlending}
-        depthWrite={false}
-      />
+      <pointsMaterial size={0.5} vertexColors={true} transparent={true} opacity={0.8} sizeAttenuation={true} blending={THREE.AdditiveBlending} depthWrite={false} />
     </points>
   );
 }
 
 // ============================================
-//  NEBULA WITH PERLIN NOISE (მოძრავი)
+//  NEBULA WITH PERLIN NOISE
 // ============================================
 function Nebula({ position, color, scale = 30, opacity = 0.3 }: any) {
   const meshRef = useRef<THREE.Mesh>(null);
@@ -111,83 +131,47 @@ function Nebula({ position, color, scale = 30, opacity = 0.3 }: any) {
     }
   });
 
-  const vertexShader = `
-    varying vec2 vUv;
-    void main() {
-      vUv = uv;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    }
-  `;
+  const vertexShader = `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
 
   const fragmentShader = `
-    uniform float uTime;
-    uniform vec3 uColor;
-    uniform float uScale;
-    uniform float uOpacity;
-    varying vec2 vUv;
-
+    uniform float uTime; uniform vec3 uColor; uniform float uScale; uniform float uOpacity; varying vec2 vUv;
     vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
     vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
     vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
     vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
-
     float snoise(vec3 v) {
-      const vec2 C = vec2(1.0/6.0, 1.0/3.0);
-      const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
-      vec3 i  = floor(v + dot(v, C.yyy));
-      vec3 x0 = v - i + dot(i, C.xxx);
-      vec3 g = step(x0.yzx, x0.xyz);
-      vec3 l = 1.0 - g;
-      vec3 i1 = min(g.xyz, l.zxy);
-      vec3 i2 = max(g.xyz, l.zxy);
-      vec3 x1 = x0 - i1 + C.xxx;
-      vec3 x2 = x0 - i2 + C.yyy;
-      vec3 x3 = x0 - D.yyy;
+      const vec2 C = vec2(1.0/6.0, 1.0/3.0); const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+      vec3 i = floor(v + dot(v, C.yyy)); vec3 x0 = v - i + dot(i, C.xxx);
+      vec3 g = step(x0.yzx, x0.xyz); vec3 l = 1.0 - g;
+      vec3 i1 = min(g.xyz, l.zxy); vec3 i2 = max(g.xyz, l.zxy);
+      vec3 x1 = x0 - i1 + C.xxx; vec3 x2 = x0 - i2 + C.yyy; vec3 x3 = x0 - D.yyy;
       i = mod289(i);
       vec4 p = permute(permute(permute(i.z + vec4(0.0, i1.z, i2.z, 1.0)) + i.y + vec4(0.0, i1.y, i2.y, 1.0)) + i.x + vec4(0.0, i1.x, i2.x, 1.0));
-      float n_ = 0.142857142857;
-      vec3 ns = n_ * D.wyz - D.xzx;
+      float n_ = 0.142857142857; vec3 ns = n_ * D.wyz - D.xzx;
       vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
-      vec4 x_ = floor(j * ns.z);
-      vec4 y_ = floor(j - 7.0 * x_);
-      vec4 x = x_ *ns.x + ns.yyyy;
-      vec4 y = y_ *ns.x + ns.yyyy;
+      vec4 x_ = floor(j * ns.z); vec4 y_ = floor(j - 7.0 * x_);
+      vec4 x = x_ *ns.x + ns.yyyy; vec4 y = y_ *ns.x + ns.yyyy;
       vec4 h = 1.0 - abs(x) - abs(y);
-      vec4 b0 = vec4(x.xy, y.xy);
-      vec4 b1 = vec4(x.zw, y.zw);
-      vec4 s0 = floor(b0)*2.0 + 1.0;
-      vec4 s1 = floor(b1)*2.0 + 1.0;
+      vec4 b0 = vec4(x.xy, y.xy); vec4 b1 = vec4(x.zw, y.zw);
+      vec4 s0 = floor(b0)*2.0 + 1.0; vec4 s1 = floor(b1)*2.0 + 1.0;
       vec4 sh = -step(h, vec4(0.0));
-      vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
-      vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
-      vec3 p0 = vec3(a0.xy, h.x);
-      vec3 p1 = vec3(a0.zw, h.y);
-      vec3 p2 = vec3(a1.xy, h.z);
-      vec3 p3 = vec3(a1.zw, h.w);
+      vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy; vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
+      vec3 p0 = vec3(a0.xy, h.x); vec3 p1 = vec3(a0.zw, h.y);
+      vec3 p2 = vec3(a1.xy, h.z); vec3 p3 = vec3(a1.zw, h.w);
       vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
       p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
       vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
       m = m * m;
       return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
     }
-
     float fbm(vec3 p) {
-      float value = 0.0;
-      float amplitude = 0.5;
-      float frequency = 1.0;
-      for (int i = 0; i < 5; i++) {
-        value += amplitude * snoise(p * frequency);
-        amplitude *= 0.5;
-        frequency *= 2.0;
-      }
+      float value = 0.0; float amplitude = 0.5; float frequency = 1.0;
+      for (int i = 0; i < 5; i++) { value += amplitude * snoise(p * frequency); amplitude *= 0.5; frequency *= 2.0; }
       return value;
     }
-
     void main() {
       vec3 p = vec3(vUv * uScale, uTime);
-      float n1 = fbm(p);
-      float n2 = fbm(p * 1.5 + 100.0);
-      float n3 = fbm(p * 2.0 + 200.0);
+      float n1 = fbm(p); float n2 = fbm(p * 1.5 + 100.0); float n3 = fbm(p * 2.0 + 200.0);
       float noise = (n1 + n2 * 0.5 + n3 * 0.25) / 1.75;
       noise = noise * 0.5 + 0.5;
       float density = pow(noise, 2.0);
@@ -201,21 +185,13 @@ function Nebula({ position, color, scale = 30, opacity = 0.3 }: any) {
   return (
     <mesh ref={meshRef} position={position}>
       <planeGeometry args={[40, 40]} />
-      <shaderMaterial
-        transparent={true}
-        depthWrite={false}
-        blending={THREE.AdditiveBlending}
-        vertexShader={vertexShader}
-        fragmentShader={fragmentShader}
-        uniforms={uniforms}
-        side={THREE.DoubleSide}
-      />
+      <shaderMaterial transparent={true} depthWrite={false} blending={THREE.AdditiveBlending} vertexShader={vertexShader} fragmentShader={fragmentShader} uniforms={uniforms} side={THREE.DoubleSide} />
     </mesh>
   );
 }
 
 // ============================================
-// ✨ BRIGHT STARS WITH GLOW (მოძრავი)
+// ✨ BRIGHT STARS WITH GLOW
 // ============================================
 function BrightStars() {
   const groupRef = useRef<THREE.Group>(null);
@@ -228,11 +204,9 @@ function BrightStars() {
       const z = (Math.random() - 0.5) * 80 - 30;
       const colorType = Math.random();
       let coreColor: [number, number, number], haloColor: [number, number, number];
-      
       if (colorType < 0.4) { coreColor = [1.0, 0.95, 0.8]; haloColor = [1.0, 0.9, 0.7]; }
       else if (colorType < 0.7) { coreColor = [0.8, 0.9, 1.0]; haloColor = [0.6, 0.8, 1.0]; }
       else { coreColor = [1.0, 0.7, 0.5]; haloColor = [1.0, 0.5, 0.3]; }
-      
       data.push({ position: [x, y, z], coreColor, haloColor, size: Math.random() * 0.5 + 0.3 });
     }
     return data;
@@ -287,28 +261,136 @@ export default function DailyCardScreen({ onNavigate }: Props) {
   const { user } = useUser();
   const [hasPremium, setHasPremium] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isUserAdmin, setIsUserAdmin] = useState(false);
+  
+  // 🆕 ავტომატური შენახვის სტატუსი
+  const [isReadingSaved, setIsReadingSaved] = useState(false);
+  const [saveAttempted, setSaveAttempted] = useState(false);
+  
+  //  Debug Panel States
+  const [showDebug, setShowDebug] = useState(false);
+  const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
+  const [logFilter, setLogFilter] = useState<LogType | 'all'>('all');
+  const [expandedLog, setExpandedLog] = useState<number | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const getTodayDate = () => new Date().toISOString().split('T')[0];
 
+  // Helper: Add Debug Log
+  const addLog = (type: LogType, message: string, data?: any) => {
+    const log: DebugLog = {
+      id: Date.now() + Math.random(),
+      timestamp: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      type,
+      message,
+      data
+    };
+    setDebugLogs(prev => [log, ...prev].slice(0, 100));
+    console.log(`[${type.toUpperCase()}] ${message}`, data || '');
+  };
+
+  useEffect(() => {
+    addLog('info', 'DailyCardScreen mounted');
+    
+    if (user) {
+      addLog('success', 'User found', { userId: user.id, name: user.display_name });
+      
+      isAdmin(user.id).then(admin => {
+        setIsUserAdmin(admin);
+        addLog('info', 'Admin check completed', { isAdmin: admin });
+      }).catch(err => addLog('error', 'Admin check failed', err));
+      
+      getActiveSubscription(user.id).then(sub => {
+        setHasPremium(!!sub);
+        addLog('info', 'Subscription check', { hasPremium: !!sub });
+      });
+    } else {
+      addLog('error', 'No user found');
+    }
+  }, [user]);
+
   useEffect(() => {
     const today = getTodayDate();
+    addLog('info', 'Checking localStorage for daily card', { today });
+    
     const stored = localStorage.getItem('dailyCard');
     if (stored) {
       const parsed: DailyReading = JSON.parse(stored);
+      addLog('db', 'Found stored daily card', { date: parsed.date, isRevealed: parsed.isRevealed });
+      
       if (parsed.date === today) {
         setDailyReading(parsed);
         setSelectedFocus(parsed.focusArea || 'general');
         if (parsed.focusArea === 'custom' && parsed.question) setCustomQuestion(parsed.question);
-        setStage(parsed.isRevealed ? 'revealed' : 'selecting');
+        
+        if (parsed.isRevealed) {
+          addLog('success', 'Card already revealed, going to revealed stage');
+          setStage('revealed');
+          // 🆕 ავტომატური შენახვის შემოწმება
+          checkAndSaveReading(parsed);
+        } else {
+          addLog('info', 'Card not yet revealed, going to selecting stage');
+          setStage('selecting');
+        }
         return;
+      } else {
+        addLog('warning', 'Stored card is from different date, generating new');
       }
+    } else {
+      addLog('info', 'No stored card found');
     }
     generateDailyCard();
   }, []);
 
-  useEffect(() => {
-    if (user) getActiveSubscription(user.id).then(sub => setHasPremium(!!sub));
-  }, [user]);
+  // 🆕 ავტომატური შენახვის ფუნქცია
+  const checkAndSaveReading = async (reading: DailyReading) => {
+    if (!user || saveAttempted) {
+      addLog('info', 'Skipping save check', { hasUser: !!user, alreadyAttempted: saveAttempted });
+      return;
+    }
+    
+    setSaveAttempted(true);
+    addLog('api', 'Checking if reading already saved in Supabase');
+    
+    try {
+      // შევამოწმოთ, არის თუ არა ეს ბარათი უკვე შენახული
+      const existingReadings = await getUserReadings(user.id, 100);
+      const todayReadings = existingReadings.filter(r => {
+        const readingDate = new Date(r.created_at).toISOString().split('T')[0];
+        return readingDate === reading.date && r.reading_type === 'daily';
+      });
+      
+      addLog('db', 'Today readings found', { count: todayReadings.length });
+      
+      if (todayReadings.length > 0) {
+        addLog('success', 'Reading already saved, skipping');
+        setIsReadingSaved(true);
+        return;
+      }
+      
+      // არ არის შენახული - შევინახოთ
+      addLog('api', 'Saving reading to Supabase', { card: reading.card.name });
+      const saveResult = await saveReading({ 
+        user_id: user.id, 
+        reading_type: 'daily', 
+        question: reading.question, 
+        cards: [{ 
+          id: reading.card.id, 
+          name: reading.card.name, 
+          is_reversed: reading.isReversed 
+        }] 
+      });
+      
+      if (saveResult && saveResult.success) {
+        addLog('success', 'Reading saved successfully', saveResult.data);
+        setIsReadingSaved(true);
+      } else {
+        addLog('error', 'Failed to save reading', saveResult?.error);
+      }
+    } catch (error: any) {
+      addLog('error', 'Error in checkAndSaveReading', { error: error.message });
+    }
+  };
 
   const generateDailyCard = () => {
     const today = getTodayDate();
@@ -321,6 +403,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
       focusArea: 'general',
       isRevealed: false 
     };
+    addLog('db', 'Generated new daily card', { cardName: card.name, date: today });
     localStorage.setItem('dailyCard', JSON.stringify(newReading));
     setDailyReading(newReading);
     setStage('selecting');
@@ -335,10 +418,13 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     setSelectedFocus(focus);
     setShowQuestionInput(focus === 'custom');
     if (focus !== 'custom') setCustomQuestion('');
+    addLog('ui', 'Focus area selected', { focus });
   };
 
   const handleReveal = async () => {
     if (!dailyReading) return;
+    addLog('ui', 'Reveal button clicked');
+    
     if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp?.HapticFeedback) {
       (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('medium');
     }
@@ -353,12 +439,13 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     
     setDailyReading(updatedReading);
     localStorage.setItem('dailyCard', JSON.stringify(updatedReading));
+    addLog('db', 'Updated localStorage with revealed card');
 
-    // ✅ განახლებული ლოგიკა: ვამოწმებთ saveReading-ის პასუხს
     setTimeout(async () => {
       setStage('revealed');
       if (user) {
         try {
+          addLog('api', 'Saving reading after reveal');
           const saveResult = await saveReading({ 
             user_id: user.id, 
             reading_type: 'daily', 
@@ -370,19 +457,19 @@ export default function DailyCardScreen({ onNavigate }: Props) {
             }] 
           });
           
-          // შევამოწმოთ ჩაწერა წარმატებული იყო თუ არა
           if (!saveResult || !saveResult.success) {
-            console.error('❌ Failed to save reading:', saveResult?.error);
+            addLog('error', 'Failed to save reading', saveResult?.error);
             alert(`Failed to save reading: ${saveResult?.error || 'Unknown error'}`);
-            return; // არ გავაგრძელოთ თუ ჩაწერა ვერ მოხერხდა
+            return;
           }
           
-          console.log('✅ Reading saved successfully');
+          addLog('success', 'Reading saved successfully after reveal');
+          setIsReadingSaved(true);
           
           await logReading(user.id, 'daily_card', [updatedReading.card.id], `${updatedReading.card.name}${updatedReading.isReversed ? ' (Reversed)' : ''}`);
           await trackQuestProgress(user.id, 'draw_daily_card', 1);
         } catch (error: any) { 
-          console.error('❌ Error saving daily reading:', error);
+          addLog('error', 'Error in handleReveal', { error: error.message });
           alert(`Error: ${error.message}`);
         }
       }
@@ -391,11 +478,18 @@ export default function DailyCardScreen({ onNavigate }: Props) {
 
   const handleShare = () => {
     if (!dailyReading) return;
+    addLog('ui', 'Share button clicked');
     const { card, isReversed } = dailyReading;
     const shareText = `🔮 My Daily Card: ${card.name}${isReversed ? ' (Reversed)' : ''}\n\n"${isReversed ? card.reversed_meaning : card.meaning}"\n\nDraw your own card on Lunara App! ✨`;
     const tg = (window as any).Telegram?.WebApp;
-    if (tg?.openTelegramLink) tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(window.location.href || '')}&text=${encodeURIComponent(shareText)}`);
-    else navigator.clipboard.writeText(shareText).then(() => alert('Copied to clipboard!'));
+    if (tg?.openTelegramLink) {
+      tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(window.location.href || '')}&text=${encodeURIComponent(shareText)}`);
+      addLog('success', 'Share dialog opened');
+    } else {
+      navigator.clipboard.writeText(shareText);
+      addLog('success', 'Copied to clipboard');
+      alert('Copied to clipboard!');
+    }
   };
 
   const getCardMeta = (card: TarotCard) => {
@@ -412,6 +506,45 @@ export default function DailyCardScreen({ onNavigate }: Props) {
       default: return <Star size={18} />;
     }
   };
+
+  const copyAllLogs = () => {
+    const text = debugLogs.map(l => `[${l.timestamp}] [${l.type.toUpperCase()}] ${l.message}${l.data ? '\n' + JSON.stringify(l.data, null, 2) : ''}`).join('\n\n');
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    addLog('info', 'All logs copied to clipboard');
+  };
+
+  const clearLogs = () => {
+    setDebugLogs([]);
+    addLog('info', 'Debug logs cleared');
+  };
+
+  const testSaveReading = async () => {
+    if (!dailyReading || !user) {
+      addLog('error', 'Cannot test save: no reading or user');
+      return;
+    }
+    addLog('api', 'Manual test save triggered');
+    const saveResult = await saveReading({ 
+      user_id: user.id, 
+      reading_type: 'daily', 
+      question: dailyReading.question, 
+      cards: [{ 
+        id: dailyReading.card.id, 
+        name: dailyReading.card.name, 
+        is_reversed: dailyReading.isReversed 
+      }] 
+    });
+    if (saveResult?.success) {
+      addLog('success', 'Test save successful', saveResult.data);
+      setIsReadingSaved(true);
+    } else {
+      addLog('error', 'Test save failed', saveResult?.error);
+    }
+  };
+
+  const filteredLogs = logFilter === 'all' ? debugLogs : debugLogs.filter(l => l.type === logFilter);
 
   if (!dailyReading) {
     return (
@@ -574,6 +707,150 @@ export default function DailyCardScreen({ onNavigate }: Props) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/*  ADMIN DEBUG PANEL */}
+      {isUserAdmin && (
+        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999, fontFamily: 'monospace' }}>
+          <button 
+            onClick={() => setShowDebug(!showDebug)}
+            style={{
+              width: '100%',
+              padding: '10px',
+              background: showDebug ? '#ef4444' : 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)',
+              color: '#fff',
+              border: 'none',
+              borderTop: '2px solid #C5A059',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              fontSize: '12px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              letterSpacing: '1px'
+            }}
+          >
+            <Bug size={14} />
+            {showDebug ? 'HIDE DEBUG' : `DEBUG (${debugLogs.filter(l => l.type === 'error').length > 0 ? `${debugLogs.filter(l => l.type === 'error').length} ERR` : `${debugLogs.length} LOGS`})`}
+          </button>
+
+          <AnimatePresence>
+            {showDebug && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                style={{
+                  background: 'rgba(10, 6, 0, 0.98)',
+                  backdropFilter: 'blur(10px)',
+                  borderTop: '2px solid #C5A059',
+                  maxHeight: '70vh',
+                  overflow: 'hidden',
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}
+              >
+                <div style={{ padding: '12px', borderBottom: '1px solid rgba(197, 160, 89, 0.3)', background: 'rgba(197, 160, 89, 0.1)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#C5A059', fontWeight: 'bold', fontSize: '13px' }}>
+                      <Shield size={16} />
+                      ADMIN DEBUG CONSOLE
+                    </div>
+                    <button onClick={() => setShowDebug(false)} style={{ background: 'none', border: 'none', color: '#C5A059', cursor: 'pointer', padding: '4px' }}>
+                      <X size={18} />
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', fontSize: '10px', marginBottom: '8px' }}>
+                    <div> User: <span style={{ color: '#10b981' }}>{user?.id?.substring(0, 8) || 'NULL'}...</span></div>
+                    <div>🔐 Admin: <span style={{ color: '#10b981' }}>YES</span></div>
+                    <div> Stage: <span style={{ color: '#fbbf24' }}>{stage}</span></div>
+                    <div>💾 Saved: <span style={{ color: isReadingSaved ? '#10b981' : '#ef4444' }}>{isReadingSaved ? 'YES' : 'NO'}</span></div>
+                    <div> Card: <span style={{ color: '#60a5fa' }}>{card.name}</span></div>
+                    <div>🔄 Reversed: <span style={{ color: '#a78bfa' }}>{isReversed ? 'YES' : 'NO'}</span></div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '4px', overflowX: 'auto', paddingBottom: '4px', marginBottom: '8px' }}>
+                    {(['all', 'info', 'success', 'error', 'api', 'db', 'ui'] as const).map(type => (
+                      <button
+                        key={type}
+                        onClick={() => setLogFilter(type)}
+                        style={{
+                          padding: '4px 8px',
+                          background: logFilter === type ? (type === 'all' ? '#C5A059' : logColors[type]) : 'rgba(255,255,255,0.1)',
+                          color: logFilter === type ? '#000' : '#fff',
+                          border: 'none',
+                          borderRadius: '4px',
+                          fontSize: '9px',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                          textTransform: 'uppercase'
+                        }}
+                      >
+                        {type} ({type === 'all' ? debugLogs.length : debugLogs.filter(l => l.type === type).length})
+                      </button>
+                    ))}
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button onClick={copyAllLogs} style={{ flex: 1, padding: '6px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                      {copied ? <><CheckCircle size={10} /> Copied!</> : <><Copy size={10} /> Copy All</>}
+                    </button>
+                    <button onClick={clearLogs} style={{ flex: 1, padding: '6px', background: 'rgba(239, 68, 68, 0.3)', color: '#ef4444', border: '1px solid #ef4444', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                      <Trash2 size={10} /> Clear
+                    </button>
+                    <button onClick={testSaveReading} style={{ flex: 1, padding: '6px', background: '#C5A059', color: '#0a0600', border: 'none', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                      <RefreshCw size={10} /> Test Save
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
+                  {filteredLogs.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '20px', color: '#666', fontSize: '11px' }}>No logs yet...</div>
+                  ) : (
+                    filteredLogs.map(log => (
+                      <div 
+                        key={log.id}
+                        style={{ 
+                          padding: '8px', 
+                          marginBottom: '4px', 
+                          background: 'rgba(255,255,255,0.03)', 
+                          borderLeft: `3px solid ${logColors[log.type]}`,
+                          borderRadius: '4px',
+                          cursor: log.data ? 'pointer' : 'default'
+                        }}
+                        onClick={() => log.data && setExpandedLog(expandedLog === log.id ? null : log.id)}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', fontSize: '10px' }}>
+                          <span style={{ flexShrink: 0 }}>{logIcons[log.type]}</span>
+                          <span style={{ color: '#666', flexShrink: 0, fontSize: '9px' }}>{log.timestamp}</span>
+                          <span style={{ color: logColors[log.type], fontWeight: 'bold', flexShrink: 0, fontSize: '9px', textTransform: 'uppercase' }}>
+                            [{log.type}]
+                          </span>
+                          <span style={{ color: '#e2e8f0', flex: 1, lineHeight: 1.4 }}>{log.message}</span>
+                          {log.data && (
+                            <span style={{ flexShrink: 0, color: '#666' }}>
+                              {expandedLog === log.id ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                            </span>
+                          )}
+                        </div>
+                        {log.data && expandedLog === log.id && (
+                          <div style={{ marginTop: '6px', padding: '6px', background: 'rgba(0,0,0,0.5)', borderRadius: '4px', fontSize: '9px', color: '#a78bfa', overflowX: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                            {typeof log.data === 'string' ? log.data : JSON.stringify(log.data, null, 2)}
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
     </div>
   );
 }
