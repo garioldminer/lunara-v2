@@ -926,7 +926,7 @@ export default function HomeScreen({ onNavigate }: Props) {
   }
 
   const dailyCardName = dailyCard?.name || 'THE FOOL';
-  const dailyCardNumber = dailyCard?.number || '0';
+  // ✅ წაშლილია გამოუყენებელი dailyCardNumber ცვლადი
   const dailyCardMeaning = isDailyReversed ? (dailyCard?.reversed_keywords?.[0] || 'Reflection') : (dailyCard?.keywords?.[0] || 'New Beginnings');
   const dailyCardElement = dailyCard ? getCardMeta(dailyCard) : '';
   const userLevelData = getLevelFromTotalXP(economy.xp);
@@ -934,7 +934,8 @@ export default function HomeScreen({ onNavigate }: Props) {
   const circumference = 2 * Math.PI * 22; 
   const strokeDashoffset = circumference - (xpPercent / 100) * circumference;
 
-  const getQuestIcon = (actionType: string) => {
+  // ✅ დამატებულია React.ReactNode დაბრუნების ტიპი TS შეცდომის მოსაგვარებლად
+  const getQuestIcon = (actionType: string): React.ReactNode => {
     switch (actionType) {
       case 'draw_daily_card': return <Scroll size={16} />;
       case 'check_horoscope': return <Sparkles size={16} />;

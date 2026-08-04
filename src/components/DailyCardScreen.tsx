@@ -238,10 +238,11 @@ function BrightStars() {
     return data;
   }, []);
 
-  useFrame((_state, delta) => {
+  // ✅ გამოსწორებულია: ვიყენებთ state.clock.elapsedTime-ს გლუვი ანიმაციისთვის
+  useFrame((state, delta) => {
     if (groupRef.current) {
       groupRef.current.rotation.y += delta * 0.01;
-      groupRef.current.position.y = Math.sin(groupRef.current.userData.clock || 0) * 1.5;
+      groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.2) * 1.5;
     }
   });
 
