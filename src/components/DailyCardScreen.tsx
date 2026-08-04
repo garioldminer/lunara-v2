@@ -62,7 +62,6 @@ function StarField() {
     return { positions, colors, sizes };
   }, []);
 
-  // ✅ შესწორებულია: '_state' გამოიყენება გამოუყენებელი პარამეტრის აღსანიშნავად
   useFrame((_state, delta) => {
     if (starsRef.current) {
       starsRef.current.rotation.y += delta * 0.015;
@@ -103,7 +102,6 @@ function Nebula({ position, color, scale = 30, opacity = 0.3 }: any) {
     uOpacity: { value: opacity }
   }), [color, scale, opacity]);
 
-  // ✅ შესწორებულია: '_state' გამოიყენება გამოუყენებელი პარამეტრის აღსანიშნავად
   useFrame((_state, delta) => {
     if (meshRef.current) {
       const material = meshRef.current.material as THREE.ShaderMaterial;
@@ -240,7 +238,6 @@ function BrightStars() {
     return data;
   }, []);
 
-  // ✅ აქ 'state' რჩება, რადგან ის რეალურად გამოიყენება (state.clock.elapsedTime)
   useFrame((state, delta) => {
     if (groupRef.current) {
       groupRef.current.rotation.y += delta * 0.01;
@@ -357,14 +354,37 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     setDailyReading(updatedReading);
     localStorage.setItem('dailyCard', JSON.stringify(updatedReading));
 
+    // ✅ განახლებული ლოგიკა: ვამოწმებთ saveReading-ის პასუხს
     setTimeout(async () => {
       setStage('revealed');
       if (user) {
         try {
-          await saveReading({ user_id: user.id, reading_type: 'daily', question: updatedReading.question, cards: [{ id: updatedReading.card.id, name: updatedReading.card.name, is_reversed: updatedReading.isReversed }] });
+          const saveResult = await saveReading({ 
+            user_id: user.id, 
+            reading_type: 'daily', 
+            question: updatedReading.question, 
+            cards: [{ 
+              id: updatedReading.card.id, 
+              name: updatedReading.card.name, 
+              is_reversed: updatedReading.isReversed 
+            }] 
+          });
+          
+          // შევამოწმოთ ჩაწერა წარმატებული იყო თუ არა
+          if (!saveResult || !saveResult.success) {
+            console.error('❌ Failed to save reading:', saveResult?.error);
+            alert(`Failed to save reading: ${saveResult?.error || 'Unknown error'}`);
+            return; // არ გავაგრძელოთ თუ ჩაწერა ვერ მოხერხდა
+          }
+          
+          console.log('✅ Reading saved successfully');
+          
           await logReading(user.id, 'daily_card', [updatedReading.card.id], `${updatedReading.card.name}${updatedReading.isReversed ? ' (Reversed)' : ''}`);
           await trackQuestProgress(user.id, 'draw_daily_card', 1);
-        } catch (error) { console.error('❌ Error saving daily reading:', error); }
+        } catch (error: any) { 
+          console.error('❌ Error saving daily reading:', error);
+          alert(`Error: ${error.message}`);
+        }
       }
     }, 1200);
   };

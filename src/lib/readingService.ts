@@ -14,13 +14,20 @@ export interface Reading {
   cards: ReadingCard[];
 }
 
+export type SaveReadingResult = {
+  success: boolean;
+  data?: any;
+  error?: string;
+  details?: any;
+};
+
 // ============================================
 // SAVE READING - წაკითხვის შენახვა
 // ============================================
-export async function saveReading(reading: Reading) {
+export async function saveReading(reading: Reading): Promise<SaveReadingResult> {
   if (!supabase) {
     console.error('❌ Supabase not initialized');
-    return null;
+    return { success: false, error: 'Supabase not initialized' };
   }
 
   try {
@@ -32,18 +39,21 @@ export async function saveReading(reading: Reading) {
 
     if (error) {
       console.error('❌ Error saving reading:', error);
-      return null;
+      // ვაბრუნებთ კონკრეტულ შეცდომას, რათა UI-მა შეძლოს მისი ჩვენება
+      return { success: false, error: error.message, details: error };
     }
 
-    console.log('✅ Reading saved:', data);
+    console.log('✅ Reading saved successfully:', data);
     
-    // განაახლე user patterns
-    await updateUserPatterns(reading.user_id);
+    // განაახლე user patterns (ცალკე, რომ არ დაბლოკოს მთავარი return)
+    updateUserPatterns(reading.user_id).catch(err => {
+      console.error('❌ Background error updating patterns:', err);
+    });
     
-    return data;
-  } catch (error) {
+    return { success: true, data };
+  } catch (error: any) {
     console.error('❌ Error in saveReading:', error);
-    return null;
+    return { success: false, error: error.message || 'Unknown error', details: error };
   }
 }
 
