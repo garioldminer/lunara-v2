@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { 
   Bug, X, Activity, Users, Server, Terminal, Settings, 
-  Copy, Check, RefreshCw, Play, Eye, ChevronDown, Heart
+  Copy, Check, RefreshCw, Play, Eye, ChevronDown, Heart, Crown
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { 
@@ -26,6 +26,14 @@ interface HomeDiagnostics {
   results: DiagnosticResult[];
   isRunning: boolean;
   lastRun: string | null;
+}
+
+interface ProfileCheck {
+  id: string;
+  element: string;
+  status: 'pass' | 'warn' | 'fail';
+  message: string;
+  details?: string;
 }
 
 interface DebugPanelProps {
@@ -59,7 +67,6 @@ interface DebugPanelProps {
   testAddXPWithLevel: (amount: number) => void;
   forceRecalcLevel: () => void;
   xpTestLogs: string[];
-  // ახალი props დიაგნოსტიკისთვის
   runHomeDiagnostics: () => Promise<DiagnosticResult[]>;
   diagnostics: HomeDiagnostics;
   testEnergySystem: () => void;
@@ -72,7 +79,7 @@ interface DebugPanelProps {
   testSupabaseConnection: () => void;
 }
 
-type TabType = 'system' | 'user' | 'diagnostics' | 'functions' | 'logs' | 'actions';
+type TabType = 'system' | 'user' | 'profile' | 'diagnostics' | 'functions' | 'logs' | 'actions';
 
 export default function DebugPanel(props: DebugPanelProps) {
   const {
@@ -104,6 +111,13 @@ export default function DebugPanel(props: DebugPanelProps) {
   const [functionLogs, setFunctionLogs] = useState<Record<string, FunctionLog[]>>({});
 
   const [expandedLog, setExpandedLog] = useState<number | null>(null);
+
+  // ============================================
+  // 🆕 PROFILE BANNER TAB STATE
+  // ============================================
+  const [profileChecks, setProfileChecks] = useState<ProfileCheck[]>([]);
+  const [profileChecking, setProfileChecking] = useState(false);
+  const [profileLastRun, setProfileLastRun] = useState<string | null>(null);
 
   useEffect(() => {
     if (!showDebug) return;
@@ -181,6 +195,162 @@ export default function DebugPanel(props: DebugPanelProps) {
     return Math.floor(2000 * Math.pow(1.8, level - 5));
   };
 
+  const getLevelFromTotalXP = (totalXP: number) => {
+    let level = 1;
+    let xpRequiredForNext = getXPToNextLevel(level);
+    let currentLevelXP = totalXP;
+    while (currentLevelXP >= xpRequiredForNext) {
+      currentLevelXP -= xpRequiredForNext;
+      level++;
+      xpRequiredForNext = getXPToNextLevel(level);
+    }
+    return { level, currentLevelXP, xpToNext: xpRequiredForNext };
+  };
+
+  // ============================================
+  // 🆕 PROFILE BANNER CHECK
+  // ============================================
+  const runProfileBannerCheck = async () => {
+    setProfileChecking(true);
+    addDebugLog('info', 'PROFILE_BANNER', '🔍 Starting profile banner check...');
+    const checks: ProfileCheck[] = [];
+
+    // Fresh data from database
+    let dbData: any = null;
+    if (user?.id && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('user_economy')
+          .select('cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus')
+          .eq('user_id', user.id)
+          .single();
+        if (!error) dbData = data;
+      } catch (err: any) {
+        addDebugLog('error', 'PROFILE_BANNER', `DB query failed: ${err.message}`);
+      }
+    }
+
+    // 1. ავატარი
+    const avatarLetter = user?.display_name?.charAt(0).toUpperCase() || 'U';
+    checks.push({
+      id: 'avatar',
+      element: '🖼️ ავატარი + ასო',
+      status: user ? (user.display_name ? 'pass' : 'warn') : 'fail',
+      message: user 
+        ? (user.display_name ? `ჩანს ასო: "${avatarLetter}"` : 'სახელი ცარიელია → fallback "U"')
+        : 'user არ არის ჩატვირთული!',
+      details: `display_name: ${user?.display_name || 'null'}`
+    });
+
+    // 2. XP წრე
+    const xp = economy?.xp ?? 0;
+    const levelData = getLevelFromTotalXP(xp);
+    const xpPercent = levelData.xpToNext > 0 ? Math.min((levelData.currentLevelXP / levelData.xpToNext) * 100, 100) : 0;
+    const circumference = 2 * Math.PI * 22;
+    const strokeDashoffset = circumference - (xpPercent / 100) * circumference;
+    checks.push({
+      id: 'xp-circle',
+      element: '⭕ XP წრე (პროგრესი)',
+      status: xp >= 0 && xpPercent >= 0 && xpPercent <= 100 ? 'pass' : 'fail',
+      message: `XP: ${xp} → პროგრესი: ${xpPercent.toFixed(1)}%`,
+      details: `currentLevelXP: ${levelData.currentLevelXP} / ${levelData.xpToNext} | dashoffset: ${strokeDashoffset.toFixed(1)}`
+    });
+
+    // 3. ლეველი badge (გამოთვლილი vs შენახული)
+    const computedLevel = levelData.level;
+    const storedLevel = economy?.level ?? 1;
+    checks.push({
+      id: 'level-badge',
+      element: '🏅 ლეველი badge',
+      status: computedLevel === storedLevel ? 'pass' : 'warn',
+      message: computedLevel === storedLevel 
+        ? `ლეველი: ${storedLevel} ✅ (თანხვედრა)`
+        : `განსხვავება! badge-ზე: ${computedLevel}, state-ში: ${storedLevel}`,
+      details: `XP-დან გამოთვლილი: ${computedLevel} | economy.level: ${storedLevel}`
+    });
+
+    // 4. მომხმარებლის სახელი
+    checks.push({
+      id: 'username',
+      element: '👤 მომხმარებლის სახელი',
+      status: user?.display_name ? 'pass' : 'warn',
+      message: user?.display_name ? `ჩანს: "${user.display_name}"` : 'ჩანს fallback: "LunaraSeeker"',
+      details: `display_name: ${user?.display_name || 'null'}`
+    });
+
+    // 5. Premium badge
+    if (activeSubscription) {
+      const expiresOk = new Date(activeSubscription.expires_at) > new Date();
+      checks.push({
+        id: 'premium-badge',
+        element: '👑 Premium badge',
+        status: expiresOk ? 'pass' : 'fail',
+        message: expiresOk 
+          ? `აქტიურია (${activeSubscription.plan_type}) → badge ჩანს`
+          : 'ვადა გასულია! badge არ უნდა ჩანდეს',
+        details: `expires_at: ${activeSubscription.expires_at}`
+      });
+    } else {
+      checks.push({
+        id: 'premium-badge',
+        element: '👑 Premium badge',
+        status: 'warn',
+        message: 'subscription არ არის → badge არ ჩანს (ნორმალურია)',
+        details: 'activeSubscription: null'
+      });
+    }
+
+    // 6. Coins (UI vs Database)
+    const uiCoins = economy?.cosmic_coins ?? 0;
+    const dbCoins = dbData?.cosmic_coins ?? null;
+    checks.push({
+      id: 'coins',
+      element: '💎 Coins',
+      status: dbCoins === null ? 'warn' : (uiCoins === dbCoins ? 'pass' : 'warn'),
+      message: dbCoins === null 
+        ? `UI: ${uiCoins} (DB ვერ წავიკითხე)`
+        : (uiCoins === dbCoins ? `UI: ${uiCoins} = DB: ${dbCoins} ✅` : `განსხვავება! UI: ${uiCoins}, DB: ${dbCoins}`),
+      details: `economy.cosmic_coins: ${uiCoins} | database: ${dbCoins}`
+    });
+
+    // 7. ენერგია (UI vs Database)
+    const uiEnergy = economy?.cosmic_focus ?? 0;
+    const uiMax = economy?.max_focus ?? 20;
+    const dbEnergy = dbData?.cosmic_focus ?? null;
+    const dbMax = dbData?.max_focus ?? null;
+    const energyValid = uiEnergy >= 0 && uiEnergy <= uiMax;
+    checks.push({
+      id: 'energy',
+      element: '⚡ ენერგია',
+      status: !energyValid ? 'fail' : (dbMax !== null && dbMax !== uiMax ? 'warn' : 'pass'),
+      message: !energyValid 
+        ? `არასწორია! ${uiEnergy}/${uiMax}`
+        : `UI: ${uiEnergy}/${uiMax} | DB: ${dbEnergy}/${dbMax}`,
+      details: `cosmic_focus: ${uiEnergy} | max_focus: ${uiMax} (უნდა იყოს 20)`
+    });
+
+    // 8. Streak (state vs DB)
+    const dbStreak = dbData?.current_streak ?? null;
+    checks.push({
+      id: 'streak',
+      element: '🔥 Streak',
+      status: dbStreak === null ? 'warn' : (currentStreak === dbStreak ? 'pass' : 'warn'),
+      message: dbStreak === null 
+        ? `State: ${currentStreak} (DB ვერ წავიკითხე)`
+        : (currentStreak === dbStreak ? `State: ${currentStreak} = DB: ${dbStreak} ✅` : `განსხვავება! State: ${currentStreak}, DB: ${dbStreak}`),
+      details: `currentStreak state: ${currentStreak} | economy.current_streak: ${economy?.current_streak} | DB: ${dbStreak}`
+    });
+
+    setProfileChecks(checks);
+    const passCount = checks.filter(c => c.status === 'pass').length;
+    const warnCount = checks.filter(c => c.status === 'warn').length;
+    const failCount = checks.filter(c => c.status === 'fail').length;
+    const ts = new Date().toLocaleTimeString('en-US', { hour12: false });
+    setProfileLastRun(ts);
+    addDebugLog('success', 'PROFILE_BANNER', `✅ Check complete: ${passCount} pass, ${warnCount} warn, ${failCount} fail`);
+    setProfileChecking(false);
+  };
+
   const xpToNext = getXPToNextLevel(economy.level || 1);
   const currentLevelXP = (() => {
     let remaining = economy.xp || 0; let lvl = 1;
@@ -196,7 +366,7 @@ export default function DebugPanel(props: DebugPanelProps) {
 ⚡ Boot Time: ${bootTime}ms
 🗄️ DB Status: ${dbStatus.toUpperCase()}
 🔑 Auth: ${authStatus === 'active' ? 'ACTIVE ✅' : 'INACTIVE ❌'}
-🛡️ Admin: ${user?.is_admin ? 'YES ✅' : 'NO ❌'}
+️ Admin: ${user?.is_admin ? 'YES ✅' : 'NO ❌'}
 
 TELEGRAM SDK
 📱 WebApp: ${tgAvailable ? 'YES ✅' : 'NO ❌'}
@@ -226,6 +396,15 @@ ECONOMY
 SUBSCRIPTION
 Status: ${activeSubscription ? 'Active ✅' : 'None ❌'}
 ${activeSubscription ? `Plan: ${activeSubscription.plan_type}\nExpires: ${new Date(activeSubscription.expires_at).toLocaleDateString()}` : ''}`;
+    } else if (tab === 'profile') {
+      text = `PROFILE BANNER CHECK (${profileChecks.length} elements)
+Last Run: ${profileLastRun || 'Never'}
+
+${profileChecks.map(c => 
+  `${c.status === 'pass' ? '✅' : c.status === 'warn' ? '⚠️' : '❌'} ${c.element}
+   ${c.message}
+   ${c.details || ''}`
+).join('\n\n')}`;
     } else if (tab === 'diagnostics') {
       text = `HOME DIAGNOSTICS (${diagnostics.results.length} checks)
 Last Run: ${diagnostics.lastRun || 'Never'}
@@ -268,6 +447,7 @@ Is Claiming: ${isClaiming}`;
   const tabs = [
     { id: 'system' as TabType, label: 'System', icon: Activity },
     { id: 'user' as TabType, label: 'User', icon: Users },
+    { id: 'profile' as TabType, label: 'Profile', icon: Crown },
     { id: 'diagnostics' as TabType, label: 'Diag', icon: Heart },
     { id: 'functions' as TabType, label: 'Functions', icon: Server },
     { id: 'logs' as TabType, label: 'Logs', icon: Terminal },
@@ -304,7 +484,7 @@ Is Claiming: ${isClaiming}`;
 
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '4px', padding: '8px 12px', borderBottom: '1px solid rgba(255, 229, 102, 0.2)', background: 'rgba(0,0,0,0.3)' }}>
             {tabs.map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ flex: '1 1 30%', minWidth: '60px', padding: '6px 4px', background: activeTab === tab.id ? 'rgba(255, 229, 102, 0.2)' : 'transparent', border: activeTab === tab.id ? '1px solid rgba(255, 229, 102, 0.5)' : '1px solid transparent', borderRadius: '8px', color: activeTab === tab.id ? '#ffe566' : '#94a3b8', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', fontSize: '9px', fontWeight: 'bold', transition: 'all 0.2s' }}>
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ flex: '1 1 22%', minWidth: '52px', padding: '6px 4px', background: activeTab === tab.id ? 'rgba(255, 229, 102, 0.2)' : 'transparent', border: activeTab === tab.id ? '1px solid rgba(255, 229, 102, 0.5)' : '1px solid transparent', borderRadius: '8px', color: activeTab === tab.id ? '#ffe566' : '#94a3b8', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', fontSize: '9px', fontWeight: 'bold', transition: 'all 0.2s' }}>
                 <tab.icon size={14} />{tab.label}
               </button>
             ))}
@@ -376,6 +556,88 @@ Is Claiming: ${isClaiming}`;
               </div>
             )}
 
+            {/* ============================================ */}
+            {/* 🆕 PROFILE BANNER TAB */}
+            {/* ============================================ */}
+            {activeTab === 'profile' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <span style={{ color: '#C5A059', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Crown size={14} /> PROFILE BANNER
+                  </span>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button 
+                      onClick={runProfileBannerCheck}
+                      disabled={profileChecking}
+                      style={{ 
+                        padding: '6px 12px', 
+                        background: profileChecking ? 'rgba(251, 191, 36, 0.3)' : 'rgba(197, 160, 89, 0.2)', 
+                        border: `1px solid ${profileChecking ? '#fbbf24' : '#C5A059'}`, 
+                        borderRadius: '6px', 
+                        color: profileChecking ? '#fbbf24' : '#C5A059', 
+                        cursor: profileChecking ? 'not-allowed' : 'pointer', 
+                        fontSize: '10px', 
+                        fontWeight: 'bold',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      <RefreshCw size={12} className={profileChecking ? 'animate-spin' : ''} /> 
+                      {profileChecking ? 'Checking...' : 'Run Check'}
+                    </button>
+                    <CopyButton tab="profile" />
+                  </div>
+                </div>
+
+                {profileLastRun && (
+                  <div style={{ padding: '8px', background: 'rgba(197, 160, 89, 0.1)', borderRadius: '6px', border: '1px solid rgba(197, 160, 89, 0.3)', fontSize: '10px', textAlign: 'center' }}>
+                    Last run: {profileLastRun} | ✅ {profileChecks.filter(c => c.status === 'pass').length} | ⚠️ {profileChecks.filter(c => c.status === 'warn').length} | ❌ {profileChecks.filter(c => c.status === 'fail').length}
+                  </div>
+                )}
+
+                {profileChecks.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '24px 12px', color: '#94a3b8', fontSize: '11px' }}>
+                    <Crown size={28} style={{ opacity: 0.4, marginBottom: '8px' }} />
+                    <div>დააჭირე "Run Check"-ს რომ შეამოწმო<br/>პროფილის ბანერის ყველა ელემენტი</div>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {profileChecks.map((check) => (
+                      <div 
+                        key={check.id}
+                        style={{ 
+                          padding: '10px', 
+                          background: 'rgba(0,0,0,0.3)', 
+                          borderRadius: '8px', 
+                          border: `1px solid ${
+                            check.status === 'pass' ? 'rgba(16, 185, 129, 0.5)' :
+                            check.status === 'warn' ? 'rgba(251, 191, 36, 0.5)' :
+                            'rgba(239, 68, 68, 0.5)'
+                          }`
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                          <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#e2e8f0' }}>
+                            {check.status === 'pass' && '✅'}
+                            {check.status === 'warn' && '⚠️'}
+                            {check.status === 'fail' && '❌'}
+                            {' '}{check.element}
+                          </div>
+                        </div>
+                        <div style={{ fontSize: '10px', color: '#cbd5e1', marginBottom: check.details ? '4px' : '0' }}>{check.message}</div>
+                        {check.details && (
+                          <div style={{ fontSize: '9px', color: '#94a3b8', padding: '4px', background: 'rgba(0,0,0,0.5)', borderRadius: '4px', wordBreak: 'break-word' }}>
+                            {check.details}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {activeTab === 'diagnostics' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
@@ -413,7 +675,6 @@ Is Claiming: ${isClaiming}`;
                   </div>
                 )}
 
-                {/* Test Buttons Grid */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
                   <button onClick={testEnergySystem} style={{ padding: '8px', background: '#fbbf24', border: 'none', borderRadius: '6px', color: '#000', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>⚡ Energy</button>
                   <button onClick={testLocalStorage} style={{ padding: '8px', background: '#60a5fa', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>💾 Storage</button>
@@ -425,7 +686,6 @@ Is Claiming: ${isClaiming}`;
                   <button onClick={testSupabaseConnection} style={{ padding: '8px', background: '#8b5cf6', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>🗄️ DB</button>
                 </div>
 
-                {/* Results List */}
                 {diagnostics.results.length > 0 && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '300px', overflowY: 'auto' }}>
                     {diagnostics.results.map((result, idx) => (
