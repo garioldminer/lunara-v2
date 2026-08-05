@@ -38,6 +38,8 @@ export async function getUserByTelegramId(telegramId: number): Promise<User | nu
     .single();
 
   if (error) {
+    // თუ მომხმარებელი არ არსებობს, ეს ნორმალურია (not found)
+    if (error.code === 'PGRST116') return null;
     console.error('Error fetching user:', error);
     return null;
   }
@@ -45,7 +47,8 @@ export async function getUserByTelegramId(telegramId: number): Promise<User | nu
   return data as User;
 }
 
-export async function createUser(tgUser: TelegramUser): Promise<User | null> {
+// 🆕 განახლებული ფუნქცია: იღებს authUid-ს და ანიჭებს მას როგორც id-ს
+export async function createUser(tgUser: TelegramUser, authUid: string): Promise<User | null> {
   if (!supabase) {
     console.warn('⚠️ Supabase not available');
     return null;
@@ -53,37 +56,89 @@ export async function createUser(tgUser: TelegramUser): Promise<User | null> {
   
   const userData = createUserDataFromTelegram(tgUser);
   
+  // ⚡ მაგიური ფიქსი: ვაიძულებთ, რომ ID იყოს ზუსტად Auth UID
+  const userDataWithId = {
+    ...userData,
+    id: authUid 
+  };
+  
   const { data, error } = await supabase
     .from('users')
-    .insert([userData])
+    .insert([userDataWithId])
     .select()
     .single();
 
   if (error) {
-    console.error('Error creating user:', error);
+    console.error('❌ Error creating user:', error);
     return null;
   }
 
-  console.log('✅ User created:', data);
+  console.log('✅ User created with correct Auth ID:', data);
   return data as User;
+}
+
+// 🆕 თვითგამოსწორებელი ფუნქცია ძველი, არასწორი ID-ებისთვის
+async function fixUserIdMismatch(oldId: string, newAuthUid: string, telegramId: number) {
+  if (!supabase) return;
+  try {
+    console.log('🔧 Fixing ID mismatch: migrating from', oldId, 'to', newAuthUid);
+    
+    // 1. განვაახლოთ users ცხრილი
+    await supabase.from('users').update({ id: newAuthUid }).eq('id', oldId);
+    
+    // 2. განვაახლოთ დაკავშირებული ცხრილები (რათა Foreign Key არ დაგვბლოკოს)
+    await supabase.from('readings').update({ user_id: newAuthUid }).eq('user_id', oldId);
+    await supabase.from('user_patterns').update({ user_id: newAuthUid }).eq('user_id', oldId);
+    await supabase.from('streaks').update({ user_id: newAuthUid }).eq('user_id', oldId);
+    await supabase.from('user_sessions').update({ user_id: newAuthUid }).eq('user_id', oldId);
+    await supabase.from('user_preferences').update({ user_id: newAuthUid }).eq('user_id', oldId);
+    
+    console.log('✅ Successfully migrated all user data to new Auth UID');
+  } catch (err) {
+    console.error('❌ Failed to fix ID mismatch:', err);
+  }
 }
 
 export async function getOrCreateUser(tgUser: TelegramUser): Promise<User | null> {
   if (!supabase) return null;
   
   try {
+    // 1. ჯერ ვიღებთ რეალურად ავტორიზებულ მომხმარებელს Supabase Auth-იდან
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !authUser) {
+      console.error('❌ No authenticated user found. Edge Function might have failed.');
+      return null;
+    }
+
+    const authUid = authUser.id;
+    console.log('🔑 Authenticated User ID (Auth UID):', authUid);
+
+    // 2. ვამოწმებთ, არსებობს თუ არა მომხმარებელი Telegram ID-ით
     let user = await getUserByTelegramId(tgUser.id);
     
     if (user) {
       console.log('✅ Existing user found:', user);
+      
+      // ⚡ თვითგამოსწორებელი ლოგიკა: თუ არსებული user.id არ ემთხვევა authUid-ს, ვასწორებთ
+      if (user.id !== authUid) {
+        console.warn('⚠️ ID Mismatch detected! Auto-fixing...');
+        await fixUserIdMismatch(user.id, authUid, tgUser.id);
+        
+        // ვკითხულობთ განახლებულ მომხმარებელს
+        user = await getUserByTelegramId(tgUser.id);
+      }
+      
       return user;
     }
 
-    console.log('🆕 Creating new user...');
-    user = await createUser(tgUser);
+    // 3. თუ მომხმარებელი არ არსებობს, ვქმნით ახალს სწორი Auth UID-ით
+    console.log('🆕 Creating new user with Auth UID:', authUid);
+    user = await createUser(tgUser, authUid);
     return user;
+
   } catch (err) {
-    console.error('Exception:', err);
+    console.error('❌ Exception in getOrCreateUser:', err);
     return null;
   }
 }
@@ -110,13 +165,11 @@ export async function updateUser(userId: string, updates: Partial<User>): Promis
   return data as User;
 }
 
-// ✅ ახალი ფუნქცია - onboarding completion-ისთვის
 export async function completeOnboarding(userId: string): Promise<User | null> {
   console.log('✅ Completing onboarding for user:', userId);
   return updateUser(userId, { onboarding_completed: true });
 }
 
-// ✅ ახალი ფუნქცია - Zodiac Sign reset-ისთვის
 export async function resetZodiacSign(userId: string): Promise<User | null> {
   console.log('🔄 Resetting zodiac sign for user:', userId);
   return updateUser(userId, { 
