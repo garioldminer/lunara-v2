@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { 
   Bug, X, CheckCircle, Activity, Settings, Terminal, Copy, Check, 
-  Zap, TrendingUp, RotateCcw, Shield, Trash2, ChevronDown, ChevronUp 
+  Zap, TrendingUp, RotateCcw, Shield, Trash2
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { useUser } from '../context/UserContext';
 
 interface DebugPanelProps {
   showDebug: boolean;
@@ -56,8 +55,6 @@ export default function DebugPanel({
   const [authStatus, setAuthStatus] = useState<'checking' | 'active' | 'inactive'>('checking');
   const [authUid, setAuthUid] = useState<string | null>(null);
   const [expandedLog, setExpandedLog] = useState<number | null>(null);
-
-  const { user: contextUser } = useUser();
 
   // 🆕 Check Auth Status dynamically
   useEffect(() => {
