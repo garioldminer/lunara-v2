@@ -119,45 +119,109 @@ const TABS: TabItem[] = [
   { id: 'ai', icon: Zap, label: 'AI', isExternal: true }
 ];
 
+// ============================================
+// ✨ ახალი ლამაზი Toast Notification
+// ============================================
 function ToastNotification({ toast, onClose }: { toast: Toast; onClose: () => void }) {
   useEffect(() => {
-    const timer = setTimeout(onClose, 3000);
+    // ავტომატურად ქრება 6 წამში
+    const timer = setTimeout(onClose, 6000);
     return () => clearTimeout(timer);
   }, [onClose]);
 
+  const borderColor = toast.type === 'success' ? 'rgba(16, 185, 129, 0.6)' : toast.type === 'error' ? 'rgba(239, 68, 68, 0.6)' : 'rgba(197, 160, 89, 0.6)';
+  const glowColor = toast.type === 'success' ? 'rgba(16, 185, 129, 0.25)' : toast.type === 'error' ? 'rgba(239, 68, 68, 0.25)' : 'rgba(197, 160, 89, 0.25)';
+
   return (
-    <motion.div
-      className={`toast toast-${toast.type}`}
-      initial={{ opacity: 0, y: 50, scale: 0.9 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 20, scale: 0.9 }}
-      transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-      style={{
-        position: 'fixed',
-        top: 'max(16px, env(safe-area-inset-top))',
-        right: '16px',
-        left: '16px',
-        marginLeft: 'auto',
-        maxWidth: '360px',
-        zIndex: 10001,
-        background: toast.type === 'success' ? 'rgba(16, 185, 129, 0.95)' : toast.type === 'error' ? 'rgba(239, 68, 68, 0.95)' : 'rgba(59, 130, 246, 0.95)',
-        color: '#fff',
-        padding: '12px 16px',
-        borderRadius: '12px',
-        boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
-        fontSize: '13.5px',
-        fontWeight: 500,
-        display: 'flex',
-        alignItems: 'center',
-        gap: '10px'
-      }}
-    >
-      <span>{toast.type === 'success' ? '✅' : toast.type === 'error' ? '⚠️' : 'ℹ️'}</span>
-      <span style={{ flex: 1 }}>{toast.message}</span>
-      <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', opacity: 0.85 }}>
-        <X size={16} />
-      </button>
-    </motion.div>
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 10001,
+      pointerEvents: 'none',
+      padding: '24px'
+    }}>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.85, y: 16 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.85, y: 16 }}
+        transition={{ type: 'spring', damping: 22, stiffness: 300 }}
+        style={{
+          pointerEvents: 'auto',
+          position: 'relative',
+          background: 'linear-gradient(145deg, #1c1712 0%, #12100c 100%)',
+          border: `1.5px solid ${borderColor}`,
+          borderRadius: '16px',
+          boxShadow: `0 12px 40px rgba(0,0,0,0.85), 0 0 24px ${glowColor}, inset 0 1px 0 rgba(255,255,255,0.06)`,
+          padding: '22px 20px 18px 20px',
+          maxWidth: '320px',
+          width: '100%',
+          textAlign: 'center'
+        }}
+      >
+        <button
+          onClick={onClose}
+          aria-label="Close notification"
+          style={{
+            position: 'absolute',
+            top: '8px',
+            right: '8px',
+            width: '26px',
+            height: '26px',
+            borderRadius: '50%',
+            background: 'rgba(197, 160, 89, 0.12)',
+            border: '1px solid rgba(197, 160, 89, 0.35)',
+            color: '#C5A059',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            transition: 'all 0.2s'
+          }}
+        >
+          <X size={13} />
+        </button>
+
+        <div style={{
+          width: '44px',
+          height: '44px',
+          margin: '0 auto 10px auto',
+          borderRadius: '50%',
+          background: toast.type === 'success' ? 'rgba(16, 185, 129, 0.15)' : toast.type === 'error' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(197, 160, 89, 0.15)',
+          border: `1px solid ${borderColor}`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '20px'
+        }}>
+          {toast.type === 'success' ? '✅' : toast.type === 'error' ? '⚠️' : 'ℹ️'}
+        </div>
+
+        <div style={{
+          fontFamily: 'Georgia, serif',
+          fontSize: '14px',
+          fontWeight: 600,
+          color: '#f5e9d0',
+          lineHeight: 1.45,
+          letterSpacing: '0.3px',
+          paddingRight: '12px'
+        }}>
+          {toast.message}
+        </div>
+
+        <div style={{
+          marginTop: '12px',
+          height: '2px',
+          borderRadius: '1px',
+          background: `linear-gradient(90deg, transparent, ${borderColor}, transparent)`
+        }} />
+      </motion.div>
+    </div>
   );
 }
 
@@ -219,6 +283,9 @@ export default function AdminScreen({ onNavigate }: Props) {
   // MEMBERS TAB STATE
   // ============================================
   const [membersWithEconomy, setMembersWithEconomy] = useState<MemberWithEconomy[]>([]);
+  const [customXpInputs, setCustomXpInputs] = useState<Record<string, string>>({});
+  const [customLevelInputs, setCustomLevelInputs] = useState<Record<string, string>>({});
+  const [customCoinsInputs, setCustomCoinsInputs] = useState<Record<string, string>>({});
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     setToast({ message, type });
@@ -370,6 +437,39 @@ export default function AdminScreen({ onNavigate }: Props) {
     } catch (err: any) {
       addDebugLog('error', 'MEMBERS', `❌ Exception: ${err.message}`);
     }
+  };
+
+  // ============================================
+  // ✍️ CUSTOM INPUT HANDLERS
+  // ============================================
+  const handleCustomXP = (userId: string) => {
+    const amount = parseInt(customXpInputs[userId] || '0', 10);
+    if (!amount || amount === 0) {
+      showToast('Enter a valid XP amount', 'error');
+      return;
+    }
+    handleAddXP(userId, amount);
+    setCustomXpInputs(prev => ({ ...prev, [userId]: '' }));
+  };
+
+  const handleCustomLevel = (userId: string) => {
+    const level = parseInt(customLevelInputs[userId] || '0', 10);
+    if (!level || level < 1) {
+      showToast('Enter a valid level (1 or higher)', 'error');
+      return;
+    }
+    handleSetLevel(userId, level);
+    setCustomLevelInputs(prev => ({ ...prev, [userId]: '' }));
+  };
+
+  const handleCustomCoins = (userId: string) => {
+    const amount = parseInt(customCoinsInputs[userId] || '0', 10);
+    if (!amount || amount === 0) {
+      showToast('Enter a valid coins amount', 'error');
+      return;
+    }
+    handleAddCoins(userId, amount);
+    setCustomCoinsInputs(prev => ({ ...prev, [userId]: '' }));
   };
 
   const loadData = async () => {
@@ -799,6 +899,42 @@ export default function AdminScreen({ onNavigate }: Props) {
                           <button className="extend-btn" onClick={() => handleAddXP(member.user_id, 500)}>+500 XP</button>
                           <button className="extend-btn" onClick={() => handleAddXP(member.user_id, 1000)}>+1000 XP</button>
                         </div>
+                        {/* ✍️ Custom XP Input */}
+                        <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
+                          <input 
+                            type="number" 
+                            placeholder="Custom XP amount (e.g. 75)"
+                            value={customXpInputs[member.user_id] || ''}
+                            onChange={(e) => setCustomXpInputs(prev => ({ ...prev, [member.user_id]: e.target.value }))}
+                            style={{
+                              flex: 1,
+                              minWidth: 0,
+                              background: 'rgba(255,255,255,0.05)',
+                              border: '1px solid rgba(197, 160, 89, 0.3)',
+                              borderRadius: '6px',
+                              padding: '7px 10px',
+                              color: '#fff',
+                              fontSize: '11px',
+                              outline: 'none'
+                            }}
+                          />
+                          <button 
+                            onClick={() => handleCustomXP(member.user_id)}
+                            style={{
+                              background: 'rgba(197, 160, 89, 0.2)',
+                              border: '1px solid #C5A059',
+                              color: '#C5A059',
+                              borderRadius: '6px',
+                              padding: '7px 14px',
+                              fontSize: '10px',
+                              fontWeight: 'bold',
+                              cursor: 'pointer',
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            Add XP
+                          </button>
+                        </div>
                       </div>
 
                       {/* Level Management */}
@@ -819,6 +955,43 @@ export default function AdminScreen({ onNavigate }: Props) {
                             </button>
                           ))}
                         </div>
+                        {/* ✍️ Custom Level Input */}
+                        <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
+                          <input 
+                            type="number" 
+                            placeholder="Custom level (e.g. 7)"
+                            min="1"
+                            value={customLevelInputs[member.user_id] || ''}
+                            onChange={(e) => setCustomLevelInputs(prev => ({ ...prev, [member.user_id]: e.target.value }))}
+                            style={{
+                              flex: 1,
+                              minWidth: 0,
+                              background: 'rgba(255,255,255,0.05)',
+                              border: '1px solid rgba(197, 160, 89, 0.3)',
+                              borderRadius: '6px',
+                              padding: '7px 10px',
+                              color: '#fff',
+                              fontSize: '11px',
+                              outline: 'none'
+                            }}
+                          />
+                          <button 
+                            onClick={() => handleCustomLevel(member.user_id)}
+                            style={{
+                              background: 'rgba(197, 160, 89, 0.2)',
+                              border: '1px solid #C5A059',
+                              color: '#C5A059',
+                              borderRadius: '6px',
+                              padding: '7px 14px',
+                              fontSize: '10px',
+                              fontWeight: 'bold',
+                              cursor: 'pointer',
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            Set Level
+                          </button>
+                        </div>
                       </div>
 
                       {/* Coins Management */}
@@ -830,6 +1003,42 @@ export default function AdminScreen({ onNavigate }: Props) {
                           <button className="extend-btn" onClick={() => handleAddCoins(member.user_id, 100)}>+100 💎</button>
                           <button className="extend-btn" onClick={() => handleAddCoins(member.user_id, 500)}>+500 💎</button>
                           <button className="extend-btn" onClick={() => handleAddCoins(member.user_id, 1000)}>+1000 💎</button>
+                        </div>
+                        {/* ✍️ Custom Coins Input */}
+                        <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
+                          <input 
+                            type="number" 
+                            placeholder="Custom coins amount (e.g. 250)"
+                            value={customCoinsInputs[member.user_id] || ''}
+                            onChange={(e) => setCustomCoinsInputs(prev => ({ ...prev, [member.user_id]: e.target.value }))}
+                            style={{
+                              flex: 1,
+                              minWidth: 0,
+                              background: 'rgba(255,255,255,0.05)',
+                              border: '1px solid rgba(197, 160, 89, 0.3)',
+                              borderRadius: '6px',
+                              padding: '7px 10px',
+                              color: '#fff',
+                              fontSize: '11px',
+                              outline: 'none'
+                            }}
+                          />
+                          <button 
+                            onClick={() => handleCustomCoins(member.user_id)}
+                            style={{
+                              background: 'rgba(197, 160, 89, 0.2)',
+                              border: '1px solid #C5A059',
+                              color: '#C5A059',
+                              borderRadius: '6px',
+                              padding: '7px 14px',
+                              fontSize: '10px',
+                              fontWeight: 'bold',
+                              cursor: 'pointer',
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            Add Coins
+                          </button>
                         </div>
                       </div>
 
@@ -1135,7 +1344,7 @@ export default function AdminScreen({ onNavigate }: Props) {
         )}
       </div>
 
-      {/* Bottom nav — fixed 4×2 grid, no scroll */}
+      {/* Bottom nav — fixed grid */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(4, 1fr)',
