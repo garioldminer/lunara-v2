@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { 
-  Bug, X, CheckCircle, Activity, Settings, Terminal, Copy, Check, 
-  Zap, TrendingUp, RotateCcw, Shield, Trash2, Server, Database,
-  Clock, AlertCircle, Play, RefreshCw, Eye, EyeOff, ChevronDown,
-  Cpu, Wifi, WifiOff, Package, Users, CreditCard, Flame, Gem
+  Bug, X, Activity, Users, Server, Terminal, Settings, 
+  Copy, Check, TrendingUp, RefreshCw, Play, Eye, ChevronDown, 
+  Cpu, Database, Package, CreditCard
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { 
@@ -48,26 +47,33 @@ interface DebugPanelProps {
   xpTestLogs: string[];
 }
 
-type TabType = 'system' | 'user' | 'network' | 'functions' | 'logs' | 'actions';
+type TabType = 'system' | 'user' | 'functions' | 'logs' | 'actions';
 
-interface NetworkRequest {
-  id: number;
-  timestamp: string;
-  method: string;
-  endpoint: string;
-  status: 'success' | 'error' | 'pending';
-  responseTime: number;
-  details?: any;
-}
+export default function DebugPanel(props: DebugPanelProps) {
+  // დესტრუქტურიზაცია მხოლოდ იმ პროპსების, რომლებიც რეალურად გამოიყენება.
+  // დანარჩენი რჩება ინტერფეისში HeadScreen.tsx-თან თავსებადობისთვის, მაგრამ აქ არ იქმნება, 
+  // რაც აგვაცილებს TS6133 (unused variable) შეცდომებს.
+  const {
+    showDebug, 
+    setShowDebug, 
+    user, 
+    economy, 
+    debugLogs, 
+    dbStatus,
+    activeSubscription, 
+    currentStreak, 
+    setDebugLogs,
+    checkDatabaseStatus, 
+    refreshUserDataDebug, 
+    handleLogoutAndReset, 
+    testAddCoins,
+    testAddXP, 
+    testAddEnergy, 
+    testSpendEnergy, 
+    testCompleteQuest, 
+    reloadFromDatabase
+  } = props;
 
-export default function DebugPanel({
-  showDebug, setShowDebug, user, economy, dbDebugInfo, debugLogs, dbStatus,
-  activeSubscription, questsLoading, dailyQuests, activeDailyQuest, isClaimingQuest,
-  timeLeft, showQuestModal, rewardClaimed, isClaiming, currentStreak, setDebugLogs,
-  checkDatabaseStatus, refreshUserDataDebug, handleLogoutAndReset, testAddCoins,
-  testAddXP, testAddEnergy, testSpendEnergy, testCompleteQuest, reloadFromDatabase,
-  testAddXPWithLevel, forceRecalcLevel, xpTestLogs
-}: DebugPanelProps) {
   const [activeTab, setActiveTab] = useState<TabType>('system');
   const [copySuccess, setCopySuccess] = useState(false);
   
@@ -86,9 +92,6 @@ export default function DebugPanel({
   const [expandedFunction, setExpandedFunction] = useState<string | null>(null);
   const [functionLogs, setFunctionLogs] = useState<Record<string, FunctionLog[]>>({});
 
-  // Network Monitor State
-  const [networkRequests, setNetworkRequests] = useState<NetworkRequest[]>([]);
-
   // UI State
   const [expandedLog, setExpandedLog] = useState<number | null>(null);
 
@@ -99,12 +102,10 @@ export default function DebugPanel({
     const checkSystem = async () => {
       const startTime = performance.now();
       
-      // Telegram SDK
       const tg = (window as any).Telegram?.WebApp;
       setTgAvailable(!!tg);
       setHasInitData(!!tg?.initData);
 
-      // Supabase Auth
       if (supabase) {
         try {
           const { data: { user: authUser }, error } = await supabase.auth.getUser();
@@ -115,7 +116,7 @@ export default function DebugPanel({
             setAuthStatus('active');
             setAuthUid(authUser.id);
           }
-        } catch (err) {
+        } catch {
           setAuthStatus('inactive');
           setAuthUid(null);
         }
@@ -123,7 +124,6 @@ export default function DebugPanel({
         setAuthStatus('inactive');
       }
 
-      // LocalStorage
       const lsData: Record<string, any> = {};
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
@@ -153,7 +153,6 @@ export default function DebugPanel({
       const statuses = await getAllFunctionStatuses(user.id);
       setFunctionStatuses(statuses);
       
-      // Load logs for each function
       const logsMap: Record<string, FunctionLog[]> = {};
       for (const func of EDGE_FUNCTIONS) {
         const logs = await getRecentLogs(user.id, 5);
@@ -170,7 +169,7 @@ export default function DebugPanel({
   useEffect(() => {
     if (showDebug && activeTab === 'functions') {
       loadFunctionStatuses();
-      const interval = setInterval(loadFunctionStatuses, 30000); // Refresh every 30s
+      const interval = setInterval(loadFunctionStatuses, 30000);
       return () => clearInterval(interval);
     }
   }, [showDebug, activeTab, loadFunctionStatuses]);
@@ -184,9 +183,9 @@ export default function DebugPanel({
       if (result.success) {
         addDebugLog('success', 'FUNCTION_TEST', `✅ ${functionName} executed successfully`, result.log);
       } else {
-        addDebugLog('error', 'FUNCTION_TEST', ` ${functionName} failed: ${result.error}`);
+        addDebugLog('error', 'FUNCTION_TEST', `❌ ${functionName} failed: ${result.error}`);
       }
-      await loadFunctionStatuses(); // Refresh statuses
+      await loadFunctionStatuses();
     } catch (error: any) {
       addDebugLog('error', 'FUNCTION_TEST', `💥 ${functionName} exception: ${error.message}`);
     } finally {
@@ -241,7 +240,6 @@ export default function DebugPanel({
   const tabs = [
     { id: 'system' as TabType, label: 'System', icon: Activity },
     { id: 'user' as TabType, label: 'User', icon: Users },
-    { id: 'network' as TabType, label: 'Network', icon: Wifi },
     { id: 'functions' as TabType, label: 'Functions', icon: Server },
     { id: 'logs' as TabType, label: 'Logs', icon: Terminal },
     { id: 'actions' as TabType, label: 'Actions', icon: Settings },
@@ -319,8 +317,8 @@ export default function DebugPanel({
                     <Activity size={14} /> SYSTEM STATUS
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '11px' }}>
-                    <div> Boot Time: <strong>{bootTime}ms</strong></div>
-                    <div>️ DB Status: <strong style={{ color: dbStatus === 'connected' ? '#10b981' : '#ef4444' }}>{dbStatus.toUpperCase()}</strong></div>
+                    <div>⚡ Boot Time: <strong>{bootTime}ms</strong></div>
+                    <div>🗄️ DB Status: <strong style={{ color: dbStatus === 'connected' ? '#10b981' : '#ef4444' }}>{dbStatus.toUpperCase()}</strong></div>
                     <div>🔑 Auth: <span style={{ color: authStatus === 'active' ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>{authStatus === 'active' ? 'ACTIVE ✅' : 'INACTIVE ❌'}</span></div>
                     <div>🛡️ Admin: <span style={{ color: user?.is_admin ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>{user?.is_admin ? 'YES ✅' : 'NO ❌'}</span></div>
                   </div>
@@ -341,7 +339,7 @@ export default function DebugPanel({
                     <Database size={14} /> IDENTITY CHECK
                   </div>
                   <div style={{ fontSize: '11px', marginBottom: '6px' }}>
-                    <div> Auth UID: <span style={{ color: authUid ? '#10b981' : '#ef4444', fontSize: '9px', wordBreak: 'break-all' }}>{authUid ? `${authUid.substring(0, 8)}...` : 'NULL'}</span></div>
+                    <div>🆔 Auth UID: <span style={{ color: authUid ? '#10b981' : '#ef4444', fontSize: '9px', wordBreak: 'break-all' }}>{authUid ? `${authUid.substring(0, 8)}...` : 'NULL'}</span></div>
                     <div>🆔 DB ID: <span style={{ color: user?.id ? '#10b981' : '#ef4444', fontSize: '9px', wordBreak: 'break-all' }}>{user?.id ? `${user.id.substring(0, 8)}...` : 'NULL'}</span></div>
                     <div style={{ marginTop: '4px', padding: '4px', background: authUid === user?.id ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)', borderRadius: '4px', textAlign: 'center' }}>
                       {authUid === user?.id ? '✅ IDs Match' : '❌ IDs Mismatch'}
@@ -415,38 +413,7 @@ export default function DebugPanel({
               </div>
             )}
 
-            {/*  NETWORK MONITOR TAB */}
-            {activeTab === 'network' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
-                  <div style={{ marginBottom: '8px', color: '#60a5fa', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Wifi size={14} /> API REQUESTS ({networkRequests.length})
-                  </div>
-                  {networkRequests.length === 0 ? (
-                    <div style={{ color: '#94a3b8', fontSize: '11px', textAlign: 'center', padding: '20px' }}>
-                      No requests captured yet. Interact with the app to see network activity.
-                    </div>
-                  ) : (
-                    <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                      {networkRequests.slice().reverse().map((req, i) => (
-                        <div key={i} style={{ padding: '8px', marginBottom: '6px', background: 'rgba(0,0,0,0.3)', borderRadius: '6px', borderLeft: `3px solid ${req.status === 'success' ? '#10b981' : req.status === 'error' ? '#ef4444' : '#fbbf24'}` }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                            <span style={{ color: '#60a5fa', fontWeight: 'bold', fontSize: '10px' }}>{req.method}</span>
-                            <span style={{ color: '#94a3b8', fontSize: '9px' }}>{req.responseTime}ms</span>
-                          </div>
-                          <div style={{ color: '#e2e8f0', fontSize: '10px', wordBreak: 'break-all' }}>{req.endpoint}</div>
-                          <div style={{ color: req.status === 'success' ? '#10b981' : '#ef4444', fontSize: '9px', marginTop: '2px' }}>
-                            {req.status === 'success' ? '✅ Success' : req.status === 'error' ? '❌ Error' : '⏳ Pending'}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/*  EDGE FUNCTIONS TAB */}
+            {/* ⚡ EDGE FUNCTIONS TAB */}
             {activeTab === 'functions' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div style={{ padding: '12px', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
@@ -543,7 +510,7 @@ export default function DebugPanel({
               </div>
             )}
 
-            {/*  LIVE LOGS TAB */}
+            {/* 📝 LIVE LOGS TAB */}
             {activeTab === 'logs' && (
               <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
@@ -612,15 +579,15 @@ export default function DebugPanel({
                 <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
                   <div style={{ marginBottom: '8px', color: '#60a5fa', fontWeight: 'bold', fontSize: '12px' }}>💎 DIAMOND TESTS</div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                    <button onClick={() => testAddCoins(100)} style={{ padding: '8px', background: '#a78bfa', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}>+100 </button>
+                    <button onClick={() => testAddCoins(100)} style={{ padding: '8px', background: '#a78bfa', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}>+100 💎</button>
                     <button onClick={() => testAddXP(100)} style={{ padding: '8px', background: '#3b82f6', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}>+100 XP</button>
                   </div>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                  <button onClick={reloadFromDatabase} style={{ padding: '10px', background: '#10b981', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}> RELOAD DB</button>
+                  <button onClick={reloadFromDatabase} style={{ padding: '10px', background: '#10b981', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}>🔄 RELOAD DB</button>
                   <button onClick={testCompleteQuest} style={{ padding: '10px', background: '#8b5cf6', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}>🎯 TEST QUEST</button>
                   <button onClick={checkDatabaseStatus} style={{ padding: '10px', background: '#3b82f6', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}>🩺 CHECK DB</button>
-                  <button onClick={refreshUserDataDebug} style={{ padding: '10px', background: '#0ea5e9', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}> REFRESH USER</button>
+                  <button onClick={refreshUserDataDebug} style={{ padding: '10px', background: '#0ea5e9', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}>🔄 REFRESH USER</button>
                 </div>
                 <button onClick={handleLogoutAndReset} style={{ width: '100%', padding: '10px', background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <X size={14} style={{ marginRight: '4px' }} /> LOGOUT & RESET
