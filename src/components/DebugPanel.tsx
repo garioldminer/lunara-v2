@@ -1,5 +1,10 @@
-import { useState } from 'react';
-import { Bug, X, CheckCircle, Activity, Settings, Terminal, Copy, Check, Zap, TrendingUp, RotateCcw } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { 
+  Bug, X, CheckCircle, Activity, Settings, Terminal, Copy, Check, 
+  Zap, TrendingUp, RotateCcw, Shield, Trash2, ChevronDown, ChevronUp 
+} from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { useUser } from '../context/UserContext';
 
 interface DebugPanelProps {
   showDebug: boolean;
@@ -29,13 +34,12 @@ interface DebugPanelProps {
   testSpendEnergy: (amount: number) => void;
   testCompleteQuest: () => void;
   reloadFromDatabase: () => void;
-  // ✅ ახალი props XP სისტემისთვის
   testAddXPWithLevel: (amount: number) => void;
   forceRecalcLevel: () => void;
   xpTestLogs: string[];
 }
 
-type TabType = 'overview' | 'quests' | 'actions' | 'xp' | 'logs';
+type TabType = 'overview' | 'quests' | 'actions' | 'xp' | 'smart' | 'logs';
 
 export default function DebugPanel({
   showDebug, setShowDebug, user, economy, dbDebugInfo, debugLogs, dbStatus,
@@ -47,18 +51,49 @@ export default function DebugPanel({
 }: DebugPanelProps) {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [copySuccess, setCopySuccess] = useState(false);
+  
+  // 🆕 Smart Debug State
+  const [authStatus, setAuthStatus] = useState<'checking' | 'active' | 'inactive'>('checking');
+  const [authUid, setAuthUid] = useState<string | null>(null);
+  const [expandedLog, setExpandedLog] = useState<number | null>(null);
+
+  const { user: contextUser } = useUser();
+
+  // 🆕 Check Auth Status dynamically
+  useEffect(() => {
+    const checkAuth = async () => {
+      if (!supabase) {
+        setAuthStatus('inactive');
+        return;
+      }
+      try {
+        const { data: { user: authUser }, error } = await supabase.auth.getUser();
+        if (error || !authUser) {
+          setAuthStatus('inactive');
+          setAuthUid(null);
+        } else {
+          setAuthStatus('active');
+          setAuthUid(authUser.id);
+        }
+      } catch (err) {
+        setAuthStatus('inactive');
+        setAuthUid(null);
+      }
+    };
+    checkAuth();
+  }, [showDebug]); // Re-check when panel opens
 
   const handleCopyLogs = () => {
+    const authInfo = `Auth Status: ${authStatus}\nAuth UID: ${authUid || 'NULL'}\nUser ID: ${user?.id || 'NULL'}\n\n`;
     const logText = debugLogs.map(log => 
       `[${log.timestamp}] [${log.category}] ${log.type.toUpperCase()}: ${log.message}${log.data ? '\n' + JSON.stringify(log.data, null, 2) : ''}`
     ).join('\n\n');
     
-    navigator.clipboard.writeText(logText);
+    navigator.clipboard.writeText(authInfo + logText);
     setCopySuccess(true);
     setTimeout(() => setCopySuccess(false), 2000);
   };
 
-  // XP Level thresholds (იგივე ლოგიკა, რაც ბაზაში)
   const getXPToNextLevel = (level: number): number => {
     if (level === 1) return 100;
     if (level === 2) return 250;
@@ -85,6 +120,7 @@ export default function DebugPanel({
     { id: 'quests' as TabType, label: 'Quests', icon: CheckCircle },
     { id: 'actions' as TabType, label: 'Actions', icon: Settings },
     { id: 'xp' as TabType, label: 'XP System', icon: Zap },
+    { id: 'smart' as TabType, label: 'Smart Debug', icon: Shield }, // 🆕 ახალი ტაბი
     { id: 'logs' as TabType, label: 'Logs', icon: Terminal },
   ];
 
@@ -229,11 +265,8 @@ export default function DebugPanel({
               </div>
             )}
 
-            {/* ✅ ახალი ტაბი: XP SYSTEM */}
             {activeTab === 'xp' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                
-                {/* Live Stats */}
                 <div style={{ padding: '12px', background: 'rgba(251, 191, 36, 0.1)', borderRadius: '8px', border: '1px solid rgba(251, 191, 36, 0.3)' }}>
                   <div style={{ marginBottom: '8px', color: '#fbbf24', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <TrendingUp size={14} /> LIVE XP STATS
@@ -244,23 +277,16 @@ export default function DebugPanel({
                     <div>📈 Level XP: <strong>{currentLevelXP}/{xpToNext}</strong></div>
                     <div>🎯 Next Lvl: <strong>{xpToNext - currentLevelXP} XP</strong></div>
                   </div>
-                  {/* XP Progress Bar */}
                   <div style={{ height: '8px', borderRadius: '4px', background: 'rgba(255,255,255,0.1)', overflow: 'hidden' }}>
                     <div style={{ 
-                      height: '100%', 
-                      width: `${xpPercent}%`, 
-                      background: 'linear-gradient(90deg, #fbbf24, #ffe566)', 
-                      borderRadius: '4px',
-                      transition: 'width 0.5s ease',
-                      boxShadow: '0 0 8px rgba(251, 191, 36, 0.5)'
+                      height: '100%', width: `${xpPercent}%`, background: 'linear-gradient(90deg, #fbbf24, #ffe566)', 
+                      borderRadius: '4px', transition: 'width 0.5s ease', boxShadow: '0 0 8px rgba(251, 191, 36, 0.5)'
                     }} />
                   </div>
                   <div style={{ fontSize: '9px', color: '#94a3b8', marginTop: '4px', textAlign: 'right' }}>
                     {xpPercent.toFixed(1)}% to Level {(economy.level || 1) + 1}
                   </div>
                 </div>
-
-                {/* Level Thresholds Reference */}
                 <div style={{ padding: '12px', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
                   <div style={{ marginBottom: '8px', color: '#a78bfa', fontWeight: 'bold', fontSize: '12px' }}>📋 LEVEL THRESHOLDS</div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px', fontSize: '10px' }}>
@@ -276,59 +302,39 @@ export default function DebugPanel({
                     ))}
                   </div>
                 </div>
-
-                {/* Test Actions */}
                 <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
                   <div style={{ marginBottom: '8px', color: '#60a5fa', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Zap size={14} /> ADD XP (with Auto Level)
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '6px' }}>
                     {[50, 100, 500, 2000].map(amount => (
-                      <button 
-                        key={amount}
-                        onClick={() => testAddXPWithLevel(amount)} 
-                        style={{ 
-                          padding: '8px 4px', 
-                          background: amount >= 500 ? 'linear-gradient(135deg, #fbbf24, #d97706)' : '#3b82f6', 
-                          border: 'none', borderRadius: '6px', 
-                          color: amount >= 500 ? '#000' : '#fff', 
-                          cursor: 'pointer', fontWeight: 'bold', fontSize: '11px'
-                        }}
-                      >
+                      <button key={amount} onClick={() => testAddXPWithLevel(amount)} style={{ 
+                        padding: '8px 4px', background: amount >= 500 ? 'linear-gradient(135deg, #fbbf24, #d97706)' : '#3b82f6', 
+                        border: 'none', borderRadius: '6px', color: amount >= 500 ? '#000' : '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '11px'
+                      }}>
                         +{amount}
                       </button>
                     ))}
                   </div>
-                  <button 
-                    onClick={forceRecalcLevel} 
-                    style={{ 
-                      width: '100%', marginTop: '8px', padding: '10px', 
-                      background: 'rgba(239, 68, 68, 0.2)', border: '1px solid rgba(239, 68, 68, 0.4)', 
-                      borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
-                    }}
-                  >
+                  <button onClick={forceRecalcLevel} style={{ 
+                    width: '100%', marginTop: '8px', padding: '10px', background: 'rgba(239, 68, 68, 0.2)', border: '1px solid rgba(239, 68, 68, 0.4)', 
+                    borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
+                  }}>
                     <RotateCcw size={12} /> Force Recalculate Level from DB
                   </button>
                 </div>
-
-                {/* XP Test Logs */}
                 <div style={{ padding: '12px', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
                   <div style={{ marginBottom: '8px', color: '#f472b6', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Terminal size={14} /> XP TEST LOGS ({xpTestLogs.length})
                   </div>
                   <div style={{ maxHeight: '150px', overflowY: 'auto', background: 'rgba(0,0,0,0.5)', borderRadius: '6px', padding: '6px' }}>
                     {xpTestLogs.length === 0 ? (
-                      <div style={{ color: '#64748b', fontSize: '10px', textAlign: 'center', padding: '12px' }}>
-                        No XP tests yet. Click a button above!
-                      </div>
+                      <div style={{ color: '#64748b', fontSize: '10px', textAlign: 'center', padding: '12px' }}>No XP tests yet.</div>
                     ) : (
                       xpTestLogs.slice().reverse().map((log, i) => (
                         <div key={i} style={{ 
-                          padding: '4px 6px', marginBottom: '3px', fontSize: '10px',
-                          background: 'rgba(255,255,255,0.03)', borderRadius: '4px',
-                          color: log.includes('LEVEL UP') ? '#10b981' : 
-                                 log.includes('ERROR') ? '#ef4444' : '#e2e8f0',
+                          padding: '4px 6px', marginBottom: '3px', fontSize: '10px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px',
+                          color: log.includes('LEVEL UP') ? '#10b981' : log.includes('ERROR') ? '#ef4444' : '#e2e8f0',
                           fontWeight: log.includes('LEVEL UP') ? 'bold' : 'normal'
                         }}>
                           {log}
@@ -340,46 +346,74 @@ export default function DebugPanel({
               </div>
             )}
 
+            {/* 🆕 SMART DEBUG TAB */}
+            {activeTab === 'smart' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ padding: '12px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                  <div style={{ marginBottom: '8px', color: '#10b981', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Shield size={14} /> AUTH & STATE STATUS
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '11px' }}>
+                    <div>🔑 Auth: <span style={{ color: authStatus === 'active' ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>{authStatus === 'active' ? 'ACTIVE ✅' : 'INACTIVE ❌'}</span></div>
+                    <div>👤 UID: <span style={{ color: authUid ? '#10b981' : '#ef4444', fontSize: '9px', wordBreak: 'break-all' }}>{authUid ? `${authUid.substring(0, 8)}...` : 'NULL'}</span></div>
+                    <div>🆔 DB ID: <span style={{ color: user?.id ? '#10b981' : '#ef4444', fontSize: '9px', wordBreak: 'break-all' }}>{user?.id ? `${user.id.substring(0, 8)}...` : 'NULL'}</span></div>
+                    <div>🛡️ Is Admin: <span style={{ color: user?.is_admin ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>{user?.is_admin ? 'YES ✅' : 'NO ❌'}</span></div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <button onClick={handleCopyLogs} style={{ flex: 1, padding: '8px', background: copySuccess ? 'rgba(16, 185, 129, 0.3)' : 'rgba(96, 165, 250, 0.2)', border: `1px solid ${copySuccess ? '#10b981' : '#60a5fa'}`, borderRadius: '6px', color: copySuccess ? '#10b981' : '#60a5fa', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                    {copySuccess ? <><Check size={12} /> Copied!</> : <><Copy size={12} /> Copy All Logs</>}
+                  </button>
+                  <button onClick={() => setDebugLogs([])} style={{ padding: '8px 12px', background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                    <Trash2 size={12} /> Clear
+                  </button>
+                </div>
+
+                <div style={{ flex: 1, overflowY: 'auto', maxHeight: '250px', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', padding: '8px' }}>
+                  {debugLogs.length === 0 ? (
+                    <div style={{ color: '#64748b', fontSize: '11px', textAlign: 'center', padding: '20px' }}>No logs yet. Try an action!</div>
+                  ) : (
+                    debugLogs.slice().reverse().map((log, i) => (
+                      <div key={i} style={{ padding: '8px', marginBottom: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', borderLeft: `3px solid ${log.type === 'error' ? '#ef4444' : log.type === 'success' ? '#10b981' : '#fbbf24'}`, cursor: log.data ? 'pointer' : 'default' }} onClick={() => log.data && setExpandedLog(expandedLog === i ? null : i)}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                          <span style={{ color: '#64748b', fontSize: '9px' }}>{log.timestamp}</span>
+                          <span style={{ fontSize: '9px', color: log.type === 'error' ? '#ef4444' : log.type === 'success' ? '#10b981' : '#fbbf24', fontWeight: 'bold' }}>{log.category}</span>
+                        </div>
+                        <div style={{ color: '#e2e8f0', fontSize: '10px', wordBreak: 'break-word', marginBottom: log.data ? '4px' : '0' }}>{log.message}</div>
+                        {log.data && (
+                          <div style={{ marginTop: '4px', padding: '6px', background: 'rgba(0,0,0,0.5)', borderRadius: '4px', fontSize: '9px', color: '#94a3b8', overflowX: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-word', display: expandedLog === i ? 'block' : 'none' }}>
+                            {typeof log.data === 'object' ? JSON.stringify(log.data, null, 2) : log.data}
+                          </div>
+                        )}
+                        {log.data && (
+                          <div style={{ textAlign: 'right', marginTop: '2px', color: '#64748b', fontSize: '9px' }}>
+                            {expandedLog === i ? '▲ Click to collapse' : '▼ Click to expand'}
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
             {activeTab === 'logs' && (
               <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                   <div style={{ color: '#f472b6', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Terminal size={14} /> LOGS ({debugLogs.length})
-                  </div>
-                  <div style={{ display: 'flex', gap: '4px' }}>
-                    <button 
-                      onClick={() => setDebugLogs([])} 
-                      style={{ padding: '6px 10px', background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontSize: '10px', fontWeight: 'bold' }}
-                    >
-                      Clear
-                    </button>
-                    <button 
-                      onClick={handleCopyLogs} 
-                      style={{ 
-                        padding: '6px 10px', background: copySuccess ? 'rgba(16, 185, 129, 0.3)' : 'rgba(96, 165, 250, 0.2)', 
-                        border: `1px solid ${copySuccess ? '#10b981' : '#60a5fa'}`, borderRadius: '6px', 
-                        color: copySuccess ? '#10b981' : '#60a5fa', cursor: 'pointer', fontSize: '10px', fontWeight: 'bold',
-                        display: 'flex', alignItems: 'center', gap: '4px'
-                      }}
-                    >
-                      {copySuccess ? <Check size={12} /> : <Copy size={12} />} {copySuccess ? 'Copied!' : 'Copy All'}
-                    </button>
+                    <Terminal size={14} /> RAW LOGS ({debugLogs.length})
                   </div>
                 </div>
                 <div style={{ flex: 1, overflowY: 'auto', background: 'rgba(0,0,0,0.5)', borderRadius: '8px', padding: '8px' }}>
-                  {debugLogs.length === 0 && <div style={{ color: '#64748b', fontSize: '11px', textAlign: 'center', padding: '20px' }}>No logs yet. Try an action!</div>}
+                  {debugLogs.length === 0 && <div style={{ color: '#64748b', fontSize: '11px', textAlign: 'center', padding: '20px' }}>No logs yet.</div>}
                   {debugLogs.slice().reverse().map((log, i) => (
                     <div key={i} style={{ padding: '8px', marginBottom: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', borderLeft: `3px solid ${log.type === 'error' ? '#ef4444' : log.type === 'success' ? '#10b981' : '#fbbf24'}` }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                         <span style={{ color: '#64748b', fontSize: '9px' }}>{log.timestamp}</span>
                         <span style={{ fontSize: '9px', color: log.type === 'error' ? '#ef4444' : log.type === 'success' ? '#10b981' : '#fbbf24', fontWeight: 'bold' }}>{log.category}</span>
                       </div>
-                      <div style={{ color: '#e2e8f0', fontSize: '10px', wordBreak: 'break-word', marginBottom: log.data ? '4px' : '0' }}>{log.message}</div>
-                      {log.data && (
-                        <pre style={{ margin: 0, fontSize: '9px', color: '#94a3b8', background: 'rgba(0,0,0,0.3)', padding: '6px', borderRadius: '4px', overflowX: 'auto' }}>
-                          {typeof log.data === 'object' ? JSON.stringify(log.data, null, 2) : log.data}
-                        </pre>
-                      )}
+                      <div style={{ color: '#e2e8f0', fontSize: '10px', wordBreak: 'break-word' }}>{log.message}</div>
                     </div>
                   ))}
                 </div>
