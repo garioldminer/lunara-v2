@@ -327,35 +327,49 @@ export default function HomeScreen({ onNavigate }: Props) {
       });
     }
 
-    // 4. Quest System Connectivity
-    try {
-      if (!user?.id || !supabase) throw new Error('No user or supabase');
-      
-      const { data, error } = await supabase
-        .from('user_quests')
-        .select('id')
-        .eq('user_id', user.id)
-        .limit(5);
-      
-      if (error) throw error;
-      
-      results.push({
-        id: 'quest-system',
-        name: 'Quest System Connectivity',
-        status: 'pass',
-        message: `Quest system accessible (${data?.length || 0} quests)`,
-        details: { questCount: data?.length || 0 },
-        timestamp
-      });
-    } catch (err: any) {
-      results.push({
-        id: 'quest-system',
-        name: 'Quest System Connectivity',
-        status: 'fail',
-        message: `Error: ${err.message}`,
-        timestamp
-      });
-    }
+// 4. Quest System Connectivity (FIXED)
+try {
+  if (!user?.id || !supabase) throw new Error('No user or supabase');
+  
+  // Check quest_definitions table
+  const { data: questDefs, error: defsError } = await supabase
+    .from('quest_definitions')
+    .select('id, title, action_type')
+    .eq('is_active', true)
+    .limit(5);
+  
+  if (defsError) throw defsError;
+  
+  // Check user_quest_progress table
+  const { data: userProgress, error: progressError } = await supabase
+    .from('user_quest_progress')
+    .select('id, quest_id, current_progress')
+    .eq('user_id', user.id)
+    .limit(5);
+  
+  if (progressError) throw progressError;
+  
+  results.push({
+    id: 'quest-system',
+    name: 'Quest System Connectivity',
+    status: 'pass',
+    message: `Quest system working (${questDefs?.length || 0} active quests, ${userProgress?.length || 0} user progress records)`,
+    details: { 
+      activeQuestDefinitions: questDefs?.length || 0, 
+      userProgressRecords: userProgress?.length || 0,
+      sampleQuests: questDefs?.slice(0, 3).map(q => q.title) || []
+    },
+    timestamp
+  });
+} catch (err: any) {
+  results.push({
+    id: 'quest-system',
+    name: 'Quest System Connectivity',
+    status: 'fail',
+    message: `Error: ${err.message}`,
+    timestamp
+  });
+}
 
     // 5. Daily Card Consistency
     try {
