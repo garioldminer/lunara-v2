@@ -87,15 +87,28 @@ interface Toast {
   type: 'success' | 'error' | 'info';
 }
 
-// ✅ გამოსწორებული ტიპი: isExternal არის ოფციონალური (?)
+interface MemberWithEconomy {
+  user_id: string;
+  display_name: string;
+  username: string | null;
+  telegram_id: number;
+  cosmic_coins: number;
+  xp: number;
+  level: number;
+  current_streak: number;
+  cosmic_focus: number;
+  max_focus: number;
+}
+
 type TabItem = {
-  id: 'credits' | 'subscriptions' | 'monitoring' | 'analytics' | 'quests' | 'notifications' | 'horoscope-monitor' | 'ai';
+  id: 'members' | 'credits' | 'subscriptions' | 'monitoring' | 'analytics' | 'quests' | 'notifications' | 'horoscope-monitor' | 'ai';
   icon: any;
   label: string;
   isExternal?: boolean;
 };
 
 const TABS: TabItem[] = [
+  { id: 'members', icon: Users, label: 'Members' },
   { id: 'credits', icon: Key, label: 'Credits' },
   { id: 'subscriptions', icon: Crown, label: 'Subs' },
   { id: 'monitoring', icon: Activity, label: 'Monitor' },
@@ -167,7 +180,7 @@ export default function AdminScreen({ onNavigate }: Props) {
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [editingFeature, setEditingFeature] = useState<string>('');
   const [newAmount, setNewAmount] = useState(0);
-  const [activeTab, setActiveTab] = useState<'credits' | 'subscriptions' | 'monitoring' | 'analytics' | 'quests' | 'notifications' | 'horoscope-monitor'>('credits');
+  const [activeTab, setActiveTab] = useState<'members' | 'credits' | 'subscriptions' | 'monitoring' | 'analytics' | 'quests' | 'notifications' | 'horoscope-monitor'>('members');
 
   const [showAddSubscription, setShowAddSubscription] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string>('');
@@ -201,6 +214,11 @@ export default function AdminScreen({ onNavigate }: Props) {
   const [showDebug, setShowDebug] = useState(false);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
   const [toast, setToast] = useState<Toast | null>(null);
+
+  // ============================================
+  // MEMBERS TAB STATE
+  // ============================================
+  const [membersWithEconomy, setMembersWithEconomy] = useState<MemberWithEconomy[]>([]);
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     setToast({ message, type });
@@ -239,6 +257,121 @@ export default function AdminScreen({ onNavigate }: Props) {
     checkAdmin();
   }, [user]);
 
+  // ============================================
+  // MEMBERS TAB FUNCTIONS
+  // ============================================
+  const loadMembersEconomy = async () => {
+    if (!user || !supabase) return;
+    addDebugLog('info', 'MEMBERS', '🔄 Loading members economy data...');
+    try {
+      const { data, error } = await supabase.rpc('admin_get_all_economy');
+      if (error) {
+        addDebugLog('error', 'MEMBERS', `❌ Failed to load members: ${error.message}`);
+        return;
+      }
+      setMembersWithEconomy(data || []);
+      addDebugLog('success', 'MEMBERS', `✅ Loaded ${data?.length || 0} members`);
+    } catch (err: any) {
+      addDebugLog('error', 'MEMBERS', `❌ Exception: ${err.message}`);
+    }
+  };
+
+  const handleAddXP = async (targetUserId: string, amount: number) => {
+    if (!user || !supabase) return;
+    addDebugLog('info', 'MEMBERS', `Adding ${amount} XP to user ${targetUserId}`);
+    try {
+      const { data, error } = await supabase.rpc('add_xp_and_recalc_level', {
+        p_user_id: targetUserId,
+        p_xp_amount: amount
+      });
+      if (error) {
+        addDebugLog('error', 'MEMBERS', `❌ Failed: ${error.message}`);
+        showToast('Failed to add XP', 'error');
+        return;
+      }
+      if (data?.success) {
+        const msg = data.leveled_up 
+          ? `+${amount} XP! Level Up: ${data.old_level} → ${data.new_level}`
+          : `+${amount} XP! Level: ${data.new_level}`;
+        addDebugLog('success', 'MEMBERS', `✅ ${msg}`);
+        showToast(msg, 'success');
+        await loadMembersEconomy();
+      }
+    } catch (err: any) {
+      addDebugLog('error', 'MEMBERS', `❌ Exception: ${err.message}`);
+    }
+  };
+
+  const handleSetLevel = async (targetUserId: string, level: number) => {
+    if (!user || !supabase) return;
+    addDebugLog('info', 'MEMBERS', `Setting level ${level} for user ${targetUserId}`);
+    try {
+      const { data, error } = await supabase.rpc('admin_set_level', {
+        p_user_id: targetUserId,
+        p_level: level
+      });
+      if (error) {
+        addDebugLog('error', 'MEMBERS', `❌ Failed: ${error.message}`);
+        showToast('Failed to set level', 'error');
+        return;
+      }
+      if (data?.success) {
+        addDebugLog('success', 'MEMBERS', `✅ Level set: ${data.old_level} → ${data.new_level}`);
+        showToast(`Level set to ${level}!`, 'success');
+        await loadMembersEconomy();
+      }
+    } catch (err: any) {
+      addDebugLog('error', 'MEMBERS', `❌ Exception: ${err.message}`);
+    }
+  };
+
+  const handleAddCoins = async (targetUserId: string, amount: number) => {
+    if (!user || !supabase) return;
+    addDebugLog('info', 'MEMBERS', `Adding ${amount} coins to user ${targetUserId}`);
+    try {
+      const { data, error } = await supabase.rpc('admin_add_coins', {
+        p_user_id: targetUserId,
+        p_amount: amount
+      });
+      if (error) {
+        addDebugLog('error', 'MEMBERS', `❌ Failed: ${error.message}`);
+        showToast('Failed to add coins', 'error');
+        return;
+      }
+      if (data?.success) {
+        addDebugLog('success', 'MEMBERS', `✅ Added ${amount} coins. New: ${data.new_coins}`);
+        showToast(`+${amount} 💎 Coins!`, 'success');
+        await loadMembersEconomy();
+      }
+    } catch (err: any) {
+      addDebugLog('error', 'MEMBERS', `❌ Exception: ${err.message}`);
+    }
+  };
+
+  const handleResetXP = async (targetUserId: string) => {
+    if (!user || !supabase) return;
+    if (!confirm('Reset XP to 0 and Level to 1?')) return;
+    addDebugLog('info', 'MEMBERS', `Resetting XP for user ${targetUserId}`);
+    try {
+      const { data, error } = await supabase.rpc('admin_set_xp', {
+        p_user_id: targetUserId,
+        p_xp_amount: 0
+      });
+      if (error) {
+        addDebugLog('error', 'MEMBERS', `❌ Failed: ${error.message}`);
+        showToast('Failed to reset XP', 'error');
+        return;
+      }
+      if (data?.success) {
+        addDebugLog('success', 'MEMBERS', '✅ XP reset to 0, Level to 1');
+        showToast('XP reset successfully!', 'success');
+        await loadMembersEconomy();
+      }
+    } catch (err: any) {
+      addDebugLog('error', 'MEMBERS', `❌ Exception: ${err.message}`);
+    }
+  };
+
   const loadData = async () => {
     if (!user || !supabase) return;
     setLoading(true);
@@ -267,6 +400,8 @@ export default function AdminScreen({ onNavigate }: Props) {
         setQuests(questsRes.data || []);
         addDebugLog('success', 'LOAD_QUESTS', `✅ Loaded ${questsRes.data?.length || 0} quests`);
       }
+
+      await loadMembersEconomy();
 
       addDebugLog('success', 'LOAD', '✅ All admin data loaded successfully');
     } catch (error) {
@@ -502,6 +637,32 @@ export default function AdminScreen({ onNavigate }: Props) {
     return days;
   };
 
+  // ============================================
+  // XP LEVEL CALCULATION HELPER
+  // ============================================
+  const getXPToNextLevel = (level: number): number => {
+    if (level === 1) return 100;
+    if (level === 2) return 250;
+    if (level === 3) return 500;
+    if (level === 4) return 1000;
+    if (level === 5) return 2000;
+    return Math.floor(2000 * Math.pow(1.8, level - 5));
+  };
+
+  const getLevelFromTotalXP = (totalXP: number) => {
+    let level = 1;
+    let xpRequiredForNext = getXPToNextLevel(level);
+    let currentLevelXP = totalXP;
+    
+    while (currentLevelXP >= xpRequiredForNext) {
+      currentLevelXP -= xpRequiredForNext;
+      level++;
+      xpRequiredForNext = getXPToNextLevel(level);
+    }
+    
+    return { level, currentLevelXP, xpToNext: xpRequiredForNext };
+  };
+
   if (isUserAdmin === null || loading) {
     return (
       <div className="admin-screen">
@@ -547,6 +708,150 @@ export default function AdminScreen({ onNavigate }: Props) {
       </div>
 
       <div className="admin-content-area">
+        {/* ============================================ */}
+        {/* MEMBERS TAB */}
+        {/* ============================================ */}
+        {activeTab === 'members' && (
+          <>
+            {/* Stats Overview */}
+            <div className="admin-stats">
+              <div className="stat-card">
+                <span className="stat-number">{membersWithEconomy.length}</span>
+                <span className="stat-label">Total Members</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-number">{membersWithEconomy.reduce((sum, m) => sum + (m.xp || 0), 0).toLocaleString()}</span>
+                <span className="stat-label">Total XP</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-number">{membersWithEconomy.length > 0 ? Math.round(membersWithEconomy.reduce((sum, m) => sum + (m.level || 1), 0) / membersWithEconomy.length * 10) / 10 : 0}</span>
+                <span className="stat-label">Avg Level</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-number">{membersWithEconomy.reduce((sum, m) => sum + (m.cosmic_coins || 0), 0).toLocaleString()}</span>
+                <span className="stat-label">Total Coins</span>
+              </div>
+            </div>
+
+            {/* Members List */}
+            {membersWithEconomy.length === 0 ? (
+              <EmptyState icon={Users} title="No members yet" hint="Members will appear here once they join." />
+            ) : (
+              <div className="admin-users-list">
+                {membersWithEconomy.map((member) => {
+                  const levelData = getLevelFromTotalXP(member.xp || 0);
+                  const xpPercent = Math.min((levelData.currentLevelXP / levelData.xpToNext) * 100, 100);
+                  
+                  return (
+                    <motion.div key={member.user_id} className="admin-user-card" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+                      {/* Member Header */}
+                      <div className="user-info">
+                        <div className="user-avatar">{member.display_name?.charAt(0).toUpperCase() || 'U'}</div>
+                        <div className="user-details">
+                          <h3>{member.display_name || 'Unknown'}</h3>
+                          <p>@{member.username || member.telegram_id}</p>
+                        </div>
+                        <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
+                          <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#C5A059' }}>Lv.{member.level || 1}</div>
+                          <div style={{ fontSize: '10px', color: '#94a3b8' }}>{(member.xp || 0).toLocaleString()} XP</div>
+                        </div>
+                      </div>
+
+                      {/* XP Progress Bar */}
+                      <div style={{ marginTop: '10px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                          <span style={{ fontSize: '10px', color: '#94a3b8' }}>Level Progress</span>
+                          <span style={{ fontSize: '10px', color: '#94a3b8' }}>{levelData.currentLevelXP}/{levelData.xpToNext} XP</span>
+                        </div>
+                        <div style={{ height: '6px', borderRadius: '3px', background: 'rgba(255,255,255,0.1)', overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${xpPercent}%`, background: 'linear-gradient(90deg, #C5A059, #fbbf24)', borderRadius: '3px', transition: 'width 0.3s ease' }} />
+                        </div>
+                      </div>
+
+                      {/* Member Stats Grid */}
+                      <div className="user-credits" style={{ marginTop: '12px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+                        <div className="credit-item" style={{ textAlign: 'center', background: 'rgba(167, 139, 250, 0.1)', padding: '8px', borderRadius: '6px' }}>
+                          <span className="credit-label" style={{ display: 'block', fontSize: '9px', marginBottom: '4px' }}>XP</span>
+                          <span className="credit-amount" style={{ color: '#a78bfa', fontSize: '14px', fontWeight: 'bold' }}>{(member.xp || 0).toLocaleString()}</span>
+                        </div>
+                        <div className="credit-item" style={{ textAlign: 'center', background: 'rgba(251, 191, 36, 0.1)', padding: '8px', borderRadius: '6px' }}>
+                          <span className="credit-label" style={{ display: 'block', fontSize: '9px', marginBottom: '4px' }}>Coins</span>
+                          <span className="credit-amount" style={{ color: '#fbbf24', fontSize: '14px', fontWeight: 'bold' }}>{(member.cosmic_coins || 0).toLocaleString()}</span>
+                        </div>
+                        <div className="credit-item" style={{ textAlign: 'center', background: 'rgba(255, 107, 53, 0.1)', padding: '8px', borderRadius: '6px' }}>
+                          <span className="credit-label" style={{ display: 'block', fontSize: '9px', marginBottom: '4px' }}>Energy</span>
+                          <span className="credit-amount" style={{ color: '#ff6b35', fontSize: '14px', fontWeight: 'bold' }}>{member.cosmic_focus}/{member.max_focus}</span>
+                        </div>
+                        <div className="credit-item" style={{ textAlign: 'center', background: 'rgba(16, 185, 129, 0.1)', padding: '8px', borderRadius: '6px' }}>
+                          <span className="credit-label" style={{ display: 'block', fontSize: '9px', marginBottom: '4px' }}>Streak</span>
+                          <span className="credit-amount" style={{ color: '#10b981', fontSize: '14px', fontWeight: 'bold' }}>{member.current_streak || 0}</span>
+                        </div>
+                      </div>
+
+                      {/* XP Management Actions */}
+                      <div style={{ marginTop: '12px' }}>
+                        <div style={{ fontSize: '10px', color: '#C5A059', fontWeight: 'bold', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' }}>⭐ XP Actions</div>
+                        <div className="subscription-actions" style={{ flexWrap: 'wrap', gap: '6px' }}>
+                          <button className="extend-btn" onClick={() => handleAddXP(member.user_id, 10)}>+10 XP</button>
+                          <button className="extend-btn" onClick={() => handleAddXP(member.user_id, 50)}>+50 XP</button>
+                          <button className="extend-btn" onClick={() => handleAddXP(member.user_id, 100)}>+100 XP</button>
+                          <button className="extend-btn" onClick={() => handleAddXP(member.user_id, 250)}>+250 XP</button>
+                          <button className="extend-btn" onClick={() => handleAddXP(member.user_id, 500)}>+500 XP</button>
+                          <button className="extend-btn" onClick={() => handleAddXP(member.user_id, 1000)}>+1000 XP</button>
+                        </div>
+                      </div>
+
+                      {/* Level Management */}
+                      <div style={{ marginTop: '12px' }}>
+                        <div style={{ fontSize: '10px', color: '#C5A059', fontWeight: 'bold', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' }}>🏆 Set Level</div>
+                        <div className="subscription-actions" style={{ flexWrap: 'wrap', gap: '6px' }}>
+                          {[1, 2, 3, 5, 10, 15, 20, 50].map(lvl => (
+                            <button 
+                              key={lvl} 
+                              className="extend-btn" 
+                              onClick={() => handleSetLevel(member.user_id, lvl)}
+                              style={{ 
+                                background: member.level === lvl ? 'rgba(197, 160, 89, 0.4)' : undefined,
+                                borderColor: member.level === lvl ? '#C5A059' : undefined
+                              }}
+                            >
+                              Lv.{lvl}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Coins Management */}
+                      <div style={{ marginTop: '12px' }}>
+                        <div style={{ fontSize: '10px', color: '#C5A059', fontWeight: 'bold', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' }}>💎 Coins Actions</div>
+                        <div className="subscription-actions" style={{ flexWrap: 'wrap', gap: '6px' }}>
+                          <button className="extend-btn" onClick={() => handleAddCoins(member.user_id, 10)}>+10 💎</button>
+                          <button className="extend-btn" onClick={() => handleAddCoins(member.user_id, 50)}>+50 💎</button>
+                          <button className="extend-btn" onClick={() => handleAddCoins(member.user_id, 100)}>+100 💎</button>
+                          <button className="extend-btn" onClick={() => handleAddCoins(member.user_id, 500)}>+500 💎</button>
+                          <button className="extend-btn" onClick={() => handleAddCoins(member.user_id, 1000)}>+1000 💎</button>
+                        </div>
+                      </div>
+
+                      {/* Reset Actions */}
+                      <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
+                        <button 
+                          className="cancel-sub-btn" 
+                          onClick={() => handleResetXP(member.user_id)}
+                          style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                        >
+                          <Trash2 size={14} />
+                          Reset XP to 0
+                        </button>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+          </>
+        )}
+
         {activeTab === 'credits' && (
           <>
             <div className="admin-stats">
@@ -834,7 +1139,7 @@ export default function AdminScreen({ onNavigate }: Props) {
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(4, 1fr)',
-        gridTemplateRows: 'repeat(2, auto)',
+        gridTemplateRows: 'repeat(3, auto)',
         gap: '4px',
         padding: '8px',
         background: 'rgba(10, 6, 0, 0.98)',
@@ -929,7 +1234,6 @@ export default function AdminScreen({ onNavigate }: Props) {
         </div>
       )}
 
-      {/* 🆕 გადატანილი ADMIN DEBUG პანელი - ზემოთ მარჯვნივ, რომ არაფერს ეფარებოდეს */}
       <button 
         onClick={() => setShowDebug(!showDebug)}
         style={{
