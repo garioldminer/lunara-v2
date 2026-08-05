@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { useUser } from '../context/UserContext';
@@ -209,10 +209,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     lastQuery: null, lastResponse: null, economyData: null, queryHistory: []
   });
 
-  // ============================================
-  // DIAGNOSTIC SYSTEM
-  // ============================================
-  
   interface DiagnosticResult {
     id: string;
     name: string;
@@ -241,7 +237,6 @@ export default function HomeScreen({ onNavigate }: Props) {
 
     addDebugLog('info', 'DIAGNOSTICS', '🔍 Starting Home Page diagnostics...');
 
-    // 1. Energy State Validity
     try {
       const energyCheck = {
         currentEnergy: economy.cosmic_focus,
@@ -269,7 +264,6 @@ export default function HomeScreen({ onNavigate }: Props) {
       });
     }
 
-    // 2. localStorage JSON Integrity
     try {
       const dailyCardStored = localStorage.getItem('dailyCard');
       let parseSuccess = true;
@@ -304,7 +298,6 @@ export default function HomeScreen({ onNavigate }: Props) {
       });
     }
 
-    // 3. Premium Gate Status
     try {
       const hasSubscription = !!activeSubscription;
       results.push({
@@ -327,61 +320,61 @@ export default function HomeScreen({ onNavigate }: Props) {
       });
     }
 
-// 4. Quest System Connectivity (FIXED)
-try {
-  if (!user?.id || !supabase) throw new Error('No user or supabase');
-  
-  // Check quest_definitions table
-  const { data: questDefs, error: defsError } = await supabase
-    .from('quest_definitions')
-    .select('id, title, action_type')
-    .eq('is_active', true)
-    .limit(5);
-  
-  if (defsError) throw defsError;
-  
-  // Check user_quest_progress table
-  const { data: userProgress, error: progressError } = await supabase
-    .from('user_quest_progress')
-    .select('id, quest_id, current_progress')
-    .eq('user_id', user.id)
-    .limit(5);
-  
-  if (progressError) throw progressError;
-  
-  results.push({
-    id: 'quest-system',
-    name: 'Quest System Connectivity',
-    status: 'pass',
-    message: `Quest system working (${questDefs?.length || 0} active quests, ${userProgress?.length || 0} user progress records)`,
-    details: { 
-      activeQuestDefinitions: questDefs?.length || 0, 
-      userProgressRecords: userProgress?.length || 0,
-      sampleQuests: questDefs?.slice(0, 3).map(q => q.title) || []
-    },
-    timestamp
-  });
-} catch (err: any) {
-  results.push({
-    id: 'quest-system',
-    name: 'Quest System Connectivity',
-    status: 'fail',
-    message: `Error: ${err.message}`,
-    timestamp
-  });
-}
+    try {
+      if (!user?.id || !supabase) throw new Error('No user or supabase');
+      
+      const { data: questDefs, error: defsError } = await supabase
+        .from('quest_definitions')
+        .select('id, title, action_type')
+        .eq('is_active', true)
+        .limit(5);
+      
+      if (defsError) throw defsError;
+      
+      const { data: userProgress, error: progressError } = await supabase
+        .from('user_quest_progress')
+        .select('id, quest_id, current_progress')
+        .eq('user_id', user.id)
+        .limit(5);
+      
+      if (progressError) throw progressError;
+      
+      results.push({
+        id: 'quest-system',
+        name: 'Quest System Connectivity',
+        status: 'pass',
+        message: `Quest system working (${questDefs?.length || 0} active quests, ${userProgress?.length || 0} user progress records)`,
+        details: { 
+          activeQuestDefinitions: questDefs?.length || 0, 
+          userProgressRecords: userProgress?.length || 0,
+          sampleQuests: questDefs?.slice(0, 3).map(q => q.title) || []
+        },
+        timestamp
+      });
+    } catch (err: any) {
+      results.push({
+        id: 'quest-system',
+        name: 'Quest System Connectivity',
+        status: 'fail',
+        message: `Error: ${err.message}`,
+        timestamp
+      });
+    }
 
-    // 5. Daily Card Consistency
     try {
       const stored = localStorage.getItem('dailyCard');
       let consistencyIssue = null;
       
       if (stored) {
-        const parsed = JSON.parse(stored);
-        const today = new Date().toISOString().split('T')[0];
-        
-        if (parsed.date !== today) consistencyIssue = 'Date mismatch';
-        if (typeof parsed.isReversed !== 'boolean') consistencyIssue = 'isReversed not boolean';
+        try {
+          const parsed = JSON.parse(stored);
+          const today = new Date().toISOString().split('T')[0];
+          
+          if (parsed.date !== today) consistencyIssue = 'Date mismatch';
+          if (typeof parsed.isReversed !== 'boolean') consistencyIssue = 'isReversed not boolean';
+        } catch (e: any) {
+          consistencyIssue = `JSON parse error: ${e.message}`;
+        }
       }
       
       results.push({
@@ -402,27 +395,25 @@ try {
       });
     }
 
-// 6. Streak State Consistency (Simplified)
-try {
-  results.push({
-    id: 'streak-state',
-    name: 'Streak State Consistency',
-    status: 'pass',
-    message: `Streak: ${economy.current_streak} days`,
-    details: { currentStreak: economy.current_streak },
-    timestamp
-  });
-} catch (err: any) {
-  results.push({
-    id: 'streak-state',
-    name: 'Streak State Consistency',
-    status: 'fail',
-    message: `Error: ${err.message}`,
-    timestamp
-  });
-}
+    try {
+      results.push({
+        id: 'streak-state',
+        name: 'Streak State Consistency',
+        status: 'pass',
+        message: `Streak: ${economy.current_streak} days`,
+        details: { currentStreak: economy.current_streak },
+        timestamp
+      });
+    } catch (err: any) {
+      results.push({
+        id: 'streak-state',
+        name: 'Streak State Consistency',
+        status: 'fail',
+        message: `Error: ${err.message}`,
+        timestamp
+      });
+    }
 
-    // 7. XP/Level Calculation
     try {
       const levelData = getLevelFromTotalXP(economy.xp || 0);
       const isValid = levelData.level >= 1 && levelData.currentLevelXP >= 0;
@@ -447,7 +438,6 @@ try {
       });
     }
 
-    // 8. Supabase Connection
     try {
       if (!supabase) throw new Error('Supabase client is null');
       
@@ -842,6 +832,7 @@ try {
     setQuestsLoading(false);
   };
 
+  // ✅ BUG FIX #2: Quest Claim XP - გამოვიყენოთ economy.xp ნაცვლად user.xp
   const handleClaimQuest = async (quest: DailyQuestDisplay) => {
     if (!user || !supabase || isClaimingQuest) return;
     setIsClaimingQuest(true);
@@ -853,11 +844,20 @@ try {
         showToast(data?.error || 'Failed to claim reward', 'error');
       } else {
         addDebugLog('success', 'QUEST_CLAIM', `Claimed! +${data.reward.coins} coins, +${data.reward.xp} XP`);
-        const currentTotalXP = user.xp || 0;
+        
+        // ✅ FIXED: გამოვიყენოთ economy.xp (up-to-date) ნაცვლად user.xp (outdated)
+        const currentTotalXP = economy.xp || 0;
         const newTotalXP = currentTotalXP + data.reward.xp;
         const oldLevelData = getLevelFromTotalXP(currentTotalXP);
         const newLevelData = getLevelFromTotalXP(newTotalXP);
-        setEconomy(prev => ({ ...prev, cosmic_coins: prev.cosmic_coins + data.reward.coins, xp: newTotalXP, level: newLevelData.level }));
+        
+        setEconomy(prev => ({ 
+          ...prev, 
+          cosmic_coins: prev.cosmic_coins + data.reward.coins, 
+          xp: newTotalXP, 
+          level: newLevelData.level 
+        }));
+        
         if (newLevelData.level > oldLevelData.level) {
           confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#fbbf24', '#f59e0b', '#ffffff', '#10b981'] });
           setLeveledUpTo(newLevelData.level);
@@ -901,8 +901,9 @@ try {
     if (user) loadQuests();
   }, [user]);
 
-  const calculateRealEnergy = async () => {
-    if (!user || !supabase) return;
+  // ✅ BUG FIX #1: Energy Race Condition - calculateRealEnergy აბრუნებს fresh value-ს
+  const calculateRealEnergy = async (): Promise<number | null> => {
+    if (!user || !supabase) return null;
 
     try {
       const { data: economyData } = await supabase
@@ -911,7 +912,7 @@ try {
         .eq('user_id', user.id)
         .single();
 
-      if (!economyData) return;
+      if (!economyData) return null;
 
       const now = new Date();
       const lastUpdate = new Date(economyData.last_energy_update);
@@ -921,8 +922,10 @@ try {
       const regenRate = 30 / boostMultiplier;
       const energyToRegen = Math.floor(minutesPassed / regenRate);
       
+      let newEnergy = economyData.cosmic_focus;
+      
       if (energyToRegen > 0) {
-        const newEnergy = Math.min(
+        newEnergy = Math.min(
           economyData.cosmic_focus + energyToRegen,
           economyData.max_focus
         );
@@ -942,18 +945,27 @@ try {
         
         console.log(`⚡ Energy regenerated: +${energyToRegen}, new total: ${newEnergy}`);
       }
+      
+      return newEnergy;
     } catch (error) {
       console.error('❌ Error calculating energy:', error);
+      return null;
     }
   };
 
+  // ✅ BUG FIX #1: checkAndSpendEnergy იყენებს fresh value-ს calculateRealEnergy-დან
   const checkAndSpendEnergy = async (readingType: string, requiredEnergy: number): Promise<boolean> => {
     if (!user || !supabase) return false;
 
-    await calculateRealEnergy();
+    const currentEnergy = await calculateRealEnergy();
     
-    if ((economy.cosmic_focus || 0) < requiredEnergy) {
-      showToast(`Not enough energy! You need ${requiredEnergy}⚡, but you have ${economy.cosmic_focus}⚡. Use diamonds to refill!`, 'error');
+    if (currentEnergy === null) {
+      showToast('Failed to check energy. Please try again.', 'error');
+      return false;
+    }
+    
+    if (currentEnergy < requiredEnergy) {
+      showToast(`Not enough energy! You need ${requiredEnergy}⚡, but you have ${currentEnergy}⚡. Use diamonds to refill!`, 'error');
       return false;
     }
     
@@ -1099,23 +1111,34 @@ try {
     }
   }, [user]);
 
+  // ✅ BUG FIX #3: Daily Card Randomization - deterministic + try-catch
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
     const stored = localStorage.getItem('dailyCard');
+    
     if (stored) {
-      const parsed = JSON.parse(stored);
-      if (parsed.date === today) {
-        setDailyCard(parsed.card);
-        setIsDailyReversed(parsed.isReversed);
-        setIsDailyRevealed(parsed.isRevealed || false);
-        addDebugLog('info', 'DAILY_CARD', 'Loaded from localStorage', parsed);
-        return;
+      try {
+        const parsed = JSON.parse(stored);
+        if (parsed.date === today) {
+          setDailyCard(parsed.card);
+          setIsDailyReversed(parsed.isReversed);
+          setIsDailyRevealed(parsed.isRevealed || false);
+          addDebugLog('info', 'DAILY_CARD', 'Loaded from localStorage', parsed);
+          return;
+        }
+      } catch (err: any) {
+        addDebugLog('error', 'DAILY_CARD', `Failed to parse localStorage: ${err.message}`);
+        localStorage.removeItem('dailyCard');
       }
     }
+    
     const dayOfYear = getDayOfYear(new Date());
     const cardIndex = dayOfYear % tarotCards.length;
     const card = tarotCards[cardIndex];
-    const isReversed = Math.random() < 0.5;
+    
+    // ✅ FIXED: Deterministic random (ნაცვლად Math.random())
+    const isReversed = cardIndex % 2 === 0;
+    
     const newReading = { card, isReversed, date: today, isRevealed: false };
     localStorage.setItem('dailyCard', JSON.stringify(newReading));
     setDailyCard(card);
@@ -1124,14 +1147,19 @@ try {
     addDebugLog('info', 'DAILY_CARD', 'Generated new daily card', { cardName: card.name, isReversed });
   }, []);
 
+  // ✅ BUG FIX #4: localStorage Crash - try-catch დამატებული
   useEffect(() => {
     const checkRevealStatus = () => {
       const stored = localStorage.getItem('dailyCard');
       if (stored) {
-        const parsed = JSON.parse(stored);
-        const today = new Date().toISOString().split('T')[0];
-        if (parsed.date === today && parsed.isRevealed) {
-          setIsDailyRevealed(true);
+        try {
+          const parsed = JSON.parse(stored);
+          const today = new Date().toISOString().split('T')[0];
+          if (parsed.date === today && parsed.isRevealed) {
+            setIsDailyRevealed(true);
+          }
+        } catch (err: any) {
+          addDebugLog('error', 'DAILY_CARD', `Failed to parse dailyCard on focus: ${err.message}`);
         }
       }
     };
@@ -1214,8 +1242,19 @@ try {
     }
   };
 
+  // ✅ BUG FIX #7: Premium Gate - subscription check დამატებული
   const handleQuickAction = async (action: string) => {
     addDebugLog('info', 'NAVIGATION', 'Quick action clicked', { action });
+    
+    // ✅ FIXED: Premium readings-ისთვის subscription check
+    const premiumActions = ['CelticCross', 'Horseshoe', 'Relationship'];
+    const isPremiumAction = premiumActions.includes(action);
+    
+    if (isPremiumAction && !activeSubscription) {
+      showToast('This reading requires a Premium subscription!', 'error');
+      onNavigate?.('subscription');
+      return;
+    }
     
     if (action === 'CelticCross') {
       const canProceed = await checkAndSpendEnergy('celtic_cross', 6);
@@ -1590,7 +1629,7 @@ try {
                 )}
                 
                 {isDailyReversed && isDailyRevealed && (
-                  <div className="card-reversed-indicator-large" style={{ position: 'absolute', top: '5px', right: '5px', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 900, zIndex: 3, background: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)', color: '#fff', border: '2px solid #fff', boxShadow: '0 0 0 2px rgba(167,139,250,0.5), 0 4px 12px rgba(167,139,250,0.8), 0 0 20px rgba(167,139,250,0.6)' }}>
+                  <div className="card-reversed-indicator-large" style={{ position: 'absolute', top: '5px', right: '5px', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: '900', zIndex: 3, background: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)', color: '#fff', border: '2px solid #fff', boxShadow: '0 0 0 2px rgba(167,139,250,0.5), 0 4px 12px rgba(167,139,250,0.8), 0 0 20px rgba(167,139,250,0.6)' }}>
                     <span>R</span>
                   </div>
                 )}
