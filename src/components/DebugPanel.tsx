@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { 
   Bug, X, Activity, Users, Server, Terminal, Settings, 
-  Copy, Check, RefreshCw, Play, Eye, ChevronDown
+  Copy, Check, RefreshCw, Play, Eye, ChevronDown, Heart
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { 
@@ -12,6 +12,21 @@ import {
   type FunctionLog,
   EDGE_FUNCTIONS
 } from '../lib/adminService';
+
+interface DiagnosticResult {
+  id: string;
+  name: string;
+  status: 'pass' | 'fail' | 'warning' | 'pending';
+  message: string;
+  details?: any;
+  timestamp: string;
+}
+
+interface HomeDiagnostics {
+  results: DiagnosticResult[];
+  isRunning: boolean;
+  lastRun: string | null;
+}
 
 interface DebugPanelProps {
   showDebug: boolean;
@@ -44,9 +59,20 @@ interface DebugPanelProps {
   testAddXPWithLevel: (amount: number) => void;
   forceRecalcLevel: () => void;
   xpTestLogs: string[];
+  // ახალი props დიაგნოსტიკისთვის
+  runHomeDiagnostics: () => Promise<DiagnosticResult[]>;
+  diagnostics: HomeDiagnostics;
+  testEnergySystem: () => void;
+  testLocalStorage: () => void;
+  testPremiumGate: () => void;
+  testQuestSystem: () => void;
+  testDailyCard: () => void;
+  testStreakSystem: () => void;
+  testXPSystem: () => void;
+  testSupabaseConnection: () => void;
 }
 
-type TabType = 'system' | 'user' | 'functions' | 'logs' | 'actions';
+type TabType = 'system' | 'user' | 'diagnostics' | 'functions' | 'logs' | 'actions';
 
 export default function DebugPanel(props: DebugPanelProps) {
   const {
@@ -55,7 +81,10 @@ export default function DebugPanel(props: DebugPanelProps) {
     checkDatabaseStatus, refreshUserDataDebug, handleLogoutAndReset, 
     testAddCoins, testAddXP, testAddEnergy, testSpendEnergy, 
     testCompleteQuest, reloadFromDatabase, questsLoading, timeLeft, 
-    showQuestModal, rewardClaimed, isClaiming
+    showQuestModal, rewardClaimed, isClaiming,
+    runHomeDiagnostics, diagnostics, testEnergySystem, testLocalStorage,
+    testPremiumGate, testQuestSystem, testDailyCard, testStreakSystem,
+    testXPSystem, testSupabaseConnection
   } = props;
 
   const [activeTab, setActiveTab] = useState<TabType>('system');
@@ -197,6 +226,18 @@ ECONOMY
 SUBSCRIPTION
 Status: ${activeSubscription ? 'Active ✅' : 'None ❌'}
 ${activeSubscription ? `Plan: ${activeSubscription.plan_type}\nExpires: ${new Date(activeSubscription.expires_at).toLocaleDateString()}` : ''}`;
+    } else if (tab === 'diagnostics') {
+      text = `HOME DIAGNOSTICS (${diagnostics.results.length} checks)
+Last Run: ${diagnostics.lastRun || 'Never'}
+Passed: ${diagnostics.results.filter(r => r.status === 'pass').length}/${diagnostics.results.length}
+
+${diagnostics.results.map(r => 
+  `${r.status === 'pass' ? '✅' : r.status === 'fail' ? '❌' : r.status === 'warning' ? '⚠️' : '⏳'} ${r.name}
+   Status: ${r.status.toUpperCase()}
+   Message: ${r.message}
+   Details: ${JSON.stringify(r.details)}
+   Time: ${r.timestamp}`
+).join('\n\n')}`;
     } else if (tab === 'functions') {
       text = `EDGE FUNCTIONS STATUS
 ${functionStatuses.map(func => 
@@ -227,6 +268,7 @@ Is Claiming: ${isClaiming}`;
   const tabs = [
     { id: 'system' as TabType, label: 'System', icon: Activity },
     { id: 'user' as TabType, label: 'User', icon: Users },
+    { id: 'diagnostics' as TabType, label: 'Diag', icon: Heart },
     { id: 'functions' as TabType, label: 'Functions', icon: Server },
     { id: 'logs' as TabType, label: 'Logs', icon: Terminal },
     { id: 'actions' as TabType, label: 'Actions', icon: Settings },
@@ -331,6 +373,98 @@ Is Claiming: ${isClaiming}`;
                   <div>Status: <strong style={{ color: activeSubscription ? '#10b981' : '#ef4444' }}>{activeSubscription ? 'Active ✅' : 'None ❌'}</strong></div>
                   {activeSubscription && <div>Plan: <strong>{activeSubscription.plan_type}</strong> | Expires: <strong>{new Date(activeSubscription.expires_at).toLocaleDateString()}</strong></div>}
                 </div>
+              </div>
+            )}
+
+            {activeTab === 'diagnostics' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <span style={{ color: '#ec4899', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Heart size={14} /> DIAGNOSTICS
+                  </span>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button 
+                      onClick={runHomeDiagnostics} 
+                      disabled={diagnostics.isRunning}
+                      style={{ 
+                        padding: '6px 12px', 
+                        background: diagnostics.isRunning ? 'rgba(251, 191, 36, 0.3)' : 'rgba(236, 72, 153, 0.2)', 
+                        border: `1px solid ${diagnostics.isRunning ? '#fbbf24' : '#ec4899'}`, 
+                        borderRadius: '6px', 
+                        color: diagnostics.isRunning ? '#fbbf24' : '#ec4899', 
+                        cursor: diagnostics.isRunning ? 'not-allowed' : 'pointer', 
+                        fontSize: '10px', 
+                        fontWeight: 'bold',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      <RefreshCw size={12} className={diagnostics.isRunning ? 'animate-spin' : ''} /> 
+                      {diagnostics.isRunning ? 'Running...' : 'Run All'}
+                    </button>
+                    <CopyButton tab="diagnostics" />
+                  </div>
+                </div>
+
+                {diagnostics.lastRun && (
+                  <div style={{ padding: '8px', background: 'rgba(236, 72, 153, 0.1)', borderRadius: '6px', border: '1px solid rgba(236, 72, 153, 0.3)', fontSize: '10px', textAlign: 'center' }}>
+                    Last run: {diagnostics.lastRun} | {diagnostics.results.filter(r => r.status === 'pass').length}/{diagnostics.results.length} passed
+                  </div>
+                )}
+
+                {/* Test Buttons Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                  <button onClick={testEnergySystem} style={{ padding: '8px', background: '#fbbf24', border: 'none', borderRadius: '6px', color: '#000', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>⚡ Energy</button>
+                  <button onClick={testLocalStorage} style={{ padding: '8px', background: '#60a5fa', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>💾 Storage</button>
+                  <button onClick={testPremiumGate} style={{ padding: '8px', background: '#a78bfa', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>👑 Premium</button>
+                  <button onClick={testQuestSystem} style={{ padding: '8px', background: '#10b981', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>🎯 Quests</button>
+                  <button onClick={testDailyCard} style={{ padding: '8px', background: '#f472b6', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>🃏 Daily</button>
+                  <button onClick={testStreakSystem} style={{ padding: '8px', background: '#fb923c', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>🔥 Streak</button>
+                  <button onClick={testXPSystem} style={{ padding: '8px', background: '#3b82f6', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>⭐ XP</button>
+                  <button onClick={testSupabaseConnection} style={{ padding: '8px', background: '#8b5cf6', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>🗄️ DB</button>
+                </div>
+
+                {/* Results List */}
+                {diagnostics.results.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '300px', overflowY: 'auto' }}>
+                    {diagnostics.results.map((result, idx) => (
+                      <div 
+                        key={idx} 
+                        style={{ 
+                          padding: '10px', 
+                          background: 'rgba(0,0,0,0.3)', 
+                          borderRadius: '8px', 
+                          border: `1px solid ${
+                            result.status === 'pass' ? 'rgba(16, 185, 129, 0.5)' :
+                            result.status === 'fail' ? 'rgba(239, 68, 68, 0.5)' :
+                            result.status === 'warning' ? 'rgba(251, 191, 36, 0.5)' :
+                            'rgba(148, 163, 184, 0.3)'
+                          }`
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                          <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#e2e8f0' }}>
+                            {result.status === 'pass' && '✅'}
+                            {result.status === 'fail' && '❌'}
+                            {result.status === 'warning' && '⚠️'}
+                            {result.status === 'pending' && '⏳'}
+                            {' '}{result.name}
+                          </div>
+                          <div style={{ fontSize: '9px', color: '#94a3b8' }}>{result.timestamp}</div>
+                        </div>
+                        <div style={{ fontSize: '10px', color: '#cbd5e1', marginBottom: '4px' }}>{result.message}</div>
+                        {result.details && (
+                          <div style={{ fontSize: '9px', color: '#94a3b8', padding: '4px', background: 'rgba(0,0,0,0.5)', borderRadius: '4px', overflowX: 'auto' }}>
+                            <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                              {JSON.stringify(result.details, null, 2)}
+                            </pre>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 

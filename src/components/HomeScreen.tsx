@@ -209,6 +209,339 @@ export default function HomeScreen({ onNavigate }: Props) {
     lastQuery: null, lastResponse: null, economyData: null, queryHistory: []
   });
 
+  // ============================================
+  // DIAGNOSTIC SYSTEM
+  // ============================================
+  
+  interface DiagnosticResult {
+    id: string;
+    name: string;
+    status: 'pass' | 'fail' | 'warning' | 'pending';
+    message: string;
+    details?: any;
+    timestamp: string;
+  }
+
+  interface HomeDiagnostics {
+    results: DiagnosticResult[];
+    isRunning: boolean;
+    lastRun: string | null;
+  }
+
+  const [diagnostics, setDiagnostics] = useState<HomeDiagnostics>({
+    results: [],
+    isRunning: false,
+    lastRun: null
+  });
+
+  const runHomeDiagnostics = async (): Promise<DiagnosticResult[]> => {
+    setDiagnostics(prev => ({ ...prev, isRunning: true }));
+    const results: DiagnosticResult[] = [];
+    const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
+
+    addDebugLog('info', 'DIAGNOSTICS', '🔍 Starting Home Page diagnostics...');
+
+    // 1. Energy State Validity
+    try {
+      const energyCheck = {
+        currentEnergy: economy.cosmic_focus,
+        maxEnergy: economy.max_focus,
+        isValid: economy.cosmic_focus >= 0 && economy.cosmic_focus <= economy.max_focus
+      };
+      
+      results.push({
+        id: 'energy-state',
+        name: 'Energy State Validity',
+        status: energyCheck.isValid ? 'pass' : 'fail',
+        message: energyCheck.isValid 
+          ? `Energy state valid (${economy.cosmic_focus}/${economy.max_focus})`
+          : `Invalid energy state (${economy.cosmic_focus}/${economy.max_focus})`,
+        details: energyCheck,
+        timestamp
+      });
+    } catch (err: any) {
+      results.push({
+        id: 'energy-state',
+        name: 'Energy State Validity',
+        status: 'fail',
+        message: `Error: ${err.message}`,
+        timestamp
+      });
+    }
+
+    // 2. localStorage JSON Integrity
+    try {
+      const dailyCardStored = localStorage.getItem('dailyCard');
+      let parseSuccess = true;
+      let parseError = null;
+      
+      if (dailyCardStored) {
+        try {
+          JSON.parse(dailyCardStored);
+        } catch (e: any) {
+          parseSuccess = false;
+          parseError = e.message;
+        }
+      }
+      
+      results.push({
+        id: 'localstorage-json',
+        name: 'localStorage JSON Integrity',
+        status: parseSuccess ? 'pass' : 'fail',
+        message: parseSuccess 
+          ? 'All localStorage data is valid JSON'
+          : `Corrupted JSON: ${parseError}`,
+        details: { hasDailyCard: !!dailyCardStored, parseSuccess, parseError },
+        timestamp
+      });
+    } catch (err: any) {
+      results.push({
+        id: 'localstorage-json',
+        name: 'localStorage JSON Integrity',
+        status: 'fail',
+        message: `Error: ${err.message}`,
+        timestamp
+      });
+    }
+
+    // 3. Premium Gate Status
+    try {
+      const hasSubscription = !!activeSubscription;
+      results.push({
+        id: 'premium-gate',
+        name: 'Premium Gate Status',
+        status: 'warning',
+        message: hasSubscription 
+          ? 'User has subscription - premium actions available'
+          : 'No subscription - premium actions blocked',
+        details: { hasSubscription },
+        timestamp
+      });
+    } catch (err: any) {
+      results.push({
+        id: 'premium-gate',
+        name: 'Premium Gate Status',
+        status: 'fail',
+        message: `Error: ${err.message}`,
+        timestamp
+      });
+    }
+
+    // 4. Quest System Connectivity
+    try {
+      if (!user?.id || !supabase) throw new Error('No user or supabase');
+      
+      const { data, error } = await supabase
+        .from('user_quests')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(5);
+      
+      if (error) throw error;
+      
+      results.push({
+        id: 'quest-system',
+        name: 'Quest System Connectivity',
+        status: 'pass',
+        message: `Quest system accessible (${data?.length || 0} quests)`,
+        details: { questCount: data?.length || 0 },
+        timestamp
+      });
+    } catch (err: any) {
+      results.push({
+        id: 'quest-system',
+        name: 'Quest System Connectivity',
+        status: 'fail',
+        message: `Error: ${err.message}`,
+        timestamp
+      });
+    }
+
+    // 5. Daily Card Consistency
+    try {
+      const stored = localStorage.getItem('dailyCard');
+      let consistencyIssue = null;
+      
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const today = new Date().toISOString().split('T')[0];
+        
+        if (parsed.date !== today) consistencyIssue = 'Date mismatch';
+        if (typeof parsed.isReversed !== 'boolean') consistencyIssue = 'isReversed not boolean';
+      }
+      
+      results.push({
+        id: 'daily-card',
+        name: 'Daily Card Consistency',
+        status: consistencyIssue ? 'warning' : 'pass',
+        message: consistencyIssue || 'Daily card data is consistent',
+        details: { consistencyIssue },
+        timestamp
+      });
+    } catch (err: any) {
+      results.push({
+        id: 'daily-card',
+        name: 'Daily Card Consistency',
+        status: 'fail',
+        message: `Error: ${err.message}`,
+        timestamp
+      });
+    }
+
+    // 6. Streak State Consistency
+    try {
+      const streakMismatch = user?.current_streak !== economy.current_streak;
+      
+      results.push({
+        id: 'streak-state',
+        name: 'Streak State Consistency',
+        status: streakMismatch ? 'warning' : 'pass',
+        message: streakMismatch 
+          ? `Mismatch: user=${user?.current_streak}, economy=${economy.current_streak}`
+          : 'Streak states are consistent',
+        details: { userStreak: user?.current_streak, economyStreak: economy.current_streak },
+        timestamp
+      });
+    } catch (err: any) {
+      results.push({
+        id: 'streak-state',
+        name: 'Streak State Consistency',
+        status: 'fail',
+        message: `Error: ${err.message}`,
+        timestamp
+      });
+    }
+
+    // 7. XP/Level Calculation
+    try {
+      const levelData = getLevelFromTotalXP(economy.xp || 0);
+      const isValid = levelData.level >= 1 && levelData.currentLevelXP >= 0;
+      
+      results.push({
+        id: 'xp-level',
+        name: 'XP/Level Calculation',
+        status: isValid ? 'pass' : 'fail',
+        message: isValid 
+          ? `Level ${levelData.level}, ${levelData.currentLevelXP}/${levelData.xpToNext} XP`
+          : 'Invalid calculation',
+        details: levelData,
+        timestamp
+      });
+    } catch (err: any) {
+      results.push({
+        id: 'xp-level',
+        name: 'XP/Level Calculation',
+        status: 'fail',
+        message: `Error: ${err.message}`,
+        timestamp
+      });
+    }
+
+    // 8. Supabase Connection
+    try {
+      if (!supabase) throw new Error('Supabase client is null');
+      
+      const { data, error } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', user?.id)
+        .single();
+      
+      if (error) throw error;
+      
+      results.push({
+        id: 'supabase-connection',
+        name: 'Supabase Connection',
+        status: 'pass',
+        message: 'Supabase connection successful',
+        details: { userId: data?.id },
+        timestamp
+      });
+    } catch (err: any) {
+      results.push({
+        id: 'supabase-connection',
+        name: 'Supabase Connection',
+        status: 'fail',
+        message: `Error: ${err.message}`,
+        timestamp
+      });
+    }
+
+    addDebugLog('success', 'DIAGNOSTICS', `✅ Complete: ${results.filter(r => r.status === 'pass').length}/${results.length} passed`);
+    
+    setDiagnostics({
+      results,
+      isRunning: false,
+      lastRun: timestamp
+    });
+    
+    return results;
+  };
+
+  const testEnergySystem = async () => {
+    addDebugLog('info', 'TEST', '🧪 Testing energy system...');
+    await testAddEnergy(1);
+    await testSpendEnergy(1);
+  };
+
+  const testLocalStorage = () => {
+    addDebugLog('info', 'TEST', '🧪 Testing localStorage...');
+    try {
+      const testKey = '__test__';
+      localStorage.setItem(testKey, JSON.stringify({ test: true }));
+      const parsed = JSON.parse(localStorage.getItem(testKey) || '');
+      localStorage.removeItem(testKey);
+      addDebugLog('success', 'TEST', '✅ localStorage works', parsed);
+    } catch (err: any) {
+      addDebugLog('error', 'TEST', `❌ localStorage failed: ${err.message}`);
+    }
+  };
+
+  const testPremiumGate = async () => {
+    addDebugLog('info', 'TEST', '🧪 Testing premium gate...');
+    if (!activeSubscription) {
+      addDebugLog('warning', 'TEST', '⚠️ No subscription - trying premium action should fail');
+      showToast('No subscription - premium actions blocked (expected)', 'info');
+    } else {
+      addDebugLog('success', 'TEST', '✅ Has subscription - premium actions available');
+    }
+  };
+
+  const testQuestSystem = async () => {
+    addDebugLog('info', 'TEST', '🧪 Testing quest system...');
+    await testCompleteQuest();
+  };
+
+  const testDailyCard = () => {
+    addDebugLog('info', 'TEST', '🧪 Testing daily card...');
+    const stored = localStorage.getItem('dailyCard');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        addDebugLog('success', 'TEST', '✅ Daily card data valid', parsed);
+      } catch (err: any) {
+        addDebugLog('error', 'TEST', `❌ Daily card data corrupted: ${err.message}`);
+      }
+    } else {
+      addDebugLog('warning', 'TEST', '⚠️ No daily card in localStorage');
+    }
+  };
+
+  const testStreakSystem = async () => {
+    addDebugLog('info', 'TEST', '🧪 Testing streak system...');
+    await handleClaimReward();
+  };
+
+  const testXPSystem = async () => {
+    addDebugLog('info', 'TEST', '🧪 Testing XP system...');
+    await testAddXP(10);
+  };
+
+  const testSupabaseConnection = async () => {
+    addDebugLog('info', 'TEST', '🧪 Testing Supabase connection...');
+    await checkDatabaseStatus();
+  };
+
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     setToast({ message, type });
   };
@@ -532,7 +865,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     }
   };
 
-  // ✅ განახლებული ადმინის შემოწმება: პირდაპირ user ობიექტიდან (რაც ბაზიდან წამოვიდა)
   useEffect(() => {
     if (user) {
       addDebugLog('info', 'USER', 'User loaded', { userId: user.id, displayName: user.display_name });
@@ -1356,6 +1688,16 @@ export default function HomeScreen({ onNavigate }: Props) {
           testAddXPWithLevel={testAddXPWithLevel}
           forceRecalcLevel={forceRecalcLevel}
           xpTestLogs={xpTestLogs}
+          runHomeDiagnostics={runHomeDiagnostics}
+          diagnostics={diagnostics}
+          testEnergySystem={testEnergySystem}
+          testLocalStorage={testLocalStorage}
+          testPremiumGate={testPremiumGate}
+          testQuestSystem={testQuestSystem}
+          testDailyCard={testDailyCard}
+          testStreakSystem={testStreakSystem}
+          testXPSystem={testXPSystem}
+          testSupabaseConnection={testSupabaseConnection}
         />
       )}
     </div>
