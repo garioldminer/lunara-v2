@@ -21,6 +21,7 @@ export interface User {
   streak: number;
   current_plan: string;
   onboarding_completed: boolean;
+  is_admin: boolean; // ✅ ახალი ველი
   created_at: string;
   updated_at: string;
 }
@@ -63,7 +64,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
       throw new Error('No user to update');
     }
 
-    // ✅ Null check supabase-ისთვის
     if (!supabase) {
       throw new Error('Supabase is not available');
     }
@@ -87,7 +87,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
       }
 
       console.log('✅ User updated successfully:', data);
-
       setUser(data);
     } catch (error) {
       console.error('❌ Update failed:', error);

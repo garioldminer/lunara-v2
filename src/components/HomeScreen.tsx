@@ -4,7 +4,6 @@ import confetti from 'canvas-confetti';
 import { useUser } from '../context/UserContext';
 import { useTranslation } from '../i18n/TranslationContext';
 import { tarotCards, SUITS, CARD_BACK_URL } from '../data/tarotCards';
-import { isAdmin } from '../lib/adminService';
 import { getActiveSubscription } from '../lib/subscriptionService';
 import { supabase } from '../lib/supabase';
 import { getTelegramUser } from '../lib/telegramAuth';
@@ -533,13 +532,15 @@ export default function HomeScreen({ onNavigate }: Props) {
     }
   };
 
+  // ✅ განახლებული ადმინის შემოწმება: პირდაპირ user ობიექტიდან (რაც ბაზიდან წამოვიდა)
   useEffect(() => {
     if (user) {
       addDebugLog('info', 'USER', 'User loaded', { userId: user.id, displayName: user.display_name });
-      isAdmin(user.id).then(admin => {
-        setIsUserAdmin(admin);
-        addDebugLog('success', 'ADMIN', 'Admin check completed', { isAdmin: admin });
-      }).catch(err => addDebugLog('error', 'ADMIN', `Admin check failed: ${err.message}`));
+      
+      const adminStatus = user.is_admin === true;
+      setIsUserAdmin(adminStatus);
+      
+      addDebugLog('success', 'ADMIN', 'Admin check completed (via Context)', { isAdmin: adminStatus });
     } else {
       addDebugLog('warning', 'USER', 'No user loaded');
     }
@@ -978,7 +979,6 @@ export default function HomeScreen({ onNavigate }: Props) {
             </h2>
             {activeSubscription && (
               <div className="premium-status-badge" onClick={() => onNavigate?.('subscription')} style={{ marginTop: '4px', alignSelf: 'flex-start' }}>
-                {/* ✅ შესწორებულია: InfinityIcon-ის გამოყენება */}
                 <InfinityIcon size={10} /><span>PREMIUM</span>
               </div>
             )}
@@ -1111,7 +1111,6 @@ export default function HomeScreen({ onNavigate }: Props) {
             
             <button className={`action-btn-vertical ${activeSubscription ? 'subscription-btn-v' : 'upgrade-btn-v'}`} onClick={() => onNavigate && onNavigate(activeSubscription ? 'subscription' : 'pricing')} style={{ background: activeSubscription ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 165, 0, 0.05) 100%)' : 'rgba(255, 255, 255, 0.03)', border: activeSubscription ? '1px solid rgba(255, 215, 0, 0.4)' : '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%' }}>
               {activeSubscription ? (
-                // ✅ შესწორებულია: InfinityIcon-ის გამოყენება
                 <><InfinityIcon size={22} style={{ filter: 'drop-shadow(0 0 6px #FFD700)', color: '#FFD700', width: '20px', height: '20px' }} /><div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>VIP</div></>
               ) : (
                 <><Crown size={22} style={{ filter: 'drop-shadow(0 0 6px #a78bfa)', color: '#a78bfa', width: '20px', height: '20px' }} /><div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>PRO</div></>

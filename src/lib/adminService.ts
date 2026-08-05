@@ -1,14 +1,24 @@
 import { supabase } from './supabase';
 
-// Admin user ID - მხოლოდ შენი ID
-export const ADMIN_USER_ID = 'c9dbe3be-5c02-4034-8bfd-1d693eb02754';
-
 // ============================================
-// CHECK IF USER IS ADMIN
+// CHECK IF USER IS ADMIN (Database driven)
 // ============================================
 export async function isAdmin(userId: string): Promise<boolean> {
-  if (!userId) return false;
-  return userId === ADMIN_USER_ID;
+  if (!userId || !supabase) return false;
+  
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('is_admin')
+      .eq('id', userId)
+      .single();
+    
+    if (error || !data) return false;
+    return data.is_admin === true;
+  } catch (err) {
+    console.error('Error checking admin status:', err);
+    return false;
+  }
 }
 
 // ============================================
@@ -380,7 +390,6 @@ export interface FunctionStatus {
   avgResponseTime: number;
 }
 
-// ყველა Edge Function-ის სია
 export const EDGE_FUNCTIONS = [
   { name: 'daily-cosmic-runner', url: 'https://eutavdhcxpfhpfsyaskb.supabase.co/functions/v1/daily-cosmic-runner' },
   { name: 'generate-horoscope', url: 'https://eutavdhcxpfhpfsyaskb.supabase.co/functions/v1/generate-horoscope' },
@@ -388,7 +397,6 @@ export const EDGE_FUNCTIONS = [
   { name: 'create-invoice', url: 'https://eutavdhcxpfhpfsyaskb.supabase.co/functions/v1/create-invoice' },
 ];
 
-// ✅ შევამოწმოთ Supabase client-ის კონფიგურაცია
 export async function checkSupabaseConfig(): Promise<{
   hasClient: boolean;
   hasUrl: boolean;
@@ -407,7 +415,6 @@ export async function checkSupabaseConfig(): Promise<{
   if (!supabase) return result;
 
   try {
-    // ✅ შევამოწმოთ კავშირი users ცხრილთან
     const { error } = await supabase.from('users').select('id').limit(1);
     result.canConnect = !error;
     result.hasUrl = true;
@@ -422,7 +429,6 @@ export async function checkSupabaseConfig(): Promise<{
   return result;
 }
 
-// მიიღეთ ყველა function-ის სტატუსი
 export async function getAllFunctionStatuses(adminId: string): Promise<FunctionStatus[]> {
   await requireAdmin(adminId);
 
@@ -431,7 +437,6 @@ export async function getAllFunctionStatuses(adminId: string): Promise<FunctionS
   const statuses: FunctionStatus[] = [];
 
   for (const func of EDGE_FUNCTIONS) {
-    // ბოლო 50 ლოგი ამ function-ისთვის
     const { data: logs } = await supabase
       .from('function_logs')
       .select('*')
@@ -462,7 +467,6 @@ export async function getAllFunctionStatuses(adminId: string): Promise<FunctionS
   return statuses;
 }
 
-// მიიღეთ ბოლო ლოგები
 export async function getRecentLogs(adminId: string, limit: number = 50): Promise<FunctionLog[]> {
   await requireAdmin(adminId);
 
@@ -482,7 +486,6 @@ export async function getRecentLogs(adminId: string, limit: number = 50): Promis
   return data || [];
 }
 
-// მიიღეთ კონკრეტული function-ის ლოგები
 export async function getFunctionLogs(
   adminId: string, 
   functionName: string, 
@@ -507,7 +510,6 @@ export async function getFunctionLogs(
   return data || [];
 }
 
-// ✅ ხელით გაუშვით function - გაუმჯობესებული fetch-ით
 export async function testFunction(adminId: string, functionName: string): Promise<{success: boolean; log?: FunctionLog; error?: string}> {
   await requireAdmin(adminId);
 
@@ -525,15 +527,13 @@ export async function testFunction(adminId: string, functionName: string): Promi
     console.log(`🔍 Testing function: ${functionName}`);
     console.log(`📍 URL: ${func.url}`);
     
-    // ✅ ვიღებთ Supabase-ის ავტორიზაციის token-ს
     const { data: sessionData } = await supabase.auth.getSession();
     const authToken = sessionData?.session?.access_token || 'anon';
 
     console.log(`🔑 Auth Token: ${authToken ? 'exists' : 'missing'}`);
     
-    // ✅ ვგზავნით request სათანადო headers-ით
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
     
     const response = await fetch(func.url, {
       method: 'POST',
@@ -555,7 +555,6 @@ export async function testFunction(adminId: string, functionName: string): Promi
     console.log(`📊 Response Status: ${statusCode}`);
     console.log(`⏱️ Response Time: ${responseTime}ms`);
 
-    // ვცადოთ response-ის წაკითხვა
     try {
       const text = await response.text();
       console.log(`📄 Response Body (${text.length} chars):`, text.substring(0, 500));
@@ -570,10 +569,8 @@ export async function testFunction(adminId: string, functionName: string): Promi
       responseData = { parse_error: parseError.message };
     }
 
-    // განვსაზღვროთ status
     const isSuccess = response.ok && statusCode === 200;
     
-    // ამოვიღოთ error message
     if (!isSuccess) {
       if (responseData?.error) {
         errorMessage = String(responseData.error);
@@ -593,7 +590,6 @@ export async function testFunction(adminId: string, functionName: string): Promi
 
     const status = isSuccess ? 'success' : 'error';
     
-    // ჩაწერეთ ლოგი
     const { data: log, error: logError } = await supabase
       .from('function_logs')
       .insert({
@@ -638,7 +634,6 @@ export async function testFunction(adminId: string, functionName: string): Promi
     console.error('Error Name:', error.name);
     console.error('Error Message:', error.message);
     
-    // დეტალური error message
     let detailedError = 'Unknown error';
     
     if (error.name === 'TypeError') {
@@ -668,7 +663,6 @@ Try:
       detailedError = `${error.name}: ${error.message}`;
     }
     
-    // ჩაწერეთ error ლოგი
     try {
       await supabase.from('function_logs').insert({
         function_name: functionName,
@@ -692,7 +686,6 @@ Try:
   }
 }
 
-// წაშალეთ ძველი ლოგები (30 დღეზე მეტი)
 export async function cleanupOldLogs(adminId: string): Promise<boolean> {
   await requireAdmin(adminId);
 
@@ -741,8 +734,8 @@ export interface UserAnalytics {
   total_readings: number;
   today_readings: number;
   last_reading_at: string | null;
-  total_session_time: number; // წამებში
-  last_session_duration: number | null; // წამებში
+  total_session_time: number;
+  last_session_duration: number | null;
 }
 
 export interface UserAnalyticsOverview {
@@ -754,7 +747,6 @@ export interface UserAnalyticsOverview {
   total_revenue: number;
 }
 
-// მიიღეთ ყველა მომხმარებლის ანალიტიკა
 export async function getAllUserAnalytics(adminId: string): Promise<UserAnalytics[]> {
   await requireAdmin(adminId);
 
@@ -763,7 +755,6 @@ export async function getAllUserAnalytics(adminId: string): Promise<UserAnalytic
   try {
     console.log('🔍 [UserAnalytics] Fetching all user data...');
 
-    // 1. მიიღეთ ყველა user
     const { data: users, error: usersError } = await supabase
       .from('users')
       .select('*')
@@ -776,7 +767,6 @@ export async function getAllUserAnalytics(adminId: string): Promise<UserAnalytic
 
     console.log(`✅ Loaded ${users.length} users`);
 
-    // 2. მიიღეთ subscriptions
     const { data: subscriptions } = await supabase
       .from('subscriptions')
       .select('user_id, status, plan_type, expires_at')
@@ -784,21 +774,18 @@ export async function getAllUserAnalytics(adminId: string): Promise<UserAnalytic
 
     console.log(`✅ Loaded ${subscriptions?.length || 0} active subscriptions`);
 
-    // 3. მიიღეთ credits
     const { data: credits } = await supabase
       .from('available_credits')
       .select('user_id, feature_id, credits');
 
     console.log(`✅ Loaded ${credits?.length || 0} credits`);
 
-    // 4. მიიღეთ streaks
     const { data: streaks } = await supabase
       .from('user_streaks')
       .select('user_id, current_streak, longest_streak');
 
     console.log(`✅ Loaded ${streaks?.length || 0} streaks`);
 
-    // 5. მიიღეთ reading stats
     const { data: readings } = await supabase
       .from('reading_history')
       .select('user_id, created_at')
@@ -806,7 +793,6 @@ export async function getAllUserAnalytics(adminId: string): Promise<UserAnalytic
 
     console.log(`✅ Loaded ${readings?.length || 0} readings`);
 
-    // 6. მიიღეთ session stats
     const { data: sessions } = await supabase
       .from('user_sessions')
       .select('user_id, duration_seconds, ended_at')
@@ -814,7 +800,6 @@ export async function getAllUserAnalytics(adminId: string): Promise<UserAnalytic
 
     console.log(`✅ Loaded ${sessions?.length || 0} sessions`);
 
-    // Helper functions
     const getSubscription = (userId: string) => {
       const sub = subscriptions?.find(s => s.user_id === userId);
       return sub || null;
@@ -849,7 +834,6 @@ export async function getAllUserAnalytics(adminId: string): Promise<UserAnalytic
       return { total, last };
     };
 
-    // ავაწყოთ analytics array
     const analytics: UserAnalytics[] = users.map(user => {
       const sub = getSubscription(user.id);
       const streak = getStreak(user.id);
@@ -882,7 +866,6 @@ export async function getAllUserAnalytics(adminId: string): Promise<UserAnalytic
   }
 }
 
-// მიიღეთ overview სტატისტიკა
 export async function getUserAnalyticsOverview(adminId: string): Promise<UserAnalyticsOverview> {
   await requireAdmin(adminId);
 
@@ -901,24 +884,20 @@ export async function getUserAnalyticsOverview(adminId: string): Promise<UserAna
     console.log('🔍 [UserAnalytics] Fetching overview stats...');
     const today = new Date().toISOString().split('T')[0];
 
-    // Total users
     const { count: totalUsers } = await supabase
       .from('users')
       .select('*', { count: 'exact', head: true });
 
-    // Active today (last_active_at today)
     const { count: activeToday } = await supabase
       .from('users')
       .select('*', { count: 'exact', head: true })
       .gte('last_active_at', `${today}T00:00:00`);
 
-    // Premium users
     const { count: premiumUsers } = await supabase
       .from('subscriptions')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'active');
 
-    // Avg streak
     const { data: streaks } = await supabase
       .from('user_streaks')
       .select('current_streak');
@@ -927,18 +906,15 @@ export async function getUserAnalyticsOverview(adminId: string): Promise<UserAna
       ? streaks.reduce((sum, s) => sum + (s.current_streak || 0), 0) / streaks.length
       : 0;
 
-    // Total readings
     const { count: totalReadings } = await supabase
       .from('reading_history')
       .select('*', { count: 'exact', head: true });
 
-    // Total revenue (from subscriptions)
     const { data: activeSubs } = await supabase
       .from('subscriptions')
       .select('plan_type, created_at')
       .eq('status', 'active');
     
-    // მარტივი revenue calculation (Monthly: $9.99, Yearly: $99.99)
     const totalRevenue = (activeSubs || []).reduce((sum, sub) => {
       return sum + (sub.plan_type === 'yearly' ? 99.99 : 9.99);
     }, 0);
@@ -973,7 +949,6 @@ export async function getUserAnalyticsOverview(adminId: string): Promise<UserAna
   }
 }
 
-// მიიღეთ კონკრეტული მომხმარებლის reading history
 export async function getUserReadingHistory(
   adminId: string,
   userId: string,
@@ -998,7 +973,6 @@ export async function getUserReadingHistory(
   return data || [];
 }
 
-// მიიღეთ კონკრეტული მომხმარებლის session history
 export async function getUserSessionHistory(
   adminId: string,
   userId: string,
@@ -1023,7 +997,6 @@ export async function getUserSessionHistory(
   return data || [];
 }
 
-// განაახლეთ user-ის last_active_at
 export async function updateUserLastActive(userId: string): Promise<void> {
   if (!supabase) return;
 
@@ -1037,7 +1010,6 @@ export async function updateUserLastActive(userId: string): Promise<void> {
   }
 }
 
-// ჩაწერეთ session
 export async function logUserSession(
   userId: string,
   startedAt: string,
@@ -1060,7 +1032,6 @@ export async function logUserSession(
   }
 }
 
-// ჩაწერეთ reading
 export async function logReading(
   userId: string,
   readingType: string,

@@ -21,6 +21,7 @@ export interface User {
   streak: number;
   current_plan: string;
   onboarding_completed: boolean;
+  is_admin: boolean; // ✅ ახალი ველი
   created_at: string;
   updated_at: string;
 }
@@ -46,16 +47,14 @@ export async function getUserByTelegramId(telegramId: number): Promise<User | nu
   return data as User;
 }
 
-// 🆕 განახლებული ფუნქცია: იღებს authUid-ს და ანიჭებს მას როგორც id-ს
 export async function createUser(tgUser: TelegramUser, authUid: string): Promise<User | null> {
   if (!supabase) {
-    console.warn('️ Supabase not available');
+    console.warn('⚠️ Supabase not available');
     return null;
   }
   
   const userData = createUserDataFromTelegram(tgUser);
   
-  // ⚡ მაგიური ფიქსი: ვაიძულებთ, რომ ID იყოს ზუსტად Auth UID
   const userDataWithId = {
     ...userData,
     id: authUid 
@@ -76,16 +75,12 @@ export async function createUser(tgUser: TelegramUser, authUid: string): Promise
   return data as User;
 }
 
-// 🆕 თვითგამოსწორებელი ფუნქცია ძველი, არასწორი ID-ებისთვის
 async function fixUserIdMismatch(oldId: string, newAuthUid: string) {
   if (!supabase) return;
   try {
-    console.log(' Fixing ID mismatch: migrating from', oldId, 'to', newAuthUid);
+    console.log('🔧 Fixing ID mismatch: migrating from', oldId, 'to', newAuthUid);
     
-    // 1. განვაახლოთ users ცხრილი
     await supabase.from('users').update({ id: newAuthUid }).eq('id', oldId);
-    
-    // 2. განვაახლოთ დაკავშირებული ცხრილები (რათა Foreign Key არ დაგვბლოკოს)
     await supabase.from('readings').update({ user_id: newAuthUid }).eq('user_id', oldId);
     await supabase.from('user_patterns').update({ user_id: newAuthUid }).eq('user_id', oldId);
     await supabase.from('streaks').update({ user_id: newAuthUid }).eq('user_id', oldId);
@@ -102,7 +97,6 @@ export async function getOrCreateUser(tgUser: TelegramUser): Promise<User | null
   if (!supabase) return null;
   
   try {
-    // 1. ერ ვიღებთ რეალურად ავტორიზებულ მომხმარებელს Supabase Auth-იდან
     const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !authUser) {
@@ -113,26 +107,21 @@ export async function getOrCreateUser(tgUser: TelegramUser): Promise<User | null
     const authUid = authUser.id;
     console.log('🔑 Authenticated User ID (Auth UID):', authUid);
 
-    // 2. ვამოწმებთ, არსებობს თუ არა მომხმარებელი Telegram ID-ით
     let user = await getUserByTelegramId(tgUser.id);
     
     if (user) {
       console.log('✅ Existing user found:', user);
       
-      // ⚡ თვითგამოსწორებელი ლოგიკა: თუ არსებული user.id არ ემთხვევა authUid-ს, ვასწორებთ
       if (user.id !== authUid) {
-        console.warn('️ ID Mismatch detected! Auto-fixing...');
+        console.warn('⚠️ ID Mismatch detected! Auto-fixing...');
         await fixUserIdMismatch(user.id, authUid);
-        
-        // ვკითხულობთ განახლებულ მომხმარებელს
         user = await getUserByTelegramId(tgUser.id);
       }
       
       return user;
     }
 
-    // 3. თუ მომხმარებელი არ არსებობს, ვქმნით ახალს სწორი Auth UID-ით
-    console.log(' Creating new user with Auth UID:', authUid);
+    console.log('🆕 Creating new user with Auth UID:', authUid);
     user = await createUser(tgUser, authUid);
     return user;
 
@@ -144,7 +133,7 @@ export async function getOrCreateUser(tgUser: TelegramUser): Promise<User | null
 
 export async function updateUser(userId: string, updates: Partial<User>): Promise<User | null> {
   if (!supabase) {
-    console.warn('️ Supabase not available');
+    console.warn('⚠️ Supabase not available');
     return null;
   }
   
