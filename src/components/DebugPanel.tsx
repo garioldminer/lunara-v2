@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { 
   Bug, X, Activity, Users, Server, Terminal, Settings, 
-  Copy, Check, TrendingUp, RefreshCw, Play, Eye, ChevronDown, 
-  Cpu, Database, Package, CreditCard
+  Copy, Check, RefreshCw, Play, Eye, ChevronDown
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { 
@@ -51,29 +50,12 @@ type TabType = 'system' | 'user' | 'functions' | 'logs' | 'actions';
 
 export default function DebugPanel(props: DebugPanelProps) {
   const {
-    showDebug, 
-    setShowDebug, 
-    user, 
-    economy, 
-    debugLogs, 
-    dbStatus,
-    activeSubscription, 
-    currentStreak, 
-    setDebugLogs,
-    checkDatabaseStatus, 
-    refreshUserDataDebug, 
-    handleLogoutAndReset, 
-    testAddCoins,
-    testAddXP, 
-    testAddEnergy, 
-    testSpendEnergy, 
-    testCompleteQuest, 
-    reloadFromDatabase,
-    questsLoading,
-    timeLeft,
-    showQuestModal,
-    rewardClaimed,
-    isClaiming
+    showDebug, setShowDebug, user, economy, debugLogs, dbStatus,
+    activeSubscription, currentStreak, setDebugLogs,
+    checkDatabaseStatus, refreshUserDataDebug, handleLogoutAndReset, 
+    testAddCoins, testAddXP, testAddEnergy, testSpendEnergy, 
+    testCompleteQuest, reloadFromDatabase, questsLoading, timeLeft, 
+    showQuestModal, rewardClaimed, isClaiming
   } = props;
 
   const [activeTab, setActiveTab] = useState<TabType>('system');
@@ -178,7 +160,6 @@ export default function DebugPanel(props: DebugPanelProps) {
   })();
   const xpPercent = Math.min((currentLevelXP / xpToNext) * 100, 100);
 
-  // 🆕 Universal Copy Function for all tabs
   const handleCopyTab = (tab: string) => {
     let text = '';
     if (tab === 'system') {
