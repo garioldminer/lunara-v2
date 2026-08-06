@@ -359,7 +359,6 @@ export default function HomeScreen({ onNavigate }: Props) {
         const levelData = getLevelFromTotalXP(data.xp || 0);
         setEconomy({ cosmic_coins: data.cosmic_coins || 0, xp: data.xp || 0, level: levelData.level, current_streak: data.current_streak || 0, cosmic_focus: data.cosmic_focus || 20, max_focus: data.max_focus || 20 });
         setCurrentStreak(data.current_streak || 0);
-        // 🆕 rewardClaimed ავტომატურად განახლდება reload-ზე
         const todayStr = new Date().toISOString().split('T')[0];
         setRewardClaimed(data.last_daily_claim === todayStr);
         setDbDebugInfo(prev => ({ ...prev, economyData: data }));
@@ -546,7 +545,6 @@ export default function HomeScreen({ onNavigate }: Props) {
       addDebugLog('info', 'ECONOMY', '📡 Starting economy data load', { userId: user.id });
       try {
         const queryParams = { table: 'user_economy', columns: 'cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus, last_daily_claim', userId: user.id };
-        // 🆕 დაემატა last_daily_claim
         const { data, error } = await supabase.from('user_economy').select('cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus, last_daily_claim').eq('user_id', user.id).single();
         if (error) { setDbStatus('error'); addToDbDebugHistory('user_economy', 'SELECT', queryParams, null, error); addDebugLog('error', 'ECONOMY', '❌ Database query failed', { error: error.message, code: error.code, details: error.details }); return; }
         setDbStatus('connected');
@@ -558,7 +556,6 @@ export default function HomeScreen({ onNavigate }: Props) {
           const economyData = { cosmic_coins: data.cosmic_coins || 0, xp: data.xp || 0, level: levelData.level, current_streak: data.current_streak || 0, cosmic_focus: data.cosmic_focus || 20, max_focus: data.max_focus || 20 };
           setEconomy(economyData);
           setCurrentStreak(economyData.current_streak);
-          // 🆕 ავტომატური rewardClaimed დაყენება
           const todayStr = new Date().toISOString().split('T')[0];
           setRewardClaimed(data.last_daily_claim === todayStr);
           addDebugLog('info', 'STATE', '💰 Economy state updated', economyData);
@@ -640,43 +637,21 @@ export default function HomeScreen({ onNavigate }: Props) {
     return () => clearInterval(timer);
   }, []);
 
-  // 🆕 სრულად განახლებული: SQL function + level up check
   const handleClaimReward = async () => {
-    if (rewardClaimed || isClaiming) { 
-      showToast('Reward already claimed or claiming', 'info'); 
-      return; 
-    }
-    if (!user?.id || !supabase) { 
-      showToast('Not connected', 'error'); 
-      return; 
-    }
+    if (rewardClaimed || isClaiming) { showToast('Reward already claimed or claiming', 'info'); return; }
+    if (!user?.id || !supabase) { showToast('Not connected', 'error'); return; }
     addDebugLog('info', 'REWARD', 'Starting reward claim via SQL function...');
     setIsClaiming(true);
     try {
       const { data, error } = await supabase.rpc('claim_daily_reward', { p_user_id: user.id });
-
-      if (error) {
-        addDebugLog('error', 'REWARD', `RPC error: ${error.message}`);
-        showToast(`Failed: ${error.message}`, 'error');
-        setIsClaiming(false);
-        return;
-      }
-
-      if (!data?.success) {
-        addDebugLog('warning', 'REWARD', `Claim rejected: ${data?.error}`);
-        showToast(data?.error || 'Failed to claim reward', 'error');
-        setIsClaiming(false);
-        return;
-      }
-
+      if (error) { addDebugLog('error', 'REWARD', `RPC error: ${error.message}`); showToast(`Failed: ${error.message}`, 'error'); setIsClaiming(false); return; }
+      if (!data?.success) { addDebugLog('warning', 'REWARD', `Claim rejected: ${data?.error}`); showToast(data?.error || 'Failed to claim reward', 'error'); setIsClaiming(false); return; }
       setRewardClaimed(true);
       const reward = data.reward;
       setCurrentStreak(reward.streak);
-
       setEconomy(prev => {
         const newXP = prev.xp + reward.xp;
         const newLevelData = getLevelFromTotalXP(newXP);
-        
         if (newLevelData.level > prev.level) {
           confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#fbbf24', '#f59e0b', '#ffffff', '#10b981'] });
           setLeveledUpTo(newLevelData.level);
@@ -684,23 +659,11 @@ export default function HomeScreen({ onNavigate }: Props) {
         } else {
           showToast(`Daily Reward Claimed! +${reward.coins} 💎, +${reward.xp} XP, 🔥 ${reward.streak} day streak!`, 'success');
         }
-        
-        return { 
-          ...prev, 
-          cosmic_coins: data.new_coins, 
-          xp: newXP, 
-          level: newLevelData.level, 
-          current_streak: reward.streak 
-        };
+        return { ...prev, cosmic_coins: data.new_coins, xp: newXP, level: newLevelData.level, current_streak: reward.streak };
       });
-
       addDebugLog('success', 'REWARD', `Claimed! +${reward.coins} coins, +${reward.xp} XP, streak ${reward.streak}`, data);
-    } catch (err: any) {
-      addDebugLog('error', 'REWARD', `Exception: ${err.message}`);
-      showToast('Failed to connect to server', 'error');
-    } finally {
-      setIsClaiming(false);
-    }
+    } catch (err: any) { addDebugLog('error', 'REWARD', `Exception: ${err.message}`); showToast('Failed to connect to server', 'error'); }
+    finally { setIsClaiming(false); }
   };
 
   const handleQuickAction = async (action: string) => {
@@ -771,7 +734,8 @@ export default function HomeScreen({ onNavigate }: Props) {
       </AnimatePresence>
 
       <div className="user-header">
-        <div className="user-main-row" style={{ alignItems: 'center', height: '52px', display: 'flex', justifyContent: 'space-between' }}>
+        <div className="user-main-row" style={{ alignItems: 'center', height: '52px', display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
+          {/* ავატარი + XP წრე + ლეველი + პრემიუმ ნიშანი */}
           <div className="avatar-section clickable-avatar" onClick={() => onNavigate?.('profile')} style={{ position: 'relative', width: '52px', height: '52px', flexShrink: 0 }}>
             <svg className="xp-circular-progress" width="52" height="52" viewBox="0 0 52 52" style={{ position: 'absolute', top: 0, left: 0 }}>
               <circle className="xp-circle-bg" cx="26" cy="26" r="22" fill="none" stroke="#e9d5ff" strokeWidth="4" />
@@ -790,7 +754,8 @@ export default function HomeScreen({ onNavigate }: Props) {
             )}
           </div>
           
-          <div className="user-info-section" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '48px', marginLeft: '12px', flex: 1, minWidth: 0 }}>
+          {/* შუა სექცია: სახელი + ჰოროსკოპი (პრემიუმ ბეიჯი ამოღებულია!) */}
+          <div className="user-info-section" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '48px', marginLeft: '4px', flex: 1, minWidth: 0 }}>
             <h2 className="username" style={{ margin: 0, fontSize: '15px', lineHeight: '16px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {user?.display_name || 'LunaraSeeker'}
             </h2>
@@ -802,23 +767,16 @@ export default function HomeScreen({ onNavigate }: Props) {
             )}
           </div>
           
-          {activeSubscription && (
-            <div style={{ display: 'flex', alignItems: 'flex-end', height: '48px', margin: '0 10px', flexShrink: 0 }}>
-              <div className="premium-status-badge" onClick={() => onNavigate?.('subscription')} style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)', color: '#0a0600', borderRadius: '20px', padding: '0 10px', height: '22px', fontSize: '9px', fontWeight: 800, letterSpacing: '0.5px', cursor: 'pointer', boxShadow: '0 2px 8px rgba(255, 215, 0, 0.3)' }}>
-                <InfinityIcon size={10} /><span>PREMIUM</span>
-              </div>
-            </div>
-          )}
-          
+          {/* მარჯვენა: დაიმონდები + ენერგია (კომპაქტური) */}
           <div className="user-resources" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '48px', gap: '4px', flexShrink: 0 }}>
-            <div className="resource gems" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(147, 112, 219, 0.15)', padding: '0 10px', borderRadius: '20px', border: '1px solid rgba(147, 112, 219, 0.3)', height: '22px' }}>
-              <Gem size={12} className="resource-icon gem-icon" style={{ color: '#9370db', flexShrink: 0 }} />
-              <span className="value" style={{ fontSize: '12px', fontWeight: '600', color: '#fff', textAlign: 'center' }}>{economy.cosmic_coins.toLocaleString()}</span>
-              <button className="add-btn" onClick={() => setIsShopOpen(true)} style={{ width: '18px', height: '18px', borderRadius: '50%', background: 'rgba(197, 160, 89, 0.3)', border: 'none', color: '#C5A059', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', flexShrink: 0 }} title="Buy Diamonds">+</button>
+            <div className="resource gems" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', background: 'rgba(147, 112, 219, 0.15)', padding: '0 8px', borderRadius: '20px', border: '1px solid rgba(147, 112, 219, 0.3)', height: '22px' }}>
+              <Gem size={11} className="resource-icon gem-icon" style={{ color: '#9370db', flexShrink: 0 }} />
+              <span className="value" style={{ fontSize: '11px', fontWeight: '600', color: '#fff', textAlign: 'center' }}>{economy.cosmic_coins.toLocaleString()}</span>
+              <button className="add-btn" onClick={() => setIsShopOpen(true)} style={{ width: '16px', height: '16px', borderRadius: '50%', background: 'rgba(197, 160, 89, 0.3)', border: 'none', color: '#C5A059', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold', flexShrink: 0 }} title="Buy Diamonds">+</button>
             </div>
-            <div className="resource energy" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(251, 191, 36, 0.15)', padding: '0 10px', borderRadius: '20px', border: '1px solid rgba(251, 191, 36, 0.3)', height: '22px' }}>
-              <Zap size={12} className="resource-icon energy-icon" style={{ color: '#fbbf24', flexShrink: 0 }} />
-              <span className="value" style={{ fontSize: '12px', fontWeight: '600', color: '#fff', textAlign: 'center' }}>{economy.cosmic_focus || 0}/{economy.max_focus || 20}</span>
+            <div className="resource energy" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', background: 'rgba(251, 191, 36, 0.15)', padding: '0 8px', borderRadius: '20px', border: '1px solid rgba(251, 191, 36, 0.3)', height: '22px' }}>
+              <Zap size={11} className="resource-icon energy-icon" style={{ color: '#fbbf24', flexShrink: 0 }} />
+              <span className="value" style={{ fontSize: '11px', fontWeight: '600', color: '#fff', textAlign: 'center' }}>{economy.cosmic_focus || 0}/{economy.max_focus || 20}</span>
               {(() => {
                 const maxF = economy.max_focus || getConfig('max_focus_default', 20);
                 const isEnergyFull = (economy.cosmic_focus || 0) >= maxF;
@@ -826,7 +784,7 @@ export default function HomeScreen({ onNavigate }: Props) {
                 const energyToAdd = Math.min(getConfig('energy_refill_max_amount', 10), energyNeeded);
                 const cost = energyToAdd * getConfig('energy_refill_coin_cost', 5);
                 return (
-                  <button className="add-btn" onClick={handleRefillEnergy} disabled={isClaiming || isEnergyFull} style={{ width: '18px', height: '18px', borderRadius: '50%', background: (isClaiming || isEnergyFull) ? 'rgba(150,150,150,0.3)' : 'rgba(197, 160, 89, 0.3)', border: 'none', color: (isClaiming || isEnergyFull) ? '#666' : '#C5A059', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: (isClaiming || isEnergyFull) ? 'not-allowed' : 'pointer', fontSize: '12px', fontWeight: 'bold', flexShrink: 0 }} title={isEnergyFull ? "Energy is already full" : `Buy ${energyToAdd}⚡ Energy for ${cost} 💎`}>
+                  <button className="add-btn" onClick={handleRefillEnergy} disabled={isClaiming || isEnergyFull} style={{ width: '16px', height: '16px', borderRadius: '50%', background: (isClaiming || isEnergyFull) ? 'rgba(150,150,150,0.3)' : 'rgba(197, 160, 89, 0.3)', border: 'none', color: (isClaiming || isEnergyFull) ? '#666' : '#C5A059', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: (isClaiming || isEnergyFull) ? 'not-allowed' : 'pointer', fontSize: '11px', fontWeight: 'bold', flexShrink: 0 }} title={isEnergyFull ? "Energy is already full" : `Buy ${energyToAdd}⚡ Energy for ${cost} 💎`}>
                     {isClaiming ? '...' : (isEnergyFull ? '✓' : '+')}
                   </button>
                 );
