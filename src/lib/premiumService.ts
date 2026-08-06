@@ -1,71 +1,23 @@
 import { supabase } from './supabase';
 
 // ============================================
-// PREMIUM FEATURES
+// TYPES
 // ============================================
-export const PREMIUM_FEATURES = {
-  subscription_monthly: {
-    id: 'subscription_monthly',
-    name: 'Premium Monthly',
-    description: 'Unlimited readings + AI Insights',
-    price: 999,
-    stars: 499,
-    type: 'subscription',
-    duration: 'monthly',
-    icon: '💎'
-  },
-  subscription_yearly: {
-    id: 'subscription_yearly',
-    name: 'Premium Yearly',
-    description: 'Save 33% - Full year access',
-    price: 7999,
-    stars: 3999,
-    type: 'subscription',
-    duration: 'yearly',
-    icon: '💎'
-  },
-  celtic_cross: {
-    id: 'celtic_cross',
-    name: 'Celtic Cross Reading',
-    description: '10-card deep analysis',
-    price: 299,
-    stars: 1,
-    type: 'single',
-    icon: '✝️'
-  },
-  horseshoe: {
-    id: 'horseshoe',
-    name: 'Horseshoe Reading',
-    description: '7-card life path analysis',
-    price: 199,
-    stars: 100,
-    type: 'single',
-    icon: '🐎'
-  },
-  relationship: {
-    id: 'relationship',
-    name: 'Relationship Spread',
-    description: '6-card love analysis',
-    price: 399,
-    stars: 200,
-    type: 'single',
-    icon: '❤️'
-  },
-  ai_weekly: {
-    id: 'ai_weekly',
-    name: 'AI Weekly Insight',
-    description: 'Personalized weekly analysis',
-    price: 499,
-    stars: 250,
-    type: 'single',
-    icon: '🧠'
-  }
-};
+// ✅ დავტოვეთ PremiumFeatureId - backward compatibility-ისთვის
+// (telegramPaymentService და PremiumPaywall ჯერ კიდევ იყენებენ)
+export type PremiumFeatureId = 
+  | 'subscription_monthly' 
+  | 'subscription_yearly'
+  | 'celtic_cross' 
+  | 'horseshoe' 
+  | 'relationship' 
+  | 'ai_weekly';
 
-export type PremiumFeatureId = keyof typeof PREMIUM_FEATURES;
+// ❌ ამოღებულია: PREMIUM_FEATURES hardcoded ობიექტი
+// ✅ ეხლა ყველა feature/plan info მოდის premiumConfig.ts-დან (DB)
 
 // ============================================
-// CHECK PREMIUM STATUS - ახალი სქემით
+// CHECK PREMIUM STATUS
 // ============================================
 export async function isPremium(userId: string): Promise<boolean> {
   if (!supabase) return false;
@@ -86,12 +38,7 @@ export async function isPremium(userId: string): Promise<boolean> {
       return false;
     }
 
-    if (!data || data.length === 0) {
-      return false;
-    }
-
-    console.log('✅ User has active subscription');
-    return true;
+    return !!(data && data.length > 0);
   } catch (error) {
     console.error('❌ Error checking premium status:', error);
     return false;
@@ -99,7 +46,7 @@ export async function isPremium(userId: string): Promise<boolean> {
 }
 
 // ============================================
-// GET ACTIVE SUBSCRIPTION - ახალი სქემით
+// GET ACTIVE SUBSCRIPTION
 // ============================================
 export async function getActiveSubscription(userId: string) {
   if (!supabase) return null;
@@ -116,10 +63,7 @@ export async function getActiveSubscription(userId: string) {
       .single();
 
     if (error) {
-      if (error.code === 'PGRST116') {
-        // No rows returned - ეს ნორმალურია
-        return null;
-      }
+      if (error.code === 'PGRST116') return null;
       console.error('❌ Error fetching subscription:', error);
       return null;
     }
@@ -132,7 +76,7 @@ export async function getActiveSubscription(userId: string) {
 }
 
 // ============================================
-// GET AVAILABLE CREDITS
+// CREDITS MANAGEMENT
 // ============================================
 export async function getAvailableCredits(userId: string): Promise<Record<string, number>> {
   if (!supabase) return {};
@@ -153,7 +97,6 @@ export async function getAvailableCredits(userId: string): Promise<Record<string
       credits[row.feature_id] = row.credits;
     });
 
-    console.log('📊 Available credits:', credits);
     return credits;
   } catch (error) {
     console.error('❌ Error fetching credits:', error);
@@ -161,9 +104,6 @@ export async function getAvailableCredits(userId: string): Promise<Record<string
   }
 }
 
-// ============================================
-// DECREMENT CREDIT (გამოყენებისას)
-// ============================================
 export async function decrementCredit(userId: string, featureId: string): Promise<boolean> {
   if (!supabase) return false;
   
@@ -175,9 +115,7 @@ export async function decrementCredit(userId: string, featureId: string): Promis
       .eq('feature_id', featureId)
       .single();
 
-    if (fetchError || !current || current.credits <= 0) {
-      return false;
-    }
+    if (fetchError || !current || current.credits <= 0) return false;
 
     const { error: updateError } = await supabase
       .from('available_credits')
@@ -193,7 +131,6 @@ export async function decrementCredit(userId: string, featureId: string): Promis
       return false;
     }
 
-    console.log('✅ Credit decremented:', featureId, 'remaining:', current.credits - 1);
     return true;
   } catch (error) {
     console.error('❌ Error decrementing credit:', error);
@@ -201,9 +138,6 @@ export async function decrementCredit(userId: string, featureId: string): Promis
   }
 }
 
-// ============================================
-// INCREMENT CREDIT (ყიდვისას)
-// ============================================
 export async function incrementCredit(userId: string, featureId: string, amount: number = 1): Promise<void> {
   if (!supabase) return;
   
@@ -216,7 +150,6 @@ export async function incrementCredit(userId: string, featureId: string, amount:
       .single();
 
     if (fetchError || !current) {
-      // არ არსებობს - შექმენი ახალი
       const { error: insertError } = await supabase
         .from('available_credits')
         .insert({
@@ -226,13 +159,8 @@ export async function incrementCredit(userId: string, featureId: string, amount:
           updated_at: new Date().toISOString()
         });
       
-      if (insertError) {
-        console.error('❌ Error inserting credit:', insertError);
-      } else {
-        console.log('✅ Credit created:', featureId, 'amount:', amount);
-      }
+      if (insertError) console.error('❌ Error inserting credit:', insertError);
     } else {
-      // განაახლე არსებული
       const { error: updateError } = await supabase
         .from('available_credits')
         .update({
@@ -242,23 +170,15 @@ export async function incrementCredit(userId: string, featureId: string, amount:
         .eq('user_id', userId)
         .eq('feature_id', featureId);
       
-      if (updateError) {
-        console.error('❌ Error updating credit:', updateError);
-      } else {
-        console.log('✅ Credit incremented:', featureId, 'new total:', current.credits + amount);
-      }
+      if (updateError) console.error('❌ Error updating credit:', updateError);
     }
   } catch (error) {
     console.error('❌ Error incrementing credit:', error);
   }
 }
 
-// ============================================
-// ROLLBACK CREDIT (თუ reading ჩავარდა)
-// ============================================
 export async function rollbackCredit(userId: string, featureId: string): Promise<void> {
   await incrementCredit(userId, featureId, 1);
-  console.log('🔄 Credit rolled back:', featureId);
 }
 
 // ============================================
@@ -266,11 +186,4 @@ export async function rollbackCredit(userId: string, featureId: string): Promise
 // ============================================
 export function formatPrice(priceInCents: number): string {
   return `$${(priceInCents / 100).toFixed(2)}`;
-}
-
-// ============================================
-// GET FEATURE BY ID
-// ============================================
-export function getFeatureById(featureId: PremiumFeatureId) {
-  return PREMIUM_FEATURES[featureId];
 }
