@@ -34,7 +34,6 @@ export default function PremiumPaywall({
   const [credits, setCredits] = useState<Record<string, number>>({});
   const [hasSubscription, setHasSubscription] = useState(false);
   
-  // 🆕 DB-დან წამოსული მონაცემები
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [features, setFeatures] = useState<PremiumFeature[]>([]);
   const [benefits, setBenefits] = useState<PremiumBenefit[]>([]);
@@ -42,8 +41,6 @@ export default function PremiumPaywall({
   useEffect(() => {
     if (isOpen && user) {
       const fetchData = async () => {
-        console.log('🔍 Fetching data for user:', user.id);
-        
         const [creditsData, isSub, plansData, featuresData, benefitsData] = await Promise.all([
           getAvailableCredits(user.id),
           isPremium(user.id),
@@ -51,12 +48,6 @@ export default function PremiumPaywall({
           getPremiumFeatures(),
           getPremiumBenefits()
         ]);
-        
-        console.log('📊 Credits loaded:', creditsData);
-        console.log('✅ Has subscription:', isSub);
-        console.log('💎 Plans loaded:', plansData.length);
-        console.log('✨ Features loaded:', featuresData.length);
-        console.log('⭐ Benefits loaded:', benefitsData.length);
         
         setCredits(creditsData);
         setHasSubscription(isSub);
@@ -77,7 +68,6 @@ export default function PremiumPaywall({
     setIsProcessing(true);
 
     try {
-      // Subscription purchase (Monthly/Yearly)
       if (selectedFeature === 'subscription_monthly' || selectedFeature === 'subscription_yearly') {
         const planType = selectedFeature === 'subscription_monthly' ? 'monthly' : 'yearly';
         const plan = plans.find(p => p.plan_type === planType);
@@ -88,8 +78,6 @@ export default function PremiumPaywall({
           setIsProcessing(false);
           return;
         }
-        
-        console.log(`💎 Purchasing ${planType} subscription for ${plan.stars} stars`);
         
         const result = await completePurchase(
           selectedFeature as PremiumFeatureId,
@@ -102,17 +90,10 @@ export default function PremiumPaywall({
           if (subscription) {
             setShowSuccess(true);
             setHasSubscription(true);
-            
-            if (onPurchase) {
-              onPurchase(selectedFeature as PremiumFeatureId);
-            }
-            
-            setTimeout(() => {
-              setShowSuccess(false);
-              onClose();
-            }, 2500);
+            if (onPurchase) onPurchase(selectedFeature as PremiumFeatureId);
+            setTimeout(() => { setShowSuccess(false); onClose(); }, 2500);
           } else {
-            setErrorMessage('Subscription created but database error occurred. Contact support.');
+            setErrorMessage('Subscription created but database error. Contact support.');
             setShowError(true);
             setIsProcessing(false);
           }
@@ -123,9 +104,7 @@ export default function PremiumPaywall({
           setShowError(true);
           setIsProcessing(false);
         }
-      } 
-      // Single reading purchase
-      else {
+      } else {
         const result = await completePurchase(
           selectedFeature as PremiumFeatureId,
           user.id
@@ -133,20 +112,9 @@ export default function PremiumPaywall({
 
         if (result === 'success') {
           setShowSuccess(true);
-          
-          setCredits(prev => ({
-            ...prev,
-            [selectedFeature]: (prev[selectedFeature] || 0) + 1
-          }));
-          
-          if (onPurchase) {
-            onPurchase(selectedFeature as PremiumFeatureId);
-          }
-          
-          setTimeout(() => {
-            setShowSuccess(false);
-            onClose();
-          }, 2500);
+          setCredits(prev => ({ ...prev, [selectedFeature]: (prev[selectedFeature] || 0) + 1 }));
+          if (onPurchase) onPurchase(selectedFeature as PremiumFeatureId);
+          setTimeout(() => { setShowSuccess(false); onClose(); }, 2500);
         } else if (result === 'cancelled') {
           setIsProcessing(false);
         } else {
@@ -164,12 +132,10 @@ export default function PremiumPaywall({
   };
 
   const handleUse = (featureId: PremiumFeatureId) => {
-    if (onUse) {
-      onUse(featureId);
-    }
+    if (onUse) onUse(featureId);
   };
 
-  // 🆕 ფასი DB-დან
+  // ✅ FIX: removed getFeatureUSD (unused), kept getFeatureStars
   const getFeatureStars = (featureId: string): number => {
     if (featureId === 'subscription_monthly' || featureId === 'subscription_yearly') {
       const planType = featureId === 'subscription_monthly' ? 'monthly' : 'yearly';
@@ -178,16 +144,6 @@ export default function PremiumPaywall({
     }
     const feature = features.find(f => f.feature_id === featureId);
     return feature?.stars || 0;
-  };
-
-  const getFeatureUSD = (featureId: string): number => {
-    if (featureId === 'subscription_monthly' || featureId === 'subscription_yearly') {
-      const planType = featureId === 'subscription_monthly' ? 'monthly' : 'yearly';
-      const plan = plans.find(p => p.plan_type === planType);
-      return plan?.usd_cents || 0;
-    }
-    const feature = features.find(f => f.feature_id === featureId);
-    return feature?.usd_cents || 0;
   };
 
   const getPlanDetails = (planType: 'monthly' | 'yearly') => {
@@ -199,27 +155,18 @@ export default function PremiumPaywall({
   };
 
   const stars = getFeatureStars(selectedFeature);
-
   const isSubscriptionTab = selectedFeature === 'subscription_monthly' || selectedFeature === 'subscription_yearly';
   const isSingleTab = selectedFeature === 'celtic_cross' || selectedFeature === 'horseshoe' || selectedFeature === 'relationship';
-
   const getCredits = (featureId: string) => credits[featureId] || 0;
 
   const showPurchaseBtn = () => {
-    if (isSubscriptionTab && !hasSubscription) {
-      return true;
-    }
-    if (isSingleTab && !hasSubscription && getCredits(selectedFeature) === 0) {
-      return true;
-    }
+    if (isSubscriptionTab && !hasSubscription) return true;
+    if (isSingleTab && !hasSubscription && getCredits(selectedFeature) === 0) return true;
     return false;
   };
 
-  // Get plan details
   const monthlyPlan = getPlanDetails('monthly');
   const yearlyPlan = getPlanDetails('yearly');
-  
-  // Get feature details
   const celticCross = getFeatureDetails('celtic_cross');
   const horseshoe = getFeatureDetails('horseshoe');
   const relationship = getFeatureDetails('relationship');
@@ -242,12 +189,10 @@ export default function PremiumPaywall({
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close Button */}
             <button className="premium-close-btn" onClick={onClose} disabled={isProcessing}>
               <X size={20} />
             </button>
 
-            {/* Header */}
             <div className="premium-header">
               <motion.div 
                 className="premium-crown-icon"
@@ -258,36 +203,21 @@ export default function PremiumPaywall({
                 👑
               </motion.div>
               <h2 className="premium-title">Unlock Premium</h2>
-              <p className="premium-subtitle">
-                Discover deeper insights
-              </p>
+              <p className="premium-subtitle">Discover deeper insights</p>
             </div>
 
-            {/* Feature Tabs */}
             <div className="premium-tabs">
-              <button
-                className={`premium-tab ${isSubscriptionTab ? 'active' : ''}`}
-                onClick={() => setSelectedFeature('subscription_monthly')}
-                disabled={isProcessing}
-              >
-                <Crown size={14} />
-                <span>Subscription</span>
+              <button className={`premium-tab ${isSubscriptionTab ? 'active' : ''}`} onClick={() => setSelectedFeature('subscription_monthly')} disabled={isProcessing}>
+                <Crown size={14} /><span>Subscription</span>
               </button>
-              <button
-                className={`premium-tab ${isSingleTab ? 'active' : ''}`}
-                onClick={() => setSelectedFeature('celtic_cross')}
-                disabled={isProcessing}
-              >
-                <Sparkles size={14} />
-                <span>Single Reading</span>
+              <button className={`premium-tab ${isSingleTab ? 'active' : ''}`} onClick={() => setSelectedFeature('celtic_cross')} disabled={isProcessing}>
+                <Sparkles size={14} /><span>Single Reading</span>
               </button>
             </div>
 
-            {/* Feature List */}
             <div className="premium-features-list">
               {isSubscriptionTab && (
                 <>
-                  {/* Features List - DB-დან */}
                   <div className="features-list-section">
                     <h3 className="features-section-title">✦ What's Included ✦</h3>
                     <div className="features-grid">
@@ -301,23 +231,20 @@ export default function PremiumPaywall({
                     </div>
                   </div>
 
-                  {/* Plan Selector - Monthly */}
+                  {/* ✅ FIX: hardcoded 💎 icon instead of plan.icon (doesn't exist) */}
                   {monthlyPlan && (
                     <div 
                       className={`premium-feature-item ${selectedFeature === 'subscription_monthly' ? 'selected' : ''} ${hasSubscription ? 'purchased' : ''}`}
                       onClick={() => !isProcessing && setSelectedFeature('subscription_monthly')}
                     >
-                      <div className="premium-feature-icon">{monthlyPlan.icon || '💎'}</div>
+                      <div className="premium-feature-icon">💎</div>
                       <div className="premium-feature-info">
                         <h4>{monthlyPlan.label}</h4>
-                        <p>{monthlyPlan.days} days access</p>
+                        <p>{monthlyPlan.description}</p>
                       </div>
                       <div className="premium-feature-price">
                         {hasSubscription ? (
-                          <div className="unlimited-badge">
-                            <Infinity size={12} />
-                            <span>Active</span>
-                          </div>
+                          <div className="unlimited-badge"><Infinity size={12} /><span>Active</span></div>
                         ) : (
                           <>
                             <span className="price-usd">{formatPrice(monthlyPlan.usd_cents)}</span>
@@ -328,7 +255,7 @@ export default function PremiumPaywall({
                     </div>
                   )}
 
-                  {/* Plan Selector - Yearly */}
+                  {/* ✅ FIX: hardcoded 💎 icon instead of plan.icon (doesn't exist) */}
                   {yearlyPlan && (
                     <div 
                       className={`premium-feature-item ${selectedFeature === 'subscription_yearly' ? 'selected' : ''} ${hasSubscription ? 'purchased' : ''}`}
@@ -337,17 +264,14 @@ export default function PremiumPaywall({
                       {yearlyPlan.savings_text && (
                         <div className="premium-feature-badge">{yearlyPlan.savings_text}</div>
                       )}
-                      <div className="premium-feature-icon">{yearlyPlan.icon || '💎'}</div>
+                      <div className="premium-feature-icon">💎</div>
                       <div className="premium-feature-info">
                         <h4>{yearlyPlan.label}</h4>
-                        <p>{yearlyPlan.days} days - Best value!</p>
+                        <p>{yearlyPlan.description}</p>
                       </div>
                       <div className="premium-feature-price">
                         {hasSubscription ? (
-                          <div className="unlimited-badge">
-                            <Infinity size={12} />
-                            <span>Active</span>
-                          </div>
+                          <div className="unlimited-badge"><Infinity size={12} /><span>Active</span></div>
                         ) : (
                           <>
                             <span className="price-usd">{formatPrice(yearlyPlan.usd_cents)}</span>
@@ -362,7 +286,6 @@ export default function PremiumPaywall({
 
               {isSingleTab && (
                 <>
-                  {/* Celtic Cross */}
                   {celticCross && (
                     <div className={`premium-feature-item ${selectedFeature === 'celtic_cross' ? 'selected' : ''} ${getCredits('celtic_cross') > 0 || hasSubscription ? 'purchased' : ''}`}>
                       <div className="premium-feature-icon">{celticCross.icon}</div>
@@ -372,24 +295,11 @@ export default function PremiumPaywall({
                       </div>
                       <div className="premium-feature-price">
                         {hasSubscription ? (
-                          <div className="unlimited-badge">
-                            <Infinity size={12} />
-                            <span>Unlimited</span>
-                          </div>
+                          <div className="unlimited-badge"><Infinity size={12} /><span>Unlimited</span></div>
                         ) : getCredits('celtic_cross') > 0 ? (
                           <div className="use-section">
-                            <button 
-                              className="use-btn"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleUse('celtic_cross');
-                              }}
-                            >
-                              Use
-                            </button>
-                            <div className="credits-badge">
-                              <span>{getCredits('celtic_cross')}</span>
-                            </div>
+                            <button className="use-btn" onClick={(e) => { e.stopPropagation(); handleUse('celtic_cross'); }}>Use</button>
+                            <div className="credits-badge"><span>{getCredits('celtic_cross')}</span></div>
                           </div>
                         ) : (
                           <>
@@ -401,7 +311,6 @@ export default function PremiumPaywall({
                     </div>
                   )}
 
-                  {/* Horseshoe */}
                   {horseshoe && (
                     <div className={`premium-feature-item ${selectedFeature === 'horseshoe' ? 'selected' : ''} ${getCredits('horseshoe') > 0 || hasSubscription ? 'purchased' : ''}`}>
                       <div className="premium-feature-icon">{horseshoe.icon}</div>
@@ -411,24 +320,11 @@ export default function PremiumPaywall({
                       </div>
                       <div className="premium-feature-price">
                         {hasSubscription ? (
-                          <div className="unlimited-badge">
-                            <Infinity size={12} />
-                            <span>Unlimited</span>
-                          </div>
+                          <div className="unlimited-badge"><Infinity size={12} /><span>Unlimited</span></div>
                         ) : getCredits('horseshoe') > 0 ? (
                           <div className="use-section">
-                            <button 
-                              className="use-btn"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleUse('horseshoe');
-                              }}
-                            >
-                              Use
-                            </button>
-                            <div className="credits-badge">
-                              <span>{getCredits('horseshoe')}</span>
-                            </div>
+                            <button className="use-btn" onClick={(e) => { e.stopPropagation(); handleUse('horseshoe'); }}>Use</button>
+                            <div className="credits-badge"><span>{getCredits('horseshoe')}</span></div>
                           </div>
                         ) : (
                           <>
@@ -440,7 +336,6 @@ export default function PremiumPaywall({
                     </div>
                   )}
 
-                  {/* Relationship */}
                   {relationship && (
                     <div className={`premium-feature-item ${selectedFeature === 'relationship' ? 'selected' : ''} ${getCredits('relationship') > 0 || hasSubscription ? 'purchased' : ''}`}>
                       <div className="premium-feature-icon">{relationship.icon}</div>
@@ -450,24 +345,11 @@ export default function PremiumPaywall({
                       </div>
                       <div className="premium-feature-price">
                         {hasSubscription ? (
-                          <div className="unlimited-badge">
-                            <Infinity size={12} />
-                            <span>Unlimited</span>
-                          </div>
+                          <div className="unlimited-badge"><Infinity size={12} /><span>Unlimited</span></div>
                         ) : getCredits('relationship') > 0 ? (
                           <div className="use-section">
-                            <button 
-                              className="use-btn"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleUse('relationship');
-                              }}
-                            >
-                              Use
-                            </button>
-                            <div className="credits-badge">
-                              <span>{getCredits('relationship')}</span>
-                            </div>
+                            <button className="use-btn" onClick={(e) => { e.stopPropagation(); handleUse('relationship'); }}>Use</button>
+                            <div className="credits-badge"><span>{getCredits('relationship')}</span></div>
                           </div>
                         ) : (
                           <>
@@ -482,116 +364,54 @@ export default function PremiumPaywall({
               )}
             </div>
 
-            {/* Purchase Button */}
             {showPurchaseBtn() && (
-              <button 
-                className="premium-purchase-btn"
-                onClick={handlePurchase}
-                disabled={isProcessing}
-              >
+              <button className="premium-purchase-btn" onClick={handlePurchase} disabled={isProcessing}>
                 {isProcessing ? (
-                  <>
-                    <div className="premium-spinner"></div>
-                    <span>Processing...</span>
-                  </>
+                  <><div className="premium-spinner"></div><span>Processing...</span></>
                 ) : (
-                  <>
-                    <span>
-                      {isSubscriptionTab 
-                        ? `Subscribe for ${formatStars(stars)}` 
-                        : `Unlock for ${formatStars(stars)}`
-                      }
-                    </span>
-                  </>
+                  <span>
+                    {isSubscriptionTab ? `Subscribe for ${formatStars(stars)}` : `Unlock for ${formatStars(stars)}`}
+                  </span>
                 )}
               </button>
             )}
 
-            {/* Active Subscription Banner */}
             {hasSubscription && (
               <div className="subscription-active-banner">
-                <Infinity size={16} />
-                <span>Premium Active - Unlimited Access</span>
+                <Infinity size={16} /><span>Premium Active - Unlimited Access</span>
               </div>
             )}
 
-            {/* Footer */}
-            <p className="premium-footer">
-              💳 Secure payment via Telegram Stars
-            </p>
+            <p className="premium-footer">💳 Secure payment via Telegram Stars</p>
           </motion.div>
 
-          {/* Success Banner */}
           <AnimatePresence>
             {showSuccess && (
-              <motion.div
-                className="success-banner-overlay"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                <motion.div
-                  className="success-banner"
-                  initial={{ scale: 0.5, opacity: 0, y: 50 }}
-                  animate={{ scale: 1, opacity: 1, y: 0 }}
-                  exit={{ scale: 0.5, opacity: 0, y: 50 }}
-                  transition={{ type: 'spring', damping: 15, stiffness: 300 }}
-                >
-                  <motion.div 
-                    className="success-icon"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.2, type: 'spring', damping: 10 }}
-                  >
+              <motion.div className="success-banner-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <motion.div className="success-banner" initial={{ scale: 0.5, opacity: 0, y: 50 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.5, opacity: 0, y: 50 }} transition={{ type: 'spring', damping: 15, stiffness: 300 }}>
+                  <motion.div className="success-icon" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: 'spring', damping: 10 }}>
                     <CheckCircle size={80} />
                   </motion.div>
                   <h3 className="success-title">Success!</h3>
                   <p className="success-message">
-                    {isSubscriptionTab 
-                      ? 'Subscription activated!<br />Unlimited readings enabled.' 
-                      : 'Transaction completed successfully.<br />Premium features activated!'
-                    }
+                    {isSubscriptionTab ? 'Subscription activated!<br />Unlimited readings enabled.' : 'Transaction completed successfully.<br />Premium features activated!'}
                   </p>
-                  <div className="success-stars">
-                    ⭐ {stars} Stars spent
-                  </div>
+                  <div className="success-stars">⭐ {stars} Stars spent</div>
                 </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Error Banner */}
           <AnimatePresence>
             {showError && (
-              <motion.div
-                className="error-banner-overlay"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                <motion.div
-                  className="error-banner"
-                  initial={{ scale: 0.5, opacity: 0, y: 50 }}
-                  animate={{ scale: 1, opacity: 1, y: 0 }}
-                  exit={{ scale: 0.5, opacity: 0, y: 50 }}
-                  transition={{ type: 'spring', damping: 15, stiffness: 300 }}
-                >
-                  <motion.div 
-                    className="error-icon"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.2, type: 'spring', damping: 10 }}
-                  >
+              <motion.div className="error-banner-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <motion.div className="error-banner" initial={{ scale: 0.5, opacity: 0, y: 50 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.5, opacity: 0, y: 50 }} transition={{ type: 'spring', damping: 15, stiffness: 300 }}>
+                  <motion.div className="error-icon" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: 'spring', damping: 10 }}>
                     <XCircle size={80} />
                   </motion.div>
                   <h3 className="error-title">Failed</h3>
                   <p className="error-message">{errorMessage}</p>
-                  <button 
-                    className="error-close-btn"
-                    onClick={() => setShowError(false)}
-                  >
-                    OK
-                  </button>
+                  <button className="error-close-btn" onClick={() => setShowError(false)}>OK</button>
                 </motion.div>
               </motion.div>
             )}

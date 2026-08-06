@@ -34,8 +34,9 @@ export async function createInvoiceUrl(
     return null;
   }
 
-  let featureName = featureId;
-  let featureDescription = featureId;
+  // ✅ FIX: explicit string types (TS2322 fix)
+  let featureName: string = featureId;
+  let featureDescription: string = featureId;
   
   if (featureId === 'subscription_monthly' || featureId === 'subscription_yearly') {
     const planType = featureId === 'subscription_monthly' ? 'monthly' : 'yearly';
