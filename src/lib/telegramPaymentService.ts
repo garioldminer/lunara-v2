@@ -1,20 +1,12 @@
-import { PREMIUM_FEATURES, PremiumFeatureId, incrementCredit } from './premiumService';
+import { PremiumFeatureId, incrementCredit } from './premiumService';
+import { getFeatureById, getPlanByType, getStarsForFeature, getStarsForPlan } from './premiumConfig';
 
 // ============================================
 // TELEGRAM PAYMENT SERVICE
 // ============================================
 
-// ============================================
-// STARS PRICING - Telegram Stars-ში
-// ============================================
-export const STARS_PRICING: Record<PremiumFeatureId, number> = {
-  subscription_monthly: 499,
-  subscription_yearly: 3999,
-  celtic_cross: 1, // 🧪 TEST MODE - 1 Star
-  horseshoe: 100,
-  relationship: 200,
-  ai_weekly: 250,
-};
+// ❌ ამოღებულია: hardcoded STARS_PRICING
+// ✅ ეხლა ფასები მოდის premiumConfig.ts-დან (DB + cache)
 
 // ============================================
 // HELPER: Get Telegram WebApp
@@ -24,22 +16,53 @@ function getTg() {
 }
 
 // ============================================
+// GET STARS FOR FEATURE (async, DB-დან)
+// ============================================
+const getStarsForFeatureId = async (featureId: string): Promise<number> => {
+  // Subscription plans
+  if (featureId === 'subscription_monthly' || featureId === 'subscription_yearly') {
+    const planType = featureId === 'subscription_monthly' ? 'monthly' : 'yearly';
+    return await getStarsForPlan(planType);
+  }
+  // Single readings
+  return await getStarsForFeature(featureId);
+};
+
+// ============================================
 // CREATE INVOICE URL
 // ============================================
 export async function createInvoiceUrl(
   featureId: PremiumFeatureId,
   userId: string
 ): Promise<string | null> {
-  const stars = STARS_PRICING[featureId];
-  const feature = PREMIUM_FEATURES[featureId];
+  const stars = await getStarsForFeatureId(featureId);
   
-  if (!stars || !feature) {
-    console.error('❌ Invalid feature ID:', featureId);
+  if (!stars || stars <= 0) {
+    console.error('❌ Invalid stars for feature:', featureId, stars);
     return null;
   }
 
+  // Get feature details from premiumConfig (DB)
+  let featureName = featureId;
+  let featureDescription = featureId;
+  
+  if (featureId === 'subscription_monthly' || featureId === 'subscription_yearly') {
+    const planType = featureId === 'subscription_monthly' ? 'monthly' : 'yearly';
+    const plan = await getPlanByType(planType);
+    if (plan) {
+      featureName = plan.label;
+      featureDescription = plan.description;
+    }
+  } else {
+    const feature = await getFeatureById(featureId);
+    if (feature) {
+      featureName = feature.name;
+      featureDescription = feature.description;
+    }
+  }
+
   try {
-    console.log('📦 Creating invoice for:', { featureId, userId, stars });
+    console.log('📦 Creating invoice for:', { featureId, userId, stars, featureName });
 
     const response = await fetch(
       `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-invoice`,
@@ -53,8 +76,8 @@ export async function createInvoiceUrl(
           feature_id: featureId,
           user_id: userId,
           stars: stars,
-          title: feature.name,
-          description: feature.description,
+          title: featureName,
+          description: featureDescription,
         }),
       }
     );
@@ -140,9 +163,6 @@ export async function completePurchase(
         console.log('💰 Payment successful! Adding credit...');
         await incrementCredit(userId, featureId, 1);
         console.log('✅ Credit added to database');
-        
-        // ❌ არ გამოვიძახოთ showSuccess popup! (ის იწვევს reload-ს)
-        // ჩვენი custom success banner PremiumPaywall-ში გამოჩნდება
         return 'success';
       
       case 'cancelled':
