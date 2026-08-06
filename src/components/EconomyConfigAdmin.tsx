@@ -55,7 +55,6 @@ export default function EconomyConfigAdmin() {
         })));
       }
 
-      // 🆕 პაკეტები
       const { data: pkgData, error: pkgError } = await supabase
         .from('diamond_packages')
         .select('*')
@@ -118,32 +117,36 @@ export default function EconomyConfigAdmin() {
     }
   };
 
-  // 🆕 პაკეტის შენახვა
-  const handleSavePackage = async (id: string) => {
+  // ✅ გამოსწორებული: ცარიელი ველი = ძველი მნიშვნელობა რჩება
+  const handleSavePackage = async (id: string, pkg: DiamondPackage) => {
     if (!supabase) return;
-    const coins = parseInt(editValues[`pkg_${id}_coins`] ?? '', 10);
-    const stars = parseInt(editValues[`pkg_${id}_stars`] ?? '', 10);
-    const label = editValues[`pkg_${id}_label`] ?? '';
-    if (isNaN(coins) || coins <= 0 || isNaN(stars) || stars <= 0 || !label.trim()) {
-      showMessage('error', 'Enter valid coins, stars and label');
+    const coinsRaw = editValues[`pkg_${id}_coins`];
+    const starsRaw = editValues[`pkg_${id}_stars`];
+    const labelRaw = editValues[`pkg_${id}_label`];
+
+    const coins = coinsRaw !== undefined && coinsRaw !== '' ? parseInt(coinsRaw, 10) : pkg.coins;
+    const stars = starsRaw !== undefined && starsRaw !== '' ? parseInt(starsRaw, 10) : pkg.stars;
+    const label = labelRaw !== undefined && labelRaw !== '' ? labelRaw.trim() : pkg.label;
+
+    if (isNaN(coins) || coins <= 0 || isNaN(stars) || stars <= 0 || !label) {
+      showMessage('error', 'Enter valid values (coins & stars must be > 0)');
       return;
     }
     setSaving(`pkg_${id}`);
     const { error } = await supabase
       .from('diamond_packages')
-      .update({ coins, stars, label: label.trim() })
+      .update({ coins, stars, label })
       .eq('id', id);
     setSaving(null);
     if (error) {
       showMessage('error', `Failed: ${error.message}`);
     } else {
-      showMessage('success', `Package "${label}" saved!`);
+      showMessage('success', `Package "${label}" saved! (${coins}💎 / ${stars}⭐)`);
       setEditValues(prev => { const n = { ...prev }; delete n[`pkg_${id}_coins`]; delete n[`pkg_${id}_stars`]; delete n[`pkg_${id}_label`]; return n; });
       await loadConfigs();
     }
   };
 
-  // 🆕 პაკეტის toggle (popular/active)
   const handleTogglePackage = async (id: string, field: 'is_popular' | 'is_active', value: boolean) => {
     if (!supabase) return;
     setSaving(`pkg_${id}_${field}`);
@@ -160,21 +163,21 @@ export default function EconomyConfigAdmin() {
     }
   };
 
-  // 🆕 ახალი პაკეტი
+  // ახალი პაკეტი: სამივე ველი აუცილებელია (ძველი მნიშვნელობა არ არსებობს)
   const handleAddPackage = async () => {
     if (!supabase) return;
     const coins = parseInt(editValues['new_pkg_coins'] ?? '', 10);
     const stars = parseInt(editValues['new_pkg_stars'] ?? '', 10);
-    const label = editValues['new_pkg_label'] ?? '';
-    if (isNaN(coins) || coins <= 0 || isNaN(stars) || stars <= 0 || !label.trim()) {
-      showMessage('error', 'Enter valid coins, stars and label for new package');
+    const label = (editValues['new_pkg_label'] ?? '').trim();
+    if (isNaN(coins) || coins <= 0 || isNaN(stars) || stars <= 0 || !label) {
+      showMessage('error', 'New package: fill ALL 3 fields (label, coins, stars)');
       return;
     }
     setSaving('new_pkg');
     const maxOrder = packages.reduce((m, p) => Math.max(m, p.sort_order), 0);
     const { error } = await supabase
       .from('diamond_packages')
-      .insert({ coins, stars, label: label.trim(), is_popular: false, is_active: true, sort_order: maxOrder + 1 });
+      .insert({ coins, stars, label, is_popular: false, is_active: true, sort_order: maxOrder + 1 });
     setSaving(null);
     if (error) {
       showMessage('error', `Failed: ${error.message}`);
@@ -185,7 +188,6 @@ export default function EconomyConfigAdmin() {
     }
   };
 
-  // 🆕 პაკეტის წაშლა
   const handleDeletePackage = async (id: string, label: string) => {
     if (!supabase) return;
     if (!confirm(`Delete package "${label}"?`)) return;
@@ -273,7 +275,7 @@ export default function EconomyConfigAdmin() {
         </div>
       )}
 
-      {/* 🆕 Diamond Packages */}
+      {/* Diamond Packages */}
       <div style={{ padding: '14px', background: 'rgba(147, 112, 219, 0.08)', borderRadius: '10px', border: '1px solid rgba(147, 112, 219, 0.3)' }}>
         <div style={{ color: '#9370db', fontWeight: 'bold', fontSize: '12px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
           <Gem size={14} /> Diamond Packages
@@ -303,7 +305,7 @@ export default function EconomyConfigAdmin() {
                   onChange={(e) => setEditValues(prev => ({ ...prev, [`pkg_${pkg.id}_stars`]: e.target.value }))}
                   style={inputStyle}
                 />
-                <button onClick={() => handleSavePackage(pkg.id)} disabled={saving === `pkg_${pkg.id}`} style={saveBtnStyle(saving === `pkg_${pkg.id}`)}>
+                <button onClick={() => handleSavePackage(pkg.id, pkg)} disabled={saving === `pkg_${pkg.id}`} style={saveBtnStyle(saving === `pkg_${pkg.id}`)}>
                   <Save size={11} /> Save
                 </button>
                 <button onClick={() => handleDeletePackage(pkg.id, pkg.label)} disabled={saving === `pkg_del_${pkg.id}`} style={{ ...toggleBtnStyle(false, '#ef4444'), padding: '6px 8px' }}>
@@ -324,7 +326,7 @@ export default function EconomyConfigAdmin() {
           {/* ახალი პაკეტი */}
           <div style={{ padding: '10px', background: 'rgba(147, 112, 219, 0.08)', borderRadius: '8px', border: '1px dashed rgba(147, 112, 219, 0.4)' }}>
             <div style={{ fontSize: '10px', color: '#9370db', fontWeight: 'bold', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Plus size={11} /> Add New Package
+              <Plus size={11} /> Add New Package (fill all 3 fields)
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
               <input 
