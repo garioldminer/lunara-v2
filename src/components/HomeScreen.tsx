@@ -209,6 +209,12 @@ export default function HomeScreen({ onNavigate }: Props) {
     lastQuery: null, lastResponse: null, economyData: null, queryHistory: []
   });
 
+  // ============================================
+  // 🆕 READING COSTS (ცენტრალიზებული - DB-დან)
+  // ============================================
+  const [readingCosts, setReadingCosts] = useState<Record<string, number>>({});
+  const [costsLoaded, setCostsLoaded] = useState(false);
+
   interface DiagnosticResult {
     id: string;
     name: string;
@@ -229,6 +235,11 @@ export default function HomeScreen({ onNavigate }: Props) {
     isRunning: false,
     lastRun: null
   });
+
+  // ✅ ღირებულების წაკითხვა DB-დან (hardcoded-ის ნაცვლად)
+  const getEnergyCost = (readingType: string): number => {
+    return readingCosts[readingType] ?? 0;
+  };
 
   const runHomeDiagnostics = async (): Promise<DiagnosticResult[]> => {
     setDiagnostics(prev => ({ ...prev, isRunning: true }));
@@ -432,6 +443,29 @@ export default function HomeScreen({ onNavigate }: Props) {
       results.push({
         id: 'xp-level',
         name: 'XP/Level Calculation',
+        status: 'fail',
+        message: `Error: ${err.message}`,
+        timestamp
+      });
+    }
+
+    // 🆕 Reading Costs ჩატვირთულია DB-დან?
+    try {
+      const costKeys = Object.keys(readingCosts);
+      results.push({
+        id: 'reading-costs',
+        name: 'Reading Costs (DB)',
+        status: costsLoaded && costKeys.length > 0 ? 'pass' : 'fail',
+        message: costsLoaded 
+          ? `ჩატვირთულია ${costKeys.length} ღირებულება DB-დან`
+          : 'ღირებულებები არ არის ჩატვირთული!',
+        details: readingCosts,
+        timestamp
+      });
+    } catch (err: any) {
+      results.push({
+        id: 'reading-costs',
+        name: 'Reading Costs (DB)',
         status: 'fail',
         message: `Error: ${err.message}`,
         timestamp
@@ -832,7 +866,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     setQuestsLoading(false);
   };
 
-  // ✅ BUG FIX #2: Quest Claim XP - გამოვიყენოთ economy.xp ნაცვლად user.xp
   const handleClaimQuest = async (quest: DailyQuestDisplay) => {
     if (!user || !supabase || isClaimingQuest) return;
     setIsClaimingQuest(true);
@@ -844,20 +877,11 @@ export default function HomeScreen({ onNavigate }: Props) {
         showToast(data?.error || 'Failed to claim reward', 'error');
       } else {
         addDebugLog('success', 'QUEST_CLAIM', `Claimed! +${data.reward.coins} coins, +${data.reward.xp} XP`);
-        
-        // ✅ FIXED: გამოვიყენოთ economy.xp (up-to-date) ნაცვლად user.xp (outdated)
         const currentTotalXP = economy.xp || 0;
         const newTotalXP = currentTotalXP + data.reward.xp;
         const oldLevelData = getLevelFromTotalXP(currentTotalXP);
         const newLevelData = getLevelFromTotalXP(newTotalXP);
-        
-        setEconomy(prev => ({ 
-          ...prev, 
-          cosmic_coins: prev.cosmic_coins + data.reward.coins, 
-          xp: newTotalXP, 
-          level: newLevelData.level 
-        }));
-        
+        setEconomy(prev => ({ ...prev, cosmic_coins: prev.cosmic_coins + data.reward.coins, xp: newTotalXP, level: newLevelData.level }));
         if (newLevelData.level > oldLevelData.level) {
           confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#fbbf24', '#f59e0b', '#ffffff', '#10b981'] });
           setLeveledUpTo(newLevelData.level);
@@ -901,7 +925,32 @@ export default function HomeScreen({ onNavigate }: Props) {
     if (user) loadQuests();
   }, [user]);
 
-  // ✅ BUG FIX #1: Energy Race Condition - calculateRealEnergy აბრუნებს fresh value-ს
+  // ============================================
+  // 🆕 READING COSTS ჩატვირთვა DB-დან
+  // ============================================
+  useEffect(() => {
+    const loadReadingCosts = async () => {
+      if (!supabase) return;
+      try {
+        const { data, error } = await supabase
+          .from('reading_costs')
+          .select('reading_type, energy_cost');
+        if (!error && data) {
+          const costs: Record<string, number> = {};
+          data.forEach((c: any) => { costs[c.reading_type] = c.energy_cost; });
+          setReadingCosts(costs);
+          setCostsLoaded(true);
+          addDebugLog('success', 'CONFIG', `✅ Loaded ${data.length} reading costs from DB`, costs);
+        } else {
+          addDebugLog('error', 'CONFIG', `❌ Failed to load reading costs: ${error?.message}`);
+        }
+      } catch (err: any) {
+        addDebugLog('error', 'CONFIG', `❌ Exception loading reading costs: ${err.message}`);
+      }
+    };
+    loadReadingCosts();
+  }, []);
+
   const calculateRealEnergy = async (): Promise<number | null> => {
     if (!user || !supabase) return null;
 
@@ -953,7 +1002,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     }
   };
 
-  // ✅ BUG FIX #1: checkAndSpendEnergy იყენებს fresh value-ს calculateRealEnergy-დან
   const checkAndSpendEnergy = async (readingType: string, requiredEnergy: number): Promise<boolean> => {
     if (!user || !supabase) return false;
 
@@ -1111,11 +1159,9 @@ export default function HomeScreen({ onNavigate }: Props) {
     }
   }, [user]);
 
-  // ✅ BUG FIX #3: Daily Card Randomization - deterministic + try-catch
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
     const stored = localStorage.getItem('dailyCard');
-    
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
@@ -1131,14 +1177,10 @@ export default function HomeScreen({ onNavigate }: Props) {
         localStorage.removeItem('dailyCard');
       }
     }
-    
     const dayOfYear = getDayOfYear(new Date());
     const cardIndex = dayOfYear % tarotCards.length;
     const card = tarotCards[cardIndex];
-    
-    // ✅ FIXED: Deterministic random (ნაცვლად Math.random())
     const isReversed = cardIndex % 2 === 0;
-    
     const newReading = { card, isReversed, date: today, isRevealed: false };
     localStorage.setItem('dailyCard', JSON.stringify(newReading));
     setDailyCard(card);
@@ -1147,7 +1189,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     addDebugLog('info', 'DAILY_CARD', 'Generated new daily card', { cardName: card.name, isReversed });
   }, []);
 
-  // ✅ BUG FIX #4: localStorage Crash - try-catch დამატებული
   useEffect(() => {
     const checkRevealStatus = () => {
       const stored = localStorage.getItem('dailyCard');
@@ -1242,11 +1283,18 @@ export default function HomeScreen({ onNavigate }: Props) {
     }
   };
 
-  // ✅ BUG FIX #7: Premium Gate - subscription check დამატებული
+  // ============================================
+  // ✅ handleQuickAction - ღირებულებები DB-დან
+  // ============================================
   const handleQuickAction = async (action: string) => {
     addDebugLog('info', 'NAVIGATION', 'Quick action clicked', { action });
+
+    // თუ ღირებულებები ჯერ არ ჩატვირთულა, არ გავაკეთოთ reading
+    if (!costsLoaded) {
+      showToast('Loading reading costs... Please try again.', 'info');
+      return;
+    }
     
-    // ✅ FIXED: Premium readings-ისთვის subscription check
     const premiumActions = ['CelticCross', 'Horseshoe', 'Relationship'];
     const isPremiumAction = premiumActions.includes(action);
     
@@ -1257,22 +1305,26 @@ export default function HomeScreen({ onNavigate }: Props) {
     }
     
     if (action === 'CelticCross') {
-      const canProceed = await checkAndSpendEnergy('celtic_cross', 6);
+      const cost = getEnergyCost('celtic_cross');
+      const canProceed = await checkAndSpendEnergy('celtic_cross', cost);
       if (canProceed) onNavigate?.('celtic-cross');
       return;
     }
     if (action === 'Horseshoe') {
-      const canProceed = await checkAndSpendEnergy('horseshoe', 4);
+      const cost = getEnergyCost('horseshoe');
+      const canProceed = await checkAndSpendEnergy('horseshoe', cost);
       if (canProceed) onNavigate?.('horseshoe');
       return;
     }
     if (action === 'Relationship') {
-      const canProceed = await checkAndSpendEnergy('relationship', 5);
+      const cost = getEnergyCost('relationship');
+      const canProceed = await checkAndSpendEnergy('relationship', cost);
       if (canProceed) onNavigate?.('relationship');
       return;
     }
     if (action === '3Cards') {
-      const canProceed = await checkAndSpendEnergy('three_card', 2);
+      const cost = getEnergyCost('three_card');
+      const canProceed = await checkAndSpendEnergy('three_card', cost);
       if (canProceed) onNavigate?.('three-card-reading');
       return;
     }
@@ -1629,7 +1681,7 @@ export default function HomeScreen({ onNavigate }: Props) {
                 )}
                 
                 {isDailyReversed && isDailyRevealed && (
-                  <div className="card-reversed-indicator-large" style={{ position: 'absolute', top: '5px', right: '5px', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: '900', zIndex: 3, background: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)', color: '#fff', border: '2px solid #fff', boxShadow: '0 0 0 2px rgba(167,139,250,0.5), 0 4px 12px rgba(167,139,250,0.8), 0 0 20px rgba(167,139,250,0.6)' }}>
+                  <div className="card-reversed-indicator-large" style={{ position: 'absolute', top: '5px', right: '5px', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 900, zIndex: 3, background: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)', color: '#fff', border: '2px solid #fff', boxShadow: '0 0 0 2px rgba(167,139,250,0.5), 0 4px 12px rgba(167,139,250,0.8), 0 0 20px rgba(167,139,250,0.6)' }}>
                     <span>R</span>
                   </div>
                 )}
