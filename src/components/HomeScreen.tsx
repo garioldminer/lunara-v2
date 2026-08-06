@@ -33,19 +33,14 @@ const getLevelFromTotalXP = (totalXP: number) => {
   let level = 1;
   let xpRequiredForNext = getXPToNextLevel(level);
   let currentLevelXP = totalXP;
-  
   while (currentLevelXP >= xpRequiredForNext) {
     currentLevelXP -= xpRequiredForNext;
     level++;
     xpRequiredForNext = getXPToNextLevel(level);
   }
-  
   return { level, currentLevelXP, xpToNext: xpRequiredForNext };
 };
 
-// ============================================
-// 🆕 ჰოროსკოპის სიმბოლოები
-// ============================================
 const ZODIAC_SYMBOLS: Record<string, string> = {
   aries: '♈', taurus: '♉', gemini: '♊', cancer: '♋',
   leo: '♌', virgo: '♍', libra: '♎', scorpio: '♏',
@@ -56,53 +51,17 @@ const getZodiacSymbol = (sign: string): string => {
   return ZODIAC_SYMBOLS[sign.toLowerCase()] || '✨';
 };
 
-interface Toast {
-  message: string;
-  type: 'success' | 'error' | 'info';
-}
+interface Toast { message: string; type: 'success' | 'error' | 'info'; }
 
 function ToastNotification({ toast, onClose }: { toast: Toast; onClose: () => void }) {
-  useEffect(() => {
-    const timer = setTimeout(onClose, 3000);
-    return () => clearTimeout(timer);
-  }, [onClose]);
-
+  useEffect(() => { const timer = setTimeout(onClose, 3000); return () => clearTimeout(timer); }, [onClose]);
   return (
-    <div style={{
-      position: 'fixed', top: '0', left: '0', right: '0', zIndex: 10003,
-      display: 'flex', justifyContent: 'center', padding: '80px 16px 0 16px', pointerEvents: 'none'
-    }}>
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.9, y: -20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.9, y: -20 }}
-        transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-        style={{
-          background: toast.type === 'success' 
-            ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.98), rgba(5, 150, 105, 0.98))'
-            : toast.type === 'error'
-            ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.98), rgba(220, 38, 38, 0.98))'
-            : 'linear-gradient(135deg, rgba(251, 191, 36, 0.98), rgba(245, 158, 11, 0.98))',
-          color: '#fff', padding: '16px 20px', borderRadius: '16px',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1)',
-          display: 'flex', alignItems: 'center', gap: '12px', fontSize: '14px', fontWeight: '600',
-          maxWidth: '400px', width: '100%', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.1)', pointerEvents: 'auto'
-        }}
-      >
-        <span style={{ fontSize: '20px', flexShrink: 0 }}>
-          {toast.type === 'success' ? '✅' : toast.type === 'error' ? '⚠️' : 'ℹ️'}
-        </span>
+    <div style={{ position: 'fixed', top: '0', left: '0', right: '0', zIndex: 10003, display: 'flex', justifyContent: 'center', padding: '80px 16px 0 16px', pointerEvents: 'none' }}>
+      <motion.div initial={{ opacity: 0, scale: 0.9, y: -20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: -20 }} transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+        style={{ background: toast.type === 'success' ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.98), rgba(5, 150, 105, 0.98))' : toast.type === 'error' ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.98), rgba(220, 38, 38, 0.98))' : 'linear-gradient(135deg, rgba(251, 191, 36, 0.98), rgba(245, 158, 11, 0.98))', color: '#fff', padding: '16px 20px', borderRadius: '16px', boxShadow: '0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '14px', fontWeight: '600', maxWidth: '400px', width: '100%', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.1)', pointerEvents: 'auto', position: 'relative' }}>
+        <span style={{ fontSize: '20px', flexShrink: 0 }}>{toast.type === 'success' ? '✅' : toast.type === 'error' ? '⚠️' : 'ℹ️'}</span>
         <span style={{ flex: 1, textAlign: 'center', paddingRight: '20px' }}>{toast.message}</span>
-        <button 
-          onClick={onClose} 
-          style={{ 
-            position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)',
-            background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '6px', width: '24px', height: '24px', 
-            display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff', fontSize: '16px', lineHeight: 1
-          }}
-        >
-          ×
-        </button>
+        <button onClick={onClose} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '6px', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff', fontSize: '16px', lineHeight: 1 }}>×</button>
       </motion.div>
     </div>
   );
@@ -110,80 +69,27 @@ function ToastNotification({ toast, onClose }: { toast: Toast; onClose: () => vo
 
 function LevelUpModal({ level, onClose, t }: { level: number; onClose: () => void; t: (key: string, params?: any) => string }) {
   return (
-    <div style={{
-      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      background: 'rgba(0,0,0,0.85)', zIndex: 10002,
-      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
-    }} onClick={onClose}>
-      <motion.div 
-        initial={{ scale: 0.5, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.5, opacity: 0 }}
-        transition={{ type: 'spring', damping: 15, stiffness: 200 }}
-        style={{
-          background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)',
-          border: '2px solid #fbbf24', borderRadius: '24px', padding: '32px 24px', textAlign: 'center',
-          maxWidth: '320px', width: '100%', boxShadow: '0 0 50px rgba(251, 191, 36, 0.4)'
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 10002, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={onClose}>
+      <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }} transition={{ type: 'spring', damping: 15, stiffness: 200 }}
+        style={{ background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)', border: '2px solid #fbbf24', borderRadius: '24px', padding: '32px 24px', textAlign: 'center', maxWidth: '320px', width: '100%', boxShadow: '0 0 50px rgba(251, 191, 36, 0.4)' }} onClick={(e) => e.stopPropagation()}>
         <div style={{ fontSize: '64px', marginBottom: '16px', filter: 'drop-shadow(0 0 10px rgba(251, 191, 36, 0.5))' }}>🎉</div>
         <h2 style={{ color: '#fbbf24', fontSize: '28px', fontWeight: 'bold', marginBottom: '8px', letterSpacing: '1px' }}>{t('home.levelUpTitle')}</h2>
         <p style={{ color: '#e2e8f0', fontSize: '16px', marginBottom: '24px', lineHeight: '1.5' }} dangerouslySetInnerHTML={{ __html: t('home.levelUpMessage', { level }) }} />
-        <button 
-          onClick={onClose}
-          style={{
-            background: 'linear-gradient(135deg, #fbbf24, #d97706)', color: '#0f0c08', border: 'none',
-            borderRadius: '12px', padding: '14px 32px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer',
-            width: '100%', boxShadow: '0 4px 15px rgba(251, 191, 36, 0.3)'
-          }}
-        >
-          {t('home.awesome')}
-        </button>
+        <button onClick={onClose} style={{ background: 'linear-gradient(135deg, #fbbf24, #d97706)', color: '#0f0c08', border: 'none', borderRadius: '12px', padding: '14px 32px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', width: '100%', boxShadow: '0 4px 15px rgba(251, 191, 36, 0.3)' }}>{t('home.awesome')}</button>
       </motion.div>
     </div>
   );
 }
 
-interface Props {
-  onNavigate?: (screen: string) => void;
-}
+interface Props { onNavigate?: (screen: string) => void; }
 
-interface EconomyData {
-  cosmic_coins: number;
-  xp: number;
-  level: number;
-  current_streak: number;
-  cosmic_focus: number;
-  max_focus: number;
-}
+interface EconomyData { cosmic_coins: number; xp: number; level: number; current_streak: number; cosmic_focus: number; max_focus: number; }
 
-interface DebugLog {
-  id: number;
-  timestamp: string;
-  type: 'info' | 'success' | 'error' | 'warning';
-  category: string;
-  message: string;
-  data?: any;
-}
+interface DebugLog { id: number; timestamp: string; type: 'info' | 'success' | 'error' | 'warning'; category: string; message: string; data?: any; }
 
-interface DatabaseDebugInfo {
-  lastQuery: any;
-  lastResponse: any;
-  economyData: any;
-  queryHistory: Array<{
-    timestamp: string;
-    table: string;
-    operation: string;
-    params: any;
-    result: any;
-    error?: any;
-  }>;
-}
+interface DatabaseDebugInfo { lastQuery: any; lastResponse: any; economyData: any; queryHistory: Array<{ timestamp: string; table: string; operation: string; params: any; result: any; error?: any }>; }
 
-interface DailyQuestDisplay extends QuestProgress {
-  isClaimable: boolean;
-}
+interface DailyQuestDisplay extends QuestProgress { isClaimable: boolean; }
 
 export default function HomeScreen({ onNavigate }: Props) {
   const { t } = useTranslation();
@@ -197,10 +103,7 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [currentStreak, setCurrentStreak] = useState(0);
   const [isUserAdmin, setIsUserAdmin] = useState(false);
   const [activeSubscription, setActiveSubscription] = useState<any>(null);
-  
-  const [economy, setEconomy] = useState<EconomyData>({ 
-    cosmic_coins: 0, xp: 0, level: 1, current_streak: 0, cosmic_focus: 20, max_focus: 20 
-  });
+  const [economy, setEconomy] = useState<EconomyData>({ cosmic_coins: 0, xp: 0, level: 1, current_streak: 0, cosmic_focus: 20, max_focus: 20 });
   const [questsLoading, setQuestsLoading] = useState(true);
   const [dailyQuests, setDailyQuests] = useState<DailyQuestDisplay[]>([]);
   const [activeDailyQuest, setActiveDailyQuest] = useState<DailyQuestDisplay | null>(null);
@@ -210,141 +113,59 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [leveledUpTo, setLeveledUpTo] = useState<number>(1);
   const [toast, setToast] = useState<Toast | null>(null);
   const [isShopOpen, setIsShopOpen] = useState(false);
-  
   const [showStreakModal, setShowStreakModal] = useState(false);
   const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
   const [xpTestLogs, setXpTestLogs] = useState<string[]>([]);
-
   const [showDebug, setShowDebug] = useState(false);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
   const [dbStatus, setDbStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
-  const [dbDebugInfo, setDbDebugInfo] = useState<DatabaseDebugInfo>({
-    lastQuery: null, lastResponse: null, economyData: null, queryHistory: []
-  });
-
+  const [dbDebugInfo, setDbDebugInfo] = useState<DatabaseDebugInfo>({ lastQuery: null, lastResponse: null, economyData: null, queryHistory: [] });
   const [readingCosts, setReadingCosts] = useState<Record<string, number>>({});
   const [gameConfig, setGameConfig] = useState<Record<string, number>>({});
   const [costsLoaded, setCostsLoaded] = useState(false);
 
-  const getConfig = (key: string, fallback: number): number => {
-    return gameConfig[key] ?? fallback;
-  };
+  const getConfig = (key: string, fallback: number): number => gameConfig[key] ?? fallback;
+  const getEnergyCost = (readingType: string): number => readingCosts[readingType] ?? 0;
 
-  const getEnergyCost = (readingType: string): number => {
-    return readingCosts[readingType] ?? 0;
-  };
-
-  interface DiagnosticResult {
-    id: string;
-    name: string;
-    status: 'pass' | 'fail' | 'warning' | 'pending';
-    message: string;
-    details?: any;
-    timestamp: string;
-  }
-
-  interface HomeDiagnostics {
-    results: DiagnosticResult[];
-    isRunning: boolean;
-    lastRun: string | null;
-  }
-
-  const [diagnostics, setDiagnostics] = useState<HomeDiagnostics>({
-    results: [],
-    isRunning: false,
-    lastRun: null
-  });
+  interface DiagnosticResult { id: string; name: string; status: 'pass' | 'fail' | 'warning' | 'pending'; message: string; details?: any; timestamp: string; }
+  interface HomeDiagnostics { results: DiagnosticResult[]; isRunning: boolean; lastRun: string | null; }
+  const [diagnostics, setDiagnostics] = useState<HomeDiagnostics>({ results: [], isRunning: false, lastRun: null });
 
   const runHomeDiagnostics = async (): Promise<DiagnosticResult[]> => {
     setDiagnostics(prev => ({ ...prev, isRunning: true }));
     const results: DiagnosticResult[] = [];
     const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
-
     addDebugLog('info', 'DIAGNOSTICS', '🔍 Starting Home Page diagnostics...');
 
     try {
-      const energyCheck = {
-        currentEnergy: economy.cosmic_focus,
-        maxEnergy: economy.max_focus,
-        isValid: economy.cosmic_focus >= 0 && economy.cosmic_focus <= economy.max_focus
-      };
-      
-      results.push({
-        id: 'energy-state',
-        name: 'Energy State Validity',
-        status: energyCheck.isValid ? 'pass' : 'fail',
-        message: energyCheck.isValid 
-          ? `Energy state valid (${economy.cosmic_focus}/${economy.max_focus})`
-          : `Invalid energy state (${economy.cosmic_focus}/${economy.max_focus})`,
-        details: energyCheck,
-        timestamp
-      });
-    } catch (err: any) {
-      results.push({ id: 'energy-state', name: 'Energy State Validity', status: 'fail', message: `Error: ${err.message}`, timestamp });
-    }
+      const energyCheck = { currentEnergy: economy.cosmic_focus, maxEnergy: economy.max_focus, isValid: economy.cosmic_focus >= 0 && economy.cosmic_focus <= economy.max_focus };
+      results.push({ id: 'energy-state', name: 'Energy State Validity', status: energyCheck.isValid ? 'pass' : 'fail', message: energyCheck.isValid ? `Energy state valid (${economy.cosmic_focus}/${economy.max_focus})` : `Invalid energy state (${economy.cosmic_focus}/${economy.max_focus})`, details: energyCheck, timestamp });
+    } catch (err: any) { results.push({ id: 'energy-state', name: 'Energy State Validity', status: 'fail', message: `Error: ${err.message}`, timestamp }); }
 
     try {
       const dailyCardStored = localStorage.getItem('dailyCard');
-      let parseSuccess = true;
-      let parseError = null;
-      
-      if (dailyCardStored) {
-        try { JSON.parse(dailyCardStored); } catch (e: any) { parseSuccess = false; parseError = e.message; }
-      }
-      
-      results.push({
-        id: 'localstorage-json',
-        name: 'localStorage JSON Integrity',
-        status: parseSuccess ? 'pass' : 'fail',
-        message: parseSuccess ? 'All localStorage data is valid JSON' : `Corrupted JSON: ${parseError}`,
-        details: { hasDailyCard: !!dailyCardStored, parseSuccess, parseError },
-        timestamp
-      });
-    } catch (err: any) {
-      results.push({ id: 'localstorage-json', name: 'localStorage JSON Integrity', status: 'fail', message: `Error: ${err.message}`, timestamp });
-    }
+      let parseSuccess = true; let parseError = null;
+      if (dailyCardStored) { try { JSON.parse(dailyCardStored); } catch (e: any) { parseSuccess = false; parseError = e.message; } }
+      results.push({ id: 'localstorage-json', name: 'localStorage JSON Integrity', status: parseSuccess ? 'pass' : 'fail', message: parseSuccess ? 'All localStorage data is valid JSON' : `Corrupted JSON: ${parseError}`, details: { hasDailyCard: !!dailyCardStored, parseSuccess, parseError }, timestamp });
+    } catch (err: any) { results.push({ id: 'localstorage-json', name: 'localStorage JSON Integrity', status: 'fail', message: `Error: ${err.message}`, timestamp }); }
 
     try {
       const hasSubscription = !!activeSubscription;
-      results.push({
-        id: 'premium-gate',
-        name: 'Premium Gate Status',
-        status: 'warning',
-        message: hasSubscription ? 'User has subscription - premium actions available' : 'No subscription - premium actions blocked',
-        details: { hasSubscription },
-        timestamp
-      });
-    } catch (err: any) {
-      results.push({ id: 'premium-gate', name: 'Premium Gate Status', status: 'fail', message: `Error: ${err.message}`, timestamp });
-    }
+      results.push({ id: 'premium-gate', name: 'Premium Gate Status', status: 'warning', message: hasSubscription ? 'User has subscription - premium actions available' : 'No subscription - premium actions blocked', details: { hasSubscription }, timestamp });
+    } catch (err: any) { results.push({ id: 'premium-gate', name: 'Premium Gate Status', status: 'fail', message: `Error: ${err.message}`, timestamp }); }
 
     try {
       if (!user?.id || !supabase) throw new Error('No user or supabase');
-      
-      const { data: questDefs, error: defsError } = await supabase
-        .from('quest_definitions').select('id, title, action_type').eq('is_active', true).limit(5);
+      const { data: questDefs, error: defsError } = await supabase.from('quest_definitions').select('id, title, action_type').eq('is_active', true).limit(5);
       if (defsError) throw defsError;
-      
-      const { data: userProgress, error: progressError } = await supabase
-        .from('user_quest_progress').select('id, quest_id, current_progress').eq('user_id', user.id).limit(5);
+      const { data: userProgress, error: progressError } = await supabase.from('user_quest_progress').select('id, quest_id, current_progress').eq('user_id', user.id).limit(5);
       if (progressError) throw progressError;
-      
-      results.push({
-        id: 'quest-system',
-        name: 'Quest System Connectivity',
-        status: 'pass',
-        message: `Quest system working (${questDefs?.length || 0} active quests, ${userProgress?.length || 0} user progress records)`,
-        details: { activeQuestDefinitions: questDefs?.length || 0, userProgressRecords: userProgress?.length || 0, sampleQuests: questDefs?.slice(0, 3).map(q => q.title) || [] },
-        timestamp
-      });
-    } catch (err: any) {
-      results.push({ id: 'quest-system', name: 'Quest System Connectivity', status: 'fail', message: `Error: ${err.message}`, timestamp });
-    }
+      results.push({ id: 'quest-system', name: 'Quest System Connectivity', status: 'pass', message: `Quest system working (${questDefs?.length || 0} active quests, ${userProgress?.length || 0} user progress records)`, details: { activeQuestDefinitions: questDefs?.length || 0, userProgressRecords: userProgress?.length || 0, sampleQuests: questDefs?.slice(0, 3).map(q => q.title) || [] }, timestamp });
+    } catch (err: any) { results.push({ id: 'quest-system', name: 'Quest System Connectivity', status: 'fail', message: `Error: ${err.message}`, timestamp }); }
 
     try {
       const stored = localStorage.getItem('dailyCard');
       let consistencyIssue = null;
-      
       if (stored) {
         try {
           const parsed = JSON.parse(stored);
@@ -353,84 +174,35 @@ export default function HomeScreen({ onNavigate }: Props) {
           if (typeof parsed.isReversed !== 'boolean') consistencyIssue = 'isReversed not boolean';
         } catch (e: any) { consistencyIssue = `JSON parse error: ${e.message}`; }
       }
-      
-      results.push({
-        id: 'daily-card',
-        name: 'Daily Card Consistency',
-        status: consistencyIssue ? 'warning' : 'pass',
-        message: consistencyIssue || 'Daily card data is consistent',
-        details: { consistencyIssue },
-        timestamp
-      });
-    } catch (err: any) {
-      results.push({ id: 'daily-card', name: 'Daily Card Consistency', status: 'fail', message: `Error: ${err.message}`, timestamp });
-    }
+      results.push({ id: 'daily-card', name: 'Daily Card Consistency', status: consistencyIssue ? 'warning' : 'pass', message: consistencyIssue || 'Daily card data is consistent', details: { consistencyIssue }, timestamp });
+    } catch (err: any) { results.push({ id: 'daily-card', name: 'Daily Card Consistency', status: 'fail', message: `Error: ${err.message}`, timestamp }); }
 
     try {
-      results.push({
-        id: 'streak-state',
-        name: 'Streak State Consistency',
-        status: 'pass',
-        message: `Streak: ${economy.current_streak} days`,
-        details: { currentStreak: economy.current_streak },
-        timestamp
-      });
-    } catch (err: any) {
-      results.push({ id: 'streak-state', name: 'Streak State Consistency', status: 'fail', message: `Error: ${err.message}`, timestamp });
-    }
+      results.push({ id: 'streak-state', name: 'Streak State Consistency', status: 'pass', message: `Streak: ${economy.current_streak} days`, details: { currentStreak: economy.current_streak }, timestamp });
+    } catch (err: any) { results.push({ id: 'streak-state', name: 'Streak State Consistency', status: 'fail', message: `Error: ${err.message}`, timestamp }); }
 
     try {
       const levelData = getLevelFromTotalXP(economy.xp || 0);
       const isValid = levelData.level >= 1 && levelData.currentLevelXP >= 0;
-      
-      results.push({
-        id: 'xp-level',
-        name: 'XP/Level Calculation',
-        status: isValid ? 'pass' : 'fail',
-        message: isValid ? `Level ${levelData.level}, ${levelData.currentLevelXP}/${levelData.xpToNext} XP` : 'Invalid calculation',
-        details: levelData,
-        timestamp
-      });
-    } catch (err: any) {
-      results.push({ id: 'xp-level', name: 'XP/Level Calculation', status: 'fail', message: `Error: ${err.message}`, timestamp });
-    }
+      results.push({ id: 'xp-level', name: 'XP/Level Calculation', status: isValid ? 'pass' : 'fail', message: isValid ? `Level ${levelData.level}, ${levelData.currentLevelXP}/${levelData.xpToNext} XP` : 'Invalid calculation', details: levelData, timestamp });
+    } catch (err: any) { results.push({ id: 'xp-level', name: 'XP/Level Calculation', status: 'fail', message: `Error: ${err.message}`, timestamp }); }
 
     try {
       const costKeys = Object.keys(readingCosts);
-      results.push({
-        id: 'reading-costs',
-        name: 'Reading Costs (DB)',
-        status: costsLoaded && costKeys.length > 0 ? 'pass' : 'fail',
-        message: costsLoaded ? `ჩატვირთულია ${costKeys.length} ღირებულება DB-დან` : 'ღირებულებები არ არის ჩატვირთული!',
-        details: readingCosts,
-        timestamp
-      });
-    } catch (err: any) {
-      results.push({ id: 'reading-costs', name: 'Reading Costs (DB)', status: 'fail', message: `Error: ${err.message}`, timestamp });
-    }
+      results.push({ id: 'reading-costs', name: 'Reading Costs (DB)', status: costsLoaded && costKeys.length > 0 ? 'pass' : 'fail', message: costsLoaded ? `ჩატვირთულია ${costKeys.length} ღირებულება DB-დან` : 'ღირებულებები არ არის ჩატვირთული!', details: readingCosts, timestamp });
+    } catch (err: any) { results.push({ id: 'reading-costs', name: 'Reading Costs (DB)', status: 'fail', message: `Error: ${err.message}`, timestamp }); }
 
     try {
       const configKeys = Object.keys(gameConfig);
-      results.push({
-        id: 'game-config',
-        name: 'Game Config (DB)',
-        status: configKeys.length >= 4 ? 'pass' : 'fail',
-        message: configKeys.length >= 4 ? `ჩატვირთულია ${configKeys.length} კონფიგი DB-დან` : 'კონფიგები არ არის ჩატვირთული!',
-        details: gameConfig,
-        timestamp
-      });
-    } catch (err: any) {
-      results.push({ id: 'game-config', name: 'Game Config (DB)', status: 'fail', message: `Error: ${err.message}`, timestamp });
-    }
+      results.push({ id: 'game-config', name: 'Game Config (DB)', status: configKeys.length >= 4 ? 'pass' : 'fail', message: configKeys.length >= 4 ? `ჩატვირთულია ${configKeys.length} კონფიგი DB-დან` : 'კონფიგები არ არის ჩატვირთული!', details: gameConfig, timestamp });
+    } catch (err: any) { results.push({ id: 'game-config', name: 'Game Config (DB)', status: 'fail', message: `Error: ${err.message}`, timestamp }); }
 
     try {
       if (!supabase) throw new Error('Supabase client is null');
       const { data, error } = await supabase.from('users').select('id').eq('id', user?.id).single();
       if (error) throw error;
       results.push({ id: 'supabase-connection', name: 'Supabase Connection', status: 'pass', message: 'Supabase connection successful', details: { userId: data?.id }, timestamp });
-    } catch (err: any) {
-      results.push({ id: 'supabase-connection', name: 'Supabase Connection', status: 'fail', message: `Error: ${err.message}`, timestamp });
-    }
+    } catch (err: any) { results.push({ id: 'supabase-connection', name: 'Supabase Connection', status: 'fail', message: `Error: ${err.message}`, timestamp }); }
 
     addDebugLog('success', 'DIAGNOSTICS', `✅ Complete: ${results.filter(r => r.status === 'pass').length}/${results.length} passed`);
     setDiagnostics({ results, isRunning: false, lastRun: timestamp });
@@ -438,7 +210,6 @@ export default function HomeScreen({ onNavigate }: Props) {
   };
 
   const testEnergySystem = async () => { addDebugLog('info', 'TEST', '🧪 Testing energy system...'); await testAddEnergy(1); await testSpendEnergy(1); };
-
   const testLocalStorage = () => {
     addDebugLog('info', 'TEST', '🧪 Testing localStorage...');
     try {
@@ -449,15 +220,12 @@ export default function HomeScreen({ onNavigate }: Props) {
       addDebugLog('success', 'TEST', '✅ localStorage works', parsed);
     } catch (err: any) { addDebugLog('error', 'TEST', `❌ localStorage failed: ${err.message}`); }
   };
-
   const testPremiumGate = async () => {
     addDebugLog('info', 'TEST', '🧪 Testing premium gate...');
     if (!activeSubscription) { addDebugLog('warning', 'TEST', '⚠️ No subscription - trying premium action should fail'); showToast('No subscription - premium actions blocked (expected)', 'info'); }
     else { addDebugLog('success', 'TEST', '✅ Has subscription - premium actions available'); }
   };
-
   const testQuestSystem = async () => { addDebugLog('info', 'TEST', '🧪 Testing quest system...'); await testCompleteQuest(); };
-
   const testDailyCard = () => {
     addDebugLog('info', 'TEST', '🧪 Testing daily card...');
     const stored = localStorage.getItem('dailyCard');
@@ -466,7 +234,6 @@ export default function HomeScreen({ onNavigate }: Props) {
       catch (err: any) { addDebugLog('error', 'TEST', `❌ Daily card data corrupted: ${err.message}`); }
     } else { addDebugLog('warning', 'TEST', '⚠️ No daily card in localStorage'); }
   };
-
   const testStreakSystem = async () => { addDebugLog('info', 'TEST', '🧪 Testing streak system...'); await handleClaimReward(); };
   const testXPSystem = async () => { addDebugLog('info', 'TEST', '🧪 Testing XP system...'); await testAddXP(10); };
   const testSupabaseConnection = async () => { addDebugLog('info', 'TEST', '🧪 Testing Supabase connection...'); await checkDatabaseStatus(); };
@@ -490,15 +257,12 @@ export default function HomeScreen({ onNavigate }: Props) {
       const { data: userData, error: userError } = await supabase.from('users').select('id, display_name, telegram_id').eq('id', user.id).single();
       if (userError) addDebugLog('error', 'DB_CHECK', `❌ Error fetching user: ${userError.message}`);
       else addDebugLog('success', 'DB_CHECK', '✅ User found in database', userData);
-
       const { data: economyData, error: economyError } = await supabase.from('user_economy').select('cosmic_coins, xp, level, cosmic_focus, max_focus').eq('user_id', user.id).single();
       if (economyError) addDebugLog('error', 'DB_CHECK', `❌ Error fetching economy: ${economyError.message}`);
       else addDebugLog('success', 'DB_CHECK', '✅ Economy record found', economyData);
-
       const { data: questsData, error: questsError } = await supabase.rpc('get_user_quests', { p_user_id: user.id });
       if (questsError) addDebugLog('error', 'DB_CHECK', `❌ Error calling get_user_quests RPC: ${questsError.message}`);
       else addDebugLog('success', 'DB_CHECK', `✅ get_user_quests RPC works. Found ${questsData?.length || 0} quests.`);
-
       addDebugLog('success', 'DB_CHECK', '🎉 Database check completed!');
     } catch (err: any) { addDebugLog('error', 'DB_CHECK', `💥 Exception during DB check: ${err.message}`); }
   };
@@ -701,7 +465,6 @@ export default function HomeScreen({ onNavigate }: Props) {
           setCostsLoaded(true);
           addDebugLog('success', 'CONFIG', `✅ Loaded ${costData.length} reading costs from DB`, costs);
         } else { addDebugLog('error', 'CONFIG', `❌ Failed to load reading costs: ${costError?.message}`); }
-
         const { data: configData, error: configError } = await supabase.from('game_config').select('key, value');
         if (!configError && configData) {
           const config: Record<string, number> = {};
@@ -987,80 +750,43 @@ export default function HomeScreen({ onNavigate }: Props) {
             )}
           </div>
           
-          <div className="user-info-section" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '52px', marginLeft: '12px', flex: 1, minWidth: 0 }}>
-            <h2 className="username" style={{ margin: 0, fontSize: '18px', lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {/* ============================================ */}
+          {/* ✅ პროპორციული შუა სექცია (48px = მარჯვენა ბეიჯების სიმაღლე) */}
+          {/* ============================================ */}
+          <div className="user-info-section" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '48px', marginLeft: '12px', flex: 1, minWidth: 0 }}>
+            <h2 className="username" style={{ margin: 0, fontSize: '15px', lineHeight: '16px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {user?.display_name || 'LunaraSeeker'}
             </h2>
-            {/* 🆕 ჰოროსკოპის ბეიჯი + Premium სტატუსი ერთ ხაზზე */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px', flexWrap: 'wrap' }}>
-              {user?.sun_sign && (
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  background: 'rgba(197, 160, 89, 0.15)',
-                  border: '1px solid rgba(197, 160, 89, 0.4)',
-                  borderRadius: '12px',
-                  padding: '2px 8px',
-                  fontSize: '10px',
-                  fontWeight: 600,
-                  color: '#C5A059',
-                  letterSpacing: '0.5px'
-                }}>
-                  <span style={{ fontSize: '11px' }}>{getZodiacSymbol(user.sun_sign)}</span>
-                  <span>{user.sun_sign}</span>
-                </div>
-              )}
-              {activeSubscription && (
-                <div className="premium-status-badge" onClick={() => onNavigate?.('subscription')}>
-                  <InfinityIcon size={10} /><span>PREMIUM</span>
-                </div>
-              )}
-            </div>
+            {user?.sun_sign && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', alignSelf: 'flex-start', background: 'rgba(197, 160, 89, 0.12)', border: '1px solid rgba(197, 160, 89, 0.35)', borderRadius: '8px', padding: '1px 7px', fontSize: '9px', fontWeight: 600, color: '#C5A059', lineHeight: '12px', letterSpacing: '0.5px' }}>
+                <span style={{ fontSize: '10px' }}>{getZodiacSymbol(user.sun_sign)}</span>
+                <span>{user.sun_sign.toLowerCase()}</span>
+              </div>
+            )}
+            {activeSubscription && (
+              <div className="premium-status-badge" onClick={() => onNavigate?.('subscription')} style={{ display: 'flex', alignItems: 'center', gap: '3px', alignSelf: 'flex-start', background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)', color: '#0a0600', borderRadius: '8px', padding: '1px 7px', fontSize: '8px', fontWeight: 800, letterSpacing: '0.5px', lineHeight: '12px', marginTop: 0, cursor: 'pointer' }}>
+                <InfinityIcon size={9} /><span>PREMIUM</span>
+              </div>
+            )}
           </div>
           
           <div className="user-resources" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '48px', gap: '4px', flexShrink: 0 }}>
             <div className="resource gems" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(147, 112, 219, 0.15)', padding: '4px 10px', borderRadius: '20px', border: '1px solid rgba(147, 112, 219, 0.3)', height: '22px' }}>
               <Gem size={12} className="resource-icon gem-icon" style={{ color: '#9370db', flexShrink: 0 }} />
               <span className="value" style={{ fontSize: '12px', fontWeight: '600', color: '#fff', textAlign: 'center' }}>{economy.cosmic_coins.toLocaleString()}</span>
-              <button 
-                className="add-btn" 
-                onClick={() => setIsShopOpen(true)}
-                style={{ width: '18px', height: '18px', borderRadius: '50%', background: 'rgba(197, 160, 89, 0.3)', border: 'none', color: '#C5A059', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', flexShrink: 0 }}
-                title="Buy Diamonds"
-              >
-                +
-              </button>
+              <button className="add-btn" onClick={() => setIsShopOpen(true)} style={{ width: '18px', height: '18px', borderRadius: '50%', background: 'rgba(197, 160, 89, 0.3)', border: 'none', color: '#C5A059', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', flexShrink: 0 }} title="Buy Diamonds">+</button>
             </div>
             <div className="resource energy" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(251, 191, 36, 0.15)', padding: '4px 10px', borderRadius: '20px', border: '1px solid rgba(251, 191, 36, 0.3)', height: '22px' }}>
               <Zap size={12} className="resource-icon energy-icon" style={{ color: '#fbbf24', flexShrink: 0 }} />
-              <span className="value" style={{ fontSize: '12px', fontWeight: '600', color: '#fff', textAlign: 'center' }}>
-                {economy.cosmic_focus || 0}/{economy.max_focus || 20}
-              </span>
-              
+              <span className="value" style={{ fontSize: '12px', fontWeight: '600', color: '#fff', textAlign: 'center' }}>{economy.cosmic_focus || 0}/{economy.max_focus || 20}</span>
               {(() => {
                 const maxF = economy.max_focus || getConfig('max_focus_default', 20);
                 const isEnergyFull = (economy.cosmic_focus || 0) >= maxF;
                 const energyNeeded = maxF - (economy.cosmic_focus || 0);
                 const energyToAdd = Math.min(getConfig('energy_refill_max_amount', 10), energyNeeded);
                 const cost = energyToAdd * getConfig('energy_refill_coin_cost', 5);
-                
                 return (
-                  <button 
-                    className="add-btn" 
-                    onClick={handleRefillEnergy}
-                    disabled={isClaiming || isEnergyFull}
-                    style={{ 
-                      width: '18px', height: '18px', borderRadius: '50%', 
-                      background: (isClaiming || isEnergyFull) ? 'rgba(150,150,150,0.3)' : 'rgba(197, 160, 89, 0.3)', 
-                      border: 'none', 
-                      color: (isClaiming || isEnergyFull) ? '#666' : '#C5A059', 
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                      cursor: (isClaiming || isEnergyFull) ? 'not-allowed' : 'pointer', 
-                      fontSize: '12px', fontWeight: 'bold', flexShrink: 0 
-                    }}
-                    title={isEnergyFull ? "Energy is already full" : `Buy ${energyToAdd}⚡ Energy for ${cost} 💎`}
-                  >
+                  <button className="add-btn" onClick={handleRefillEnergy} disabled={isClaiming || isEnergyFull} style={{ width: '18px', height: '18px', borderRadius: '50%', background: (isClaiming || isEnergyFull) ? 'rgba(150,150,150,0.3)' : 'rgba(197, 160, 89, 0.3)', border: 'none', color: (isClaiming || isEnergyFull) ? '#666' : '#C5A059', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: (isClaiming || isEnergyFull) ? 'not-allowed' : 'pointer', fontSize: '12px', fontWeight: 'bold', flexShrink: 0 }} title={isEnergyFull ? "Energy is already full" : `Buy ${energyToAdd}⚡ Energy for ${cost} 💎`}>
                     {isClaiming ? '...' : (isEnergyFull ? '✓' : '+')}
                   </button>
                 );
@@ -1126,25 +852,14 @@ export default function HomeScreen({ onNavigate }: Props) {
               )}
               {!rewardClaimed && !isClaiming && <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>50</div>}
             </button>
-            
-            <button 
-              className="action-btn-vertical streak-btn-v" 
-              onClick={() => setShowStreakModal(true)}
-              style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%' }}
-            >
+            <button className="action-btn-vertical streak-btn-v" onClick={() => setShowStreakModal(true)} style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%' }}>
               <Flame size={22} style={{ filter: 'drop-shadow(0 0 6px #ff6b35)', color: '#ff6b35', width: '20px', height: '20px' }} />
               <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>{currentStreak}</div>
             </button>
-            
-            <button 
-              className="action-btn-vertical rank-btn-v" 
-              onClick={() => setShowLeaderboardModal(true)}
-              style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%' }}
-            >
+            <button className="action-btn-vertical rank-btn-v" onClick={() => setShowLeaderboardModal(true)} style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%' }}>
               <Trophy size={22} style={{ filter: 'drop-shadow(0 0 6px #ffd700)', color: '#ffd700', width: '20px', height: '20px' }} />
               <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>TOP</div>
             </button>
-            
             <button className={`action-btn-vertical ${activeSubscription ? 'subscription-btn-v' : 'upgrade-btn-v'}`} onClick={() => onNavigate && onNavigate(activeSubscription ? 'subscription' : 'pricing')} style={{ background: activeSubscription ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 165, 0, 0.05) 100%)' : 'rgba(255, 255, 255, 0.03)', border: activeSubscription ? '1px solid rgba(255, 215, 0, 0.4)' : '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%' }}>
               {activeSubscription ? (
                 <><InfinityIcon size={22} style={{ filter: 'drop-shadow(0 0 6px #FFD700)', color: '#FFD700', width: '20px', height: '20px' }} /><div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>VIP</div></>
@@ -1163,9 +878,7 @@ export default function HomeScreen({ onNavigate }: Props) {
               <h3 style={{ margin: 0, color: '#C5A059', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Trophy size={18} /> {t('home.questModal.title')}
               </h3>
-              <button onClick={() => setShowQuestModal(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>
-                <X size={20} />
-              </button>
+              <button onClick={() => setShowQuestModal(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}><X size={20} /></button>
             </div>
             <div style={{ padding: '16px', overflowY: 'auto', flex: 1 }}>
               {dailyQuests.length === 0 ? (
@@ -1217,49 +930,20 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       )}
 
-      <motion.div 
-        className="card-of-day-banner clickable-card" 
-        onClick={() => onNavigate && onNavigate('daily-card')} 
-        style={{ 
-          background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)', 
-          border: '1px solid #332a1a', 
-          borderRadius: '16px', 
-          padding: '12px', 
-          marginBottom: '2px', 
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)', 
-          position: 'relative', 
-          overflow: 'visible', 
-          cursor: 'pointer' 
-        }}
-      >
+      <motion.div className="card-of-day-banner clickable-card" onClick={() => onNavigate && onNavigate('daily-card')} style={{ background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)', border: '1px solid #332a1a', borderRadius: '16px', padding: '12px', marginBottom: '2px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)', position: 'relative', overflow: 'visible', cursor: 'pointer' }}>
         <div className="card-of-day-content" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '0' }}>
           <div className="card-half-left" style={{ flex: '0 0 45%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px 0' }}>
-            <motion.div 
-              className="card-image-3d-wrapper" 
-              animate={!isDailyRevealed ? { y: [0, -5, 0] } : {}}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              style={{ position: 'relative', width: 'clamp(110px, 28vw, 140px)', aspectRatio: '2/3', perspective: '800px', margin: '-16px 0' }}
-            >
+            <motion.div className="card-image-3d-wrapper" animate={!isDailyRevealed ? { y: [0, -5, 0] } : {}} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }} style={{ position: 'relative', width: 'clamp(110px, 28vw, 140px)', aspectRatio: '2/3', perspective: '800px', margin: '-16px 0' }}>
               <div className="card-image-tilted" style={{ position: 'relative', width: '100%', height: '100%', transform: 'rotateY(-5deg) rotateX(2deg) rotate(3deg)', transition: 'transform 0.4s ease', zIndex: 2, transformStyle: 'preserve-3d' }}>
                 {!isDailyRevealed ? (
                   <div style={{ position: 'relative', width: '100%', height: '100%', borderRadius: '8px', border: '2px solid #C5A059', boxShadow: '0 2px 4px rgba(0,0,0,0.4), 0 8px 16px rgba(0,0,0,0.5), 0 16px 32px rgba(0,0,0,0.6), 0 0 20px rgba(197,160,89,0.3)', overflow: 'hidden' }}>
                     <img src={CARD_BACK_URL} alt="Card Back" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                    <motion.div
-                      animate={{ x: ['-150%', '150%'] }}
-                      transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 3, ease: "easeInOut" }}
-                      style={{ position: 'absolute', top: 0, left: 0, width: '50%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent)', transform: 'skewX(-20deg)', pointerEvents: 'none' }}
-                    />
-                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(10, 8, 20, 0.7)', backdropFilter: 'blur(4px)', padding: '6px 16px', borderRadius: '20px', border: '1px solid rgba(197, 160, 89, 0.6)', color: '#C5A059', fontSize: '11px', fontWeight: '700', letterSpacing: '2px', textTransform: 'uppercase', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
-                      TAP
-                    </div>
+                    <motion.div animate={{ x: ['-150%', '150%'] }} transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 3, ease: "easeInOut" }} style={{ position: 'absolute', top: 0, left: 0, width: '50%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent)', transform: 'skewX(-20deg)', pointerEvents: 'none' }} />
+                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(10, 8, 20, 0.7)', backdropFilter: 'blur(4px)', padding: '6px 16px', borderRadius: '20px', border: '1px solid rgba(197, 160, 89, 0.6)', color: '#C5A059', fontSize: '11px', fontWeight: '700', letterSpacing: '2px', textTransform: 'uppercase', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>TAP</div>
                   </div>
                 ) : (
                   <div style={{ position: 'relative', width: '100%', height: '100%', borderRadius: '8px', border: '2px solid #C5A059', boxShadow: '0 2px 4px rgba(0,0,0,0.4), 0 8px 16px rgba(0,0,0,0.5), 0 16px 32px rgba(0,0,0,0.6)', overflow: 'hidden' }}>
-                    <img 
-                      src={dailyCard?.image_url} 
-                      alt={dailyCardName} 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', filter: 'grayscale(30%) opacity(0.85)', transform: isDailyReversed ? 'rotate(180deg)' : 'rotate(0deg)' }} 
-                    />
+                    <img src={dailyCard?.image_url} alt={dailyCardName} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', filter: 'grayscale(30%) opacity(0.85)', transform: isDailyReversed ? 'rotate(180deg)' : 'rotate(0deg)' }} />
                   </div>
                 )}
                 {isDailyReversed && isDailyRevealed && (
@@ -1271,7 +955,6 @@ export default function HomeScreen({ onNavigate }: Props) {
               <div className="card-3d-shadow" style={{ position: 'absolute', bottom: '-6px', left: '10%', width: '80%', height: '14px', background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.6) 0%, transparent 70%)', filter: 'blur(6px)', zIndex: 1, opacity: 0.7 }}></div>
             </motion.div>
           </div>
-          
           <div className="card-half-right" style={{ flex: '0 0 55%', paddingLeft: '12px', display: 'flex', alignItems: 'center' }}>
             <div className="card-info-section" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '4px', width: '100%', minWidth: 0 }}>
               {!isDailyRevealed ? (
@@ -1311,76 +994,18 @@ export default function HomeScreen({ onNavigate }: Props) {
       </div>
 
       {isShopOpen && user && (
-        <DiamondShopModal 
-          isOpen={isShopOpen} 
-          onClose={() => setIsShopOpen(false)} 
-          userId={user.id}
-          isAdmin={isUserAdmin}
-          onSuccess={() => {
-            setIsShopOpen(false);
-            showToast('Diamonds successfully added!', 'success');
-            reloadFromDatabase();
-          }}
-        />
+        <DiamondShopModal isOpen={isShopOpen} onClose={() => setIsShopOpen(false)} userId={user.id} isAdmin={isUserAdmin} onSuccess={() => { setIsShopOpen(false); showToast('Diamonds successfully added!', 'success'); reloadFromDatabase(); }} />
       )}
 
-      <StreakModal 
-        isOpen={showStreakModal} 
-        onClose={() => setShowStreakModal(false)} 
-        currentStreak={currentStreak} 
-      />
+      <StreakModal isOpen={showStreakModal} onClose={() => setShowStreakModal(false)} currentStreak={currentStreak} />
 
       {user && (
-        <LeaderboardModal 
-          isOpen={showLeaderboardModal} 
-          onClose={() => setShowLeaderboardModal(false)} 
-          currentUserId={user.id}
-          isAdmin={isUserAdmin}
-        />
+        <LeaderboardModal isOpen={showLeaderboardModal} onClose={() => setShowLeaderboardModal(false)} currentUserId={user.id} isAdmin={isUserAdmin} />
       )}
 
       {isUserAdmin && (
         <DebugPanel
-          showDebug={showDebug}
-          setShowDebug={setShowDebug}
-          user={user}
-          economy={economy}
-          dbDebugInfo={dbDebugInfo}
-          debugLogs={debugLogs}
-          dbStatus={dbStatus}
-          activeSubscription={activeSubscription}
-          questsLoading={questsLoading}
-          dailyQuests={dailyQuests}
-          activeDailyQuest={activeDailyQuest}
-          isClaimingQuest={isClaimingQuest}
-          timeLeft={timeLeft}
-          showQuestModal={showQuestModal}
-          rewardClaimed={rewardClaimed}
-          isClaiming={isClaiming}
-          currentStreak={currentStreak}
-          setDebugLogs={setDebugLogs}
-          checkDatabaseStatus={checkDatabaseStatus}
-          refreshUserDataDebug={refreshUserDataDebug}
-          handleLogoutAndReset={handleLogoutAndReset}
-          testAddCoins={testAddCoins}
-          testAddXP={testAddXP}
-          testAddEnergy={testAddEnergy}
-          testSpendEnergy={testSpendEnergy}
-          testCompleteQuest={testCompleteQuest}
-          reloadFromDatabase={reloadFromDatabase}
-          testAddXPWithLevel={testAddXPWithLevel}
-          forceRecalcLevel={forceRecalcLevel}
-          xpTestLogs={xpTestLogs}
-          runHomeDiagnostics={runHomeDiagnostics}
-          diagnostics={diagnostics}
-          testEnergySystem={testEnergySystem}
-          testLocalStorage={testLocalStorage}
-          testPremiumGate={testPremiumGate}
-          testQuestSystem={testQuestSystem}
-          testDailyCard={testDailyCard}
-          testStreakSystem={testStreakSystem}
-          testXPSystem={testXPSystem}
-          testSupabaseConnection={testSupabaseConnection}
+          showDebug={showDebug} setShowDebug={setShowDebug} user={user} economy={economy} dbDebugInfo={dbDebugInfo} debugLogs={debugLogs} dbStatus={dbStatus} activeSubscription={activeSubscription} questsLoading={questsLoading} dailyQuests={dailyQuests} activeDailyQuest={activeDailyQuest} isClaimingQuest={isClaimingQuest} timeLeft={timeLeft} showQuestModal={showQuestModal} rewardClaimed={rewardClaimed} isClaiming={isClaiming} currentStreak={currentStreak} setDebugLogs={setDebugLogs} checkDatabaseStatus={checkDatabaseStatus} refreshUserDataDebug={refreshUserDataDebug} handleLogoutAndReset={handleLogoutAndReset} testAddCoins={testAddCoins} testAddXP={testAddXP} testAddEnergy={testAddEnergy} testSpendEnergy={testSpendEnergy} testCompleteQuest={testCompleteQuest} reloadFromDatabase={reloadFromDatabase} testAddXPWithLevel={testAddXPWithLevel} forceRecalcLevel={forceRecalcLevel} xpTestLogs={xpTestLogs} runHomeDiagnostics={runHomeDiagnostics} diagnostics={diagnostics} testEnergySystem={testEnergySystem} testLocalStorage={testLocalStorage} testPremiumGate={testPremiumGate} testQuestSystem={testQuestSystem} testDailyCard={testDailyCard} testStreakSystem={testStreakSystem} testXPSystem={testXPSystem} testSupabaseConnection={testSupabaseConnection}
         />
       )}
     </div>
