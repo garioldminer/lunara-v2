@@ -210,10 +210,20 @@ export default function HomeScreen({ onNavigate }: Props) {
   });
 
   // ============================================
-  // 🆕 READING COSTS (ცენტრალიზებული - DB-დან)
+  // 🆕 ცენტრალიზებული კონფიგურაცია (DB-დან)
   // ============================================
   const [readingCosts, setReadingCosts] = useState<Record<string, number>>({});
+  const [gameConfig, setGameConfig] = useState<Record<string, number>>({});
   const [costsLoaded, setCostsLoaded] = useState(false);
+
+  // ✅ კონფიგის წაკითხვა (hardcoded-ის ნაცვლად)
+  const getConfig = (key: string, fallback: number): number => {
+    return gameConfig[key] ?? fallback;
+  };
+
+  const getEnergyCost = (readingType: string): number => {
+    return readingCosts[readingType] ?? 0;
+  };
 
   interface DiagnosticResult {
     id: string;
@@ -235,11 +245,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     isRunning: false,
     lastRun: null
   });
-
-  // ✅ ღირებულების წაკითხვა DB-დან (hardcoded-ის ნაცვლად)
-  const getEnergyCost = (readingType: string): number => {
-    return readingCosts[readingType] ?? 0;
-  };
 
   const runHomeDiagnostics = async (): Promise<DiagnosticResult[]> => {
     setDiagnostics(prev => ({ ...prev, isRunning: true }));
@@ -449,7 +454,6 @@ export default function HomeScreen({ onNavigate }: Props) {
       });
     }
 
-    // 🆕 Reading Costs ჩატვირთულია DB-დან?
     try {
       const costKeys = Object.keys(readingCosts);
       results.push({
@@ -466,6 +470,29 @@ export default function HomeScreen({ onNavigate }: Props) {
       results.push({
         id: 'reading-costs',
         name: 'Reading Costs (DB)',
+        status: 'fail',
+        message: `Error: ${err.message}`,
+        timestamp
+      });
+    }
+
+    // 🆕 Game Config check
+    try {
+      const configKeys = Object.keys(gameConfig);
+      results.push({
+        id: 'game-config',
+        name: 'Game Config (DB)',
+        status: configKeys.length >= 4 ? 'pass' : 'fail',
+        message: configKeys.length >= 4
+          ? `ჩატვირთულია ${configKeys.length} კონფიგი DB-დან`
+          : 'კონფიგები არ არის ჩატვირთული!',
+        details: gameConfig,
+        timestamp
+      });
+    } catch (err: any) {
+      results.push({
+        id: 'game-config',
+        name: 'Game Config (DB)',
         status: 'fail',
         message: `Error: ${err.message}`,
         timestamp
@@ -926,29 +953,41 @@ export default function HomeScreen({ onNavigate }: Props) {
   }, [user]);
 
   // ============================================
-  // 🆕 READING COSTS ჩატვირთვა DB-დან
+  // 🆕 READING COSTS + GAME CONFIG ჩატვირთვა DB-დან
   // ============================================
   useEffect(() => {
-    const loadReadingCosts = async () => {
+    const loadConfigs = async () => {
       if (!supabase) return;
       try {
-        const { data, error } = await supabase
+        const { data: costData, error: costError } = await supabase
           .from('reading_costs')
           .select('reading_type, energy_cost');
-        if (!error && data) {
+        if (!costError && costData) {
           const costs: Record<string, number> = {};
-          data.forEach((c: any) => { costs[c.reading_type] = c.energy_cost; });
+          costData.forEach((c: any) => { costs[c.reading_type] = c.energy_cost; });
           setReadingCosts(costs);
           setCostsLoaded(true);
-          addDebugLog('success', 'CONFIG', `✅ Loaded ${data.length} reading costs from DB`, costs);
+          addDebugLog('success', 'CONFIG', `✅ Loaded ${costData.length} reading costs from DB`, costs);
         } else {
-          addDebugLog('error', 'CONFIG', `❌ Failed to load reading costs: ${error?.message}`);
+          addDebugLog('error', 'CONFIG', `❌ Failed to load reading costs: ${costError?.message}`);
+        }
+
+        const { data: configData, error: configError } = await supabase
+          .from('game_config')
+          .select('key, value');
+        if (!configError && configData) {
+          const config: Record<string, number> = {};
+          configData.forEach((c: any) => { config[c.key] = parseFloat(c.value) || 0; });
+          setGameConfig(config);
+          addDebugLog('success', 'CONFIG', `✅ Loaded ${configData.length} game configs from DB`, config);
+        } else {
+          addDebugLog('error', 'CONFIG', `❌ Failed to load game config: ${configError?.message}`);
         }
       } catch (err: any) {
-        addDebugLog('error', 'CONFIG', `❌ Exception loading reading costs: ${err.message}`);
+        addDebugLog('error', 'CONFIG', `❌ Exception loading configs: ${err.message}`);
       }
     };
-    loadReadingCosts();
+    loadConfigs();
   }, []);
 
   const calculateRealEnergy = async (): Promise<number | null> => {
@@ -968,7 +1007,9 @@ export default function HomeScreen({ onNavigate }: Props) {
       const minutesPassed = (now.getTime() - lastUpdate.getTime()) / 1000 / 60;
       
       const boostMultiplier = economyData.energy_boost_multiplier || 1.0;
-      const regenRate = 30 / boostMultiplier;
+      // ✅ რეგენერაციის წუთები DB-დან
+      const regenMinutes = getConfig('energy_regen_minutes', 30);
+      const regenRate = regenMinutes / boostMultiplier;
       const energyToRegen = Math.floor(minutesPassed / regenRate);
       
       let newEnergy = economyData.cosmic_focus;
@@ -1046,7 +1087,7 @@ export default function HomeScreen({ onNavigate }: Props) {
   const handleRefillEnergy = async () => {
     if (!user || !supabase) return;
     
-    const maxEnergy = economy.max_focus || 20;
+    const maxEnergy = economy.max_focus || getConfig('max_focus_default', 20);
     const currentEnergy = economy.cosmic_focus || 0;
     const energyNeeded = maxEnergy - currentEnergy;
 
@@ -1055,8 +1096,9 @@ export default function HomeScreen({ onNavigate }: Props) {
       return;
     }
 
-    const energyToAdd = Math.min(10, energyNeeded);
-    const cost = energyToAdd * 5;
+    // ✅ მაქს დამატება და ღირებულება DB-დან
+    const energyToAdd = Math.min(getConfig('energy_refill_max_amount', 10), energyNeeded);
+    const cost = energyToAdd * getConfig('energy_refill_coin_cost', 5);
 
     addDebugLog('info', 'ENERGY_REFILL', `🔍 Step 1: Calculating refill. Needed: ${energyNeeded}⚡, Adding: ${energyToAdd}⚡, Cost: ${cost}💎`);
 
@@ -1283,13 +1325,9 @@ export default function HomeScreen({ onNavigate }: Props) {
     }
   };
 
-  // ============================================
-  // ✅ handleQuickAction - ღირებულებები DB-დან
-  // ============================================
   const handleQuickAction = async (action: string) => {
     addDebugLog('info', 'NAVIGATION', 'Quick action clicked', { action });
 
-    // თუ ღირებულებები ჯერ არ ჩატვირთულა, არ გავაკეთოთ reading
     if (!costsLoaded) {
       showToast('Loading reading costs... Please try again.', 'info');
       return;
@@ -1437,10 +1475,11 @@ export default function HomeScreen({ onNavigate }: Props) {
               </span>
               
               {(() => {
-                const isEnergyFull = (economy.cosmic_focus || 0) >= (economy.max_focus || 20);
-                const energyNeeded = (economy.max_focus || 20) - (economy.cosmic_focus || 0);
-                const energyToAdd = Math.min(10, energyNeeded);
-                const cost = energyToAdd * 5;
+                const maxF = economy.max_focus || getConfig('max_focus_default', 20);
+                const isEnergyFull = (economy.cosmic_focus || 0) >= maxF;
+                const energyNeeded = maxF - (economy.cosmic_focus || 0);
+                const energyToAdd = Math.min(getConfig('energy_refill_max_amount', 10), energyNeeded);
+                const cost = energyToAdd * getConfig('energy_refill_coin_cost', 5);
                 
                 return (
                   <button 
