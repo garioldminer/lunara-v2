@@ -11,10 +11,13 @@ interface LeaderboardModalProps {
 }
 
 interface LeaderboardUser {
-  id: string;
+  user_id: string;
   display_name: string;
   level: number;
   xp: number;
+  cosmic_coins: number;
+  xp_last_updated: string;
+  created_at: string;
   rank: number;
 }
 
@@ -41,73 +44,39 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId, isAdm
 
     setLoading(true);
     try {
-      const { data: economyData, error: economyError } = await supabase
-        .from('user_economy')
-        .select('user_id, xp, level')
-        .order('level', { ascending: false })
-        .order('xp', { ascending: false })
-        .limit(10);
+      // 1. წამოვიღოთ top 10 SQL function-დან (უკვე დალაგებულია!)
+      const { data: leadersData, error: leadersError } = await supabase.rpc('get_leaderboard', { p_limit: 10 });
 
-      const userIds = economyData?.map((item: any) => item.user_id) || [];
-      const { data: usersData, error: usersError } = await supabase
-        .from('users')
-        .select('id, display_name')
-        .in('id', userIds);
+      if (leadersError) throw leadersError;
 
-      if (economyError) throw economyError;
-      if (!economyData || economyData.length === 0) {
-        setLeaders([]);
-        setUserRank(null);
-        setDebugData({ economyData, economyError, usersData, usersError, currentUserId, leadersCount: 0 });
-        setLoading(false);
-        return;
-      }
-
-      const nameMap: Record<string, string> = {};
-      if (usersData) {
-        usersData.forEach((u: any) => {
-          nameMap[u.id] = u.display_name || 'Seeker';
-        });
-      }
-
-      const formattedLeaders: LeaderboardUser[] = economyData.map((item: any, index: number) => ({
-        id: item.user_id,
-        display_name: nameMap[item.user_id] || 'Seeker',
+      const formattedLeaders: LeaderboardUser[] = (leadersData || []).map((item: any) => ({
+        user_id: item.user_id,
+        display_name: item.display_name || 'Seeker',
         level: item.level || 1,
         xp: item.xp || 0,
-        rank: index + 1
+        cosmic_coins: item.cosmic_coins || 0,
+        xp_last_updated: item.xp_last_updated,
+        created_at: item.created_at,
+        rank: Number(item.rank)
       }));
 
       setLeaders(formattedLeaders);
 
-      // ვინახავთ საბოლოო მასივს, რომ დავინახოთ რას აპირებს კომპონენტი დაარენდერებას
-      setDebugData({
-        economyData,
-        economyError,
-        usersData,
-        usersError,
-        currentUserId,
-        leadersCount: formattedLeaders.length,
-        leaders: formattedLeaders 
-      });
-
-      const { data: currentUserData } = await supabase
-        .from('user_economy')
-        .select('xp, level')
-        .eq('user_id', currentUserId)
-        .single();
-
-      if (currentUserData) {
-        const userCurrentXp = currentUserData.xp || 0;
-        const userCurrentLevel = currentUserData.level || 1;
-
-        const { count } = await supabase
-          .from('user_economy')
-          .select('*', { count: 'exact', head: true })
-          .or(`level.gt.${userCurrentLevel},and(level.eq.${userCurrentLevel},xp.gt.${userCurrentXp})`);
-
-        setUserRank(count !== null ? count + 1 : 99);
+      // 2. მიმდინარე მომხმარებლის rank
+      const { data: rankData, error: rankError } = await supabase.rpc('get_user_leaderboard_rank', { p_user_id: currentUserId });
+      
+      if (!rankError && rankData) {
+        setUserRank(rankData);
       }
+
+      setDebugData({
+        leadersData,
+        leadersError,
+        currentUserId,
+        userRank: rankData,
+        leadersCount: formattedLeaders.length,
+        leaders: formattedLeaders
+      });
 
     } catch (err) {
       console.error('❌ Leaderboard fetch error:', err);
@@ -338,11 +307,11 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId, isAdm
               ) : (
                 leaders.map((leader, index) => {
                   const styles = getRankStyles(leader.rank);
-                  const isCurrentUser = leader.id === currentUserId;
+                  const isCurrentUser = leader.user_id === currentUserId;
 
                   return (
                     <motion.div
-                      key={leader.id}
+                      key={leader.user_id}
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
@@ -388,7 +357,7 @@ export default function LeaderboardModal({ isOpen, onClose, currentUserId, isAdm
                             {leader.display_name}
                           </div>
                           <div style={{ fontSize: '10px', color: '#94a3b8' }}>
-                            Level {leader.level}
+                            Level {leader.level} • 💎 {leader.cosmic_coins.toLocaleString()}
                           </div>
                         </div>
                       </div>
