@@ -163,6 +163,7 @@ export default function PremiumConfigAdmin() {
     else { showMessage('success', `Benefit saved!`); await loadData(); }
   };
 
+  // ✅ FIXED: removed unused 'b' parameter, using simple length + 1
   const handleAddBenefit = async () => {
     if (!supabase) return;
     const icon = editValues['new_ben_icon'] ?? '';
@@ -172,11 +173,25 @@ export default function PremiumConfigAdmin() {
       return;
     }
     setSaving('new_ben');
-    const maxOrder = benefits.reduce((m, b) => Math.max(m, 0), 0) + benefits.length + 1;
-    const { error } = await supabase.from('premium_benefits').insert({ icon: icon.trim(), text: text.trim(), sort_order: maxOrder, is_active: true });
+    const newSortOrder = benefits.length + 1;
+    const { error } = await supabase.from('premium_benefits').insert({ 
+      icon: icon.trim(), 
+      text: text.trim(), 
+      sort_order: newSortOrder, 
+      is_active: true 
+    });
     setSaving(null);
     if (error) showMessage('error', `Failed: ${error.message}`);
-    else { showMessage('success', `Benefit added!`); setEditValues(p => { const n = { ...p }; delete n['new_ben_icon']; delete n['new_ben_text']; return n; }); await loadData(); }
+    else { 
+      showMessage('success', `Benefit added!`); 
+      setEditValues(p => { 
+        const n = { ...p }; 
+        delete n['new_ben_icon']; 
+        delete n['new_ben_text']; 
+        return n; 
+      }); 
+      await loadData(); 
+    }
   };
 
   const handleDeleteBenefit = async (id: string, text: string) => {
