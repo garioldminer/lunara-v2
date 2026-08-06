@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { 
   Bug, X, Activity, Users, Server, Terminal, Settings, 
-  Copy, Check, RefreshCw, Play, Eye, ChevronDown, Heart, Crown
+  Copy, Check, RefreshCw, Play, Eye, ChevronDown, Heart, Crown, Zap
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { 
@@ -34,6 +34,36 @@ interface ProfileCheck {
   status: 'pass' | 'warn' | 'fail';
   message: string;
   details?: string;
+}
+
+interface EnergyTransaction {
+  id: string;
+  amount: number;
+  transaction_type: string;
+  reference_id: string | null;
+  balance_after: number;
+  created_at: string;
+}
+
+interface ReadingCost {
+  reading_type: string;
+  energy_cost: number;
+  description: string;
+}
+
+interface EnergyCheckData {
+  uiEnergy: number;
+  uiMax: number;
+  dbEnergy: number;
+  dbMax: number;
+  lastUpdate: string | null;
+  boostMultiplier: number;
+  minutesPassed: number;
+  energyToRegen: number;
+  minutesUntilNext: number;
+  transactions: EnergyTransaction[];
+  costs: ReadingCost[];
+  match: boolean;
 }
 
 interface DebugPanelProps {
@@ -79,7 +109,7 @@ interface DebugPanelProps {
   testSupabaseConnection: () => void;
 }
 
-type TabType = 'system' | 'user' | 'profile' | 'diagnostics' | 'functions' | 'logs' | 'actions';
+type TabType = 'system' | 'user' | 'profile' | 'energy' | 'diagnostics' | 'functions' | 'logs' | 'actions';
 
 export default function DebugPanel(props: DebugPanelProps) {
   const {
@@ -112,12 +142,16 @@ export default function DebugPanel(props: DebugPanelProps) {
 
   const [expandedLog, setExpandedLog] = useState<number | null>(null);
 
-  // ============================================
-  // 🆕 PROFILE BANNER TAB STATE
-  // ============================================
   const [profileChecks, setProfileChecks] = useState<ProfileCheck[]>([]);
   const [profileChecking, setProfileChecking] = useState(false);
   const [profileLastRun, setProfileLastRun] = useState<string | null>(null);
+
+  // ============================================
+  // ⚡ ENERGY TAB STATE
+  // ============================================
+  const [energyData, setEnergyData] = useState<EnergyCheckData | null>(null);
+  const [energyChecking, setEnergyChecking] = useState(false);
+  const [energyLastRun, setEnergyLastRun] = useState<string | null>(null);
 
   useEffect(() => {
     if (!showDebug) return;
@@ -208,14 +242,71 @@ export default function DebugPanel(props: DebugPanelProps) {
   };
 
   // ============================================
-  // 🆕 PROFILE BANNER CHECK
+  // ⚡ ENERGY CHECK
   // ============================================
+  const runEnergyCheck = async () => {
+    if (!user?.id || !supabase) return;
+    setEnergyChecking(true);
+    addDebugLog('info', 'ENERGY_CHECK', '⚡ Starting energy system check...');
+    try {
+      const { data: ecoData } = await supabase
+        .from('user_economy')
+        .select('cosmic_focus, max_focus, last_energy_update, energy_boost_multiplier')
+        .eq('user_id', user.id)
+        .single();
+
+      const { data: txData } = await supabase
+        .from('energy_transactions')
+        .select('id, amount, transaction_type, reference_id, balance_after, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      const { data: costData } = await supabase
+        .from('reading_costs')
+        .select('reading_type, energy_cost, description')
+        .order('energy_cost', { ascending: true });
+
+      if (ecoData) {
+        const boost = parseFloat(ecoData.energy_boost_multiplier) || 1.0;
+        const now = new Date();
+        const lastUpdate = new Date(ecoData.last_energy_update);
+        const minutesPassed = (now.getTime() - lastUpdate.getTime()) / 1000 / 60;
+        const regenRate = 30 / boost;
+        const energyToRegen = Math.floor(minutesPassed / regenRate);
+        const minutesUntilNext = Math.max(0, Math.ceil(regenRate - (minutesPassed % regenRate)));
+
+        setEnergyData({
+          uiEnergy: economy?.cosmic_focus ?? 0,
+          uiMax: economy?.max_focus ?? 20,
+          dbEnergy: ecoData.cosmic_focus,
+          dbMax: ecoData.max_focus,
+          lastUpdate: ecoData.last_energy_update,
+          boostMultiplier: boost,
+          minutesPassed: Math.floor(minutesPassed),
+          energyToRegen,
+          minutesUntilNext,
+          transactions: txData || [],
+          costs: costData || [],
+          match: (economy?.cosmic_focus ?? 0) === ecoData.cosmic_focus && (economy?.max_focus ?? 20) === ecoData.max_focus
+        });
+        addDebugLog('success', 'ENERGY_CHECK', `✅ Check complete: UI ${economy?.cosmic_focus}/${economy?.max_focus} | DB ${ecoData.cosmic_focus}/${ecoData.max_focus}`);
+      } else {
+        addDebugLog('error', 'ENERGY_CHECK', '❌ No economy data found');
+      }
+
+      setEnergyLastRun(new Date().toLocaleTimeString('en-US', { hour12: false }));
+    } catch (err: any) {
+      addDebugLog('error', 'ENERGY_CHECK', `❌ ${err.message}`);
+    }
+    setEnergyChecking(false);
+  };
+
   const runProfileBannerCheck = async () => {
     setProfileChecking(true);
     addDebugLog('info', 'PROFILE_BANNER', '🔍 Starting profile banner check...');
     const checks: ProfileCheck[] = [];
 
-    // Fresh data from database
     let dbData: any = null;
     if (user?.id && supabase) {
       try {
@@ -230,7 +321,6 @@ export default function DebugPanel(props: DebugPanelProps) {
       }
     }
 
-    // 1. ავატარი
     const avatarLetter = user?.display_name?.charAt(0).toUpperCase() || 'U';
     checks.push({
       id: 'avatar',
@@ -242,7 +332,6 @@ export default function DebugPanel(props: DebugPanelProps) {
       details: `display_name: ${user?.display_name || 'null'}`
     });
 
-    // 2. XP წრე
     const xp = economy?.xp ?? 0;
     const levelData = getLevelFromTotalXP(xp);
     const xpPercent = levelData.xpToNext > 0 ? Math.min((levelData.currentLevelXP / levelData.xpToNext) * 100, 100) : 0;
@@ -256,7 +345,6 @@ export default function DebugPanel(props: DebugPanelProps) {
       details: `currentLevelXP: ${levelData.currentLevelXP} / ${levelData.xpToNext} | dashoffset: ${strokeDashoffset.toFixed(1)}`
     });
 
-    // 3. ლეველი badge (გამოთვლილი vs შენახული)
     const computedLevel = levelData.level;
     const storedLevel = economy?.level ?? 1;
     checks.push({
@@ -269,7 +357,6 @@ export default function DebugPanel(props: DebugPanelProps) {
       details: `XP-დან გამოთვლილი: ${computedLevel} | economy.level: ${storedLevel}`
     });
 
-    // 4. მომხმარებლის სახელი
     checks.push({
       id: 'username',
       element: '👤 მომხმარებლის სახელი',
@@ -278,7 +365,6 @@ export default function DebugPanel(props: DebugPanelProps) {
       details: `display_name: ${user?.display_name || 'null'}`
     });
 
-    // 5. Premium badge
     if (activeSubscription) {
       const expiresOk = new Date(activeSubscription.expires_at) > new Date();
       checks.push({
@@ -300,7 +386,6 @@ export default function DebugPanel(props: DebugPanelProps) {
       });
     }
 
-    // 6. Coins (UI vs Database)
     const uiCoins = economy?.cosmic_coins ?? 0;
     const dbCoins = dbData?.cosmic_coins ?? null;
     checks.push({
@@ -313,7 +398,6 @@ export default function DebugPanel(props: DebugPanelProps) {
       details: `economy.cosmic_coins: ${uiCoins} | database: ${dbCoins}`
     });
 
-    // 7. ენერგია (UI vs Database)
     const uiEnergy = economy?.cosmic_focus ?? 0;
     const uiMax = economy?.max_focus ?? 20;
     const dbEnergy = dbData?.cosmic_focus ?? null;
@@ -329,7 +413,6 @@ export default function DebugPanel(props: DebugPanelProps) {
       details: `cosmic_focus: ${uiEnergy} | max_focus: ${uiMax} (უნდა იყოს 20)`
     });
 
-    // 8. Streak (state vs DB)
     const dbStreak = dbData?.current_streak ?? null;
     checks.push({
       id: 'streak',
@@ -366,7 +449,7 @@ export default function DebugPanel(props: DebugPanelProps) {
 ⚡ Boot Time: ${bootTime}ms
 🗄️ DB Status: ${dbStatus.toUpperCase()}
 🔑 Auth: ${authStatus === 'active' ? 'ACTIVE ✅' : 'INACTIVE ❌'}
-️ Admin: ${user?.is_admin ? 'YES ✅' : 'NO ❌'}
+🛡️ Admin: ${user?.is_admin ? 'YES ✅' : 'NO ❌'}
 
 TELEGRAM SDK
 📱 WebApp: ${tgAvailable ? 'YES ✅' : 'NO ❌'}
@@ -405,6 +488,19 @@ ${profileChecks.map(c =>
    ${c.message}
    ${c.details || ''}`
 ).join('\n\n')}`;
+    } else if (tab === 'energy') {
+      text = `ENERGY SYSTEM CHECK
+Last Run: ${energyLastRun || 'Never'}
+
+UI: ${energyData?.uiEnergy}/${energyData?.uiMax} | DB: ${energyData?.dbEnergy}/${energyData?.dbMax} | Match: ${energyData?.match ? 'YES ✅' : 'NO ❌'}
+Boost: ${energyData?.boostMultiplier}x | Minutes passed: ${energyData?.minutesPassed}
+Pending regen: +${energyData?.energyToRegen} | Next +1 in: ${energyData?.minutesUntilNext} min
+
+READING COSTS:
+${energyData?.costs.map(c => `- ${c.reading_type}: ${c.energy_cost}⚡ (${c.description})`).join('\n') || 'None'}
+
+LAST TRANSACTIONS:
+${energyData?.transactions.map(t => `- [${t.created_at}] ${t.amount > 0 ? '+' : ''}${t.amount} (${t.transaction_type}) → balance: ${t.balance_after}`).join('\n') || 'None'}`;
     } else if (tab === 'diagnostics') {
       text = `HOME DIAGNOSTICS (${diagnostics.results.length} checks)
 Last Run: ${diagnostics.lastRun || 'Never'}
@@ -448,8 +544,9 @@ Is Claiming: ${isClaiming}`;
     { id: 'system' as TabType, label: 'System', icon: Activity },
     { id: 'user' as TabType, label: 'User', icon: Users },
     { id: 'profile' as TabType, label: 'Profile', icon: Crown },
+    { id: 'energy' as TabType, label: 'Energy', icon: Zap },
     { id: 'diagnostics' as TabType, label: 'Diag', icon: Heart },
-    { id: 'functions' as TabType, label: 'Functions', icon: Server },
+    { id: 'functions' as TabType, label: 'Funcs', icon: Server },
     { id: 'logs' as TabType, label: 'Logs', icon: Terminal },
     { id: 'actions' as TabType, label: 'Actions', icon: Settings },
   ];
@@ -484,7 +581,7 @@ Is Claiming: ${isClaiming}`;
 
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '4px', padding: '8px 12px', borderBottom: '1px solid rgba(255, 229, 102, 0.2)', background: 'rgba(0,0,0,0.3)' }}>
             {tabs.map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ flex: '1 1 22%', minWidth: '52px', padding: '6px 4px', background: activeTab === tab.id ? 'rgba(255, 229, 102, 0.2)' : 'transparent', border: activeTab === tab.id ? '1px solid rgba(255, 229, 102, 0.5)' : '1px solid transparent', borderRadius: '8px', color: activeTab === tab.id ? '#ffe566' : '#94a3b8', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', fontSize: '9px', fontWeight: 'bold', transition: 'all 0.2s' }}>
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ flex: '1 1 22%', minWidth: '50px', padding: '6px 4px', background: activeTab === tab.id ? 'rgba(255, 229, 102, 0.2)' : 'transparent', border: activeTab === tab.id ? '1px solid rgba(255, 229, 102, 0.5)' : '1px solid transparent', borderRadius: '8px', color: activeTab === tab.id ? '#ffe566' : '#94a3b8', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', fontSize: '9px', fontWeight: 'bold', transition: 'all 0.2s' }}>
                 <tab.icon size={14} />{tab.label}
               </button>
             ))}
@@ -556,9 +653,6 @@ Is Claiming: ${isClaiming}`;
               </div>
             )}
 
-            {/* ============================================ */}
-            {/* 🆕 PROFILE BANNER TAB */}
-            {/* ============================================ */}
             {activeTab === 'profile' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
@@ -634,6 +728,137 @@ Is Claiming: ${isClaiming}`;
                       </div>
                     ))}
                   </div>
+                )}
+              </div>
+            )}
+
+            {/* ============================================ */}
+            {/* ⚡ ENERGY TAB */}
+            {/* ============================================ */}
+            {activeTab === 'energy' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <span style={{ color: '#fbbf24', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Zap size={14} /> ENERGY SYSTEM
+                  </span>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button 
+                      onClick={runEnergyCheck}
+                      disabled={energyChecking}
+                      style={{ 
+                        padding: '6px 12px', 
+                        background: energyChecking ? 'rgba(251, 191, 36, 0.3)' : 'rgba(251, 191, 36, 0.2)', 
+                        border: `1px solid #fbbf24`, 
+                        borderRadius: '6px', 
+                        color: '#fbbf24', 
+                        cursor: energyChecking ? 'not-allowed' : 'pointer', 
+                        fontSize: '10px', 
+                        fontWeight: 'bold',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      <RefreshCw size={12} className={energyChecking ? 'animate-spin' : ''} /> 
+                      {energyChecking ? 'Checking...' : 'Run Check'}
+                    </button>
+                    <CopyButton tab="energy" />
+                  </div>
+                </div>
+
+                {energyLastRun && energyData && (
+                  <div style={{ padding: '8px', background: 'rgba(251, 191, 36, 0.1)', borderRadius: '6px', border: '1px solid rgba(251, 191, 36, 0.3)', fontSize: '10px', textAlign: 'center' }}>
+                    Last run: {energyLastRun} | {energyData.match ? '✅ UI = DB' : '❌ UI ≠ DB'}
+                  </div>
+                )}
+
+                {!energyData ? (
+                  <div style={{ textAlign: 'center', padding: '24px 12px', color: '#94a3b8', fontSize: '11px' }}>
+                    <Zap size={28} style={{ opacity: 0.4, marginBottom: '8px' }} />
+                    <div>დააჭირე "Run Check"-ს რომ შეამოწმო<br/>ენერგიის სისტემა</div>
+                  </div>
+                ) : (
+                  <>
+                    {/* Current Energy */}
+                    <div style={{ padding: '12px', background: 'rgba(251, 191, 36, 0.1)', borderRadius: '8px', border: `1px solid ${energyData.match ? 'rgba(16, 185, 129, 0.5)' : 'rgba(239, 68, 68, 0.5)'}`, fontSize: '11px' }}>
+                      <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#fbbf24' }}>⚡ მიმდინარე ენერგია</div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                        <div>UI: <strong>{energyData.uiEnergy}/{energyData.uiMax}</strong></div>
+                        <div>DB: <strong>{energyData.dbEnergy}/{energyData.dbMax}</strong></div>
+                      </div>
+                      <div style={{ marginTop: '6px', padding: '4px', borderRadius: '4px', textAlign: 'center', background: energyData.match ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)' }}>
+                        {energyData.match ? '✅ UI და DB თანხვედრაშია' : '❌ განსხვავება! საჭიროა sync'}
+                      </div>
+                    </div>
+
+                    {/* Regeneration */}
+                    <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.3)', fontSize: '11px' }}>
+                      <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#60a5fa' }}>🔄 რეგენერაცია (30 წუთში +1)</div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                        <div>გასული წუთები: <strong>{energyData.minutesPassed}</strong></div>
+                        <div>Boost: <strong>{energyData.boostMultiplier}x</strong></div>
+                        <div>დასამატებელი: <strong style={{ color: energyData.energyToRegen > 0 ? '#10b981' : '#94a3b8' }}>+{energyData.energyToRegen}</strong></div>
+                        <div>შემდეგი +1: <strong>{energyData.minutesUntilNext} წუთში</strong></div>
+                      </div>
+                      {energyData.dbEnergy >= energyData.dbMax && (
+                        <div style={{ marginTop: '6px', padding: '4px', borderRadius: '4px', textAlign: 'center', background: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24' }}>
+                          🔋 ენერგია სრულია - რეგენერაცია პაუზაზეა
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Reading Costs */}
+                    <div style={{ padding: '12px', background: 'rgba(167, 139, 250, 0.1)', borderRadius: '8px', border: '1px solid rgba(167, 139, 250, 0.3)', fontSize: '11px' }}>
+                      <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#a78bfa' }}>💰 ხარჯვის ღირებულებები (reading_costs)</div>
+                      {energyData.costs.length === 0 ? (
+                        <div style={{ color: '#94a3b8', textAlign: 'center' }}>ცხრილი ცარიელია</div>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          {energyData.costs.map((cost) => (
+                            <div key={cost.reading_type} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 6px', background: 'rgba(0,0,0,0.3)', borderRadius: '4px' }}>
+                              <span style={{ color: '#e2e8f0' }}>{cost.reading_type}</span>
+                              <span style={{ color: cost.energy_cost === 0 ? '#10b981' : '#fbbf24', fontWeight: 'bold' }}>
+                                {cost.energy_cost === 0 ? 'FREE' : `${cost.energy_cost}⚡`}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Transactions */}
+                    <div style={{ padding: '12px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)', fontSize: '11px' }}>
+                      <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#10b981' }}>📜 ბოლო 10 ტრანზაქცია</div>
+                      {energyData.transactions.length === 0 ? (
+                        <div style={{ color: '#94a3b8', textAlign: 'center' }}>ტრანზაქციები არ არის</div>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '180px', overflowY: 'auto' }}>
+                          {energyData.transactions.map((tx) => (
+                            <div key={tx.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 6px', background: 'rgba(0,0,0,0.3)', borderRadius: '4px' }}>
+                              <div>
+                                <span style={{ color: tx.amount > 0 ? '#10b981' : tx.amount < 0 ? '#ef4444' : '#94a3b8', fontWeight: 'bold' }}>
+                                  {tx.amount > 0 ? '+' : ''}{tx.amount}
+                                </span>
+                                <span style={{ color: '#94a3b8', fontSize: '9px', marginLeft: '6px' }}>{tx.transaction_type}</span>
+                              </div>
+                              <div style={{ textAlign: 'right' }}>
+                                <div style={{ color: '#e2e8f0', fontSize: '9px' }}>→ {tx.balance_after}</div>
+                                <div style={{ color: '#64748b', fontSize: '8px' }}>{new Date(tx.created_at).toLocaleTimeString('en-US', { hour12: false })}</div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Test Buttons */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                      <button onClick={() => { testAddEnergy(1); setTimeout(runEnergyCheck, 1000); }} style={{ padding: '8px', background: '#fbbf24', border: 'none', borderRadius: '6px', color: '#000', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>+1 ⚡</button>
+                      <button onClick={() => { testSpendEnergy(1); setTimeout(runEnergyCheck, 1000); }} style={{ padding: '8px', background: '#ef4444', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>-1 ⚡</button>
+                      <button onClick={() => { testAddEnergy(10); setTimeout(runEnergyCheck, 1000); }} style={{ padding: '8px', background: '#10b981', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>+10 ⚡</button>
+                      <button onClick={runEnergyCheck} style={{ padding: '8px', background: '#3b82f6', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>🔄 Refresh</button>
+                    </div>
+                  </>
                 )}
               </div>
             )}
