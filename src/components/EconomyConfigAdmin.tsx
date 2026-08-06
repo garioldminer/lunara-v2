@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { RefreshCw, DollarSign, Settings2, Save, Zap } from 'lucide-react';
+import { RefreshCw, DollarSign, Settings2, Save, Zap, Gem, Plus, Trash2, Star } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface ReadingCost {
@@ -15,9 +15,20 @@ interface GameConfig {
   description: string;
 }
 
+interface DiamondPackage {
+  id: string;
+  coins: number;
+  stars: number;
+  label: string;
+  is_popular: boolean;
+  is_active: boolean;
+  sort_order: number;
+}
+
 export default function EconomyConfigAdmin() {
   const [readingCosts, setReadingCosts] = useState<ReadingCost[]>([]);
   const [gameConfigs, setGameConfigs] = useState<GameConfig[]>([]);
+  const [packages, setPackages] = useState<DiamondPackage[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Record<string, string>>({});
@@ -43,6 +54,13 @@ export default function EconomyConfigAdmin() {
           description: c.description 
         })));
       }
+
+      // 🆕 პაკეტები
+      const { data: pkgData, error: pkgError } = await supabase
+        .from('diamond_packages')
+        .select('*')
+        .order('sort_order', { ascending: true });
+      if (!pkgError && pkgData) setPackages(pkgData);
     } catch (err: any) {
       console.error('Failed to load configs:', err);
     }
@@ -72,7 +90,7 @@ export default function EconomyConfigAdmin() {
     if (error) {
       showMessage('error', `Failed: ${error.message}`);
     } else {
-      showMessage('success', `${reading_type_label(readingType)} → ${newValue}⚡ saved!`);
+      showMessage('success', `${readingType} → ${newValue}⚡ saved!`);
       setEditValues(prev => { const n = { ...prev }; delete n[`cost_${id}`]; return n; });
       await loadConfigs();
     }
@@ -96,6 +114,91 @@ export default function EconomyConfigAdmin() {
     } else {
       showMessage('success', `${key} → ${newValue} saved!`);
       setEditValues(prev => { const n = { ...prev }; delete n[`config_${key}`]; return n; });
+      await loadConfigs();
+    }
+  };
+
+  // 🆕 პაკეტის შენახვა
+  const handleSavePackage = async (id: string) => {
+    if (!supabase) return;
+    const coins = parseInt(editValues[`pkg_${id}_coins`] ?? '', 10);
+    const stars = parseInt(editValues[`pkg_${id}_stars`] ?? '', 10);
+    const label = editValues[`pkg_${id}_label`] ?? '';
+    if (isNaN(coins) || coins <= 0 || isNaN(stars) || stars <= 0 || !label.trim()) {
+      showMessage('error', 'Enter valid coins, stars and label');
+      return;
+    }
+    setSaving(`pkg_${id}`);
+    const { error } = await supabase
+      .from('diamond_packages')
+      .update({ coins, stars, label: label.trim() })
+      .eq('id', id);
+    setSaving(null);
+    if (error) {
+      showMessage('error', `Failed: ${error.message}`);
+    } else {
+      showMessage('success', `Package "${label}" saved!`);
+      setEditValues(prev => { const n = { ...prev }; delete n[`pkg_${id}_coins`]; delete n[`pkg_${id}_stars`]; delete n[`pkg_${id}_label`]; return n; });
+      await loadConfigs();
+    }
+  };
+
+  // 🆕 პაკეტის toggle (popular/active)
+  const handleTogglePackage = async (id: string, field: 'is_popular' | 'is_active', value: boolean) => {
+    if (!supabase) return;
+    setSaving(`pkg_${id}_${field}`);
+    const { error } = await supabase
+      .from('diamond_packages')
+      .update({ [field]: value })
+      .eq('id', id);
+    setSaving(null);
+    if (error) {
+      showMessage('error', `Failed: ${error.message}`);
+    } else {
+      showMessage('success', `${field === 'is_popular' ? 'Popular' : 'Active'} ${value ? 'enabled' : 'disabled'}!`);
+      await loadConfigs();
+    }
+  };
+
+  // 🆕 ახალი პაკეტი
+  const handleAddPackage = async () => {
+    if (!supabase) return;
+    const coins = parseInt(editValues['new_pkg_coins'] ?? '', 10);
+    const stars = parseInt(editValues['new_pkg_stars'] ?? '', 10);
+    const label = editValues['new_pkg_label'] ?? '';
+    if (isNaN(coins) || coins <= 0 || isNaN(stars) || stars <= 0 || !label.trim()) {
+      showMessage('error', 'Enter valid coins, stars and label for new package');
+      return;
+    }
+    setSaving('new_pkg');
+    const maxOrder = packages.reduce((m, p) => Math.max(m, p.sort_order), 0);
+    const { error } = await supabase
+      .from('diamond_packages')
+      .insert({ coins, stars, label: label.trim(), is_popular: false, is_active: true, sort_order: maxOrder + 1 });
+    setSaving(null);
+    if (error) {
+      showMessage('error', `Failed: ${error.message}`);
+    } else {
+      showMessage('success', `Package "${label}" added!`);
+      setEditValues(prev => { const n = { ...prev }; delete n['new_pkg_coins']; delete n['new_pkg_stars']; delete n['new_pkg_label']; return n; });
+      await loadConfigs();
+    }
+  };
+
+  // 🆕 პაკეტის წაშლა
+  const handleDeletePackage = async (id: string, label: string) => {
+    if (!supabase) return;
+    if (!confirm(`Delete package "${label}"?`)) return;
+    setSaving(`pkg_del_${id}`);
+    const { error } = await supabase
+      .from('diamond_packages')
+      .delete()
+      .eq('id', id);
+    setSaving(null);
+    if (error) {
+      showMessage('error', `Failed: ${error.message}`);
+    } else {
+      showMessage('success', `Package "${label}" deleted!`);
       await loadConfigs();
     }
   };
@@ -128,6 +231,20 @@ export default function EconomyConfigAdmin() {
     gap: '4px'
   });
 
+  const toggleBtnStyle = (active: boolean, color: string): React.CSSProperties => ({
+    background: active ? `${color}33` : 'rgba(255,255,255,0.05)',
+    border: `1px solid ${active ? color : 'rgba(255,255,255,0.15)'}`,
+    color: active ? color : '#94a3b8',
+    borderRadius: '6px',
+    padding: '4px 8px',
+    fontSize: '9px',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '3px'
+  });
+
   if (loading) {
     return (
       <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>
@@ -155,6 +272,89 @@ export default function EconomyConfigAdmin() {
           {message.text}
         </div>
       )}
+
+      {/* 🆕 Diamond Packages */}
+      <div style={{ padding: '14px', background: 'rgba(147, 112, 219, 0.08)', borderRadius: '10px', border: '1px solid rgba(147, 112, 219, 0.3)' }}>
+        <div style={{ color: '#9370db', fontWeight: 'bold', fontSize: '12px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <Gem size={14} /> Diamond Packages
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {packages.map((pkg) => (
+            <div key={pkg.id} style={{ padding: '10px', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                <input 
+                  type="text"
+                  placeholder={pkg.label}
+                  value={editValues[`pkg_${pkg.id}_label`] ?? ''}
+                  onChange={(e) => setEditValues(prev => ({ ...prev, [`pkg_${pkg.id}_label`]: e.target.value }))}
+                  style={{ ...inputStyle, width: '110px', textAlign: 'left' }}
+                />
+                <input 
+                  type="number"
+                  placeholder={`💎 ${pkg.coins}`}
+                  value={editValues[`pkg_${pkg.id}_coins`] ?? ''}
+                  onChange={(e) => setEditValues(prev => ({ ...prev, [`pkg_${pkg.id}_coins`]: e.target.value }))}
+                  style={inputStyle}
+                />
+                <input 
+                  type="number"
+                  placeholder={`⭐ ${pkg.stars}`}
+                  value={editValues[`pkg_${pkg.id}_stars`] ?? ''}
+                  onChange={(e) => setEditValues(prev => ({ ...prev, [`pkg_${pkg.id}_stars`]: e.target.value }))}
+                  style={inputStyle}
+                />
+                <button onClick={() => handleSavePackage(pkg.id)} disabled={saving === `pkg_${pkg.id}`} style={saveBtnStyle(saving === `pkg_${pkg.id}`)}>
+                  <Save size={11} /> Save
+                </button>
+                <button onClick={() => handleDeletePackage(pkg.id, pkg.label)} disabled={saving === `pkg_del_${pkg.id}`} style={{ ...toggleBtnStyle(false, '#ef4444'), padding: '6px 8px' }}>
+                  <Trash2 size={11} />
+                </button>
+              </div>
+              <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
+                <button onClick={() => handleTogglePackage(pkg.id, 'is_popular', !pkg.is_popular)} style={toggleBtnStyle(pkg.is_popular, '#fbbf24')}>
+                  <Star size={10} /> {pkg.is_popular ? 'Popular ✓' : 'Popular'}
+                </button>
+                <button onClick={() => handleTogglePackage(pkg.id, 'is_active', !pkg.is_active)} style={toggleBtnStyle(pkg.is_active, '#10b981')}>
+                  {pkg.is_active ? 'Active ✓' : 'Inactive'}
+                </button>
+              </div>
+            </div>
+          ))}
+
+          {/* ახალი პაკეტი */}
+          <div style={{ padding: '10px', background: 'rgba(147, 112, 219, 0.08)', borderRadius: '8px', border: '1px dashed rgba(147, 112, 219, 0.4)' }}>
+            <div style={{ fontSize: '10px', color: '#9370db', fontWeight: 'bold', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Plus size={11} /> Add New Package
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+              <input 
+                type="text"
+                placeholder="Label (e.g. Mega Pack)"
+                value={editValues['new_pkg_label'] ?? ''}
+                onChange={(e) => setEditValues(prev => ({ ...prev, ['new_pkg_label']: e.target.value }))}
+                style={{ ...inputStyle, width: '130px', textAlign: 'left' }}
+              />
+              <input 
+                type="number"
+                placeholder="💎 coins"
+                value={editValues['new_pkg_coins'] ?? ''}
+                onChange={(e) => setEditValues(prev => ({ ...prev, ['new_pkg_coins']: e.target.value }))}
+                style={inputStyle}
+              />
+              <input 
+                type="number"
+                placeholder="⭐ stars"
+                value={editValues['new_pkg_stars'] ?? ''}
+                onChange={(e) => setEditValues(prev => ({ ...prev, ['new_pkg_stars']: e.target.value }))}
+                style={inputStyle}
+              />
+              <button onClick={handleAddPackage} disabled={saving === 'new_pkg'} style={saveBtnStyle(saving === 'new_pkg')}>
+                <Plus size={11} /> Add
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Reading Costs */}
       <div style={{ padding: '14px', background: 'rgba(167, 139, 250, 0.08)', borderRadius: '10px', border: '1px solid rgba(167, 139, 250, 0.3)' }}>

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { X, Gem, Sparkles, Bug } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Gem, Sparkles, Bug, RefreshCw } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface Package {
@@ -7,14 +7,8 @@ interface Package {
   coins: number;
   stars: number;
   label: string;
-  isPopular?: boolean;
+  isPopular: boolean;
 }
-
-const packages: Package[] = [
-  { id: 'small', coins: 50, stars: 50, label: 'Small Pack' },
-  { id: 'medium', coins: 120, stars: 100, label: 'Medium Pack', isPopular: true },
-  { id: 'large', coins: 300, stars: 200, label: 'Large Pack' },
-];
 
 interface DiamondShopModalProps {
   isOpen: boolean;
@@ -25,6 +19,8 @@ interface DiamondShopModalProps {
 }
 
 export default function DiamondShopModal({ isOpen, onClose, userId, isAdmin, onSuccess }: DiamondShopModalProps) {
+  const [packages, setPackages] = useState<Package[]>([]);
+  const [loading, setLoading] = useState(false);
   const [isLoading, setIsLoading] = useState<string | null>(null);
   const [debugLogs, setDebugLogs] = useState<string[]>([]);
   const [showDebug, setShowDebug] = useState(false);
@@ -36,11 +32,39 @@ export default function DiamondShopModal({ isOpen, onClose, userId, isAdmin, onS
     setDebugLogs(prev => [...prev, `[${timestamp}] ${message}`]);
   };
 
+  // 🆕 პაკეტების ჩატვირთვა DB-დან
+  const loadPackages = async () => {
+    if (!supabase) return;
+    setLoading(true);
+    addLog('📦 Loading packages from DB...');
+    try {
+      const { data, error } = await supabase
+        .from('diamond_packages')
+        .select('id, coins, stars, label, is_popular')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true });
+      if (error) {
+        addLog(`❌ Failed to load packages: ${error.message}`);
+      } else {
+        const pkgs = (data || []).map((p: any) => ({ id: p.id, coins: p.coins, stars: p.stars, label: p.label, isPopular: p.is_popular }));
+        setPackages(pkgs);
+        addLog(`✅ Loaded ${pkgs.length} packages from DB`);
+      }
+    } catch (err: any) {
+      addLog(`💥 Exception: ${err.message}`);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    if (isOpen) loadPackages();
+  }, [isOpen]);
+
   const handleBuy = async (pkg: Package) => {
     setDebugLogs([]);
     setShowDebug(true);
     addLog('🚀 Starting purchase process...');
-    addLog(`📦 Package: ${pkg.label} (${pkg.coins}  for ${pkg.stars} ⭐)`);
+    addLog(`📦 Package: ${pkg.label} (${pkg.coins} 💎 for ${pkg.stars} ⭐)`);
     
     if (!(window as any).Telegram?.WebApp) {
       addLog('❌ ERROR: Telegram WebApp not available');
@@ -145,46 +169,57 @@ export default function DiamondShopModal({ isOpen, onClose, userId, isAdmin, onS
         </div>
 
         <div style={{ padding: '0 20px 20px 20px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {packages.map((pkg) => (
-              <button
-                key={pkg.id}
-                onClick={() => handleBuy(pkg)}
-                disabled={isLoading !== null}
-                style={{
-                  background: pkg.isPopular ? 'rgba(197, 160, 89, 0.15)' : 'rgba(255,255,255,0.05)',
-                  border: pkg.isPopular ? '1px solid #C5A059' : '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '12px', padding: '14px', cursor: 'pointer',
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  opacity: isLoading === pkg.id ? 0.5 : 1, position: 'relative'
-                }}
-              >
-                {pkg.isPopular && (
-                  <div style={{
-                    position: 'absolute', top: '0', right: '0',
-                    background: '#C5A059', color: '#000', fontSize: '9px',
-                    padding: '2px 6px', borderBottomLeftRadius: '8px', fontWeight: 'bold'
-                  }}>
-                    POPULAR
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '30px 0', color: '#C5A059', fontSize: '13px' }}>
+              <RefreshCw size={20} className="animate-spin" style={{ margin: '0 auto 8px auto', display: 'block' }} />
+              Loading packages...
+            </div>
+          ) : packages.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '30px 0', color: '#94a3b8', fontSize: '13px' }}>
+              No packages available
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {packages.map((pkg) => (
+                <button
+                  key={pkg.id}
+                  onClick={() => handleBuy(pkg)}
+                  disabled={isLoading !== null}
+                  style={{
+                    background: pkg.isPopular ? 'rgba(197, 160, 89, 0.15)' : 'rgba(255,255,255,0.05)',
+                    border: pkg.isPopular ? '1px solid #C5A059' : '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '12px', padding: '14px', cursor: 'pointer',
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    opacity: isLoading === pkg.id ? 0.5 : 1, position: 'relative'
+                  }}
+                >
+                  {pkg.isPopular && (
+                    <div style={{
+                      position: 'absolute', top: '0', right: '0',
+                      background: '#C5A059', color: '#000', fontSize: '9px',
+                      padding: '2px 6px', borderBottomLeftRadius: '8px', fontWeight: 'bold'
+                    }}>
+                      POPULAR
+                    </div>
+                  )}
+                  
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Gem size={18} color="#C5A059" />
+                    <span style={{ color: '#fff', fontWeight: 'bold', fontSize: '16px' }}>{pkg.coins}</span>
+                    <span style={{ color: '#94a3b8', fontSize: '13px' }}>{pkg.label}</span>
                   </div>
-                )}
-                
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <Gem size={18} color="#C5A059" />
-                  <span style={{ color: '#fff', fontWeight: 'bold', fontSize: '16px' }}>{pkg.coins}</span>
-                  <span style={{ color: '#94a3b8', fontSize: '13px' }}>{pkg.label}</span>
-                </div>
 
-                <div style={{ 
-                  display: 'flex', alignItems: 'center', gap: '4px', 
-                  background: 'rgba(255,255,255,0.1)', padding: '5px 10px', borderRadius: '15px',
-                  color: '#fff', fontWeight: 'bold', fontSize: '13px'
-                }}>
-                  <Sparkles size={14} color="#FFD700" /> {pkg.stars} ⭐
-                </div>
-              </button>
-            ))}
-          </div>
+                  <div style={{ 
+                    display: 'flex', alignItems: 'center', gap: '4px', 
+                    background: 'rgba(255,255,255,0.1)', padding: '5px 10px', borderRadius: '15px',
+                    color: '#fff', fontWeight: 'bold', fontSize: '13px'
+                  }}>
+                    <Sparkles size={14} color="#FFD700" /> {pkg.stars} ⭐
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
 
           {isLoading && (
             <div style={{ textAlign: 'center', marginTop: '16px', color: '#C5A059', fontSize: '13px' }}>
@@ -193,7 +228,7 @@ export default function DiamondShopModal({ isOpen, onClose, userId, isAdmin, onS
           )}
         </div>
 
-        {/* Admin Debug Panel - Only visible for admins */}
+        {/* Admin Debug Panel */}
         {isAdmin && (
           <div style={{ 
             borderTop: '1px solid rgba(197, 160, 89, 0.3)',
