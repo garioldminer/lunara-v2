@@ -82,13 +82,9 @@ function LevelUpModal({ level, onClose, t }: { level: number; onClose: () => voi
 }
 
 interface Props { onNavigate?: (screen: string) => void; }
-
 interface EconomyData { cosmic_coins: number; xp: number; level: number; current_streak: number; cosmic_focus: number; max_focus: number; }
-
 interface DebugLog { id: number; timestamp: string; type: 'info' | 'success' | 'error' | 'warning'; category: string; message: string; data?: any; }
-
 interface DatabaseDebugInfo { lastQuery: any; lastResponse: any; economyData: any; queryHistory: Array<{ timestamp: string; table: string; operation: string; params: any; result: any; error?: any }>; }
-
 interface DailyQuestDisplay extends QuestProgress { isClaimable: boolean; }
 
 export default function HomeScreen({ onNavigate }: Props) {
@@ -732,6 +728,7 @@ export default function HomeScreen({ onNavigate }: Props) {
 
       <div className="user-header">
         <div className="user-main-row" style={{ alignItems: 'center', height: '52px', display: 'flex', justifyContent: 'space-between' }}>
+          {/* ავატარი + XP წრე */}
           <div className="avatar-section clickable-avatar" onClick={() => onNavigate?.('profile')} style={{ position: 'relative', width: '52px', height: '52px', flexShrink: 0 }}>
             <svg className="xp-circular-progress" width="52" height="52" viewBox="0 0 52 52" style={{ position: 'absolute', top: 0, left: 0 }}>
               <circle className="xp-circle-bg" cx="26" cy="26" r="22" fill="none" stroke="#e9d5ff" strokeWidth="4" />
@@ -750,33 +747,36 @@ export default function HomeScreen({ onNavigate }: Props) {
             )}
           </div>
           
-          {/* ============================================ */}
-          {/* ✅ პროპორციული შუა სექცია (48px = მარჯვენა ბეიჯების სიმაღლე) */}
-          {/* ============================================ */}
+          {/* შუა სექცია: სახელი (ზედა) + ჰოროსკოპი (ქვედა) */}
           <div className="user-info-section" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '48px', marginLeft: '12px', flex: 1, minWidth: 0 }}>
             <h2 className="username" style={{ margin: 0, fontSize: '15px', lineHeight: '16px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {user?.display_name || 'LunaraSeeker'}
             </h2>
             {user?.sun_sign && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', alignSelf: 'flex-start', background: 'rgba(197, 160, 89, 0.12)', border: '1px solid rgba(197, 160, 89, 0.35)', borderRadius: '8px', padding: '1px 7px', fontSize: '9px', fontWeight: 600, color: '#C5A059', lineHeight: '12px', letterSpacing: '0.5px' }}>
-                <span style={{ fontSize: '10px' }}>{getZodiacSymbol(user.sun_sign)}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '5px', alignSelf: 'flex-start', background: 'rgba(197, 160, 89, 0.12)', border: '1px solid rgba(197, 160, 89, 0.35)', borderRadius: '20px', padding: '0 10px', height: '22px', fontSize: '10px', fontWeight: 600, color: '#C5A059', letterSpacing: '0.5px' }}>
+                <span style={{ fontSize: '11px', lineHeight: 1 }}>{getZodiacSymbol(user.sun_sign)}</span>
                 <span>{user.sun_sign.toLowerCase()}</span>
-              </div>
-            )}
-            {activeSubscription && (
-              <div className="premium-status-badge" onClick={() => onNavigate?.('subscription')} style={{ display: 'flex', alignItems: 'center', gap: '3px', alignSelf: 'flex-start', background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)', color: '#0a0600', borderRadius: '8px', padding: '1px 7px', fontSize: '8px', fontWeight: 800, letterSpacing: '0.5px', lineHeight: '12px', marginTop: 0, cursor: 'pointer' }}>
-                <InfinityIcon size={9} /><span>PREMIUM</span>
               </div>
             )}
           </div>
           
+          {/* 🆕 პრემიუმ ბეიჯი: ჰოროსკოპსა და ენერგიას შორის სივრცის ცენტრში, ქვედა ხაზზე */}
+          {activeSubscription && (
+            <div style={{ display: 'flex', alignItems: 'flex-end', height: '48px', margin: '0 10px', flexShrink: 0 }}>
+              <div className="premium-status-badge" onClick={() => onNavigate?.('subscription')} style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)', color: '#0a0600', borderRadius: '20px', padding: '0 10px', height: '22px', fontSize: '9px', fontWeight: 800, letterSpacing: '0.5px', cursor: 'pointer', boxShadow: '0 2px 8px rgba(255, 215, 0, 0.3)' }}>
+                <InfinityIcon size={10} /><span>PREMIUM</span>
+              </div>
+            </div>
+          )}
+          
+          {/* მარჯვენა: დაიმონდები + ენერგია (ორივე 22px) */}
           <div className="user-resources" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '48px', gap: '4px', flexShrink: 0 }}>
-            <div className="resource gems" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(147, 112, 219, 0.15)', padding: '4px 10px', borderRadius: '20px', border: '1px solid rgba(147, 112, 219, 0.3)', height: '22px' }}>
+            <div className="resource gems" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(147, 112, 219, 0.15)', padding: '0 10px', borderRadius: '20px', border: '1px solid rgba(147, 112, 219, 0.3)', height: '22px' }}>
               <Gem size={12} className="resource-icon gem-icon" style={{ color: '#9370db', flexShrink: 0 }} />
               <span className="value" style={{ fontSize: '12px', fontWeight: '600', color: '#fff', textAlign: 'center' }}>{economy.cosmic_coins.toLocaleString()}</span>
               <button className="add-btn" onClick={() => setIsShopOpen(true)} style={{ width: '18px', height: '18px', borderRadius: '50%', background: 'rgba(197, 160, 89, 0.3)', border: 'none', color: '#C5A059', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', flexShrink: 0 }} title="Buy Diamonds">+</button>
             </div>
-            <div className="resource energy" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(251, 191, 36, 0.15)', padding: '4px 10px', borderRadius: '20px', border: '1px solid rgba(251, 191, 36, 0.3)', height: '22px' }}>
+            <div className="resource energy" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(251, 191, 36, 0.15)', padding: '0 10px', borderRadius: '20px', border: '1px solid rgba(251, 191, 36, 0.3)', height: '22px' }}>
               <Zap size={12} className="resource-icon energy-icon" style={{ color: '#fbbf24', flexShrink: 0 }} />
               <span className="value" style={{ fontSize: '12px', fontWeight: '600', color: '#fff', textAlign: 'center' }}>{economy.cosmic_focus || 0}/{economy.max_focus || 20}</span>
               {(() => {
