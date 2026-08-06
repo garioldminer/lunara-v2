@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { RefreshCw, DollarSign, Settings2, Save, Zap, Gem, Plus, Trash2, Star } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import PremiumConfigAdmin from './PremiumConfigAdmin';
 
 interface ReadingCost {
   id: string;
@@ -117,7 +118,6 @@ export default function EconomyConfigAdmin() {
     }
   };
 
-  // ✅ გამოსწორებული: ცარიელი ველი = ძველი მნიშვნელობა რჩება
   const handleSavePackage = async (id: string, pkg: DiamondPackage) => {
     if (!supabase) return;
     const coinsRaw = editValues[`pkg_${id}_coins`];
@@ -163,7 +163,6 @@ export default function EconomyConfigAdmin() {
     }
   };
 
-  // ახალი პაკეტი: სამივე ველი აუცილებელია (ძველი მნიშვნელობა არ არსებობს)
   const handleAddPackage = async () => {
     if (!supabase) return;
     const coins = parseInt(editValues['new_pkg_coins'] ?? '', 10);
@@ -323,7 +322,7 @@ export default function EconomyConfigAdmin() {
             </div>
           ))}
 
-          {/* ახალი პაკეტი */}
+          {/* New Package */}
           <div style={{ padding: '10px', background: 'rgba(147, 112, 219, 0.08)', borderRadius: '8px', border: '1px dashed rgba(147, 112, 219, 0.4)' }}>
             <div style={{ fontSize: '10px', color: '#9370db', fontWeight: 'bold', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <Plus size={11} /> Add New Package (fill all 3 fields)
@@ -428,9 +427,12 @@ export default function EconomyConfigAdmin() {
         </div>
       </div>
 
+      {/* 🆕 Premium Configuration (separate component) */}
+      <PremiumConfigAdmin />
+
       {/* Info */}
       <div style={{ padding: '10px', background: 'rgba(59, 130, 246, 0.08)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.3)', fontSize: '10px', color: '#94a3b8', lineHeight: 1.5 }}>
-        💡 ცვლილებები დაუყოვნებლივ აისახება აპლიკაციაში (მომხმარებლის შემდეგი ჩატვირთვისას). Hardcoded მონაცემები აღარ გამოიყენება.
+        💡 Changes are reflected immediately in the app (on next user load). No hardcoded data is used.
       </div>
     </div>
   );
