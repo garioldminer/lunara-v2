@@ -43,6 +43,19 @@ const getLevelFromTotalXP = (totalXP: number) => {
   return { level, currentLevelXP, xpToNext: xpRequiredForNext };
 };
 
+// ============================================
+// 🆕 ჰოროსკოპის სიმბოლოები
+// ============================================
+const ZODIAC_SYMBOLS: Record<string, string> = {
+  aries: '♈', taurus: '♉', gemini: '♊', cancer: '♋',
+  leo: '♌', virgo: '♍', libra: '♎', scorpio: '♏',
+  sagittarius: '♐', capricorn: '♑', aquarius: '♒', pisces: '♓'
+};
+
+const getZodiacSymbol = (sign: string): string => {
+  return ZODIAC_SYMBOLS[sign.toLowerCase()] || '✨';
+};
+
 interface Toast {
   message: string;
   type: 'success' | 'error' | 'info';
@@ -209,14 +222,10 @@ export default function HomeScreen({ onNavigate }: Props) {
     lastQuery: null, lastResponse: null, economyData: null, queryHistory: []
   });
 
-  // ============================================
-  // 🆕 ცენტრალიზებული კონფიგურაცია (DB-დან)
-  // ============================================
   const [readingCosts, setReadingCosts] = useState<Record<string, number>>({});
   const [gameConfig, setGameConfig] = useState<Record<string, number>>({});
   const [costsLoaded, setCostsLoaded] = useState(false);
 
-  // ✅ კონფიგის წაკითხვა (hardcoded-ის ნაცვლად)
   const getConfig = (key: string, fallback: number): number => {
     return gameConfig[key] ?? fallback;
   };
@@ -271,13 +280,7 @@ export default function HomeScreen({ onNavigate }: Props) {
         timestamp
       });
     } catch (err: any) {
-      results.push({
-        id: 'energy-state',
-        name: 'Energy State Validity',
-        status: 'fail',
-        message: `Error: ${err.message}`,
-        timestamp
-      });
+      results.push({ id: 'energy-state', name: 'Energy State Validity', status: 'fail', message: `Error: ${err.message}`, timestamp });
     }
 
     try {
@@ -286,32 +289,19 @@ export default function HomeScreen({ onNavigate }: Props) {
       let parseError = null;
       
       if (dailyCardStored) {
-        try {
-          JSON.parse(dailyCardStored);
-        } catch (e: any) {
-          parseSuccess = false;
-          parseError = e.message;
-        }
+        try { JSON.parse(dailyCardStored); } catch (e: any) { parseSuccess = false; parseError = e.message; }
       }
       
       results.push({
         id: 'localstorage-json',
         name: 'localStorage JSON Integrity',
         status: parseSuccess ? 'pass' : 'fail',
-        message: parseSuccess 
-          ? 'All localStorage data is valid JSON'
-          : `Corrupted JSON: ${parseError}`,
+        message: parseSuccess ? 'All localStorage data is valid JSON' : `Corrupted JSON: ${parseError}`,
         details: { hasDailyCard: !!dailyCardStored, parseSuccess, parseError },
         timestamp
       });
     } catch (err: any) {
-      results.push({
-        id: 'localstorage-json',
-        name: 'localStorage JSON Integrity',
-        status: 'fail',
-        message: `Error: ${err.message}`,
-        timestamp
-      });
+      results.push({ id: 'localstorage-json', name: 'localStorage JSON Integrity', status: 'fail', message: `Error: ${err.message}`, timestamp });
     }
 
     try {
@@ -320,39 +310,23 @@ export default function HomeScreen({ onNavigate }: Props) {
         id: 'premium-gate',
         name: 'Premium Gate Status',
         status: 'warning',
-        message: hasSubscription 
-          ? 'User has subscription - premium actions available'
-          : 'No subscription - premium actions blocked',
+        message: hasSubscription ? 'User has subscription - premium actions available' : 'No subscription - premium actions blocked',
         details: { hasSubscription },
         timestamp
       });
     } catch (err: any) {
-      results.push({
-        id: 'premium-gate',
-        name: 'Premium Gate Status',
-        status: 'fail',
-        message: `Error: ${err.message}`,
-        timestamp
-      });
+      results.push({ id: 'premium-gate', name: 'Premium Gate Status', status: 'fail', message: `Error: ${err.message}`, timestamp });
     }
 
     try {
       if (!user?.id || !supabase) throw new Error('No user or supabase');
       
       const { data: questDefs, error: defsError } = await supabase
-        .from('quest_definitions')
-        .select('id, title, action_type')
-        .eq('is_active', true)
-        .limit(5);
-      
+        .from('quest_definitions').select('id, title, action_type').eq('is_active', true).limit(5);
       if (defsError) throw defsError;
       
       const { data: userProgress, error: progressError } = await supabase
-        .from('user_quest_progress')
-        .select('id, quest_id, current_progress')
-        .eq('user_id', user.id)
-        .limit(5);
-      
+        .from('user_quest_progress').select('id, quest_id, current_progress').eq('user_id', user.id).limit(5);
       if (progressError) throw progressError;
       
       results.push({
@@ -360,21 +334,11 @@ export default function HomeScreen({ onNavigate }: Props) {
         name: 'Quest System Connectivity',
         status: 'pass',
         message: `Quest system working (${questDefs?.length || 0} active quests, ${userProgress?.length || 0} user progress records)`,
-        details: { 
-          activeQuestDefinitions: questDefs?.length || 0, 
-          userProgressRecords: userProgress?.length || 0,
-          sampleQuests: questDefs?.slice(0, 3).map(q => q.title) || []
-        },
+        details: { activeQuestDefinitions: questDefs?.length || 0, userProgressRecords: userProgress?.length || 0, sampleQuests: questDefs?.slice(0, 3).map(q => q.title) || [] },
         timestamp
       });
     } catch (err: any) {
-      results.push({
-        id: 'quest-system',
-        name: 'Quest System Connectivity',
-        status: 'fail',
-        message: `Error: ${err.message}`,
-        timestamp
-      });
+      results.push({ id: 'quest-system', name: 'Quest System Connectivity', status: 'fail', message: `Error: ${err.message}`, timestamp });
     }
 
     try {
@@ -385,12 +349,9 @@ export default function HomeScreen({ onNavigate }: Props) {
         try {
           const parsed = JSON.parse(stored);
           const today = new Date().toISOString().split('T')[0];
-          
           if (parsed.date !== today) consistencyIssue = 'Date mismatch';
           if (typeof parsed.isReversed !== 'boolean') consistencyIssue = 'isReversed not boolean';
-        } catch (e: any) {
-          consistencyIssue = `JSON parse error: ${e.message}`;
-        }
+        } catch (e: any) { consistencyIssue = `JSON parse error: ${e.message}`; }
       }
       
       results.push({
@@ -402,13 +363,7 @@ export default function HomeScreen({ onNavigate }: Props) {
         timestamp
       });
     } catch (err: any) {
-      results.push({
-        id: 'daily-card',
-        name: 'Daily Card Consistency',
-        status: 'fail',
-        message: `Error: ${err.message}`,
-        timestamp
-      });
+      results.push({ id: 'daily-card', name: 'Daily Card Consistency', status: 'fail', message: `Error: ${err.message}`, timestamp });
     }
 
     try {
@@ -421,13 +376,7 @@ export default function HomeScreen({ onNavigate }: Props) {
         timestamp
       });
     } catch (err: any) {
-      results.push({
-        id: 'streak-state',
-        name: 'Streak State Consistency',
-        status: 'fail',
-        message: `Error: ${err.message}`,
-        timestamp
-      });
+      results.push({ id: 'streak-state', name: 'Streak State Consistency', status: 'fail', message: `Error: ${err.message}`, timestamp });
     }
 
     try {
@@ -438,20 +387,12 @@ export default function HomeScreen({ onNavigate }: Props) {
         id: 'xp-level',
         name: 'XP/Level Calculation',
         status: isValid ? 'pass' : 'fail',
-        message: isValid 
-          ? `Level ${levelData.level}, ${levelData.currentLevelXP}/${levelData.xpToNext} XP`
-          : 'Invalid calculation',
+        message: isValid ? `Level ${levelData.level}, ${levelData.currentLevelXP}/${levelData.xpToNext} XP` : 'Invalid calculation',
         details: levelData,
         timestamp
       });
     } catch (err: any) {
-      results.push({
-        id: 'xp-level',
-        name: 'XP/Level Calculation',
-        status: 'fail',
-        message: `Error: ${err.message}`,
-        timestamp
-      });
+      results.push({ id: 'xp-level', name: 'XP/Level Calculation', status: 'fail', message: `Error: ${err.message}`, timestamp });
     }
 
     try {
@@ -460,90 +401,43 @@ export default function HomeScreen({ onNavigate }: Props) {
         id: 'reading-costs',
         name: 'Reading Costs (DB)',
         status: costsLoaded && costKeys.length > 0 ? 'pass' : 'fail',
-        message: costsLoaded 
-          ? `ჩატვირთულია ${costKeys.length} ღირებულება DB-დან`
-          : 'ღირებულებები არ არის ჩატვირთული!',
+        message: costsLoaded ? `ჩატვირთულია ${costKeys.length} ღირებულება DB-დან` : 'ღირებულებები არ არის ჩატვირთული!',
         details: readingCosts,
         timestamp
       });
     } catch (err: any) {
-      results.push({
-        id: 'reading-costs',
-        name: 'Reading Costs (DB)',
-        status: 'fail',
-        message: `Error: ${err.message}`,
-        timestamp
-      });
+      results.push({ id: 'reading-costs', name: 'Reading Costs (DB)', status: 'fail', message: `Error: ${err.message}`, timestamp });
     }
 
-    // 🆕 Game Config check
     try {
       const configKeys = Object.keys(gameConfig);
       results.push({
         id: 'game-config',
         name: 'Game Config (DB)',
         status: configKeys.length >= 4 ? 'pass' : 'fail',
-        message: configKeys.length >= 4
-          ? `ჩატვირთულია ${configKeys.length} კონფიგი DB-დან`
-          : 'კონფიგები არ არის ჩატვირთული!',
+        message: configKeys.length >= 4 ? `ჩატვირთულია ${configKeys.length} კონფიგი DB-დან` : 'კონფიგები არ არის ჩატვირთული!',
         details: gameConfig,
         timestamp
       });
     } catch (err: any) {
-      results.push({
-        id: 'game-config',
-        name: 'Game Config (DB)',
-        status: 'fail',
-        message: `Error: ${err.message}`,
-        timestamp
-      });
+      results.push({ id: 'game-config', name: 'Game Config (DB)', status: 'fail', message: `Error: ${err.message}`, timestamp });
     }
 
     try {
       if (!supabase) throw new Error('Supabase client is null');
-      
-      const { data, error } = await supabase
-        .from('users')
-        .select('id')
-        .eq('id', user?.id)
-        .single();
-      
+      const { data, error } = await supabase.from('users').select('id').eq('id', user?.id).single();
       if (error) throw error;
-      
-      results.push({
-        id: 'supabase-connection',
-        name: 'Supabase Connection',
-        status: 'pass',
-        message: 'Supabase connection successful',
-        details: { userId: data?.id },
-        timestamp
-      });
+      results.push({ id: 'supabase-connection', name: 'Supabase Connection', status: 'pass', message: 'Supabase connection successful', details: { userId: data?.id }, timestamp });
     } catch (err: any) {
-      results.push({
-        id: 'supabase-connection',
-        name: 'Supabase Connection',
-        status: 'fail',
-        message: `Error: ${err.message}`,
-        timestamp
-      });
+      results.push({ id: 'supabase-connection', name: 'Supabase Connection', status: 'fail', message: `Error: ${err.message}`, timestamp });
     }
 
     addDebugLog('success', 'DIAGNOSTICS', `✅ Complete: ${results.filter(r => r.status === 'pass').length}/${results.length} passed`);
-    
-    setDiagnostics({
-      results,
-      isRunning: false,
-      lastRun: timestamp
-    });
-    
+    setDiagnostics({ results, isRunning: false, lastRun: timestamp });
     return results;
   };
 
-  const testEnergySystem = async () => {
-    addDebugLog('info', 'TEST', '🧪 Testing energy system...');
-    await testAddEnergy(1);
-    await testSpendEnergy(1);
-  };
+  const testEnergySystem = async () => { addDebugLog('info', 'TEST', '🧪 Testing energy system...'); await testAddEnergy(1); await testSpendEnergy(1); };
 
   const testLocalStorage = () => {
     addDebugLog('info', 'TEST', '🧪 Testing localStorage...');
@@ -553,83 +447,45 @@ export default function HomeScreen({ onNavigate }: Props) {
       const parsed = JSON.parse(localStorage.getItem(testKey) || '');
       localStorage.removeItem(testKey);
       addDebugLog('success', 'TEST', '✅ localStorage works', parsed);
-    } catch (err: any) {
-      addDebugLog('error', 'TEST', `❌ localStorage failed: ${err.message}`);
-    }
+    } catch (err: any) { addDebugLog('error', 'TEST', `❌ localStorage failed: ${err.message}`); }
   };
 
   const testPremiumGate = async () => {
     addDebugLog('info', 'TEST', '🧪 Testing premium gate...');
-    if (!activeSubscription) {
-      addDebugLog('warning', 'TEST', '⚠️ No subscription - trying premium action should fail');
-      showToast('No subscription - premium actions blocked (expected)', 'info');
-    } else {
-      addDebugLog('success', 'TEST', '✅ Has subscription - premium actions available');
-    }
+    if (!activeSubscription) { addDebugLog('warning', 'TEST', '⚠️ No subscription - trying premium action should fail'); showToast('No subscription - premium actions blocked (expected)', 'info'); }
+    else { addDebugLog('success', 'TEST', '✅ Has subscription - premium actions available'); }
   };
 
-  const testQuestSystem = async () => {
-    addDebugLog('info', 'TEST', '🧪 Testing quest system...');
-    await testCompleteQuest();
-  };
+  const testQuestSystem = async () => { addDebugLog('info', 'TEST', '🧪 Testing quest system...'); await testCompleteQuest(); };
 
   const testDailyCard = () => {
     addDebugLog('info', 'TEST', '🧪 Testing daily card...');
     const stored = localStorage.getItem('dailyCard');
     if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        addDebugLog('success', 'TEST', '✅ Daily card data valid', parsed);
-      } catch (err: any) {
-        addDebugLog('error', 'TEST', `❌ Daily card data corrupted: ${err.message}`);
-      }
-    } else {
-      addDebugLog('warning', 'TEST', '⚠️ No daily card in localStorage');
-    }
+      try { const parsed = JSON.parse(stored); addDebugLog('success', 'TEST', '✅ Daily card data valid', parsed); }
+      catch (err: any) { addDebugLog('error', 'TEST', `❌ Daily card data corrupted: ${err.message}`); }
+    } else { addDebugLog('warning', 'TEST', '⚠️ No daily card in localStorage'); }
   };
 
-  const testStreakSystem = async () => {
-    addDebugLog('info', 'TEST', '🧪 Testing streak system...');
-    await handleClaimReward();
-  };
+  const testStreakSystem = async () => { addDebugLog('info', 'TEST', '🧪 Testing streak system...'); await handleClaimReward(); };
+  const testXPSystem = async () => { addDebugLog('info', 'TEST', '🧪 Testing XP system...'); await testAddXP(10); };
+  const testSupabaseConnection = async () => { addDebugLog('info', 'TEST', '🧪 Testing Supabase connection...'); await checkDatabaseStatus(); };
 
-  const testXPSystem = async () => {
-    addDebugLog('info', 'TEST', '🧪 Testing XP system...');
-    await testAddXP(10);
-  };
-
-  const testSupabaseConnection = async () => {
-    addDebugLog('info', 'TEST', '🧪 Testing Supabase connection...');
-    await checkDatabaseStatus();
-  };
-
-  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
-    setToast({ message, type });
-  };
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => { setToast({ message, type }); };
 
   const addDebugLog = (type: DebugLog['type'], category: string, message: string, data?: any) => {
-    const log: DebugLog = {
-      id: Date.now(), timestamp: new Date().toLocaleTimeString('en-US', { hour12: false }), type, category, message, data
-    };
+    const log: DebugLog = { id: Date.now(), timestamp: new Date().toLocaleTimeString('en-US', { hour12: false }), type, category, message, data };
     setDebugLogs(prev => [log, ...prev].slice(0, 50));
   };
 
   const addToDbDebugHistory = (table: string, operation: string, params: any, result: any, error?: any) => {
-    const historyEntry = {
-      timestamp: new Date().toLocaleTimeString('en-US', { hour12: false }), table, operation, params, result, error
-    };
-    setDbDebugInfo(prev => ({
-      ...prev, lastQuery: { table, operation, params }, lastResponse: result || error,
-      queryHistory: [historyEntry, ...prev.queryHistory].slice(0, 20)
-    }));
+    const historyEntry = { timestamp: new Date().toLocaleTimeString('en-US', { hour12: false }), table, operation, params, result, error };
+    setDbDebugInfo(prev => ({ ...prev, lastQuery: { table, operation, params }, lastResponse: result || error, queryHistory: [historyEntry, ...prev.queryHistory].slice(0, 20) }));
   };
 
   const checkDatabaseStatus = async () => {
     addDebugLog('info', 'DB_CHECK', '🔍 Starting database status check...');
-    if (!user || !supabase) {
-      addDebugLog('error', 'DB_CHECK', '❌ No user or supabase client available');
-      return;
-    }
+    if (!user || !supabase) { addDebugLog('error', 'DB_CHECK', '❌ No user or supabase client available'); return; }
     try {
       const { data: userData, error: userError } = await supabase.from('users').select('id, display_name, telegram_id').eq('id', user.id).single();
       if (userError) addDebugLog('error', 'DB_CHECK', `❌ Error fetching user: ${userError.message}`);
@@ -644,41 +500,26 @@ export default function HomeScreen({ onNavigate }: Props) {
       else addDebugLog('success', 'DB_CHECK', `✅ get_user_quests RPC works. Found ${questsData?.length || 0} quests.`);
 
       addDebugLog('success', 'DB_CHECK', '🎉 Database check completed!');
-    } catch (err: any) {
-      addDebugLog('error', 'DB_CHECK', `💥 Exception during DB check: ${err.message}`);
-    }
+    } catch (err: any) { addDebugLog('error', 'DB_CHECK', `💥 Exception during DB check: ${err.message}`); }
   };
 
   const refreshUserDataDebug = async () => {
     addDebugLog('info', 'AUTH_DEBUG', '🔄 Starting manual user data refresh...');
     const tgUser = getTelegramUser();
     addDebugLog('info', 'AUTH_DEBUG', '1. Data from Telegram:', tgUser);
-    if (!tgUser || !supabase) {
-      addDebugLog('error', 'AUTH_DEBUG', '❌ CRITICAL: Missing Telegram user or Supabase!');
-      return;
-    }
+    if (!tgUser || !supabase) { addDebugLog('error', 'AUTH_DEBUG', '❌ CRITICAL: Missing Telegram user or Supabase!'); return; }
     addDebugLog('info', 'AUTH_DEBUG', `2. Querying Supabase with telegram_id: ${tgUser.id}`);
     const freshUser = await getOrCreateUser(tgUser);
     addDebugLog('info', 'AUTH_DEBUG', '3. Response from getOrCreateUser:', freshUser);
-    if (freshUser) {
-      addDebugLog('success', 'AUTH_DEBUG', '✅ SUCCESS: Updating User Context with fresh data');
-      setUser(freshUser);
-      setEconomy({ cosmic_coins: 0, xp: 0, level: 1, current_streak: 0, cosmic_focus: 20, max_focus: 20 });
-    } else {
-      addDebugLog('error', 'AUTH_DEBUG', '❌ FAILED: getOrCreateUser returned null.');
-    }
+    if (freshUser) { addDebugLog('success', 'AUTH_DEBUG', '✅ SUCCESS: Updating User Context with fresh data'); setUser(freshUser); setEconomy({ cosmic_coins: 0, xp: 0, level: 1, current_streak: 0, cosmic_focus: 20, max_focus: 20 }); }
+    else { addDebugLog('error', 'AUTH_DEBUG', '❌ FAILED: getOrCreateUser returned null.'); }
   };
 
   const handleLogoutAndReset = async () => {
     if (!supabase) return;
     addDebugLog('info', 'AUTH', 'Logging out and clearing local storage...');
-    try {
-      localStorage.clear();
-      await supabase.auth.signOut();
-      window.location.reload();
-    } catch (err: any) {
-      addDebugLog('error', 'AUTH', `Logout failed: ${err.message}`);
-    }
+    try { localStorage.clear(); await supabase.auth.signOut(); window.location.reload(); }
+    catch (err: any) { addDebugLog('error', 'AUTH', `Logout failed: ${err.message}`); }
   };
 
   const testAddCoins = async (amount: number) => {
@@ -693,10 +534,7 @@ export default function HomeScreen({ onNavigate }: Props) {
       setEconomy(prev => ({ ...prev, cosmic_coins: newCoins }));
       addDebugLog('success', 'TEST', `✅ Added ${amount} coins. New balance: ${newCoins}`);
       showToast(`Added ${amount} coins!`, 'success');
-    } catch (err: any) {
-      addDebugLog('error', 'TEST', `❌ Failed: ${err.message}`);
-      showToast('Failed to add coins', 'error');
-    }
+    } catch (err: any) { addDebugLog('error', 'TEST', `❌ Failed: ${err.message}`); showToast('Failed to add coins', 'error'); }
   };
 
   const testAddXP = async (amount: number) => {
@@ -712,77 +550,45 @@ export default function HomeScreen({ onNavigate }: Props) {
       setEconomy(prev => ({ ...prev, xp: newXP, level: newLevelData.level }));
       addDebugLog('success', 'TEST', `✅ Added ${amount} XP. New: ${newXP} XP, Level ${newLevelData.level}`);
       showToast(`Added ${amount} XP!`, 'success');
-    } catch (err: any) {
-      addDebugLog('error', 'TEST', `❌ Failed: ${err.message}`);
-      showToast('Failed to add XP', 'error');
-    }
+    } catch (err: any) { addDebugLog('error', 'TEST', `❌ Failed: ${err.message}`); showToast('Failed to add XP', 'error'); }
   };
 
   const testAddEnergy = async (amount: number) => {
     if (!user || !supabase) return;
     addDebugLog('info', 'ENERGY_TEST', `⚡ Adding ${amount} energy...`);
     try {
-      const { data, error } = await supabase.rpc('add_energy', {
-        user_uuid: user.id,
-        amount: amount,
-        transaction_type: 'debug_test',
-        reference_id: 'debug_panel'
-      });
+      const { data, error } = await supabase.rpc('add_energy', { user_uuid: user.id, amount: amount, transaction_type: 'debug_test', reference_id: 'debug_panel' });
       if (error) throw error;
       if (!data?.success) throw new Error(data?.error || 'Failed to add energy');
-      
       setEconomy(prev => ({ ...prev, cosmic_focus: data.new_energy }));
       addDebugLog('success', 'ENERGY_TEST', `✅ Added ${amount} energy. New: ${data.new_energy}`);
       showToast(`Added ${amount} ⚡ Energy!`, 'success');
-    } catch (err: any) {
-      addDebugLog('error', 'ENERGY_TEST', `❌ Failed: ${err.message}`);
-      showToast('Failed to add energy', 'error');
-    }
+    } catch (err: any) { addDebugLog('error', 'ENERGY_TEST', `❌ Failed: ${err.message}`); showToast('Failed to add energy', 'error'); }
   };
 
   const testSpendEnergy = async (amount: number) => {
     if (!user || !supabase) return;
     addDebugLog('info', 'ENERGY_TEST', `⚡ Spending ${amount} energy...`);
     try {
-      const { data, error } = await supabase.rpc('spend_energy', {
-        user_uuid: user.id,
-        amount: amount,
-        reading_type: 'debug_test'
-      });
+      const { data, error } = await supabase.rpc('spend_energy', { user_uuid: user.id, amount: amount, reading_type: 'debug_test' });
       if (error) throw error;
       if (!data?.success) throw new Error(data?.error || 'Not enough energy');
-      
       setEconomy(prev => ({ ...prev, cosmic_focus: data.new_energy }));
       addDebugLog('success', 'ENERGY_TEST', `✅ Spent ${amount} energy. Remaining: ${data.new_energy}`);
       showToast(`Spent ${amount} ⚡ Energy! Remaining: ${data.new_energy}`, 'success');
-    } catch (err: any) {
-      addDebugLog('error', 'ENERGY_TEST', `❌ Failed: ${err.message}`);
-      showToast(err.message || 'Failed to spend energy', 'error');
-    }
+    } catch (err: any) { addDebugLog('error', 'ENERGY_TEST', `❌ Failed: ${err.message}`); showToast(err.message || 'Failed to spend energy', 'error'); }
   };
 
   const testCompleteQuest = async () => {
-    if (!user || !supabase) {
-      addDebugLog('error', 'QUEST_TEST', 'No user or supabase available for test');
-      return;
-    }
+    if (!user || !supabase) { addDebugLog('error', 'QUEST_TEST', 'No user or supabase available for test'); return; }
     addDebugLog('info', 'QUEST_TEST', '🎯 Simulating quest completion: draw_daily_card');
     const currentQuests = await loadUserQuests(user.id);
     const q = currentQuests.find(x => x.quest?.action_type === 'draw_daily_card');
-    if (q) {
-      addDebugLog('info', 'QUEST_TEST', `Current State -> Progress: ${q.current_progress}/${q.quest?.target_count}, Completed: ${q.is_completed}`);
-    } else {
-      addDebugLog('info', 'QUEST_TEST', 'Quest not found in user progress. Will create new record via secure function...');
-    }
+    if (q) addDebugLog('info', 'QUEST_TEST', `Current State -> Progress: ${q.current_progress}/${q.quest?.target_count}, Completed: ${q.is_completed}`);
+    else addDebugLog('info', 'QUEST_TEST', 'Quest not found in user progress. Will create new record via secure function...');
     const reward = await trackQuestProgress(user.id, 'draw_daily_card', 1);
-    if (reward) {
-      addDebugLog('success', 'QUEST_TEST', `🎉 Quest Completed! Reward: ${reward.coins} coins, ${reward.xp} XP`);
-      reloadFromDatabase();
-      await loadQuests();
-    } else {
-      addDebugLog('info', 'QUEST_TEST', 'Progress updated. Check logs for details.');
-      await loadQuests();
-    }
+    if (reward) { addDebugLog('success', 'QUEST_TEST', `🎉 Quest Completed! Reward: ${reward.coins} coins, ${reward.xp} XP`); reloadFromDatabase(); await loadQuests(); }
+    else { addDebugLog('info', 'QUEST_TEST', 'Progress updated. Check logs for details.'); await loadQuests(); }
   };
 
   const reloadFromDatabase = async () => {
@@ -791,14 +597,7 @@ export default function HomeScreen({ onNavigate }: Props) {
       const { data, error } = await supabase.from('user_economy').select('cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus, energy_boost_multiplier, last_energy_update').eq('user_id', user.id).single();
       if (!error && data) {
         const levelData = getLevelFromTotalXP(data.xp || 0);
-        setEconomy({ 
-          cosmic_coins: data.cosmic_coins || 0, 
-          xp: data.xp || 0, 
-          level: levelData.level, 
-          current_streak: data.current_streak || 0,
-          cosmic_focus: data.cosmic_focus || 20,
-          max_focus: data.max_focus || 20
-        });
+        setEconomy({ cosmic_coins: data.cosmic_coins || 0, xp: data.xp || 0, level: levelData.level, current_streak: data.current_streak || 0, cosmic_focus: data.cosmic_focus || 20, max_focus: data.max_focus || 20 });
         setCurrentStreak(data.current_streak || 0);
         setDbDebugInfo(prev => ({ ...prev, economyData: data }));
         addDebugLog('success', 'DB', '✅ Data reloaded successfully');
@@ -811,42 +610,18 @@ export default function HomeScreen({ onNavigate }: Props) {
     const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
     setXpTestLogs(prev => [...prev, `[${timestamp}] Adding ${amount} XP via RPC...`]);
     addDebugLog('info', 'XP_TEST', `🧪 Adding ${amount} XP with auto-level...`);
-    
     try {
-      const { data, error } = await supabase.rpc('add_xp_and_recalc_level', {
-        p_user_id: user.id,
-        p_xp_amount: amount
-      });
-
-      if (error) {
-        setXpTestLogs(prev => [...prev, `[${timestamp}] ❌ ERROR: ${error.message}`]);
-        addDebugLog('error', 'XP_TEST', `❌ RPC Error: ${error.message}`);
-        showToast('XP test failed', 'error');
-        return;
-      }
-
+      const { data, error } = await supabase.rpc('add_xp_and_recalc_level', { p_user_id: user.id, p_xp_amount: amount });
+      if (error) { setXpTestLogs(prev => [...prev, `[${timestamp}] ❌ ERROR: ${error.message}`]); addDebugLog('error', 'XP_TEST', `❌ RPC Error: ${error.message}`); showToast('XP test failed', 'error'); return; }
       if (data?.success) {
-        const logMsg = data.leveled_up 
-          ? `[${timestamp}] 🎉 LEVEL UP! ${data.old_level} → ${data.new_level} | Total XP: ${data.total_xp}`
-          : `[${timestamp}] ✅ +${amount} XP | Total: ${data.total_xp} | Level: ${data.new_level} | Next: ${data.xp_to_next} XP`;
-        
+        const logMsg = data.leveled_up ? `[${timestamp}] 🎉 LEVEL UP! ${data.old_level} → ${data.new_level} | Total XP: ${data.total_xp}` : `[${timestamp}] ✅ +${amount} XP | Total: ${data.total_xp} | Level: ${data.new_level} | Next: ${data.xp_to_next} XP`;
         setXpTestLogs(prev => [...prev, logMsg]);
         addDebugLog('success', 'XP_TEST', logMsg, data);
-        
         await reloadFromDatabase();
-        
-        if (data.leveled_up) {
-          showToast(`Level Up! You are now Level ${data.new_level}!`, 'success');
-        } else {
-          showToast(`+${amount} XP added successfully`, 'success');
-        }
-      } else {
-        setXpTestLogs(prev => [...prev, `[${timestamp}] ❌ ${data?.error || 'Unknown error'}`]);
-      }
-    } catch (err: any) {
-      setXpTestLogs(prev => [...prev, `[${timestamp}] 💥 Exception: ${err.message}`]);
-      addDebugLog('error', 'XP_TEST', `💥 Exception: ${err.message}`);
-    }
+        if (data.leveled_up) showToast(`Level Up! You are now Level ${data.new_level}!`, 'success');
+        else showToast(`+${amount} XP added successfully`, 'success');
+      } else { setXpTestLogs(prev => [...prev, `[${timestamp}] ❌ ${data?.error || 'Unknown error'}`]); }
+    } catch (err: any) { setXpTestLogs(prev => [...prev, `[${timestamp}] 💥 Exception: ${err.message}`]); addDebugLog('error', 'XP_TEST', `💥 Exception: ${err.message}`); }
   };
 
   const forceRecalcLevel = async () => {
@@ -854,26 +629,11 @@ export default function HomeScreen({ onNavigate }: Props) {
     const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
     setXpTestLogs(prev => [...prev, `[${timestamp}] 🔄 Force recalculating level from DB...`]);
     addDebugLog('info', 'XP_TEST', '🔄 Force recalculating level...');
-    
     try {
-      const { data, error } = await supabase.rpc('add_xp_and_recalc_level', {
-        p_user_id: user.id,
-        p_xp_amount: 0
-      });
-
-      if (error) {
-        setXpTestLogs(prev => [...prev, `[${timestamp}] ❌ ERROR: ${error.message}`]);
-        return;
-      }
-
-      if (data?.success) {
-        setXpTestLogs(prev => [...prev, `[${timestamp}] ✅ Level recalculated: ${data.new_level} | XP: ${data.total_xp} | Next: ${data.xp_to_next} XP`]);
-        await reloadFromDatabase();
-        showToast(`Level verified: ${data.new_level}`, 'info');
-      }
-    } catch (err: any) {
-      setXpTestLogs(prev => [...prev, `[${timestamp}] 💥 Exception: ${err.message}`]);
-    }
+      const { data, error } = await supabase.rpc('add_xp_and_recalc_level', { p_user_id: user.id, p_xp_amount: 0 });
+      if (error) { setXpTestLogs(prev => [...prev, `[${timestamp}] ❌ ERROR: ${error.message}`]); return; }
+      if (data?.success) { setXpTestLogs(prev => [...prev, `[${timestamp}] ✅ Level recalculated: ${data.new_level} | XP: ${data.total_xp} | Next: ${data.xp_to_next} XP`]); await reloadFromDatabase(); showToast(`Level verified: ${data.new_level}`, 'info'); }
+    } catch (err: any) { setXpTestLogs(prev => [...prev, `[${timestamp}] 💥 Exception: ${err.message}`]); }
   };
 
   const loadQuests = async () => {
@@ -884,12 +644,8 @@ export default function HomeScreen({ onNavigate }: Props) {
     const processedQuests = dQuests.map(q => ({ ...q, isClaimable: q.is_completed && !q.is_claimed }));
     setDailyQuests(processedQuests);
     const unclaimed = processedQuests.filter(q => !q.is_claimed);
-    if (unclaimed.length > 0) {
-      const randomIndex = Math.floor(Math.random() * unclaimed.length);
-      setActiveDailyQuest(unclaimed[randomIndex]);
-    } else {
-      setActiveDailyQuest(null);
-    }
+    if (unclaimed.length > 0) { const randomIndex = Math.floor(Math.random() * unclaimed.length); setActiveDailyQuest(unclaimed[randomIndex]); }
+    else { setActiveDailyQuest(null); }
     setQuestsLoading(false);
   };
 
@@ -899,296 +655,149 @@ export default function HomeScreen({ onNavigate }: Props) {
     addDebugLog('info', 'QUEST_CLAIM', `Attempting to claim quest: ${quest.quest?.title}`);
     try {
       const { data, error } = await supabase.rpc('claim_quest_reward', { p_user_id: user.id, p_quest_id: quest.quest_id });
-      if (error || !data?.success) {
-        addDebugLog('error', 'QUEST_CLAIM', `Failed: ${error?.message || data?.error}`);
-        showToast(data?.error || 'Failed to claim reward', 'error');
-      } else {
+      if (error || !data?.success) { addDebugLog('error', 'QUEST_CLAIM', `Failed: ${error?.message || data?.error}`); showToast(data?.error || 'Failed to claim reward', 'error'); }
+      else {
         addDebugLog('success', 'QUEST_CLAIM', `Claimed! +${data.reward.coins} coins, +${data.reward.xp} XP`);
         const currentTotalXP = economy.xp || 0;
         const newTotalXP = currentTotalXP + data.reward.xp;
         const oldLevelData = getLevelFromTotalXP(currentTotalXP);
         const newLevelData = getLevelFromTotalXP(newTotalXP);
         setEconomy(prev => ({ ...prev, cosmic_coins: prev.cosmic_coins + data.reward.coins, xp: newTotalXP, level: newLevelData.level }));
-        if (newLevelData.level > oldLevelData.level) {
-          confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#fbbf24', '#f59e0b', '#ffffff', '#10b981'] });
-          setLeveledUpTo(newLevelData.level);
-          setShowLevelUpModal(true);
-        } else {
-          showToast(`Quest Completed! +${data.reward.coins} Coins, +${data.reward.xp} XP`, 'success');
-        }
+        if (newLevelData.level > oldLevelData.level) { confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#fbbf24', '#f59e0b', '#ffffff', '#10b981'] }); setLeveledUpTo(newLevelData.level); setShowLevelUpModal(true); }
+        else { showToast(`Quest Completed! +${data.reward.coins} Coins, +${data.reward.xp} XP`, 'success'); }
         await loadQuests();
       }
-    } catch (err: any) {
-      addDebugLog('error', 'QUEST_CLAIM', `Exception: ${err.message}`);
-      showToast('Failed to claim quest', 'error');
-    } finally {
-      setIsClaimingQuest(false);
-    }
+    } catch (err: any) { addDebugLog('error', 'QUEST_CLAIM', `Exception: ${err.message}`); showToast('Failed to claim quest', 'error'); }
+    finally { setIsClaimingQuest(false); }
   };
 
   useEffect(() => {
     if (user) {
       addDebugLog('info', 'USER', 'User loaded', { userId: user.id, displayName: user.display_name });
-      
       const adminStatus = user.is_admin === true;
       setIsUserAdmin(adminStatus);
-      
       addDebugLog('success', 'ADMIN', 'Admin check completed (via Context)', { isAdmin: adminStatus });
-    } else {
-      addDebugLog('warning', 'USER', 'No user loaded');
-    }
+    } else { addDebugLog('warning', 'USER', 'No user loaded'); }
   }, [user]);
 
   useEffect(() => {
     if (user) {
-      getActiveSubscription(user.id).then(sub => {
-        setActiveSubscription(sub);
-        addDebugLog('success', 'SUBSCRIPTION', 'Subscription loaded', { hasSubscription: !!sub });
-      }).catch(err => addDebugLog('error', 'SUBSCRIPTION', `Subscription load failed: ${err.message}`));
+      getActiveSubscription(user.id).then(sub => { setActiveSubscription(sub); addDebugLog('success', 'SUBSCRIPTION', 'Subscription loaded', { hasSubscription: !!sub }); })
+        .catch(err => addDebugLog('error', 'SUBSCRIPTION', `Subscription load failed: ${err.message}`));
     }
   }, [user]);
 
-  useEffect(() => {
-    if (user) loadQuests();
-  }, [user]);
+  useEffect(() => { if (user) loadQuests(); }, [user]);
 
-  // ============================================
-  // 🆕 READING COSTS + GAME CONFIG ჩატვირთვა DB-დან
-  // ============================================
   useEffect(() => {
     const loadConfigs = async () => {
       if (!supabase) return;
       try {
-        const { data: costData, error: costError } = await supabase
-          .from('reading_costs')
-          .select('reading_type, energy_cost');
+        const { data: costData, error: costError } = await supabase.from('reading_costs').select('reading_type, energy_cost');
         if (!costError && costData) {
           const costs: Record<string, number> = {};
           costData.forEach((c: any) => { costs[c.reading_type] = c.energy_cost; });
           setReadingCosts(costs);
           setCostsLoaded(true);
           addDebugLog('success', 'CONFIG', `✅ Loaded ${costData.length} reading costs from DB`, costs);
-        } else {
-          addDebugLog('error', 'CONFIG', `❌ Failed to load reading costs: ${costError?.message}`);
-        }
+        } else { addDebugLog('error', 'CONFIG', `❌ Failed to load reading costs: ${costError?.message}`); }
 
-        const { data: configData, error: configError } = await supabase
-          .from('game_config')
-          .select('key, value');
+        const { data: configData, error: configError } = await supabase.from('game_config').select('key, value');
         if (!configError && configData) {
           const config: Record<string, number> = {};
           configData.forEach((c: any) => { config[c.key] = parseFloat(c.value) || 0; });
           setGameConfig(config);
           addDebugLog('success', 'CONFIG', `✅ Loaded ${configData.length} game configs from DB`, config);
-        } else {
-          addDebugLog('error', 'CONFIG', `❌ Failed to load game config: ${configError?.message}`);
-        }
-      } catch (err: any) {
-        addDebugLog('error', 'CONFIG', `❌ Exception loading configs: ${err.message}`);
-      }
+        } else { addDebugLog('error', 'CONFIG', `❌ Failed to load game config: ${configError?.message}`); }
+      } catch (err: any) { addDebugLog('error', 'CONFIG', `❌ Exception loading configs: ${err.message}`); }
     };
     loadConfigs();
   }, []);
 
   const calculateRealEnergy = async (): Promise<number | null> => {
     if (!user || !supabase) return null;
-
     try {
-      const { data: economyData } = await supabase
-        .from('user_economy')
-        .select('cosmic_focus, max_focus, last_energy_update, energy_boost_multiplier')
-        .eq('user_id', user.id)
-        .single();
-
+      const { data: economyData } = await supabase.from('user_economy').select('cosmic_focus, max_focus, last_energy_update, energy_boost_multiplier').eq('user_id', user.id).single();
       if (!economyData) return null;
-
       const now = new Date();
       const lastUpdate = new Date(economyData.last_energy_update);
       const minutesPassed = (now.getTime() - lastUpdate.getTime()) / 1000 / 60;
-      
       const boostMultiplier = economyData.energy_boost_multiplier || 1.0;
-      // ✅ რეგენერაციის წუთები DB-დან
       const regenMinutes = getConfig('energy_regen_minutes', 30);
       const regenRate = regenMinutes / boostMultiplier;
       const energyToRegen = Math.floor(minutesPassed / regenRate);
-      
       let newEnergy = economyData.cosmic_focus;
-      
       if (energyToRegen > 0) {
-        newEnergy = Math.min(
-          economyData.cosmic_focus + energyToRegen,
-          economyData.max_focus
-        );
-        
-        await supabase
-          .from('user_economy')
-          .update({
-            cosmic_focus: newEnergy,
-            last_energy_update: now.toISOString()
-          })
-          .eq('user_id', user.id);
-        
-        setEconomy(prev => ({
-          ...prev,
-          cosmic_focus: newEnergy
-        }));
-        
+        newEnergy = Math.min(economyData.cosmic_focus + energyToRegen, economyData.max_focus);
+        await supabase.from('user_economy').update({ cosmic_focus: newEnergy, last_energy_update: now.toISOString() }).eq('user_id', user.id);
+        setEconomy(prev => ({ ...prev, cosmic_focus: newEnergy }));
         console.log(`⚡ Energy regenerated: +${energyToRegen}, new total: ${newEnergy}`);
       }
-      
       return newEnergy;
-    } catch (error) {
-      console.error('❌ Error calculating energy:', error);
-      return null;
-    }
+    } catch (error) { console.error('❌ Error calculating energy:', error); return null; }
   };
 
   const checkAndSpendEnergy = async (readingType: string, requiredEnergy: number): Promise<boolean> => {
     if (!user || !supabase) return false;
-
     const currentEnergy = await calculateRealEnergy();
-    
-    if (currentEnergy === null) {
-      showToast('Failed to check energy. Please try again.', 'error');
-      return false;
-    }
-    
-    if (currentEnergy < requiredEnergy) {
-      showToast(`Not enough energy! You need ${requiredEnergy}⚡, but you have ${currentEnergy}⚡. Use diamonds to refill!`, 'error');
-      return false;
-    }
-    
-    const { data, error } = await supabase.rpc('spend_energy', {
-      user_uuid: user.id,
-      amount: requiredEnergy,
-      reading_type: readingType
-    });
-    
-    if (error) {
-      console.error('❌ Error spending energy:', error);
-      showToast('Failed to spend energy. Please try again.', 'error');
-      return false;
-    }
-    
-    if (!data?.success) {
-      showToast(data?.error || 'Not enough energy', 'error');
-      return false;
-    }
-    
-    setEconomy(prev => ({
-      ...prev,
-      cosmic_focus: data.new_energy
-    }));
-    
+    if (currentEnergy === null) { showToast('Failed to check energy. Please try again.', 'error'); return false; }
+    if (currentEnergy < requiredEnergy) { showToast(`Not enough energy! You need ${requiredEnergy}⚡, but you have ${currentEnergy}⚡. Use diamonds to refill!`, 'error'); return false; }
+    const { data, error } = await supabase.rpc('spend_energy', { user_uuid: user.id, amount: requiredEnergy, reading_type: readingType });
+    if (error) { console.error('❌ Error spending energy:', error); showToast('Failed to spend energy. Please try again.', 'error'); return false; }
+    if (!data?.success) { showToast(data?.error || 'Not enough energy', 'error'); return false; }
+    setEconomy(prev => ({ ...prev, cosmic_focus: data.new_energy }));
     console.log(`⚡ Spent ${requiredEnergy} energy on ${readingType}, remaining: ${data.new_energy}`);
     return true;
   };
 
   const handleRefillEnergy = async () => {
     if (!user || !supabase) return;
-    
     const maxEnergy = economy.max_focus || getConfig('max_focus_default', 20);
     const currentEnergy = economy.cosmic_focus || 0;
     const energyNeeded = maxEnergy - currentEnergy;
-
-    if (energyNeeded <= 0) {
-      showToast('Energy is already full! No refill needed.', 'info');
-      return;
-    }
-
-    // ✅ მაქს დამატება და ღირებულება DB-დან
+    if (energyNeeded <= 0) { showToast('Energy is already full! No refill needed.', 'info'); return; }
     const energyToAdd = Math.min(getConfig('energy_refill_max_amount', 10), energyNeeded);
     const cost = energyToAdd * getConfig('energy_refill_coin_cost', 5);
-
     addDebugLog('info', 'ENERGY_REFILL', `🔍 Step 1: Calculating refill. Needed: ${energyNeeded}⚡, Adding: ${energyToAdd}⚡, Cost: ${cost}💎`);
-
-    if (economy.cosmic_coins < cost) {
-      addDebugLog('error', 'ENERGY_REFILL', `❌ Step 1 Failed: Insufficient diamonds. Have: ${economy.cosmic_coins}, Need: ${cost}`);
-      showToast(`Not enough diamonds! You need ${cost} 💎 to buy ${energyToAdd}⚡ energy.`, 'error');
-      return;
-    }
-
+    if (economy.cosmic_coins < cost) { addDebugLog('error', 'ENERGY_REFILL', `❌ Step 1 Failed: Insufficient diamonds. Have: ${economy.cosmic_coins}, Need: ${cost}`); showToast(`Not enough diamonds! You need ${cost} 💎 to buy ${energyToAdd}⚡ energy.`, 'error'); return; }
     setIsClaiming(true);
     addDebugLog('info', 'ENERGY_REFILL', `⏳ Step 2: Calling Supabase RPC with dynamic values (Cost: ${cost}, Gain: ${energyToAdd})...`);
-    
     try {
-      const { data, error } = await supabase.rpc('refill_energy_with_coins', {
-        p_user_id: user.id,
-        p_coin_cost: cost,
-        p_energy_gain: energyToAdd
-      });
-
-      if (error) {
-        addDebugLog('error', 'ENERGY_REFILL', `❌ Step 3 Failed: RPC Error`, error);
-        showToast(`Refill failed: ${error.message}`, 'error');
-      } else if (!data?.success) {
-        addDebugLog('error', 'ENERGY_REFILL', `❌ Step 3 Failed: Function returned error`, data);
-        showToast(`Refill failed: ${data?.error || 'Unknown error'}`, 'error');
-      } else {
+      const { data, error } = await supabase.rpc('refill_energy_with_coins', { p_user_id: user.id, p_coin_cost: cost, p_energy_gain: energyToAdd });
+      if (error) { addDebugLog('error', 'ENERGY_REFILL', `❌ Step 3 Failed: RPC Error`, error); showToast(`Refill failed: ${error.message}`, 'error'); }
+      else if (!data?.success) { addDebugLog('error', 'ENERGY_REFILL', `❌ Step 3 Failed: Function returned error`, data); showToast(`Refill failed: ${data?.error || 'Unknown error'}`, 'error'); }
+      else {
         addDebugLog('success', 'ENERGY_REFILL', `✅ Step 3 Success: Bought ${energyToAdd}⚡ for ${cost}💎`, data);
-        
-        setEconomy(prev => {
-          const newState = { ...prev, cosmic_coins: data.new_coins, cosmic_focus: data.new_energy };
-          addDebugLog('info', 'ENERGY_REFILL', `🔄 Step 4: Updating local state`, newState);
-          return newState;
-        });
-        
+        setEconomy(prev => { const newState = { ...prev, cosmic_coins: data.new_coins, cosmic_focus: data.new_energy }; addDebugLog('info', 'ENERGY_REFILL', `🔄 Step 4: Updating local state`, newState); return newState; });
         showToast(`Successfully bought +${energyToAdd}⚡ Energy for ${cost} 💎!`, 'success');
         addDebugLog('success', 'ENERGY_REFILL', `🎉 Step 5: Refill process completed successfully!`);
       }
-    } catch (err: any) {
-      addDebugLog('error', 'ENERGY_REFILL', `💥 Step 3 Exception: ${err.message}`, err);
-      showToast(`Network error: ${err.message}`, 'error');
-    } finally {
-      setIsClaiming(false);
-    }
+    } catch (err: any) { addDebugLog('error', 'ENERGY_REFILL', `💥 Step 3 Exception: ${err.message}`, err); showToast(`Network error: ${err.message}`, 'error'); }
+    finally { setIsClaiming(false); }
   };
 
   useEffect(() => {
     const loadEconomy = async () => {
-      if (!user) {
-        addDebugLog('warning', 'ECONOMY', 'Cannot load economy - no user');
-        return;
-      }
-      if (!supabase) {
-        addDebugLog('error', 'ECONOMY', 'Supabase client is null');
-        return;
-      }
+      if (!user) { addDebugLog('warning', 'ECONOMY', 'Cannot load economy - no user'); return; }
+      if (!supabase) { addDebugLog('error', 'ECONOMY', 'Supabase client is null'); return; }
       setDbStatus('connecting');
       addDebugLog('info', 'ECONOMY', '📡 Starting economy data load', { userId: user.id });
       try {
         const queryParams = { table: 'user_economy', columns: 'cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus', userId: user.id };
         const { data, error } = await supabase.from('user_economy').select('cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus').eq('user_id', user.id).single();
-        if (error) {
-          setDbStatus('error');
-          addToDbDebugHistory('user_economy', 'SELECT', queryParams, null, error);
-          addDebugLog('error', 'ECONOMY', '❌ Database query failed', { error: error.message, code: error.code, details: error.details });
-          return;
-        }
+        if (error) { setDbStatus('error'); addToDbDebugHistory('user_economy', 'SELECT', queryParams, null, error); addDebugLog('error', 'ECONOMY', '❌ Database query failed', { error: error.message, code: error.code, details: error.details }); return; }
         setDbStatus('connected');
         addToDbDebugHistory('user_economy', 'SELECT', queryParams, data);
         setDbDebugInfo(prev => ({ ...prev, economyData: data }));
         addDebugLog('success', 'ECONOMY', '✅ Economy data loaded successfully', data);
         if (data) {
           const levelData = getLevelFromTotalXP(data.xp || 0);
-          const economyData = { 
-            cosmic_coins: data.cosmic_coins || 0, 
-            xp: data.xp || 0, 
-            level: levelData.level, 
-            current_streak: data.current_streak || 0,
-            cosmic_focus: data.cosmic_focus || 20,
-            max_focus: data.max_focus || 20
-          };
+          const economyData = { cosmic_coins: data.cosmic_coins || 0, xp: data.xp || 0, level: levelData.level, current_streak: data.current_streak || 0, cosmic_focus: data.cosmic_focus || 20, max_focus: data.max_focus || 20 };
           setEconomy(economyData);
           setCurrentStreak(economyData.current_streak);
           addDebugLog('info', 'STATE', '💰 Economy state updated', economyData);
-        } else {
-          addDebugLog('warning', 'ECONOMY', '⚠️ No economy data found for user');
-        }
-      } catch (error: any) {
-        setDbStatus('error');
-        addDebugLog('error', 'ECONOMY', '💥 Exception during economy load', { message: error.message, stack: error.stack });
-      }
+        } else { addDebugLog('warning', 'ECONOMY', '⚠️ No economy data found for user'); }
+      } catch (error: any) { setDbStatus('error'); addDebugLog('error', 'ECONOMY', '💥 Exception during economy load', { message: error.message, stack: error.stack }); }
     };
     loadEconomy();
   }, [user]);
@@ -1207,17 +816,8 @@ export default function HomeScreen({ onNavigate }: Props) {
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        if (parsed.date === today) {
-          setDailyCard(parsed.card);
-          setIsDailyReversed(parsed.isReversed);
-          setIsDailyRevealed(parsed.isRevealed || false);
-          addDebugLog('info', 'DAILY_CARD', 'Loaded from localStorage', parsed);
-          return;
-        }
-      } catch (err: any) {
-        addDebugLog('error', 'DAILY_CARD', `Failed to parse localStorage: ${err.message}`);
-        localStorage.removeItem('dailyCard');
-      }
+        if (parsed.date === today) { setDailyCard(parsed.card); setIsDailyReversed(parsed.isReversed); setIsDailyRevealed(parsed.isRevealed || false); addDebugLog('info', 'DAILY_CARD', 'Loaded from localStorage', parsed); return; }
+      } catch (err: any) { addDebugLog('error', 'DAILY_CARD', `Failed to parse localStorage: ${err.message}`); localStorage.removeItem('dailyCard'); }
     }
     const dayOfYear = getDayOfYear(new Date());
     const cardIndex = dayOfYear % tarotCards.length;
@@ -1238,18 +838,12 @@ export default function HomeScreen({ onNavigate }: Props) {
         try {
           const parsed = JSON.parse(stored);
           const today = new Date().toISOString().split('T')[0];
-          if (parsed.date === today && parsed.isRevealed) {
-            setIsDailyRevealed(true);
-          }
-        } catch (err: any) {
-          addDebugLog('error', 'DAILY_CARD', `Failed to parse dailyCard on focus: ${err.message}`);
-        }
+          if (parsed.date === today && parsed.isRevealed) setIsDailyRevealed(true);
+        } catch (err: any) { addDebugLog('error', 'DAILY_CARD', `Failed to parse dailyCard on focus: ${err.message}`); }
       }
     };
-    
     window.addEventListener('focus', checkRevealStatus);
     checkRevealStatus();
-    
     return () => window.removeEventListener('focus', checkRevealStatus);
   }, []);
 
@@ -1281,23 +875,13 @@ export default function HomeScreen({ onNavigate }: Props) {
   }, []);
 
   const handleClaimReward = async () => {
-    if (rewardClaimed || isClaiming) {
-      showToast('Reward already claimed or claiming', 'info');
-      return;
-    }
+    if (rewardClaimed || isClaiming) { showToast('Reward already claimed or claiming', 'info'); return; }
     addDebugLog('info', 'REWARD', 'Starting reward claim process');
     setIsClaiming(true);
     try {
-      if (!user?.id) {
-        addDebugLog('error', 'REWARD', 'No user ID available');
-        showToast('User ID not found', 'error');
-        setIsClaiming(false);
-        return;
-      }
+      if (!user?.id) { addDebugLog('error', 'REWARD', 'No user ID available'); showToast('User ID not found', 'error'); setIsClaiming(false); return; }
       addDebugLog('info', 'REWARD', 'Calling Edge Function', { userId: user.id, url: 'https://eutavdhcxpfhpfsyaskb.supabase.co/functions/v1/claim-daily-reward' });
-      const response = await fetch('https://eutavdhcxpfhpfsyaskb.supabase.co/functions/v1/claim-daily-reward', {
-        method: 'POST', headers: { 'Content-Type': 'application/json', 'X-User-Id': user.id }, body: JSON.stringify({})
-      });
+      const response = await fetch('https://eutavdhcxpfhpfsyaskb.supabase.co/functions/v1/claim-daily-reward', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-User-Id': user.id }, body: JSON.stringify({}) });
       addDebugLog('info', 'REWARD', 'Edge Function response received', { status: response.status, statusText: response.statusText });
       const result = await response.json();
       addDebugLog('info', 'REWARD', 'Response parsed', result);
@@ -1310,63 +894,22 @@ export default function HomeScreen({ onNavigate }: Props) {
           setEconomy(newEconomy);
           addDebugLog('success', 'REWARD', 'Reward claimed successfully', { coins: rewardData.coins, xp: rewardData.xp, streak: rewardData.streak, newEconomy });
           showToast(`Daily Reward Claimed! +${rewardData.coins} Coins, +${rewardData.xp} XP`, 'success');
-        } else {
-          showToast('Reward data missing in response', 'error');
-        }
-      } else {
-        addDebugLog('warning', 'REWARD', 'Edge Function returned error', result.error);
-        showToast(result.error || 'Failed to claim reward', 'error');
-      }
-    } catch (error: any) {
-      addDebugLog('error', 'REWARD', 'Exception during reward claim', { message: error.message, stack: error.stack });
-      showToast('Failed to connect to server', 'error');
-    } finally {
-      setIsClaiming(false);
-    }
+        } else { showToast('Reward data missing in response', 'error'); }
+      } else { addDebugLog('warning', 'REWARD', 'Edge Function returned error', result.error); showToast(result.error || 'Failed to claim reward', 'error'); }
+    } catch (error: any) { addDebugLog('error', 'REWARD', 'Exception during reward claim', { message: error.message, stack: error.stack }); showToast('Failed to connect to server', 'error'); }
+    finally { setIsClaiming(false); }
   };
 
   const handleQuickAction = async (action: string) => {
     addDebugLog('info', 'NAVIGATION', 'Quick action clicked', { action });
-
-    if (!costsLoaded) {
-      showToast('Loading reading costs... Please try again.', 'info');
-      return;
-    }
-    
+    if (!costsLoaded) { showToast('Loading reading costs... Please try again.', 'info'); return; }
     const premiumActions = ['CelticCross', 'Horseshoe', 'Relationship'];
     const isPremiumAction = premiumActions.includes(action);
-    
-    if (isPremiumAction && !activeSubscription) {
-      showToast('This reading requires a Premium subscription!', 'error');
-      onNavigate?.('subscription');
-      return;
-    }
-    
-    if (action === 'CelticCross') {
-      const cost = getEnergyCost('celtic_cross');
-      const canProceed = await checkAndSpendEnergy('celtic_cross', cost);
-      if (canProceed) onNavigate?.('celtic-cross');
-      return;
-    }
-    if (action === 'Horseshoe') {
-      const cost = getEnergyCost('horseshoe');
-      const canProceed = await checkAndSpendEnergy('horseshoe', cost);
-      if (canProceed) onNavigate?.('horseshoe');
-      return;
-    }
-    if (action === 'Relationship') {
-      const cost = getEnergyCost('relationship');
-      const canProceed = await checkAndSpendEnergy('relationship', cost);
-      if (canProceed) onNavigate?.('relationship');
-      return;
-    }
-    if (action === '3Cards') {
-      const cost = getEnergyCost('three_card');
-      const canProceed = await checkAndSpendEnergy('three_card', cost);
-      if (canProceed) onNavigate?.('three-card-reading');
-      return;
-    }
-
+    if (isPremiumAction && !activeSubscription) { showToast('This reading requires a Premium subscription!', 'error'); onNavigate?.('subscription'); return; }
+    if (action === 'CelticCross') { const canProceed = await checkAndSpendEnergy('celtic_cross', getEnergyCost('celtic_cross')); if (canProceed) onNavigate?.('celtic-cross'); return; }
+    if (action === 'Horseshoe') { const canProceed = await checkAndSpendEnergy('horseshoe', getEnergyCost('horseshoe')); if (canProceed) onNavigate?.('horseshoe'); return; }
+    if (action === 'Relationship') { const canProceed = await checkAndSpendEnergy('relationship', getEnergyCost('relationship')); if (canProceed) onNavigate?.('relationship'); return; }
+    if (action === '3Cards') { const canProceed = await checkAndSpendEnergy('three_card', getEnergyCost('three_card')); if (canProceed) onNavigate?.('three-card-reading'); return; }
     if (onNavigate) {
       if (action === 'Tarot') onNavigate('card-fan');
       else if (action === 'Daily') onNavigate('daily-card');
@@ -1448,11 +991,32 @@ export default function HomeScreen({ onNavigate }: Props) {
             <h2 className="username" style={{ margin: 0, fontSize: '18px', lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {user?.display_name || 'LunaraSeeker'}
             </h2>
-            {activeSubscription && (
-              <div className="premium-status-badge" onClick={() => onNavigate?.('subscription')} style={{ marginTop: '4px', alignSelf: 'flex-start' }}>
-                <InfinityIcon size={10} /><span>PREMIUM</span>
-              </div>
-            )}
+            {/* 🆕 ჰოროსკოპის ბეიჯი + Premium სტატუსი ერთ ხაზზე */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px', flexWrap: 'wrap' }}>
+              {user?.sun_sign && (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  background: 'rgba(197, 160, 89, 0.15)',
+                  border: '1px solid rgba(197, 160, 89, 0.4)',
+                  borderRadius: '12px',
+                  padding: '2px 8px',
+                  fontSize: '10px',
+                  fontWeight: 600,
+                  color: '#C5A059',
+                  letterSpacing: '0.5px'
+                }}>
+                  <span style={{ fontSize: '11px' }}>{getZodiacSymbol(user.sun_sign)}</span>
+                  <span>{user.sun_sign}</span>
+                </div>
+              )}
+              {activeSubscription && (
+                <div className="premium-status-badge" onClick={() => onNavigate?.('subscription')}>
+                  <InfinityIcon size={10} /><span>PREMIUM</span>
+                </div>
+              )}
+            </div>
           </div>
           
           <div className="user-resources" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '48px', gap: '4px', flexShrink: 0 }}>
@@ -1670,7 +1234,6 @@ export default function HomeScreen({ onNavigate }: Props) {
       >
         <div className="card-of-day-content" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '0' }}>
           <div className="card-half-left" style={{ flex: '0 0 45%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px 0' }}>
-            
             <motion.div 
               className="card-image-3d-wrapper" 
               animate={!isDailyRevealed ? { y: [0, -5, 0] } : {}}
@@ -1678,30 +1241,15 @@ export default function HomeScreen({ onNavigate }: Props) {
               style={{ position: 'relative', width: 'clamp(110px, 28vw, 140px)', aspectRatio: '2/3', perspective: '800px', margin: '-16px 0' }}
             >
               <div className="card-image-tilted" style={{ position: 'relative', width: '100%', height: '100%', transform: 'rotateY(-5deg) rotateX(2deg) rotate(3deg)', transition: 'transform 0.4s ease', zIndex: 2, transformStyle: 'preserve-3d' }}>
-                
                 {!isDailyRevealed ? (
                   <div style={{ position: 'relative', width: '100%', height: '100%', borderRadius: '8px', border: '2px solid #C5A059', boxShadow: '0 2px 4px rgba(0,0,0,0.4), 0 8px 16px rgba(0,0,0,0.5), 0 16px 32px rgba(0,0,0,0.6), 0 0 20px rgba(197,160,89,0.3)', overflow: 'hidden' }}>
-                    <img 
-                      src={CARD_BACK_URL} 
-                      alt="Card Back" 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} 
-                    />
+                    <img src={CARD_BACK_URL} alt="Card Back" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                     <motion.div
                       animate={{ x: ['-150%', '150%'] }}
                       transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 3, ease: "easeInOut" }}
-                      style={{
-                        position: 'absolute', top: 0, left: 0, width: '50%', height: '100%',
-                        background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent)',
-                        transform: 'skewX(-20deg)', pointerEvents: 'none'
-                      }}
+                      style={{ position: 'absolute', top: 0, left: 0, width: '50%', height: '100%', background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent)', transform: 'skewX(-20deg)', pointerEvents: 'none' }}
                     />
-                    <div style={{
-                      position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-                      background: 'rgba(10, 8, 20, 0.7)', backdropFilter: 'blur(4px)',
-                      padding: '6px 16px', borderRadius: '20px', border: '1px solid rgba(197, 160, 89, 0.6)',
-                      color: '#C5A059', fontSize: '11px', fontWeight: '700', letterSpacing: '2px',
-                      textTransform: 'uppercase', boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
-                    }}>
+                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(10, 8, 20, 0.7)', backdropFilter: 'blur(4px)', padding: '6px 16px', borderRadius: '20px', border: '1px solid rgba(197, 160, 89, 0.6)', color: '#C5A059', fontSize: '11px', fontWeight: '700', letterSpacing: '2px', textTransform: 'uppercase', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
                       TAP
                     </div>
                   </div>
@@ -1710,15 +1258,10 @@ export default function HomeScreen({ onNavigate }: Props) {
                     <img 
                       src={dailyCard?.image_url} 
                       alt={dailyCardName} 
-                      style={{ 
-                        width: '100%', height: '100%', objectFit: 'cover', display: 'block',
-                        filter: 'grayscale(30%) opacity(0.85)',
-                        transform: isDailyReversed ? 'rotate(180deg)' : 'rotate(0deg)'
-                      }} 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', filter: 'grayscale(30%) opacity(0.85)', transform: isDailyReversed ? 'rotate(180deg)' : 'rotate(0deg)' }} 
                     />
                   </div>
                 )}
-                
                 {isDailyReversed && isDailyRevealed && (
                   <div className="card-reversed-indicator-large" style={{ position: 'absolute', top: '5px', right: '5px', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 900, zIndex: 3, background: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)', color: '#fff', border: '2px solid #fff', boxShadow: '0 0 0 2px rgba(167,139,250,0.5), 0 4px 12px rgba(167,139,250,0.8), 0 0 20px rgba(167,139,250,0.6)' }}>
                     <span>R</span>
