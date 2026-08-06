@@ -1,21 +1,82 @@
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Flame, Gem, Sparkles } from 'lucide-react';
+import { X, Flame, Gem, Sparkles, Lock, CheckCircle, RefreshCw } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface StreakModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentStreak: number;
+  userId?: string;
+  onMilestoneClaimed?: (data: { reward_coins: number; new_coins: number }) => void;
 }
 
-export default function StreakModal({ isOpen, onClose, currentStreak }: StreakModalProps) {
-  const milestones = [
-    { days: 3, reward: 50, icon: '🔥', claimed: currentStreak >= 3 },
-    { days: 7, reward: 200, icon: '⭐', claimed: currentStreak >= 7 },
-    { days: 14, reward: 500, icon: '💫', claimed: currentStreak >= 14 },
-    { days: 30, reward: 2000, icon: '👑', claimed: currentStreak >= 30, isSpecial: true },
-  ];
+interface Milestone {
+  days: number;
+  reward: number;
+  icon: string;
+  isSpecial?: boolean;
+}
 
-  const nextMilestone = milestones.find(m => !m.claimed);
+const MILESTONES: Milestone[] = [
+  { days: 3, reward: 50, icon: '🔥' },
+  { days: 7, reward: 200, icon: '⭐' },
+  { days: 14, reward: 500, icon: '💫' },
+  { days: 30, reward: 2000, icon: '👑', isSpecial: true },
+];
+
+export default function StreakModal({ isOpen, onClose, currentStreak, userId, onMilestoneClaimed }: StreakModalProps) {
+  const [claimedDays, setClaimedDays] = useState<number[]>([]);
+  const [claimingDays, setClaimingDays] = useState<number | null>(null);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // ============================================
+  // წაიკითხე მოთხოვნილი მილეუსტონები როცა იხსნება
+  // ============================================
+  useEffect(() => {
+    if (isOpen && userId && supabase) {
+      setMessage(null);
+      supabase
+        .rpc('get_claimed_streak_milestones', { p_user_id: userId })
+        .then(({ data, error }) => {
+          if (!error && data) {
+            setClaimedDays(data.map((d: any) => d.milestone_days));
+          }
+        });
+    }
+  }, [isOpen, userId]);
+
+  // ============================================
+  // მილეუსტონის მოთხოვნა
+  // ============================================
+  const handleClaim = async (m: Milestone) => {
+    if (!userId || !supabase || claimingDays !== null) return;
+    setClaimingDays(m.days);
+    setMessage(null);
+    try {
+      const { data, error } = await supabase.rpc('claim_streak_milestone', {
+        p_user_id: userId,
+        p_milestone_days: m.days,
+        p_reward_coins: m.reward,
+      });
+
+      if (error) {
+        setMessage({ type: 'error', text: error.message });
+      } else if (data?.success) {
+        setClaimedDays(prev => [...prev, m.days]);
+        setMessage({ type: 'success', text: `+${m.reward} 💎 Diamonds claimed!` });
+        onMilestoneClaimed?.({ reward_coins: m.reward, new_coins: data.new_coins });
+      } else {
+        setMessage({ type: 'error', text: data?.error || 'Failed to claim' });
+      }
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.message });
+    }
+    setClaimingDays(null);
+  };
+
+  // შემდეგი მილეუსტონი progress bar-ისთვის
+  const nextMilestone = MILESTONES.find(m => !claimedDays.includes(m.days) && currentStreak < m.days);
   const progressToNext = nextMilestone ? Math.min((currentStreak / nextMilestone.days) * 100, 100) : 100;
 
   return (
@@ -33,7 +94,7 @@ export default function StreakModal({ isOpen, onClose, currentStreak }: StreakMo
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '16px', // შემცირებულია 20px-დან
+            padding: '16px',
             background: 'rgba(0,0,0,0.85)',
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)'
@@ -48,7 +109,7 @@ export default function StreakModal({ isOpen, onClose, currentStreak }: StreakMo
             style={{
               position: 'relative',
               width: '100%',
-              maxWidth: '360px', // ოდნავ ვიწრო მობილურისთვის
+              maxWidth: '360px',
               maxHeight: '85vh',
               borderRadius: '20px',
               overflow: 'hidden',
@@ -63,7 +124,7 @@ export default function StreakModal({ isOpen, onClose, currentStreak }: StreakMo
             <div
               style={{
                 position: 'relative',
-                padding: '24px 20px 20px 20px', // შემცირებული padding
+                padding: '24px 20px 20px 20px',
                 textAlign: 'center',
                 flexShrink: 0,
                 overflow: 'hidden',
@@ -146,57 +207,114 @@ export default function StreakModal({ isOpen, onClose, currentStreak }: StreakMo
               </div>
             )}
 
+            {/* 🆕 Message Banner (claim შედეგი) */}
+            {message && (
+              <div style={{ padding: '8px 16px', flexShrink: 0 }}>
+                <div style={{
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  textAlign: 'center',
+                  background: message.type === 'success' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                  border: `1px solid ${message.type === 'success' ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)'}`,
+                  color: message.type === 'success' ? '#10b981' : '#ef4444'
+                }}>
+                  {message.text}
+                </div>
+              </div>
+            )}
+
             {/* Milestones List */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              {milestones.map((milestone, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  style={{
-                    position: 'relative',
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '10px 12px', borderRadius: '12px',
-                    background: milestone.claimed 
-                      ? 'rgba(16, 185, 129, 0.1)' 
-                      : (milestone.isSpecial ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(197, 160, 89, 0.05))' : 'rgba(255, 255, 255, 0.02)'),
-                    border: milestone.claimed 
-                      ? '1px solid rgba(16, 185, 129, 0.3)' 
-                      : (milestone.isSpecial ? '1px solid rgba(255, 215, 0, 0.3)' : '1px solid rgba(255, 255, 255, 0.06)'),
-                    opacity: milestone.claimed ? 0.6 : 1
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div
-                      style={{
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        width: '36px', height: '36px', borderRadius: '50%',
-                        fontSize: '16px', flexShrink: 0,
-                        background: milestone.claimed ? 'rgba(16, 185, 129, 0.2)' : 'rgba(197, 160, 89, 0.15)',
-                        border: `1px solid ${milestone.claimed ? 'rgba(16, 185, 129, 0.4)' : 'rgba(197, 160, 89, 0.3)'}`
-                      }}
-                    >
-                      {milestone.claimed ? '✅' : milestone.icon}
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        {milestone.days} Days {milestone.isSpecial && <Sparkles size={10} style={{ color: '#FFD700' }} />}
-                      </div>
-                      <div style={{ fontSize: '10px', color: '#94a3b8' }}>
-                        {milestone.claimed ? 'Claimed' : 'Locked'}
-                      </div>
-                    </div>
-                  </div>
+              {MILESTONES.map((milestone, index) => {
+                const isClaimed = claimedDays.includes(milestone.days);
+                const isClaimable = !isClaimed && currentStreak >= milestone.days;
+                const isLocked = !isClaimed && !isClaimable;
 
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '13px', fontWeight: 700, color: milestone.claimed ? '#10b981' : '#ffe566', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '3px' }}>
-                      <Gem size={12} />
-                      {milestone.reward}
+                return (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    style={{
+                      position: 'relative',
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '10px 12px', borderRadius: '12px',
+                      background: isClaimed 
+                        ? 'rgba(16, 185, 129, 0.1)' 
+                        : isClaimable
+                        ? 'rgba(251, 191, 36, 0.08)'
+                        : (milestone.isSpecial ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(197, 160, 89, 0.05))' : 'rgba(255, 255, 255, 0.02)'),
+                      border: isClaimed 
+                        ? '1px solid rgba(16, 185, 129, 0.3)' 
+                        : isClaimable
+                        ? '1px solid rgba(251, 191, 36, 0.4)'
+                        : (milestone.isSpecial ? '1px solid rgba(255, 215, 0, 0.3)' : '1px solid rgba(255, 255, 255, 0.06)'),
+                      opacity: isClaimed ? 0.6 : 1
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          width: '36px', height: '36px', borderRadius: '50%',
+                          fontSize: '16px', flexShrink: 0,
+                          background: isClaimed ? 'rgba(16, 185, 129, 0.2)' : isClaimable ? 'rgba(251, 191, 36, 0.2)' : 'rgba(197, 160, 89, 0.15)',
+                          border: `1px solid ${isClaimed ? 'rgba(16, 185, 129, 0.4)' : isClaimable ? 'rgba(251, 191, 36, 0.5)' : 'rgba(197, 160, 89, 0.3)'}`
+                        }}
+                      >
+                        {isClaimed ? '✅' : isLocked ? <Lock size={14} style={{ color: '#94a3b8' }} /> : milestone.icon}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          {milestone.days} Days {milestone.isSpecial && <Sparkles size={10} style={{ color: '#FFD700' }} />}
+                        </div>
+                        <div style={{ fontSize: '10px', color: isClaimed ? '#10b981' : isClaimable ? '#fbbf24' : '#94a3b8' }}>
+                          {isClaimed ? 'Claimed' : isClaimable ? 'Ready to claim!' : 'Locked'}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
+
+                    {/* 🆕 მარჯვენა მხარე: reward + CLAIM ღილაკი */}
+                    <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: isClaimed ? '#10b981' : '#ffe566', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '3px' }}>
+                        <Gem size={12} />
+                        {milestone.reward}
+                      </div>
+
+                      {isClaimable && (
+                        <button
+                          onClick={() => handleClaim(milestone)}
+                          disabled={claimingDays !== null}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: '4px',
+                            padding: '5px 12px',
+                            borderRadius: '999px',
+                            border: 'none',
+                            background: 'linear-gradient(135deg, #fbbf24, #d97706)',
+                            color: '#0f0c08',
+                            fontSize: '10px',
+                            fontWeight: 800,
+                            letterSpacing: '0.5px',
+                            cursor: claimingDays !== null ? 'not-allowed' : 'pointer',
+                            boxShadow: '0 2px 10px rgba(251, 191, 36, 0.4)',
+                            opacity: claimingDays !== null && claimingDays !== milestone.days ? 0.5 : 1
+                          }}
+                        >
+                          {claimingDays === milestone.days ? (
+                            <RefreshCw size={10} className="animate-spin" />
+                          ) : (
+                            <CheckCircle size={10} />
+                          )}
+                          CLAIM
+                        </button>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
 
             {/* Footer */}

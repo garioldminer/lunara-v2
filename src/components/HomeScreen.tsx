@@ -728,7 +728,6 @@ export default function HomeScreen({ onNavigate }: Props) {
 
       <div className="user-header">
         <div className="user-main-row" style={{ alignItems: 'center', height: '52px', display: 'flex', justifyContent: 'space-between' }}>
-          {/* ავატარი + XP წრე */}
           <div className="avatar-section clickable-avatar" onClick={() => onNavigate?.('profile')} style={{ position: 'relative', width: '52px', height: '52px', flexShrink: 0 }}>
             <svg className="xp-circular-progress" width="52" height="52" viewBox="0 0 52 52" style={{ position: 'absolute', top: 0, left: 0 }}>
               <circle className="xp-circle-bg" cx="26" cy="26" r="22" fill="none" stroke="#e9d5ff" strokeWidth="4" />
@@ -747,7 +746,6 @@ export default function HomeScreen({ onNavigate }: Props) {
             )}
           </div>
           
-          {/* შუა სექცია: სახელი (ზედა) + ჰოროსკოპი (ქვედა) */}
           <div className="user-info-section" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '48px', marginLeft: '12px', flex: 1, minWidth: 0 }}>
             <h2 className="username" style={{ margin: 0, fontSize: '15px', lineHeight: '16px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {user?.display_name || 'LunaraSeeker'}
@@ -760,7 +758,6 @@ export default function HomeScreen({ onNavigate }: Props) {
             )}
           </div>
           
-          {/* 🆕 პრემიუმ ბეიჯი: ჰოროსკოპსა და ენერგიას შორის სივრცის ცენტრში, ქვედა ხაზზე */}
           {activeSubscription && (
             <div style={{ display: 'flex', alignItems: 'flex-end', height: '48px', margin: '0 10px', flexShrink: 0 }}>
               <div className="premium-status-badge" onClick={() => onNavigate?.('subscription')} style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)', color: '#0a0600', borderRadius: '20px', padding: '0 10px', height: '22px', fontSize: '9px', fontWeight: 800, letterSpacing: '0.5px', cursor: 'pointer', boxShadow: '0 2px 8px rgba(255, 215, 0, 0.3)' }}>
@@ -769,7 +766,6 @@ export default function HomeScreen({ onNavigate }: Props) {
             </div>
           )}
           
-          {/* მარჯვენა: დაიმონდები + ენერგია (ორივე 22px) */}
           <div className="user-resources" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '48px', gap: '4px', flexShrink: 0 }}>
             <div className="resource gems" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(147, 112, 219, 0.15)', padding: '0 10px', borderRadius: '20px', border: '1px solid rgba(147, 112, 219, 0.3)', height: '22px' }}>
               <Gem size={12} className="resource-icon gem-icon" style={{ color: '#9370db', flexShrink: 0 }} />
@@ -997,7 +993,17 @@ export default function HomeScreen({ onNavigate }: Props) {
         <DiamondShopModal isOpen={isShopOpen} onClose={() => setIsShopOpen(false)} userId={user.id} isAdmin={isUserAdmin} onSuccess={() => { setIsShopOpen(false); showToast('Diamonds successfully added!', 'success'); reloadFromDatabase(); }} />
       )}
 
-      <StreakModal isOpen={showStreakModal} onClose={() => setShowStreakModal(false)} currentStreak={currentStreak} />
+      {/* ✅ განახლებული StreakModal: userId + onMilestoneClaimed */}
+      <StreakModal 
+        isOpen={showStreakModal} 
+        onClose={() => setShowStreakModal(false)} 
+        currentStreak={currentStreak}
+        userId={user?.id}
+        onMilestoneClaimed={(data) => {
+          setEconomy(prev => ({ ...prev, cosmic_coins: data.new_coins }));
+          showToast(`+${data.reward_coins} 💎 Diamonds claimed!`, 'success');
+        }}
+      />
 
       {user && (
         <LeaderboardModal isOpen={showLeaderboardModal} onClose={() => setShowLeaderboardModal(false)} currentUserId={user.id} isAdmin={isUserAdmin} />
