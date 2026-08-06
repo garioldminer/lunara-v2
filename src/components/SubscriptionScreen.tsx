@@ -1,14 +1,11 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-// ✅ გასწორებულია: Infinity იმპორტირებულია როგორც InfinityIcon, რათა არ შეერიოს JS-ის გლობალურ Infinity რიცხვს
-import { ArrowLeft, Crown, Calendar, XCircle, CheckCircle, Infinity as InfinityIcon, AlertTriangle, Gem } from 'lucide-react';
+import { ArrowLeft, Crown, Calendar, XCircle, CheckCircle, Infinity as InfinityIcon, AlertTriangle, Gem, Clock } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { getActiveSubscription, getUserSubscriptions, cancelSubscription, formatExpirationDate, Subscription } from '../lib/subscriptionService';
+import { getSubscriptionPlans, SubscriptionPlan } from '../lib/premiumConfig';
 import './SubscriptionScreen.css';
 
-// The 12 zodiac glyphs used to build the rotating celestial ring — the same
-// signature element used in the Leaderboard and Streak modals, so premium
-// status reads as part of LUNARA's astrology world rather than generic UI.
 const ZODIAC_GLYPHS = ['♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓'];
 
 function CelestialRing({ size = 88, children }: { size?: number; children: React.ReactNode }) {
@@ -16,7 +13,6 @@ function CelestialRing({ size = 88, children }: { size?: number; children: React
     <div className="celestial-ring-wrap" style={{ width: size, height: size }}>
       <motion.div
         animate={{ rotate: 360 }}
-        // ✅ აქ Infinity ახლა სწორად მიუთითებს JavaScript-ის გლობალურ რიცხვზე (უსასრულობა)
         transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
         className="celestial-ring"
       >
@@ -42,6 +38,7 @@ export default function SubscriptionScreen({ onNavigate }: Props) {
   const { user } = useUser();
   const [activeSubscription, setActiveSubscription] = useState<Subscription | null>(null);
   const [subscriptionHistory, setSubscriptionHistory] = useState<Subscription[]>([]);
+  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [cancelling, setCancelling] = useState(false);
@@ -57,13 +54,15 @@ export default function SubscriptionScreen({ onNavigate }: Props) {
     if (!user) return;
 
     setLoading(true);
-    const [active, history] = await Promise.all([
+    const [active, history, plansData] = await Promise.all([
       getActiveSubscription(user.id),
-      getUserSubscriptions(user.id)
+      getUserSubscriptions(user.id),
+      getSubscriptionPlans()
     ]);
 
     setActiveSubscription(active);
     setSubscriptionHistory(history);
+    setPlans(plansData);
     setLoading(false);
   };
 
@@ -76,16 +75,16 @@ export default function SubscriptionScreen({ onNavigate }: Props) {
     if (success) {
       setCancelSuccess(true);
       setShowCancelConfirm(false);
-
-      // Refresh data
       await loadSubscriptionData();
-
-      setTimeout(() => {
-        setCancelSuccess(false);
-      }, 3000);
+      setTimeout(() => setCancelSuccess(false), 3000);
     }
 
     setCancelling(false);
+  };
+
+  // Helper: Get plan details from DB
+  const getPlanByType = (planType: string): SubscriptionPlan | undefined => {
+    return plans.find(p => p.plan_type === planType);
   };
 
   if (loading) {
@@ -98,6 +97,8 @@ export default function SubscriptionScreen({ onNavigate }: Props) {
       </div>
     );
   }
+
+  const currentPlan = activeSubscription ? getPlanByType(activeSubscription.plan_type) : null;
 
   return (
     <div className="subscription-screen">
@@ -134,7 +135,6 @@ export default function SubscriptionScreen({ onNavigate }: Props) {
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="active-badge">
-            {/* ✅ გასწორებულია: InfinityIcon-ის გამოყენება */}
             <InfinityIcon size={16} />
             <span>ACTIVE</span>
           </div>
@@ -143,12 +143,14 @@ export default function SubscriptionScreen({ onNavigate }: Props) {
             <Gem size={30} style={{ color: '#ffe9a8' }} />
           </CelestialRing>
 
+          {/* ✅ Plan name from DB */}
           <h2 className="subscription-plan-name">
-            Premium {activeSubscription.plan_type === 'monthly' ? 'Monthly' : 'Yearly'}
+            {currentPlan?.label || `Premium ${activeSubscription.plan_type === 'monthly' ? 'Monthly' : 'Yearly'}`}
           </h2>
 
+          {/* ✅ Plan description from DB */}
           <p className="subscription-plan-description">
-            Unlimited readings + AI Insights
+            {currentPlan?.description || 'Unlimited readings + AI Insights'}
           </p>
 
           <div className="subscription-details">
@@ -186,7 +188,7 @@ export default function SubscriptionScreen({ onNavigate }: Props) {
 
             <div className="detail-row highlight">
               <div className="detail-icon">
-                <ClockIcon />
+                <Clock size={16} />
               </div>
               <div className="detail-info">
                 <span className="detail-label">Time Remaining</span>
@@ -196,14 +198,15 @@ export default function SubscriptionScreen({ onNavigate }: Props) {
               </div>
             </div>
 
+            {/* ✅ FIXED: Payment Type instead of misleading Auto-Renew */}
             <div className="detail-row">
               <div className="detail-icon">
                 <CheckCircle size={16} />
               </div>
               <div className="detail-info">
-                <span className="detail-label">Auto-Renew</span>
+                <span className="detail-label">Payment Type</span>
                 <span className="detail-value">
-                  {activeSubscription.auto_renew ? 'Enabled' : 'Disabled'}
+                  One-time ({currentPlan?.days || (activeSubscription.plan_type === 'monthly' ? 30 : 365)} days)
                 </span>
               </div>
             </div>
@@ -260,26 +263,29 @@ export default function SubscriptionScreen({ onNavigate }: Props) {
         >
           <h3>Subscription History</h3>
           <div className="history-list">
-            {subscriptionHistory.map((sub) => (
-              <div key={sub.id} className={`history-item ${sub.status}`}>
-                <div className="history-icon">
-                  {sub.status === 'active' && <CheckCircle size={16} />}
-                  {sub.status === 'cancelled' && <XCircle size={16} />}
-                  {sub.status === 'expired' && <AlertTriangle size={16} />}
+            {subscriptionHistory.map((sub) => {
+              const historyPlan = getPlanByType(sub.plan_type);
+              return (
+                <div key={sub.id} className={`history-item ${sub.status}`}>
+                  <div className="history-icon">
+                    {sub.status === 'active' && <CheckCircle size={16} />}
+                    {sub.status === 'cancelled' && <XCircle size={16} />}
+                    {sub.status === 'expired' && <AlertTriangle size={16} />}
+                  </div>
+                  <div className="history-info">
+                    <span className="history-plan">
+                      {historyPlan?.label || `Premium ${sub.plan_type === 'monthly' ? 'Monthly' : 'Yearly'}`}
+                    </span>
+                    <span className="history-dates">
+                      {new Date(sub.started_at).toLocaleDateString()} - {new Date(sub.expires_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className={`history-status ${sub.status}`}>
+                    {sub.status.charAt(0).toUpperCase() + sub.status.slice(1)}
+                  </div>
                 </div>
-                <div className="history-info">
-                  <span className="history-plan">
-                    Premium {sub.plan_type === 'monthly' ? 'Monthly' : 'Yearly'}
-                  </span>
-                  <span className="history-dates">
-                    {new Date(sub.started_at).toLocaleDateString()} - {new Date(sub.expires_at).toLocaleDateString()}
-                  </span>
-                </div>
-                <div className={`history-status ${sub.status}`}>
-                  {sub.status.charAt(0).toUpperCase() + sub.status.slice(1)}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </motion.div>
       )}
@@ -301,7 +307,7 @@ export default function SubscriptionScreen({ onNavigate }: Props) {
             </div>
             <h3>Cancel Subscription?</h3>
             <p>
-              You will lose access to premium features at the end of your current billing period.
+              Your subscription will remain active until the end of the current period. After that, premium features will no longer be accessible.
             </p>
             <div className="cancel-modal-buttons">
               <button
@@ -323,15 +329,5 @@ export default function SubscriptionScreen({ onNavigate }: Props) {
         </div>
       )}
     </div>
-  );
-}
-
-// Helper component for clock icon
-function ClockIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10"></circle>
-      <polyline points="12 6 12 12 16 14"></polyline>
-    </svg>
   );
 }
