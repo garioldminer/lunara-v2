@@ -2,15 +2,9 @@ import { PremiumFeatureId, incrementCredit } from './premiumService';
 import { getFeatureById, getPlanByType, getStarsForFeature, getStarsForPlan } from './premiumConfig';
 
 // ============================================
-// TELEGRAM PAYMENT SERVICE
+// TELEGRAM PAYMENT SERVICE (Centralized - DB-based pricing)
 // ============================================
 
-// ❌ ამოღებულია: hardcoded STARS_PRICING
-// ✅ ეხლა ფასები მოდის premiumConfig.ts-დან (DB + cache)
-
-// ============================================
-// HELPER: Get Telegram WebApp
-// ============================================
 function getTg() {
   return (window as any).Telegram?.WebApp;
 }
@@ -19,12 +13,10 @@ function getTg() {
 // GET STARS FOR FEATURE (async, DB-დან)
 // ============================================
 const getStarsForFeatureId = async (featureId: string): Promise<number> => {
-  // Subscription plans
   if (featureId === 'subscription_monthly' || featureId === 'subscription_yearly') {
     const planType = featureId === 'subscription_monthly' ? 'monthly' : 'yearly';
     return await getStarsForPlan(planType);
   }
-  // Single readings
   return await getStarsForFeature(featureId);
 };
 
@@ -42,7 +34,6 @@ export async function createInvoiceUrl(
     return null;
   }
 
-  // Get feature details from premiumConfig (DB)
   let featureName = featureId;
   let featureDescription = featureId;
   
@@ -62,7 +53,7 @@ export async function createInvoiceUrl(
   }
 
   try {
-    console.log('📦 Creating invoice for:', { featureId, userId, stars, featureName });
+    console.log('📦 Creating invoice:', { featureId, userId, stars, featureName });
 
     const response = await fetch(
       `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-invoice`,
@@ -81,8 +72,6 @@ export async function createInvoiceUrl(
         }),
       }
     );
-
-    console.log('📡 Response status:', response.status);
 
     if (!response.ok) {
       const error = await response.text();
@@ -115,8 +104,6 @@ export function openPayment(invoiceUrl: string): Promise<'paid' | 'cancelled' | 
     tg.HapticFeedback?.impactOccurred('medium');
 
     tg.openInvoice(invoiceUrl, (status: string) => {
-      console.log('💳 Payment status:', status);
-      
       switch (status) {
         case 'paid':
           tg.HapticFeedback?.notificationOccurred('success');
@@ -159,19 +146,13 @@ export async function completePurchase(
 
     switch (status) {
       case 'paid':
-        // ✅ წარმატება! დავამატოთ credit ბაზაში
-        console.log('💰 Payment successful! Adding credit...');
         await incrementCredit(userId, featureId, 1);
-        console.log('✅ Credit added to database');
         return 'success';
-      
       case 'cancelled':
         return 'cancelled';
-      
       case 'pending':
         showInfo('Payment is being processed. Please check back in a moment.');
         return 'error';
-      
       case 'failed':
       default:
         showError('Payment failed. Please try again.');
@@ -185,29 +166,20 @@ export async function completePurchase(
 }
 
 // ============================================
-// HELPER: SHOW MESSAGES
+// HELPERS
 // ============================================
 function showError(message: string) {
   const tg = getTg();
-  if (tg?.showAlert) {
-    tg.showAlert(message);
-  } else {
-    alert(message);
-  }
+  if (tg?.showAlert) tg.showAlert(message);
+  else alert(message);
 }
 
 function showInfo(message: string) {
   const tg = getTg();
-  if (tg?.showAlert) {
-    tg.showAlert(message);
-  } else {
-    alert(message);
-  }
+  if (tg?.showAlert) tg.showAlert(message);
+  else alert(message);
 }
 
-// ============================================
-// FORMAT STARS PRICE
-// ============================================
 export function formatStars(stars: number): string {
   return `⭐ ${stars}`;
 }

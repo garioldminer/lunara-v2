@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Crown, Sparkles, CheckCircle, XCircle, Infinity } from 'lucide-react';
 import { formatPrice, PremiumFeatureId, getAvailableCredits, isPremium } from '../lib/premiumService';
-import { completePurchase, formatStars, STARS_PRICING } from '../lib/telegramPaymentService';
+import { completePurchase, formatStars } from '../lib/telegramPaymentService';
 import { createSubscription } from '../lib/subscriptionService';
-import { SUBSCRIPTION_PRICING } from '../lib/subscriptionPricing';
+import { getSubscriptionPlans, getPremiumFeatures, getPremiumBenefits, SubscriptionPlan, PremiumFeature, PremiumBenefit } from '../lib/premiumConfig';
 import { useUser } from '../context/UserContext';
 import './PremiumPaywall.css';
 
@@ -15,19 +15,6 @@ interface Props {
   onPurchase?: (featureId: PremiumFeatureId) => void;
   onUse?: (featureId: PremiumFeatureId) => void;
 }
-
-// ✅ Premium Features List - რა შედის subscription-ში
-const PREMIUM_FEATURES_LIST = [
-  { icon: '🔮', text: 'Unlimited readings' },
-  { icon: '🃏', text: 'Full 78-card collection' },
-  { icon: '🌙', text: 'Daily + weekly horoscope' },
-  { icon: '🔢', text: 'Complete numerology' },
-  { icon: '💎', text: '50+ crystals' },
-  { icon: '🌕', text: 'Moon rituals' },
-  { icon: '📊', text: 'Birth chart analysis' },
-  { icon: '🤖', text: 'AI-powered insights' },
-  { icon: '🚫', text: 'No ads' },
-];
 
 export default function PremiumPaywall({ 
   isOpen, 
@@ -46,19 +33,36 @@ export default function PremiumPaywall({
   const [errorMessage, setErrorMessage] = useState('');
   const [credits, setCredits] = useState<Record<string, number>>({});
   const [hasSubscription, setHasSubscription] = useState(false);
+  
+  // 🆕 DB-დან წამოსული მონაცემები
+  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
+  const [features, setFeatures] = useState<PremiumFeature[]>([]);
+  const [benefits, setBenefits] = useState<PremiumBenefit[]>([]);
 
   useEffect(() => {
     if (isOpen && user) {
       const fetchData = async () => {
-        console.log('🔍 Fetching credits for user:', user.id);
-        const [creditsData, isSub] = await Promise.all([
+        console.log('🔍 Fetching data for user:', user.id);
+        
+        const [creditsData, isSub, plansData, featuresData, benefitsData] = await Promise.all([
           getAvailableCredits(user.id),
-          isPremium(user.id)
+          isPremium(user.id),
+          getSubscriptionPlans(),
+          getPremiumFeatures(),
+          getPremiumBenefits()
         ]);
+        
         console.log('📊 Credits loaded:', creditsData);
         console.log('✅ Has subscription:', isSub);
+        console.log('💎 Plans loaded:', plansData.length);
+        console.log('✨ Features loaded:', featuresData.length);
+        console.log('⭐ Benefits loaded:', benefitsData.length);
+        
         setCredits(creditsData);
         setHasSubscription(isSub);
+        setPlans(plansData);
+        setFeatures(featuresData);
+        setBenefits(benefitsData);
       };
       fetchData();
     }
@@ -73,22 +77,27 @@ export default function PremiumPaywall({
     setIsProcessing(true);
 
     try {
-      // ✅ Subscription purchase (Monthly/Yearly)
+      // Subscription purchase (Monthly/Yearly)
       if (selectedFeature === 'subscription_monthly' || selectedFeature === 'subscription_yearly') {
-        const plan = selectedFeature === 'subscription_monthly' ? 'monthly' : 'yearly';
-        const pricing = SUBSCRIPTION_PRICING[plan];
+        const planType = selectedFeature === 'subscription_monthly' ? 'monthly' : 'yearly';
+        const plan = plans.find(p => p.plan_type === planType);
         
-        console.log(`💎 Purchasing ${plan} subscription for ${pricing.stars} stars`);
+        if (!plan) {
+          setErrorMessage('Plan not found. Please try again.');
+          setShowError(true);
+          setIsProcessing(false);
+          return;
+        }
         
-        // Telegram Stars payment
+        console.log(`💎 Purchasing ${planType} subscription for ${plan.stars} stars`);
+        
         const result = await completePurchase(
           selectedFeature as PremiumFeatureId,
           user.id
         );
 
         if (result === 'success') {
-          // Create subscription in database
-          const subscription = await createSubscription(user.id, plan);
+          const subscription = await createSubscription(user.id, planType);
           
           if (subscription) {
             setShowSuccess(true);
@@ -110,12 +119,12 @@ export default function PremiumPaywall({
         } else if (result === 'cancelled') {
           setIsProcessing(false);
         } else {
-          setErrorMessage('ტრანზაქცია ვერ განხორციელდა. გთხოვთ სცადოთ ხელახლა.');
+          setErrorMessage('Transaction failed. Please try again.');
           setShowError(true);
           setIsProcessing(false);
         }
       } 
-      // ✅ Single reading purchase
+      // Single reading purchase
       else {
         const result = await completePurchase(
           selectedFeature as PremiumFeatureId,
@@ -141,14 +150,14 @@ export default function PremiumPaywall({
         } else if (result === 'cancelled') {
           setIsProcessing(false);
         } else {
-          setErrorMessage('ტრანზაქცია ვერ განხორციელდა. გთხოვთ სცადოთ ხელახლა.');
+          setErrorMessage('Transaction failed. Please try again.');
           setShowError(true);
           setIsProcessing(false);
         }
       }
     } catch (error) {
       console.error('❌ Purchase error:', error);
-      setErrorMessage('რაღაც შეცდომა მოხდა. გთხოვთ სცადოთ ხელახლა.');
+      setErrorMessage('Something went wrong. Please try again.');
       setShowError(true);
       setIsProcessing(false);
     }
@@ -160,25 +169,60 @@ export default function PremiumPaywall({
     }
   };
 
-  const stars = STARS_PRICING[selectedFeature as PremiumFeatureId] || 0;
+  // 🆕 ფასი DB-დან
+  const getFeatureStars = (featureId: string): number => {
+    if (featureId === 'subscription_monthly' || featureId === 'subscription_yearly') {
+      const planType = featureId === 'subscription_monthly' ? 'monthly' : 'yearly';
+      const plan = plans.find(p => p.plan_type === planType);
+      return plan?.stars || 0;
+    }
+    const feature = features.find(f => f.feature_id === featureId);
+    return feature?.stars || 0;
+  };
+
+  const getFeatureUSD = (featureId: string): number => {
+    if (featureId === 'subscription_monthly' || featureId === 'subscription_yearly') {
+      const planType = featureId === 'subscription_monthly' ? 'monthly' : 'yearly';
+      const plan = plans.find(p => p.plan_type === planType);
+      return plan?.usd_cents || 0;
+    }
+    const feature = features.find(f => f.feature_id === featureId);
+    return feature?.usd_cents || 0;
+  };
+
+  const getPlanDetails = (planType: 'monthly' | 'yearly') => {
+    return plans.find(p => p.plan_type === planType);
+  };
+
+  const getFeatureDetails = (featureId: string) => {
+    return features.find(f => f.feature_id === featureId);
+  };
+
+  const stars = getFeatureStars(selectedFeature);
 
   const isSubscriptionTab = selectedFeature === 'subscription_monthly' || selectedFeature === 'subscription_yearly';
   const isSingleTab = selectedFeature === 'celtic_cross' || selectedFeature === 'horseshoe' || selectedFeature === 'relationship';
 
   const getCredits = (featureId: string) => credits[featureId] || 0;
 
-  // ✅ Purchase button-ის ჩვენების ლოგიკა
   const showPurchaseBtn = () => {
-    // Subscription tab-ზე ყოველთვის ჩანს (თუ არ აქვს subscription)
     if (isSubscriptionTab && !hasSubscription) {
       return true;
     }
-    // Single tab-ზე ჩანს მხოლოდ თუ არ აქვს subscription და credits = 0
     if (isSingleTab && !hasSubscription && getCredits(selectedFeature) === 0) {
       return true;
     }
     return false;
   };
+
+  // Get plan details
+  const monthlyPlan = getPlanDetails('monthly');
+  const yearlyPlan = getPlanDetails('yearly');
+  
+  // Get feature details
+  const celticCross = getFeatureDetails('celtic_cross');
+  const horseshoe = getFeatureDetails('horseshoe');
+  const relationship = getFeatureDetails('relationship');
 
   return (
     <AnimatePresence>
@@ -243,189 +287,202 @@ export default function PremiumPaywall({
             <div className="premium-features-list">
               {isSubscriptionTab && (
                 <>
-                  {/* ✅ Features List - რა შედის Premium-ში */}
+                  {/* Features List - DB-დან */}
                   <div className="features-list-section">
                     <h3 className="features-section-title">✦ What's Included ✦</h3>
                     <div className="features-grid">
-                      {PREMIUM_FEATURES_LIST.map((feature, idx) => (
-                        <div key={idx} className="feature-item-mini">
-                          <span className="feature-icon-mini">{feature.icon}</span>
-                          <span className="feature-text-mini">{feature.text}</span>
+                      {benefits.map((benefit) => (
+                        <div key={benefit.id} className="feature-item-mini">
+                          <span className="feature-icon-mini">{benefit.icon}</span>
+                          <span className="feature-text-mini">{benefit.text}</span>
                           <CheckCircle size={12} className="feature-check-mini" />
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  {/* Plan Selector */}
-                  <div 
-                    className={`premium-feature-item ${selectedFeature === 'subscription_monthly' ? 'selected' : ''} ${hasSubscription ? 'purchased' : ''}`}
-                    onClick={() => !isProcessing && setSelectedFeature('subscription_monthly')}
-                  >
-                    <div className="premium-feature-icon">💎</div>
-                    <div className="premium-feature-info">
-                      <h4>Premium Monthly</h4>
-                      <p>30 days access</p>
+                  {/* Plan Selector - Monthly */}
+                  {monthlyPlan && (
+                    <div 
+                      className={`premium-feature-item ${selectedFeature === 'subscription_monthly' ? 'selected' : ''} ${hasSubscription ? 'purchased' : ''}`}
+                      onClick={() => !isProcessing && setSelectedFeature('subscription_monthly')}
+                    >
+                      <div className="premium-feature-icon">{monthlyPlan.icon || '💎'}</div>
+                      <div className="premium-feature-info">
+                        <h4>{monthlyPlan.label}</h4>
+                        <p>{monthlyPlan.days} days access</p>
+                      </div>
+                      <div className="premium-feature-price">
+                        {hasSubscription ? (
+                          <div className="unlimited-badge">
+                            <Infinity size={12} />
+                            <span>Active</span>
+                          </div>
+                        ) : (
+                          <>
+                            <span className="price-usd">{formatPrice(monthlyPlan.usd_cents)}</span>
+                            <span className="price-stars">{formatStars(monthlyPlan.stars)}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
-                    <div className="premium-feature-price">
-                      {hasSubscription ? (
-                        <div className="unlimited-badge">
-                          <Infinity size={12} />
-                          <span>Active</span>
-                        </div>
-                      ) : (
-                        <>
-                          <span className="price-usd">{formatPrice(999)}</span>
-                          <span className="price-stars">{formatStars(499)}</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
+                  )}
 
-                  <div 
-                    className={`premium-feature-item ${selectedFeature === 'subscription_yearly' ? 'selected' : ''} ${hasSubscription ? 'purchased' : ''}`}
-                    onClick={() => !isProcessing && setSelectedFeature('subscription_yearly')}
-                  >
-                    <div className="premium-feature-badge">SAVE 33%</div>
-                    <div className="premium-feature-icon">💎</div>
-                    <div className="premium-feature-info">
-                      <h4>Premium Yearly</h4>
-                      <p>365 days - Best value!</p>
-                    </div>
-                    <div className="premium-feature-price">
-                      {hasSubscription ? (
-                        <div className="unlimited-badge">
-                          <Infinity size={12} />
-                          <span>Active</span>
-                        </div>
-                      ) : (
-                        <>
-                          <span className="price-usd">{formatPrice(7999)}</span>
-                          <span className="price-stars">{formatStars(3999)}</span>
-                        </>
+                  {/* Plan Selector - Yearly */}
+                  {yearlyPlan && (
+                    <div 
+                      className={`premium-feature-item ${selectedFeature === 'subscription_yearly' ? 'selected' : ''} ${hasSubscription ? 'purchased' : ''}`}
+                      onClick={() => !isProcessing && setSelectedFeature('subscription_yearly')}
+                    >
+                      {yearlyPlan.savings_text && (
+                        <div className="premium-feature-badge">{yearlyPlan.savings_text}</div>
                       )}
+                      <div className="premium-feature-icon">{yearlyPlan.icon || '💎'}</div>
+                      <div className="premium-feature-info">
+                        <h4>{yearlyPlan.label}</h4>
+                        <p>{yearlyPlan.days} days - Best value!</p>
+                      </div>
+                      <div className="premium-feature-price">
+                        {hasSubscription ? (
+                          <div className="unlimited-badge">
+                            <Infinity size={12} />
+                            <span>Active</span>
+                          </div>
+                        ) : (
+                          <>
+                            <span className="price-usd">{formatPrice(yearlyPlan.usd_cents)}</span>
+                            <span className="price-stars">{formatStars(yearlyPlan.stars)}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </>
               )}
 
               {isSingleTab && (
                 <>
                   {/* Celtic Cross */}
-                  <div className={`premium-feature-item ${selectedFeature === 'celtic_cross' ? 'selected' : ''} ${getCredits('celtic_cross') > 0 || hasSubscription ? 'purchased' : ''}`}>
-                    <div className="premium-feature-icon">✝️</div>
-                    <div className="premium-feature-info">
-                      <h4>Celtic Cross Reading</h4>
-                      <p>10-card deep analysis</p>
-                    </div>
-                    <div className="premium-feature-price">
-                      {hasSubscription ? (
-                        <div className="unlimited-badge">
-                          <Infinity size={12} />
-                          <span>Unlimited</span>
-                        </div>
-                      ) : getCredits('celtic_cross') > 0 ? (
-                        <div className="use-section">
-                          <button 
-                            className="use-btn"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleUse('celtic_cross');
-                            }}
-                          >
-                            Use
-                          </button>
-                          <div className="credits-badge">
-                            <span>{getCredits('celtic_cross')}</span>
+                  {celticCross && (
+                    <div className={`premium-feature-item ${selectedFeature === 'celtic_cross' ? 'selected' : ''} ${getCredits('celtic_cross') > 0 || hasSubscription ? 'purchased' : ''}`}>
+                      <div className="premium-feature-icon">{celticCross.icon}</div>
+                      <div className="premium-feature-info">
+                        <h4>{celticCross.name}</h4>
+                        <p>{celticCross.description}</p>
+                      </div>
+                      <div className="premium-feature-price">
+                        {hasSubscription ? (
+                          <div className="unlimited-badge">
+                            <Infinity size={12} />
+                            <span>Unlimited</span>
                           </div>
-                        </div>
-                      ) : (
-                        <>
-                          <span className="price-usd">{formatPrice(299)}</span>
-                          <span className="price-stars">{formatStars(1)}</span>
-                        </>
-                      )}
+                        ) : getCredits('celtic_cross') > 0 ? (
+                          <div className="use-section">
+                            <button 
+                              className="use-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleUse('celtic_cross');
+                              }}
+                            >
+                              Use
+                            </button>
+                            <div className="credits-badge">
+                              <span>{getCredits('celtic_cross')}</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <span className="price-usd">{formatPrice(celticCross.usd_cents)}</span>
+                            <span className="price-stars">{formatStars(celticCross.stars)}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Horseshoe */}
-                  <div className={`premium-feature-item ${selectedFeature === 'horseshoe' ? 'selected' : ''} ${getCredits('horseshoe') > 0 || hasSubscription ? 'purchased' : ''}`}>
-                    <div className="premium-feature-icon">🐎</div>
-                    <div className="premium-feature-info">
-                      <h4>Horseshoe Reading</h4>
-                      <p>7-card life path</p>
-                    </div>
-                    <div className="premium-feature-price">
-                      {hasSubscription ? (
-                        <div className="unlimited-badge">
-                          <Infinity size={12} />
-                          <span>Unlimited</span>
-                        </div>
-                      ) : getCredits('horseshoe') > 0 ? (
-                        <div className="use-section">
-                          <button 
-                            className="use-btn"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleUse('horseshoe');
-                            }}
-                          >
-                            Use
-                          </button>
-                          <div className="credits-badge">
-                            <span>{getCredits('horseshoe')}</span>
+                  {horseshoe && (
+                    <div className={`premium-feature-item ${selectedFeature === 'horseshoe' ? 'selected' : ''} ${getCredits('horseshoe') > 0 || hasSubscription ? 'purchased' : ''}`}>
+                      <div className="premium-feature-icon">{horseshoe.icon}</div>
+                      <div className="premium-feature-info">
+                        <h4>{horseshoe.name}</h4>
+                        <p>{horseshoe.description}</p>
+                      </div>
+                      <div className="premium-feature-price">
+                        {hasSubscription ? (
+                          <div className="unlimited-badge">
+                            <Infinity size={12} />
+                            <span>Unlimited</span>
                           </div>
-                        </div>
-                      ) : (
-                        <>
-                          <span className="price-usd">{formatPrice(199)}</span>
-                          <span className="price-stars">{formatStars(100)}</span>
-                        </>
-                      )}
+                        ) : getCredits('horseshoe') > 0 ? (
+                          <div className="use-section">
+                            <button 
+                              className="use-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleUse('horseshoe');
+                              }}
+                            >
+                              Use
+                            </button>
+                            <div className="credits-badge">
+                              <span>{getCredits('horseshoe')}</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <span className="price-usd">{formatPrice(horseshoe.usd_cents)}</span>
+                            <span className="price-stars">{formatStars(horseshoe.stars)}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Relationship */}
-                  <div className={`premium-feature-item ${selectedFeature === 'relationship' ? 'selected' : ''} ${getCredits('relationship') > 0 || hasSubscription ? 'purchased' : ''}`}>
-                    <div className="premium-feature-icon">❤️</div>
-                    <div className="premium-feature-info">
-                      <h4>Relationship Spread</h4>
-                      <p>6-card love analysis</p>
-                    </div>
-                    <div className="premium-feature-price">
-                      {hasSubscription ? (
-                        <div className="unlimited-badge">
-                          <Infinity size={12} />
-                          <span>Unlimited</span>
-                        </div>
-                      ) : getCredits('relationship') > 0 ? (
-                        <div className="use-section">
-                          <button 
-                            className="use-btn"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleUse('relationship');
-                            }}
-                          >
-                            Use
-                          </button>
-                          <div className="credits-badge">
-                            <span>{getCredits('relationship')}</span>
+                  {relationship && (
+                    <div className={`premium-feature-item ${selectedFeature === 'relationship' ? 'selected' : ''} ${getCredits('relationship') > 0 || hasSubscription ? 'purchased' : ''}`}>
+                      <div className="premium-feature-icon">{relationship.icon}</div>
+                      <div className="premium-feature-info">
+                        <h4>{relationship.name}</h4>
+                        <p>{relationship.description}</p>
+                      </div>
+                      <div className="premium-feature-price">
+                        {hasSubscription ? (
+                          <div className="unlimited-badge">
+                            <Infinity size={12} />
+                            <span>Unlimited</span>
                           </div>
-                        </div>
-                      ) : (
-                        <>
-                          <span className="price-usd">{formatPrice(399)}</span>
-                          <span className="price-stars">{formatStars(200)}</span>
-                        </>
-                      )}
+                        ) : getCredits('relationship') > 0 ? (
+                          <div className="use-section">
+                            <button 
+                              className="use-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleUse('relationship');
+                              }}
+                            >
+                              Use
+                            </button>
+                            <div className="credits-badge">
+                              <span>{getCredits('relationship')}</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <span className="price-usd">{formatPrice(relationship.usd_cents)}</span>
+                            <span className="price-stars">{formatStars(relationship.stars)}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </>
               )}
             </div>
 
-            {/* ✅ Purchase Button - სწორი ლოგიკით */}
+            {/* Purchase Button */}
             {showPurchaseBtn() && (
               <button 
                 className="premium-purchase-btn"
@@ -488,15 +545,15 @@ export default function PremiumPaywall({
                   >
                     <CheckCircle size={80} />
                   </motion.div>
-                  <h3 className="success-title">წარმატებით!</h3>
+                  <h3 className="success-title">Success!</h3>
                   <p className="success-message">
                     {isSubscriptionTab 
                       ? 'Subscription activated!<br />Unlimited readings enabled.' 
-                      : 'ტრანზაქცია წარმატებით განხორციელდა.<br />Premium ფუნქციები აქტიურებულია!'
+                      : 'Transaction completed successfully.<br />Premium features activated!'
                     }
                   </p>
                   <div className="success-stars">
-                    ⭐ {stars} Stars დახარჯული
+                    ⭐ {stars} Stars spent
                   </div>
                 </motion.div>
               </motion.div>
@@ -527,13 +584,13 @@ export default function PremiumPaywall({
                   >
                     <XCircle size={80} />
                   </motion.div>
-                  <h3 className="error-title">ვერ განხორციელდა</h3>
+                  <h3 className="error-title">Failed</h3>
                   <p className="error-message">{errorMessage}</p>
                   <button 
                     className="error-close-btn"
                     onClick={() => setShowError(false)}
                   >
-                    კარგი
+                    OK
                   </button>
                 </motion.div>
               </motion.div>
