@@ -354,11 +354,14 @@ export default function HomeScreen({ onNavigate }: Props) {
   const reloadFromDatabase = async () => {
     addDebugLog('info', 'DB', '🔄 Reloading all data from database...');
     if (user && supabase) {
-      const { data, error } = await supabase.from('user_economy').select('cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus, energy_boost_multiplier, last_energy_update').eq('user_id', user.id).single();
+      const { data, error } = await supabase.from('user_economy').select('cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus, energy_boost_multiplier, last_energy_update, last_daily_claim').eq('user_id', user.id).single();
       if (!error && data) {
         const levelData = getLevelFromTotalXP(data.xp || 0);
         setEconomy({ cosmic_coins: data.cosmic_coins || 0, xp: data.xp || 0, level: levelData.level, current_streak: data.current_streak || 0, cosmic_focus: data.cosmic_focus || 20, max_focus: data.max_focus || 20 });
         setCurrentStreak(data.current_streak || 0);
+        // 🆕 rewardClaimed ავტომატურად განახლდება reload-ზე
+        const todayStr = new Date().toISOString().split('T')[0];
+        setRewardClaimed(data.last_daily_claim === todayStr);
         setDbDebugInfo(prev => ({ ...prev, economyData: data }));
         addDebugLog('success', 'DB', '✅ Data reloaded successfully');
       }
@@ -542,8 +545,9 @@ export default function HomeScreen({ onNavigate }: Props) {
       setDbStatus('connecting');
       addDebugLog('info', 'ECONOMY', '📡 Starting economy data load', { userId: user.id });
       try {
-        const queryParams = { table: 'user_economy', columns: 'cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus', userId: user.id };
-        const { data, error } = await supabase.from('user_economy').select('cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus').eq('user_id', user.id).single();
+        const queryParams = { table: 'user_economy', columns: 'cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus, last_daily_claim', userId: user.id };
+        // 🆕 დაემატა last_daily_claim
+        const { data, error } = await supabase.from('user_economy').select('cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus, last_daily_claim').eq('user_id', user.id).single();
         if (error) { setDbStatus('error'); addToDbDebugHistory('user_economy', 'SELECT', queryParams, null, error); addDebugLog('error', 'ECONOMY', '❌ Database query failed', { error: error.message, code: error.code, details: error.details }); return; }
         setDbStatus('connected');
         addToDbDebugHistory('user_economy', 'SELECT', queryParams, data);
@@ -554,6 +558,9 @@ export default function HomeScreen({ onNavigate }: Props) {
           const economyData = { cosmic_coins: data.cosmic_coins || 0, xp: data.xp || 0, level: levelData.level, current_streak: data.current_streak || 0, cosmic_focus: data.cosmic_focus || 20, max_focus: data.max_focus || 20 };
           setEconomy(economyData);
           setCurrentStreak(economyData.current_streak);
+          // 🆕 ავტომატური rewardClaimed დაყენება
+          const todayStr = new Date().toISOString().split('T')[0];
+          setRewardClaimed(data.last_daily_claim === todayStr);
           addDebugLog('info', 'STATE', '💰 Economy state updated', economyData);
         } else { addDebugLog('warning', 'ECONOMY', '⚠️ No economy data found for user'); }
       } catch (error: any) { setDbStatus('error'); addDebugLog('error', 'ECONOMY', '💥 Exception during economy load', { message: error.message, stack: error.stack }); }
@@ -633,30 +640,67 @@ export default function HomeScreen({ onNavigate }: Props) {
     return () => clearInterval(timer);
   }, []);
 
+  // 🆕 სრულად განახლებული: SQL function + level up check
   const handleClaimReward = async () => {
-    if (rewardClaimed || isClaiming) { showToast('Reward already claimed or claiming', 'info'); return; }
-    addDebugLog('info', 'REWARD', 'Starting reward claim process');
+    if (rewardClaimed || isClaiming) { 
+      showToast('Reward already claimed or claiming', 'info'); 
+      return; 
+    }
+    if (!user?.id || !supabase) { 
+      showToast('Not connected', 'error'); 
+      return; 
+    }
+    addDebugLog('info', 'REWARD', 'Starting reward claim via SQL function...');
     setIsClaiming(true);
     try {
-      if (!user?.id) { addDebugLog('error', 'REWARD', 'No user ID available'); showToast('User ID not found', 'error'); setIsClaiming(false); return; }
-      addDebugLog('info', 'REWARD', 'Calling Edge Function', { userId: user.id, url: 'https://eutavdhcxpfhpfsyaskb.supabase.co/functions/v1/claim-daily-reward' });
-      const response = await fetch('https://eutavdhcxpfhpfsyaskb.supabase.co/functions/v1/claim-daily-reward', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-User-Id': user.id }, body: JSON.stringify({}) });
-      addDebugLog('info', 'REWARD', 'Edge Function response received', { status: response.status, statusText: response.statusText });
-      const result = await response.json();
-      addDebugLog('info', 'REWARD', 'Response parsed', result);
-      if (result.success) {
-        setRewardClaimed(true);
-        const rewardData = result.data?.reward || result.reward;
-        if (rewardData) {
-          setCurrentStreak(rewardData.streak);
-          const newEconomy = { ...economy, cosmic_coins: economy.cosmic_coins + rewardData.coins, xp: economy.xp + rewardData.xp, current_streak: rewardData.streak };
-          setEconomy(newEconomy);
-          addDebugLog('success', 'REWARD', 'Reward claimed successfully', { coins: rewardData.coins, xp: rewardData.xp, streak: rewardData.streak, newEconomy });
-          showToast(`Daily Reward Claimed! +${rewardData.coins} Coins, +${rewardData.xp} XP`, 'success');
-        } else { showToast('Reward data missing in response', 'error'); }
-      } else { addDebugLog('warning', 'REWARD', 'Edge Function returned error', result.error); showToast(result.error || 'Failed to claim reward', 'error'); }
-    } catch (error: any) { addDebugLog('error', 'REWARD', 'Exception during reward claim', { message: error.message, stack: error.stack }); showToast('Failed to connect to server', 'error'); }
-    finally { setIsClaiming(false); }
+      const { data, error } = await supabase.rpc('claim_daily_reward', { p_user_id: user.id });
+
+      if (error) {
+        addDebugLog('error', 'REWARD', `RPC error: ${error.message}`);
+        showToast(`Failed: ${error.message}`, 'error');
+        setIsClaiming(false);
+        return;
+      }
+
+      if (!data?.success) {
+        addDebugLog('warning', 'REWARD', `Claim rejected: ${data?.error}`);
+        showToast(data?.error || 'Failed to claim reward', 'error');
+        setIsClaiming(false);
+        return;
+      }
+
+      setRewardClaimed(true);
+      const reward = data.reward;
+      setCurrentStreak(reward.streak);
+
+      setEconomy(prev => {
+        const newXP = prev.xp + reward.xp;
+        const newLevelData = getLevelFromTotalXP(newXP);
+        
+        if (newLevelData.level > prev.level) {
+          confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#fbbf24', '#f59e0b', '#ffffff', '#10b981'] });
+          setLeveledUpTo(newLevelData.level);
+          setShowLevelUpModal(true);
+        } else {
+          showToast(`Daily Reward Claimed! +${reward.coins} 💎, +${reward.xp} XP, 🔥 ${reward.streak} day streak!`, 'success');
+        }
+        
+        return { 
+          ...prev, 
+          cosmic_coins: data.new_coins, 
+          xp: newXP, 
+          level: newLevelData.level, 
+          current_streak: reward.streak 
+        };
+      });
+
+      addDebugLog('success', 'REWARD', `Claimed! +${reward.coins} coins, +${reward.xp} XP, streak ${reward.streak}`, data);
+    } catch (err: any) {
+      addDebugLog('error', 'REWARD', `Exception: ${err.message}`);
+      showToast('Failed to connect to server', 'error');
+    } finally {
+      setIsClaiming(false);
+    }
   };
 
   const handleQuickAction = async (action: string) => {
@@ -993,7 +1037,6 @@ export default function HomeScreen({ onNavigate }: Props) {
         <DiamondShopModal isOpen={isShopOpen} onClose={() => setIsShopOpen(false)} userId={user.id} isAdmin={isUserAdmin} onSuccess={() => { setIsShopOpen(false); showToast('Diamonds successfully added!', 'success'); reloadFromDatabase(); }} />
       )}
 
-      {/* ✅ განახლებული StreakModal: userId + onMilestoneClaimed */}
       <StreakModal 
         isOpen={showStreakModal} 
         onClose={() => setShowStreakModal(false)} 
