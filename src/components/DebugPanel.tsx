@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { 
   Bug, X, Activity, Users, Server, Terminal, Settings, 
-  Copy, Check, RefreshCw, Play, Eye, ChevronDown, Heart, Crown, Zap
+  Copy, Check, RefreshCw, Play, Eye, ChevronDown, Heart, Crown, Zap, Flame
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { 
@@ -97,7 +97,6 @@ interface DebugPanelProps {
   testAddXPWithLevel: (amount: number) => void;
   forceRecalcLevel: () => void;
   xpTestLogs: string[];
-  // ✅ ბოლო 10 props optional-ად (HomeScreen-ში არ გადაეცემა)
   runHomeDiagnostics?: () => Promise<DiagnosticResult[]>;
   diagnostics?: HomeDiagnostics;
   testEnergySystem?: () => void;
@@ -110,7 +109,7 @@ interface DebugPanelProps {
   testSupabaseConnection?: () => void;
 }
 
-type TabType = 'system' | 'user' | 'profile' | 'energy' | 'diagnostics' | 'functions' | 'logs' | 'actions';
+type TabType = 'system' | 'user' | 'streak' | 'profile' | 'energy' | 'diagnostics' | 'functions' | 'logs' | 'actions';
 
 export default function DebugPanel(props: DebugPanelProps) {
   const {
@@ -120,7 +119,6 @@ export default function DebugPanel(props: DebugPanelProps) {
     testAddCoins, testAddXP, testAddEnergy, testSpendEnergy, 
     testCompleteQuest, reloadFromDatabase, questsLoading, timeLeft, 
     showQuestModal, rewardClaimed, isClaiming,
-    // ✅ Default values optional props-ისთვის
     runHomeDiagnostics = async () => [],
     diagnostics = { results: [], isRunning: false, lastRun: null },
     testEnergySystem = () => {},
@@ -155,12 +153,17 @@ export default function DebugPanel(props: DebugPanelProps) {
   const [profileChecking, setProfileChecking] = useState(false);
   const [profileLastRun, setProfileLastRun] = useState<string | null>(null);
 
-  // ============================================
-  // ⚡ ENERGY TAB STATE
-  // ============================================
   const [energyData, setEnergyData] = useState<EnergyCheckData | null>(null);
   const [energyChecking, setEnergyChecking] = useState(false);
   const [energyLastRun, setEnergyLastRun] = useState<string | null>(null);
+
+  // ============================================
+  // 🔥 STREAK TAB STATE
+  // ============================================
+  const [streakData, setStreakData] = useState<any>(null);
+  const [streakChecking, setStreakChecking] = useState(false);
+  const [streakLastRun, setStreakLastRun] = useState<string | null>(null);
+  const [streakActionLoading, setStreakActionLoading] = useState<string | null>(null);
 
   useEffect(() => {
     if (!showDebug) return;
@@ -250,9 +253,6 @@ export default function DebugPanel(props: DebugPanelProps) {
     return { level, currentLevelXP, xpToNext: xpRequiredForNext };
   };
 
-  // ============================================
-  // ⚡ ENERGY CHECK
-  // ============================================
   const runEnergyCheck = async () => {
     if (!user?.id || !supabase) return;
     setEnergyChecking(true);
@@ -443,6 +443,106 @@ export default function DebugPanel(props: DebugPanelProps) {
     setProfileChecking(false);
   };
 
+  // ============================================
+  // 🔥 STREAK TAB FUNCTIONS
+  // ============================================
+  const runStreakCheck = async () => {
+    if (!user?.id) return;
+    setStreakChecking(true);
+    addDebugLog('info', 'STREAK_CHECK', '🔥 Starting streak system check...');
+    
+    try {
+      const { getStreakDiagnostics } = await import('../lib/streakService');
+      const data = await getStreakDiagnostics(user.id);
+      
+      if (data) {
+        setStreakData(data);
+        setStreakLastRun(new Date().toLocaleTimeString('en-US', { hour12: false }));
+        addDebugLog('success', 'STREAK_CHECK', 
+          `✅ Streak: ${data.streak_info?.current_streak || 0} | ` +
+          `Milestones: ${data.stats.claimed_count}/${data.stats.total_milestones} claimed | ` +
+          `Unclaimed: ${data.stats.unclaimed_count}`);
+      } else {
+        addDebugLog('error', 'STREAK_CHECK', '❌ Failed to get streak data');
+      }
+    } catch (err: any) {
+      addDebugLog('error', 'STREAK_CHECK', `❌ ${err.message}`);
+    }
+    
+    setStreakChecking(false);
+  };
+
+  const handleSetStreak = async (days: number) => {
+    if (!user?.id) return;
+    setStreakActionLoading('set');
+    addDebugLog('info', 'STREAK_ACTION', `🔧 Setting streak to ${days} days...`);
+    
+    try {
+      const { forceSetStreak } = await import('../lib/streakService');
+      const result = await forceSetStreak(user.id, days);
+      
+      if (result.success) {
+        addDebugLog('success', 'STREAK_ACTION', `✅ Streak set to ${result.new_streak}`);
+        await runStreakCheck();
+      } else {
+        addDebugLog('error', 'STREAK_ACTION', `❌ Failed: ${result.error}`);
+      }
+    } catch (err: any) {
+      addDebugLog('error', 'STREAK_ACTION', `❌ ${err.message}`);
+    }
+    
+    setStreakActionLoading(null);
+  };
+
+  const handleResetMilestones = async () => {
+    if (!user?.id) return;
+    if (!confirm('⚠️ Delete ALL claimed milestones? This cannot be undone.')) return;
+    
+    setStreakActionLoading('reset');
+    addDebugLog('info', 'STREAK_ACTION', '🗑️ Resetting all claimed milestones...');
+    
+    try {
+      const { resetClaimedMilestones } = await import('../lib/streakService');
+      const result = await resetClaimedMilestones(user.id);
+      
+      if (result.success) {
+        addDebugLog('success', 'STREAK_ACTION', `✅ Deleted ${result.deleted_count} claimed milestones`);
+        await runStreakCheck();
+      } else {
+        addDebugLog('error', 'STREAK_ACTION', `❌ Failed: ${result.error}`);
+      }
+    } catch (err: any) {
+      addDebugLog('error', 'STREAK_ACTION', `❌ ${err.message}`);
+    }
+    
+    setStreakActionLoading(null);
+  };
+
+  const handleForceClaim = async () => {
+    if (!user?.id) return;
+    setStreakActionLoading('claim');
+    addDebugLog('info', 'STREAK_ACTION', '🎯 Force claiming milestones via Edge Function...');
+    
+    try {
+      const { claimStreakMilestone } = await import('../lib/streakService');
+      const result = await claimStreakMilestone();
+      
+      if (result.success && result.data) {
+        const claimedCount = result.data.milestones_claimed.length;
+        addDebugLog('success', 'STREAK_ACTION', 
+          `✅ Claimed ${claimedCount} milestone(s)! ` +
+          `+${result.data.total_coins} coins, +${result.data.total_xp} XP`);
+        await runStreakCheck();
+      } else {
+        addDebugLog('warning', 'STREAK_ACTION', `⚠️ ${result.error || 'No milestones to claim'}`);
+      }
+    } catch (err: any) {
+      addDebugLog('error', 'STREAK_ACTION', `❌ ${err.message}`);
+    }
+    
+    setStreakActionLoading(null);
+  };
+
   const xpToNext = getXPToNextLevel(economy.level || 1);
   const currentLevelXP = (() => {
     let remaining = economy.xp || 0; let lvl = 1;
@@ -488,6 +588,32 @@ ECONOMY
 SUBSCRIPTION
 Status: ${activeSubscription ? 'Active ✅' : 'None ❌'}
 ${activeSubscription ? `Plan: ${activeSubscription.plan_type}\nExpires: ${new Date(activeSubscription.expires_at).toLocaleDateString()}` : ''}`;
+    } else if (tab === 'streak') {
+      if (!streakData) {
+        text = 'STREAK SYSTEM\n\nNo data yet - run check first';
+      } else {
+        text = `STREAK SYSTEM DIAGNOSTICS
+Last Run: ${streakLastRun || 'Never'}
+
+CURRENT STREAK:
+Current: ${streakData.streak_info?.current_streak || 0}
+Longest: ${streakData.streak_info?.longest_streak || 0}
+Last Active: ${streakData.economy?.last_active_date || 'N/A'}
+Last Claim: ${streakData.economy?.last_daily_claim || 'N/A'}
+Next Milestone: ${streakData.streak_info?.next_milestone?.name || 'None'} (${streakData.streak_info?.days_to_next || 0} days)
+
+STATS:
+Achieved: ${streakData.stats.achieved_count}/${streakData.stats.total_milestones}
+Claimed: ${streakData.stats.claimed_count}
+Unclaimed: ${streakData.stats.unclaimed_count}
+Active Days (30d): ${streakData.stats.active_days}
+Missed Days: ${streakData.stats.missed_days}
+
+MILESTONES:
+${streakData.milestones.map((m: any) => 
+  `${m.is_claimed ? '✅' : m.is_achieved ? '🎁' : '🔒'} ${m.name} (${m.days_required}d) - +${m.reward_coins}💎 +${m.reward_xp}XP${m.reward_premium_days > 0 ? ` +${m.reward_premium_days}d👑` : ''}`
+).join('\n')}`;
+      }
     } else if (tab === 'profile') {
       text = `PROFILE BANNER CHECK (${profileChecks.length} elements)
 Last Run: ${profileLastRun || 'Never'}
@@ -553,6 +679,7 @@ Is Claiming: ${isClaiming}`;
   const tabs = [
     { id: 'system' as TabType, label: 'System', icon: Activity },
     { id: 'user' as TabType, label: 'User', icon: Users },
+    { id: 'streak' as TabType, label: 'Streak', icon: Flame },
     { id: 'profile' as TabType, label: 'Profile', icon: Crown },
     { id: 'energy' as TabType, label: 'Energy', icon: Zap },
     { id: 'diagnostics' as TabType, label: 'Diag', icon: Heart },
@@ -576,7 +703,6 @@ Is Claiming: ${isClaiming}`;
     </button>
   );
 
-  // ✅ Safe access to diagnostics (may be default empty)
   const diagResults = diagnostics?.results || [];
   const diagIsRunning = diagnostics?.isRunning || false;
   const diagLastRun = diagnostics?.lastRun || null;
@@ -668,6 +794,267 @@ Is Claiming: ${isClaiming}`;
               </div>
             )}
 
+            {/* ============================================ */}
+            {/* 🔥 STREAK TAB */}
+            {/* ============================================ */}
+            {activeTab === 'streak' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <span style={{ color: '#fb923c', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Flame size={14} /> STREAK SYSTEM
+                  </span>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button 
+                      onClick={runStreakCheck}
+                      disabled={streakChecking}
+                      style={{ 
+                        padding: '6px 12px', 
+                        background: streakChecking ? 'rgba(251, 191, 36, 0.3)' : 'rgba(251, 146, 60, 0.2)', 
+                        border: `1px solid #fb923c`, 
+                        borderRadius: '6px', 
+                        color: '#fb923c', 
+                        cursor: streakChecking ? 'not-allowed' : 'pointer', 
+                        fontSize: '10px', 
+                        fontWeight: 'bold',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      <RefreshCw size={12} className={streakChecking ? 'animate-spin' : ''} /> 
+                      {streakChecking ? 'Checking...' : 'Run Check'}
+                    </button>
+                    <CopyButton tab="streak" />
+                  </div>
+                </div>
+
+                {streakLastRun && streakData && (
+                  <div style={{ padding: '8px', background: 'rgba(251, 146, 60, 0.1)', borderRadius: '6px', border: '1px solid rgba(251, 146, 60, 0.3)', fontSize: '10px', textAlign: 'center' }}>
+                    Last run: {streakLastRun} | 🔥 {streakData.streak_info?.current_streak || 0} days | 🎯 {streakData.stats.unclaimed_count} unclaimed
+                  </div>
+                )}
+
+                {!streakData ? (
+                  <div style={{ textAlign: 'center', padding: '24px 12px', color: '#94a3b8', fontSize: '11px' }}>
+                    <Flame size={28} style={{ opacity: 0.4, marginBottom: '8px' }} />
+                    <div>დააჭირე "Run Check"-ს რომ შეამოწმო<br/>streak system</div>
+                  </div>
+                ) : (
+                  <>
+                    {/* Streak Info */}
+                    <div style={{ padding: '12px', background: 'rgba(251, 146, 60, 0.1)', borderRadius: '8px', border: '1px solid rgba(251, 146, 60, 0.3)', fontSize: '11px' }}>
+                      <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#fb923c' }}>🔥 მიმდინარე Streak</div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                        <div>Current: <strong>{streakData.streak_info?.current_streak || 0}</strong></div>
+                        <div>Longest: <strong>{streakData.streak_info?.longest_streak || 0}</strong></div>
+                        <div>Last Active: <strong style={{ fontSize: '9px' }}>{streakData.economy?.last_active_date || 'N/A'}</strong></div>
+                        <div>Last Claim: <strong style={{ fontSize: '9px' }}>{streakData.economy?.last_daily_claim || 'N/A'}</strong></div>
+                      </div>
+                      {streakData.streak_info?.next_milestone && (
+                        <div style={{ marginTop: '8px', padding: '6px', background: 'rgba(251, 191, 36, 0.2)', borderRadius: '4px', fontSize: '10px' }}>
+                          🎯 Next: <strong>{streakData.streak_info.next_milestone.icon_emoji} {streakData.streak_info.next_milestone.name}</strong>
+                          <br/>
+                          📅 {streakData.streak_info.days_to_next} days left ({streakData.streak_info.percent_to_next.toFixed(0)}%)
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Stats Summary */}
+                    <div style={{ padding: '12px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)', fontSize: '11px' }}>
+                      <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#10b981' }}>📊 სტატისტიკა</div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#fb923c' }}>{streakData.stats.achieved_count}</div>
+                          <div style={{ fontSize: '9px', color: '#94a3b8' }}>Achieved</div>
+                        </div>
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#10b981' }}>{streakData.stats.claimed_count}</div>
+                          <div style={{ fontSize: '9px', color: '#94a3b8' }}>Claimed</div>
+                        </div>
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ fontSize: '16px', fontWeight: 'bold', color: streakData.stats.unclaimed_count > 0 ? '#fbbf24' : '#94a3b8' }}>
+                            {streakData.stats.unclaimed_count}
+                          </div>
+                          <div style={{ fontSize: '9px', color: '#94a3b8' }}>Unclaimed</div>
+                        </div>
+                      </div>
+                      <div style={{ marginTop: '8px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '10px' }}>
+                        <div>📅 Active Days (30d): <strong>{streakData.stats.active_days}</strong></div>
+                        <div>❌ Missed Days: <strong style={{ color: streakData.stats.missed_days > 0 ? '#ef4444' : '#10b981' }}>{streakData.stats.missed_days}</strong></div>
+                      </div>
+                    </div>
+
+                    {/* Milestones List */}
+                    <div style={{ padding: '12px', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(139, 92, 246, 0.3)', fontSize: '11px' }}>
+                      <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#a78bfa' }}>🎯 Milestones ({streakData.milestones.length})</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '200px', overflowY: 'auto' }}>
+                        {streakData.milestones.map((m: any) => {
+                          const status = m.is_claimed ? 'claimed' : m.is_achieved ? 'ready' : 'locked';
+                          const colors = {
+                            claimed: { bg: 'rgba(16, 185, 129, 0.2)', border: 'rgba(16, 185, 129, 0.4)', text: '#10b981', label: '✅ Claimed' },
+                            ready: { bg: 'rgba(251, 191, 36, 0.2)', border: 'rgba(251, 191, 36, 0.4)', text: '#fbbf24', label: '🎁 Ready' },
+                            locked: { bg: 'rgba(0,0,0,0.3)', border: 'rgba(255,255,255,0.1)', text: '#94a3b8', label: '🔒 Locked' }
+                          };
+                          const c = colors[status];
+                          
+                          return (
+                            <div 
+                              key={m.id} 
+                              style={{ 
+                                padding: '8px', 
+                                background: c.bg, 
+                                border: `1px solid ${c.border}`, 
+                                borderRadius: '6px',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center'
+                              }}
+                            >
+                              <div style={{ flex: 1 }}>
+                                <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#e2e8f0' }}>
+                                  {m.icon_emoji} {m.name} <span style={{ color: c.text, fontSize: '9px' }}>({m.days_required}d)</span>
+                                </div>
+                                <div style={{ fontSize: '9px', color: '#94a3b8' }}>
+                                  +{m.reward_coins}💎 +{m.reward_xp}XP {m.reward_premium_days > 0 && `+${m.reward_premium_days}d👑`}
+                                </div>
+                              </div>
+                              <div style={{ fontSize: '9px', color: c.text, fontWeight: 'bold', textAlign: 'right' }}>
+                                {c.label}
+                                {m.claim_record && (
+                                  <div style={{ fontSize: '8px', color: '#64748b', marginTop: '2px' }}>
+                                    @ {m.claim_record.streak_at_claim}d
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Calendar Preview */}
+                    <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.3)', fontSize: '11px' }}>
+                      <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#60a5fa' }}>📅 ბოლო 30 დღე</div>
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(7, 1fr)',
+                        gap: '3px'
+                      }}>
+                        {streakData.calendar.map((day: any, idx: number) => (
+                          <div
+                            key={idx}
+                            title={`${day.date} ${day.has_reading ? '✓' : '✗'}`}
+                            style={{
+                              aspectRatio: '1',
+                              borderRadius: '3px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '8px',
+                              fontWeight: day.is_today ? 700 : 400,
+                              background: day.is_today
+                                ? 'linear-gradient(135deg, #fbbf24, #d97706)'
+                                : day.has_reading
+                                ? 'linear-gradient(135deg, #10b981, #059669)'
+                                : day.is_future
+                                ? 'rgba(255,255,255,0.02)'
+                                : 'rgba(239, 68, 68, 0.3)',
+                              color: day.is_future ? '#64748b' : '#fff',
+                              border: day.is_today ? '1px solid #ffe566' : '1px solid transparent'
+                            }}
+                          >
+                            {day.has_reading ? '✓' : day.is_today ? '★' : day.is_future ? '' : '✗'}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Test Actions */}
+                    <div style={{ padding: '12px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.3)', fontSize: '11px' }}>
+                      <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#ef4444' }}>🔧 TEST ACTIONS</div>
+                      
+                      <div style={{ marginBottom: '8px', fontSize: '10px', color: '#94a3b8' }}>Force Set Streak:</div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '4px', marginBottom: '12px' }}>
+                        <button 
+                          onClick={() => handleSetStreak(0)} 
+                          disabled={streakActionLoading === 'set'}
+                          style={{ padding: '6px', background: '#64748b', border: 'none', borderRadius: '4px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}
+                        >
+                          0d
+                        </button>
+                        <button 
+                          onClick={() => handleSetStreak(3)} 
+                          disabled={streakActionLoading === 'set'}
+                          style={{ padding: '6px', background: '#10b981', border: 'none', borderRadius: '4px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}
+                        >
+                          3d 🌱
+                        </button>
+                        <button 
+                          onClick={() => handleSetStreak(7)} 
+                          disabled={streakActionLoading === 'set'}
+                          style={{ padding: '6px', background: '#fb923c', border: 'none', borderRadius: '4px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}
+                        >
+                          7d 🔥
+                        </button>
+                        <button 
+                          onClick={() => handleSetStreak(30)} 
+                          disabled={streakActionLoading === 'set'}
+                          style={{ padding: '6px', background: '#fbbf24', border: 'none', borderRadius: '4px', color: '#000', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}
+                        >
+                          30d 👑
+                        </button>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                        <button 
+                          onClick={handleForceClaim}
+                          disabled={streakActionLoading === 'claim'}
+                          style={{ 
+                            padding: '8px', 
+                            background: streakActionLoading === 'claim' ? 'rgba(251, 191, 36, 0.3)' : '#fbbf24', 
+                            border: 'none', 
+                            borderRadius: '6px', 
+                            color: '#000', 
+                            cursor: streakActionLoading === 'claim' ? 'not-allowed' : 'pointer', 
+                            fontWeight: 'bold', 
+                            fontSize: '10px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          {streakActionLoading === 'claim' ? <RefreshCw size={10} className="animate-spin" /> : <Play size={10} />}
+                          Force Claim
+                        </button>
+                        <button 
+                          onClick={handleResetMilestones}
+                          disabled={streakActionLoading === 'reset'}
+                          style={{ 
+                            padding: '8px', 
+                            background: 'rgba(239, 68, 68, 0.3)', 
+                            border: '1px solid #ef4444', 
+                            borderRadius: '6px', 
+                            color: '#ef4444', 
+                            cursor: streakActionLoading === 'reset' ? 'not-allowed' : 'pointer', 
+                            fontWeight: 'bold', 
+                            fontSize: '10px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          {streakActionLoading === 'reset' ? <RefreshCw size={10} className="animate-spin" /> : <X size={10} />}
+                          Reset All
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
             {activeTab === 'profile' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
@@ -747,9 +1134,6 @@ Is Claiming: ${isClaiming}`;
               </div>
             )}
 
-            {/* ============================================ */}
-            {/* ⚡ ENERGY TAB */}
-            {/* ============================================ */}
             {activeTab === 'energy' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>

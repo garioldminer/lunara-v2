@@ -305,3 +305,140 @@ export function getCurrentMilestoneTier(
   
   return achieved[0] || null;
 }
+
+// ============================================
+// 🧪 TEST FUNCTIONS (Admin Only)
+// ============================================
+
+/**
+ * Force set streak to specific number (test purposes)
+ */
+export async function forceSetStreak(
+  userId: string, 
+  newStreak: number
+): Promise<{ success: boolean; error?: string; new_streak?: number }> {
+  if (!supabase || !userId) {
+    return { success: false, error: 'No supabase or userId' };
+  }
+  
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    
+    const { data, error } = await supabase
+      .from('user_economy')
+      .update({
+        current_streak: newStreak,
+        longest_streak: Math.max(newStreak, 0),
+        last_active_date: newStreak > 0 ? yesterdayStr : today,
+        last_daily_claim: newStreak > 0 ? yesterdayStr : null
+      })
+      .eq('user_id', userId)
+      .select('current_streak, longest_streak')
+      .single();
+    
+    if (error) {
+      console.error('❌ Error setting streak:', error);
+      return { success: false, error: error.message };
+    }
+    
+    return { 
+      success: true, 
+      new_streak: data.current_streak 
+    };
+  } catch (error: any) {
+    console.error('❌ Error in forceSetStreak:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Reset all claimed milestones for user (test purposes)
+ */
+export async function resetClaimedMilestones(
+  userId: string
+): Promise<{ success: boolean; deleted_count: number; error?: string }> {
+  if (!supabase || !userId) {
+    return { success: false, deleted_count: 0, error: 'No supabase or userId' };
+  }
+  
+  try {
+    const { data, error } = await supabase
+      .from('user_claimed_milestones')
+      .delete()
+      .eq('user_id', userId)
+      .select('id');
+    
+    if (error) {
+      console.error('❌ Error resetting milestones:', error);
+      return { success: false, deleted_count: 0, error: error.message };
+    }
+    
+    return { 
+      success: true, 
+      deleted_count: data?.length || 0 
+    };
+  } catch (error: any) {
+    console.error('❌ Error in resetClaimedMilestones:', error);
+    return { success: false, deleted_count: 0, error: error.message };
+  }
+}
+
+/**
+ * Get full streak diagnostics for debug panel
+ */
+export async function getStreakDiagnostics(userId: string) {
+  if (!supabase || !userId) return null;
+  
+  try {
+    // Parallel fetch
+    const [streakInfo, milestones, claimed, calendar, economyFull] = await Promise.all([
+      getStreakInfo(userId),
+      getStreakMilestones(),
+      getClaimedMilestones(userId),
+      getStreakCalendar(userId, 30),
+      supabase
+        .from('user_economy')
+        .select('current_streak, longest_streak, last_active_date, last_daily_claim')
+        .eq('user_id', userId)
+        .single()
+    ]);
+    
+    // Build milestone status map
+    const claimedIds = new Set(claimed.map(c => c.milestone_id));
+    const milestoneStatus = milestones.map(m => ({
+      ...m,
+      is_achieved: (streakInfo?.current_streak || 0) >= m.days_required,
+      is_claimed: claimedIds.has(m.id),
+      claim_record: claimed.find(c => c.milestone_id === m.id)
+    }));
+    
+    // Count stats
+    const achievedCount = milestoneStatus.filter(m => m.is_achieved).length;
+    const claimedCount = milestoneStatus.filter(m => m.is_claimed).length;
+    const unclaimedCount = milestoneStatus.filter(m => m.is_achieved && !m.is_claimed).length;
+    const missedDays = calendar.filter(d => !d.has_reading && !d.is_future && !d.is_today).length;
+    const activeDays = calendar.filter(d => d.has_reading).length;
+    
+    return {
+      streak_info: streakInfo,
+      milestones: milestoneStatus,
+      claimed: claimed,
+      calendar: calendar,
+      economy: economyFull.data,
+      stats: {
+        achieved_count: achievedCount,
+        claimed_count: claimedCount,
+        unclaimed_count: unclaimedCount,
+        missed_days: missedDays,
+        active_days: activeDays,
+        total_milestones: milestones.length
+      }
+    };
+  } catch (error) {
+    console.error('❌ Error in getStreakDiagnostics:', error);
+    return null;
+  }
+}
