@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Flame, Gem, Sparkles, Lock, CheckCircle, RefreshCw, Calendar as CalendarIcon, Trophy, Crown, Star, Zap } from 'lucide-react';
+import { X, Flame, Gem, Sparkles, Lock, CheckCircle, RefreshCw, Calendar as CalendarIcon, Crown, Star } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useUser } from '../context/UserContext';
 import { 
@@ -270,7 +270,7 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
                     <span style={{ fontSize: '11px', fontWeight: 600, color: '#C5A059', display: 'flex', alignItems: 'center', gap: '4px' }}>
                       Next: {nextMilestone.icon_emoji} {nextMilestone.name}
                     </span>
-                    <span style={{ fontSize: '11px', color: '#94a3b8' }}>{streak}/{nextMilestone.days}</span>
+                    <span style={{ fontSize: '11px', color: '#94a3b8' }}>{streak}/{nextMilestone.days_required}</span>
                   </div>
                   <div style={{ height: '5px', borderRadius: '999px', overflow: 'hidden', backgroundColor: 'rgba(255,255,255,0.05)' }}>
                     <motion.div 
@@ -424,7 +424,7 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
                           </div>
                           <div>
                             <div style={{ fontSize: '13px', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              {milestone.days} Days • {milestone.name}
+                              {milestone.days_required} Days • {milestone.name}
                               {isSpecial && <Sparkles size={10} style={{ color: '#FFD700' }} />}
                             </div>
                             <div style={{ fontSize: '10px', color: isClaimed ? '#10b981' : isClaimable ? '#fbbf24' : '#94a3b8' }}>

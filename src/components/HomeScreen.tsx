@@ -205,7 +205,6 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [xpTestLogs, setXpTestLogs] = useState<string[]>([]);
 
   // 🆕 STREAK MILESTONES STATE
-  const [streakMilestones, setStreakMilestones] = useState<StreakMilestone[]>([]);
   const [unclaimedMilestoneCount, setUnclaimedMilestoneCount] = useState(0);
 
   const [showDebug, setShowDebug] = useState(false);
