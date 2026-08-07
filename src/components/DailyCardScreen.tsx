@@ -14,6 +14,7 @@ import {
   getDailyCard,
   updateDailyNotes,
   toggleBookmark,
+  updateStreakOnReading,
   type DailyReading,
   type FocusArea
 } from '../lib/dailyCardService';
@@ -444,8 +445,25 @@ export default function DailyCardScreen({ onNavigate }: Props) {
       await logReading(user.id, 'daily_card', [reading.cards[0].id], `${reading.cards[0].name}${reading.cards[0].is_reversed ? ' (Reversed)' : ''}`);
       await trackQuestProgress(user.id, 'draw_daily_card', 1);
       addLog('success', 'Quest progress tracked');
+      
+      // 🔥 UPDATE STREAK ON READING
+      const streakResult = await updateStreakOnReading();
+      if (streakResult.success) {
+        addLog('success', 'Streak updated via Edge Function', { 
+          current_streak: streakResult.current_streak,
+          longest_streak: streakResult.longest_streak,
+          streak_incremented: streakResult.streak_incremented
+        });
+        if (streakResult.streak_incremented) {
+          showToast(`🔥 Streak: ${streakResult.current_streak} days!`, 'success');
+        } else {
+          addLog('info', 'Streak already updated today');
+        }
+      } else {
+        addLog('warning', 'Streak update failed', { error: streakResult.error });
+      }
     } catch (err: any) {
-      addLog('error', 'Quest tracking failed', { error: err.message });
+      addLog('error', 'Quest/Streak tracking failed', { error: err.message });
     }
 
     setTimeout(() => {

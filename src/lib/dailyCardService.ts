@@ -359,3 +359,55 @@ export async function deleteDailyReading(readingId: string): Promise<boolean> {
     return false;
   }
 }
+
+// ============================================
+// UPDATE STREAK ON READING (Edge Function)
+// ============================================
+export async function updateStreakOnReading(): Promise<{
+  success: boolean;
+  current_streak?: number;
+  longest_streak?: number;
+  streak_incremented?: boolean;
+  error?: string;
+}> {
+  if (!supabase) {
+    return { success: false, error: 'Supabase not initialized' };
+  }
+  
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      return { success: false, error: 'Not authenticated' };
+    }
+    
+    const response = await fetch(
+      'https://eutavdhcxpfhpfsyaskb.supabase.co/functions/v1/update-streak-on-reading',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      }
+    );
+    
+    const result = await response.json();
+    
+    if (!response.ok || !result.success) {
+      return { 
+        success: false, 
+        error: result.error || 'Failed to update streak' 
+      };
+    }
+    
+    return { 
+      success: true,
+      current_streak: result.data.current_streak,
+      longest_streak: result.data.longest_streak,
+      streak_incremented: result.data.streak_incremented
+    };
+  } catch (error: any) {
+    console.error('❌ Error in updateStreakOnReading:', error);
+    return { success: false, error: error.message };
+  }
+}
