@@ -1247,8 +1247,8 @@ export default function HomeScreen({ onNavigate }: Props) {
                   <h3 style={{ margin: 0, fontSize: '16px', color: '#C5A059', letterSpacing: '0.5px', fontWeight: 700, lineHeight: 1.2 }}>{dailyCardName}{isDailyReversed ? ' (R)' : ''}</h3>
                   <p style={{ margin: 0, fontSize: '11px', color: 'rgba(255,255,255,0.7)', fontStyle: 'italic', lineHeight: 1.3 }}>"{dailyCardMeaning}"</p>
                   {dailyCardElement && <p style={{ margin: 0, fontSize: '10px', color: '#888' }}>{dailyCardElement}</p>}
-                  <button className="read-guidance-btn" style={{ background: 'transparent', border: '1px solid #C5A059', color: '#C5A059', padding: '5px 10px', borderRadius: '6px', fontSize: '9px', fontWeight: 700, cursor: 'pointer', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '4px', alignSelf: 'flex-start' }}>
-                    View Details <ChevronRight size={14} />
+                  <button className="read-guidance-btn" onClick={(e) => { e.stopPropagation(); onNavigate?.('reading-history'); }} style={{ background: 'transparent', border: '1px solid #C5A059', color: '#C5A059', padding: '5px 10px', borderRadius: '6px', fontSize: '9px', fontWeight: 700, cursor: 'pointer', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '4px', alignSelf: 'flex-start' }}>
+                    View Journal <ChevronRight size={14} />
                   </button>
                 </>
               )}
