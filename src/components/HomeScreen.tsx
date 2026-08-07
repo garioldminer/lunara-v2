@@ -10,6 +10,7 @@ import { getTelegramUser } from '../lib/telegramAuth';
 import { getOrCreateUser } from '../lib/userService';
 import { loadUserQuests, trackQuestProgress, type QuestProgress } from '../lib/questService';
 import { getTodayReading } from '../lib/dailyCardService';
+import { getStreakMilestones, getClaimedMilestones, type StreakMilestone } from '../lib/streakService';
 import { 
   Gem, Zap, Trophy, Flame, X, CheckCircle,
   Sparkles, LayoutGrid, Moon, Hash, 
@@ -202,6 +203,10 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [showStreakModal, setShowStreakModal] = useState(false);
   const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
   const [xpTestLogs, setXpTestLogs] = useState<string[]>([]);
+
+  // 🆕 STREAK MILESTONES STATE
+  const [streakMilestones, setStreakMilestones] = useState<StreakMilestone[]>([]);
+  const [unclaimedMilestoneCount, setUnclaimedMilestoneCount] = useState(0);
 
   const [showDebug, setShowDebug] = useState(false);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
@@ -533,6 +538,29 @@ export default function HomeScreen({ onNavigate }: Props) {
     }
   };
 
+  // 🆕 HANDLE MILESTONE CLAIMED (from StreakModal)
+  const handleMilestoneClaimed = (data: { total_coins: number; total_xp: number; total_premium_days: number }) => {
+    addDebugLog('success', 'MILESTONE_CLAIM', `🎉 Milestones claimed!`, data);
+    
+    // Celebration toast
+    const premiumText = data.total_premium_days > 0 ? `, +${data.total_premium_days} Premium Days` : '';
+    showToast(`🎉 +${data.total_coins} Coins, +${data.total_xp} XP${premiumText} claimed!`, 'success');
+    
+    // Confetti burst
+    confetti({
+      particleCount: 200,
+      spread: 90,
+      origin: { y: 0.5 },
+      colors: ['#fbbf24', '#f59e0b', '#10b981', '#ffe566', '#a78bfa']
+    });
+    
+    // Reload economy to get new coins/XP
+    reloadFromDatabase();
+    
+    // Reset unclaimed counter
+    setUnclaimedMilestoneCount(0);
+  };
+
   useEffect(() => {
     if (user) {
       addDebugLog('info', 'USER', 'User loaded', { userId: user.id, displayName: user.display_name });
@@ -558,6 +586,39 @@ export default function HomeScreen({ onNavigate }: Props) {
   useEffect(() => {
     if (user) loadQuests();
   }, [user]);
+
+  // 🆕 LOAD STREAK MILESTONES & CALCULATE UNCLAIMED
+  useEffect(() => {
+    const loadMilestones = async () => {
+      if (!user) return;
+      
+      try {
+        const [milestones, claimed] = await Promise.all([
+          getStreakMilestones(),
+          getClaimedMilestones(user.id)
+        ]);
+        
+        setStreakMilestones(milestones);
+        
+        // Calculate unclaimed count
+        const claimedIds = new Set(claimed.map(c => c.milestone_id));
+        const unclaimed = milestones.filter(
+          m => economy.current_streak >= m.days_required && !claimedIds.has(m.id)
+        );
+        setUnclaimedMilestoneCount(unclaimed.length);
+        
+        addDebugLog('info', 'MILESTONES', 'Loaded milestones', { 
+          total: milestones.length, 
+          claimed: claimed.length,
+          unclaimed: unclaimed.length 
+        });
+      } catch (err: any) {
+        addDebugLog('error', 'MILESTONES', `Failed to load: ${err.message}`);
+      }
+    };
+    
+    loadMilestones();
+  }, [user, economy.current_streak]);
 
   const calculateRealEnergy = async () => {
     if (!user || !supabase) return;
@@ -757,7 +818,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     }
   }, [user]);
 
-  // ✅ DB-დან დღევანდელი reading-ის ჩატვირთვა
   useEffect(() => {
     const loadDailyCard = async () => {
       if (!user) return;
@@ -909,6 +969,18 @@ export default function HomeScreen({ onNavigate }: Props) {
   const xpPercent = Math.min((userLevelData.currentLevelXP / userLevelData.xpToNext) * 100, 100);
   const circumference = 2 * Math.PI * 22; 
   const strokeDashoffset = circumference - (xpPercent / 100) * circumference;
+
+  // 🆕 STREAK TIER ICON CALCULATION
+  const getStreakTierIcon = (): string => {
+    const streak = currentStreak;
+    if (streak >= 100) return '💎';
+    if (streak >= 60) return '🏆';
+    if (streak >= 30) return '👑';
+    if (streak >= 14) return '⭐';
+    if (streak >= 7) return '🔥';
+    if (streak >= 3) return '🌱';
+    return '🔥';
+  };
 
   const getQuestIcon = (actionType: string): React.ReactNode => {
     switch (actionType) {
@@ -1067,13 +1139,40 @@ export default function HomeScreen({ onNavigate }: Props) {
               {!rewardClaimed && !isClaiming && <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>50</div>}
             </button>
             
+            {/* 🆕 UPDATED STREAK BUTTON with tier icon + unclaimed badge */}
             <button 
               className="action-btn-vertical streak-btn-v" 
               onClick={() => setShowStreakModal(true)}
-              style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%' }}
+              style={{ background: 'rgba(255, 255, 255, 0.03)', border: unclaimedMilestoneCount > 0 ? '1.5px solid rgba(251, 191, 36, 0.6)' : '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'visible', padding: '4px', width: '100%', height: '100%' }}
             >
-              <Flame size={22} style={{ filter: 'drop-shadow(0 0 6px #ff6b35)', color: '#ff6b35', width: '20px', height: '20px' }} />
+              <div style={{ fontSize: '22px', lineHeight: 1, filter: 'drop-shadow(0 0 6px #ff6b35)' }}>
+                {getStreakTierIcon()}
+              </div>
               <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>{currentStreak}</div>
+              
+              {/* Unclaimed milestone indicator */}
+              {unclaimedMilestoneCount > 0 && (
+                <motion.div
+                  animate={{ scale: [1, 1.15, 1] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                  style={{
+                    position: 'absolute',
+                    top: '-4px',
+                    right: '-4px',
+                    background: 'linear-gradient(135deg, #10b981, #059669)',
+                    color: '#fff',
+                    fontSize: '9px',
+                    fontWeight: 800,
+                    padding: '2px 5px',
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 8px rgba(16, 185, 129, 0.6)',
+                    border: '1.5px solid #1a1510',
+                    zIndex: 5
+                  }}
+                >
+                  🎁 {unclaimedMilestoneCount}
+                </motion.div>
+              )}
             </button>
             
             <button 
@@ -1285,10 +1384,12 @@ export default function HomeScreen({ onNavigate }: Props) {
         />
       )}
 
+      {/* 🆕 UPDATED STREAK MODAL with new props */}
       <StreakModal 
         isOpen={showStreakModal} 
         onClose={() => setShowStreakModal(false)} 
-        currentStreak={currentStreak} 
+        currentStreak={currentStreak}
+        onMilestoneClaimed={handleMilestoneClaimed}
       />
 
       {user && (
