@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Heart, Briefcase, Star, Share2, Bookmark, BookOpen, ArrowLeft, Shield, RefreshCw, Copy, CheckCircle, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { Sparkles, Heart, Briefcase, Star, Share2, Bookmark, BookOpen, ArrowLeft, Shield, Copy, CheckCircle, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards';
@@ -12,7 +12,6 @@ import { supabase } from '../lib/supabase';
 import {
   getTodayReading,
   getDailyCard,
-  updateDailyFocus,
   updateDailyNotes,
   toggleBookmark,
   type DailyReading,
@@ -281,7 +280,6 @@ function ToastNotification({ toast, onClose }: { toast: Toast; onClose: () => vo
 export default function DailyCardScreen({ onNavigate }: Props) {
   const { user } = useUser();
 
-  // ✅ Core state (DB-driven)
   const [dailyReading, setDailyReading] = useState<DailyReading | null>(null);
   const [stage, setStage] = useState<'selecting' | 'revealing' | 'revealed'>('selecting');
   const [selectedFocus, setSelectedFocus] = useState<FocusArea>('general');
@@ -289,29 +287,23 @@ export default function DailyCardScreen({ onNavigate }: Props) {
   const [showQuestionInput, setShowQuestionInput] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
-  // ✅ DB-driven state
   const [hasPremium, setHasPremium] = useState(false);
   const [isUserAdmin, setIsUserAdmin] = useState(false);
 
-  // ✅ Notes state (auto-save)
   const [notes, setNotes] = useState('');
   const [notesSaving, setNotesSaving] = useState(false);
 
-  // ✅ Toast state
   const [toast, setToast] = useState<Toast | null>(null);
 
-  // Debug state
   const [showDebug, setShowDebug] = useState(false);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
   const [logFilter, setLogFilter] = useState<LogType | 'all'>('all');
   const [expandedLog, setExpandedLog] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
 
-  // Auth state
   const [authUid, setAuthUid] = useState<string | null>(null);
   const [authStatus, setAuthStatus] = useState<'checking' | 'active' | 'inactive'>('checking');
 
-  // Helper: Add Debug Log
   const addLog = (type: LogType, message: string, data?: any) => {
     const log: DebugLog = {
       id: Date.now() + Math.random(),
@@ -326,9 +318,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     setToast({ message, type });
   };
 
-  // ============================================
-  // CHECK SUPABASE AUTH STATUS
-  // ============================================
   useEffect(() => {
     const checkAuth = async () => {
       if (!supabase) {
@@ -357,16 +346,12 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     checkAuth();
   }, []);
 
-  // ============================================
-  // USER + SUBSCRIPTION + ADMIN CHECK (unified)
-  // ============================================
   useEffect(() => {
     addLog('info', 'DailyCardScreen mounted');
 
     if (user) {
       addLog('success', 'User found in context', { userId: user.id, name: user.display_name });
 
-      // ✅ Admin check from DB (not hardcoded Telegram ID)
       const isAdmin = user.is_admin === true;
       setIsUserAdmin(isAdmin);
       addLog('info', 'Admin check completed', { isAdmin, authUid: user.id });
@@ -380,9 +365,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     }
   }, [user]);
 
-  // ============================================
-  // LOAD TODAY'S READING FROM DB (Single Source of Truth)
-  // ============================================
   useEffect(() => {
     const loadTodayReading = async () => {
       if (!user) return;
@@ -407,9 +389,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     loadTodayReading();
   }, [user]);
 
-  // ============================================
-  // AUTO-SAVE NOTES (debounced, 1s)
-  // ============================================
   useEffect(() => {
     if (!dailyReading || !notes) return;
     if (notes === dailyReading.notes) return;
@@ -427,9 +406,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     return () => clearTimeout(timer);
   }, [notes, dailyReading?.id]);
 
-  // ============================================
-  // HANDLE FOCUS SELECT
-  // ============================================
   const handleFocusSelect = (focus: FocusArea) => {
     setSelectedFocus(focus);
     setShowQuestionInput(focus === 'custom');
@@ -437,23 +413,18 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     addLog('ui', 'Focus area selected', { focus });
   };
 
-  // ============================================
-  // HANDLE REVEAL (uses dailyCardService)
-  // ============================================
   const handleReveal = async () => {
     if (!user || isCreating) return;
 
     setIsCreating(true);
     addLog('ui', 'Reveal button clicked');
 
-    // Haptic feedback
     if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp?.HapticFeedback) {
       (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('medium');
     }
 
     setStage('revealing');
 
-    // Create reading via centralized service (DB save happens here)
     const question = selectedFocus === 'custom' ? customQuestion : undefined;
     const reading = await getDailyCard(user.id, selectedFocus, question);
 
@@ -469,7 +440,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     setDailyReading(reading);
     setNotes(reading.notes || '');
 
-    // Track quest progress
     try {
       await logReading(user.id, 'daily_card', [reading.cards[0].id], `${reading.cards[0].name}${reading.cards[0].is_reversed ? ' (Reversed)' : ''}`);
       await trackQuestProgress(user.id, 'draw_daily_card', 1);
@@ -478,7 +448,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
       addLog('error', 'Quest tracking failed', { error: err.message });
     }
 
-    // Show revealed card after animation
     setTimeout(() => {
       setStage('revealed');
       setIsCreating(false);
@@ -486,9 +455,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     }, 1200);
   };
 
-  // ============================================
-  // HANDLE SHARE
-  // ============================================
   const handleShare = () => {
     if (!dailyReading) return;
     addLog('ui', 'Share button clicked');
@@ -509,9 +475,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     }
   };
 
-  // ============================================
-  // TOGGLE BOOKMARK (DB-driven)
-  // ============================================
   const handleToggleBookmark = async () => {
     if (!dailyReading) return;
 
@@ -523,9 +486,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     }
   };
 
-  // ============================================
-  // AI INSIGHT (Premium feature)
-  // ============================================
   const handleAIInsight = () => {
     if (!hasPremium) {
       showToast('AI Insight is a Premium feature ✨', 'info');
@@ -566,7 +526,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
 
   const filteredLogs = logFilter === 'all' ? debugLogs : debugLogs.filter(l => l.type === logFilter);
 
-  // Loading state
   if (!user || (dailyReading === null && stage === 'selecting' && !isCreating && debugLogs.length === 0)) {
     return (
       <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', background: '#000002' }}>
@@ -613,12 +572,10 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         <CosmicScene />
       </Canvas>
 
-      {/* Toast */}
       <AnimatePresence>
         {toast && <ToastNotification toast={toast} onClose={() => setToast(null)} />}
       </AnimatePresence>
 
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingLeft: '5px', paddingRight: '5px', position: 'relative', zIndex: 1 }}>
         <button onClick={() => onNavigate?.('home')} style={{ background: 'rgba(10, 8, 20, 0.5)', border: '1px solid rgba(197, 160, 89, 0.4)', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C5A059', cursor: 'pointer', backdropFilter: 'blur(12px)' }}>
           <ArrowLeft size={20} />
@@ -684,9 +641,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                 )}
               </motion.div>
 
-              {/* Action buttons */}
               <div style={{ width: '48px', display: 'flex', flexDirection: 'column', gap: '14px', marginLeft: '12px' }}>
-                {/* ✨ AI Insight (Premium) */}
                 <motion.button
                   whileTap={{ scale: 0.9 }}
                   onClick={handleAIInsight}
@@ -696,24 +651,20 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                   <Sparkles size={20} />
                 </motion.button>
 
-                {/* Bookmark */}
                 <motion.button whileTap={{ scale: 0.9 }} onClick={handleToggleBookmark} style={{ ...actionBtnStyle, color: dailyReading?.is_bookmarked ? '#C5A059' : '#94a3b8' }}>
                   <Bookmark size={20} fill={dailyReading?.is_bookmarked ? '#C5A059' : 'none'} />
                 </motion.button>
 
-                {/* Share */}
                 <motion.button whileTap={{ scale: 0.9 }} onClick={handleShare} style={actionBtnStyle}>
                   <Share2 size={20} />
                 </motion.button>
 
-                {/* History */}
                 <motion.button whileTap={{ scale: 0.9 }} onClick={() => onNavigate?.('reading-history')} style={actionBtnStyle} title="Reading History">
                   <BookOpen size={20} />
                 </motion.button>
               </div>
             </div>
 
-            {/* Card Info + Notes */}
             <div style={{ background: 'rgba(10, 8, 20, 0.6)', border: '1px solid rgba(197, 160, 89, 0.2)', borderRadius: '16px', padding: '16px', backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)', marginLeft: '5px', marginRight: '5px', marginBottom: '5px', boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>
               <div style={{ textAlign: 'center', marginBottom: '12px' }}>
                 <div style={{ fontSize: '11px', color: '#94a3b8', letterSpacing: '1px', textTransform: 'uppercase' }}>{getCardMeta(currentCard)}</div>
@@ -732,7 +683,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                 ))}
               </div>
 
-              {/* Notes Section (auto-save) */}
               <div style={{ marginTop: '12px' }}>
                 <label style={{ fontSize: '11px', color: '#94a3b8', letterSpacing: '1px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
                   📝 Your Notes
@@ -755,7 +705,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         )}
       </AnimatePresence>
 
-      {/* Admin Debug Panel */}
       {isUserAdmin && (
         <div style={{ position: 'fixed', right: 0, top: '50%', transform: 'translateY(-50%)', zIndex: 9999, fontFamily: 'monospace' }}>
           <button onClick={() => setShowDebug(!showDebug)} style={{ width: '50px', height: '50px', background: showDebug ? '#ef4444' : 'rgba(197, 160, 89, 0.9)', border: 'none', borderRadius: '8px 0 0 8px', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.3)', fontSize: '20px' }}>
