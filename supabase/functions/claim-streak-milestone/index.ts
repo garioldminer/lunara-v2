@@ -149,7 +149,79 @@ serve(async (req) => {
       });
     }
 
-    // 9. Success response
+    // 9. 🆕 EXTEND SUBSCRIPTION IF PREMIUM DAYS EARNED
+    let premiumDaysExtended = 0;
+    let newExpiryDate = null;
+
+    if (totalPremiumDays > 0) {
+      const now = new Date();
+
+      // Get latest subscription
+      const { data: sub } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (sub && sub.status === 'active' && new Date(sub.expires_at) > now) {
+        // ✅ Extend existing active subscription
+        const newExpiry = new Date(sub.expires_at);
+        newExpiry.setDate(newExpiry.getDate() + totalPremiumDays);
+        newExpiryDate = newExpiry.toISOString();
+
+        const { error: extError } = await supabase
+          .from('subscriptions')
+          .update({
+            expires_at: newExpiryDate,
+            updated_at: now.toISOString()
+          })
+          .eq('id', sub.id);
+
+        if (extError) {
+          console.error('Error extending subscription:', extError);
+        } else {
+          premiumDaysExtended = totalPremiumDays;
+          console.log(`✅ Subscription extended by ${totalPremiumDays} days → ${newExpiryDate}`);
+        }
+      } else {
+        // ✅ Create new subscription (no active one)
+        const newExpiry = new Date(now);
+        newExpiry.setDate(newExpiry.getDate() + totalPremiumDays);
+        newExpiryDate = newExpiry.toISOString();
+
+        const { error: insertError } = await supabase
+          .from('subscriptions')
+          .insert({
+            user_id: userId,
+            plan_type: 'streak_reward',
+            status: 'active',
+            started_at: now.toISOString(),
+            expires_at: newExpiryDate,
+            auto_renew: false
+          });
+
+        if (insertError) {
+          console.error('Error creating reward subscription:', insertError);
+        } else {
+          premiumDaysExtended = totalPremiumDays;
+          console.log(`✅ New reward subscription created → ${newExpiryDate}`);
+        }
+      }
+
+      // Log the premium extension
+      await supabase.from('transactions').insert({
+        user_id: userId,
+        transaction_type: 'info',
+        amount_coins: 0,
+        amount_xp: 0,
+        source: 'premium_days',
+        description: `+${totalPremiumDays} Premium Days from streak milestone`
+      });
+    }
+
+    // 10. Success response
     return new Response(
       JSON.stringify({
         success: true,
@@ -158,7 +230,9 @@ serve(async (req) => {
           milestones_claimed: claimedRewards,
           total_coins: totalCoins,
           total_xp: totalXP,
-          total_premium_days: totalPremiumDays
+          total_premium_days: totalPremiumDays,
+          premium_days_extended: premiumDaysExtended,
+          new_expiry_date: newExpiryDate
         }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
