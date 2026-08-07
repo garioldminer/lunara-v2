@@ -18,6 +18,7 @@ import {
   type DailyReading,
   type FocusArea
 } from '../lib/dailyCardService';
+import { getStreakInfo, type StreakInfo } from '../lib/streakService';
 
 interface Props {
   onNavigate?: (screen: string) => void;
@@ -305,6 +306,9 @@ export default function DailyCardScreen({ onNavigate }: Props) {
   const [authUid, setAuthUid] = useState<string | null>(null);
   const [authStatus, setAuthStatus] = useState<'checking' | 'active' | 'inactive'>('checking');
 
+  // 🆕 STREAK PROGRESS STATE
+  const [streakInfo, setStreakInfo] = useState<StreakInfo | null>(null);
+
   const addLog = (type: LogType, message: string, data?: any) => {
     const log: DebugLog = {
       id: Date.now() + Math.random(),
@@ -318,6 +322,26 @@ export default function DailyCardScreen({ onNavigate }: Props) {
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     setToast({ message, type });
   };
+
+  // 🆕 LOAD STREAK PROGRESS
+  useEffect(() => {
+    const loadStreak = async () => {
+      if (!user) return;
+      try {
+        const info = await getStreakInfo(user.id);
+        if (info) {
+          setStreakInfo(info);
+          addLog('info', 'Streak loaded', { 
+            current: info.current_streak, 
+            next: info.next_milestone?.name || 'None' 
+          });
+        }
+      } catch (err: any) {
+        addLog('error', 'Streak load failed', { error: err.message });
+      }
+    };
+    loadStreak();
+  }, [user]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -456,6 +480,10 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         });
         if (streakResult.streak_incremented) {
           showToast(`🔥 Streak: ${streakResult.current_streak} days!`, 'success');
+          
+          // 🆕 Reload streak info to update progress bar
+          const newInfo = await getStreakInfo(user.id);
+          if (newInfo) setStreakInfo(newInfo);
         } else {
           addLog('info', 'Streak already updated today');
         }
@@ -603,6 +631,53 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         </div>
         <div style={{ width: '40px' }} />
       </div>
+
+      {/* 🆕 STREAK PROGRESS BAR */}
+      {streakInfo && streakInfo.current_streak > 0 && (
+        <div
+          style={{
+            margin: '0 10px 12px 10px',
+            padding: '10px 14px',
+            background: 'rgba(10, 8, 20, 0.6)',
+            border: '1px solid rgba(251, 146, 60, 0.3)',
+            borderRadius: '12px',
+            backdropFilter: 'blur(8px)',
+            position: 'relative',
+            zIndex: 1
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '14px' }}>🔥</span>
+              <span style={{ fontSize: '12px', fontWeight: 800, color: '#fb923c' }}>
+                {streakInfo.current_streak} day{streakInfo.current_streak !== 1 ? 's' : ''}
+              </span>
+            </div>
+            {streakInfo.next_milestone ? (
+              <span style={{ fontSize: '10px', color: '#94a3b8' }}>
+                {streakInfo.days_to_next} day{streakInfo.days_to_next !== 1 ? 's' : ''} to {streakInfo.next_milestone.icon_emoji} {streakInfo.next_milestone.name}
+              </span>
+            ) : (
+              <span style={{ fontSize: '10px', color: '#FFD700' }}>💎 Max tier reached!</span>
+            )}
+          </div>
+          {streakInfo.next_milestone && (
+            <div style={{ height: '5px', borderRadius: '999px', overflow: 'hidden', background: 'rgba(255,255,255,0.08)' }}>
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${streakInfo.percent_to_next}%` }}
+                transition={{ duration: 0.8, ease: 'easeOut' }}
+                style={{
+                  height: '100%',
+                  borderRadius: '999px',
+                  background: 'linear-gradient(90deg, #fb923c, #fbbf24)',
+                  boxShadow: '0 0 8px rgba(251, 146, 60, 0.5)'
+                }}
+              />
+            </div>
+          )}
+        </div>
+      )}
 
       <AnimatePresence mode="wait">
         {stage === 'selecting' && (
