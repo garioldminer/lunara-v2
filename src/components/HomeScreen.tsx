@@ -207,6 +207,9 @@ export default function HomeScreen({ onNavigate }: Props) {
   // 🆕 STREAK MILESTONES STATE
   const [unclaimedMilestoneCount, setUnclaimedMilestoneCount] = useState(0);
 
+  // 🆕 STREAK BANNER DISMISS STATE
+  const [streakBannerDismissed, setStreakBannerDismissed] = useState(false);
+
   const [showDebug, setShowDebug] = useState(false);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
   const [dbStatus, setDbStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
@@ -998,52 +1001,127 @@ export default function HomeScreen({ onNavigate }: Props) {
         {showLevelUpModal && <LevelUpModal level={leveledUpTo} onClose={() => setShowLevelUpModal(false)} t={t} />}
       </AnimatePresence>
 
-      {/* 🆕 STREAK DANGER BANNER */}
-      {currentStreak > 0 && !isDailyRevealed && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          style={{
-            margin: '8px 12px 0 12px',
-            padding: '10px 14px',
-            background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(251, 146, 60, 0.15) 100%)',
-            border: '1px solid rgba(239, 68, 68, 0.4)',
-            borderRadius: '12px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            cursor: 'pointer'
-          }}
-          onClick={() => onNavigate?.('daily-card')}
-        >
-          <motion.span
-            animate={{ scale: [1, 1.15, 1] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-            style={{ fontSize: '20px' }}
-          >
-            ⚠️
-          </motion.span>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '12px', fontWeight: 700, color: '#ef4444' }}>
-              Your {currentStreak}-day streak is in danger!
-            </div>
-            <div style={{ fontSize: '10px', color: '#fb923c', marginTop: '2px' }}>
-              Draw your card today to keep it alive 🔥
-            </div>
-          </div>
-          <div style={{
-            padding: '6px 12px',
-            background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-            borderRadius: '8px',
-            color: '#fff',
-            fontSize: '10px',
-            fontWeight: 800,
-            letterSpacing: '0.5px'
-          }}>
-            DRAW NOW
-          </div>
-        </motion.div>
-      )}
+      {/* 🆕 STREAK DANGER BANNER - CENTERED POPUP */}
+      <AnimatePresence>
+        {currentStreak > 0 && !isDailyRevealed && !streakBannerDismissed && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              style={{
+                position: 'fixed',
+                inset: 0,
+                background: 'rgba(0, 0, 0, 0.7)',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+                zIndex: 9997
+              }}
+              onClick={() => setStreakBannerDismissed(true)}
+            />
+
+            {/* Centered Banner */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.85, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.85, y: 20 }}
+              transition={{ type: 'spring', damping: 22, stiffness: 300 }}
+              style={{
+                position: 'fixed',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                zIndex: 9998,
+                width: 'calc(100% - 48px)',
+                maxWidth: '360px',
+                padding: '24px 20px',
+                background: 'linear-gradient(135deg, rgba(69, 10, 10, 0.98) 0%, rgba(124, 45, 18, 0.98) 100%)',
+                border: '2px solid rgba(239, 68, 68, 0.6)',
+                borderRadius: '20px',
+                boxShadow: '0 25px 80px rgba(0,0,0,0.9), 0 0 50px rgba(239, 68, 68, 0.35)',
+                textAlign: 'center'
+              }}
+            >
+              {/* Close button */}
+              <button
+                onClick={() => setStreakBannerDismissed(true)}
+                style={{
+                  position: 'absolute',
+                  top: '10px',
+                  right: '10px',
+                  padding: '6px',
+                  borderRadius: '50%',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  background: 'rgba(0,0,0,0.4)',
+                  color: '#94a3b8',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <X size={14} />
+              </button>
+
+              {/* Pulsing warning icon */}
+              <motion.div
+                animate={{ scale: [1, 1.15, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                style={{ fontSize: '44px', marginBottom: '12px' }}
+              >
+                ⚠️
+              </motion.div>
+
+              <div style={{ fontSize: '17px', fontWeight: 800, color: '#fca5a5', marginBottom: '6px', lineHeight: 1.3 }}>
+                Your {currentStreak}-day streak is in danger!
+              </div>
+
+              <div style={{ fontSize: '12px', color: '#fdba74', marginBottom: '18px', lineHeight: 1.5 }}>
+                Draw your card today to keep it alive 🔥
+              </div>
+
+              {/* Action buttons */}
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  onClick={() => setStreakBannerDismissed(true)}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    background: 'rgba(255,255,255,0.08)',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    borderRadius: '10px',
+                    color: '#94a3b8',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Later
+                </button>
+                <button
+                  onClick={() => onNavigate?.('daily-card')}
+                  style={{
+                    flex: 2,
+                    padding: '12px',
+                    background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                    border: 'none',
+                    borderRadius: '10px',
+                    color: '#fff',
+                    fontSize: '12px',
+                    fontWeight: 800,
+                    letterSpacing: '0.5px',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 20px rgba(239, 68, 68, 0.5)'
+                  }}
+                >
+                  🔥 DRAW NOW
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       <div className="user-header">
         <div className="user-main-row" style={{ alignItems: 'center', height: '52px', display: 'flex', justifyContent: 'space-between' }}>
