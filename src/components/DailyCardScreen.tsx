@@ -15,8 +15,11 @@ import {
   updateDailyNotes,
   toggleBookmark,
   updateStreakOnReading,
+  updateMood,
+  MOODS,
   type DailyReading,
-  type FocusArea
+  type FocusArea,
+  type Mood
 } from '../lib/dailyCardService';
 import { getStreakInfo, type StreakInfo } from '../lib/streakService';
 
@@ -295,6 +298,10 @@ export default function DailyCardScreen({ onNavigate }: Props) {
   const [notes, setNotes] = useState('');
   const [notesSaving, setNotesSaving] = useState(false);
 
+  // 🆕 MOOD TRACKING STATE
+  const [selectedMood, setSelectedMood] = useState<Mood | null>(null);
+  const [moodSaving, setMoodSaving] = useState(false);
+
   const [toast, setToast] = useState<Toast | null>(null);
 
   const [showDebug, setShowDebug] = useState(false);
@@ -403,6 +410,8 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         setSelectedFocus(existing.focus_area || 'general');
         setCustomQuestion(existing.question || '');
         setNotes(existing.notes || '');
+        // 🆕 Load mood from DB
+        setSelectedMood(existing.mood || null);
         setStage('revealed');
       } else {
         addLog('info', 'No reading for today - showing focus selection');
@@ -464,6 +473,8 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     addLog('success', 'Reading created in DB', reading);
     setDailyReading(reading);
     setNotes(reading.notes || '');
+    // 🆕 Reset mood for new reading
+    setSelectedMood(null);
 
     try {
       await logReading(user.id, 'daily_card', [reading.cards[0].id], `${reading.cards[0].name}${reading.cards[0].is_reversed ? ' (Reversed)' : ''}`);
@@ -776,6 +787,60 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                 ))}
               </div>
 
+              {/* 🆕 MOOD SELECTOR */}
+              <div style={{ marginTop: '12px', marginBottom: '12px' }}>
+                <label style={{ fontSize: '11px', color: '#94a3b8', letterSpacing: '1px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '8px' }}>
+                  How are you feeling?
+                  {moodSaving && <span style={{ fontSize: '9px', color: '#fbbf24' }}>Saving...</span>}
+                </label>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
+                  {MOODS.map((mood) => (
+                    <motion.button
+                      key={mood.value}
+                      whileTap={{ scale: 0.9 }}
+                      whileHover={{ scale: 1.1 }}
+                      onClick={async () => {
+                        if (!dailyReading) return;
+                        setSelectedMood(mood.value);
+                        setMoodSaving(true);
+                        const success = await updateMood(dailyReading.id, mood.value);
+                        if (success) {
+                          addLog('success', `Mood saved: ${mood.label}`);
+                          showToast(`${mood.emoji} Mood recorded!`, 'success');
+                        } else {
+                          addLog('error', 'Mood save failed');
+                          showToast('Failed to save mood', 'error');
+                        }
+                        setMoodSaving(false);
+                      }}
+                      style={{
+                        width: '48px',
+                        height: '56px',
+                        borderRadius: '12px',
+                        background: selectedMood === mood.value 
+                          ? `linear-gradient(135deg, ${mood.color}30, ${mood.color}15)` 
+                          : 'rgba(255,255,255,0.05)',
+                        border: selectedMood === mood.value 
+                          ? `2px solid ${mood.color}` 
+                          : '2px solid rgba(255,255,255,0.1)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '2px',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <span style={{ fontSize: '20px' }}>{mood.emoji}</span>
+                      <span style={{ fontSize: '8px', color: selectedMood === mood.value ? mood.color : '#94a3b8', fontWeight: selectedMood === mood.value ? 700 : 500 }}>
+                        {mood.label}
+                      </span>
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+
               <div style={{ marginTop: '12px' }}>
                 <label style={{ fontSize: '11px', color: '#94a3b8', letterSpacing: '1px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
                   📝 Your Notes
@@ -819,7 +884,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                   <div>📊 Stage: <span style={{ color: '#fbbf24' }}>{stage}</span></div>
                   <div>💾 Reading ID: <span style={{ color: dailyReading ? '#10b981' : '#ef4444', fontSize: '9px' }}>{dailyReading?.id?.substring(0, 8) || 'None'}</span></div>
                   <div>🃏 Card: <span style={{ color: '#60a5fa' }}>{currentCard?.name || 'None'}</span></div>
-                  <div>🔄 Reversed: <span style={{ color: '#a78bfa' }}>{isReversed ? 'YES' : 'NO'}</span></div>
+                  <div>🎭 Mood: <span style={{ color: '#a78bfa' }}>{selectedMood || 'None'}</span></div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '4px', overflowX: 'auto', paddingBottom: '4px', marginBottom: '8px' }}>
