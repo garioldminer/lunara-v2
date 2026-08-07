@@ -9,7 +9,7 @@ import { supabase } from '../lib/supabase';
 import { getTelegramUser } from '../lib/telegramAuth';
 import { getOrCreateUser } from '../lib/userService';
 import { loadUserQuests, trackQuestProgress, type QuestProgress } from '../lib/questService';
-import { getTodayReading, type DailyReading } from '../lib/dailyCardService';
+import { getTodayReading } from '../lib/dailyCardService';
 import { 
   Gem, Zap, Trophy, Flame, X, CheckCircle,
   Sparkles, LayoutGrid, Moon, Hash, 
@@ -179,7 +179,6 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [rewardClaimed, setRewardClaimed] = useState(false);
   const [isClaiming, setIsClaiming] = useState(false);
   const [timeLeft, setTimeLeft] = useState('14:32:18');
-  const [todayReading, setTodayReading] = useState<DailyReading | null>(null);
   const [dailyCard, setDailyCard] = useState<typeof tarotCards[0] | null>(null);
   const [isDailyReversed, setIsDailyReversed] = useState(false);
   const [isDailyRevealed, setIsDailyRevealed] = useState(false);
@@ -758,13 +757,12 @@ export default function HomeScreen({ onNavigate }: Props) {
     }
   }, [user]);
 
-  // ✅ NEW: DB-დან დღევანდელი reading-ის ჩატვირთვა
+  // ✅ DB-დან დღევანდელი reading-ის ჩატვირთვა
   useEffect(() => {
     const loadDailyCard = async () => {
       if (!user) return;
       try {
         const reading = await getTodayReading(user.id);
-        setTodayReading(reading);
         if (reading) {
           const card = tarotCards.find(c => c.id === reading.cards[0]?.id);
           if (card) {
@@ -784,13 +782,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     };
     loadDailyCard();
   }, [user]);
-
-  const getDayOfYear = (date: Date): number => {
-    const start = new Date(date.getFullYear(), 0, 0);
-    const diff = date.getTime() - start.getTime();
-    const oneDay = 1000 * 60 * 60 * 24;
-    return Math.floor(diff / oneDay);
-  };
 
   const getCardMeta = (card: typeof tarotCards[0]) => {
     if (card.arcana === 'major') return 'Major Arcana';

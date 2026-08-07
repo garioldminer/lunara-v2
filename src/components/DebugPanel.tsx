@@ -97,16 +97,17 @@ interface DebugPanelProps {
   testAddXPWithLevel: (amount: number) => void;
   forceRecalcLevel: () => void;
   xpTestLogs: string[];
-  runHomeDiagnostics: () => Promise<DiagnosticResult[]>;
-  diagnostics: HomeDiagnostics;
-  testEnergySystem: () => void;
-  testLocalStorage: () => void;
-  testPremiumGate: () => void;
-  testQuestSystem: () => void;
-  testDailyCard: () => void;
-  testStreakSystem: () => void;
-  testXPSystem: () => void;
-  testSupabaseConnection: () => void;
+  // ✅ ბოლო 10 props optional-ად (HomeScreen-ში არ გადაეცემა)
+  runHomeDiagnostics?: () => Promise<DiagnosticResult[]>;
+  diagnostics?: HomeDiagnostics;
+  testEnergySystem?: () => void;
+  testLocalStorage?: () => void;
+  testPremiumGate?: () => void;
+  testQuestSystem?: () => void;
+  testDailyCard?: () => void;
+  testStreakSystem?: () => void;
+  testXPSystem?: () => void;
+  testSupabaseConnection?: () => void;
 }
 
 type TabType = 'system' | 'user' | 'profile' | 'energy' | 'diagnostics' | 'functions' | 'logs' | 'actions';
@@ -119,9 +120,17 @@ export default function DebugPanel(props: DebugPanelProps) {
     testAddCoins, testAddXP, testAddEnergy, testSpendEnergy, 
     testCompleteQuest, reloadFromDatabase, questsLoading, timeLeft, 
     showQuestModal, rewardClaimed, isClaiming,
-    runHomeDiagnostics, diagnostics, testEnergySystem, testLocalStorage,
-    testPremiumGate, testQuestSystem, testDailyCard, testStreakSystem,
-    testXPSystem, testSupabaseConnection
+    // ✅ Default values optional props-ისთვის
+    runHomeDiagnostics = async () => [],
+    diagnostics = { results: [], isRunning: false, lastRun: null },
+    testEnergySystem = () => {},
+    testLocalStorage = () => {},
+    testPremiumGate = () => {},
+    testQuestSystem = () => {},
+    testDailyCard = () => {},
+    testStreakSystem = () => {},
+    testXPSystem = () => {},
+    testSupabaseConnection = () => {}
   } = props;
 
   const [activeTab, setActiveTab] = useState<TabType>('system');
@@ -502,11 +511,12 @@ ${energyData?.costs.map(c => `- ${c.reading_type}: ${c.energy_cost}⚡ (${c.desc
 LAST TRANSACTIONS:
 ${energyData?.transactions.map(t => `- [${t.created_at}] ${t.amount > 0 ? '+' : ''}${t.amount} (${t.transaction_type}) → balance: ${t.balance_after}`).join('\n') || 'None'}`;
     } else if (tab === 'diagnostics') {
-      text = `HOME DIAGNOSTICS (${diagnostics.results.length} checks)
-Last Run: ${diagnostics.lastRun || 'Never'}
-Passed: ${diagnostics.results.filter(r => r.status === 'pass').length}/${diagnostics.results.length}
+      const diagResults = diagnostics?.results || [];
+      text = `HOME DIAGNOSTICS (${diagResults.length} checks)
+Last Run: ${diagnostics?.lastRun || 'Never'}
+Passed: ${diagResults.filter(r => r.status === 'pass').length}/${diagResults.length}
 
-${diagnostics.results.map(r => 
+${diagResults.map(r => 
   `${r.status === 'pass' ? '✅' : r.status === 'fail' ? '❌' : r.status === 'warning' ? '⚠️' : '⏳'} ${r.name}
    Status: ${r.status.toUpperCase()}
    Message: ${r.message}
@@ -565,6 +575,11 @@ Is Claiming: ${isClaiming}`;
       {activeCopyTab === tab ? 'Copied!' : 'Copy'}
     </button>
   );
+
+  // ✅ Safe access to diagnostics (may be default empty)
+  const diagResults = diagnostics?.results || [];
+  const diagIsRunning = diagnostics?.isRunning || false;
+  const diagLastRun = diagnostics?.lastRun || null;
 
   return (
     <>
@@ -779,7 +794,6 @@ Is Claiming: ${isClaiming}`;
                   </div>
                 ) : (
                   <>
-                    {/* Current Energy */}
                     <div style={{ padding: '12px', background: 'rgba(251, 191, 36, 0.1)', borderRadius: '8px', border: `1px solid ${energyData.match ? 'rgba(16, 185, 129, 0.5)' : 'rgba(239, 68, 68, 0.5)'}`, fontSize: '11px' }}>
                       <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#fbbf24' }}>⚡ მიმდინარე ენერგია</div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
@@ -791,7 +805,6 @@ Is Claiming: ${isClaiming}`;
                       </div>
                     </div>
 
-                    {/* Regeneration */}
                     <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.3)', fontSize: '11px' }}>
                       <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#60a5fa' }}>🔄 რეგენერაცია (30 წუთში +1)</div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
@@ -807,7 +820,6 @@ Is Claiming: ${isClaiming}`;
                       )}
                     </div>
 
-                    {/* Reading Costs */}
                     <div style={{ padding: '12px', background: 'rgba(167, 139, 250, 0.1)', borderRadius: '8px', border: '1px solid rgba(167, 139, 250, 0.3)', fontSize: '11px' }}>
                       <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#a78bfa' }}>💰 ხარჯვის ღირებულებები (reading_costs)</div>
                       {energyData.costs.length === 0 ? (
@@ -826,7 +838,6 @@ Is Claiming: ${isClaiming}`;
                       )}
                     </div>
 
-                    {/* Transactions */}
                     <div style={{ padding: '12px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)', fontSize: '11px' }}>
                       <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#10b981' }}>📜 ბოლო 10 ტრანზაქცია</div>
                       {energyData.transactions.length === 0 ? (
@@ -851,7 +862,6 @@ Is Claiming: ${isClaiming}`;
                       )}
                     </div>
 
-                    {/* Test Buttons */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
                       <button onClick={() => { testAddEnergy(1); setTimeout(runEnergyCheck, 1000); }} style={{ padding: '8px', background: '#fbbf24', border: 'none', borderRadius: '6px', color: '#000', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>+1 ⚡</button>
                       <button onClick={() => { testSpendEnergy(1); setTimeout(runEnergyCheck, 1000); }} style={{ padding: '8px', background: '#ef4444', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>-1 ⚡</button>
@@ -871,15 +881,15 @@ Is Claiming: ${isClaiming}`;
                   </span>
                   <div style={{ display: 'flex', gap: '6px' }}>
                     <button 
-                      onClick={runHomeDiagnostics} 
-                      disabled={diagnostics.isRunning}
+                      onClick={() => runHomeDiagnostics?.()} 
+                      disabled={diagIsRunning}
                       style={{ 
                         padding: '6px 12px', 
-                        background: diagnostics.isRunning ? 'rgba(251, 191, 36, 0.3)' : 'rgba(236, 72, 153, 0.2)', 
-                        border: `1px solid ${diagnostics.isRunning ? '#fbbf24' : '#ec4899'}`, 
+                        background: diagIsRunning ? 'rgba(251, 191, 36, 0.3)' : 'rgba(236, 72, 153, 0.2)', 
+                        border: `1px solid ${diagIsRunning ? '#fbbf24' : '#ec4899'}`, 
                         borderRadius: '6px', 
-                        color: diagnostics.isRunning ? '#fbbf24' : '#ec4899', 
-                        cursor: diagnostics.isRunning ? 'not-allowed' : 'pointer', 
+                        color: diagIsRunning ? '#fbbf24' : '#ec4899', 
+                        cursor: diagIsRunning ? 'not-allowed' : 'pointer', 
                         fontSize: '10px', 
                         fontWeight: 'bold',
                         display: 'flex',
@@ -887,16 +897,16 @@ Is Claiming: ${isClaiming}`;
                         gap: '4px'
                       }}
                     >
-                      <RefreshCw size={12} className={diagnostics.isRunning ? 'animate-spin' : ''} /> 
-                      {diagnostics.isRunning ? 'Running...' : 'Run All'}
+                      <RefreshCw size={12} className={diagIsRunning ? 'animate-spin' : ''} /> 
+                      {diagIsRunning ? 'Running...' : 'Run All'}
                     </button>
                     <CopyButton tab="diagnostics" />
                   </div>
                 </div>
 
-                {diagnostics.lastRun && (
+                {diagLastRun && (
                   <div style={{ padding: '8px', background: 'rgba(236, 72, 153, 0.1)', borderRadius: '6px', border: '1px solid rgba(236, 72, 153, 0.3)', fontSize: '10px', textAlign: 'center' }}>
-                    Last run: {diagnostics.lastRun} | {diagnostics.results.filter(r => r.status === 'pass').length}/{diagnostics.results.length} passed
+                    Last run: {diagLastRun} | {diagResults.filter(r => r.status === 'pass').length}/{diagResults.length} passed
                   </div>
                 )}
 
@@ -911,9 +921,9 @@ Is Claiming: ${isClaiming}`;
                   <button onClick={testSupabaseConnection} style={{ padding: '8px', background: '#8b5cf6', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>🗄️ DB</button>
                 </div>
 
-                {diagnostics.results.length > 0 && (
+                {diagResults.length > 0 && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '300px', overflowY: 'auto' }}>
-                    {diagnostics.results.map((result, idx) => (
+                    {diagResults.map((result, idx) => (
                       <div 
                         key={idx} 
                         style={{ 
