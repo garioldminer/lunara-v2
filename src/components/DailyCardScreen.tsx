@@ -1,31 +1,29 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Heart, Briefcase, Star, Share2, Lock, Bookmark, BookOpen, ArrowLeft, Shield, RefreshCw, Copy, CheckCircle, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { Sparkles, Heart, Briefcase, Star, Share2, Bookmark, BookOpen, ArrowLeft, Shield, RefreshCw, Copy, CheckCircle, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards';
-import { saveReading, getUserReadings } from '../lib/readingService';
 import { logReading } from '../lib/adminService';
 import { trackQuestProgress } from '../lib/questService';
 import { useUser } from '../context/UserContext';
 import { getActiveSubscription } from '../lib/subscriptionService';
 import { supabase } from '../lib/supabase';
+import {
+  getTodayReading,
+  getDailyCard,
+  updateDailyFocus,
+  updateDailyNotes,
+  toggleBookmark,
+  type DailyReading,
+  type FocusArea
+} from '../lib/dailyCardService';
 
 interface Props {
   onNavigate?: (screen: string) => void;
 }
 
-type FocusArea = 'general' | 'love' | 'career' | 'custom';
 type LogType = 'info' | 'success' | 'error' | 'warning' | 'api' | 'db' | 'ui';
-
-interface DailyReading {
-  card: TarotCard;
-  isReversed: boolean;
-  date: string;
-  focusArea: FocusArea;
-  question?: string;
-  isRevealed?: boolean;
-}
 
 interface DebugLog {
   id: number;
@@ -35,48 +33,39 @@ interface DebugLog {
   data?: any;
 }
 
+interface Toast {
+  message: string;
+  type: 'success' | 'error' | 'info';
+}
+
 const logColors: Record<LogType, string> = {
-  info: '#60a5fa',
-  success: '#10b981',
-  error: '#ef4444',
-  warning: '#fbbf24',
-  api: '#a78bfa',
-  db: '#f472b6',
-  ui: '#f59e0b'
+  info: '#60a5fa', success: '#10b981', error: '#ef4444',
+  warning: '#fbbf24', api: '#a78bfa', db: '#f472b6', ui: '#f59e0b'
 };
 
 const logIcons: Record<LogType, string> = {
-  info: 'ℹ️',
-  success: '✅',
-  error: '❌',
-  warning: '⚠️',
-  api: '🌐',
-  db: '🗄️',
-  ui: ''
+  info: 'ℹ️', success: '✅', error: '❌',
+  warning: '⚠️', api: '🌐', db: '🗄️', ui: ''
 };
 
 // ============================================
-//  PROCEDURAL STAR FIELD
+// PROCEDURAL STAR FIELD
 // ============================================
 function StarField() {
   const starsRef = useRef<THREE.Points>(null);
-  
   const { positions, colors, sizes } = useMemo(() => {
     const count = 8000;
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
     const sizes = new Float32Array(count);
-    
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
       const radius = 50 + Math.random() * 100;
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(2 * Math.random() - 1);
-      
       positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
       positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
       positions[i3 + 2] = radius * Math.cos(phi);
-      
       const starType = Math.random();
       if (starType < 0.6) {
         colors[i3] = 1.0; colors[i3 + 1] = 0.95 + Math.random() * 0.05; colors[i3 + 2] = 0.8 + Math.random() * 0.2;
@@ -85,9 +74,7 @@ function StarField() {
       } else {
         colors[i3] = 1.0; colors[i3 + 1] = 0.6 + Math.random() * 0.2; colors[i3 + 2] = 0.4 + Math.random() * 0.2;
       }
-      
-      const brightness = Math.log(1 - Math.random()) * -0.5;
-      sizes[i] = brightness * 2;
+      sizes[i] = Math.log(1 - Math.random()) * -1;
     }
     return { positions, colors, sizes };
   }, []);
@@ -112,11 +99,10 @@ function StarField() {
 }
 
 // ============================================
-//  NEBULA WITH PERLIN NOISE
+// NEBULA WITH PERLIN NOISE
 // ============================================
 function Nebula({ position, color, scale = 30, opacity = 0.3 }: any) {
   const meshRef = useRef<THREE.Mesh>(null);
-  
   const uniforms = useMemo(() => ({
     uTime: { value: 0 },
     uColor: { value: new THREE.Color(color) },
@@ -134,7 +120,6 @@ function Nebula({ position, color, scale = 30, opacity = 0.3 }: any) {
   });
 
   const vertexShader = `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
-
   const fragmentShader = `
     uniform float uTime; uniform vec3 uColor; uniform float uScale; uniform float uOpacity; varying vec2 vUv;
     vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -193,11 +178,10 @@ function Nebula({ position, color, scale = 30, opacity = 0.3 }: any) {
 }
 
 // ============================================
-// ✨ BRIGHT STARS WITH GLOW
+// BRIGHT STARS WITH GLOW
 // ============================================
 function BrightStars() {
   const groupRef = useRef<THREE.Group>(null);
-
   const stars = useMemo(() => {
     const data: Array<{ position: [number, number, number]; coreColor: [number, number, number]; haloColor: [number, number, number]; size: number }> = [];
     for (let i = 0; i < 200; i++) {
@@ -234,7 +218,7 @@ function BrightStars() {
 }
 
 // ============================================
-//  REALISTIC COSMIC SCENE
+// REALISTIC COSMIC SCENE
 // ============================================
 function CosmicScene() {
   return (
@@ -252,52 +236,99 @@ function CosmicScene() {
 }
 
 // ============================================
+// TOAST NOTIFICATION
+// ============================================
+function ToastNotification({ toast, onClose }: { toast: Toast; onClose: () => void }) {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 3000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <div style={{
+      position: 'fixed', top: '80px', left: '50%', transform: 'translateX(-50%)',
+      zIndex: 10000, pointerEvents: 'none'
+    }}>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9, y: -20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.9, y: -20 }}
+        transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+        style={{
+          background: toast.type === 'success'
+            ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.98), rgba(5, 150, 105, 0.98))'
+            : toast.type === 'error'
+            ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.98), rgba(220, 38, 38, 0.98))'
+            : 'linear-gradient(135deg, rgba(251, 191, 36, 0.98), rgba(245, 158, 11, 0.98))',
+          color: '#fff', padding: '12px 20px', borderRadius: '12px',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+          display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', fontWeight: '600',
+          maxWidth: '320px', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.1)'
+        }}
+      >
+        <span style={{ fontSize: '18px' }}>
+          {toast.type === 'success' ? '✅' : toast.type === 'error' ? '⚠️' : 'ℹ️'}
+        </span>
+        <span>{toast.message}</span>
+      </motion.div>
+    </div>
+  );
+}
+
+// ============================================
 // MAIN COMPONENT
 // ============================================
 export default function DailyCardScreen({ onNavigate }: Props) {
+  const { user } = useUser();
+
+  // ✅ Core state (DB-driven)
   const [dailyReading, setDailyReading] = useState<DailyReading | null>(null);
   const [stage, setStage] = useState<'selecting' | 'revealing' | 'revealed'>('selecting');
   const [selectedFocus, setSelectedFocus] = useState<FocusArea>('general');
   const [customQuestion, setCustomQuestion] = useState('');
   const [showQuestionInput, setShowQuestionInput] = useState(false);
-  const { user } = useUser();
+  const [isCreating, setIsCreating] = useState(false);
+
+  // ✅ DB-driven state
   const [hasPremium, setHasPremium] = useState(false);
-  const [isBookmarked, setIsBookmarked] = useState(false);
   const [isUserAdmin, setIsUserAdmin] = useState(false);
-  
-  const [isReadingSaved, setIsReadingSaved] = useState(false);
-  const [saveAttempted, setSaveAttempted] = useState(false);
-  
-  // Debug Panel States
+
+  // ✅ Notes state (auto-save)
+  const [notes, setNotes] = useState('');
+  const [notesSaving, setNotesSaving] = useState(false);
+
+  // ✅ Toast state
+  const [toast, setToast] = useState<Toast | null>(null);
+
+  // Debug state
   const [showDebug, setShowDebug] = useState(false);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
   const [logFilter, setLogFilter] = useState<LogType | 'all'>('all');
   const [expandedLog, setExpandedLog] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
-  
-  // 🆕 Auth Status
+
+  // Auth state
   const [authUid, setAuthUid] = useState<string | null>(null);
   const [authStatus, setAuthStatus] = useState<'checking' | 'active' | 'inactive'>('checking');
-
-  // 🆕 Admin Telegram ID
-  const ADMIN_TELEGRAM_ID = 1436756556;
-
-  const getTodayDate = () => new Date().toISOString().split('T')[0];
 
   // Helper: Add Debug Log
   const addLog = (type: LogType, message: string, data?: any) => {
     const log: DebugLog = {
       id: Date.now() + Math.random(),
       timestamp: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-      type,
-      message,
-      data
+      type, message, data
     };
     setDebugLogs(prev => [log, ...prev].slice(0, 100));
     console.log(`[${type.toUpperCase()}] ${message}`, data || '');
   };
 
-  //  Check Supabase Auth Status
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+    setToast({ message, type });
+  };
+
+  // ============================================
+  // CHECK SUPABASE AUTH STATUS
+  // ============================================
   useEffect(() => {
     const checkAuth = async () => {
       if (!supabase) {
@@ -305,7 +336,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         addLog('error', 'Supabase not initialized');
         return;
       }
-
       try {
         const { data: { user: authUser }, error } = await supabase.auth.getUser();
         if (error) {
@@ -324,27 +354,23 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         addLog('error', 'Auth check failed', { message: err.message });
       }
     };
-
     checkAuth();
   }, []);
 
+  // ============================================
+  // USER + SUBSCRIPTION + ADMIN CHECK (unified)
+  // ============================================
   useEffect(() => {
     addLog('info', 'DailyCardScreen mounted');
-    
+
     if (user) {
       addLog('success', 'User found in context', { userId: user.id, name: user.display_name });
-      
-      // Admin check by Telegram ID
-      const tg = (window as any).Telegram?.WebApp;
-      const tgUserId = tg?.initDataUnsafe?.user?.id;
-      const isAdminByTgId = tgUserId === ADMIN_TELEGRAM_ID;
-      setIsUserAdmin(isAdminByTgId);
-      addLog('info', 'Admin check completed', { 
-        isAdmin: isAdminByTgId, 
-        tgUserId, 
-        authUid: user.id 
-      });
-      
+
+      // ✅ Admin check from DB (not hardcoded Telegram ID)
+      const isAdmin = user.is_admin === true;
+      setIsUserAdmin(isAdmin);
+      addLog('info', 'Admin check completed', { isAdmin, authUid: user.id });
+
       getActiveSubscription(user.id).then(sub => {
         setHasPremium(!!sub);
         addLog('info', 'Subscription check', { hasPremium: !!sub });
@@ -354,107 +380,56 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     }
   }, [user]);
 
+  // ============================================
+  // LOAD TODAY'S READING FROM DB (Single Source of Truth)
+  // ============================================
   useEffect(() => {
-    const today = getTodayDate();
-    addLog('info', 'Checking localStorage for daily card', { today });
-    
-    const stored = localStorage.getItem('dailyCard');
-    if (stored) {
-      const parsed: DailyReading = JSON.parse(stored);
-      addLog('db', 'Found stored daily card', { date: parsed.date, isRevealed: parsed.isRevealed });
-      
-      if (parsed.date === today) {
-        setDailyReading(parsed);
-        setSelectedFocus(parsed.focusArea || 'general');
-        if (parsed.focusArea === 'custom' && parsed.question) setCustomQuestion(parsed.question);
-        
-        if (parsed.isRevealed) {
-          addLog('success', 'Card already revealed, going to revealed stage');
-          setStage('revealed');
-          checkAndSaveReading(parsed);
-        } else {
-          addLog('info', 'Card not yet revealed, going to selecting stage');
-          setStage('selecting');
-        }
-        return;
-      } else {
-        addLog('warning', 'Stored card is from different date, generating new');
-      }
-    } else {
-      addLog('info', 'No stored card found');
-    }
-    generateDailyCard();
-  }, []);
+    const loadTodayReading = async () => {
+      if (!user) return;
 
-  const checkAndSaveReading = async (reading: DailyReading) => {
-    if (!user || saveAttempted) {
-      addLog('info', 'Skipping save check', { hasUser: !!user, alreadyAttempted: saveAttempted });
-      return;
-    }
-    
-    setSaveAttempted(true);
-    addLog('api', 'Checking if reading already saved in Supabase');
-    
-    try {
-      const existingReadings = await getUserReadings(user.id, 100);
-      const todayReadings = existingReadings.filter(r => {
-        const readingDate = new Date(r.created_at).toISOString().split('T')[0];
-        return readingDate === reading.date && r.reading_type === 'daily';
-      });
-      
-      addLog('db', 'Today readings found', { count: todayReadings.length });
-      
-      if (todayReadings.length > 0) {
-        addLog('success', 'Reading already saved, skipping');
-        setIsReadingSaved(true);
-        return;
-      }
-      
-      addLog('api', 'Saving reading to Supabase', { card: reading.card.name });
-      const saveResult = await saveReading({ 
-        user_id: user.id, 
-        reading_type: 'daily', 
-        question: reading.question, 
-        cards: [{ 
-          id: reading.card.id, 
-          name: reading.card.name, 
-          is_reversed: reading.isReversed 
-        }] 
-      });
-      
-      if (saveResult && saveResult.success) {
-        addLog('success', 'Reading saved successfully', saveResult.data);
-        setIsReadingSaved(true);
-      } else {
-        addLog('error', 'Failed to save reading', saveResult?.error);
-      }
-    } catch (error: any) {
-      addLog('error', 'Error in checkAndSaveReading', { error: error.message });
-    }
-  };
+      addLog('api', 'Loading today reading from DB');
+      const existing = await getTodayReading(user.id);
 
-  const generateDailyCard = () => {
-    const today = getTodayDate();
-    const dayOfYear = getDayOfYear(new Date());
-    const card = tarotCards[dayOfYear % tarotCards.length];
-    const newReading: DailyReading = { 
-      card, 
-      isReversed: Math.random() < 0.5, 
-      date: today, 
-      focusArea: 'general',
-      isRevealed: false 
+      if (existing) {
+        addLog('success', 'Today reading found in DB', existing);
+        setDailyReading(existing);
+        setSelectedFocus(existing.focus_area || 'general');
+        setCustomQuestion(existing.question || '');
+        setNotes(existing.notes || '');
+        setStage('revealed');
+      } else {
+        addLog('info', 'No reading for today - showing focus selection');
+        setDailyReading(null);
+        setStage('selecting');
+      }
     };
-    addLog('db', 'Generated new daily card', { cardName: card.name, date: today });
-    localStorage.setItem('dailyCard', JSON.stringify(newReading));
-    setDailyReading(newReading);
-    setStage('selecting');
-  };
 
-  const getDayOfYear = (date: Date): number => {
-    const start = new Date(date.getFullYear(), 0, 0);
-    return Math.floor((date.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-  };
+    loadTodayReading();
+  }, [user]);
 
+  // ============================================
+  // AUTO-SAVE NOTES (debounced, 1s)
+  // ============================================
+  useEffect(() => {
+    if (!dailyReading || !notes) return;
+    if (notes === dailyReading.notes) return;
+
+    const timer = setTimeout(async () => {
+      setNotesSaving(true);
+      const success = await updateDailyNotes(dailyReading.id, notes);
+      if (success) {
+        addLog('success', 'Notes auto-saved');
+        setDailyReading(prev => prev ? { ...prev, notes } : null);
+      }
+      setNotesSaving(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [notes, dailyReading?.id]);
+
+  // ============================================
+  // HANDLE FOCUS SELECT
+  // ============================================
   const handleFocusSelect = (focus: FocusArea) => {
     setSelectedFocus(focus);
     setShowQuestionInput(focus === 'custom');
@@ -462,74 +437,101 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     addLog('ui', 'Focus area selected', { focus });
   };
 
+  // ============================================
+  // HANDLE REVEAL (uses dailyCardService)
+  // ============================================
   const handleReveal = async () => {
-    if (!dailyReading) return;
+    if (!user || isCreating) return;
+
+    setIsCreating(true);
     addLog('ui', 'Reveal button clicked');
-    
+
+    // Haptic feedback
     if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp?.HapticFeedback) {
       (window as any).Telegram.WebApp.HapticFeedback.impactOccurred('medium');
     }
-    setStage('revealing');
-    
-    const updatedReading = { 
-      ...dailyReading, 
-      focusArea: selectedFocus, 
-      question: selectedFocus === 'custom' ? customQuestion : undefined,
-      isRevealed: true 
-    };
-    
-    setDailyReading(updatedReading);
-    localStorage.setItem('dailyCard', JSON.stringify(updatedReading));
-    addLog('db', 'Updated localStorage with revealed card');
 
-    setTimeout(async () => {
+    setStage('revealing');
+
+    // Create reading via centralized service (DB save happens here)
+    const question = selectedFocus === 'custom' ? customQuestion : undefined;
+    const reading = await getDailyCard(user.id, selectedFocus, question);
+
+    if (!reading) {
+      addLog('error', 'Failed to create reading');
+      showToast('Failed to draw your card. Please try again.', 'error');
+      setIsCreating(false);
+      setStage('selecting');
+      return;
+    }
+
+    addLog('success', 'Reading created in DB', reading);
+    setDailyReading(reading);
+    setNotes(reading.notes || '');
+
+    // Track quest progress
+    try {
+      await logReading(user.id, 'daily_card', [reading.cards[0].id], `${reading.cards[0].name}${reading.cards[0].is_reversed ? ' (Reversed)' : ''}`);
+      await trackQuestProgress(user.id, 'draw_daily_card', 1);
+      addLog('success', 'Quest progress tracked');
+    } catch (err: any) {
+      addLog('error', 'Quest tracking failed', { error: err.message });
+    }
+
+    // Show revealed card after animation
+    setTimeout(() => {
       setStage('revealed');
-      if (user) {
-        try {
-          addLog('api', 'Saving reading after reveal');
-          const saveResult = await saveReading({ 
-            user_id: user.id, 
-            reading_type: 'daily', 
-            question: updatedReading.question, 
-            cards: [{ 
-              id: updatedReading.card.id, 
-              name: updatedReading.card.name, 
-              is_reversed: updatedReading.isReversed 
-            }] 
-          });
-          
-          if (!saveResult || !saveResult.success) {
-            addLog('error', 'Failed to save reading', saveResult?.error);
-            alert(`Failed to save reading: ${saveResult?.error || 'Unknown error'}`);
-            return;
-          }
-          
-          addLog('success', 'Reading saved successfully after reveal');
-          setIsReadingSaved(true);
-          
-          await logReading(user.id, 'daily_card', [updatedReading.card.id], `${updatedReading.card.name}${updatedReading.isReversed ? ' (Reversed)' : ''}`);
-          await trackQuestProgress(user.id, 'draw_daily_card', 1);
-        } catch (error: any) { 
-          addLog('error', 'Error in handleReveal', { error: error.message });
-          alert(`Error: ${error.message}`);
-        }
-      }
+      setIsCreating(false);
+      showToast(`Your card: ${reading.cards[0].name} ✨`, 'success');
     }, 1200);
   };
 
+  // ============================================
+  // HANDLE SHARE
+  // ============================================
   const handleShare = () => {
     if (!dailyReading) return;
     addLog('ui', 'Share button clicked');
-    const { card, isReversed } = dailyReading;
-    const shareText = ` My Daily Card: ${card.name}${isReversed ? ' (Reversed)' : ''}\n\n"${isReversed ? card.reversed_meaning : card.meaning}"\n\nDraw your own card on Lunara App! ✨`;
+
+    const cardData = dailyReading.cards[0];
+    const tarotCard = tarotCards.find(c => c.id === cardData.id);
+    if (!tarotCard) return;
+
+    const shareText = `✨ My Daily Card: ${cardData.name}${cardData.is_reversed ? ' (Reversed)' : ''}\n\n"${cardData.is_reversed ? tarotCard.reversed_meaning : tarotCard.meaning}"\n\nDraw your own card on Lunara App! 🌙`;
+
     const tg = (window as any).Telegram?.WebApp;
     if (tg?.openTelegramLink) {
       tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(window.location.href || '')}&text=${encodeURIComponent(shareText)}`);
-      addLog('success', 'Share dialog opened');
+      showToast('Share dialog opened', 'info');
     } else {
       navigator.clipboard.writeText(shareText);
-      addLog('success', 'Copied to clipboard');
-      alert('Copied to clipboard!');
+      showToast('Copied to clipboard!', 'success');
+    }
+  };
+
+  // ============================================
+  // TOGGLE BOOKMARK (DB-driven)
+  // ============================================
+  const handleToggleBookmark = async () => {
+    if (!dailyReading) return;
+
+    const newStatus = await toggleBookmark(dailyReading.id);
+    if (newStatus !== null) {
+      setDailyReading(prev => prev ? { ...prev, is_bookmarked: newStatus } : null);
+      showToast(newStatus ? 'Added to favorites ⭐' : 'Removed from favorites', 'success');
+      addLog('success', `Bookmark ${newStatus ? 'added' : 'removed'}`);
+    }
+  };
+
+  // ============================================
+  // AI INSIGHT (Premium feature)
+  // ============================================
+  const handleAIInsight = () => {
+    if (!hasPremium) {
+      showToast('AI Insight is a Premium feature ✨', 'info');
+      onNavigate?.('pricing');
+    } else {
+      showToast('AI Insight coming soon! 🤖', 'info');
     }
   };
 
@@ -562,33 +564,10 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     addLog('info', 'Debug logs cleared');
   };
 
-  const testSaveReading = async () => {
-    if (!dailyReading || !user) {
-      addLog('error', 'Cannot test save: no reading or user');
-      return;
-    }
-    addLog('api', 'Manual test save triggered');
-    const saveResult = await saveReading({ 
-      user_id: user.id, 
-      reading_type: 'daily', 
-      question: dailyReading.question, 
-      cards: [{ 
-        id: dailyReading.card.id, 
-        name: dailyReading.card.name, 
-        is_reversed: dailyReading.isReversed 
-      }] 
-    });
-    if (saveResult?.success) {
-      addLog('success', 'Test save successful', saveResult.data);
-      setIsReadingSaved(true);
-    } else {
-      addLog('error', 'Test save failed', saveResult?.error);
-    }
-  };
-
   const filteredLogs = logFilter === 'all' ? debugLogs : debugLogs.filter(l => l.type === logFilter);
 
-  if (!dailyReading) {
+  // Loading state
+  if (!user || (dailyReading === null && stage === 'selecting' && !isCreating && debugLogs.length === 0)) {
     return (
       <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', background: '#000002' }}>
         <Canvas dpr={[1, 1.5]} style={{ position: 'absolute', inset: 0 }}>
@@ -603,53 +582,45 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     );
   }
 
-  const { card, isReversed } = dailyReading;
-  const meaning = isReversed ? card.reversed_meaning : card.meaning;
-  const keywords = isReversed ? card.reversed_keywords : card.keywords;
+  const currentCard = dailyReading ? tarotCards.find(c => c.id === dailyReading.cards[0].id) : null;
+  const isReversed = dailyReading?.cards[0].is_reversed || false;
+  const meaning = currentCard ? (isReversed ? currentCard.reversed_meaning : currentCard.meaning) : '';
+  const keywords = currentCard ? (isReversed ? currentCard.reversed_keywords : currentCard.keywords) : [];
 
   const containerStyle: React.CSSProperties = {
-    minHeight: '100vh',
-    position: 'relative',
-    color: '#fff',
+    minHeight: '100vh', position: 'relative', color: '#fff',
     paddingTop: 'calc(70px + env(safe-area-inset-top, 0px))',
     paddingBottom: 'calc(20px + env(safe-area-inset-bottom, 0px))',
-    paddingLeft: '5px',
-    paddingRight: '5px',
-    display: 'flex',
-    flexDirection: 'column',
+    paddingLeft: '5px', paddingRight: '5px',
+    display: 'flex', flexDirection: 'column',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-    overflowY: 'auto',
-    WebkitOverflowScrolling: 'touch',
-    background: '#000002'
+    overflowY: 'auto', WebkitOverflowScrolling: 'touch', background: '#000002'
   };
 
   const actionBtnStyle: React.CSSProperties = {
     width: '48px', height: '48px', borderRadius: '50%',
     background: 'rgba(10, 8, 20, 0.5)',
     border: '1px solid rgba(197, 160, 89, 0.4)',
-    backdropFilter: 'blur(12px)',
-    WebkitBackdropFilter: 'blur(12px)',
+    backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     color: '#C5A059', cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
+    transition: 'all 0.2s ease', boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
   };
 
   return (
     <div style={containerStyle}>
-      <Canvas 
-        dpr={[1, 1.5]} 
-        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, pointerEvents: 'none' }}
-        camera={{ position: [0, 0, 35], fov: 60 }}
-      >
+      <Canvas dpr={[1, 1.5]} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, pointerEvents: 'none' }} camera={{ position: [0, 0, 35], fov: 60 }}>
         <CosmicScene />
       </Canvas>
 
+      {/* Toast */}
+      <AnimatePresence>
+        {toast && <ToastNotification toast={toast} onClose={() => setToast(null)} />}
+      </AnimatePresence>
+
+      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingLeft: '5px', paddingRight: '5px', position: 'relative', zIndex: 1 }}>
-        <button 
-          onClick={() => onNavigate?.('home')}
-          style={{ background: 'rgba(10, 8, 20, 0.5)', border: '1px solid rgba(197, 160, 89, 0.4)', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C5A059', cursor: 'pointer', backdropFilter: 'blur(12px)' }}
-        >
+        <button onClick={() => onNavigate?.('home')} style={{ background: 'rgba(10, 8, 20, 0.5)', border: '1px solid rgba(197, 160, 89, 0.4)', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C5A059', cursor: 'pointer', backdropFilter: 'blur(12px)' }}>
           <ArrowLeft size={20} />
         </button>
         <div style={{ fontSize: '11px', color: '#94a3b8', letterSpacing: '1px', textTransform: 'uppercase', background: 'rgba(10, 8, 20, 0.4)', padding: '6px 12px', borderRadius: '20px', backdropFilter: 'blur(8px)' }}>
@@ -662,8 +633,9 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         {stage === 'selecting' && (
           <motion.div key="selecting" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} style={{ padding: '0 10px', position: 'relative', zIndex: 1 }}>
             <div style={{ textAlign: 'center', marginBottom: '20px', background: 'rgba(10, 8, 20, 0.6)', padding: '20px', borderRadius: '16px', backdropFilter: 'blur(12px)', border: '1px solid rgba(197, 160, 89, 0.15)' }}>
-              <div style={{ fontSize: '40px', marginBottom: '8px' }}></div>
+              <div style={{ fontSize: '40px', marginBottom: '8px' }}>🌙</div>
               <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#C5A059' }}>Set Your Intention</h2>
+              <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>Choose a focus for today's reading</p>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
               {(['general', 'love', 'career', 'custom'] as FocusArea[]).map((focus) => (
@@ -676,8 +648,8 @@ export default function DailyCardScreen({ onNavigate }: Props) {
             {showQuestionInput && (
               <textarea value={customQuestion} onChange={(e) => setCustomQuestion(e.target.value)} placeholder="Your question..." style={{ width: '100%', marginTop: '12px', padding: '12px', background: 'rgba(10, 8, 20, 0.6)', border: '1px solid rgba(197, 160, 89, 0.3)', borderRadius: '10px', color: '#fff', fontSize: '13px', minHeight: '60px', boxSizing: 'border-box', backdropFilter: 'blur(8px)' }} />
             )}
-            <motion.button whileTap={{ scale: 0.98 }} onClick={handleReveal} style={{ width: '100%', marginTop: '16px', padding: '14px', background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)', border: 'none', borderRadius: '10px', color: '#0f0c08', fontSize: '15px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 4px 20px rgba(197, 160, 89, 0.4)' }}>
-              Reveal My Card
+            <motion.button whileTap={{ scale: 0.98 }} onClick={handleReveal} disabled={isCreating} style={{ width: '100%', marginTop: '16px', padding: '14px', background: isCreating ? 'rgba(197, 160, 89, 0.5)' : 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)', border: 'none', borderRadius: '10px', color: '#0f0c08', fontSize: '15px', fontWeight: '700', cursor: isCreating ? 'not-allowed' : 'pointer', boxShadow: '0 4px 20px rgba(197, 160, 89, 0.4)' }}>
+              {isCreating ? 'Drawing your card...' : 'Reveal My Card'}
             </motion.button>
           </motion.div>
         )}
@@ -690,7 +662,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
           </motion.div>
         )}
 
-        {stage === 'revealed' && (
+        {stage === 'revealed' && currentCard && (
           <motion.div key="revealed" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} style={{ display: 'flex', flexDirection: 'column', flex: 1, position: 'relative', zIndex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
               <motion.div
@@ -704,126 +676,113 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                   background: '#0a0600'
                 }}
               >
-                <img src={card.image_url} alt={card.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                <img src={currentCard.image_url} alt={currentCard.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                 {isReversed && (
-                  <div style={{ position: 'absolute', top: '12px', right: '12px', width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '900', background: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)', color: '#fff', border: '2px solid #fff', boxShadow: '0 0 10px rgba(167,139,250,0.8)', transform: isReversed ? 'rotate(-180deg)' : 'rotate(0deg)' }}>
+                  <div style={{ position: 'absolute', top: '12px', right: '12px', width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '900', background: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)', color: '#fff', border: '2px solid #fff', boxShadow: '0 0 10px rgba(167,139,250,0.8)', transform: 'rotate(-180deg)' }}>
                     R
                   </div>
                 )}
               </motion.div>
 
+              {/* Action buttons */}
               <div style={{ width: '48px', display: 'flex', flexDirection: 'column', gap: '14px', marginLeft: '12px' }}>
-                <motion.button whileTap={{ scale: 0.9 }} onClick={() => !hasPremium && onNavigate?.('pricing')} style={{ ...actionBtnStyle, background: hasPremium ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 215, 0, 0.15)', borderColor: hasPremium ? 'rgba(16, 185, 129, 0.5)' : 'rgba(255, 215, 0, 0.5)', color: hasPremium ? '#10b981' : '#FFD700' }}>
-                  {hasPremium ? <Sparkles size={20} /> : <Lock size={18} />}
+                {/* ✨ AI Insight (Premium) */}
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleAIInsight}
+                  style={{ ...actionBtnStyle, background: hasPremium ? 'rgba(167, 139, 250, 0.2)' : 'rgba(255, 215, 0, 0.15)', borderColor: hasPremium ? 'rgba(167, 139, 250, 0.5)' : 'rgba(255, 215, 0, 0.5)', color: hasPremium ? '#a78bfa' : '#FFD700' }}
+                  title="AI Insight"
+                >
+                  <Sparkles size={20} />
                 </motion.button>
-                <motion.button whileTap={{ scale: 0.9 }} onClick={() => setIsBookmarked(!isBookmarked)} style={{ ...actionBtnStyle, color: isBookmarked ? '#C5A059' : '#94a3b8' }}>
-                  <Bookmark size={20} fill={isBookmarked ? '#C5A059' : 'none'} />
+
+                {/* Bookmark */}
+                <motion.button whileTap={{ scale: 0.9 }} onClick={handleToggleBookmark} style={{ ...actionBtnStyle, color: dailyReading?.is_bookmarked ? '#C5A059' : '#94a3b8' }}>
+                  <Bookmark size={20} fill={dailyReading?.is_bookmarked ? '#C5A059' : 'none'} />
                 </motion.button>
+
+                {/* Share */}
                 <motion.button whileTap={{ scale: 0.9 }} onClick={handleShare} style={actionBtnStyle}>
                   <Share2 size={20} />
                 </motion.button>
+
+                {/* History */}
                 <motion.button whileTap={{ scale: 0.9 }} onClick={() => onNavigate?.('reading-history')} style={actionBtnStyle} title="Reading History">
                   <BookOpen size={20} />
                 </motion.button>
               </div>
             </div>
 
+            {/* Card Info + Notes */}
             <div style={{ background: 'rgba(10, 8, 20, 0.6)', border: '1px solid rgba(197, 160, 89, 0.2)', borderRadius: '16px', padding: '16px', backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)', marginLeft: '5px', marginRight: '5px', marginBottom: '5px', boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>
               <div style={{ textAlign: 'center', marginBottom: '12px' }}>
-                <div style={{ fontSize: '11px', color: '#94a3b8', letterSpacing: '1px', textTransform: 'uppercase' }}>{getCardMeta(card)}</div>
-                <h2 style={{ margin: '4px 0', fontSize: '22px', color: '#C5A059', fontWeight: '700' }}>{card.name}</h2>
+                <div style={{ fontSize: '11px', color: '#94a3b8', letterSpacing: '1px', textTransform: 'uppercase' }}>{getCardMeta(currentCard)}</div>
+                <h2 style={{ margin: '4px 0', fontSize: '22px', color: '#C5A059', fontWeight: '700' }}>{currentCard.name}</h2>
                 {isReversed && <span style={{ fontSize: '10px', color: '#a78bfa', fontWeight: '700', letterSpacing: '0.5px' }}>REVERSED POSITION</span>}
               </div>
               <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent, rgba(197, 160, 89, 0.3), transparent)', margin: '12px 0' }} />
               <div style={{ marginBottom: '12px' }}>
                 <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.5', color: 'rgba(255, 255, 255, 0.9)', fontStyle: 'italic', textAlign: 'center' }}>"{meaning}"</p>
               </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center', marginBottom: '12px' }}>
                 {keywords.map((keyword: string, idx: number) => (
                   <span key={idx} style={{ background: 'rgba(197, 160, 89, 0.15)', color: '#e2e8f0', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '500', border: '1px solid rgba(197, 160, 89, 0.25)' }}>
                     {keyword}
                   </span>
                 ))}
               </div>
+
+              {/* Notes Section (auto-save) */}
+              <div style={{ marginTop: '12px' }}>
+                <label style={{ fontSize: '11px', color: '#94a3b8', letterSpacing: '1px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                  📝 Your Notes
+                  {notesSaving && <span style={{ fontSize: '9px', color: '#fbbf24' }}>Saving...</span>}
+                </label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Write your thoughts about this card..."
+                  style={{
+                    width: '100%', minHeight: '80px', padding: '10px',
+                    background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(197, 160, 89, 0.2)',
+                    borderRadius: '8px', color: '#fff', fontSize: '13px',
+                    fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box'
+                  }}
+                />
+              </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* 🐛 FLOATING DEBUG PANEL (მხოლოდ ადმინისთვის) */}
+      {/* Admin Debug Panel */}
       {isUserAdmin && (
         <div style={{ position: 'fixed', right: 0, top: '50%', transform: 'translateY(-50%)', zIndex: 9999, fontFamily: 'monospace' }}>
-          <button 
-            onClick={() => setShowDebug(!showDebug)}
-            style={{
-              width: '50px',
-              height: '50px',
-              background: showDebug ? '#ef4444' : 'rgba(197, 160, 89, 0.9)',
-              border: 'none',
-              borderRadius: '8px 0 0 8px',
-              color: '#fff',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
-              fontSize: '20px'
-            }}
-          >
+          <button onClick={() => setShowDebug(!showDebug)} style={{ width: '50px', height: '50px', background: showDebug ? '#ef4444' : 'rgba(197, 160, 89, 0.9)', border: 'none', borderRadius: '8px 0 0 8px', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.3)', fontSize: '20px' }}>
             {showDebug ? '✕' : '🐛'}
           </button>
 
           {showDebug && (
-            <div style={{
-              position: 'absolute',
-              right: '50px',
-              top: '0',
-              width: '350px',
-              maxHeight: '80vh',
-              background: 'rgba(10, 6, 0, 0.98)',
-              backdropFilter: 'blur(10px)',
-              border: '2px solid #C5A059',
-              borderRadius: '8px',
-              overflow: 'hidden',
-              display: 'flex',
-              flexDirection: 'column'
-            }}>
+            <div style={{ position: 'absolute', right: '50px', top: '0', width: '350px', maxHeight: '80vh', background: 'rgba(10, 6, 0, 0.98)', backdropFilter: 'blur(10px)', border: '2px solid #C5A059', borderRadius: '8px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
               <div style={{ padding: '12px', borderBottom: '1px solid rgba(197, 160, 89, 0.3)', background: 'rgba(197, 160, 89, 0.1)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#C5A059', fontWeight: 'bold', fontSize: '13px' }}>
-                    <Shield size={16} />
-                    ADMIN DEBUG CONSOLE
+                    <Shield size={16} /> ADMIN DEBUG
                   </div>
                 </div>
 
-                {/* 🆕 Auth Status */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', fontSize: '10px', marginBottom: '8px' }}>
                   <div>🔑 Auth: <span style={{ color: authStatus === 'active' ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>{authStatus === 'active' ? 'ACTIVE ✅' : 'INACTIVE ❌'}</span></div>
                   <div>👤 UID: <span style={{ color: authUid ? '#10b981' : '#ef4444', fontSize: '9px' }}>{authUid ? `${authUid.substring(0, 8)}...` : 'NULL'}</span></div>
                   <div>📊 Stage: <span style={{ color: '#fbbf24' }}>{stage}</span></div>
-                  <div>💾 Saved: <span style={{ color: isReadingSaved ? '#10b981' : '#ef4444' }}>{isReadingSaved ? 'YES ✅' : 'NO ❌'}</span></div>
-                  <div>🃏 Card: <span style={{ color: '#60a5fa' }}>{card.name}</span></div>
+                  <div>💾 Reading ID: <span style={{ color: dailyReading ? '#10b981' : '#ef4444', fontSize: '9px' }}>{dailyReading?.id?.substring(0, 8) || 'None'}</span></div>
+                  <div>🃏 Card: <span style={{ color: '#60a5fa' }}>{currentCard?.name || 'None'}</span></div>
                   <div>🔄 Reversed: <span style={{ color: '#a78bfa' }}>{isReversed ? 'YES' : 'NO'}</span></div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '4px', overflowX: 'auto', paddingBottom: '4px', marginBottom: '8px' }}>
                   {(['all', 'info', 'success', 'error', 'warning', 'api', 'db', 'ui'] as const).map(type => (
-                    <button
-                      key={type}
-                      onClick={() => setLogFilter(type)}
-                      style={{
-                        padding: '4px 8px',
-                        background: logFilter === type ? (type === 'all' ? '#C5A059' : logColors[type]) : 'rgba(255,255,255,0.1)',
-                        color: logFilter === type ? '#000' : '#fff',
-                        border: 'none',
-                        borderRadius: '4px',
-                        fontSize: '9px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        whiteSpace: 'nowrap',
-                        textTransform: 'uppercase'
-                      }}
-                    >
+                    <button key={type} onClick={() => setLogFilter(type)} style={{ padding: '4px 8px', background: logFilter === type ? (type === 'all' ? '#C5A059' : logColors[type]) : 'rgba(255,255,255,0.1)', color: logFilter === type ? '#000' : '#fff', border: 'none', borderRadius: '4px', fontSize: '9px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap', textTransform: 'uppercase' }}>
                       {type} ({type === 'all' ? debugLogs.length : debugLogs.filter(l => l.type === type).length})
                     </button>
                   ))}
@@ -836,9 +795,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                   <button onClick={clearLogs} style={{ flex: 1, padding: '6px', background: 'rgba(239, 68, 68, 0.3)', color: '#ef4444', border: '1px solid #ef4444', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                     <Trash2 size={10} /> Clear
                   </button>
-                  <button onClick={testSaveReading} style={{ flex: 1, padding: '6px', background: '#C5A059', color: '#0a0600', border: 'none', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                    <RefreshCw size={10} /> Test Save
-                  </button>
                 </div>
               </div>
 
@@ -847,30 +803,13 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                   <div style={{ textAlign: 'center', padding: '20px', color: '#666', fontSize: '11px' }}>No logs yet...</div>
                 ) : (
                   filteredLogs.map(log => (
-                    <div 
-                      key={log.id}
-                      style={{ 
-                        padding: '8px', 
-                        marginBottom: '4px', 
-                        background: 'rgba(255,255,255,0.03)', 
-                        borderLeft: `3px solid ${logColors[log.type]}`,
-                        borderRadius: '4px',
-                        cursor: log.data ? 'pointer' : 'default'
-                      }}
-                      onClick={() => log.data && setExpandedLog(expandedLog === log.id ? null : log.id)}
-                    >
+                    <div key={log.id} style={{ padding: '8px', marginBottom: '4px', background: 'rgba(255,255,255,0.03)', borderLeft: `3px solid ${logColors[log.type]}`, borderRadius: '4px', cursor: log.data ? 'pointer' : 'default' }} onClick={() => log.data && setExpandedLog(expandedLog === log.id ? null : log.id)}>
                       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', fontSize: '10px' }}>
                         <span style={{ flexShrink: 0 }}>{logIcons[log.type]}</span>
                         <span style={{ color: '#666', flexShrink: 0, fontSize: '9px' }}>{log.timestamp}</span>
-                        <span style={{ color: logColors[log.type], fontWeight: 'bold', flexShrink: 0, fontSize: '9px', textTransform: 'uppercase' }}>
-                          [{log.type}]
-                        </span>
+                        <span style={{ color: logColors[log.type], fontWeight: 'bold', flexShrink: 0, fontSize: '9px', textTransform: 'uppercase' }}>[{log.type}]</span>
                         <span style={{ color: '#e2e8f0', flex: 1, lineHeight: 1.4 }}>{log.message}</span>
-                        {log.data && (
-                          <span style={{ flexShrink: 0, color: '#666' }}>
-                            {expandedLog === log.id ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                          </span>
-                        )}
+                        {log.data && <span style={{ flexShrink: 0, color: '#666' }}>{expandedLog === log.id ? <ChevronUp size={12} /> : <ChevronDown size={12} />}</span>}
                       </div>
                       {log.data && expandedLog === log.id && (
                         <div style={{ marginTop: '6px', padding: '6px', background: 'rgba(0,0,0,0.5)', borderRadius: '4px', fontSize: '9px', color: '#a78bfa', overflowX: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
