@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { tarotCards, TarotCard } from '../data/tarotCards';
+import { tarotCards } from '../data/tarotCards';
 
 // ============================================
 // TYPES
