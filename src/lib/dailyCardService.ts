@@ -19,9 +19,23 @@ export interface DailyReading {
   focus_area: 'general' | 'love' | 'career' | 'custom';
   reading_date: string;
   created_at: string;
+  // 🆕 MOOD TRACKING
+  mood: Mood | null;
+  mood_at_read: string | null;
 }
 
 export type FocusArea = 'general' | 'love' | 'career' | 'custom';
+
+// 🆕 MOOD TRACKING TYPES
+export type Mood = 'terrible' | 'bad' | 'okay' | 'good' | 'amazing';
+
+export const MOODS: Array<{ value: Mood; emoji: string; label: string; color: string }> = [
+  { value: 'terrible', emoji: '😞', label: 'Terrible', color: '#ef4444' },
+  { value: 'bad',      emoji: '😕', label: 'Bad',      color: '#f97316' },
+  { value: 'okay',     emoji: '😐', label: 'Okay',     color: '#fbbf24' },
+  { value: 'good',     emoji: '🙂', label: 'Good',     color: '#84cc16' },
+  { value: 'amazing',  emoji: '🤩', label: 'Amazing',  color: '#10b981' },
+];
 
 // ============================================
 // HELPER: Hash Function (Personalized Seed)
@@ -233,6 +247,34 @@ export async function updateDailyNotes(
     return true;
   } catch (error) {
     console.error('❌ Error in updateDailyNotes:', error);
+    return false;
+  }
+}
+
+// ============================================
+// 🆕 UPDATE MOOD (Mood Tracking)
+// ============================================
+export async function updateMood(readingId: string, mood: Mood): Promise<boolean> {
+  if (!supabase) return false;
+
+  try {
+    const { error } = await supabase
+      .from('readings')
+      .update({ 
+        mood, 
+        mood_at_read: new Date().toISOString() 
+      })
+      .eq('id', readingId);
+
+    if (error) {
+      console.error('❌ Error updating mood:', error);
+      return false;
+    }
+
+    console.log('✅ Mood updated:', mood);
+    return true;
+  } catch (error) {
+    console.error('❌ Error in updateMood:', error);
     return false;
   }
 }
