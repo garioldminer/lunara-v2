@@ -998,6 +998,53 @@ export default function HomeScreen({ onNavigate }: Props) {
         {showLevelUpModal && <LevelUpModal level={leveledUpTo} onClose={() => setShowLevelUpModal(false)} t={t} />}
       </AnimatePresence>
 
+      {/* 🆕 STREAK DANGER BANNER */}
+      {currentStreak > 0 && !isDailyRevealed && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{
+            margin: '8px 12px 0 12px',
+            padding: '10px 14px',
+            background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(251, 146, 60, 0.15) 100%)',
+            border: '1px solid rgba(239, 68, 68, 0.4)',
+            borderRadius: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            cursor: 'pointer'
+          }}
+          onClick={() => onNavigate?.('daily-card')}
+        >
+          <motion.span
+            animate={{ scale: [1, 1.15, 1] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+            style={{ fontSize: '20px' }}
+          >
+            ⚠️
+          </motion.span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: '12px', fontWeight: 700, color: '#ef4444' }}>
+              Your {currentStreak}-day streak is in danger!
+            </div>
+            <div style={{ fontSize: '10px', color: '#fb923c', marginTop: '2px' }}>
+              Draw your card today to keep it alive 🔥
+            </div>
+          </div>
+          <div style={{
+            padding: '6px 12px',
+            background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+            borderRadius: '8px',
+            color: '#fff',
+            fontSize: '10px',
+            fontWeight: 800,
+            letterSpacing: '0.5px'
+          }}>
+            DRAW NOW
+          </div>
+        </motion.div>
+      )}
+
       <div className="user-header">
         <div className="user-main-row" style={{ alignItems: 'center', height: '52px', display: 'flex', justifyContent: 'space-between' }}>
           <div className="avatar-section clickable-avatar" onClick={() => onNavigate?.('profile')} style={{ position: 'relative', width: '52px', height: '52px', flexShrink: 0 }}>
