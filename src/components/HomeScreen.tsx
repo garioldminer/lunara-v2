@@ -10,7 +10,7 @@ import { getTelegramUser } from '../lib/telegramAuth';
 import { getOrCreateUser } from '../lib/userService';
 import { loadUserQuests, trackQuestProgress, type QuestProgress } from '../lib/questService';
 import { getTodayReading } from '../lib/dailyCardService';
-import { getStreakMilestones, getClaimedMilestones, type StreakMilestone } from '../lib/streakService';
+import { getStreakMilestones, getClaimedMilestones } from '../lib/streakService';
 import { 
   Gem, Zap, Trophy, Flame, X, CheckCircle,
   Sparkles, LayoutGrid, Moon, Hash, 
@@ -596,8 +596,6 @@ export default function HomeScreen({ onNavigate }: Props) {
           getStreakMilestones(),
           getClaimedMilestones(user.id)
         ]);
-        
-        setStreakMilestones(milestones);
         
         // Calculate unclaimed count
         const claimedIds = new Set(claimed.map(c => c.milestone_id));
