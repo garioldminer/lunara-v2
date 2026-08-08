@@ -14,7 +14,7 @@ import { getStreakMilestones, getClaimedMilestones } from '../lib/streakService'
 import { 
   Gem, Zap, Trophy, Flame, X, CheckCircle,
   Sparkles, LayoutGrid, Moon, Hash, 
-  Crown, Scroll, ChevronRight, Gift, Shield, Infinity as InfinityIcon, RefreshCw
+  Crown, Scroll, ChevronRight, Gift, Shield, Infinity as InfinityIcon, RefreshCw, TrendingUp
 } from 'lucide-react';
 import DebugPanel from './DebugPanel';
 import DiamondShopModal from './DiamondShopModal';
@@ -936,6 +936,7 @@ export default function HomeScreen({ onNavigate }: Props) {
       else if (action === 'Admin') onNavigate('admin');
       else if (action === 'Subscription') onNavigate('subscription');
       else if (action === 'Services') onNavigate('services');
+      else if (action === 'Stats') onNavigate('journal-stats');
     }
   };
 
@@ -945,6 +946,7 @@ export default function HomeScreen({ onNavigate }: Props) {
     { icon: <Moon size={28} />, label: t('home.quickAccess.tarot'), sublabel: t('home.quickAccess.draw'), color: '#60a5fa', action: 'Tarot' },
     { icon: <Hash size={28} />, label: t('home.quickAccess.cards'), sublabel: t('home.quickAccess.gallery'), color: '#fbbf24', action: 'Cards' },
     { icon: <Scroll size={28} />, label: t('home.quickAccess.history'), sublabel: t('home.quickAccess.readings'), color: '#34d399', action: 'History' },
+    { icon: <TrendingUp size={28} />, label: 'Stats', sublabel: 'Journal', color: '#C5A059', action: 'Stats' },
     { icon: <Crown size={28} />, label: t('home.quickAccess.celtic'), sublabel: t('home.quickAccess.cross'), color: '#C5A059', action: 'CelticCross', isPremium: true },
     { icon: <span style={{ fontSize: '28px' }}>🐎</span>, label: t('home.quickAccess.horseshoe'), sublabel: t('home.quickAccess.sevenCards'), color: '#fb923c', action: 'Horseshoe', isPremium: true },
     { icon: <span style={{ fontSize: '28px' }}>❤️</span>, label: t('home.quickAccess.love'), sublabel: t('home.quickAccess.spread'), color: '#f472b6', action: 'Relationship', isPremium: true },

@@ -31,6 +31,7 @@ import { TranslationProvider } from './i18n/TranslationContext';
 import { initializeTelegramAuth, getTelegramUser } from './lib/telegramAuth';
 import { getOrCreateUser, completeOnboarding } from './lib/userService';
 import { updateUserLastActive } from './lib/adminService';
+import JournalStatsScreen from './components/JournalStatsScreen';
 import './App.css';
 
 class ErrorBoundary extends React.Component<
@@ -65,7 +66,8 @@ type Screen =
   | 'splash' | 'welcome' | 'zodiac' | 'first-reading' | 'home' | 'cards' | 'reading' 
   | 'astro' | 'horoscope' | 'sign-selection' | 'profile' | 'card-fan' | 'card-detail' 
   | 'daily-card' | 'three-card-reading' | 'reading-history' | 'celtic-cross' | 'horseshoe' 
-  | 'relationship' | 'admin' | 'user-analytics' | 'ai-management' | 'subscription' | 'services';
+  | 'relationship' | 'admin' | 'user-analytics' | 'ai-management' | 'subscription' | 'services'
+  | 'journal-stats';
 
 function UserLoader({ onReady }: { onReady: () => void }) {
   const { setUser, setLoading } = useUser();
@@ -173,6 +175,8 @@ function AppContent() {
         console.warn('⛔ Unauthorized admin access attempt by user:', user?.id);
         goTo('home');
       }
+    } else if (screen === 'journal-stats') {
+      goTo('journal-stats');
     } else {
       goTo(screen as Screen);
     }
@@ -227,6 +231,9 @@ function AppContent() {
       {currentScreen === 'celtic-cross' && <CelticCrossReadingScreen onNavigate={handleNavigate} />}
       {currentScreen === 'horseshoe' && <HorseshoeReadingScreen onNavigate={handleNavigate} />}
       {currentScreen === 'relationship' && <RelationshipReadingScreen onNavigate={handleNavigate} />}
+      
+      {/* 🆕 JOURNAL STATS SCREEN */}
+      {currentScreen === 'journal-stats' && <JournalStatsScreen onNavigate={handleNavigate} />}
       
       {/* ✅ ადმინ ეკრანები */}
       {currentScreen === 'admin' && <AdminScreen onNavigate={handleNavigate} />}
