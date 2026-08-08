@@ -148,13 +148,6 @@ interface Stat {
   icon: string;
 }
 
-interface SignInfo {
-  name: string;
-  symbol: string;
-  element: string;
-  planet: string;
-}
-
 interface Reading {
   id: string;
   type: string;
