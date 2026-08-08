@@ -13,7 +13,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    padding: 100px 20px 40px 20px;
+    padding: 100px 20px 140px 20px;
   }
   
   /* ============================================
@@ -963,7 +963,7 @@
      ============================================ */
   @media (max-width: 768px) {
     .sign-selection-screen {
-      padding: 90px 16px 30px 16px;
+      padding: 90px 16px 130px 16px;
     }
   
     .ss-back-btn-fixed {
@@ -1065,7 +1065,7 @@
      ============================================ */
   @media (max-width: 480px) {
     .sign-selection-screen {
-      padding: 80px 12px 20px 12px;
+      padding: 80px 12px 120px 12px;
     }
   
     .ss-back-btn-fixed {
