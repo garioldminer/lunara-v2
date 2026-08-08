@@ -39,6 +39,50 @@ export const MOODS: Array<{ value: Mood; emoji: string; label: string; color: st
   { value: 'amazing',  emoji: '🤩', label: 'Amazing',  color: '#10b981' },
 ];
 
+// 🆕 JOURNAL STATS TYPES
+export interface JournalStats {
+  total_readings: number;
+  total_bookmarked: number;
+  bookmark_percentage: number;
+  current_streak: number;
+  longest_streak: number;
+  
+  // Mood Distribution
+  mood_distribution: {
+    terrible: number;
+    bad: number;
+    okay: number;
+    good: number;
+    amazing: number;
+  };
+  average_mood_score: number; // 1-5 scale
+  most_common_mood: Mood | null;
+  
+  // Card Stats
+  most_drawn_cards: Array<{
+    id: number;
+    name: string;
+    count: number;
+  }>;
+  
+  // Focus Areas
+  focus_breakdown: {
+    general: number;
+    love: number;
+    career: number;
+    custom: number;
+  };
+  
+  // Notes Stats
+  total_notes_written: number;
+  average_note_length: number;
+  
+  // Date Range
+  first_reading_date: string | null;
+  latest_reading_date: string | null;
+  days_since_first: number;
+}
+
 // ============================================
 // 🆕 REFLECTION PROMPT GENERATION (Dynamic)
 // ============================================
@@ -482,6 +526,165 @@ export async function deleteDailyReading(readingId: string): Promise<boolean> {
   } catch (error) {
     console.error('❌ Error in deleteDailyReading:', error);
     return false;
+  }
+}
+
+// ============================================
+// 🆕 GET JOURNAL STATISTICS
+// ============================================
+export async function getJournalStats(userId: string): Promise<JournalStats | null> {
+  if (!supabase) return null;
+
+  try {
+    // 1. Get all readings for user
+    const { data: readings, error } = await supabase
+      .from('readings')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('reading_type', 'daily')
+      .order('reading_date', { ascending: true });
+
+    if (error) {
+      console.error('❌ Error fetching stats:', error);
+      return null;
+    }
+
+    if (!readings || readings.length === 0) {
+      return null;
+    }
+
+    // 2. Calculate basic stats
+    const totalReadings = readings.length;
+    const totalBookmarked = readings.filter(r => r.is_bookmarked).length;
+    const bookmarkPercentage = Math.round((totalBookmarked / totalReadings) * 100);
+
+    // 3. Mood distribution
+    const moodDist = {
+      terrible: 0,
+      bad: 0,
+      okay: 0,
+      good: 0,
+      amazing: 0
+    };
+
+    readings.forEach(r => {
+      if (r.mood && r.mood in moodDist) {
+        moodDist[r.mood as Mood]++;
+      }
+    });
+
+    // Calculate average mood score (1=terrible, 5=amazing)
+    const moodScores: Record<Mood, number> = {
+      terrible: 1,
+      bad: 2,
+      okay: 3,
+      good: 4,
+      amazing: 5
+    };
+
+    let totalMoodScore = 0;
+    let moodCount = 0;
+    readings.forEach(r => {
+      if (r.mood) {
+        totalMoodScore += moodScores[r.mood as Mood];
+        moodCount++;
+      }
+    });
+    const averageMoodScore = moodCount > 0 ? Math.round((totalMoodScore / moodCount) * 10) / 10 : 0;
+
+    // Most common mood
+    let mostCommonMood: Mood | null = null;
+    let maxMoodCount = 0;
+    Object.entries(moodDist).forEach(([mood, count]) => {
+      if (count > maxMoodCount) {
+        maxMoodCount = count;
+        mostCommonMood = mood as Mood;
+      }
+    });
+
+    // 4. Most drawn cards
+    const cardCounts: Record<number, { id: number; name: string; count: number }> = {};
+    readings.forEach(r => {
+      const card = r.cards[0];
+      if (card) {
+        if (!cardCounts[card.id]) {
+          cardCounts[card.id] = { id: card.id, name: card.name, count: 0 };
+        }
+        cardCounts[card.id].count++;
+      }
+    });
+
+    const mostDrawnCards = Object.values(cardCounts)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    // 5. Focus area breakdown
+    const focusBreakdown = {
+      general: 0,
+      love: 0,
+      career: 0,
+      custom: 0
+    };
+    readings.forEach(r => {
+      if (r.focus_area && r.focus_area in focusBreakdown) {
+        focusBreakdown[r.focus_area as FocusArea]++;
+      }
+    });
+
+    // 6. Notes stats
+    const totalNotesWritten = readings.filter(r => r.notes && r.notes.trim().length > 0).length;
+    const totalNoteLength = readings.reduce((sum, r) => sum + (r.notes?.length || 0), 0);
+    const averageNoteLength = totalNotesWritten > 0 ? Math.round(totalNoteLength / totalNotesWritten) : 0;
+
+    // 7. Date range
+    const firstReading = readings[0];
+    const latestReading = readings[readings.length - 1];
+    const firstDate = firstReading?.reading_date || null;
+    const latestDate = latestReading?.reading_date || null;
+    
+    const daysSinceFirst = firstDate 
+      ? Math.floor((Date.now() - new Date(firstDate).getTime()) / (1000 * 60 * 60 * 24))
+      : 0;
+
+    // 8. Get streak info (from user_economy)
+    let currentStreak = 0;
+    let longestStreak = 0;
+    
+    try {
+      const { data: economyData } = await supabase
+        .from('user_economy')
+        .select('current_streak, longest_streak')
+        .eq('user_id', userId)
+        .single();
+      
+      if (economyData) {
+        currentStreak = economyData.current_streak || 0;
+        longestStreak = economyData.longest_streak || 0;
+      }
+    } catch (err) {
+      console.warn('Could not fetch streak data');
+    }
+
+    return {
+      total_readings: totalReadings,
+      total_bookmarked: totalBookmarked,
+      bookmark_percentage: bookmarkPercentage,
+      current_streak: currentStreak,
+      longest_streak: longestStreak,
+      mood_distribution: moodDist,
+      average_mood_score: averageMoodScore,
+      most_common_mood: mostCommonMood,
+      most_drawn_cards: mostDrawnCards,
+      focus_breakdown: focusBreakdown,
+      total_notes_written: totalNotesWritten,
+      average_note_length: averageNoteLength,
+      first_reading_date: firstDate,
+      latest_reading_date: latestDate,
+      days_since_first: daysSinceFirst
+    };
+  } catch (error) {
+    console.error('❌ Error in getJournalStats:', error);
+    return null;
   }
 }
 
