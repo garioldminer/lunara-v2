@@ -1,13 +1,64 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Sparkles, BookOpen, TrendingUp, Award, Calendar, PenTool, Bookmark, Star } from 'lucide-react';
-import { Canvas } from '@react-three/fiber';
-import { CosmicScene } from './DailyCardScreen';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { ArrowLeft, Sparkles, BookOpen, TrendingUp, Award, Calendar, Bookmark, Star } from 'lucide-react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import * as THREE from 'three';
 import { useUser } from '../context/UserContext';
 import { getJournalStats, type JournalStats, MOODS, type Mood } from '../lib/dailyCardService';
 
 interface Props {
   onNavigate?: (screen: string) => void;
+}
+
+// ============================================
+// 🆕 STANDALONE COSMIC SCENE (simplified)
+// ============================================
+function MiniStarField() {
+  const starsRef = useRef<THREE.Points>(null);
+  const { positions, colors, sizes } = useMemo(() => {
+    const count = 3000;
+    const positions = new Float32Array(count * 3);
+    const colors = new Float32Array(count * 3);
+    const sizes = new Float32Array(count);
+    for (let i = 0; i < count; i++) {
+      const i3 = i * 3;
+      const radius = 50 + Math.random() * 100;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+      positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+      positions[i3 + 2] = radius * Math.cos(phi);
+      colors[i3] = 1.0; colors[i3 + 1] = 0.95; colors[i3 + 2] = 0.9;
+      sizes[i] = Math.log(1 - Math.random()) * -1;
+    }
+    return { positions, colors, sizes };
+  }, []);
+
+  useFrame((_state, delta) => {
+    if (starsRef.current) {
+      starsRef.current.rotation.y += delta * 0.01;
+    }
+  });
+
+  return (
+    <points ref={starsRef}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" count={positions.length / 3} array={positions} itemSize={3} />
+        <bufferAttribute attach="attributes-color" count={colors.length / 3} array={colors} itemSize={3} />
+        <bufferAttribute attach="attributes-size" count={sizes.length} array={sizes} itemSize={1} />
+      </bufferGeometry>
+      <pointsMaterial size={0.5} vertexColors={true} transparent={true} opacity={0.7} sizeAttenuation={true} blending={THREE.AdditiveBlending} depthWrite={false} />
+    </points>
+  );
+}
+
+function JournalCosmicScene() {
+  return (
+    <>
+      <color attach="background" args={['#000002']} />
+      <MiniStarField />
+    </>
+  );
 }
 
 // ============================================
@@ -17,11 +68,6 @@ function getMoodEmoji(mood: Mood | null): string {
   if (!mood) return '—';
   const found = MOODS.find(m => m.value === mood);
   return found ? found.emoji : '—';
-}
-
-function getMoodColor(mood: Mood): string {
-  const found = MOODS.find(m => m.value === mood);
-  return found ? found.color : '#94a3b8';
 }
 
 // ============================================
@@ -96,7 +142,7 @@ export default function JournalStatsScreen({ onNavigate }: Props) {
     return (
       <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', background: '#000002' }}>
         <Canvas dpr={[1, 1.5]} style={{ position: 'absolute', inset: 0 }}>
-          <CosmicScene />
+          <JournalCosmicScene />
         </Canvas>
         <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', color: '#C5A059' }}>
           <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}>
@@ -112,7 +158,7 @@ export default function JournalStatsScreen({ onNavigate }: Props) {
     return (
       <div style={containerStyle}>
         <Canvas dpr={[1, 1.5]} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, pointerEvents: 'none' }} camera={{ position: [0, 0, 35], fov: 60 }}>
-          <CosmicScene />
+          <JournalCosmicScene />
         </Canvas>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', position: 'relative', zIndex: 1 }}>
           <button onClick={() => onNavigate?.('home')} style={{ background: 'rgba(10, 8, 20, 0.5)', border: '1px solid rgba(197, 160, 89, 0.4)', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C5A059', cursor: 'pointer', backdropFilter: 'blur(12px)' }}>
@@ -180,7 +226,7 @@ export default function JournalStatsScreen({ onNavigate }: Props) {
   return (
     <div style={containerStyle}>
       <Canvas dpr={[1, 1.5]} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, pointerEvents: 'none' }} camera={{ position: [0, 0, 35], fov: 60 }}>
-        <CosmicScene />
+        <JournalCosmicScene />
       </Canvas>
 
       {/* Header */}
