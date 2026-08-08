@@ -20,8 +20,11 @@ serve(async (req) => {
   try {
     console.log('🚀 [send-daily-horoscope] Starting execution...');
 
-    // 🔐 AUTH CHECK - CRON_SECRET verification
+    // 🔐 AUTH CHECK - CRON_SECRET verification (improved)
     const authHeader = req.headers.get('Authorization');
+    
+    console.log('🔐 [Auth] Header exists:', authHeader ? 'yes' : 'no');
+    console.log('🔐 [Auth] CRON_SECRET exists:', CRON_SECRET ? 'yes' : 'no');
     
     if (!CRON_SECRET) {
       console.error('❌ CRITICAL: CRON_SECRET not configured in Supabase secrets');
@@ -31,16 +34,34 @@ serve(async (req) => {
       );
     }
     
-    if (!authHeader || !authHeader.includes(CRON_SECRET)) {
-      console.error('❌ Unauthorized attempt - invalid or missing CRON_SECRET');
-      console.error(`   Received header: ${authHeader || 'none'}`);
+    if (!authHeader) {
+      console.error('❌ [Auth] No Authorization header provided');
       return new Response(
-        JSON.stringify({ success: false, error: 'Unauthorized' }),
+        JSON.stringify({ success: false, error: 'Unauthorized: Missing Authorization header' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
     
-    console.log('✅ Auth passed - CRON_SECRET verified');
+    // მოვაშოროთ "Bearer " prefix თუ არსებობს
+    const token = authHeader.startsWith('Bearer ') 
+      ? authHeader.replace('Bearer ', '') 
+      : authHeader;
+    
+    console.log('🔐 [Auth] Token length:', token.length);
+    console.log('🔐 [Auth] Expected length:', CRON_SECRET.length);
+    console.log('🔐 [Auth] Match:', token === CRON_SECRET ? '✅ YES' : '❌ NO');
+    
+    if (token !== CRON_SECRET) {
+      console.error('❌ [Auth] Token mismatch');
+      console.error(`   Received first 10 chars: ${token.substring(0, 10)}...`);
+      console.error(`   Expected first 10 chars: ${CRON_SECRET.substring(0, 10)}...`);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized: Invalid CRON_SECRET' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    console.log('✅ [Auth] CRON_SECRET verified successfully');
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
