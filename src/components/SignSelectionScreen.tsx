@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useUser } from '../context/UserContext';
 import { updateUser } from '../lib/userService';
-import { calculateZodiacSign, validateBirthDate } from '../utils/zodiacCalculator';
-import { supabase } from '../lib/supabase';
+import { validateBirthDate } from '../utils/zodiacCalculator';
 import { ArrowLeft } from 'lucide-react';
 import './SignSelectionScreen.css';
 
