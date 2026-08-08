@@ -22,6 +22,20 @@ import StreakModal from './StreakModal';
 import LeaderboardModal from './LeaderboardModal';
 import './HomeScreen.css';
 
+// ==========================================
+// ✨ Zodiac helper for HomeScreen - Big Three Display
+// ==========================================
+const ZODIAC_SYMBOLS: Record<string, string> = {
+  aries: '♈', taurus: '♉', gemini: '♊', cancer: '♋',
+  leo: '♌', virgo: '♍', libra: '♎', scorpio: '♏',
+  sagittarius: '♐', capricorn: '♑', aquarius: '♒', pisces: '♓'
+};
+
+const getZodiacSymbol = (signName: string): string => {
+  if (!signName) return '✧';
+  return ZODIAC_SYMBOLS[signName.toLowerCase()] || '✧';
+};
+
 const getXPToNextLevel = (level: number): number => {
   if (level === 1) return 100;
   if (level === 2) return 250;
@@ -1152,13 +1166,82 @@ export default function HomeScreen({ onNavigate }: Props) {
             )}
           </div>
           
+          {/* ✨ UPDATED: Zodiac Big Three Display (premium badge removed) */}
           <div className="user-info-section" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '52px', marginLeft: '12px', flex: 1, minWidth: 0 }}>
             <h2 className="username" style={{ margin: 0, fontSize: '18px', lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {user?.display_name || 'LunaraSeeker'}
             </h2>
-            {activeSubscription && (
-              <div className="premium-status-badge" onClick={() => onNavigate?.('subscription')} style={{ marginTop: '4px', alignSelf: 'flex-start' }}>
-                <InfinityIcon size={10} /><span>PREMIUM</span>
+            
+            {user?.sun_sign ? (
+              <div 
+                className="zodiac-sign-badge" 
+                onClick={() => onNavigate?.('profile')}
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '6px', 
+                  marginTop: '4px', 
+                  alignSelf: 'flex-start',
+                  padding: '3px 10px',
+                  background: 'linear-gradient(135deg, rgba(197, 160, 89, 0.15), rgba(197, 160, 89, 0.08))',
+                  border: '1px solid rgba(197, 160, 89, 0.3)',
+                  borderRadius: '12px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  overflow: 'hidden',
+                  maxWidth: '100%'
+                }}
+              >
+                <span style={{ fontSize: '12px', filter: 'drop-shadow(0 0 3px rgba(197, 160, 89, 0.6))', flexShrink: 0 }}>
+                  {getZodiacSymbol(user.sun_sign)}
+                </span>
+                <span style={{ 
+                  fontSize: '11px', 
+                  color: '#C5A059', 
+                  fontWeight: 600, 
+                  letterSpacing: '0.5px',
+                  textTransform: 'capitalize',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                }}>
+                  {user.sun_sign}
+                  {user.moon_sign && (
+                    <>
+                      <span style={{ margin: '0 4px', color: 'rgba(197, 160, 89, 0.5)' }}>·</span>
+                      {getZodiacSymbol(user.moon_sign)}
+                    </>
+                  )}
+                  {user.rising_sign && (
+                    <>
+                      <span style={{ margin: '0 4px', color: 'rgba(197, 160, 89, 0.5)' }}>·</span>
+                      {getZodiacSymbol(user.rising_sign)}
+                    </>
+                  )}
+                </span>
+              </div>
+            ) : (
+              <div 
+                className="add-sign-badge" 
+                onClick={() => onNavigate?.('sign-selection')}
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '4px', 
+                  marginTop: '4px', 
+                  alignSelf: 'flex-start',
+                  padding: '3px 10px',
+                  background: 'rgba(197, 160, 89, 0.1)',
+                  border: '1px dashed rgba(197, 160, 89, 0.4)',
+                  borderRadius: '12px',
+                  cursor: 'pointer',
+                  fontSize: '10px',
+                  color: '#b3a68c',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <span>✨</span>
+                <span>Add your sign</span>
               </div>
             )}
           </div>
