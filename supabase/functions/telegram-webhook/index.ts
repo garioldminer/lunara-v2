@@ -77,7 +77,7 @@ serve(async (req) => {
           }
         }
 
-        // ✅ შეძენის ლოგირება (გასწორებულია .catch()-ის გარეშე)
+        // ✅ შეძენის ლოგირება
         const { error: purchaseLogError } = await supabase.from("purchases").insert({
           user_id: userId,
           feature_id: "diamonds",
@@ -90,7 +90,7 @@ serve(async (req) => {
           console.error("Failed to log purchase:", purchaseLogError);
         }
 
-        // ✅ მომხმარებლისთვის შეტყობინების გაგზავნა (გასწორებულია try/catch-ით)
+        // ✅ მომხმარებლისთვის შეტყობინების გაგზავნა
         try {
           await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
             method: "POST",
@@ -137,15 +137,17 @@ serve(async (req) => {
         else if (tier === "yearly") expiresAt.setFullYear(expiresAt.getFullYear() + 1);
         else expiresAt.setFullYear(2099);
 
+        // ✅ გასწორებულია: tier → plan_type, is_active → status
         const { error: subInsertError } = await supabase.from("subscriptions").insert({
           user_id: invoice.user_id,
-          tier,
+          plan_type: tier,
+          status: "active",
           started_at: new Date().toISOString(),
           expires_at: expiresAt.toISOString(),
-          is_active: true,
           telegram_payment_charge_id: payment.telegram_payment_charge_id,
         });
         if (subInsertError) console.error("❌ Failed to insert subscription:", subInsertError);
+        else console.log(`✅ Subscription created for user ${invoice.user_id}: ${tier}`);
 
       } else {
         const { error: purchaseInsertError } = await supabase.from("purchases").insert({
@@ -156,6 +158,7 @@ serve(async (req) => {
           purchased_at: new Date().toISOString(),
         });
         if (purchaseInsertError) console.error("❌ Failed to insert purchase:", purchaseInsertError);
+        else console.log(`✅ Purchase recorded for user ${invoice.user_id}: ${invoice.feature_id}`);
       }
 
       return new Response("OK", { status: 200, headers: { "Content-Type": "application/json" } });
