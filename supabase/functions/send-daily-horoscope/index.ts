@@ -4,6 +4,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const TELEGRAM_BOT_TOKEN = Deno.env.get('TELEGRAM_BOT_TOKEN');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const CRON_SECRET = Deno.env.get('CRON_SECRET');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,6 +19,28 @@ serve(async (req) => {
 
   try {
     console.log('🚀 [send-daily-horoscope] Starting execution...');
+
+    // 🔐 AUTH CHECK - CRON_SECRET verification
+    const authHeader = req.headers.get('Authorization');
+    
+    if (!CRON_SECRET) {
+      console.error('❌ CRITICAL: CRON_SECRET not configured in Supabase secrets');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Server configuration error' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    if (!authHeader || !authHeader.includes(CRON_SECRET)) {
+      console.error('❌ Unauthorized attempt - invalid or missing CRON_SECRET');
+      console.error(`   Received header: ${authHeader || 'none'}`);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    console.log('✅ Auth passed - CRON_SECRET verified');
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
