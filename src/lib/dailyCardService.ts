@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { tarotCards } from '../data/tarotCards';
+import { tarotCards, TarotCard } from '../data/tarotCards';
 
 // ============================================
 // TYPES
@@ -22,6 +22,8 @@ export interface DailyReading {
   // 🆕 MOOD TRACKING
   mood: Mood | null;
   mood_at_read: string | null;
+  // 🆕 REFLECTION PROMPT
+  reflection_prompt: string | null;
 }
 
 export type FocusArea = 'general' | 'love' | 'career' | 'custom';
@@ -36,6 +38,82 @@ export const MOODS: Array<{ value: Mood; emoji: string; label: string; color: st
   { value: 'good',     emoji: '🙂', label: 'Good',     color: '#84cc16' },
   { value: 'amazing',  emoji: '🤩', label: 'Amazing',  color: '#10b981' },
 ];
+
+// ============================================
+// 🆕 REFLECTION PROMPT GENERATION (Dynamic)
+// ============================================
+const MAJOR_PROMPTS = [
+  'What life lesson is the universe teaching you right now?',
+  'What major change are you being called to embrace?',
+  'What part of your journey needs your full attention today?',
+  'What inner strength can you draw upon right now?',
+  'What old chapter is ready to close so a new one can begin?',
+  'What truth about yourself are you ready to acknowledge?'
+];
+
+const WANDS_PROMPTS = [
+  'What passion is ready to ignite within you today?',
+  'Where can you take bold, inspired action right now?',
+  'What creative spark deserves your energy today?',
+  'What goal are you ready to pursue with full confidence?'
+];
+
+const CUPS_PROMPTS = [
+  'What emotion is asking to be felt and honored today?',
+  'How can you deepen a meaningful connection right now?',
+  'What does your heart truly need at this moment?',
+  'What feeling have you been avoiding that deserves attention?'
+];
+
+const SWORDS_PROMPTS = [
+  'What thought pattern is ready to be released today?',
+  'Where can you bring clarity instead of confusion right now?',
+  'What truth do you need to speak or hear today?',
+  'What mental burden can you set down right now?'
+];
+
+const PENTACLES_PROMPTS = [
+  'What practical step can you take toward your goals today?',
+  'What resource or skill are you ready to cultivate right now?',
+  'Where can you build more stability in your life today?',
+  'What small investment now will pay off later?'
+];
+
+const REVERSED_TWIST = ' (Take a moment to look inward before answering.)';
+
+const FOCUS_SUFFIX: Record<FocusArea, string> = {
+  general: '',
+  love: ' Think about your relationships and heart.',
+  career: ' Think about your work and ambitions.',
+  custom: ''
+};
+
+export function generateReflectionPrompt(
+  card: TarotCard,
+  focusArea: FocusArea,
+  isReversed: boolean,
+  seed: number
+): string {
+  let pool: string[];
+
+  if (card.arcana === 'major') {
+    pool = MAJOR_PROMPTS;
+  } else {
+    switch (card.suit) {
+      case 'wands': pool = WANDS_PROMPTS; break;
+      case 'cups': pool = CUPS_PROMPTS; break;
+      case 'swords': pool = SWORDS_PROMPTS; break;
+      case 'pentacles': pool = PENTACLES_PROMPTS; break;
+      default: pool = MAJOR_PROMPTS;
+    }
+  }
+
+  const prompt = pool[seed % pool.length];
+  const twist = isReversed ? REVERSED_TWIST : '';
+  const suffix = FOCUS_SUFFIX[focusArea] || '';
+
+  return prompt + twist + suffix;
+}
 
 // ============================================
 // HELPER: Hash Function (Personalized Seed)
@@ -155,6 +233,9 @@ export async function getDailyCard(
     
     const isReversed = (seed % 100) < 50;
 
+    // 🆕 Generate reflection prompt for this card
+    const reflectionPrompt = generateReflectionPrompt(card, focusArea, isReversed, seed);
+
     const { data, error } = await supabase
       .from('readings')
       .insert([{
@@ -169,7 +250,8 @@ export async function getDailyCard(
         focus_area: focusArea,
         reading_date: today,
         notes: null,
-        is_bookmarked: false
+        is_bookmarked: false,
+        reflection_prompt: reflectionPrompt
       }])
       .select()
       .single();
@@ -182,7 +264,8 @@ export async function getDailyCard(
     console.log('✅ Daily reading created:', {
       card: card.name,
       reversed: isReversed,
-      focus: focusArea
+      focus: focusArea,
+      prompt: reflectionPrompt.substring(0, 50) + '...'
     });
 
     return data as DailyReading;
