@@ -41,7 +41,7 @@ serve(async (req) => {
 
     console.log('✅ Daily horoscope is enabled. Fetching eligible users...');
 
-    // 3. მივიღოთ დღევანდელი კოსმოსური მონაცემები (ერთხელ, ყველასთვის)
+    // 3. მივიღოთ დღევანდელი კოსმოსური მონაცემები
     const today = new Date().toISOString().split('T')[0];
     const { data: cosmicData } = await supabase
       .from('cosmic_daily_data')
@@ -71,25 +71,12 @@ serve(async (req) => {
       throw new Error('Prompt template "daily_horoscope_base" not found or inactive');
     }
 
-    // 5. მივიღოთ eligible მომხმარებლები
+    // ✅ 5. მივიღოთ eligible მომხმარებლები (გასწორებული - users table პირდაპირ)
     const { data: users, error: usersError } = await supabase
       .from('users')
-      .select(`
-        id,
-        display_name,
-        username,
-        sun_sign,
-        moon_sign,
-        rising_sign,
-        user_preferences (
-          telegram_chat_id,
-          push_notifications,
-          preferred_language
-        )
-      `)
+      .select('id, display_name, username, sun_sign, moon_sign, rising_sign, telegram_id')
       .not('sun_sign', 'is', null)
-      .eq('user_preferences.push_notifications', true)
-      .not('user_preferences.telegram_chat_id', 'is', null);
+      .not('telegram_id', 'is', null);
 
     if (usersError || !users) {
       throw new Error('Failed to fetch users: ' + usersError?.message);
@@ -107,10 +94,9 @@ serve(async (req) => {
         const sunSign = user.sun_sign;
         const moonSign = user.moon_sign || 'Unknown';
         const risingSign = user.rising_sign || 'Unknown';
-        const chatId = user.user_preferences?.telegram_chat_id;
-        const language = user.user_preferences?.preferred_language || 'English';
+        const chatId = user.telegram_id;  // ✅ telegram_id == chat_id
+        const language = 'English';  // Default (შემდეგში დავამატებთ user preference-ს)
         
-        // მომხმარებლის სახელის ამოღება (Fallback: 'Friend')
         const userName = user.display_name || user.username || 'Friend';
 
         // მოვამზადოთ Prompt
@@ -151,7 +137,7 @@ serve(async (req) => {
         // პარსინგი
         const parsed = parseHoroscopeResponse(aiText);
 
-        // ✅ განახლებული: დამატებულია Planet და Crystal, აღდგენილია ემოჯი
+        // Telegram message
         const telegramMessage = 
 `🌙 *Good Morning, ${userName}!*
 
@@ -175,7 +161,7 @@ Planet: ${parsed.lucky_planet || 'Venus'}  •  Crystal: ${parsed.lucky_crystal 
 
 ✨ *Lunara* - Your daily dose of cosmic wisdom`;
 
-        // გაგზავნა
+        // გაგზავნა Telegram-ში
         const tgRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -188,15 +174,27 @@ Planet: ${parsed.lucky_planet || 'Venus'}  •  Crystal: ${parsed.lucky_crystal 
 
         const tgData = await tgRes.json();
 
-        // ლოგირება
-        await supabase.from('horoscope_logs').insert({
-          user_id: user.id,
-          sun_sign: sunSign,
-          status: tgData.ok ? 'sent' : 'failed',
-          error_message: tgData.ok ? null : tgData.description,
-          ai_model: aiModel,
-          tokens_used: tokensUsed
-        });
+        // ✅ ლოგირება function_logs-ში (იმის ნაცვლად რომ horoscope_logs-ში)
+        try {
+          await supabase.from('function_logs').insert({
+            function_name: 'send-daily-horoscope',
+            status: tgData.ok ? 'success' : 'error',
+            response_time_ms: 0,
+            status_code: tgData.ok ? 200 : 500,
+            error_message: tgData.ok ? null : tgData.description,
+            request_data: { 
+              user_id: user.id,
+              sun_sign: sunSign,
+              chat_id: chatId,
+              ai_model: aiModel,
+              tokens_used: tokensUsed
+            },
+            response_data: { status: tgData.ok ? 'sent' : 'failed' },
+            triggered_by: 'cron'
+          });
+        } catch (logErr) {
+          console.error('Failed to log:', logErr);
+        }
 
         if (tgData.ok) {
           successCount++;
@@ -211,14 +209,6 @@ Planet: ${parsed.lucky_planet || 'Venus'}  •  Crystal: ${parsed.lucky_crystal 
       } catch (err: any) {
         failCount++;
         errors.push(`User ${user.id}: ${err.message}`);
-        
-        // შეცდომის ლოგირება
-        await supabase.from('horoscope_logs').insert({
-          user_id: user.id,
-          sun_sign: user.sun_sign,
-          status: 'failed',
-          error_message: err.message
-        }).catch(() => {});
       }
     }
 
