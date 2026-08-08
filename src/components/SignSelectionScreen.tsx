@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useUser } from '../context/UserContext';
 import { updateUser } from '../lib/userService';
 import { calculateZodiacSign, validateBirthDate } from '../utils/zodiacCalculator';
+import { supabase } from '../lib/supabase';
 import { ArrowLeft } from 'lucide-react';
 import './SignSelectionScreen.css';
 
@@ -9,8 +10,8 @@ interface Props {
   onNavigate?: (screen: string) => void;
 }
 
-// ✅ Supabase-ის base URL
 const SUPABASE_BASE_URL = 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/Horoscope';
+const SUPABASE_URL = 'https://eutavdhcxpfhpfsyaskb.supabase.co';
 
 const ZODIAC_SIGNS = [
   { name: 'aries', symbol: '♈', label: 'Aries', dates: 'Mar 21 - Apr 19', imageUrl: `${SUPABASE_BASE_URL}/Aries.jpg` },
@@ -32,7 +33,13 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
   const [selectedMode, setSelectedMode] = useState<'manual' | 'birth-date' | null>(null);
   const [selectedSign, setSelectedSign] = useState<string | null>(null);
   const [birthDate, setBirthDate] = useState({ day: '', month: '', year: '' });
-  const [calculatedSign, setCalculatedSign] = useState<string | null>(null);
+  const [birthTime, setBirthTime] = useState({ hours: '', minutes: '' });
+  const [birthPlace, setBirthPlace] = useState('');
+  const [birthChartData, setBirthChartData] = useState<{
+    sun_sign: string;
+    moon_sign: string;
+    rising_sign: string;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -44,14 +51,29 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
   const handleBirthDateChange = (field: 'day' | 'month' | 'year', value: string) => {
     setBirthDate(prev => ({ ...prev, [field]: value }));
     setError(null);
-    setCalculatedSign(null);
+    setBirthChartData(null);
   };
 
-  const handleCalculateSign = () => {
+  const handleBirthTimeChange = (field: 'hours' | 'minutes', value: string) => {
+    setBirthTime(prev => ({ ...prev, [field]: value }));
+    setError(null);
+    setBirthChartData(null);
+  };
+
+  const handleCalculateBirthChart = async () => {
     const { day, month, year } = birthDate;
-    
+    const { hours, minutes } = birthTime;
+
     if (!day || !month || !year) {
-      setError('Please fill in all fields');
+      setError('Please fill in birth date');
+      return;
+    }
+    if (!hours || !minutes) {
+      setError('Please fill in birth time');
+      return;
+    }
+    if (!birthPlace.trim()) {
+      setError('Please enter your birth city');
       return;
     }
 
@@ -62,10 +84,39 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
       return;
     }
 
-    const sign = calculateZodiacSign(dateStr);
-    setCalculatedSign(sign);
-    setSelectedSign(sign);
+    setLoading(true);
     setError(null);
+
+    try {
+      console.log('🔮 Calculating birth chart...');
+
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/calculate-birth-chart`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          birth_date: dateStr,
+          birth_time: `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`,
+          birth_place: birthPlace.trim()
+        })
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        setError(result.error || 'Failed to calculate birth chart');
+        return;
+      }
+
+      setBirthChartData(result.data);
+      setSelectedSign(result.data.sun_sign);
+      console.log('✅ Birth chart calculated:', result.data);
+
+    } catch (err: any) {
+      console.error('❌ Error calculating birth chart:', err);
+      setError('Failed to calculate. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleContinue = async () => {
@@ -78,7 +129,7 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
     setError(null);
 
     try {
-      console.log('💾 Saving sign:', selectedSign);
+      console.log('💾 Saving birth chart data...');
 
       const updates: any = { sun_sign: selectedSign };
       
@@ -86,18 +137,31 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
         updates.birth_date = `${birthDate.year}-${birthDate.month.padStart(2, '0')}-${birthDate.day.padStart(2, '0')}`;
       }
 
+      if (birthTime.hours && birthTime.minutes) {
+        updates.birth_time = `${birthTime.hours.padStart(2, '0')}:${birthTime.minutes.padStart(2, '0')}:00`;
+      }
+
+      if (birthPlace.trim()) {
+        updates.birth_place = birthPlace.trim();
+      }
+
+      if (birthChartData) {
+        updates.moon_sign = birthChartData.moon_sign;
+        updates.rising_sign = birthChartData.rising_sign;
+      }
+
       const updatedUser = await updateUser(user.id, updates);
       
       if (updatedUser) {
         setUser(updatedUser);
-        console.log('✅ Sign saved successfully!');
+        console.log('✅ Birth chart saved successfully!');
         
         if (onNavigate) {
           onNavigate('horoscope');
         }
       }
     } catch (error) {
-      console.error('❌ Error saving sign:', error);
+      console.error('❌ Error saving birth chart:', error);
       setError('Failed to save. Please try again.');
     } finally {
       setLoading(false);
@@ -108,7 +172,7 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
     if (selectedMode) {
       setSelectedMode(null);
       setSelectedSign(null);
-      setCalculatedSign(null);
+      setBirthChartData(null);
       setError(null);
     } else if (onNavigate) {
       onNavigate('home');
@@ -116,7 +180,7 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
   };
 
   const getSignData = (signName: string) => {
-    return ZODIAC_SIGNS.find(s => s.name === signName);
+    return ZODIAC_SIGNS.find(s => s.name === signName.toLowerCase());
   };
 
   return (
@@ -148,8 +212,8 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
 
       <div className="ss-content">
         <div className="ss-header">
-          <p className="ss-subtitle-top">Discover Your Sign</p>
-          <h1 className="ss-title-main">Select Your Zodiac Sign</h1>
+          <p className="ss-subtitle-top">Discover Your Cosmic Blueprint</p>
+          <h1 className="ss-title-main">Your Birth Chart</h1>
         </div>
 
         {!selectedMode && (
@@ -160,8 +224,8 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
             >
               <div className="ss-mode-icon">✨</div>
               <div className="ss-mode-content">
-                <h3>Manual Selection</h3>
-                <p>Choose your sign from the list</p>
+                <h3>Just Sun Sign</h3>
+                <p>Quick selection from the list</p>
               </div>
             </button>
 
@@ -169,10 +233,10 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
               className="ss-mode-btn"
               onClick={() => setSelectedMode('birth-date')}
             >
-              <div className="ss-mode-icon">📅</div>
+              <div className="ss-mode-icon">🔮</div>
               <div className="ss-mode-content">
-                <h3>Birth Date</h3>
-                <p>We'll calculate it automatically</p>
+                <h3>Full Birth Chart</h3>
+                <p>Sun, Moon & Rising signs</p>
               </div>
             </button>
           </div>
@@ -205,7 +269,7 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
 
         {selectedMode === 'birth-date' && (
           <div className="ss-birth-date-mode">
-            <h2 className="ss-mode-title">When were you born?</h2>
+            <h2 className="ss-mode-title">When & Where were you born?</h2>
             
             <div className="ss-date-inputs">
               <div className="ss-date-field">
@@ -245,18 +309,74 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
               </div>
             </div>
 
-            {calculatedSign && (
-              <div className="ss-calculated-sign">
-                <div className="ss-calculated-image-container">
-                  <img 
-                    src={getSignData(calculatedSign)?.imageUrl} 
-                    alt={getSignData(calculatedSign)?.label}
-                    className="ss-calculated-image"
-                  />
-                </div>
-                <div className="ss-calculated-info">
-                  <h3>Your Sign</h3>
-                  <p>{getSignData(calculatedSign)?.label}</p>
+            <div className="ss-time-inputs">
+              <div className="ss-time-field">
+                <label>Hour</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="23"
+                  placeholder="14"
+                  value={birthTime.hours}
+                  onChange={(e) => handleBirthTimeChange('hours', e.target.value)}
+                />
+              </div>
+
+              <div className="ss-time-field">
+                <label>Minute</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="59"
+                  placeholder="30"
+                  value={birthTime.minutes}
+                  onChange={(e) => handleBirthTimeChange('minutes', e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="ss-place-input">
+              <label>Birth City</label>
+              <input
+                type="text"
+                placeholder="Tbilisi, New York, London..."
+                value={birthPlace}
+                onChange={(e) => {
+                  setBirthPlace(e.target.value);
+                  setError(null);
+                  setBirthChartData(null);
+                }}
+              />
+              <p className="ss-hint">Supported: Tbilisi, Batumi, Kutaisi, New York, London, Paris, Moscow, Istanbul, Dubai, Tokyo, LA, Chicago, Berlin, Rome, Madrid, Beijing, Mumbai, Sydney, Toronto, Miami</p>
+            </div>
+
+            {birthChartData && (
+              <div className="ss-birth-chart-result">
+                <h3>Your Big Three</h3>
+                <div className="ss-three-signs">
+                  <div className="ss-sign-result">
+                    <div className="ss-sign-result-icon">
+                      <img src={getSignData(birthChartData.sun_sign)?.imageUrl} alt="Sun" />
+                    </div>
+                    <div className="ss-sign-result-label">☀️ Sun</div>
+                    <div className="ss-sign-result-name">{getSignData(birthChartData.sun_sign)?.label}</div>
+                  </div>
+
+                  <div className="ss-sign-result">
+                    <div className="ss-sign-result-icon">
+                      <img src={getSignData(birthChartData.moon_sign)?.imageUrl} alt="Moon" />
+                    </div>
+                    <div className="ss-sign-result-label">🌙 Moon</div>
+                    <div className="ss-sign-result-name">{getSignData(birthChartData.moon_sign)?.label}</div>
+                  </div>
+
+                  <div className="ss-sign-result">
+                    <div className="ss-sign-result-icon">
+                      <img src={getSignData(birthChartData.rising_sign)?.imageUrl} alt="Rising" />
+                    </div>
+                    <div className="ss-sign-result-label">🌅 Rising</div>
+                    <div className="ss-sign-result-name">{getSignData(birthChartData.rising_sign)?.label}</div>
+                  </div>
                 </div>
               </div>
             )}
@@ -264,9 +384,10 @@ export default function SignSelectionScreen({ onNavigate }: Props) {
             <div className="ss-birth-date-actions">
               <button
                 className="ss-calculate-btn"
-                onClick={handleCalculateSign}
+                onClick={handleCalculateBirthChart}
+                disabled={loading}
               >
-                Calculate Sign
+                {loading ? 'Calculating...' : 'Calculate Birth Chart'}
               </button>
             </div>
           </div>
