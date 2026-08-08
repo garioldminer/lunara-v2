@@ -30,6 +30,32 @@ const ZODIAC_DATA: Record<string, { symbol: string; element: string; planet: str
   Pisces: { symbol: '♓', element: 'Water', planet: 'Neptune' },
 };
 
+// Supabase Storage URLs for sign images
+const SUPABASE_BASE_URL = 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/Horoscope';
+
+// Map sign names to image filenames (some have different filenames)
+const SIGN_IMAGE_MAP: Record<string, string> = {
+  Aries: 'Aries',
+  Taurus: 'Taurus',
+  Gemini: 'Gemini',
+  Cancer: 'Cancer1',
+  Leo: 'Leo1',
+  Virgo: 'Virgo',
+  Libra: 'Libra',
+  Scorpio: 'Scorpio',
+  Sagittarius: 'Sagittarius',
+  Capricorn: 'Capricorn',
+  Aquarius: 'Aquarius',
+  Pisces: 'Pisces',
+};
+
+const getSignImageUrl = (signName: string): string => {
+  if (!signName) return '';
+  const capitalized = signName.charAt(0).toUpperCase() + signName.slice(1).toLowerCase();
+  const filename = SIGN_IMAGE_MAP[capitalized] || capitalized;
+  return `${SUPABASE_BASE_URL}/${filename}.jpg`;
+};
+
 const getSignInfo = (signName: string, t: (key: string) => string) => {
   if (!signName) return { symbol: '✧', element: t('elements.Unknown'), planet: t('planets.Unknown') };
   const capitalized = signName.charAt(0).toUpperCase() + signName.slice(1).toLowerCase();
@@ -292,6 +318,9 @@ export default function ProfileScreen({ onNavigate }: Props) {
     streak: economyData?.current_streak ?? user?.streak ?? 0,
     readingsCount: (user as any).readings_count || 0,
     cardsCollected: (user as any).cards_collected || 0,
+    birthDate: user.birth_date || '',
+    birthTime: user.birth_time || '',
+    birthPlace: user.birth_place || '',
   } : null;
 
   const mySigns: { label: string; icon: string; sign: SignInfo }[] = userData ? [
@@ -331,7 +360,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
         window.location.href = '/';
       } catch (error) {
         console.error('❌ Error logging out:', error);
-        alert('Logout failed.'); // Translated to English
+        alert('Logout failed.');
       }
     }
   };
@@ -419,7 +448,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
     }
   };
 
-  // 🆕 Improved test notification sending (with anon key)
   const testSendNotification = async () => {
     if (!user || !supabase) {
       setTestResult({ success: false, error: 'No user or supabase instance' });
@@ -504,6 +532,13 @@ export default function ProfileScreen({ onNavigate }: Props) {
       console.error('Failed to copy:', err);
     }
   };
+
+  // ✨ Helper for Big Three display
+  const bigThreeSigns = userData ? [
+    { type: '☀️ Sun', sign: userData.sunSign, info: getSignInfo(userData.sunSign, t) },
+    { type: '🌙 Moon', sign: userData.moonSign, info: getSignInfo(userData.moonSign, t) },
+    { type: '🌅 Rising', sign: userData.risingSign, info: getSignInfo(userData.risingSign, t) },
+  ] : [];
 
   if (loading || !userData) {
     return (
@@ -591,23 +626,67 @@ export default function ProfileScreen({ onNavigate }: Props) {
               ))}
             </div>
 
+            {/* ✨ BIRTH CHART DISPLAY - Big Three */}
             <section className="panel animate-fade-in stagger-2">
               <div className="panel-head">
-                <h3 className="panel-title">{t('profile.natalChart')}</h3>
+                <h3 className="panel-title">✨ YOUR COSMIC BLUEPRINT</h3>
                 <div className="panel-actions">
                   <button className="ghost-btn" onClick={handleChangeSign}><Shuffle size={12} /> {t('profile.change')}</button>
-                  <button className="ghost-btn ghost-btn--danger" onClick={() => setShowResetConfirm(true)}><RotateCcw size={12} /> {t('profile.reset')}</button>
                 </div>
               </div>
-              <div className="natal-trio">
-                {mySigns.map((item, index) => (
-                  <div key={index} className="natal-cell">
-                    <span className="natal-glyph">{item.sign.symbol}</span>
-                    <span className="natal-role">{item.label}</span>
-                    <span className="natal-sign">{item.sign.name || '—'}</span>
-                    <span className="natal-sub">{item.sign.element} · {item.sign.planet}</span>
+
+              <div className="birth-chart-display">
+                <div className="big-three-grid">
+                  {bigThreeSigns.map((item, index) => (
+                    <div key={index} className="big-three-card">
+                      <div className="sign-image-wrapper">
+                        <img 
+                          src={getSignImageUrl(item.sign)}
+                          alt={item.sign || 'Unknown'}
+                          className="sign-image"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      </div>
+                      <div className="sign-info">
+                        <div className="sign-type">{item.type}</div>
+                        <div className="sign-name">
+                          {item.sign ? item.sign.charAt(0).toUpperCase() + item.sign.slice(1) : '—'}
+                        </div>
+                        <div className="sign-details">
+                          <span className="element">{item.info.element}</span>
+                          <span className="separator">·</span>
+                          <span className="planet">{item.info.planet}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Birth Info Strip */}
+                {(userData.birthDate || userData.birthTime || userData.birthPlace) && (
+                  <div className="birth-info-strip">
+                    {userData.birthDate && (
+                      <div className="birth-info-item">
+                        <span className="birth-icon">📅</span>
+                        <span className="birth-label">{userData.birthDate}</span>
+                      </div>
+                    )}
+                    {userData.birthTime && (
+                      <div className="birth-info-item">
+                        <span className="birth-icon">🕐</span>
+                        <span className="birth-label">{userData.birthTime}</span>
+                      </div>
+                    )}
+                    {userData.birthPlace && (
+                      <div className="birth-info-item">
+                        <span className="birth-icon">📍</span>
+                        <span className="birth-label">{userData.birthPlace}</span>
+                      </div>
+                    )}
                   </div>
-                ))}
+                )}
               </div>
             </section>
 

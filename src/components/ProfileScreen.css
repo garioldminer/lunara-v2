@@ -271,6 +271,62 @@
   .profile-screen.light-theme .reset-message {
     color: #a08040;
   }
+
+  /* ===== LIGHT THEME - BIG THREE DISPLAY ===== */
+  .profile-screen.light-theme .big-three-card {
+    background: linear-gradient(135deg, rgba(197, 160, 89, 0.12) 0%, rgba(197, 160, 89, 0.06) 100%);
+    border-color: rgba(197, 160, 89, 0.35);
+  }
+
+  .profile-screen.light-theme .big-three-card:hover {
+    border-color: rgba(197, 160, 89, 0.6);
+    box-shadow: 0 8px 20px rgba(139, 105, 20, 0.15);
+  }
+
+  .profile-screen.light-theme .sign-image-wrapper {
+    border-color: rgba(197, 160, 89, 0.5);
+    box-shadow: 
+      0 4px 12px rgba(139, 105, 20, 0.2),
+      0 0 15px rgba(197, 160, 89, 0.25);
+  }
+
+  .profile-screen.light-theme .sign-image-wrapper::before,
+  .profile-screen.light-theme .sign-image-wrapper::after {
+    border-color: rgba(139, 105, 20, 0.8);
+  }
+
+  .profile-screen.light-theme .big-three-card:hover .sign-image-wrapper {
+    border-color: rgba(139, 105, 20, 0.9);
+    box-shadow: 
+      0 0 20px rgba(197, 160, 89, 0.5),
+      0 8px 20px rgba(139, 105, 20, 0.25);
+  }
+
+  .profile-screen.light-theme .sign-type {
+    color: #a08040;
+  }
+
+  .profile-screen.light-theme .sign-name {
+    color: #8b6914;
+    text-shadow: 0 0 10px rgba(139, 105, 20, 0.3);
+  }
+
+  .profile-screen.light-theme .sign-details {
+    color: #a08040;
+  }
+
+  .profile-screen.light-theme .sign-details .separator {
+    color: rgba(139, 105, 20, 0.6);
+  }
+
+  .profile-screen.light-theme .birth-info-strip {
+    background: rgba(197, 160, 89, 0.08);
+    border-color: rgba(197, 160, 89, 0.25);
+  }
+
+  .profile-screen.light-theme .birth-label {
+    color: #8b6914;
+  }
   
   /* ===== PARTICLES ===== */
   .profile-screen .particles-container {
@@ -366,8 +422,8 @@
     border: 1px solid rgba(200, 120, 0, 0.4);
     border-radius: 16px;
     padding: 12px 16px;
-    margin-top: 70px; /* 🆕 შეიცვალა 65px-დან 70px-ზე */
-    margin-bottom: 5px; /* 🆕 შეიცვალა 16px-დან 5px-ზე */
+    margin-top: 70px;
+    margin-bottom: 5px;
   }
   
   .profile-screen .identity-left {
@@ -502,7 +558,7 @@
     background: linear-gradient(135deg, #1a0f05 0%, #0a0600 50%, #1a0f05 100%);
     border: 1px solid rgba(200, 120, 0, 0.35);
     border-radius: 12px;
-    margin-bottom: 5px; /* 🆕 შეიცვალა 12px-დან 5px-ზე */
+    margin-bottom: 5px;
   }
   
   .profile-screen .stat-cell {
@@ -539,14 +595,14 @@
     border: 1px solid rgba(200, 120, 0, 0.35);
     border-radius: 14px;
     padding: 14px;
-    margin-bottom: 5px; /* 🆕 შეიცვალა 12px-დან 5px-ზე */
+    margin-bottom: 5px;
   }
   
   .profile-screen .panel-head {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 5px; /* 🆕 შეიცვალა 12px-დან 5px-ზე */
+    margin-bottom: 5px;
   }
   
   .profile-screen .panel-title {
@@ -687,7 +743,7 @@
   .profile-screen .action-row {
     display: flex;
     gap: 8px;
-    margin-bottom: 5px; /* 🆕 შეიცვალა 12px-დან 5px-ზე */
+    margin-bottom: 5px;
     overflow-x: auto;
     padding-bottom: 4px;
     scrollbar-width: none;
@@ -786,14 +842,14 @@
     font-size: 14px;
     color: #ffe566;
     text-align: center;
-    margin: 0 0 5px; /* 🆕 შეიცვალა 16px-დან 5px-ზე */
+    margin: 0 0 5px;
     letter-spacing: 1.5px;
   }
   
   .profile-screen .achv-list {
     display: flex;
     flex-direction: column;
-    gap: 5px; /* 🆕 შეიცვალა 10px-დან 5px-ზე */
+    gap: 5px;
   }
   
   .profile-screen .achv-row {
@@ -873,7 +929,7 @@
   
   /* ===== SETTINGS ===== */
   .profile-screen .settings-group {
-    margin-bottom: 5px; /* 🆕 შეიცვალა 20px-დან 5px-ზე */
+    margin-bottom: 5px;
   }
   
   .profile-screen .settings-group-label {
@@ -881,7 +937,7 @@
     font-family: 'Georgia', serif;
     font-size: 11px;
     color: #c87800;
-    margin: 0 0 5px 4px; /* 🆕 შეიცვალა 8px-დან 5px-ზე */
+    margin: 0 0 5px 4px;
     letter-spacing: 0.5px;
     font-weight: 600;
   }
@@ -894,7 +950,7 @@
     border: 1px solid rgba(200, 120, 0, 0.25);
     border-radius: 12px;
     padding: 12px 14px;
-    margin-bottom: 5px; /* 🆕 შეიცვალა 8px-დან 5px-ზე */
+    margin-bottom: 5px;
     cursor: pointer;
     transition: all 0.2s;
     width: 100%;
@@ -1008,7 +1064,7 @@
   /* ===== COMPACT SETTINGS ===== */
   .profile-screen .setting-row--compact {
     padding: 10px 12px;
-    margin-bottom: 5px; /* 🆕 შეიცვალა 6px-დან 5px-ზე */
+    margin-bottom: 5px;
   }
   
   .profile-screen .setting-row--compact .setting-row-icon {
@@ -1352,8 +1408,8 @@
   .profile-screen .edit-section-tabs {
     display: flex;
     gap: 8px;
-    margin-bottom: 5px; /* 🆕 შეიცვალა 20px-დან 5px-ზე */
-    padding-bottom: 5px; /* 🆕 შეიცვალა 16px-დან 5px-ზე */
+    margin-bottom: 5px;
+    padding-bottom: 5px;
     border-bottom: 1px solid rgba(200, 120, 0, 0.2);
   }
   
@@ -1465,6 +1521,184 @@
   
   .profile-screen .debug-body::-webkit-scrollbar-thumb { background: rgba(251, 191, 36, 0.3); border-radius: 3px; }
   .profile-screen .debug-body::-webkit-scrollbar-thumb:hover { background: rgba(251, 191, 36, 0.5); }
+
+  /* ============================================
+     ✨ BIRTH CHART DISPLAY - Big Three
+     ============================================ */
+  .birth-chart-display {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .big-three-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .big-three-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 6px;
+    background: linear-gradient(135deg, rgba(200, 120, 0, 0.08) 0%, rgba(200, 120, 0, 0.03) 100%);
+    border: 1px solid rgba(200, 120, 0, 0.25);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .big-three-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(200, 120, 0, 0.05), transparent 60%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .big-three-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 229, 102, 0.5);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  }
+
+  .big-three-card:hover::before {
+    opacity: 1;
+  }
+
+  /* Sign Image */
+  .sign-image-wrapper {
+    width: 52px;
+    height: 73px;
+    border-radius: 7px;
+    overflow: hidden;
+    border: 2px solid rgba(200, 120, 0, 0.45);
+    box-shadow: 
+      0 3px 10px rgba(0, 0, 0, 0.4),
+      0 0 12px rgba(200, 120, 0, 0.25);
+    position: relative;
+    transition: all 0.3s ease;
+  }
+
+  .sign-image-wrapper::before,
+  .sign-image-wrapper::after {
+    content: '';
+    position: absolute;
+    width: 9px;
+    height: 9px;
+    border: 1.5px solid rgba(255, 229, 102, 0.8);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .sign-image-wrapper::before {
+    top: 3px;
+    left: 3px;
+    border-right: none;
+    border-bottom: none;
+  }
+
+  .sign-image-wrapper::after {
+    bottom: 3px;
+    right: 3px;
+    border-left: none;
+    border-top: none;
+  }
+
+  .sign-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: all 0.3s ease;
+  }
+
+  .big-three-card:hover .sign-image-wrapper {
+    border-color: rgba(255, 229, 102, 0.9);
+    box-shadow: 
+      0 0 18px rgba(255, 229, 102, 0.5),
+      0 6px 16px rgba(0, 0, 0, 0.5);
+    transform: scale(1.05);
+  }
+
+  .big-three-card:hover .sign-image {
+    filter: brightness(1.1) saturate(1.1);
+  }
+
+  /* Sign Info */
+  .sign-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    text-align: center;
+  }
+
+  .sign-type {
+    font-family: 'Georgia', serif;
+    font-size: 10px;
+    color: #c87800;
+    font-style: italic;
+    letter-spacing: 0.3px;
+  }
+
+  .sign-name {
+    font-family: 'Georgia', serif;
+    font-size: 12px;
+    font-weight: bold;
+    color: #ffe566;
+    letter-spacing: 0.5px;
+    text-shadow: 0 0 8px rgba(255, 229, 102, 0.3);
+  }
+
+  .sign-details {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-family: 'Georgia', serif;
+    font-size: 9px;
+    color: #c87800;
+  }
+
+  .sign-details .separator {
+    color: rgba(200, 120, 0, 0.6);
+  }
+
+  /* Birth Info Strip */
+  .birth-info-strip {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    padding: 10px;
+    background: rgba(200, 120, 0, 0.06);
+    border: 1px solid rgba(200, 120, 0, 0.2);
+    border-radius: 8px;
+  }
+
+  .birth-info-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .birth-icon {
+    font-size: 12px;
+  }
+
+  .birth-label {
+    font-family: 'Georgia', serif;
+    font-size: 11px;
+    color: #ffe566;
+    font-style: italic;
+  }
   
   /* ===== MOBILE OPTIMIZATION ===== */
   @media (max-width: 380px) {
@@ -1489,6 +1723,93 @@
       width: calc(100% - 40px);
       right: 20px;
       left: 20px;
+    }
+
+    /* Big Three mobile adjustments */
+    .big-three-grid {
+      gap: 6px;
+    }
+
+    .big-three-card {
+      padding: 8px 4px;
+      gap: 6px;
+    }
+
+    .sign-image-wrapper {
+      width: 44px;
+      height: 62px;
+    }
+
+    .sign-image-wrapper::before,
+    .sign-image-wrapper::after {
+      width: 7px;
+      height: 7px;
+      border-width: 1px;
+    }
+
+    .sign-image-wrapper::before {
+      top: 2px;
+      left: 2px;
+    }
+
+    .sign-image-wrapper::after {
+      bottom: 2px;
+      right: 2px;
+    }
+
+    .sign-type {
+      font-size: 9px;
+    }
+
+    .sign-name {
+      font-size: 10px;
+    }
+
+    .sign-details {
+      font-size: 8px;
+    }
+
+    .birth-info-strip {
+      flex-direction: column;
+      gap: 6px;
+      padding: 8px;
+    }
+
+    .birth-info-item {
+      justify-content: center;
+    }
+
+    .birth-label {
+      font-size: 10px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    /* Big Three tablet adjustments */
+    .big-three-grid {
+      gap: 7px;
+    }
+
+    .big-three-card {
+      padding: 9px 5px;
+      gap: 7px;
+    }
+
+    .sign-image-wrapper {
+      width: 48px;
+      height: 68px;
+    }
+
+    .sign-type {
+      font-size: 10px;
+    }
+
+    .sign-name {
+      font-size: 11px;
+    }
+
+    .sign-details {
+      font-size: 9px;
     }
   }
   
