@@ -412,6 +412,10 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         setNotes(existing.notes || '');
         // 🆕 Load mood from DB
         setSelectedMood(existing.mood || null);
+        // 🆕 Log reflection prompt
+        if (existing.reflection_prompt) {
+          addLog('info', 'Reflection prompt loaded', { prompt: existing.reflection_prompt });
+        }
         setStage('revealed');
       } else {
         addLog('info', 'No reading for today - showing focus selection');
@@ -787,6 +791,57 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                 ))}
               </div>
 
+              {/* 🆕 REFLECTION PROMPT */}
+              {dailyReading?.reflection_prompt && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  onClick={() => {
+                    if (notes.trim()) return;
+                    setNotes(dailyReading.reflection_prompt || '');
+                    showToast('💭 Prompt added to your notes! Edit as you wish.', 'info');
+                    addLog('ui', 'Prompt filled into notes', { prompt: dailyReading.reflection_prompt });
+                  }}
+                  style={{
+                    marginTop: '8px',
+                    marginBottom: '16px',
+                    padding: '14px',
+                    background: 'linear-gradient(135deg, rgba(167, 139, 250, 0.08) 0%, rgba(124, 58, 237, 0.05) 100%)',
+                    border: '1px solid rgba(167, 139, 250, 0.25)',
+                    borderRadius: '12px',
+                    cursor: notes.trim() ? 'default' : 'pointer',
+                    position: 'relative',
+                    transition: 'all 0.2s ease',
+                    opacity: notes.trim() ? 0.6 : 1
+                  }}
+                  whileHover={notes.trim() ? {} : { scale: 1.02, borderColor: 'rgba(167, 139, 250, 0.5)' }}
+                  whileTap={notes.trim() ? {} : { scale: 0.98 }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                    <span style={{ fontSize: '18px', flexShrink: 0, marginTop: '2px' }}>💭</span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '9px', color: '#a78bfa', letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: '4px', fontWeight: 700 }}>
+                        Reflection Prompt
+                      </div>
+                      <div style={{ fontSize: '13px', color: '#e2e8f0', lineHeight: 1.5, fontStyle: 'italic', fontWeight: 400 }}>
+                        "{dailyReading.reflection_prompt}"
+                      </div>
+                      {!notes.trim() && (
+                        <div style={{ fontSize: '9px', color: '#a78bfa', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '4px', letterSpacing: '0.5px' }}>
+                          <span>✨</span> Tap to start your reflection with this prompt
+                        </div>
+                      )}
+                      {notes.trim() && (
+                        <div style={{ fontSize: '9px', color: '#10b981', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span>✓</span> Prompt used in your notes
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
               {/* 🆕 MOOD SELECTOR */}
               <div style={{ marginTop: '12px', marginBottom: '12px' }}>
                 <label style={{ fontSize: '11px', color: '#94a3b8', letterSpacing: '1px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '8px' }}>
@@ -885,6 +940,11 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                   <div>💾 Reading ID: <span style={{ color: dailyReading ? '#10b981' : '#ef4444', fontSize: '9px' }}>{dailyReading?.id?.substring(0, 8) || 'None'}</span></div>
                   <div>🃏 Card: <span style={{ color: '#60a5fa' }}>{currentCard?.name || 'None'}</span></div>
                   <div>🎭 Mood: <span style={{ color: '#a78bfa' }}>{selectedMood || 'None'}</span></div>
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    📝 Prompt: <span style={{ color: '#f472b6', fontSize: '9px' }}>
+                      {dailyReading?.reflection_prompt ? `"${dailyReading.reflection_prompt.substring(0, 40)}..."` : 'None'}
+                    </span>
+                  </div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '4px', overflowX: 'auto', paddingBottom: '4px', marginBottom: '8px' }}>
