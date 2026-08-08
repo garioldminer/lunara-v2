@@ -113,7 +113,7 @@
   }
   
   /* ============================================
-     ✅ HEADER - გაცვლილი სტილები
+     HEADER
      ============================================ */
   .ss-header {
     text-align: center;
@@ -251,7 +251,7 @@
     letter-spacing: 2px;
   }
   
-  /* ✅ 4 ნიშანი ხაზზე */
+  /* 4 signs per row */
   .ss-signs-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -260,7 +260,7 @@
     transition: all 0.3s ease;
   }
   
-  /* ✅ როცა ნიშანი არჩეულია, სხვა cards ფერმკრთალდება */
+  /* When a sign is selected, other cards fade */
   .ss-signs-grid.has-selection .ss-sign-card:not(.selected) {
     opacity: 0.35;
     filter: grayscale(60%) brightness(0.7);
@@ -311,7 +311,7 @@
     opacity: 1;
   }
   
-  /* ✅ Selected state - უფრო გამოკვეთილი */
+  /* Selected state */
   .ss-sign-card.selected {
     background: linear-gradient(135deg, rgba(217, 182, 111, 0.25) 0%, rgba(217, 182, 111, 0.12) 100%);
     border-color: rgba(217, 182, 111, 0.8);
@@ -324,12 +324,12 @@
   }
   
   /* ============================================
-     ✅ ZODIAC SIGN IMAGES - ბანქოს კარტის ფორმატი
+     ZODIAC SIGN IMAGES - Card format
      ============================================ */
   .ss-sign-image-container {
     width: 60px;
-    height: 85px; /* ✅ Portrait format (2:3 ratio) */
-    border-radius: 8px; /* ✅ ბანქოს კარტის ფორმა */
+    height: 85px;
+    border-radius: 8px;
     overflow: hidden;
     border: 2px solid rgba(217, 182, 111, 0.4);
     transition: all 0.3s ease;
@@ -340,7 +340,7 @@
     position: relative;
   }
   
-  /* ✅ Gold corner accents (ბანქოს კარტის სტილი) */
+  /* Gold corner accents */
   .ss-sign-image-container::before,
   .ss-sign-image-container::after {
     content: '';
@@ -374,7 +374,6 @@
     transition: all 0.3s ease;
   }
   
-  /* ✅ Selected state - ბანქოს კარტი */
   .ss-sign-card.selected .ss-sign-image-container {
     border-color: rgba(217, 182, 111, 0.9);
     box-shadow: 
@@ -395,7 +394,6 @@
     filter: brightness(1.15) saturate(1.15);
   }
   
-  /* ✅ Hover effect */
   .ss-sign-card:hover .ss-sign-image {
     transform: scale(1.05);
     filter: brightness(1.1);
@@ -425,7 +423,7 @@
   }
   
   /* ============================================
-     BIRTH DATE MODE
+     BIRTH DATE MODE - Date Inputs
      ============================================ */
   .ss-date-inputs {
     display: grid;
@@ -487,7 +485,328 @@
   }
   
   /* ============================================
-     ✅ CALCULATED SIGN - ბანქოს კარტის ფორმატი
+     ✨ NEW: BIRTH TIME INPUTS
+     ============================================ */
+  .ss-time-inputs {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    width: 100%;
+  }
+  
+  .ss-time-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .ss-time-field label {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(217, 182, 111, 0.8);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  
+  .ss-time-field input {
+    width: 100%;
+    padding: 12px;
+    background: rgba(217, 182, 111, 0.05);
+    border: 1px solid rgba(217, 182, 111, 0.3);
+    border-radius: 8px;
+    color: #F7F3EB;
+    font-family: 'Cinzel', serif;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+  
+  .ss-time-field input::placeholder {
+    color: rgba(247, 243, 235, 0.3);
+  }
+  
+  .ss-time-field input:focus {
+    outline: none;
+    border-color: rgba(217, 182, 111, 0.6);
+    box-shadow: 0 0 15px rgba(217, 182, 111, 0.2);
+    background: rgba(217, 182, 111, 0.08);
+  }
+  
+  .ss-time-field input[type="number"]::-webkit-inner-spin-button,
+  .ss-time-field input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+  }
+  
+  .ss-time-field input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+  
+  /* ============================================
+     ✨ NEW: BIRTH PLACE INPUT
+     ============================================ */
+  .ss-place-input {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+  
+  .ss-place-input label {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(217, 182, 111, 0.8);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  
+  .ss-place-input input {
+    width: 100%;
+    padding: 14px 16px;
+    background: rgba(217, 182, 111, 0.05);
+    border: 1px solid rgba(217, 182, 111, 0.3);
+    border-radius: 8px;
+    color: #F7F3EB;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+  }
+  
+  .ss-place-input input::placeholder {
+    color: rgba(247, 243, 235, 0.3);
+    font-style: italic;
+  }
+  
+  .ss-place-input input:focus {
+    outline: none;
+    border-color: rgba(217, 182, 111, 0.6);
+    box-shadow: 0 0 15px rgba(217, 182, 111, 0.2);
+    background: rgba(217, 182, 111, 0.08);
+  }
+  
+  .ss-hint {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 12px;
+    color: rgba(247, 243, 235, 0.5);
+    margin: 4px 0 0 0;
+    font-style: italic;
+    line-height: 1.5;
+    text-align: center;
+    padding: 0 8px;
+  }
+  
+  /* ============================================
+     ✨ NEW: BIRTH CHART RESULT - Big Three
+     ============================================ */
+  .ss-birth-chart-result {
+    width: 100%;
+    padding: 24px 16px;
+    background: linear-gradient(135deg, rgba(217, 182, 111, 0.12) 0%, rgba(100, 80, 180, 0.08) 100%);
+    border: 1px solid rgba(217, 182, 111, 0.4);
+    border-radius: 16px;
+    animation: ssBirthChartReveal 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  /* Decorative glow effect */
+  .ss-birth-chart-result::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(217, 182, 111, 0.08), transparent 60%);
+    pointer-events: none;
+    animation: ssResultGlow 4s ease-in-out infinite;
+  }
+  
+  @keyframes ssResultGlow {
+    0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.5; }
+    50% { transform: scale(1.1) rotate(180deg); opacity: 1; }
+  }
+  
+  @keyframes ssBirthChartReveal {
+    0% { 
+      opacity: 0; 
+      transform: translateY(20px) scale(0.95);
+    }
+    100% { 
+      opacity: 1; 
+      transform: translateY(0) scale(1);
+    }
+  }
+  
+  .ss-birth-chart-result h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #D9B66F;
+    letter-spacing: 3px;
+    text-align: center;
+    margin: 0 0 20px 0;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 0 10px rgba(217, 182, 111, 0.3);
+  }
+  
+  /* Decorative lines around title */
+  .ss-birth-chart-result h3::before,
+  .ss-birth-chart-result h3::after {
+    content: '✦';
+    color: rgba(217, 182, 111, 0.6);
+    margin: 0 12px;
+    font-size: 12px;
+  }
+  
+  /* ============================================
+     ✨ NEW: THREE SIGNS GRID
+     ============================================ */
+  .ss-three-signs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    width: 100%;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .ss-sign-result {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 8px;
+    background: linear-gradient(135deg, rgba(247, 243, 235, 0.05) 0%, rgba(217, 182, 111, 0.03) 100%);
+    border: 1px solid rgba(217, 182, 111, 0.25);
+    border-radius: 12px;
+    transition: all 0.4s ease;
+    animation: ssSignCardFloat 3s ease-in-out infinite;
+    position: relative;
+  }
+  
+  /* Stagger animation for each card */
+  .ss-sign-result:nth-child(1) { animation-delay: 0s; }
+  .ss-sign-result:nth-child(2) { animation-delay: 0.5s; }
+  .ss-sign-result:nth-child(3) { animation-delay: 1s; }
+  
+  @keyframes ssSignCardFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+  }
+  
+  .ss-sign-result:hover {
+    transform: translateY(-5px) scale(1.03);
+    border-color: rgba(217, 182, 111, 0.6);
+    box-shadow: 
+      0 10px 25px rgba(0, 0, 0, 0.3),
+      0 0 25px rgba(217, 182, 111, 0.3);
+    background: linear-gradient(135deg, rgba(247, 243, 235, 0.08) 0%, rgba(217, 182, 111, 0.06) 100%);
+  }
+  
+  /* ============================================
+     ✨ NEW: SIGN RESULT ICON (Card format)
+     ============================================ */
+  .ss-sign-result-icon {
+    width: 70px;
+    height: 100px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid rgba(217, 182, 111, 0.6);
+    box-shadow: 
+      0 4px 12px rgba(0, 0, 0, 0.4),
+      0 0 20px rgba(217, 182, 111, 0.3);
+    position: relative;
+    transition: all 0.4s ease;
+    background: rgba(217, 182, 111, 0.05);
+  }
+  
+  /* Gold corner accents for result cards */
+  .ss-sign-result-icon::before,
+  .ss-sign-result-icon::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1.5px solid rgba(217, 182, 111, 0.8);
+    z-index: 2;
+    pointer-events: none;
+  }
+  
+  .ss-sign-result-icon::before {
+    top: 5px;
+    left: 5px;
+    border-right: none;
+    border-bottom: none;
+  }
+  
+  .ss-sign-result-icon::after {
+    bottom: 5px;
+    right: 5px;
+    border-left: none;
+    border-top: none;
+  }
+  
+  .ss-sign-result-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: all 0.4s ease;
+  }
+  
+  .ss-sign-result:hover .ss-sign-result-icon {
+    border-color: rgba(217, 182, 111, 1);
+    box-shadow: 
+      0 8px 20px rgba(0, 0, 0, 0.5),
+      0 0 30px rgba(217, 182, 111, 0.5);
+    transform: scale(1.05);
+  }
+  
+  .ss-sign-result:hover .ss-sign-result-icon img {
+    filter: brightness(1.15) saturate(1.15);
+  }
+  
+  /* ============================================
+     ✨ NEW: SIGN RESULT LABEL & NAME
+     ============================================ */
+  .ss-sign-result-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px;
+    color: rgba(247, 243, 235, 0.75);
+    font-style: italic;
+    letter-spacing: 0.5px;
+    margin: 0;
+    transition: all 0.3s ease;
+  }
+  
+  .ss-sign-result-name {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #D9B66F;
+    letter-spacing: 1px;
+    margin: 0;
+    text-align: center;
+    text-shadow: 0 0 10px rgba(217, 182, 111, 0.4);
+    transition: all 0.3s ease;
+  }
+  
+  .ss-sign-result:hover .ss-sign-result-name {
+    color: #F4D47C;
+    text-shadow: 0 0 15px rgba(217, 182, 111, 0.7);
+  }
+  
+  /* ============================================
+     CALCULATED SIGN (Legacy - kept for compatibility)
      ============================================ */
   .ss-calculated-sign {
     display: flex;
@@ -505,10 +824,9 @@
     50% { box-shadow: 0 0 30px rgba(217, 182, 111, 0.4); }
   }
   
-  /* ✅ Calculated sign image container - ბანქოს კარტი */
   .ss-calculated-image-container {
     width: 90px;
-    height: 127px; /* ✅ 2:3 ratio */
+    height: 127px;
     border-radius: 10px;
     overflow: hidden;
     border: 3px solid rgba(217, 182, 111, 0.8);
@@ -520,7 +838,6 @@
     position: relative;
   }
   
-  /* ✅ Gold corner accents */
   .ss-calculated-image-container::before,
   .ss-calculated-image-container::after {
     content: '';
@@ -595,6 +912,7 @@
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 0 20px rgba(217, 182, 111, 0.15);
+    text-transform: uppercase;
   }
   
   .ss-calculate-btn:hover,
@@ -605,6 +923,7 @@
     transform: translateY(-2px);
   }
   
+  .ss-calculate-btn:disabled,
   .ss-continue-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -614,6 +933,7 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
+    width: 100%;
   }
   
   /* ============================================
@@ -639,7 +959,7 @@
   }
   
   /* ============================================
-     RESPONSIVE DESIGN
+     RESPONSIVE DESIGN - TABLET
      ============================================ */
   @media (max-width: 768px) {
     .sign-selection-screen {
@@ -687,10 +1007,9 @@
       padding: 12px 4px;
     }
   
-    /* ✅ Tablet - ბანქოს კარტი */
     .ss-sign-image-container {
       width: 52px;
-      height: 73px; /* 2:3 ratio */
+      height: 73px;
     }
   
     .ss-sign-label {
@@ -701,11 +1020,13 @@
       font-size: 8px;
     }
   
-    .ss-date-inputs {
+    .ss-date-inputs,
+    .ss-time-inputs {
       gap: 10px;
     }
   
-    .ss-date-field input {
+    .ss-date-field input,
+    .ss-time-field input {
       padding: 10px;
       font-size: 14px;
     }
@@ -715,17 +1036,33 @@
       gap: 12px;
     }
   
-    /* ✅ Tablet calculated image */
     .ss-calculated-image-container {
       width: 78px;
-      height: 110px; /* 2:3 ratio */
+      height: 110px;
     }
   
     .ss-calculated-info p {
       font-size: 20px;
     }
+  
+    /* Big Three tablet adjustments */
+    .ss-sign-result-icon {
+      width: 60px;
+      height: 85px;
+    }
+  
+    .ss-sign-result-name {
+      font-size: 11px;
+    }
+  
+    .ss-sign-result-label {
+      font-size: 12px;
+    }
   }
   
+  /* ============================================
+     RESPONSIVE DESIGN - MOBILE
+     ============================================ */
   @media (max-width: 480px) {
     .sign-selection-screen {
       padding: 80px 12px 20px 12px;
@@ -762,13 +1099,11 @@
       gap: 4px;
     }
   
-    /* ✅ Mobile - ბანქოს კარტი */
     .ss-sign-image-container {
       width: 44px;
-      height: 62px; /* 2:3 ratio */
+      height: 62px;
     }
   
-    /* ✅ Mobile corner accents უფრო პატარა */
     .ss-sign-image-container::before,
     .ss-sign-image-container::after {
       width: 7px;
@@ -811,10 +1146,9 @@
       font-size: 12px;
     }
   
-    /* ✅ Mobile calculated image */
     .ss-calculated-image-container {
       width: 66px;
-      height: 93px; /* 2:3 ratio */
+      height: 93px;
     }
   
     .ss-calculated-image-container::before,
@@ -826,6 +1160,81 @@
     .ss-calculated-info p {
       font-size: 18px;
     }
+  
+    /* ✨ Big Three mobile adjustments */
+    .ss-birth-chart-result {
+      padding: 20px 12px;
+    }
+  
+    .ss-birth-chart-result h3 {
+      font-size: 12px;
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+    }
+  
+    .ss-birth-chart-result h3::before,
+    .ss-birth-chart-result h3::after {
+      margin: 0 8px;
+      font-size: 10px;
+    }
+  
+    .ss-three-signs {
+      gap: 8px;
+    }
+  
+    .ss-sign-result {
+      padding: 10px 6px;
+      gap: 6px;
+    }
+  
+    .ss-sign-result-icon {
+      width: 52px;
+      height: 73px;
+    }
+  
+    .ss-sign-result-icon::before,
+    .ss-sign-result-icon::after {
+      width: 9px;
+      height: 9px;
+      border-width: 1px;
+    }
+  
+    .ss-sign-result-icon::before {
+      top: 3px;
+      left: 3px;
+    }
+  
+    .ss-sign-result-icon::after {
+      bottom: 3px;
+      right: 3px;
+    }
+  
+    .ss-sign-result-label {
+      font-size: 10px;
+    }
+  
+    .ss-sign-result-name {
+      font-size: 10px;
+      letter-spacing: 0.5px;
+    }
+  
+    .ss-date-field input,
+    .ss-time-field input,
+    .ss-place-input input {
+      padding: 10px;
+      font-size: 14px;
+    }
+  
+    .ss-hint {
+      font-size: 11px;
+    }
+  
+    .ss-calculate-btn,
+    .ss-continue-btn {
+      padding: 12px 20px;
+      font-size: 12px;
+      letter-spacing: 1.5px;
+    }
   }
   
   /* ============================================
@@ -834,7 +1243,9 @@
   @media (prefers-reduced-motion: reduce) {
     .ss-aurora,
     .ss-particle,
-    .ss-calculated-sign {
+    .ss-calculated-sign,
+    .ss-birth-chart-result,
+    .ss-sign-result {
       animation: none !important;
     }
   }
