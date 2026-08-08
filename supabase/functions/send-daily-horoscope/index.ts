@@ -4,7 +4,6 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const TELEGRAM_BOT_TOKEN = Deno.env.get('TELEGRAM_BOT_TOKEN');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const CRON_SECRET = Deno.env.get('CRON_SECRET') || 'your-secret-token-here';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,15 +17,11 @@ serve(async (req) => {
   }
 
   try {
-    // 1. უსაფრთხოების შემოწმება
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader || !authHeader.includes(CRON_SECRET)) {
-      throw new Error('Unauthorized: Invalid or missing CRON_SECRET');
-    }
+    console.log('🚀 [send-daily-horoscope] Starting execution...');
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // 2. შევამოწმოთ ჩართულია თუ არა გლობალურად
+    // 1. შევამოწმოთ ჩართულია თუ არა გლობალურად
     const { data: settings } = await supabase
       .from('notification_settings')
       .select('daily_horoscope_enabled')
@@ -41,7 +36,7 @@ serve(async (req) => {
 
     console.log('✅ Daily horoscope is enabled. Fetching eligible users...');
 
-    // 3. მივიღოთ დღევანდელი კოსმოსური მონაცემები
+    // 2. მივიღოთ დღევანდელი კოსმოსური მონაცემები
     const today = new Date().toISOString().split('T')[0];
     const { data: cosmicData } = await supabase
       .from('cosmic_daily_data')
@@ -59,7 +54,7 @@ serve(async (req) => {
       .map((a: any) => `${a.planet1} ${a.aspect_type} ${a.planet2} (${a.influence})`)
       .join('\n');
 
-    // 4. მივიღოთ Prompt
+    // 3. მივიღოთ Prompt
     const { data: prompt } = await supabase
       .from('ai_prompts')
       .select('*')
@@ -71,7 +66,7 @@ serve(async (req) => {
       throw new Error('Prompt template "daily_horoscope_base" not found or inactive');
     }
 
-    // ✅ 5. მივიღოთ eligible მომხმარებლები (გასწორებული - users table პირდაპირ)
+    // 4. ✅ მივიღოთ eligible მომხმარებლები (users table პირდაპირ)
     const { data: users, error: usersError } = await supabase
       .from('users')
       .select('id, display_name, username, sun_sign, moon_sign, rising_sign, telegram_id')
@@ -88,18 +83,17 @@ serve(async (req) => {
     let failCount = 0;
     const errors: string[] = [];
 
-    // 6. გავუგზავნოთ თითოეულს
+    // 5. გავუგზავნოთ თითოეულს
     for (const user of users as any[]) {
       try {
         const sunSign = user.sun_sign;
         const moonSign = user.moon_sign || 'Unknown';
         const risingSign = user.rising_sign || 'Unknown';
-        const chatId = user.telegram_id;  // ✅ telegram_id == chat_id
-        const language = 'English';  // Default (შემდეგში დავამატებთ user preference-ს)
+        const chatId = user.telegram_id;
+        const language = 'English';
         
         const userName = user.display_name || user.username || 'Friend';
 
-        // მოვამზადოთ Prompt
         const userPrompt = prompt.user_prompt_template
           .replace(/\{\{sun_sign\}\}/g, sunSign)
           .replace(/\{\{moon_sign\}\}/g, moonSign)
@@ -114,7 +108,6 @@ serve(async (req) => {
           .replace(/\{\{dominant_element\}\}/g, cosmicData?.dominant_element || 'Unknown')
           .replace(/\{\{energy_level\}\}/g, String(cosmicData?.energy_level || 50));
 
-        // AI გამოძახება (Gemini -> Groq fallback)
         let aiText = '';
         let aiModel = 'unknown';
         let tokensUsed = 0;
@@ -134,10 +127,8 @@ serve(async (req) => {
           tokensUsed = groqRes.tokensUsed || 0;
         }
 
-        // პარსინგი
         const parsed = parseHoroscopeResponse(aiText);
 
-        // Telegram message
         const telegramMessage = 
 `🌙 *Good Morning, ${userName}!*
 
@@ -161,7 +152,6 @@ Planet: ${parsed.lucky_planet || 'Venus'}  •  Crystal: ${parsed.lucky_crystal 
 
 ✨ *Lunara* - Your daily dose of cosmic wisdom`;
 
-        // გაგზავნა Telegram-ში
         const tgRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -174,7 +164,6 @@ Planet: ${parsed.lucky_planet || 'Venus'}  •  Crystal: ${parsed.lucky_crystal 
 
         const tgData = await tgRes.json();
 
-        // ✅ ლოგირება function_logs-ში (იმის ნაცვლად რომ horoscope_logs-ში)
         try {
           await supabase.from('function_logs').insert({
             function_name: 'send-daily-horoscope',
@@ -198,12 +187,12 @@ Planet: ${parsed.lucky_planet || 'Venus'}  •  Crystal: ${parsed.lucky_crystal 
 
         if (tgData.ok) {
           successCount++;
+          console.log(`✅ Sent to ${userName} (${sunSign})`);
         } else {
           failCount++;
           errors.push(`User ${user.id}: ${tgData.description}`);
         }
 
-        // Rate limiting (50ms დაყოვნება)
         await new Promise(resolve => setTimeout(resolve, 50));
 
       } catch (err: any) {
@@ -229,10 +218,6 @@ Planet: ${parsed.lucky_planet || 'Venus'}  •  Crystal: ${parsed.lucky_crystal 
     );
   }
 });
-
-// ============================================
-// HELPER FUNCTIONS
-// ============================================
 
 async function getApiKey(supabase: any, provider: string): Promise<string> {
   const { data } = await supabase
@@ -317,9 +302,7 @@ function parseHoroscopeResponse(text: string) {
       sections.reasoning = parsed.reasoning || '';
       return sections;
     }
-  } catch (e) {
-    // Fallback to regex if JSON fails
-  }
+  } catch (e) {}
   
   const generalMatch = text.match(/## General Energy\n([\s\S]*?)(?=##|$)/i);
   if (generalMatch) sections.general = generalMatch[1].trim();
