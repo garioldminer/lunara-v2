@@ -5,7 +5,7 @@ import { useSettings } from '../context/SettingsContext';
 import { updateUser, resetZodiacSign } from '../lib/userService';
 import { getActiveSubscription } from '../lib/subscriptionService';
 import { supabase } from '../lib/supabase';
-import { Bug, X, Star, Heart, BookOpen, Lock, User, Trophy, Gem, Settings, LogOut, ChevronRight, RotateCcw, Shuffle, Bell, Mail, Sun, Moon, RefreshCw, Trash2 } from 'lucide-react';
+import { Bug, X, Star, Heart, BookOpen, Lock, User, Trophy, Gem, Settings, LogOut, ChevronRight, Shuffle, Bell, Mail, Sun, Moon, RefreshCw, Trash2 } from 'lucide-react';
 import { useTranslation, LANGUAGE_META, type Language } from '../i18n/TranslationContext';
 
 interface Props {
@@ -322,12 +322,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
     birthTime: user.birth_time || '',
     birthPlace: user.birth_place || '',
   } : null;
-
-  const mySigns: { label: string; icon: string; sign: SignInfo }[] = userData ? [
-    { label: t('profile.signs.sun'), icon: '☀', sign: { name: userData.sunSign, ...getSignInfo(userData.sunSign, t) } },
-    { label: t('profile.signs.moon'), icon: '☾', sign: { name: userData.moonSign, ...getSignInfo(userData.moonSign, t) } },
-    { label: t('profile.signs.rising'), icon: '↑', sign: { name: userData.risingSign, ...getSignInfo(userData.risingSign, t) } },
-  ] : [];
 
   const stats: Stat[] = userData ? [
     { label: t('profile.stats.readings'), value: userData.readingsCount || recentReadings.length, icon: '🔮' },
