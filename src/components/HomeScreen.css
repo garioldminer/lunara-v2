@@ -9,9 +9,10 @@
     --max-width: 480px;
   }
   
+  /* 🎯 padding-top/bottom ამოღებულია - handled by .screen-wrapper in App.css */
   .home-screen {
     width: 100%;
-    padding: calc(70px + env(safe-area-inset-top, 0px)) var(--screen-padding) calc(100px + env(safe-area-inset-bottom, 0px)) var(--screen-padding);
+    padding: 0 var(--screen-padding);
     max-width: var(--max-width);
     margin: 0 auto;
     color: #fff;
@@ -960,9 +961,10 @@
     }
   }
   
+  /* 🎯 padding განახლებული - მხოლოდ left/right */
   @media (min-width: 480px) {
     .home-screen {
-      padding: calc(70px + env(safe-area-inset-top, 0px)) var(--screen-padding) calc(100px + env(safe-area-inset-bottom, 0px)) var(--screen-padding);
+      padding: 0 var(--screen-padding);
     }
     
     .quick-grid {

@@ -211,37 +211,46 @@ function AppContent() {
     <div className="app-container">
       {!userReady && <UserLoader onReady={handleUserReady} />}
       
+      {/* 🎯 ONBOARDING SCREENS - NO wrapper padding (they have their own full-screen design) */}
       {currentScreen === 'splash' && <SplashScreen onFinish={handleSplashFinish} />}
       {currentScreen === 'welcome' && <OnboardingWelcome onFinish={() => goTo('zodiac')} />}
       {currentScreen === 'zodiac' && <OnboardingZodiac onFinish={() => goTo('first-reading')} />}
       {currentScreen === 'first-reading' && <OnboardingFirstReading onFinish={handleOnboardingComplete} />}
       
-      {currentScreen === 'home' && <><HomeScreen onNavigate={handleNavigate} /><BottomNav activeTab={activeTab} onTabChange={handleTabChange} /></>}
-      {currentScreen === 'cards' && <><CardsScreen onNavigate={handleNavigate} /><BottomNav activeTab={activeTab} onTabChange={handleTabChange} /></>}
-      {currentScreen === 'reading' && <><ReadingScreen onNavigate={handleNavigate} /><BottomNav activeTab={activeTab} onTabChange={handleTabChange} /></>}
-      {currentScreen === 'astro' && <><AstroScreen onNavigate={handleNavigate} /><BottomNav activeTab={activeTab} onTabChange={handleTabChange} /></>}
-      {currentScreen === 'horoscope' && <><ErrorBoundary><HoroscopeScreen onNavigate={handleNavigate} /></ErrorBoundary><BottomNav activeTab={activeTab} onTabChange={handleTabChange} /></>}
-      {currentScreen === 'sign-selection' && <SignSelectionScreen onNavigate={handleNavigate} />}
-      {currentScreen === 'profile' && <><ProfileScreen onNavigate={handleNavigate} /><BottomNav activeTab={activeTab} onTabChange={handleTabChange} /></>}
-      {currentScreen === 'card-fan' && <CardFanScreen onNavigate={handleNavigate} />}
-      {currentScreen === 'card-detail' && selectedCardId && <CardDetailScreen cardId={selectedCardId} onNavigate={handleNavigate} />}
-      {currentScreen === 'daily-card' && <DailyCardScreen onNavigate={handleNavigate} />}
-      {currentScreen === 'three-card-reading' && <ThreeCardReadingScreen onNavigate={handleNavigate} />}
-      {currentScreen === 'reading-history' && <ReadingHistoryScreen onNavigate={handleNavigate} />}
-      {currentScreen === 'celtic-cross' && <CelticCrossReadingScreen onNavigate={handleNavigate} />}
-      {currentScreen === 'horseshoe' && <HorseshoeReadingScreen onNavigate={handleNavigate} />}
-      {currentScreen === 'relationship' && <RelationshipReadingScreen onNavigate={handleNavigate} />}
+      {/* 🎯 SCREEN WRAPPER - ყველა main გვერდს აქვს 70px padding Telegram header-ისთვის */}
+      <div className="screen-wrapper">
+        {currentScreen === 'home' && <HomeScreen onNavigate={handleNavigate} />}
+        {currentScreen === 'cards' && <CardsScreen onNavigate={handleNavigate} />}
+        {currentScreen === 'reading' && <ReadingScreen onNavigate={handleNavigate} />}
+        {currentScreen === 'astro' && <AstroScreen onNavigate={handleNavigate} />}
+        {currentScreen === 'horoscope' && <ErrorBoundary><HoroscopeScreen onNavigate={handleNavigate} /></ErrorBoundary>}
+        {currentScreen === 'sign-selection' && <SignSelectionScreen onNavigate={handleNavigate} />}
+        {currentScreen === 'profile' && <ProfileScreen onNavigate={handleNavigate} />}
+        {currentScreen === 'card-fan' && <CardFanScreen onNavigate={handleNavigate} />}
+        {currentScreen === 'card-detail' && selectedCardId && <CardDetailScreen cardId={selectedCardId} onNavigate={handleNavigate} />}
+        {currentScreen === 'daily-card' && <DailyCardScreen onNavigate={handleNavigate} />}
+        {currentScreen === 'three-card-reading' && <ThreeCardReadingScreen onNavigate={handleNavigate} />}
+        {currentScreen === 'reading-history' && <ReadingHistoryScreen onNavigate={handleNavigate} />}
+        {currentScreen === 'celtic-cross' && <CelticCrossReadingScreen onNavigate={handleNavigate} />}
+        {currentScreen === 'horseshoe' && <HorseshoeReadingScreen onNavigate={handleNavigate} />}
+        {currentScreen === 'relationship' && <RelationshipReadingScreen onNavigate={handleNavigate} />}
+        
+        {/* 🆕 JOURNAL STATS SCREEN */}
+        {currentScreen === 'journal-stats' && <JournalStatsScreen onNavigate={handleNavigate} />}
+        
+        {/* ✅ ადმინ ეკრანები */}
+        {currentScreen === 'admin' && <AdminScreen onNavigate={handleNavigate} />}
+        {currentScreen === 'user-analytics' && <UserAnalytics onNavigate={handleNavigate} />}
+        {currentScreen === 'ai-management' && <AdminAIManagement onNavigate={handleNavigate} />}
+        
+        {currentScreen === 'subscription' && <SubscriptionScreen onNavigate={handleNavigate} />}
+        {currentScreen === 'services' && <ServicesScreen onNavigate={handleNavigate} />}
+      </div>
       
-      {/* 🆕 JOURNAL STATS SCREEN */}
-      {currentScreen === 'journal-stats' && <JournalStatsScreen onNavigate={handleNavigate} />}
-      
-      {/* ✅ ადმინ ეკრანები */}
-      {currentScreen === 'admin' && <AdminScreen onNavigate={handleNavigate} />}
-      {currentScreen === 'user-analytics' && <UserAnalytics onNavigate={handleNavigate} />}
-      {currentScreen === 'ai-management' && <AdminAIManagement onNavigate={handleNavigate} />}
-      
-      {currentScreen === 'subscription' && <SubscriptionScreen onNavigate={handleNavigate} />}
-      {currentScreen === 'services' && <ServicesScreen onNavigate={handleNavigate} />}
+      {/* 🎯 BOTTOM NAV - გარეთ wrapper-დან, რომ არ მიიღოს padding-top */}
+      {['home', 'cards', 'reading', 'astro', 'horoscope', 'profile'].includes(currentScreen) && (
+        <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+      )}
     </div>
   );
 }
