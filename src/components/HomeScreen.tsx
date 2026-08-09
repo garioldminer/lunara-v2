@@ -1592,7 +1592,7 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </motion.div>
 
-      {/* ✨ MYSTICAL TAROT CARDS - Quick Actions */}
+      {/* ✨ MYSTICAL TAROT CARDS - Quick Actions (Badges FIXED) */}
       <div className="quick-access" style={{ marginBottom: '8px', width: '100%' }}>
         <div className="quick-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '7px' }}>
           {quickActions.map((action, index) => (
@@ -1618,8 +1618,45 @@ export default function HomeScreen({ onNavigate }: Props) {
               } as React.CSSProperties} 
               onClick={() => handleQuickAction(action.action)}
             >
-              {action.isPremium && <div style={{ position: 'absolute', top: '-4px', right: '-4px', background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', boxShadow: '0 2px 8px rgba(197, 160, 89, 0.5)', zIndex: 10 }}>💎</div>}
-              {(action as any).isServices && <div style={{ position: 'absolute', top: '-4px', right: '-4px', background: 'linear-gradient(135deg, #FFD700 0%, #FF8C00 100%)', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', boxShadow: '0 2px 8px rgba(255, 215, 0, 0.5)', zIndex: 10, animation: 'paywallPulse 2s ease-in-out infinite' }}>🛍️</div>}
+              {action.isPremium && (
+                <div style={{ 
+                  position: 'absolute', 
+                  top: '5px', 
+                  right: '5px', 
+                  background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)', 
+                  width: '20px', 
+                  height: '20px', 
+                  borderRadius: '50%', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  fontSize: '10px', 
+                  boxShadow: '0 2px 8px rgba(197, 160, 89, 0.6), 0 0 0 1.5px rgba(26, 21, 16, 0.95)', 
+                  zIndex: 10 
+                }}>
+                  💎
+                </div>
+              )}
+              {(action as any).isServices && (
+                <div style={{ 
+                  position: 'absolute', 
+                  top: '5px', 
+                  right: '5px', 
+                  background: 'linear-gradient(135deg, #FFD700 0%, #FF8C00 100%)', 
+                  width: '20px', 
+                  height: '20px', 
+                  borderRadius: '50%', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  fontSize: '10px', 
+                  boxShadow: '0 2px 8px rgba(255, 215, 0, 0.6), 0 0 0 1.5px rgba(26, 21, 16, 0.95)', 
+                  zIndex: 10, 
+                  animation: 'paywallPulse 2s ease-in-out infinite' 
+                }}>
+                  🛍️
+                </div>
+              )}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1, filter: `drop-shadow(0 0 6px ${action.color})`, color: action.color }}>{action.icon}</div>
               <span style={{ fontSize: '10px', color: '#fff', fontWeight: 600, textAlign: 'center', lineHeight: 1.1 }}>{action.label}</span>
               {action.sublabel && <span style={{ fontSize: '9px', color: '#b3a68c', textAlign: 'center', lineHeight: 1.1 }}>{action.sublabel}</span>}
