@@ -1,3 +1,4 @@
+/* 🎯 padding-top/bottom ამოღებული - handled by .screen-wrapper in App.css */
 .reading-screen {
   position: relative;
   width: 100%;
@@ -7,7 +8,7 @@
   font-family: 'Georgia', serif;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 70px 4px 100px 4px;
+  padding: 0 4px;
 }
 
 /* Particles */
