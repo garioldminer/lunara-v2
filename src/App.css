@@ -6,22 +6,21 @@
     background: #0a0600;
     overflow-x: hidden;
     position: relative;
-    display: flex;
-    flex-direction: column;
+    overscroll-behavior: none; /* 🎯 iOS rubber-band თავიდან */
   }
   
   /* ============================================
      🎯 GLOBAL TELEGRAM HEADER OFFSET
      ყველა main გვერდს აქვს 70px padding-top
      რომ Telegram-ის header-მა არ დაფაროს ელემენტები
+     🎯 min-height/padding-bottom ამოღებული -
+     ზედმეტი შავი ზონისა და სქროლის თავიდან
      ============================================ */
   .screen-wrapper {
     padding-top: calc(70px + env(safe-area-inset-top, 0px));
-    padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
-    min-height: 100vh;
     width: 100%;
     box-sizing: border-box;
-    flex: 1;
+    overscroll-behavior: none;
   }
   
   /* ============================================
@@ -45,6 +44,7 @@
     padding: 0;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior: none; /* 🎯 iOS rubber-band თავიდან */
   }
   
   /* ============================================
@@ -67,10 +67,10 @@
   
   /* ============================================
      📱 SAFE AREA SUPPORT (iPhone notch, etc.)
+     🎯 მხოლოდ padding-top - bottom ამოღებული
      ============================================ */
   @supports (padding-top: env(safe-area-inset-top)) {
     .screen-wrapper {
       padding-top: calc(70px + env(safe-area-inset-top));
-      padding-bottom: calc(100px + env(safe-area-inset-bottom));
     }
   }
