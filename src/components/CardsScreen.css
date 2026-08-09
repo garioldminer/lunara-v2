@@ -1,6 +1,7 @@
+/* 🎯 padding-top/bottom ამოღებული - handled by .screen-wrapper in App.css */
 .cards-screen {
   width: 100%;
-  padding: 70px 4px 100px 4px;
+  padding: 0 4px;
   max-width: 480px;
   margin: 0 auto;
   color: #fff;

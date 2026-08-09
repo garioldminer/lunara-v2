@@ -134,6 +134,7 @@
 
 /* ============================================
    ✅ PREMIUM HEADER
+   🎯 padding-top ამოღებული - handled by .screen-wrapper in App.css
    ============================================ */
 .premium-header {
   position: sticky;
@@ -142,7 +143,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 65px 20px 10px 20px;
+  padding: 10px 20px 10px 20px;
   background: transparent;
   backdrop-filter: none;
   border-bottom: none;
@@ -1178,7 +1179,7 @@
 
 .rf-close { 
   position: absolute; 
-  top: 65px;
+  top: 16px;
   right: 16px; 
   z-index: 10; 
   background: rgba(217, 182, 111, 0.1); 
@@ -1481,10 +1482,11 @@
 
 /* ============================================
    RESPONSIVE
+   🎯 padding-top values updated for screen-wrapper
    ============================================ */
 @media (max-width: 768px) {
   .premium-header { 
-    padding: 65px 16px 10px 16px;
+    padding: 10px 16px 10px 16px;
   }
   .premium-sign-name { 
     font-size: 28px; 
@@ -1575,7 +1577,7 @@
   }
   
   .rf-close {
-    top: 65px;
+    top: 16px;
   }
   
   .rf-scroll {
@@ -1614,7 +1616,7 @@
 
 @media (max-width: 480px) {
   .premium-header { 
-    padding: 65px 12px 8px 12px;
+    padding: 10px 12px 8px 12px;
   }
   .premium-back-btn,
   .premium-refresh-btn { width: 38px; height: 38px; }
@@ -1728,7 +1730,7 @@
   }
   
   .rf-close {
-    top: 65px;
+    top: 16px;
     width: 36px;
     height: 36px;
   }
