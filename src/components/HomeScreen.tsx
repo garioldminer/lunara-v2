@@ -23,7 +23,7 @@ import LeaderboardModal from './LeaderboardModal';
 import './HomeScreen.css';
 
 // ==========================================
-// ✨ Zodiac helper for HomeScreen - Big Three Display
+// ✨ Zodiac helper for HomeScreen
 // ==========================================
 const ZODIAC_SYMBOLS: Record<string, string> = {
   aries: '♈', taurus: '♉', gemini: '♊', cancer: '♋',
@@ -1146,8 +1146,15 @@ export default function HomeScreen({ onNavigate }: Props) {
         )}
       </AnimatePresence>
 
+      {/* ================================================================
+          ✨ REDESIGNED USER HEADER - Perfect 52px Alignment
+          Layout: 24px (top row) + 4px (gap) + 24px (bottom row) = 52px
+          Avatar center line (26px) passes exactly through the gap
+          ================================================================ */}
       <div className="user-header">
         <div className="user-main-row" style={{ alignItems: 'center', height: '52px', display: 'flex', justifyContent: 'space-between' }}>
+          
+          {/* 🎭 AVATAR - 52px reference element */}
           <div className="avatar-section clickable-avatar" onClick={() => onNavigate?.('profile')} style={{ position: 'relative', width: '52px', height: '52px', flexShrink: 0 }}>
             <svg className="xp-circular-progress" width="52" height="52" viewBox="0 0 52 52" style={{ position: 'absolute', top: 0, left: 0 }}>
               <circle className="xp-circle-bg" cx="26" cy="26" r="22" fill="none" stroke="#e9d5ff" strokeWidth="4" />
@@ -1166,12 +1173,27 @@ export default function HomeScreen({ onNavigate }: Props) {
             )}
           </div>
           
-          {/* ✨ UPDATED: Zodiac Big Three Display (premium badge removed) */}
+          {/* 📛 LEFT COLUMN: Username (24px, top) + Zodiac badge (24px, bottom)
+              space-between creates the exact 4px gap (52 - 24 - 24 = 4) */}
           <div className="user-info-section" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '52px', marginLeft: '12px', flex: 1, minWidth: 0 }}>
-            <h2 className="username" style={{ margin: 0, fontSize: '18px', lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            
+            {/* Username - 24px height, aligned with avatar TOP edge */}
+            <h2 className="username" style={{ 
+              margin: 0, 
+              fontSize: '16px', 
+              fontWeight: 700,
+              height: '24px', 
+              lineHeight: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              overflow: 'hidden', 
+              textOverflow: 'ellipsis', 
+              whiteSpace: 'nowrap' 
+            }}>
               {user?.display_name || 'LunaraSeeker'}
             </h2>
             
+            {/* Zodiac badge - 24px height, aligned with avatar BOTTOM edge, elegant "♍ Virgo" only */}
             {user?.sun_sign ? (
               <div 
                 className="zodiac-sign-badge" 
@@ -1180,9 +1202,10 @@ export default function HomeScreen({ onNavigate }: Props) {
                   display: 'flex', 
                   alignItems: 'center', 
                   gap: '6px', 
-                  marginTop: '4px', 
+                  height: '24px',
+                  boxSizing: 'border-box',
                   alignSelf: 'flex-start',
-                  padding: '3px 10px',
+                  padding: '0 10px',
                   background: 'linear-gradient(135deg, rgba(197, 160, 89, 0.15), rgba(197, 160, 89, 0.08))',
                   border: '1px solid rgba(197, 160, 89, 0.3)',
                   borderRadius: '12px',
@@ -1192,11 +1215,12 @@ export default function HomeScreen({ onNavigate }: Props) {
                   maxWidth: '100%'
                 }}
               >
-                <span style={{ fontSize: '12px', filter: 'drop-shadow(0 0 3px rgba(197, 160, 89, 0.6))', flexShrink: 0 }}>
+                <span style={{ fontSize: '12px', lineHeight: 1, filter: 'drop-shadow(0 0 3px rgba(197, 160, 89, 0.6))', flexShrink: 0 }}>
                   {getZodiacSymbol(user.sun_sign)}
                 </span>
                 <span style={{ 
                   fontSize: '11px', 
+                  lineHeight: 1,
                   color: '#C5A059', 
                   fontWeight: 600, 
                   letterSpacing: '0.5px',
@@ -1206,18 +1230,6 @@ export default function HomeScreen({ onNavigate }: Props) {
                   textOverflow: 'ellipsis'
                 }}>
                   {user.sun_sign}
-                  {user.moon_sign && (
-                    <>
-                      <span style={{ margin: '0 4px', color: 'rgba(197, 160, 89, 0.5)' }}>·</span>
-                      {getZodiacSymbol(user.moon_sign)}
-                    </>
-                  )}
-                  {user.rising_sign && (
-                    <>
-                      <span style={{ margin: '0 4px', color: 'rgba(197, 160, 89, 0.5)' }}>·</span>
-                      {getZodiacSymbol(user.rising_sign)}
-                    </>
-                  )}
                 </span>
               </div>
             ) : (
@@ -1228,9 +1240,10 @@ export default function HomeScreen({ onNavigate }: Props) {
                   display: 'flex', 
                   alignItems: 'center', 
                   gap: '4px', 
-                  marginTop: '4px', 
+                  height: '24px',
+                  boxSizing: 'border-box',
                   alignSelf: 'flex-start',
-                  padding: '3px 10px',
+                  padding: '0 10px',
                   background: 'rgba(197, 160, 89, 0.1)',
                   border: '1px dashed rgba(197, 160, 89, 0.4)',
                   borderRadius: '12px',
@@ -1246,8 +1259,24 @@ export default function HomeScreen({ onNavigate }: Props) {
             )}
           </div>
           
-          <div className="user-resources" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '48px', gap: '4px', flexShrink: 0 }}>
-            <div className="resource gems" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(147, 112, 219, 0.15)', padding: '4px 10px', borderRadius: '20px', border: '1px solid rgba(147, 112, 219, 0.3)', height: '22px' }}>
+          {/* 💎⚡ RIGHT COLUMN: Diamonds (24px, top) + Energy (24px, bottom)
+              space-between creates the exact 4px gap; avatar center line (26px)
+              passes exactly through the middle of this gap */}
+          <div className="user-resources" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '52px', flexShrink: 0 }}>
+            
+            {/* Diamonds badge - 24px height, aligned with avatar TOP edge */}
+            <div className="resource gems" style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              gap: '6px', 
+              background: 'rgba(147, 112, 219, 0.15)', 
+              padding: '0 8px', 
+              borderRadius: '12px', 
+              border: '1px solid rgba(147, 112, 219, 0.3)', 
+              height: '24px',
+              boxSizing: 'border-box'
+            }}>
               <Gem size={12} className="resource-icon gem-icon" style={{ color: '#9370db', flexShrink: 0 }} />
               <span className="value" style={{ fontSize: '12px', fontWeight: '600', color: '#fff', textAlign: 'center' }}>{economy.cosmic_coins.toLocaleString()}</span>
               <button 
@@ -1259,7 +1288,20 @@ export default function HomeScreen({ onNavigate }: Props) {
                 +
               </button>
             </div>
-            <div className="resource energy" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(251, 191, 36, 0.15)', padding: '4px 10px', borderRadius: '20px', border: '1px solid rgba(251, 191, 36, 0.3)', height: '22px' }}>
+            
+            {/* Energy badge - 24px height, aligned with avatar BOTTOM edge */}
+            <div className="resource energy" style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              gap: '6px', 
+              background: 'rgba(251, 191, 36, 0.15)', 
+              padding: '0 8px', 
+              borderRadius: '12px', 
+              border: '1px solid rgba(251, 191, 36, 0.3)', 
+              height: '24px',
+              boxSizing: 'border-box'
+            }}>
               <Zap size={12} className="resource-icon energy-icon" style={{ color: '#fbbf24', flexShrink: 0 }} />
               <span className="value" style={{ fontSize: '12px', fontWeight: '600', color: '#fff', textAlign: 'center' }}>
                 {economy.cosmic_focus || 0}/{economy.max_focus || 20}
