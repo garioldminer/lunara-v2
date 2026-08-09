@@ -36,6 +36,16 @@ const getZodiacSymbol = (signName: string): string => {
   return ZODIAC_SYMBOLS[signName.toLowerCase()] || '✧';
 };
 
+// ==========================================
+// ✨ Color helper - Mystical Tarot Cards
+// ==========================================
+const hexToRgba = (hex: string, alpha: number): string => {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
 const getXPToNextLevel = (level: number): number => {
   if (level === 1) return 100;
   if (level === 2) return 250;
@@ -218,10 +228,7 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
   const [xpTestLogs, setXpTestLogs] = useState<string[]>([]);
 
-  // 🆕 STREAK MILESTONES STATE
   const [unclaimedMilestoneCount, setUnclaimedMilestoneCount] = useState(0);
-
-  // 🆕 STREAK BANNER DISMISS STATE
   const [streakBannerDismissed, setStreakBannerDismissed] = useState(false);
 
   const [showDebug, setShowDebug] = useState(false);
@@ -554,7 +561,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     }
   };
 
-  // 🆕 HANDLE MILESTONE CLAIMED (from StreakModal)
   const handleMilestoneClaimed = (data: { total_coins: number; total_xp: number; total_premium_days: number }) => {
     addDebugLog('success', 'MILESTONE_CLAIM', `🎉 Milestones claimed!`, data);
     
@@ -598,7 +604,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     if (user) loadQuests();
   }, [user]);
 
-  // 🆕 LOAD STREAK MILESTONES & CALCULATE UNCLAIMED
   useEffect(() => {
     const loadMilestones = async () => {
       if (!user) return;
@@ -980,7 +985,6 @@ export default function HomeScreen({ onNavigate }: Props) {
   const circumference = 2 * Math.PI * 22; 
   const strokeDashoffset = circumference - (xpPercent / 100) * circumference;
 
-  // 🆕 STREAK TIER ICON CALCULATION
   const getStreakTierIcon = (): string => {
     const streak = currentStreak;
     if (streak >= 100) return '💎';
@@ -1011,11 +1015,9 @@ export default function HomeScreen({ onNavigate }: Props) {
         {showLevelUpModal && <LevelUpModal level={leveledUpTo} onClose={() => setShowLevelUpModal(false)} t={t} />}
       </AnimatePresence>
 
-      {/* 🆕 STREAK DANGER BANNER - CENTERED POPUP (FIXED) */}
       <AnimatePresence>
         {currentStreak > 0 && !isDailyRevealed && !streakBannerDismissed && (
           <>
-            {/* Backdrop */}
             <motion.div
               key="streak-backdrop"
               initial={{ opacity: 0 }}
@@ -1032,7 +1034,6 @@ export default function HomeScreen({ onNavigate }: Props) {
               onClick={() => setStreakBannerDismissed(true)}
             />
 
-            {/* ✅ Flex wrapper - საიმედო centering (არ ეჯახება framer-motion-ს) */}
             <div
               style={{
                 position: 'fixed',
@@ -1045,7 +1046,6 @@ export default function HomeScreen({ onNavigate }: Props) {
                 padding: '24px'
               }}
             >
-              {/* Banner card */}
               <motion.div
                 key="streak-banner"
                 initial={{ opacity: 0, scale: 0.85, y: 20 }}
@@ -1065,7 +1065,6 @@ export default function HomeScreen({ onNavigate }: Props) {
                   position: 'relative'
                 }}
               >
-                {/* Close button */}
                 <button
                   onClick={() => setStreakBannerDismissed(true)}
                   style={{
@@ -1086,7 +1085,6 @@ export default function HomeScreen({ onNavigate }: Props) {
                   <X size={12} />
                 </button>
 
-                {/* Pulsing warning icon */}
                 <motion.div
                   animate={{ scale: [1, 1.12, 1] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
@@ -1103,7 +1101,6 @@ export default function HomeScreen({ onNavigate }: Props) {
                   Draw your card today to keep it alive 🔥
                 </div>
 
-                {/* Action buttons */}
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button
                     onClick={() => setStreakBannerDismissed(true)}
@@ -1146,15 +1143,9 @@ export default function HomeScreen({ onNavigate }: Props) {
         )}
       </AnimatePresence>
 
-      {/* ================================================================
-          ✨ REDESIGNED USER HEADER - Perfect 52px Alignment
-          Layout: 24px (top row) + 4px (gap) + 24px (bottom row) = 52px
-          Avatar center line (26px) passes exactly through the gap
-          ================================================================ */}
       <div className="user-header">
         <div className="user-main-row" style={{ alignItems: 'center', height: '52px', display: 'flex', justifyContent: 'space-between' }}>
           
-          {/* 🎭 AVATAR - 52px reference element */}
           <div className="avatar-section clickable-avatar" onClick={() => onNavigate?.('profile')} style={{ position: 'relative', width: '52px', height: '52px', flexShrink: 0 }}>
             <svg className="xp-circular-progress" width="52" height="52" viewBox="0 0 52 52" style={{ position: 'absolute', top: 0, left: 0 }}>
               <circle className="xp-circle-bg" cx="26" cy="26" r="22" fill="none" stroke="#e9d5ff" strokeWidth="4" />
@@ -1173,11 +1164,8 @@ export default function HomeScreen({ onNavigate }: Props) {
             )}
           </div>
           
-          {/* 📛 LEFT COLUMN: Username (24px, top) + Zodiac badge (24px, bottom)
-              space-between creates the exact 4px gap (52 - 24 - 24 = 4) */}
           <div className="user-info-section" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '52px', marginLeft: '12px', flex: 1, minWidth: 0 }}>
             
-            {/* Username - 24px height, aligned with avatar TOP edge */}
             <h2 className="username" style={{ 
               margin: 0, 
               fontSize: '16px', 
@@ -1193,7 +1181,6 @@ export default function HomeScreen({ onNavigate }: Props) {
               {user?.display_name || 'LunaraSeeker'}
             </h2>
             
-            {/* Zodiac badge - 24px height, aligned with avatar BOTTOM edge, elegant "♍ Virgo" only */}
             {user?.sun_sign ? (
               <div 
                 className="zodiac-sign-badge" 
@@ -1259,12 +1246,8 @@ export default function HomeScreen({ onNavigate }: Props) {
             )}
           </div>
           
-          {/* 💎⚡ RIGHT COLUMN: Diamonds (24px, top) + Energy (24px, bottom)
-              space-between creates the exact 4px gap; avatar center line (26px)
-              passes exactly through the middle of this gap */}
           <div className="user-resources" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '52px', flexShrink: 0 }}>
             
-            {/* Diamonds badge - 24px height, aligned with avatar TOP edge */}
             <div className="resource gems" style={{ 
               display: 'flex', 
               alignItems: 'center', 
@@ -1289,7 +1272,6 @@ export default function HomeScreen({ onNavigate }: Props) {
               </button>
             </div>
             
-            {/* Energy badge - 24px height, aligned with avatar BOTTOM edge */}
             <div className="resource energy" style={{ 
               display: 'flex', 
               alignItems: 'center', 
@@ -1395,7 +1377,6 @@ export default function HomeScreen({ onNavigate }: Props) {
               {!rewardClaimed && !isClaiming && <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>50</div>}
             </button>
             
-            {/* 🆕 UPDATED STREAK BUTTON with tier icon + unclaimed badge */}
             <button 
               className="action-btn-vertical streak-btn-v" 
               onClick={() => setShowStreakModal(true)}
@@ -1406,7 +1387,6 @@ export default function HomeScreen({ onNavigate }: Props) {
               </div>
               <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>{currentStreak}</div>
               
-              {/* Unclaimed milestone indicator */}
               {unclaimedMilestoneCount > 0 && (
                 <motion.div
                   animate={{ scale: [1, 1.15, 1] }}
@@ -1612,10 +1592,32 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </motion.div>
 
+      {/* ✨ MYSTICAL TAROT CARDS - Quick Actions */}
       <div className="quick-access" style={{ marginBottom: '8px', width: '100%' }}>
-        <div className="quick-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
+        <div className="quick-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '7px' }}>
           {quickActions.map((action, index) => (
-            <button key={index} className={`quick-item ${action.isPremium ? 'premium-item' : ''} ${action.action === 'Admin' ? 'admin-item' : ''} ${(action as any).isServices ? 'services-item' : ''}`} style={{ '--glow-color': action.color, background: action.isPremium ? 'linear-gradient(135deg, rgba(197, 160, 89, 0.15) 0%, rgba(139, 105, 20, 0.1) 100%)' : (action as any).isServices ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 165, 0, 0.08) 100%)' : '#1a1510', border: action.isPremium ? '1px solid rgba(197, 160, 89, 0.4)' : (action as any).isServices ? '1px solid rgba(255, 215, 0, 0.4)' : '1px solid #2a2215', borderRadius: '12px', padding: 'clamp(8px, 2.5vw, 12px) 4px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', color: '#fff', cursor: 'pointer', position: 'relative', overflow: 'hidden' } as React.CSSProperties} onClick={() => handleQuickAction(action.action)}>
+            <button 
+              key={index} 
+              className={`quick-item ${action.isPremium ? 'premium-item' : ''} ${action.action === 'Admin' ? 'admin-item' : ''} ${(action as any).isServices ? 'services-item' : ''}`} 
+              style={{ 
+                '--glow-color': action.color, 
+                background: `linear-gradient(160deg, ${hexToRgba(action.color, 0.14)} 0%, rgba(16, 13, 10, 0.97) 60%)`, 
+                border: `1px solid ${hexToRgba(action.color, action.isPremium || (action as any).isServices ? 0.45 : 0.28)}`, 
+                borderRadius: '14px', 
+                padding: 'clamp(10px, 3vw, 14px) 4px', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                gap: '6px', 
+                color: '#fff', 
+                cursor: 'pointer', 
+                position: 'relative', 
+                overflow: 'hidden',
+                boxShadow: '0 4px 14px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06)',
+                transition: 'all 0.25s ease'
+              } as React.CSSProperties} 
+              onClick={() => handleQuickAction(action.action)}
+            >
               {action.isPremium && <div style={{ position: 'absolute', top: '-4px', right: '-4px', background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', boxShadow: '0 2px 8px rgba(197, 160, 89, 0.5)', zIndex: 10 }}>💎</div>}
               {(action as any).isServices && <div style={{ position: 'absolute', top: '-4px', right: '-4px', background: 'linear-gradient(135deg, #FFD700 0%, #FF8C00 100%)', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', boxShadow: '0 2px 8px rgba(255, 215, 0, 0.5)', zIndex: 10, animation: 'paywallPulse 2s ease-in-out infinite' }}>🛍️</div>}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1, filter: `drop-shadow(0 0 6px ${action.color})`, color: action.color }}>{action.icon}</div>
@@ -1640,7 +1642,6 @@ export default function HomeScreen({ onNavigate }: Props) {
         />
       )}
 
-      {/* 🆕 UPDATED STREAK MODAL with new props */}
       <StreakModal 
         isOpen={showStreakModal} 
         onClose={() => setShowStreakModal(false)} 

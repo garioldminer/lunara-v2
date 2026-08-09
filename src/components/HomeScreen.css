@@ -42,10 +42,9 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    height: 52px; /* ✨ Fixed height for perfect alignment */
+    height: 52px;
   }
   
-  /* Avatar - 52px reference */
   .avatar-section {
     position: relative;
     width: 52px;
@@ -95,7 +94,6 @@
     z-index: 2;
   }
   
-  /* ✨ LEFT COLUMN: Username + Zodiac (24px + 4px + 24px = 52px) */
   .user-info-section {
     flex: 1;
     min-width: 0;
@@ -106,7 +104,6 @@
     margin-left: 12px;
   }
   
-  /* Username - 24px height, aligned with avatar TOP */
   .username {
     font-size: 16px;
     font-weight: 700;
@@ -122,7 +119,6 @@
     white-space: nowrap;
   }
   
-  /* ✨ NEW: Zodiac Sign Badge - 24px height, aligned with avatar BOTTOM */
   .zodiac-sign-badge {
     display: flex;
     align-items: center;
@@ -146,7 +142,6 @@
     border-color: rgba(197, 160, 89, 0.5);
   }
   
-  /* ✨ NEW: Add Sign Badge (empty state) */
   .add-sign-badge {
     display: flex;
     align-items: center;
@@ -175,7 +170,6 @@
     display: none;
   }
   
-  /* ✨ RIGHT COLUMN: Diamonds + Energy (24px + 4px + 24px = 52px) */
   .user-resources {
     display: flex;
     flex-direction: column;
@@ -184,7 +178,6 @@
     flex-shrink: 0;
   }
   
-  /* ✨ UPDATED: Resource badges - 24px height, 12px radius */
   .resource {
     display: flex;
     align-items: center;
@@ -220,7 +213,6 @@
     font-size: 12px;
   }
   
-  /* Add button */
   .home-screen .add-btn {
     background: #C5A059;
     color: #0a0600;
@@ -725,7 +717,7 @@
   }
   
   /* ============================================
-     4. QUICK ACCESS GRID
+     4. QUICK ACCESS GRID - MYSTICAL TAROT CARDS
      ============================================ */
   .quick-access { 
     margin-bottom: 8px; 
@@ -735,27 +727,47 @@
   .quick-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 6px;
+    gap: 7px;
   }
   
+  /* ✨ Base mystical tarot card */
   .quick-item {
-    background: linear-gradient(145deg, #1a1510 0%, #12100c 100%);
-    border: 1px solid #2a2215;
-    border-radius: 12px;
-    padding: clamp(8px, 2.5vw, 12px) 4px;
+    border-radius: 14px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     color: #fff;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.25s ease;
     position: relative;
     overflow: hidden;
   }
   
+  /* ✨ Ornate tarot card corners (top-left + bottom-right) */
+  .quick-item::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border-radius: 10px;
+    background:
+      linear-gradient(var(--glow-color, #C5A059), var(--glow-color, #C5A059)) top left / 10px 1.5px,
+      linear-gradient(var(--glow-color, #C5A059), var(--glow-color, #C5A059)) top left / 1.5px 10px,
+      linear-gradient(var(--glow-color, #C5A059), var(--glow-color, #C5A059)) bottom right / 10px 1.5px,
+      linear-gradient(var(--glow-color, #C5A059), var(--glow-color, #C5A059)) bottom right / 1.5px 10px;
+    background-repeat: no-repeat;
+    opacity: 0.5;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    z-index: 1;
+  }
+  
   .quick-item:active { 
-    transform: scale(0.96);
+    transform: scale(0.96) translateY(1px);
+  }
+  
+  .quick-item:active::before {
+    opacity: 0.95;
   }
   
   .q-icon-wrapper {
@@ -763,8 +775,8 @@
     align-items: center;
     justify-content: center;
     position: relative;
-    z-index: 1;
-    filter: drop-shadow(0 0 6px var(--glow-color, #C5A059));
+    z-index: 2;
+    filter: drop-shadow(0 0 8px var(--glow-color, #C5A059));
   }
   
   .q-label { 
@@ -773,6 +785,8 @@
     font-weight: 600;
     text-align: center;
     line-height: 1.1;
+    position: relative;
+    z-index: 2;
   }
   
   .q-sublabel { 
@@ -780,11 +794,18 @@
     color: #b3a68c;
     text-align: center;
     line-height: 1.1;
+    position: relative;
+    z-index: 2;
   }
   
+  /* Premium items (Celtic Cross, Horseshoe, Relationship) */
   .quick-item.premium-item {
-    background: linear-gradient(135deg, rgba(197, 160, 89, 0.15) 0%, rgba(139, 105, 20, 0.1) 100%);
-    border: 1px solid rgba(197, 160, 89, 0.4);
+    background: linear-gradient(160deg, rgba(197, 160, 89, 0.22) 0%, rgba(16, 13, 10, 0.97) 60%);
+    border: 1px solid rgba(197, 160, 89, 0.5);
+    box-shadow: 
+      0 4px 14px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 rgba(255, 215, 0, 0.1),
+      0 0 15px rgba(197, 160, 89, 0.15);
   }
   
   .premium-badge {
@@ -803,20 +824,30 @@
     z-index: 10;
   }
   
+  /* Admin item */
   .quick-item.admin-item {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.1) 100%);
-    border: 1px solid rgba(239, 68, 68, 0.4);
+    background: linear-gradient(160deg, rgba(239, 68, 68, 0.2) 0%, rgba(16, 13, 10, 0.97) 60%);
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    box-shadow: 
+      0 4px 14px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 rgba(255, 100, 100, 0.1),
+      0 0 15px rgba(239, 68, 68, 0.2);
   }
   
   .quick-item.admin-item .q-icon-wrapper {
     color: #ef4444 !important;
-    filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.6));
+    filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.7));
   }
   
+  /* Services item */
   .quick-item.paywall-item,
   .quick-item.services-item {
-    background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 165, 0, 0.08) 100%);
-    border: 1px solid rgba(255, 215, 0, 0.4);
+    background: linear-gradient(160deg, rgba(255, 215, 0, 0.22) 0%, rgba(16, 13, 10, 0.97) 60%);
+    border: 1px solid rgba(255, 215, 0, 0.5);
+    box-shadow: 
+      0 4px 14px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 rgba(255, 215, 0, 0.15),
+      0 0 15px rgba(255, 215, 0, 0.2);
     position: relative;
     overflow: hidden;
   }
@@ -832,11 +863,12 @@
     background: linear-gradient(
       45deg,
       transparent 30%,
-      rgba(255, 215, 0, 0.1) 50%,
+      rgba(255, 215, 0, 0.12) 50%,
       transparent 70%
     );
     animation: paywallShine 3s ease-in-out infinite;
     pointer-events: none;
+    z-index: 2;
   }
   
   @keyframes paywallShine {
@@ -847,7 +879,7 @@
   .quick-item.services-item .q-icon-wrapper,
   .quick-item.paywall-item .q-icon-wrapper {
     color: #FFD700 !important;
-    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6));
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.7));
   }
   
   .paywall-badge {
@@ -934,6 +966,6 @@
     }
     
     .quick-grid {
-      gap: 8px;
+      gap: 9px;
     }
   }
