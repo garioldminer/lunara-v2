@@ -1,6 +1,6 @@
 /* ============================================
    HOME SCREEN - RESPONSIVE GAMIFIED DASHBOARD
-   Visual polish only + Telegram Mobile fix
+   Perfect 52px Header Alignment Edition
    ============================================ */
 
    :root {
@@ -11,7 +11,6 @@
   
   .home-screen {
     width: 100%;
-    /* Telegram Mobile header (~70px) + side padding */
     padding: calc(70px + env(safe-area-inset-top, 0px)) var(--screen-padding) calc(100px + env(safe-area-inset-bottom, 0px)) var(--screen-padding);
     max-width: var(--max-width);
     margin: 0 auto;
@@ -28,7 +27,7 @@
   }
   
   /* ============================================
-     1. USER HEADER
+     1. USER HEADER - 52px Perfect Alignment
      ============================================ */
   .user-header {
     background: linear-gradient(145deg, #1c1712 0%, #12100c 100%);
@@ -43,8 +42,10 @@
     display: flex;
     align-items: center;
     gap: 12px;
+    height: 52px; /* ✨ Fixed height for perfect alignment */
   }
   
+  /* Avatar - 52px reference */
   .avatar-section {
     position: relative;
     width: 52px;
@@ -94,60 +95,118 @@
     z-index: 2;
   }
   
+  /* ✨ LEFT COLUMN: Username + Zodiac (24px + 4px + 24px = 52px) */
   .user-info-section {
     flex: 1;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 52px;
+    margin-left: 12px;
   }
   
+  /* Username - 24px height, aligned with avatar TOP */
   .username {
     font-size: 16px;
     font-weight: 700;
-    margin: 0 0 2px 0;
+    margin: 0;
     color: #fff;
     letter-spacing: 0.3px;
+    height: 24px;
+    line-height: 24px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   
-  .premium-status-badge {
-    display: inline-flex;
+  /* ✨ NEW: Zodiac Sign Badge - 24px height, aligned with avatar BOTTOM */
+  .zodiac-sign-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 24px;
+    box-sizing: border-box;
+    align-self: flex-start;
+    padding: 0 10px;
+    background: linear-gradient(135deg, rgba(197, 160, 89, 0.15), rgba(197, 160, 89, 0.08));
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    overflow: hidden;
+    max-width: 100%;
+  }
+  
+  .zodiac-sign-badge:active {
+    transform: scale(0.97);
+    background: linear-gradient(135deg, rgba(197, 160, 89, 0.25), rgba(197, 160, 89, 0.15));
+    border-color: rgba(197, 160, 89, 0.5);
+  }
+  
+  /* ✨ NEW: Add Sign Badge (empty state) */
+  .add-sign-badge {
+    display: flex;
     align-items: center;
     gap: 4px;
-    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-    color: #0a0600;
-    padding: 3px 8px;
-    border-radius: 8px;
-    font-size: 9px;
-    font-weight: 900;
-    letter-spacing: 0.5px;
+    height: 24px;
+    box-sizing: border-box;
+    align-self: flex-start;
+    padding: 0 10px;
+    background: rgba(197, 160, 89, 0.1);
+    border: 1px dashed rgba(197, 160, 89, 0.4);
+    border-radius: 12px;
     cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
-    margin-top: 4px;
+    font-size: 10px;
+    color: #b3a68c;
+    transition: all 0.2s ease;
   }
   
-  .premium-status-badge:active {
+  .add-sign-badge:active {
     transform: scale(0.97);
+    background: rgba(197, 160, 89, 0.18);
+    border-color: rgba(197, 160, 89, 0.6);
+    color: #C5A059;
   }
   
   .xp-text-inline {
     display: none;
   }
   
+  /* ✨ RIGHT COLUMN: Diamonds + Energy (24px + 4px + 24px = 52px) */
   .user-resources {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    justify-content: space-between;
+    height: 52px;
     flex-shrink: 0;
   }
   
+  /* ✨ UPDATED: Resource badges - 24px height, 12px radius */
   .resource {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
     background: rgba(255, 255, 255, 0.06);
-    padding: 4px 10px;
-    border-radius: 20px;
+    padding: 0 8px;
+    border-radius: 12px;
     font-size: 12px;
     border: 1px solid rgba(255, 255, 255, 0.08);
+    height: 24px;
+    box-sizing: border-box;
+  }
+  
+  .resource.gems {
+    background: rgba(147, 112, 219, 0.15);
+    border-color: rgba(147, 112, 219, 0.3);
+  }
+  
+  .resource.energy {
+    background: rgba(251, 191, 36, 0.15);
+    border-color: rgba(251, 191, 36, 0.3);
   }
   
   .resource-icon { flex-shrink: 0; }
@@ -158,9 +217,10 @@
     font-weight: 600;
     color: #fff;
     min-width: 36px;
+    font-size: 12px;
   }
   
-  /* Scoped add button */
+  /* Add button */
   .home-screen .add-btn {
     background: #C5A059;
     color: #0a0600;
@@ -177,9 +237,16 @@
     margin-left: 4px;
     transition: transform 0.15s;
     line-height: 1;
+    flex-shrink: 0;
   }
   
   .home-screen .add-btn:active { transform: scale(0.9); }
+  
+  .home-screen .add-btn:disabled {
+    background: rgba(150, 150, 150, 0.3);
+    color: #666;
+    cursor: not-allowed;
+  }
   
   /* ============================================
      2. DAILY QUESTS + ACTION BUTTONS
@@ -202,6 +269,7 @@
     display: flex;
     flex-direction: column;
     min-width: 0;
+    cursor: pointer;
   }
   
   .quests-header-compact {
