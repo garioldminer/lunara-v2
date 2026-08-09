@@ -298,7 +298,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
   const [notes, setNotes] = useState('');
   const [notesSaving, setNotesSaving] = useState(false);
 
-  // 🆕 MOOD TRACKING STATE
   const [selectedMood, setSelectedMood] = useState<Mood | null>(null);
   const [moodSaving, setMoodSaving] = useState(false);
 
@@ -313,7 +312,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
   const [authUid, setAuthUid] = useState<string | null>(null);
   const [authStatus, setAuthStatus] = useState<'checking' | 'active' | 'inactive'>('checking');
 
-  // 🆕 STREAK PROGRESS STATE
   const [streakInfo, setStreakInfo] = useState<StreakInfo | null>(null);
 
   const addLog = (type: LogType, message: string, data?: any) => {
@@ -330,7 +328,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     setToast({ message, type });
   };
 
-  // 🆕 LOAD STREAK PROGRESS
   useEffect(() => {
     const loadStreak = async () => {
       if (!user) return;
@@ -410,9 +407,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         setSelectedFocus(existing.focus_area || 'general');
         setCustomQuestion(existing.question || '');
         setNotes(existing.notes || '');
-        // 🆕 Load mood from DB
         setSelectedMood(existing.mood || null);
-        // 🆕 Log reflection prompt
         if (existing.reflection_prompt) {
           addLog('info', 'Reflection prompt loaded', { prompt: existing.reflection_prompt });
         }
@@ -477,7 +472,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     addLog('success', 'Reading created in DB', reading);
     setDailyReading(reading);
     setNotes(reading.notes || '');
-    // 🆕 Reset mood for new reading
     setSelectedMood(null);
 
     try {
@@ -485,7 +479,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
       await trackQuestProgress(user.id, 'draw_daily_card', 1);
       addLog('success', 'Quest progress tracked');
       
-      // 🔥 UPDATE STREAK ON READING
       const streakResult = await updateStreakOnReading();
       if (streakResult.success) {
         addLog('success', 'Streak updated via Edge Function', { 
@@ -496,7 +489,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         if (streakResult.streak_incremented) {
           showToast(`🔥 Streak: ${streakResult.current_streak} days!`, 'success');
           
-          // 🆕 Reload streak info to update progress bar
           const newInfo = await getStreakInfo(user.id);
           if (newInfo) setStreakInfo(newInfo);
         } else {
@@ -607,10 +599,9 @@ export default function DailyCardScreen({ onNavigate }: Props) {
   const meaning = currentCard ? (isReversed ? currentCard.reversed_meaning : currentCard.meaning) : '';
   const keywords = currentCard ? (isReversed ? currentCard.reversed_keywords : currentCard.keywords) : [];
 
+  // 🎯 paddingTop/paddingBottom ამოღებული - handled by .screen-wrapper in App.css
   const containerStyle: React.CSSProperties = {
     minHeight: '100vh', position: 'relative', color: '#fff',
-    paddingTop: 'calc(70px + env(safe-area-inset-top, 0px))',
-    paddingBottom: 'calc(20px + env(safe-area-inset-bottom, 0px))',
     paddingLeft: '5px', paddingRight: '5px',
     display: 'flex', flexDirection: 'column',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -647,7 +638,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         <div style={{ width: '40px' }} />
       </div>
 
-      {/* 🆕 STREAK PROGRESS BAR */}
       {streakInfo && streakInfo.current_streak > 0 && (
         <div
           style={{
@@ -791,7 +781,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                 ))}
               </div>
 
-              {/* 🆕 REFLECTION PROMPT */}
               {dailyReading?.reflection_prompt && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -842,7 +831,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                 </motion.div>
               )}
 
-              {/* 🆕 MOOD SELECTOR */}
               <div style={{ marginTop: '12px', marginBottom: '12px' }}>
                 <label style={{ fontSize: '11px', color: '#94a3b8', letterSpacing: '1px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '8px' }}>
                   How are you feeling?

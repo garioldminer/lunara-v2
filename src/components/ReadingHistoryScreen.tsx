@@ -73,7 +73,8 @@ export default function ReadingHistoryScreen({ onNavigate }: Props) {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0f0c08', color: '#fff', paddingTop: 'calc(20px + env(safe-area-inset-top, 0px))', paddingBottom: 'calc(20px + env(safe-area-inset-bottom, 0px))' }}>
+    // 🎯 paddingTop/paddingBottom ამოღებული - handled by .screen-wrapper in App.css
+    <div style={{ minHeight: '100vh', background: '#0f0c08', color: '#fff' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', marginBottom: '16px' }}>
         <button onClick={() => onNavigate?.('home')} style={{ background: 'rgba(10, 8, 20, 0.5)', border: '1px solid rgba(197, 160, 89, 0.4)', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C5A059', cursor: 'pointer' }}>

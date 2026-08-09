@@ -413,6 +413,7 @@
   }
   
   /* ===== IDENTITY BAR ===== */
+  /* 🎯 margin-top ამოღებული - handled by .screen-wrapper in App.css */
   .profile-screen .identity-bar {
     display: flex;
     align-items: center;
@@ -422,7 +423,7 @@
     border: 1px solid rgba(200, 120, 0, 0.4);
     border-radius: 16px;
     padding: 12px 16px;
-    margin-top: 70px;
+    margin-top: 0;
     margin-bottom: 5px;
   }
   

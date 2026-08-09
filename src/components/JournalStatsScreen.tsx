@@ -121,12 +121,11 @@ export default function JournalStatsScreen({ onNavigate }: Props) {
     loadStats();
   }, [user]);
 
+  // 🎯 paddingTop/paddingBottom ამოღებული - handled by .screen-wrapper in App.css
   const containerStyle: React.CSSProperties = {
     minHeight: '100vh',
     position: 'relative',
     color: '#fff',
-    paddingTop: 'calc(70px + env(safe-area-inset-top, 0px))',
-    paddingBottom: 'calc(20px + env(safe-area-inset-bottom, 0px))',
     paddingLeft: '16px',
     paddingRight: '16px',
     display: 'flex',
