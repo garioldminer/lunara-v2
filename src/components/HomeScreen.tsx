@@ -62,13 +62,6 @@ const getZodiacSymbol = (signName: string): string => {
   return ZODIAC_SYMBOLS[signName.toLowerCase()] || '✧';
 };
 
-const hexToRgba = (hex: string, alpha: number): string => {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-};
-
 const getXPToNextLevel = (level: number): number => {
   if (level === 1) return 100;
   if (level === 2) return 250;
@@ -226,9 +219,6 @@ export default function HomeScreen({ onNavigate }: Props) {
   const { user, setUser } = useUser();
   const [rewardClaimed, setRewardClaimed] = useState(false);
   const [isClaiming, setIsClaiming] = useState(false);
-  
-  // ✅ REMOVED: timeLeft state (now in isolated CountdownTimer component)
-  // const [timeLeft, setTimeLeft] = useState('14:32:18');
   
   const [dailyCard, setDailyCard] = useState<typeof tarotCards[0] | null>(null);
   const [isDailyReversed, setIsDailyReversed] = useState(false);
@@ -888,21 +878,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     return '';
   };
 
-  // ✅ REMOVED: Timer useEffect (now in isolated CountdownTimer component)
-  // useEffect(() => {
-  //   const timer = setInterval(() => {
-  //     const now = new Date();
-  //     const tomorrow = new Date(now);
-  //     tomorrow.setHours(24, 0, 0, 0);
-  //     const diff = tomorrow.getTime() - now.getTime();
-  //     const hours = Math.floor(diff / (1000 * 60 * 60));
-  //     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  //     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-  //     setTimeLeft(`${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`);
-  //   }, 1000);
-  //   return () => clearInterval(timer);
-  // }, []);
-
   const handleClaimReward = async () => {
     if (rewardClaimed || isClaiming) {
       showToast('Reward already claimed or claiming', 'info');
@@ -1347,12 +1322,10 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* ✅ FIX: Removed inline flexDirection - now CSS controls responsive layout */}
       <div className="quests-and-actions-split">
         <div className="daily-quests-compact" onClick={() => setShowQuestModal(true)}>
           <div className="quests-header-compact">
             <h3>{t('home.dailyQuests')}</h3>
-            {/* ✅ FIX: Use isolated CountdownTimer instead of timeLeft state */}
             <CountdownTimer style={{ fontSize: '9px', color: '#b3a68c', fontFamily: 'monospace' }} />
           </div>
           <div className="quest-list-compact">
@@ -1460,7 +1433,7 @@ export default function HomeScreen({ onNavigate }: Props) {
               {dailyQuests.length === 0 ? (
                 <div style={{ textAlign: 'center', color: '#94a3b8', padding: '20px' }}>{t('home.questModal.noQuests')}</div>
               ) : (
-                dailyQuests.map((q, idx) => (
+                dailyQuests.map((q) => (
                   <div key={q.id} className={`quest-modal-item ${q.is_claimed ? 'claimed' : ''}`}>
                     <div className="quest-modal-top">
                       <div className="quest-modal-info">
@@ -1498,7 +1471,6 @@ export default function HomeScreen({ onNavigate }: Props) {
               {dailyQuests.length > 0 && dailyQuests.every(q => q.is_claimed) && (
                 <div className="quest-modal-all-complete">
                   <div className="quest-modal-all-complete-title">{t('home.questModal.allCompleteTitle')}</div>
-                  {/* ✅ FIX: Use isolated CountdownTimer */}
                   <div className="quest-modal-comeback">
                     {t('home.questModal.comeBack', { time: '' })} <CountdownTimer style={{ fontFamily: 'monospace', fontWeight: 'bold' }} />
                   </div>
@@ -1513,7 +1485,6 @@ export default function HomeScreen({ onNavigate }: Props) {
         className="card-of-day-banner clickable-card" 
         onClick={() => onNavigate && onNavigate('daily-card')}
       >
-        {/* ✅ FIX: Removed inline flexDirection - CSS controls responsive layout */}
         <div className="card-of-day-content">
           <div className="card-half-left">
             
@@ -1522,7 +1493,6 @@ export default function HomeScreen({ onNavigate }: Props) {
               animate={!isDailyRevealed ? { y: [0, -5, 0] } : {}}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             >
-              {/* ✅ FIX: Removed inline transform - CSS controls :active effect */}
               <div className="card-image-tilted">
                 
                 {!isDailyRevealed ? (
@@ -1586,12 +1556,11 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </motion.div>
 
-      {/* ✨ MYSTICAL TAROT CARDS - Quick Actions */}
       <div className="quick-access">
         <div className="quick-grid">
-          {quickActions.map((action, index) => (
+          {quickActions.map((action) => (
             <button 
-              key={index} 
+              key={action.action} 
               className={`quick-item ${action.isPremium ? 'premium-item' : ''} ${action.action === 'Admin' ? 'admin-item' : ''} ${(action as any).isServices ? 'services-item' : ''}`} 
               style={{ '--glow-color': action.color } as React.CSSProperties} 
               onClick={() => handleQuickAction(action.action)}
@@ -1658,7 +1627,7 @@ export default function HomeScreen({ onNavigate }: Props) {
           dailyQuests={dailyQuests}
           activeDailyQuest={activeDailyQuest}
           isClaimingQuest={isClaimingQuest}
-          timeLeft="" // ✅ No longer needed - CountdownTimer handles it
+          timeLeft=""
           showQuestModal={showQuestModal}
           rewardClaimed={rewardClaimed}
           isClaiming={isClaiming}
