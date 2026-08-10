@@ -607,6 +607,19 @@ export default function HomeScreen({ onNavigate }: Props) {
     setUnclaimedMilestoneCount(0);
   };
 
+  // ✅ FIX: Telegram WebApp expand + disable vertical swipes (pull-to-refresh)
+  useEffect(() => {
+    if (window.Telegram?.WebApp) {
+      window.Telegram.WebApp.ready();
+      window.Telegram.WebApp.expand();
+      try {
+        window.Telegram.WebApp.disableVerticalSwipes();
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, []);
+
   useEffect(() => {
     if (user) {
       addDebugLog('info', 'USER', 'User loaded', { userId: user.id, displayName: user.display_name });
@@ -1552,11 +1565,6 @@ export default function HomeScreen({ onNavigate }: Props) {
                       alt="Card Back" 
                       className="card-back-image"
                     />
-                    <motion.div
-                      animate={{ x: ['-150%', '150%'] }}
-                      transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 3, ease: "easeInOut" }}
-                      className="card-shimmer"
-                    />
                     <div className="card-tap-label">
                       TAP
                     </div>
@@ -1567,7 +1575,6 @@ export default function HomeScreen({ onNavigate }: Props) {
                       src={dailyCard?.image_url} 
                       alt={dailyCardName} 
                       className="card-front-image"
-                      style={{ transform: isDailyReversed ? 'rotate(180deg)' : 'rotate(0deg)' }}
                     />
                   </div>
                 )}
@@ -1633,7 +1640,6 @@ export default function HomeScreen({ onNavigate }: Props) {
               } as React.CSSProperties} 
               onClick={() => handleQuickAction(action.action)}
             >
-              {/* ✅ FIX: inline badge styles (16px, overrides CSS cache) */}
               {action.isPremium && (
                 <div style={premiumBadgeStyle}>💎</div>
               )}
