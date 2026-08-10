@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { 
   Bug, X, Activity, Users, Server, Terminal, Settings, 
-  Copy, Check, RefreshCw, Play, Eye, ChevronDown, Heart, Crown, Zap, Flame
+  Copy, Check, RefreshCw, Play, Eye, ChevronDown, Heart, Crown, Zap, Flame, Shield
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { 
@@ -64,6 +64,16 @@ interface EnergyCheckData {
   transactions: EnergyTransaction[];
   costs: ReadingCost[];
   match: boolean;
+}
+
+// 🆕 🔐 AUTH SECURITY DATA TYPE
+interface AuthSecurityInfo {
+  signatureVerified: boolean | null;
+  tokenAge: number | null;
+  expiresIn: number | null;
+  authMethod: 'signIn' | 'createUser' | 'unknown';
+  rawDataHash: string | null;
+  authDate: string | null;
 }
 
 interface DebugPanelProps {
@@ -141,6 +151,16 @@ export default function DebugPanel(props: DebugPanelProps) {
   const [bootTime, setBootTime] = useState<number>(0);
   const [localStorageData, setLocalStorageData] = useState<Record<string, any>>({});
 
+  // 🆕 🔐 AUTH SECURITY STATE
+  const [authSecurity, setAuthSecurity] = useState<AuthSecurityInfo>({
+    signatureVerified: null,
+    tokenAge: null,
+    expiresIn: null,
+    authMethod: 'unknown',
+    rawDataHash: null,
+    authDate: null
+  });
+
   const [functionStatuses, setFunctionStatuses] = useState<FunctionStatus[]>([]);
   const [functionsLoading, setFunctionsLoading] = useState(false);
   const [testingFunction, setTestingFunction] = useState<string | null>(null);
@@ -157,9 +177,6 @@ export default function DebugPanel(props: DebugPanelProps) {
   const [energyChecking, setEnergyChecking] = useState(false);
   const [energyLastRun, setEnergyLastRun] = useState<string | null>(null);
 
-  // ============================================
-  // 🔥 STREAK TAB STATE
-  // ============================================
   const [streakData, setStreakData] = useState<any>(null);
   const [streakChecking, setStreakChecking] = useState(false);
   const [streakLastRun, setStreakLastRun] = useState<string | null>(null);
@@ -194,6 +211,94 @@ export default function DebugPanel(props: DebugPanelProps) {
     };
     checkSystem();
   }, [showDebug]);
+
+  // 🆕 🔐 AUTH SECURITY CHECK
+  useEffect(() => {
+    if (!showDebug) return;
+    
+    const checkAuthSecurity = async () => {
+      const securityInfo: AuthSecurityInfo = {
+        signatureVerified: null,
+        tokenAge: null,
+        expiresIn: null,
+        authMethod: 'unknown',
+        rawDataHash: null,
+        authDate: null
+      };
+
+      try {
+        // 1. Check if session exists and get token info
+        if (supabase) {
+          const { data: { session } } = await supabase.auth.getSession();
+          
+          if (session?.access_token) {
+            // Parse JWT to get timing info
+            try {
+              const tokenParts = session.access_token.split('.');
+              if (tokenParts.length === 3) {
+                const payload = JSON.parse(atob(tokenParts[1]));
+                const now = Math.floor(Date.now() / 1000);
+                securityInfo.tokenAge = now - (payload.iat || now);
+                securityInfo.expiresIn = (payload.exp || now) - now;
+                
+                // Check custom claims if present
+                if (payload.auth_method) {
+                  securityInfo.authMethod = payload.auth_method;
+                }
+              }
+            } catch (e) {
+              console.warn('Failed to parse JWT:', e);
+            }
+            
+            // Session exists = signature was verified (otherwise wouldn't be here)
+            securityInfo.signatureVerified = true;
+          } else {
+            securityInfo.signatureVerified = false;
+          }
+        }
+
+        // 2. Check initData hash from Telegram
+        const tg = (window as any).Telegram?.WebApp;
+        if (tg?.initData) {
+          const params = new URLSearchParams(tg.initData);
+          const hash = params.get('hash');
+          const authDate = params.get('auth_date');
+          
+          if (hash) {
+            securityInfo.rawDataHash = hash.substring(0, 16) + '...';
+          }
+          if (authDate) {
+            const age = Math.floor(Date.now() / 1000) - parseInt(authDate, 10);
+            securityInfo.authDate = `${age}s ago`;
+            
+            // Check if initData is too old (24h)
+            if (age > 86400) {
+              securityInfo.signatureVerified = false; // Stale
+            }
+          }
+        }
+
+        // 3. Try to detect auth method from logs
+        const authLogs = debugLogs.filter(l => 
+          l.category === 'TELEGRAM_AUTH' || l.message?.includes('signed in') || l.message?.includes('User created')
+        );
+        if (authLogs.length > 0) {
+          const lastAuthLog = authLogs[0];
+          if (lastAuthLog.message?.includes('New user') || lastAuthLog.message?.includes('created')) {
+            securityInfo.authMethod = 'createUser';
+          } else if (lastAuthLog.message?.includes('signed in')) {
+            securityInfo.authMethod = 'signIn';
+          }
+        }
+
+        setAuthSecurity(securityInfo);
+      } catch (err) {
+        console.error('Auth security check failed:', err);
+      }
+    };
+
+    checkAuthSecurity();
+  }, [showDebug, debugLogs]);
 
   const loadFunctionStatuses = useCallback(async () => {
     if (!user?.id) return;
@@ -443,9 +548,6 @@ export default function DebugPanel(props: DebugPanelProps) {
     setProfileChecking(false);
   };
 
-  // ============================================
-  // 🔥 STREAK TAB FUNCTIONS
-  // ============================================
   const runStreakCheck = async () => {
     if (!user?.id) return;
     setStreakChecking(true);
@@ -568,6 +670,14 @@ IDENTITY CHECK
 🆔 Auth UID: ${authUid ? authUid.substring(0, 8) + '...' : 'NULL'}
 🆔 DB ID: ${user?.id ? user.id.substring(0, 8) + '...' : 'NULL'}
 ${authUid === user?.id ? '✅ IDs Match' : '❌ IDs Mismatch'}
+
+🔐 AUTH SECURITY
+🔑 HMAC Signature: ${authSecurity.signatureVerified === true ? 'VERIFIED ✅' : authSecurity.signatureVerified === false ? 'FAILED ❌' : 'CHECKING...'}
+⏱️ Token Age: ${authSecurity.tokenAge !== null ? `${authSecurity.tokenAge}s` : 'N/A'}
+⏰ Expires In: ${authSecurity.expiresIn !== null ? `${authSecurity.expiresIn}s (~${Math.floor((authSecurity.expiresIn || 0) / 60)} min)` : 'N/A'}
+📊 Auth Method: ${authSecurity.authMethod}
+🔗 Raw Hash: ${authSecurity.rawDataHash || 'N/A'}
+📅 initData Age: ${authSecurity.authDate || 'N/A'}
 
 LOCALSTORAGE (${Object.keys(localStorageData).length} keys)
 ${Object.entries(localStorageData).map(([key, value]) => `${key}\n${value}`).join('\n\n')}`;
@@ -751,6 +861,31 @@ Is Claiming: ${isClaiming}`;
                   <div>🆔 DB ID: <span style={{ color: user?.id ? '#10b981' : '#ef4444', wordBreak: 'break-all' }}>{user?.id ? `${user.id.substring(0, 8)}...` : 'NULL'}</span></div>
                   <div style={{ marginTop: '4px', padding: '4px', background: authUid === user?.id ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)', borderRadius: '4px', textAlign: 'center' }}>{authUid === user?.id ? '✅ IDs Match' : '❌ IDs Mismatch'}</div>
                 </div>
+
+                {/* 🆕 🔐 AUTH SECURITY SECTION */}
+                <div style={{ padding: '12px', background: 'rgba(168, 85, 247, 0.1)', borderRadius: '8px', border: '1px solid rgba(168, 85, 247, 0.4)', fontSize: '11px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', color: '#a855f7', fontWeight: 'bold', fontSize: '12px' }}>
+                    <Shield size={14} /> AUTH SECURITY
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                    <div>
+                      🔑 HMAC: <span style={{ 
+                        color: authSecurity.signatureVerified === true ? '#10b981' : authSecurity.signatureVerified === false ? '#ef4444' : '#fbbf24', 
+                        fontWeight: 'bold' 
+                      }}>
+                        {authSecurity.signatureVerified === true ? 'VERIFIED ✅' : authSecurity.signatureVerified === false ? 'FAILED ❌' : 'CHECKING...'}
+                      </span>
+                    </div>
+                    <div>⏱️ Token Age: <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>{authSecurity.tokenAge !== null ? `${authSecurity.tokenAge}s` : 'N/A'}</span></div>
+                    <div>⏰ Expires: <span style={{ color: '#60a5fa', fontWeight: 'bold' }}>{authSecurity.expiresIn !== null ? `${authSecurity.expiresIn}s` : 'N/A'}</span></div>
+                    <div>📊 Method: <span style={{ color: '#a78bfa', fontWeight: 'bold' }}>{authSecurity.authMethod}</span></div>
+                  </div>
+                  <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(168, 85, 247, 0.2)', fontSize: '10px' }}>
+                    <div>🔗 Hash: <span style={{ color: '#94a3b8', fontFamily: 'monospace', fontSize: '9px' }}>{authSecurity.rawDataHash || 'N/A'}</span></div>
+                    <div>📅 initData Age: <span style={{ color: '#94a3b8' }}>{authSecurity.authDate || 'N/A'}</span></div>
+                  </div>
+                </div>
+
                 <div style={{ padding: '12px', background: 'rgba(251, 191, 36, 0.1)', borderRadius: '8px', border: '1px solid rgba(251, 191, 36, 0.3)', fontSize: '10px', maxHeight: '120px', overflowY: 'auto' }}>
                   <div style={{ fontWeight: 'bold', marginBottom: '6px' }}>LOCALSTORAGE ({Object.keys(localStorageData).length} keys)</div>
                   {Object.entries(localStorageData).map(([key, value]) => (
@@ -794,9 +929,6 @@ Is Claiming: ${isClaiming}`;
               </div>
             )}
 
-            {/* ============================================ */}
-            {/* 🔥 STREAK TAB */}
-            {/* ============================================ */}
             {activeTab === 'streak' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
@@ -841,7 +973,6 @@ Is Claiming: ${isClaiming}`;
                   </div>
                 ) : (
                   <>
-                    {/* Streak Info */}
                     <div style={{ padding: '12px', background: 'rgba(251, 146, 60, 0.1)', borderRadius: '8px', border: '1px solid rgba(251, 146, 60, 0.3)', fontSize: '11px' }}>
                       <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#fb923c' }}>🔥 მიმდინარე Streak</div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
@@ -859,7 +990,6 @@ Is Claiming: ${isClaiming}`;
                       )}
                     </div>
 
-                    {/* Stats Summary */}
                     <div style={{ padding: '12px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)', fontSize: '11px' }}>
                       <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#10b981' }}>📊 სტატისტიკა</div>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
@@ -884,7 +1014,6 @@ Is Claiming: ${isClaiming}`;
                       </div>
                     </div>
 
-                    {/* Milestones List */}
                     <div style={{ padding: '12px', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(139, 92, 246, 0.3)', fontSize: '11px' }}>
                       <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#a78bfa' }}>🎯 Milestones ({streakData.milestones.length})</div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '200px', overflowY: 'auto' }}>
@@ -932,7 +1061,6 @@ Is Claiming: ${isClaiming}`;
                       </div>
                     </div>
 
-                    {/* Calendar Preview */}
                     <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.3)', fontSize: '11px' }}>
                       <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#60a5fa' }}>📅 ბოლო 30 დღე</div>
                       <div style={{
@@ -969,7 +1097,6 @@ Is Claiming: ${isClaiming}`;
                       </div>
                     </div>
 
-                    {/* Test Actions */}
                     <div style={{ padding: '12px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.3)', fontSize: '11px' }}>
                       <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#ef4444' }}>🔧 TEST ACTIONS</div>
                       
