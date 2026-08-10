@@ -1,6 +1,5 @@
 /* ============================================
    HOME SCREEN - RESPONSIVE GAMIFIED DASHBOARD
-   Perfect 52px Header Alignment Edition
    ============================================ */
 
    :root {
@@ -12,13 +11,12 @@
   .home-screen {
     width: 100%;
     padding: 0 var(--screen-padding);
+    padding-bottom: 80px; /* ✅ FIX: space for bottom nav */
     max-width: var(--max-width);
     margin: 0 auto;
     color: #fff;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
     background: radial-gradient(ellipse at 50% 0%, #14101c 0%, #0a0600 55%, #07050a 100%);
-    min-height: 100vh;
-    overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     box-sizing: border-box;
@@ -1302,7 +1300,7 @@
   }
   
   /* ============================================
-     RESPONSIVE
+     RESPONSIVE - ✅ FIXED: removed 4x1 action grid bug
      ============================================ */
   @media (max-width: 360px) {
     .quests-and-actions-split {
@@ -1314,10 +1312,8 @@
       flex: 1 1 100%;
     }
     
-    .action-grid-vertical {
-      grid-template-columns: repeat(4, 1fr);
-      grid-template-rows: 1fr;
-    }
+    /* ✅ REMOVED: .action-grid-vertical 4x1 rule (was causing 4 buttons in 1 row) */
+    /* Action grid stays 2x2 on all screen sizes */
     
     .card-of-day-content {
       flex-direction: column;
@@ -1338,6 +1334,7 @@
   @media (min-width: 480px) {
     .home-screen {
       padding: 0 var(--screen-padding);
+      padding-bottom: 80px; /* ✅ FIX: space for bottom nav */
     }
     
     .quick-grid {
