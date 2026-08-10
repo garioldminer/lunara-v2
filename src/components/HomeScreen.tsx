@@ -607,16 +607,17 @@ export default function HomeScreen({ onNavigate }: Props) {
     setUnclaimedMilestoneCount(0);
   };
 
-  // ✅ FIX: Telegram WebApp expand + disable vertical swipes (pull-to-refresh)
+  // ✅ FIX: Telegram WebApp - TypeScript-safe with optional chaining
   useEffect(() => {
-    if (window.Telegram?.WebApp) {
-      window.Telegram.WebApp.ready();
-      window.Telegram.WebApp.expand();
-      try {
-        window.Telegram.WebApp.disableVerticalSwipes();
-      } catch (e) {
-        // ignore
+    try {
+      const tg = (window as any).Telegram?.WebApp;
+      if (tg) {
+        tg.ready?.();
+        tg.expand?.();
+        tg.disableVerticalSwipes?.();
       }
+    } catch (e) {
+      // silently ignore - not in Telegram context
     }
   }, []);
 
