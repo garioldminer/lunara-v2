@@ -9,7 +9,6 @@
     --max-width: 480px;
   }
   
-  /* 🎯 padding-top/bottom ამოღებულია - handled by .screen-wrapper in App.css */
   .home-screen {
     width: 100%;
     padding: 0 var(--screen-padding);
@@ -246,6 +245,7 @@
      ============================================ */
   .quests-and-actions-split {
     display: flex;
+    flex-direction: row;
     gap: var(--section-gap);
     margin-bottom: var(--section-gap);
     width: 100%;
@@ -376,6 +376,27 @@
     flex-shrink: 0;
   }
   
+  /* 🆕 Quest claim button compact */
+  .quest-claim-btn-compact {
+    background: #10b981;
+    border: none;
+    border-radius: 4px;
+    color: #fff;
+    padding: 2px 6px;
+    font-size: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    transition: all 0.2s;
+  }
+  
+  .quest-claim-btn-compact:disabled {
+    background: #6b7280;
+    cursor: not-allowed;
+  }
+  
   .action-buttons-panel {
     flex: 2;
     background: linear-gradient(145deg, #1c1712 0%, #12100c 100%);
@@ -423,7 +444,8 @@
     height: 20px;
   }
   
-  .action-badge-v {
+  /* 🆕 General action badge (replaces inline divs) */
+  .action-badge {
     position: absolute;
     bottom: 3px;
     right: 3px;
@@ -433,6 +455,27 @@
     font-weight: 700;
     padding: 1px 3px;
     border-radius: 3px;
+    z-index: 3;
+  }
+  
+  .action-badge.premium {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  }
+  
+  /* 🆕 Milestone badge (unclaimed milestones) */
+  .milestone-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 2px 5px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.6);
+    border: 1.5px solid #1a1510;
+    z-index: 5;
   }
   
   .action-btn-vertical:not(.streak-btn-v):not(.rank-btn-v):not(.upgrade-btn-v):not(.subscription-btn-v) {
@@ -462,11 +505,6 @@
     color: #FFD700 !important;
   }
   
-  .subscription-btn-v .action-badge-v {
-    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-    color: #0a0600;
-  }
-  
   .action-btn-vertical.claimed {
     opacity: 0.5;
     cursor: not-allowed;
@@ -477,7 +515,7 @@
     filter: none;
   }
   
-  .action-btn-vertical.claimed .action-badge-v {
+  .action-btn-vertical.claimed .action-badge {
     display: none;
   }
   
@@ -506,6 +544,7 @@
   
   .card-of-day-content {
     display: flex;
+    flex-direction: row;
     align-items: center;
     gap: 0;
     position: relative;
@@ -540,6 +579,82 @@
   
   .card-of-day-banner:active .card-image-tilted {
     transform: rotateY(-3deg) rotateX(1deg) rotate(2deg) translateY(-3px);
+  }
+  
+  /* 🆕 Card back container */
+  .card-back-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    border: 2px solid #C5A059;
+    box-shadow: 
+      0 2px 4px rgba(0, 0, 0, 0.4),
+      0 8px 16px rgba(0, 0, 0, 0.5),
+      0 16px 32px rgba(0, 0, 0, 0.6),
+      0 0 20px rgba(197, 160, 89, 0.3);
+    overflow: hidden;
+  }
+  
+  .card-back-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  
+  /* 🆕 Card shimmer effect */
+  .card-shimmer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+    transform: skewX(-20deg);
+    pointer-events: none;
+  }
+  
+  /* 🆕 Card tap label */
+  .card-tap-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(10, 8, 20, 0.7);
+    backdrop-filter: blur(4px);
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(197, 160, 89, 0.6);
+    color: #C5A059;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+  
+  /* 🆕 Card front container */
+  .card-front-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    border: 2px solid #C5A059;
+    box-shadow: 
+      0 2px 4px rgba(0, 0, 0, 0.4),
+      0 8px 16px rgba(0, 0, 0, 0.5),
+      0 16px 32px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+  }
+  
+  .card-front-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: grayscale(30%) opacity(0.85);
+    transition: transform 0.3s ease;
   }
   
   .card-image-large {
@@ -661,6 +776,16 @@
     min-width: 0;
   }
   
+  /* 🆕 Card label */
+  .card-label {
+    font-size: clamp(8px, 2vw, 9px);
+    color: #C5A059;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    opacity: 0.7;
+    font-weight: 600;
+  }
+  
   .card-day-label {
     font-size: clamp(8px, 2vw, 9px);
     color: #C5A059;
@@ -677,6 +802,15 @@
     letter-spacing: 0.5px;
     font-weight: 700;
     line-height: 1.2;
+  }
+  
+  /* 🆕 Card description */
+  .card-description {
+    margin: 0;
+    font-size: clamp(10px, 2.8vw, 12px);
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+    line-height: 1.3;
   }
   
   .card-meaning {
@@ -731,7 +865,6 @@
     gap: 7px;
   }
   
-  /* ✨ Base mystical tarot card */
   .quick-item {
     border-radius: 14px;
     display: flex;
@@ -743,9 +876,12 @@
     transition: all 0.25s ease;
     position: relative;
     overflow: hidden;
+    background: linear-gradient(160deg, rgba(var(--glow-color-rgb, 197 160 89), 0.14) 0%, rgba(16, 13, 10, 0.97) 60%);
+    border: 1px solid rgba(var(--glow-color-rgb, 197 160 89), 0.28);
+    padding: clamp(10px, 3vw, 14px) 4px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   }
   
-  /* ✨ Ornate tarot card corners (top-left + bottom-right) */
   .quick-item::before {
     content: '';
     position: absolute;
@@ -771,6 +907,15 @@
     opacity: 0.95;
   }
   
+  /* 🆕 Quick icon, label, sublabel */
+  .quick-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+  }
+  
   .q-icon-wrapper {
     display: flex;
     align-items: center;
@@ -780,10 +925,29 @@
     filter: drop-shadow(0 0 8px var(--glow-color, #C5A059));
   }
   
+  .quick-label {
+    font-size: clamp(9px, 2.5vw, 10px);
+    color: #fff;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.1;
+    position: relative;
+    z-index: 2;
+  }
+  
   .q-label { 
     font-size: clamp(9px, 2.5vw, 10px);
     color: #fff;
     font-weight: 600;
+    text-align: center;
+    line-height: 1.1;
+    position: relative;
+    z-index: 2;
+  }
+  
+  .quick-sublabel {
+    font-size: clamp(8px, 2vw, 9px);
+    color: #b3a68c;
     text-align: center;
     line-height: 1.1;
     position: relative;
@@ -799,7 +963,6 @@
     z-index: 2;
   }
   
-  /* Premium items (Celtic Cross, Horseshoe, Relationship) */
   .quick-item.premium-item {
     background: linear-gradient(160deg, rgba(197, 160, 89, 0.22) 0%, rgba(16, 13, 10, 0.97) 60%);
     border: 1px solid rgba(197, 160, 89, 0.5);
@@ -811,21 +974,20 @@
   
   .premium-badge {
     position: absolute;
-    top: -4px;
-    right: -4px;
+    top: 5px;
+    right: 5px;
     background: linear-gradient(135deg, #C5A059 0%, #8B6914 100%);
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 11px;
-    box-shadow: 0 2px 8px rgba(197, 160, 89, 0.5);
+    font-size: 10px;
+    box-shadow: 0 2px 8px rgba(197, 160, 89, 0.6), 0 0 0 1.5px rgba(26, 21, 16, 0.95);
     z-index: 10;
   }
   
-  /* Admin item */
   .quick-item.admin-item {
     background: linear-gradient(160deg, rgba(239, 68, 68, 0.2) 0%, rgba(16, 13, 10, 0.97) 60%);
     border: 1px solid rgba(239, 68, 68, 0.5);
@@ -835,12 +997,12 @@
       0 0 15px rgba(239, 68, 68, 0.2);
   }
   
+  .quick-item.admin-item .quick-icon,
   .quick-item.admin-item .q-icon-wrapper {
     color: #ef4444 !important;
     filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.7));
   }
   
-  /* Services item */
   .quick-item.paywall-item,
   .quick-item.services-item {
     background: linear-gradient(160deg, rgba(255, 215, 0, 0.22) 0%, rgba(16, 13, 10, 0.97) 60%);
@@ -877,25 +1039,28 @@
     100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
   }
   
+  .quick-item.services-item .quick-icon,
   .quick-item.services-item .q-icon-wrapper,
+  .quick-item.paywall-item .quick-icon,
   .quick-item.paywall-item .q-icon-wrapper {
     color: #FFD700 !important;
     filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.7));
   }
   
+  .services-badge,
   .paywall-badge {
     position: absolute;
-    top: -4px;
-    right: -4px;
+    top: 5px;
+    right: 5px;
     background: linear-gradient(135deg, #FFD700 0%, #FF8C00 100%);
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 11px;
-    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
+    font-size: 10px;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.5), 0 0 0 1.5px rgba(26, 21, 16, 0.95);
     z-index: 10;
     animation: paywallPulse 2s ease-in-out infinite;
   }
@@ -909,6 +1074,222 @@
       transform: scale(1.1);
       box-shadow: 0 4px 12px rgba(255, 215, 0, 0.7);
     }
+  }
+  
+  /* ============================================
+     5. QUEST MODAL
+     ============================================ */
+  .quest-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  
+  .quest-modal-content {
+    background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
+    border: 1px solid #332a1a;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 400px;
+    max-height: 80vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .quest-modal-header {
+    padding: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .quest-modal-header h3 {
+    margin: 0;
+    color: #C5A059;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .quest-modal-close {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px;
+  }
+  
+  .quest-modal-body {
+    padding: 16px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  
+  .quest-modal-item {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  
+  .quest-modal-item.claimed {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.3);
+    opacity: 0.7;
+  }
+  
+  .quest-modal-item:last-child {
+    margin-bottom: 0;
+  }
+  
+  .quest-modal-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+  }
+  
+  .quest-modal-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .quest-modal-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(197, 160, 89, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #C5A059;
+    flex-shrink: 0;
+  }
+  
+  .quest-modal-item:not(.claimed) .quest-modal-icon {
+    background: rgba(197, 160, 89, 0.1);
+    color: #C5A059;
+  }
+  
+  .quest-modal-title {
+    font-size: 13px;
+    color: #fff;
+    font-weight: 600;
+  }
+  
+  .quest-modal-desc {
+    font-size: 10px;
+    color: #94a3b8;
+  }
+  
+  .quest-modal-reward {
+    font-size: 11px;
+    color: #fbbf24;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  
+  .quest-modal-progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  
+  .progress-bar-modal {
+    flex: 1;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  
+  .progress-fill-modal {
+    height: 100%;
+    background: linear-gradient(90deg, #C5A059, #ffe566);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+  
+  .quest-modal-progress-text {
+    font-size: 11px;
+    color: #b3a68c;
+    min-width: 30px;
+    text-align: right;
+  }
+  
+  .quest-modal-claim-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #10b981, #059669);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    padding: 8px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s;
+  }
+  
+  .quest-modal-claim-btn:disabled {
+    background: #6b7280;
+    cursor: not-allowed;
+  }
+  
+  .quest-modal-completed {
+    width: 100%;
+    background: rgba(16, 185, 129, 0.2);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    border-radius: 8px;
+    padding: 8px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #10b981;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  
+  .quest-modal-all-complete {
+    text-align: center;
+    padding: 16px;
+    background: rgba(16, 185, 129, 0.1);
+    border-radius: 12px;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    margin-top: 16px;
+  }
+  
+  .quest-modal-all-complete-title {
+    font-size: 14px;
+    color: #10b981;
+    font-weight: bold;
+    margin-bottom: 4px;
+  }
+  
+  .quest-modal-comeback {
+    font-size: 11px;
+    color: #94a3b8;
   }
   
   /* ============================================
@@ -961,7 +1342,6 @@
     }
   }
   
-  /* 🎯 padding განახლებული - მხოლოდ left/right */
   @media (min-width: 480px) {
     .home-screen {
       padding: 0 var(--screen-padding);
