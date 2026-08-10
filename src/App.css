@@ -7,6 +7,7 @@
     overflow-x: hidden;
     position: relative;
     overscroll-behavior: none; /* 🎯 iOS rubber-band თავიდან */
+    -webkit-overflow-scrolling: touch; /* ✅ FIX: smooth native scroll */
   }
   
   /* ============================================
@@ -59,10 +60,13 @@
     scroll-behavior: smooth;
   }
   
-  /* Prevent horizontal scroll */
-  body {
+  /* ✅ FIX: block rubber-band overscroll on iOS WebView (html + body) */
+  html, body {
     max-width: 100vw;
     overflow-x: hidden;
+    overscroll-behavior: none;
+    -webkit-overscroll-behavior: none;
+    height: auto;
   }
   
   /* ============================================

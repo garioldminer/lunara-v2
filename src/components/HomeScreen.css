@@ -963,19 +963,20 @@
       0 0 15px rgba(197, 160, 89, 0.15);
   }
   
+  /* ✅ FIX: badge resized 20px→16px, repositioned 5px→3px */
   .premium-badge {
     position: absolute;
-    top: 5px;
-    right: 5px;
+    top: 3px;
+    right: 3px;
     background: linear-gradient(135deg, #C5A059 0%, #8B6914 100%);
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 10px;
-    box-shadow: 0 2px 8px rgba(197, 160, 89, 0.6), 0 0 0 1.5px rgba(26, 21, 16, 0.95);
+    font-size: 8px;
+    box-shadow: 0 1px 4px rgba(197, 160, 89, 0.6), 0 0 0 1px rgba(26, 21, 16, 0.95);
     z-index: 10;
   }
   
@@ -1038,20 +1039,21 @@
     filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.7));
   }
   
+  /* ✅ FIX: badge resized 20px→16px, repositioned 5px→3px */
   .services-badge,
   .paywall-badge {
     position: absolute;
-    top: 5px;
-    right: 5px;
+    top: 3px;
+    right: 3px;
     background: linear-gradient(135deg, #FFD700 0%, #FF8C00 100%);
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 10px;
-    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.5), 0 0 0 1.5px rgba(26, 21, 16, 0.95);
+    font-size: 8px;
+    box-shadow: 0 1px 4px rgba(255, 215, 0, 0.5), 0 0 0 1px rgba(26, 21, 16, 0.95);
     z-index: 10;
     animation: paywallPulse 2s ease-in-out infinite;
   }
@@ -1059,11 +1061,11 @@
   @keyframes paywallPulse {
     0%, 100% {
       transform: scale(1);
-      box-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
+      box-shadow: 0 1px 4px rgba(255, 215, 0, 0.5);
     }
     50% {
       transform: scale(1.1);
-      box-shadow: 0 4px 12px rgba(255, 215, 0, 0.7);
+      box-shadow: 0 2px 8px rgba(255, 215, 0, 0.7);
     }
   }
   

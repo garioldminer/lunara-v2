@@ -61,7 +61,6 @@ const getZodiacSymbol = (signName: string): string => {
   return ZODIAC_SYMBOLS[signName.toLowerCase()] || '✧';
 };
 
-// 🎨 Convert hex to RGB space-separated for CSS gradients
 const hexToRgbVars = (hex: string): string => {
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
@@ -69,7 +68,6 @@ const hexToRgbVars = (hex: string): string => {
   return `${r} ${g} ${b}`;
 };
 
-// 🎨 Convert hex to rgba() string (works in ALL browsers including Telegram WebView)
 const hexToRgba = (hex: string, alpha: number): string => {
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
@@ -1337,9 +1335,7 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* ✅ FIX: inline flexDirection + gap + alignItems (works in all browsers) */}
       <div className="quests-and-actions-split" style={{ display: 'flex', flexDirection: 'row', gap: '2px', marginBottom: '2px', width: '100%', alignItems: 'stretch' }}>
-        {/* ✅ FIX: inline flex 60% */}
         <div className="daily-quests-compact" style={{ flex: '0 0 60%', minWidth: 0 }} onClick={() => setShowQuestModal(true)}>
           <div className="quests-header-compact">
             <h3>{t('home.dailyQuests')}</h3>
@@ -1382,7 +1378,6 @@ export default function HomeScreen({ onNavigate }: Props) {
           </div>
         </div>
 
-        {/* ✅ FIX: inline flex 40% */}
         <div className="action-buttons-panel" style={{ flex: '0 0 calc(40% - 2px)', minWidth: 0 }}>
           <div className="action-grid-vertical">
             <button className={`action-btn-vertical ${rewardClaimed ? 'claimed' : ''}`} onClick={handleClaimReward} disabled={rewardClaimed || isClaiming}>
@@ -1503,9 +1498,7 @@ export default function HomeScreen({ onNavigate }: Props) {
         className="card-of-day-banner clickable-card" 
         onClick={() => onNavigate && onNavigate('daily-card')}
       >
-        {/* ✅ FIX: inline flexDirection */}
         <div className="card-of-day-content" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '0' }}>
-          {/* ✅ FIX: inline flex 45% */}
           <div className="card-half-left" style={{ flex: '0 0 45%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px 0' }}>
             
             <motion.div 
@@ -1552,7 +1545,6 @@ export default function HomeScreen({ onNavigate }: Props) {
             </motion.div>
           </div>
           
-          {/* ✅ FIX: inline flex 55% */}
           <div className="card-half-right" style={{ flex: '0 0 55%', paddingLeft: '12px', display: 'flex', alignItems: 'center' }}>
             <div className="card-info-section">
               {!isDailyRevealed ? (
@@ -1587,7 +1579,6 @@ export default function HomeScreen({ onNavigate }: Props) {
               style={{ 
                 '--glow-color': action.color,
                 '--glow-color-rgb': hexToRgbVars(action.color),
-                // ✅ FIX: inline styles work in ALL browsers (no rgba() CSS var hack)
                 background: `linear-gradient(160deg, ${hexToRgba(action.color, 0.14)} 0%, rgba(16, 13, 10, 0.97) 60%)`,
                 border: `1px solid ${hexToRgba(action.color, (action as any).isPremium || (action as any).isServices ? 0.45 : 0.28)}`,
                 borderRadius: '14px',
@@ -1599,7 +1590,7 @@ export default function HomeScreen({ onNavigate }: Props) {
                 color: '#fff',
                 cursor: 'pointer',
                 position: 'relative',
-                overflow: 'hidden',
+                overflow: 'visible',
                 boxShadow: '0 4px 14px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06)',
                 transition: 'all 0.25s ease'
               } as React.CSSProperties} 
