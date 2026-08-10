@@ -253,7 +253,7 @@
   }
   
   .daily-quests-compact {
-    flex: 3;
+    flex: 0 0 60%;
     background: linear-gradient(145deg, #1c1712 0%, #12100c 100%);
     border: 1px solid rgba(197, 160, 89, 0.22);
     border-radius: 14px;
@@ -376,7 +376,6 @@
     flex-shrink: 0;
   }
   
-  /* 🆕 Quest claim button compact */
   .quest-claim-btn-compact {
     background: #10b981;
     border: none;
@@ -398,7 +397,7 @@
   }
   
   .action-buttons-panel {
-    flex: 2;
+    flex: 0 0 calc(40% - 2px);
     background: linear-gradient(145deg, #1c1712 0%, #12100c 100%);
     border: 1px solid rgba(197, 160, 89, 0.22);
     border-radius: 14px;
@@ -444,7 +443,6 @@
     height: 20px;
   }
   
-  /* 🆕 General action badge (replaces inline divs) */
   .action-badge {
     position: absolute;
     bottom: 3px;
@@ -462,7 +460,6 @@
     background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
   }
   
-  /* 🆕 Milestone badge (unclaimed milestones) */
   .milestone-badge {
     position: absolute;
     top: -4px;
@@ -486,7 +483,10 @@
     color: #C5A059;
   }
   
-  .streak-btn-v { --glow-color: #ff6b35; }
+  .streak-btn-v { 
+    --glow-color: #ff6b35; 
+    overflow: visible;
+  }
   .streak-btn-v .action-icon-v { color: #ff6b35; }
   
   .rank-btn-v { --glow-color: #ffd700; }
@@ -581,7 +581,6 @@
     transform: rotateY(-3deg) rotateX(1deg) rotate(2deg) translateY(-3px);
   }
   
-  /* 🆕 Card back container */
   .card-back-container {
     position: relative;
     width: 100%;
@@ -603,7 +602,6 @@
     display: block;
   }
   
-  /* 🆕 Card shimmer effect */
   .card-shimmer {
     position: absolute;
     top: 0;
@@ -615,7 +613,6 @@
     pointer-events: none;
   }
   
-  /* 🆕 Card tap label */
   .card-tap-label {
     position: absolute;
     top: 50%;
@@ -634,7 +631,6 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   }
   
-  /* 🆕 Card front container */
   .card-front-container {
     position: relative;
     width: 100%;
@@ -776,7 +772,6 @@
     min-width: 0;
   }
   
-  /* 🆕 Card label */
   .card-label {
     font-size: clamp(8px, 2vw, 9px);
     color: #C5A059;
@@ -804,7 +799,6 @@
     line-height: 1.2;
   }
   
-  /* 🆕 Card description */
   .card-description {
     margin: 0;
     font-size: clamp(10px, 2.8vw, 12px);
@@ -907,7 +901,6 @@
     opacity: 0.95;
   }
   
-  /* 🆕 Quick icon, label, sublabel */
   .quick-icon {
     display: flex;
     align-items: center;

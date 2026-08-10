@@ -24,7 +24,6 @@ import './HomeScreen.css';
 
 // ==========================================
 // 🕐 ISOLATED COUNTDOWN TIMER
-// ✅ Fix: Re-renders ONLY itself, not entire HomeScreen
 // ==========================================
 function CountdownTimer({ style }: { style?: React.CSSProperties }) {
   const [timeLeft, setTimeLeft] = useState('00:00:00');
@@ -49,7 +48,7 @@ function CountdownTimer({ style }: { style?: React.CSSProperties }) {
 }
 
 // ==========================================
-// ✨ Zodiac helper for HomeScreen
+// ✨ Helpers
 // ==========================================
 const ZODIAC_SYMBOLS: Record<string, string> = {
   aries: '♈', taurus: '♉', gemini: '♊', cancer: '♋',
@@ -60,6 +59,14 @@ const ZODIAC_SYMBOLS: Record<string, string> = {
 const getZodiacSymbol = (signName: string): string => {
   if (!signName) return '✧';
   return ZODIAC_SYMBOLS[signName.toLowerCase()] || '✧';
+};
+
+// 🆕 🎨 Convert hex to RGB space-separated for CSS gradients
+const hexToRgbVars = (hex: string): string => {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `${r} ${g} ${b}`;
 };
 
 const getXPToNextLevel = (level: number): number => {
@@ -1556,24 +1563,24 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </motion.div>
 
+      {/* ✨ MYSTICAL TAROT CARDS - Quick Actions */}
       <div className="quick-access">
         <div className="quick-grid">
           {quickActions.map((action) => (
             <button 
               key={action.action} 
               className={`quick-item ${action.isPremium ? 'premium-item' : ''} ${action.action === 'Admin' ? 'admin-item' : ''} ${(action as any).isServices ? 'services-item' : ''}`} 
-              style={{ '--glow-color': action.color } as React.CSSProperties} 
+              style={{ 
+                '--glow-color': action.color,
+                '--glow-color-rgb': hexToRgbVars(action.color)
+              } as React.CSSProperties} 
               onClick={() => handleQuickAction(action.action)}
             >
               {action.isPremium && (
-                <div className="premium-badge">
-                  💎
-                </div>
+                <div className="premium-badge">💎</div>
               )}
               {(action as any).isServices && (
-                <div className="services-badge">
-                  🛍️
-                </div>
+                <div className="services-badge">🛍️</div>
               )}
               <div className="quick-icon" style={{ filter: `drop-shadow(0 0 6px ${action.color})`, color: action.color }}>{action.icon}</div>
               <span className="quick-label">{action.label}</span>
