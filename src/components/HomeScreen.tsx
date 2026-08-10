@@ -23,6 +23,32 @@ import LeaderboardModal from './LeaderboardModal';
 import './HomeScreen.css';
 
 // ==========================================
+// 🕐 ISOLATED COUNTDOWN TIMER
+// ✅ Fix: Re-renders ONLY itself, not entire HomeScreen
+// ==========================================
+function CountdownTimer({ style }: { style?: React.CSSProperties }) {
+  const [timeLeft, setTimeLeft] = useState('00:00:00');
+  
+  useEffect(() => {
+    const tick = () => {
+      const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setHours(24, 0, 0, 0);
+      const diff = tomorrow.getTime() - now.getTime();
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      setTimeLeft(`${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+  
+  return <span style={style}>{timeLeft}</span>;
+}
+
+// ==========================================
 // ✨ Zodiac helper for HomeScreen
 // ==========================================
 const ZODIAC_SYMBOLS: Record<string, string> = {
@@ -36,9 +62,6 @@ const getZodiacSymbol = (signName: string): string => {
   return ZODIAC_SYMBOLS[signName.toLowerCase()] || '✧';
 };
 
-// ==========================================
-// ✨ Color helper - Mystical Tarot Cards
-// ==========================================
 const hexToRgba = (hex: string, alpha: number): string => {
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
@@ -203,7 +226,10 @@ export default function HomeScreen({ onNavigate }: Props) {
   const { user, setUser } = useUser();
   const [rewardClaimed, setRewardClaimed] = useState(false);
   const [isClaiming, setIsClaiming] = useState(false);
-  const [timeLeft, setTimeLeft] = useState('14:32:18');
+  
+  // ✅ REMOVED: timeLeft state (now in isolated CountdownTimer component)
+  // const [timeLeft, setTimeLeft] = useState('14:32:18');
+  
   const [dailyCard, setDailyCard] = useState<typeof tarotCards[0] | null>(null);
   const [isDailyReversed, setIsDailyReversed] = useState(false);
   const [isDailyRevealed, setIsDailyRevealed] = useState(false);
@@ -862,19 +888,20 @@ export default function HomeScreen({ onNavigate }: Props) {
     return '';
   };
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const now = new Date();
-      const tomorrow = new Date(now);
-      tomorrow.setHours(24, 0, 0, 0);
-      const diff = tomorrow.getTime() - now.getTime();
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      setTimeLeft(`${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+  // ✅ REMOVED: Timer useEffect (now in isolated CountdownTimer component)
+  // useEffect(() => {
+  //   const timer = setInterval(() => {
+  //     const now = new Date();
+  //     const tomorrow = new Date(now);
+  //     tomorrow.setHours(24, 0, 0, 0);
+  //     const diff = tomorrow.getTime() - now.getTime();
+  //     const hours = Math.floor(diff / (1000 * 60 * 60));
+  //     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  //     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+  //     setTimeLeft(`${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`);
+  //   }, 1000);
+  //   return () => clearInterval(timer);
+  // }, []);
 
   const handleClaimReward = async () => {
     if (rewardClaimed || isClaiming) {
@@ -1320,36 +1347,38 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      <div className="quests-and-actions-split" style={{ display: 'flex', flexDirection: 'row', gap: '2px', marginBottom: '2px', width: '100%', alignItems: 'stretch' }}>
-        <div className="daily-quests-compact" style={{ flex: '0 0 60%', minWidth: 0, background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)', border: '1px solid #332a1a', borderRadius: '14px', padding: '8px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)', display: 'flex', flexDirection: 'column', cursor: 'pointer' }} onClick={() => setShowQuestModal(true)}>
-          <div className="quests-header-compact" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', padding: '0 2px' }}>
-            <h3 style={{ margin: 0, fontSize: '9px', color: '#C5A059', letterSpacing: '1px', fontWeight: 700, textTransform: 'uppercase' }}>{t('home.dailyQuests')}</h3>
-            <span style={{ fontSize: '9px', color: '#b3a68c', fontFamily: 'monospace' }}>{timeLeft}</span>
+      {/* ✅ FIX: Removed inline flexDirection - now CSS controls responsive layout */}
+      <div className="quests-and-actions-split">
+        <div className="daily-quests-compact" onClick={() => setShowQuestModal(true)}>
+          <div className="quests-header-compact">
+            <h3>{t('home.dailyQuests')}</h3>
+            {/* ✅ FIX: Use isolated CountdownTimer instead of timeLeft state */}
+            <CountdownTimer style={{ fontSize: '9px', color: '#b3a68c', fontFamily: 'monospace' }} />
           </div>
-          <div className="quest-list-compact" style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, justifyContent: 'center' }}>
+          <div className="quest-list-compact">
             {questsLoading ? (
               <div style={{ textAlign: 'center', color: '#b3a68c', fontSize: '9px', padding: '10px' }}>{t('home.loading')}</div>
             ) : dailyQuests.length === 0 ? (
               <div style={{ textAlign: 'center', color: '#b3a68c', fontSize: '9px', padding: '10px' }}>{t('home.noQuests')}</div>
             ) : activeDailyQuest ? (
-              <div className="quest-item-compact" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 6px', background: activeDailyQuest.isClaimable ? 'rgba(16, 185, 129, 0.1)' : 'rgba(197, 160, 89, 0.05)', borderRadius: '6px', border: `1px solid ${activeDailyQuest.isClaimable ? 'rgba(16, 185, 129, 0.3)' : 'rgba(197, 160, 89, 0.08)'}` }}>
-                <div className="quest-icon-compact" style={{ color: activeDailyQuest.isClaimable ? '#10b981' : '#C5A059', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '16px', height: '16px' }}>
+              <div className="quest-item-compact">
+                <div className="quest-icon-compact" style={{ color: activeDailyQuest.isClaimable ? '#10b981' : '#C5A059' }}>
                   {getQuestIcon(activeDailyQuest.quest?.action_type || '')}
                 </div>
-                <div className="quest-info-compact" style={{ flex: 1, minWidth: 0 }}>
-                  <span className="quest-name-compact" style={{ fontSize: '9px', color: '#fff', fontWeight: 500, display: 'block', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <div className="quest-info-compact">
+                  <span className="quest-name-compact">
                     {activeDailyQuest.quest?.title || t('home.quest')}
                   </span>
-                  <div className="quest-progress-compact" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <div className="progress-bar-compact" style={{ flex: 1, height: '3px', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '2px', overflow: 'hidden' }}>
-                      <div className="progress-fill-compact" style={{ width: `${Math.min((activeDailyQuest.current_progress / (activeDailyQuest.quest?.target_count || 1)) * 100, 100)}%`, height: '100%', background: activeDailyQuest.isClaimable ? '#10b981' : 'linear-gradient(90deg, #C5A059, #ffe566)', borderRadius: '2px', boxShadow: '0 0 4px rgba(197, 160, 89, 0.5)' }}></div>
+                  <div className="quest-progress-compact">
+                    <div className="progress-bar-compact">
+                      <div className="progress-fill-compact" style={{ width: `${Math.min((activeDailyQuest.current_progress / (activeDailyQuest.quest?.target_count || 1)) * 100, 100)}%` }}></div>
                     </div>
                     <span style={{ fontSize: '8px', color: '#b3a68c', minWidth: '18px' }}>{activeDailyQuest.current_progress}/{activeDailyQuest.quest?.target_count}</span>
                   </div>
                 </div>
-                <div className="quest-reward-compact" style={{ fontSize: '9px', color: activeDailyQuest.isClaimable ? '#10b981' : '#C5A059', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '1px', flexShrink: 0 }}>
+                <div className="quest-reward-compact" style={{ color: activeDailyQuest.isClaimable ? '#10b981' : '#C5A059' }}>
                   {activeDailyQuest.isClaimable ? (
-                    <button onClick={(e) => { e.stopPropagation(); handleClaimQuest(activeDailyQuest); }} disabled={isClaimingQuest} style={{ background: '#10b981', border: 'none', borderRadius: '4px', color: '#fff', padding: '2px 6px', fontSize: '8px', fontWeight: 'bold', cursor: isClaimingQuest ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                    <button onClick={(e) => { e.stopPropagation(); handleClaimQuest(activeDailyQuest); }} disabled={isClaimingQuest} className="quest-claim-btn-compact">
                       {isClaimingQuest ? <RefreshCw size={10} className="spin" /> : t('home.claim')}
                     </button>
                   ) : (
@@ -1363,9 +1392,9 @@ export default function HomeScreen({ onNavigate }: Props) {
           </div>
         </div>
 
-        <div className="action-buttons-panel" style={{ flex: '0 0 calc(40% - 2px)', minWidth: 0, background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)', border: '1px solid #332a1a', borderRadius: '14px', padding: '6px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)', display: 'flex' }}>
-          <div className="action-grid-vertical" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: '4px', width: '100%', height: '100%' }}>
-            <button className={`action-btn-vertical ${rewardClaimed ? 'claimed' : ''}`} onClick={handleClaimReward} disabled={rewardClaimed || isClaiming} style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: (rewardClaimed || isClaiming) ? 'not-allowed' : 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%', opacity: (rewardClaimed || isClaiming) ? 0.7 : 1 }}>
+        <div className="action-buttons-panel">
+          <div className="action-grid-vertical">
+            <button className={`action-btn-vertical ${rewardClaimed ? 'claimed' : ''}`} onClick={handleClaimReward} disabled={rewardClaimed || isClaiming}>
               {isClaiming ? (
                 <svg className="animate-spin" style={{ width: '20px', height: '20px', color: '#C5A059' }} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -1374,37 +1403,23 @@ export default function HomeScreen({ onNavigate }: Props) {
               ) : (
                 <Gift size={22} style={{ filter: 'drop-shadow(0 0 6px #C5A059)', color: '#C5A059', width: '20px', height: '20px' }} />
               )}
-              {!rewardClaimed && !isClaiming && <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>50</div>}
+              {!rewardClaimed && !isClaiming && <div className="action-badge">50</div>}
             </button>
             
             <button 
               className="action-btn-vertical streak-btn-v" 
               onClick={() => setShowStreakModal(true)}
-              style={{ background: 'rgba(255, 255, 255, 0.03)', border: unclaimedMilestoneCount > 0 ? '1.5px solid rgba(251, 191, 36, 0.6)' : '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'visible', padding: '4px', width: '100%', height: '100%' }}
             >
               <div style={{ fontSize: '22px', lineHeight: 1, filter: 'drop-shadow(0 0 6px #ff6b35)' }}>
                 {getStreakTierIcon()}
               </div>
-              <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>{currentStreak}</div>
+              <div className="action-badge">{currentStreak}</div>
               
               {unclaimedMilestoneCount > 0 && (
                 <motion.div
                   animate={{ scale: [1, 1.15, 1] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
-                  style={{
-                    position: 'absolute',
-                    top: '-4px',
-                    right: '-4px',
-                    background: 'linear-gradient(135deg, #10b981, #059669)',
-                    color: '#fff',
-                    fontSize: '9px',
-                    fontWeight: 800,
-                    padding: '2px 5px',
-                    borderRadius: '8px',
-                    boxShadow: '0 2px 8px rgba(16, 185, 129, 0.6)',
-                    border: '1.5px solid #1a1510',
-                    zIndex: 5
-                  }}
+                  className="milestone-badge"
                 >
                   🎁 {unclaimedMilestoneCount}
                 </motion.div>
@@ -1414,17 +1429,16 @@ export default function HomeScreen({ onNavigate }: Props) {
             <button 
               className="action-btn-vertical rank-btn-v" 
               onClick={() => setShowLeaderboardModal(true)}
-              style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%' }}
             >
               <Trophy size={22} style={{ filter: 'drop-shadow(0 0 6px #ffd700)', color: '#ffd700', width: '20px', height: '20px' }} />
-              <div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>TOP</div>
+              <div className="action-badge">TOP</div>
             </button>
             
-            <button className={`action-btn-vertical ${activeSubscription ? 'subscription-btn-v' : 'upgrade-btn-v'}`} onClick={() => onNavigate && onNavigate(activeSubscription ? 'subscription' : 'pricing')} style={{ background: activeSubscription ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 165, 0, 0.05) 100%)' : 'rgba(255, 255, 255, 0.03)', border: activeSubscription ? '1px solid rgba(255, 215, 0, 0.4)' : '1px solid rgba(197, 160, 89, 0.15)', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', overflow: 'hidden', padding: '4px', width: '100%', height: '100%' }}>
+            <button className={`action-btn-vertical ${activeSubscription ? 'subscription-btn-v' : 'upgrade-btn-v'}`} onClick={() => onNavigate && onNavigate(activeSubscription ? 'subscription' : 'pricing')}>
               {activeSubscription ? (
-                <><InfinityIcon size={22} style={{ filter: 'drop-shadow(0 0 6px #FFD700)', color: '#FFD700', width: '20px', height: '20px' }} /><div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>VIP</div></>
+                <><InfinityIcon size={22} style={{ filter: 'drop-shadow(0 0 6px #FFD700)', color: '#FFD700', width: '20px', height: '20px' }} /><div className="action-badge premium">VIP</div></>
               ) : (
-                <><Crown size={22} style={{ filter: 'drop-shadow(0 0 6px #a78bfa)', color: '#a78bfa', width: '20px', height: '20px' }} /><div style={{ position: 'absolute', bottom: '3px', right: '3px', background: 'rgba(197, 160, 89, 0.9)', color: '#0a0600', fontSize: '7px', fontWeight: 700, padding: '1px 3px', borderRadius: '3px' }}>PRO</div></>
+                <><Crown size={22} style={{ filter: 'drop-shadow(0 0 6px #a78bfa)', color: '#a78bfa', width: '20px', height: '20px' }} /><div className="action-badge">PRO</div></>
               )}
             </button>
           </div>
@@ -1432,49 +1446,49 @@ export default function HomeScreen({ onNavigate }: Props) {
       </div>
 
       {showQuestModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }} onClick={() => setShowQuestModal(false)}>
-          <div style={{ background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)', border: '1px solid #332a1a', borderRadius: '16px', width: '100%', maxWidth: '400px', maxHeight: '80vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ margin: 0, color: '#C5A059', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="quest-modal-overlay" onClick={() => setShowQuestModal(false)}>
+          <div className="quest-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="quest-modal-header">
+              <h3>
                 <Trophy size={18} /> {t('home.questModal.title')}
               </h3>
-              <button onClick={() => setShowQuestModal(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>
+              <button onClick={() => setShowQuestModal(false)} className="quest-modal-close">
                 <X size={20} />
               </button>
             </div>
-            <div style={{ padding: '16px', overflowY: 'auto', flex: 1 }}>
+            <div className="quest-modal-body">
               {dailyQuests.length === 0 ? (
                 <div style={{ textAlign: 'center', color: '#94a3b8', padding: '20px' }}>{t('home.questModal.noQuests')}</div>
               ) : (
                 dailyQuests.map((q, idx) => (
-                  <div key={q.id} style={{ background: q.is_claimed ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255,255,255,0.03)', border: `1px solid ${q.is_claimed ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255,255,255,0.1)'}`, borderRadius: '12px', padding: '12px', marginBottom: idx < dailyQuests.length - 1 ? '12px' : '0', opacity: q.is_claimed ? 0.7 : 1 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: q.isClaimable ? 'rgba(16, 185, 129, 0.2)' : 'rgba(197, 160, 89, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: q.isClaimable ? '#10b981' : '#C5A059' }}>
+                  <div key={q.id} className={`quest-modal-item ${q.is_claimed ? 'claimed' : ''}`}>
+                    <div className="quest-modal-top">
+                      <div className="quest-modal-info">
+                        <div className="quest-modal-icon" style={{ color: q.isClaimable ? '#10b981' : '#C5A059' }}>
                           {getQuestIcon(q.quest?.action_type || '')}
                         </div>
                         <div>
-                          <div style={{ fontSize: '13px', color: '#fff', fontWeight: 600 }}>{q.quest?.title}</div>
-                          <div style={{ fontSize: '10px', color: '#94a3b8' }}>{q.quest?.description}</div>
+                          <div className="quest-modal-title">{q.quest?.title}</div>
+                          <div className="quest-modal-desc">{q.quest?.description}</div>
                         </div>
                       </div>
-                      <div style={{ fontSize: '11px', color: '#fbbf24', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <div className="quest-modal-reward">
                         <Gem size={12} /> +{q.quest?.reward_coins}
                       </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                      <div style={{ flex: 1, height: '4px', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '2px', overflow: 'hidden' }}>
-                        <div style={{ width: `${Math.min((q.current_progress / (q.quest?.target_count || 1)) * 100, 100)}%`, height: '100%', background: q.isClaimable ? '#10b981' : 'linear-gradient(90deg, #C5A059, #ffe566)', borderRadius: '2px' }}></div>
+                    <div className="quest-modal-progress">
+                      <div className="progress-bar-modal">
+                        <div className="progress-fill-modal" style={{ width: `${Math.min((q.current_progress / (q.quest?.target_count || 1)) * 100, 100)}%` }}></div>
                       </div>
-                      <span style={{ fontSize: '11px', color: '#b3a68c', minWidth: '30px', textAlign: 'right' }}>{q.current_progress}/{q.quest?.target_count}</span>
+                      <span className="quest-modal-progress-text">{q.current_progress}/{q.quest?.target_count}</span>
                     </div>
                     {q.isClaimable && (
-                      <button onClick={() => handleClaimQuest(q)} disabled={isClaimingQuest} style={{ width: '100%', background: 'linear-gradient(135deg, #10b981, #059669)', border: 'none', borderRadius: '8px', color: '#fff', padding: '8px', fontSize: '12px', fontWeight: 'bold', cursor: isClaimingQuest ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                      <button onClick={() => handleClaimQuest(q)} disabled={isClaimingQuest} className="quest-modal-claim-btn">
                         {isClaimingQuest ? <RefreshCw size={14} className="spin" /> : <><CheckCircle size={14} /> {t('home.questModal.claimReward')}</>}
                       </button>
                     )}
                     {q.is_claimed && (
-                      <div style={{ width: '100%', background: 'rgba(16, 185, 129, 0.2)', border: '1px solid rgba(16, 185, 129, 0.4)', borderRadius: '8px', padding: '8px', fontSize: '12px', fontWeight: 'bold', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                      <div className="quest-modal-completed">
                         <CheckCircle size={14} /> {t('home.questModal.completed')}
                       </div>
                     )}
@@ -1482,9 +1496,12 @@ export default function HomeScreen({ onNavigate }: Props) {
                 ))
               )}
               {dailyQuests.length > 0 && dailyQuests.every(q => q.is_claimed) && (
-                <div style={{ textAlign: 'center', padding: '16px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px', border: '1px solid rgba(16, 185, 129, 0.3)', marginTop: '16px' }}>
-                  <div style={{ fontSize: '14px', color: '#10b981', fontWeight: 'bold', marginBottom: '4px' }}>{t('home.questModal.allCompleteTitle')}</div>
-                  <div style={{ fontSize: '11px', color: '#94a3b8' }}>{t('home.questModal.comeBack', { time: timeLeft })}</div>
+                <div className="quest-modal-all-complete">
+                  <div className="quest-modal-all-complete-title">{t('home.questModal.allCompleteTitle')}</div>
+                  {/* ✅ FIX: Use isolated CountdownTimer */}
+                  <div className="quest-modal-comeback">
+                    {t('home.questModal.comeBack', { time: '' })} <CountdownTimer style={{ fontFamily: 'monospace', fontWeight: 'bold' }} />
+                  </div>
                 </div>
               )}
             </div>
@@ -1494,95 +1511,72 @@ export default function HomeScreen({ onNavigate }: Props) {
 
       <motion.div 
         className="card-of-day-banner clickable-card" 
-        onClick={() => onNavigate && onNavigate('daily-card')} 
-        style={{ 
-          background: 'linear-gradient(135deg, #1a1510 0%, #0f0c08 100%)', 
-          border: '1px solid #332a1a', 
-          borderRadius: '16px', 
-          padding: '12px', 
-          marginBottom: '2px', 
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)', 
-          position: 'relative', 
-          overflow: 'visible', 
-          cursor: 'pointer' 
-        }}
+        onClick={() => onNavigate && onNavigate('daily-card')}
       >
-        <div className="card-of-day-content" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '0' }}>
-          <div className="card-half-left" style={{ flex: '0 0 45%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px 0' }}>
+        {/* ✅ FIX: Removed inline flexDirection - CSS controls responsive layout */}
+        <div className="card-of-day-content">
+          <div className="card-half-left">
             
             <motion.div 
               className="card-image-3d-wrapper" 
               animate={!isDailyRevealed ? { y: [0, -5, 0] } : {}}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              style={{ position: 'relative', width: 'clamp(110px, 28vw, 140px)', aspectRatio: '2/3', perspective: '800px', margin: '-16px 0' }}
             >
-              <div className="card-image-tilted" style={{ position: 'relative', width: '100%', height: '100%', transform: 'rotateY(-5deg) rotateX(2deg) rotate(3deg)', transition: 'transform 0.4s ease', zIndex: 2, transformStyle: 'preserve-3d' }}>
+              {/* ✅ FIX: Removed inline transform - CSS controls :active effect */}
+              <div className="card-image-tilted">
                 
                 {!isDailyRevealed ? (
-                  <div style={{ position: 'relative', width: '100%', height: '100%', borderRadius: '8px', border: '2px solid #C5A059', boxShadow: '0 2px 4px rgba(0,0,0,0.4), 0 8px 16px rgba(0,0,0,0.5), 0 16px 32px rgba(0,0,0,0.6), 0 0 20px rgba(197,160,89,0.3)', overflow: 'hidden' }}>
+                  <div className="card-back-container">
                     <img 
                       src={CARD_BACK_URL} 
                       alt="Card Back" 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} 
+                      className="card-back-image"
                     />
                     <motion.div
                       animate={{ x: ['-150%', '150%'] }}
                       transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 3, ease: "easeInOut" }}
-                      style={{
-                        position: 'absolute', top: 0, left: 0, width: '50%', height: '100%',
-                        background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent)',
-                        transform: 'skewX(-20deg)', pointerEvents: 'none'
-                      }}
+                      className="card-shimmer"
                     />
-                    <div style={{
-                      position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-                      background: 'rgba(10, 8, 20, 0.7)', backdropFilter: 'blur(4px)',
-                      padding: '6px 16px', borderRadius: '20px', border: '1px solid rgba(197, 160, 89, 0.6)',
-                      color: '#C5A059', fontSize: '11px', fontWeight: '700', letterSpacing: '2px',
-                      textTransform: 'uppercase', boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
-                    }}>
+                    <div className="card-tap-label">
                       TAP
                     </div>
                   </div>
                 ) : (
-                  <div style={{ position: 'relative', width: '100%', height: '100%', borderRadius: '8px', border: '2px solid #C5A059', boxShadow: '0 2px 4px rgba(0,0,0,0.4), 0 8px 16px rgba(0,0,0,0.5), 0 16px 32px rgba(0,0,0,0.6)', overflow: 'hidden' }}>
+                  <div className="card-front-container">
                     <img 
                       src={dailyCard?.image_url} 
                       alt={dailyCardName} 
-                      style={{ 
-                        width: '100%', height: '100%', objectFit: 'cover', display: 'block',
-                        filter: 'grayscale(30%) opacity(0.85)',
-                        transform: isDailyReversed ? 'rotate(180deg)' : 'rotate(0deg)'
-                      }} 
+                      className="card-front-image"
+                      style={{ transform: isDailyReversed ? 'rotate(180deg)' : 'rotate(0deg)' }}
                     />
                   </div>
                 )}
                 
                 {isDailyReversed && isDailyRevealed && (
-                  <div className="card-reversed-indicator-large" style={{ position: 'absolute', top: '5px', right: '5px', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 900, zIndex: 3, background: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)', color: '#fff', border: '2px solid #fff', boxShadow: '0 0 0 2px rgba(167,139,250,0.5), 0 4px 12px rgba(167,139,250,0.8), 0 0 20px rgba(167,139,250,0.6)' }}>
+                  <div className="card-reversed-indicator-large">
                     <span>R</span>
                   </div>
                 )}
               </div>
-              <div className="card-3d-shadow" style={{ position: 'absolute', bottom: '-6px', left: '10%', width: '80%', height: '14px', background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.6) 0%, transparent 70%)', filter: 'blur(6px)', zIndex: 1, opacity: 0.7 }}></div>
+              <div className="card-3d-shadow"></div>
             </motion.div>
           </div>
           
-          <div className="card-half-right" style={{ flex: '0 0 55%', paddingLeft: '12px', display: 'flex', alignItems: 'center' }}>
-            <div className="card-info-section" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '4px', width: '100%', minWidth: 0 }}>
+          <div className="card-half-right">
+            <div className="card-info-section">
               {!isDailyRevealed ? (
                 <>
-                  <div style={{ fontSize: '9px', color: '#C5A059', letterSpacing: '2px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 600 }}>{t('home.cardOfTheDay')}</div>
-                  <h3 style={{ margin: 0, fontSize: '16px', color: '#C5A059', letterSpacing: '0.5px', fontWeight: 700, lineHeight: 1.2 }}>Your Card Awaits</h3>
-                  <p style={{ margin: 0, fontSize: '11px', color: 'rgba(255,255,255,0.7)', fontStyle: 'italic', lineHeight: 1.3 }}>Tap to reveal your daily guidance</p>
+                  <div className="card-label">{t('home.cardOfTheDay')}</div>
+                  <h3 className="card-title">Your Card Awaits</h3>
+                  <p className="card-description">Tap to reveal your daily guidance</p>
                 </>
               ) : (
                 <>
-                  <div style={{ fontSize: '9px', color: '#C5A059', letterSpacing: '2px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 600 }}>{t('home.cardOfTheDay')}</div>
-                  <h3 style={{ margin: 0, fontSize: '16px', color: '#C5A059', letterSpacing: '0.5px', fontWeight: 700, lineHeight: 1.2 }}>{dailyCardName}{isDailyReversed ? ' (R)' : ''}</h3>
-                  <p style={{ margin: 0, fontSize: '11px', color: 'rgba(255,255,255,0.7)', fontStyle: 'italic', lineHeight: 1.3 }}>"{dailyCardMeaning}"</p>
-                  {dailyCardElement && <p style={{ margin: 0, fontSize: '10px', color: '#888' }}>{dailyCardElement}</p>}
-                  <button className="read-guidance-btn" onClick={(e) => { e.stopPropagation(); onNavigate?.('reading-history'); }} style={{ background: 'transparent', border: '1px solid #C5A059', color: '#C5A059', padding: '5px 10px', borderRadius: '6px', fontSize: '9px', fontWeight: 700, cursor: 'pointer', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '4px', alignSelf: 'flex-start' }}>
+                  <div className="card-label">{t('home.cardOfTheDay')}</div>
+                  <h3 className="card-title">{dailyCardName}{isDailyReversed ? ' (R)' : ''}</h3>
+                  <p className="card-description">"{dailyCardMeaning}"</p>
+                  {dailyCardElement && <p className="card-element">{dailyCardElement}</p>}
+                  <button className="read-guidance-btn" onClick={(e) => { e.stopPropagation(); onNavigate?.('reading-history'); }}>
                     View Journal <ChevronRight size={14} />
                   </button>
                 </>
@@ -1592,74 +1586,29 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </motion.div>
 
-      {/* ✨ MYSTICAL TAROT CARDS - Quick Actions (Badges FIXED) */}
-      <div className="quick-access" style={{ marginBottom: '8px', width: '100%' }}>
-        <div className="quick-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '7px' }}>
+      {/* ✨ MYSTICAL TAROT CARDS - Quick Actions */}
+      <div className="quick-access">
+        <div className="quick-grid">
           {quickActions.map((action, index) => (
             <button 
               key={index} 
               className={`quick-item ${action.isPremium ? 'premium-item' : ''} ${action.action === 'Admin' ? 'admin-item' : ''} ${(action as any).isServices ? 'services-item' : ''}`} 
-              style={{ 
-                '--glow-color': action.color, 
-                background: `linear-gradient(160deg, ${hexToRgba(action.color, 0.14)} 0%, rgba(16, 13, 10, 0.97) 60%)`, 
-                border: `1px solid ${hexToRgba(action.color, action.isPremium || (action as any).isServices ? 0.45 : 0.28)}`, 
-                borderRadius: '14px', 
-                padding: 'clamp(10px, 3vw, 14px) 4px', 
-                display: 'flex', 
-                flexDirection: 'column', 
-                alignItems: 'center', 
-                gap: '6px', 
-                color: '#fff', 
-                cursor: 'pointer', 
-                position: 'relative', 
-                overflow: 'hidden',
-                boxShadow: '0 4px 14px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06)',
-                transition: 'all 0.25s ease'
-              } as React.CSSProperties} 
+              style={{ '--glow-color': action.color } as React.CSSProperties} 
               onClick={() => handleQuickAction(action.action)}
             >
               {action.isPremium && (
-                <div style={{ 
-                  position: 'absolute', 
-                  top: '5px', 
-                  right: '5px', 
-                  background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)', 
-                  width: '20px', 
-                  height: '20px', 
-                  borderRadius: '50%', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  fontSize: '10px', 
-                  boxShadow: '0 2px 8px rgba(197, 160, 89, 0.6), 0 0 0 1.5px rgba(26, 21, 16, 0.95)', 
-                  zIndex: 10 
-                }}>
+                <div className="premium-badge">
                   💎
                 </div>
               )}
               {(action as any).isServices && (
-                <div style={{ 
-                  position: 'absolute', 
-                  top: '5px', 
-                  right: '5px', 
-                  background: 'linear-gradient(135deg, #FFD700 0%, #FF8C00 100%)', 
-                  width: '20px', 
-                  height: '20px', 
-                  borderRadius: '50%', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  fontSize: '10px', 
-                  boxShadow: '0 2px 8px rgba(255, 215, 0, 0.6), 0 0 0 1.5px rgba(26, 21, 16, 0.95)', 
-                  zIndex: 10, 
-                  animation: 'paywallPulse 2s ease-in-out infinite' 
-                }}>
+                <div className="services-badge">
                   🛍️
                 </div>
               )}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1, filter: `drop-shadow(0 0 6px ${action.color})`, color: action.color }}>{action.icon}</div>
-              <span style={{ fontSize: '10px', color: '#fff', fontWeight: 600, textAlign: 'center', lineHeight: 1.1 }}>{action.label}</span>
-              {action.sublabel && <span style={{ fontSize: '9px', color: '#b3a68c', textAlign: 'center', lineHeight: 1.1 }}>{action.sublabel}</span>}
+              <div className="quick-icon" style={{ filter: `drop-shadow(0 0 6px ${action.color})`, color: action.color }}>{action.icon}</div>
+              <span className="quick-label">{action.label}</span>
+              {action.sublabel && <span className="quick-sublabel">{action.sublabel}</span>}
             </button>
           ))}
         </div>
@@ -1709,7 +1658,7 @@ export default function HomeScreen({ onNavigate }: Props) {
           dailyQuests={dailyQuests}
           activeDailyQuest={activeDailyQuest}
           isClaimingQuest={isClaimingQuest}
-          timeLeft={timeLeft}
+          timeLeft="" // ✅ No longer needed - CountdownTimer handles it
           showQuestModal={showQuestModal}
           rewardClaimed={rewardClaimed}
           isClaiming={isClaiming}
