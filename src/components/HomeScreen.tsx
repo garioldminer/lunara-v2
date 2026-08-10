@@ -1023,6 +1023,43 @@ export default function HomeScreen({ onNavigate }: Props) {
     }
   };
 
+  // ✅ Badge inline styles (override CSS cache issues)
+  const premiumBadgeStyle: React.CSSProperties = {
+    position: 'absolute',
+    top: '3px',
+    right: '3px',
+    width: '16px',
+    height: '16px',
+    borderRadius: '50%',
+    background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '8px',
+    lineHeight: 1,
+    boxShadow: '0 1px 4px rgba(197, 160, 89, 0.6), 0 0 0 1px rgba(26, 21, 16, 0.95)',
+    zIndex: 10,
+    pointerEvents: 'none'
+  };
+
+  const servicesBadgeStyle: React.CSSProperties = {
+    position: 'absolute',
+    top: '3px',
+    right: '3px',
+    width: '16px',
+    height: '16px',
+    borderRadius: '50%',
+    background: 'linear-gradient(135deg, #FFD700 0%, #FF8C00 100%)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '8px',
+    lineHeight: 1,
+    boxShadow: '0 1px 4px rgba(255, 215, 0, 0.5), 0 0 0 1px rgba(26, 21, 16, 0.95)',
+    zIndex: 10,
+    pointerEvents: 'none'
+  };
+
   return (
     <div className="home-screen">
       <AnimatePresence>
@@ -1596,11 +1633,12 @@ export default function HomeScreen({ onNavigate }: Props) {
               } as React.CSSProperties} 
               onClick={() => handleQuickAction(action.action)}
             >
+              {/* ✅ FIX: inline badge styles (16px, overrides CSS cache) */}
               {action.isPremium && (
-                <div className="premium-badge">💎</div>
+                <div style={premiumBadgeStyle}>💎</div>
               )}
               {(action as any).isServices && (
-                <div className="services-badge">🛍️</div>
+                <div style={servicesBadgeStyle}>🛍️</div>
               )}
               <div className="quick-icon" style={{ filter: `drop-shadow(0 0 6px ${action.color})`, color: action.color }}>{action.icon}</div>
               <span className="quick-label">{action.label}</span>
