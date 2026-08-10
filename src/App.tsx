@@ -111,19 +111,38 @@ function AppContent() {
   const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState('home');
   const [userReady, setUserReady] = useState(false);
+  
+  // 🆕 🔴 FIX #1: Splash stale closure - state-based approach instead of setInterval
+  const [splashFinished, setSplashFinished] = useState(false);
+  
   const { user, setUser } = useUser();
 
+  // 🆕 🔴 FIX #4: Add tg.ready() call
   useEffect(() => {
     const tg = (window as any).Telegram?.WebApp;
     if (tg) {
+      if (typeof tg.ready === 'function') tg.ready();
       if (typeof tg.setHeaderColor === 'function') tg.setHeaderColor('#0a0600');
       if (typeof tg.setBackgroundColor === 'function') tg.setBackgroundColor('#0a0600');
       if (typeof tg.expand === 'function') tg.expand();
     }
   }, []);
 
+  // 🆕 🔴 FIX #1: useEffect handles splash navigation (no stale closure)
+  useEffect(() => {
+    if (splashFinished && userReady) {
+      if (user?.onboarding_completed) {
+        setCurrentScreen('home');
+      } else {
+        setCurrentScreen('welcome');
+      }
+    }
+  }, [splashFinished, userReady, user]);
+
+  // 🆕 🔴 FIX #2: visibilitychange with named handler + proper cleanup
   useEffect(() => {
     if (!user) return;
+    
     const updateLastActive = async () => {
       try { 
         await updateUserLastActive(user.id); 
@@ -131,12 +150,21 @@ function AppContent() {
         console.error('❌ [LastActive] Error:', error); 
       }
     };
+    
     updateLastActive();
     const interval = setInterval(updateLastActive, 5 * 60 * 1000);
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') updateLastActive();
-    });
-    return () => { clearInterval(interval); };
+    
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        updateLastActive();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    
+    return () => { 
+      clearInterval(interval); 
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, [user]);
 
   const goTo = (screen: Screen) => setCurrentScreen(screen);
@@ -168,7 +196,6 @@ function AppContent() {
     } else if (['home', 'cards', 'astro', 'profile'].includes(screen)) {
       handleTabChange(screen);
     } else if (screen === 'admin' || screen === 'user-analytics' || screen === 'ai-management') {
-      // ✅ ახალი ლოგიკა: ვამოწმებთ is_admin ფლაგს და არა hardcoded ID-ს
       if (user && user.is_admin === true) {
         goTo(screen as Screen);
       } else {
@@ -184,18 +211,9 @@ function AppContent() {
 
   const handleUserReady = () => setUserReady(true);
   
+  // 🆕 🔴 FIX #1: Simple state toggle (no polling)
   const handleSplashFinish = () => {
-    if (!userReady) {
-      const checkInterval = setInterval(() => {
-        if (userReady) { 
-          clearInterval(checkInterval); 
-          handleSplashFinish(); 
-        }
-      }, 100);
-      return;
-    }
-    if (user?.onboarding_completed) goTo('home');
-    else goTo('welcome');
+    setSplashFinished(true);
   };
 
   const handleOnboardingComplete = async () => {
@@ -211,43 +229,41 @@ function AppContent() {
     <div className="app-container">
       {!userReady && <UserLoader onReady={handleUserReady} />}
       
-      {/* 🎯 ONBOARDING SCREENS - NO wrapper padding (they have their own full-screen design) */}
+      {/* 🎯 ONBOARDING SCREENS - NO wrapper padding */}
       {currentScreen === 'splash' && <SplashScreen onFinish={handleSplashFinish} />}
       {currentScreen === 'welcome' && <OnboardingWelcome onFinish={() => goTo('zodiac')} />}
       {currentScreen === 'zodiac' && <OnboardingZodiac onFinish={() => goTo('first-reading')} />}
       {currentScreen === 'first-reading' && <OnboardingFirstReading onFinish={handleOnboardingComplete} />}
       
-      {/* 🎯 SCREEN WRAPPER - ყველა main გვერდს აქვს 70px padding Telegram header-ისთვის */}
+      {/* 🎯 SCREEN WRAPPER with single ErrorBoundary for ALL screens */}
+      {/* 🆕 🔴 FIX #3: ErrorBoundary wraps all screens */}
       <div className="screen-wrapper">
-        {currentScreen === 'home' && <HomeScreen onNavigate={handleNavigate} />}
-        {currentScreen === 'cards' && <CardsScreen onNavigate={handleNavigate} />}
-        {currentScreen === 'reading' && <ReadingScreen onNavigate={handleNavigate} />}
-        {currentScreen === 'astro' && <AstroScreen onNavigate={handleNavigate} />}
-        {currentScreen === 'horoscope' && <ErrorBoundary><HoroscopeScreen onNavigate={handleNavigate} /></ErrorBoundary>}
-        {currentScreen === 'sign-selection' && <SignSelectionScreen onNavigate={handleNavigate} />}
-        {currentScreen === 'profile' && <ProfileScreen onNavigate={handleNavigate} />}
-        {currentScreen === 'card-fan' && <CardFanScreen onNavigate={handleNavigate} />}
-        {currentScreen === 'card-detail' && selectedCardId && <CardDetailScreen cardId={selectedCardId} onNavigate={handleNavigate} />}
-        {currentScreen === 'daily-card' && <DailyCardScreen onNavigate={handleNavigate} />}
-        {currentScreen === 'three-card-reading' && <ThreeCardReadingScreen onNavigate={handleNavigate} />}
-        {currentScreen === 'reading-history' && <ReadingHistoryScreen onNavigate={handleNavigate} />}
-        {currentScreen === 'celtic-cross' && <CelticCrossReadingScreen onNavigate={handleNavigate} />}
-        {currentScreen === 'horseshoe' && <HorseshoeReadingScreen onNavigate={handleNavigate} />}
-        {currentScreen === 'relationship' && <RelationshipReadingScreen onNavigate={handleNavigate} />}
-        
-        {/* 🆕 JOURNAL STATS SCREEN */}
-        {currentScreen === 'journal-stats' && <JournalStatsScreen onNavigate={handleNavigate} />}
-        
-        {/* ✅ ადმინ ეკრანები */}
-        {currentScreen === 'admin' && <AdminScreen onNavigate={handleNavigate} />}
-        {currentScreen === 'user-analytics' && <UserAnalytics onNavigate={handleNavigate} />}
-        {currentScreen === 'ai-management' && <AdminAIManagement onNavigate={handleNavigate} />}
-        
-        {currentScreen === 'subscription' && <SubscriptionScreen onNavigate={handleNavigate} />}
-        {currentScreen === 'services' && <ServicesScreen onNavigate={handleNavigate} />}
+        <ErrorBoundary>
+          {currentScreen === 'home' && <HomeScreen onNavigate={handleNavigate} />}
+          {currentScreen === 'cards' && <CardsScreen onNavigate={handleNavigate} />}
+          {currentScreen === 'reading' && <ReadingScreen onNavigate={handleNavigate} />}
+          {currentScreen === 'astro' && <AstroScreen onNavigate={handleNavigate} />}
+          {currentScreen === 'horoscope' && <HoroscopeScreen onNavigate={handleNavigate} />}
+          {currentScreen === 'sign-selection' && <SignSelectionScreen onNavigate={handleNavigate} />}
+          {currentScreen === 'profile' && <ProfileScreen onNavigate={handleNavigate} />}
+          {currentScreen === 'card-fan' && <CardFanScreen onNavigate={handleNavigate} />}
+          {/* 🆕 🟡 FIX #5: Use !== null to handle card ID 0 */}
+          {currentScreen === 'card-detail' && selectedCardId !== null && <CardDetailScreen cardId={selectedCardId} onNavigate={handleNavigate} />}
+          {currentScreen === 'daily-card' && <DailyCardScreen onNavigate={handleNavigate} />}
+          {currentScreen === 'three-card-reading' && <ThreeCardReadingScreen onNavigate={handleNavigate} />}
+          {currentScreen === 'reading-history' && <ReadingHistoryScreen onNavigate={handleNavigate} />}
+          {currentScreen === 'celtic-cross' && <CelticCrossReadingScreen onNavigate={handleNavigate} />}
+          {currentScreen === 'horseshoe' && <HorseshoeReadingScreen onNavigate={handleNavigate} />}
+          {currentScreen === 'relationship' && <RelationshipReadingScreen onNavigate={handleNavigate} />}
+          {currentScreen === 'journal-stats' && <JournalStatsScreen onNavigate={handleNavigate} />}
+          {currentScreen === 'admin' && <AdminScreen onNavigate={handleNavigate} />}
+          {currentScreen === 'user-analytics' && <UserAnalytics onNavigate={handleNavigate} />}
+          {currentScreen === 'ai-management' && <AdminAIManagement onNavigate={handleNavigate} />}
+          {currentScreen === 'subscription' && <SubscriptionScreen onNavigate={handleNavigate} />}
+          {currentScreen === 'services' && <ServicesScreen onNavigate={handleNavigate} />}
+        </ErrorBoundary>
       </div>
       
-      {/* 🎯 BOTTOM NAV - გარეთ wrapper-დან, რომ არ მიიღოს padding-top */}
       {['home', 'cards', 'reading', 'astro', 'horoscope', 'profile'].includes(currentScreen) && (
         <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
       )}
