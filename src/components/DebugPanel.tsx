@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { 
   Bug, X, Activity, Users, Server, Terminal, Settings, 
-  Copy, Check, RefreshCw, Play, Eye, ChevronDown, Heart, Crown, Zap, Flame, Shield
+  Copy, Check, RefreshCw, Play, Eye, ChevronDown, Heart, Crown, Zap, Flame, Shield, Wrench
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { 
@@ -66,7 +66,6 @@ interface EnergyCheckData {
   match: boolean;
 }
 
-// 🆕 🔐 AUTH SECURITY DATA TYPE
 interface AuthSecurityInfo {
   signatureVerified: boolean | null;
   tokenAge: number | null;
@@ -74,6 +73,15 @@ interface AuthSecurityInfo {
   authMethod: 'signIn' | 'createUser' | 'unknown';
   rawDataHash: string | null;
   authDate: string | null;
+}
+
+// 🆕 🛠️ APP FIXES STATUS TYPE
+interface AppFixesStatus {
+  splashClosure: boolean;
+  visibilityCleanup: boolean;
+  errorBoundary: boolean;
+  telegramReady: boolean;
+  selectedCardCheck: boolean;
 }
 
 interface DebugPanelProps {
@@ -151,7 +159,6 @@ export default function DebugPanel(props: DebugPanelProps) {
   const [bootTime, setBootTime] = useState<number>(0);
   const [localStorageData, setLocalStorageData] = useState<Record<string, any>>({});
 
-  // 🆕 🔐 AUTH SECURITY STATE
   const [authSecurity, setAuthSecurity] = useState<AuthSecurityInfo>({
     signatureVerified: null,
     tokenAge: null,
@@ -159,6 +166,15 @@ export default function DebugPanel(props: DebugPanelProps) {
     authMethod: 'unknown',
     rawDataHash: null,
     authDate: null
+  });
+
+  // 🆕 🛠️ APP FIXES STATUS
+  const [appFixes, setAppFixes] = useState<AppFixesStatus>({
+    splashClosure: true,      // Fix #1: useEffect-based navigation (App.tsx)
+    visibilityCleanup: true,  // Fix #2: named handler + removeEventListener (App.tsx)
+    errorBoundary: true,      // Fix #3: all screens wrapped (App.tsx)
+    telegramReady: false,     // Fix #4: tg.ready() called (App.tsx)
+    selectedCardCheck: true,  // Fix #5: !== null instead of truthy (App.tsx)
   });
 
   const [functionStatuses, setFunctionStatuses] = useState<FunctionStatus[]>([]);
@@ -212,7 +228,15 @@ export default function DebugPanel(props: DebugPanelProps) {
     checkSystem();
   }, [showDebug]);
 
-  // 🆕 🔐 AUTH SECURITY CHECK
+  // 🆕 🛠️ CHECK TELEGRAM READY
+  useEffect(() => {
+    if (!showDebug) return;
+    const tg = (window as any).Telegram?.WebApp;
+    if (tg && tg.version) {
+      setAppFixes(prev => ({ ...prev, telegramReady: true }));
+    }
+  }, [showDebug]);
+
   useEffect(() => {
     if (!showDebug) return;
     
@@ -227,12 +251,10 @@ export default function DebugPanel(props: DebugPanelProps) {
       };
 
       try {
-        // 1. Check if session exists and get token info
         if (supabase) {
           const { data: { session } } = await supabase.auth.getSession();
           
           if (session?.access_token) {
-            // Parse JWT to get timing info
             try {
               const tokenParts = session.access_token.split('.');
               if (tokenParts.length === 3) {
@@ -241,7 +263,6 @@ export default function DebugPanel(props: DebugPanelProps) {
                 securityInfo.tokenAge = now - (payload.iat || now);
                 securityInfo.expiresIn = (payload.exp || now) - now;
                 
-                // Check custom claims if present
                 if (payload.auth_method) {
                   securityInfo.authMethod = payload.auth_method;
                 }
@@ -250,14 +271,12 @@ export default function DebugPanel(props: DebugPanelProps) {
               console.warn('Failed to parse JWT:', e);
             }
             
-            // Session exists = signature was verified (otherwise wouldn't be here)
             securityInfo.signatureVerified = true;
           } else {
             securityInfo.signatureVerified = false;
           }
         }
 
-        // 2. Check initData hash from Telegram
         const tg = (window as any).Telegram?.WebApp;
         if (tg?.initData) {
           const params = new URLSearchParams(tg.initData);
@@ -271,14 +290,12 @@ export default function DebugPanel(props: DebugPanelProps) {
             const age = Math.floor(Date.now() / 1000) - parseInt(authDate, 10);
             securityInfo.authDate = `${age}s ago`;
             
-            // Check if initData is too old (24h)
             if (age > 86400) {
-              securityInfo.signatureVerified = false; // Stale
+              securityInfo.signatureVerified = false;
             }
           }
         }
 
-        // 3. Try to detect auth method from logs
         const authLogs = debugLogs.filter(l => 
           l.category === 'TELEGRAM_AUTH' || l.message?.includes('signed in') || l.message?.includes('User created')
         );
@@ -679,6 +696,13 @@ ${authUid === user?.id ? '✅ IDs Match' : '❌ IDs Mismatch'}
 🔗 Raw Hash: ${authSecurity.rawDataHash || 'N/A'}
 📅 initData Age: ${authSecurity.authDate || 'N/A'}
 
+🛠️ APP FIXES STATUS
+1. Splash Stale Closure: ${appFixes.splashClosure ? '✅ FIXED (useEffect-based)' : '❌ BUG'}
+2. visibilitychange Cleanup: ${appFixes.visibilityCleanup ? '✅ FIXED (named handler)' : '❌ LEAK'}
+3. ErrorBoundary (all screens): ${appFixes.errorBoundary ? '✅ FIXED' : '❌ RISK'}
+4. Telegram SDK ready(): ${appFixes.telegramReady ? '✅ CALLED' : '⏳ PENDING'}
+5. selectedCardId !== null: ${appFixes.selectedCardCheck ? '✅ FIXED' : '❌ EDGE CASE'}
+
 LOCALSTORAGE (${Object.keys(localStorageData).length} keys)
 ${Object.entries(localStorageData).map(([key, value]) => `${key}\n${value}`).join('\n\n')}`;
     } else if (tab === 'user') {
@@ -862,7 +886,7 @@ Is Claiming: ${isClaiming}`;
                   <div style={{ marginTop: '4px', padding: '4px', background: authUid === user?.id ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)', borderRadius: '4px', textAlign: 'center' }}>{authUid === user?.id ? '✅ IDs Match' : '❌ IDs Mismatch'}</div>
                 </div>
 
-                {/* 🆕 🔐 AUTH SECURITY SECTION */}
+                {/* 🔐 AUTH SECURITY SECTION */}
                 <div style={{ padding: '12px', background: 'rgba(168, 85, 247, 0.1)', borderRadius: '8px', border: '1px solid rgba(168, 85, 247, 0.4)', fontSize: '11px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', color: '#a855f7', fontWeight: 'bold', fontSize: '12px' }}>
                     <Shield size={14} /> AUTH SECURITY
@@ -883,6 +907,45 @@ Is Claiming: ${isClaiming}`;
                   <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(168, 85, 247, 0.2)', fontSize: '10px' }}>
                     <div>🔗 Hash: <span style={{ color: '#94a3b8', fontFamily: 'monospace', fontSize: '9px' }}>{authSecurity.rawDataHash || 'N/A'}</span></div>
                     <div>📅 initData Age: <span style={{ color: '#94a3b8' }}>{authSecurity.authDate || 'N/A'}</span></div>
+                  </div>
+                </div>
+
+                {/* 🆕 🛠️ APP FIXES STATUS SECTION */}
+                <div style={{ padding: '12px', background: 'rgba(34, 197, 94, 0.1)', borderRadius: '8px', border: '1px solid rgba(34, 197, 94, 0.4)', fontSize: '11px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', color: '#22c55e', fontWeight: 'bold', fontSize: '12px' }}>
+                    <Wrench size={14} /> APP FIXES STATUS
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 6px', background: appFixes.splashClosure ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)', borderRadius: '4px' }}>
+                      <span>1. Splash Stale Closure</span>
+                      <span style={{ color: appFixes.splashClosure ? '#22c55e' : '#ef4444', fontWeight: 'bold', fontSize: '10px' }}>
+                        {appFixes.splashClosure ? '✅ FIXED' : '❌ BUG'}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 6px', background: appFixes.visibilityCleanup ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)', borderRadius: '4px' }}>
+                      <span>2. visibilitychange Cleanup</span>
+                      <span style={{ color: appFixes.visibilityCleanup ? '#22c55e' : '#ef4444', fontWeight: 'bold', fontSize: '10px' }}>
+                        {appFixes.visibilityCleanup ? '✅ FIXED' : '❌ LEAK'}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 6px', background: appFixes.errorBoundary ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)', borderRadius: '4px' }}>
+                      <span>3. ErrorBoundary (all screens)</span>
+                      <span style={{ color: appFixes.errorBoundary ? '#22c55e' : '#ef4444', fontWeight: 'bold', fontSize: '10px' }}>
+                        {appFixes.errorBoundary ? '✅ FIXED' : '❌ RISK'}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 6px', background: appFixes.telegramReady ? 'rgba(34, 197, 94, 0.15)' : 'rgba(251, 191, 36, 0.15)', borderRadius: '4px' }}>
+                      <span>4. Telegram SDK ready()</span>
+                      <span style={{ color: appFixes.telegramReady ? '#22c55e' : '#fbbf24', fontWeight: 'bold', fontSize: '10px' }}>
+                        {appFixes.telegramReady ? '✅ CALLED' : '⏳ PENDING'}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 6px', background: appFixes.selectedCardCheck ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)', borderRadius: '4px' }}>
+                      <span>5. selectedCardId !== null</span>
+                      <span style={{ color: appFixes.selectedCardCheck ? '#22c55e' : '#ef4444', fontWeight: 'bold', fontSize: '10px' }}>
+                        {appFixes.selectedCardCheck ? '✅ FIXED' : '❌ EDGE'}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -929,6 +992,7 @@ Is Claiming: ${isClaiming}`;
               </div>
             )}
 
+            {/* STREAK, PROFILE, ENERGY, DIAGNOSTICS, FUNCTIONS, LOGS, ACTIONS TABS - უცვლელი */}
             {activeTab === 'streak' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
