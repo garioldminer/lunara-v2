@@ -28,12 +28,11 @@ export interface User {
 }
 
 // ============================================
-// 🛡️ HELPERS: Retry + Timeout
+// 🛡️ HELPERS: Retry + Timeout (TypeScript-safe)
 // ============================================
 
 /**
  * Retry a function with exponential backoff
- * Used for network operations that might temporarily fail
  */
 async function retryWithBackoff<T>(
   fn: () => Promise<T>,
@@ -48,9 +47,9 @@ async function retryWithBackoff<T>(
     } catch (err: any) {
       lastError = err;
       
-      // Don't retry if it's a business logic error (not network)
+      // Don't retry business logic errors
       if (err?.code === 'PGRST116' || err?.isNotFound) {
-        throw err; // Not found - retry won't help
+        throw err;
       }
       
       if (attempt < maxRetries) {
@@ -65,11 +64,10 @@ async function retryWithBackoff<T>(
 }
 
 /**
- * Add timeout to a promise
- * Prevents queries from hanging forever
+ * Add timeout to a real Promise
  */
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  return new Promise((resolve, reject) => {
+  return new Promise<T>((resolve, reject) => {
     const timer = setTimeout(
       () => reject(new Error(`⏰ Timeout after ${ms}ms`)),
       ms
@@ -92,32 +90,34 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 // ============================================
 
 export async function getUserByTelegramId(telegramId: number): Promise<User | null> {
-  if (!supabase) {
+  const db = supabase;
+  if (!db) {
     logger.warn('⚠️ Supabase not available');
     return null;
   }
   
   try {
     const result = await retryWithBackoff(async () => {
+      // ✅ Convert Supabase builder to real Promise via async IIFE
       return await withTimeout(
-        supabase
-          .from('users')
-          .select('*')
-          .eq('telegram_id', telegramId)
-          .single(),
-        8000 // 8 second timeout
+        (async () => {
+          return await db
+            .from('users')
+            .select('*')
+            .eq('telegram_id', telegramId)
+            .single();
+        })(),
+        8000
       );
     }, 2, 500);
 
     const { data, error } = result;
 
     if (error) {
-      // PGRST116 = "not found" (zero rows) - this is normal, not an error
       if (error.code === 'PGRST116') {
         return null;
       }
       
-      // Real error - log it
       logger.error('❌ Error fetching user by telegram_id:', {
         telegramId,
         code: error.code,
@@ -128,7 +128,6 @@ export async function getUserByTelegramId(telegramId: number): Promise<User | nu
 
     return data as User;
   } catch (err: any) {
-    // Network error, timeout, or exhausted retries
     logger.error('❌ getUserByTelegramId failed after retries:', {
       telegramId,
       error: err.message
@@ -138,7 +137,8 @@ export async function getUserByTelegramId(telegramId: number): Promise<User | nu
 }
 
 export async function createUser(tgUser: TelegramUser, authUid: string): Promise<User | null> {
-  if (!supabase) {
+  const db = supabase;
+  if (!db) {
     logger.warn('⚠️ Supabase not available');
     return null;
   }
@@ -147,16 +147,20 @@ export async function createUser(tgUser: TelegramUser, authUid: string): Promise
   const userDataWithId = { ...userData, id: authUid };
   
   try {
-    const { data, error } = await retryWithBackoff(async () => {
+    const result = await retryWithBackoff(async () => {
       return await withTimeout(
-        supabase
-          .from('users')
-          .insert([userDataWithId])
-          .select()
-          .single(),
+        (async () => {
+          return await db
+            .from('users')
+            .insert([userDataWithId])
+            .select()
+            .single();
+        })(),
         8000
       );
     }, 2, 500);
+
+    const { data, error } = result;
 
     if (error) {
       logger.error('❌ Error creating user:', {
@@ -179,16 +183,18 @@ export async function createUser(tgUser: TelegramUser, authUid: string): Promise
 }
 
 async function fixUserIdMismatch(oldId: string, newAuthUid: string) {
-  if (!supabase) return;
+  const db = supabase;
+  if (!db) return;
+  
   try {
     logger.log('🔧 Fixing ID mismatch: migrating from', oldId, 'to', newAuthUid);
     
-    await supabase.from('users').update({ id: newAuthUid }).eq('id', oldId);
-    await supabase.from('readings').update({ user_id: newAuthUid }).eq('user_id', oldId);
-    await supabase.from('user_patterns').update({ user_id: newAuthUid }).eq('user_id', oldId);
-    await supabase.from('streaks').update({ user_id: newAuthUid }).eq('user_id', oldId);
-    await supabase.from('user_sessions').update({ user_id: newAuthUid }).eq('user_id', oldId);
-    await supabase.from('user_preferences').update({ user_id: newAuthUid }).eq('user_id', oldId);
+    await db.from('users').update({ id: newAuthUid }).eq('id', oldId);
+    await db.from('readings').update({ user_id: newAuthUid }).eq('user_id', oldId);
+    await db.from('user_patterns').update({ user_id: newAuthUid }).eq('user_id', oldId);
+    await db.from('streaks').update({ user_id: newAuthUid }).eq('user_id', oldId);
+    await db.from('user_sessions').update({ user_id: newAuthUid }).eq('user_id', oldId);
+    await db.from('user_preferences').update({ user_id: newAuthUid }).eq('user_id', oldId);
     
     logger.log('✅ Successfully migrated all user data to new Auth UID');
   } catch (err: any) {
@@ -197,15 +203,17 @@ async function fixUserIdMismatch(oldId: string, newAuthUid: string) {
 }
 
 export async function getOrCreateUser(tgUser: TelegramUser): Promise<User | null> {
-  if (!supabase) {
+  const db = supabase;
+  if (!db) {
     logger.error('❌ getOrCreateUser: Supabase not available');
     return null;
   }
   
   try {
-    // Step 1: Get authenticated user
     const { data: { user: authUser }, error: authError } = await withTimeout(
-      supabase.auth.getUser(),
+      (async () => {
+        return await db.auth.getUser();
+      })(),
       5000
     );
 
@@ -217,13 +225,11 @@ export async function getOrCreateUser(tgUser: TelegramUser): Promise<User | null
     const authUid = authUser.id;
     logger.log('🔑 Authenticated User ID (Auth UID):', authUid);
 
-    // Step 2: Try to find existing user
     let user = await getUserByTelegramId(tgUser.id);
     
     if (user) {
       logger.log('✅ Existing user found:', { userId: user.id });
       
-      // ID mismatch? Auto-fix (legacy migration)
       if (user.id !== authUid) {
         logger.warn('⚠️ ID Mismatch detected! Auto-fixing...');
         await fixUserIdMismatch(user.id, authUid);
@@ -233,9 +239,6 @@ export async function getOrCreateUser(tgUser: TelegramUser): Promise<User | null
       return user;
     }
 
-    // Step 3: User not found - create new one
-    // ⚠️ CRITICAL: Only create if we're SURE user doesn't exist (got explicit null, not error)
-    // The retry logic in getUserByTelegramId ensures we only return null after multiple attempts
     logger.log('🆕 Creating new user with Auth UID:', authUid);
     user = await createUser(tgUser, authUid);
     
@@ -253,23 +256,28 @@ export async function getOrCreateUser(tgUser: TelegramUser): Promise<User | null
 }
 
 export async function updateUser(userId: string, updates: Partial<User>): Promise<User | null> {
-  if (!supabase) {
+  const db = supabase;
+  if (!db) {
     logger.warn('⚠️ Supabase not available');
     return null;
   }
   
   try {
-    const { data, error } = await retryWithBackoff(async () => {
+    const result = await retryWithBackoff(async () => {
       return await withTimeout(
-        supabase
-          .from('users')
-          .update({ ...updates, updated_at: new Date().toISOString() })
-          .eq('id', userId)
-          .select()
-          .single(),
+        (async () => {
+          return await db
+            .from('users')
+            .update({ ...updates, updated_at: new Date().toISOString() })
+            .eq('id', userId)
+            .select()
+            .single();
+        })(),
         6000
       );
-    }, 1, 300); // Only 1 retry for updates
+    }, 1, 300);
+
+    const { data, error } = result;
 
     if (error) {
       logger.error('Error updating user:', {
