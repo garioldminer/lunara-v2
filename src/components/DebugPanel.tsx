@@ -440,6 +440,19 @@ export default function DebugPanel(props: DebugPanelProps) {
 
     // Test 2: Session refresh
     setAuthFlow(prev => ({ ...prev, session: 'testing', sessionError: null }));
+    
+    // ✅ FIX: null check for supabase (TypeScript safety)
+    if (!supabase) {
+      setAuthFlow(prev => ({ 
+        ...prev, 
+        session: 'fail', 
+        sessionError: 'No supabase client available',
+        lastRun: new Date().toLocaleTimeString('en-US', { hour12: false }) 
+      }));
+      addDebugLog('error', 'AUTH_FLOW_TEST', '❌ No supabase client');
+      return;
+    }
+    
     try {
       const { data, error } = await supabase.auth.refreshSession();
       if (error) {
@@ -781,7 +794,7 @@ ${authUid === user?.id ? '✅ IDs Match' : '❌ IDs Mismatch'}
 
 🧪 AUTH FLOW TEST
 Last Run: ${authFlow.lastRun || 'Never'}
- Edge Function: ${authFlow.edge === 'ok' ? `OK (${authFlow.edgeLatency}ms)` : authFlow.edge === 'fail' ? `FAIL: ${authFlow.edgeError}` : 'Not run'}
+🔌 Edge Function: ${authFlow.edge === 'ok' ? `OK (${authFlow.edgeLatency}ms)` : authFlow.edge === 'fail' ? `FAIL: ${authFlow.edgeError}` : 'Not run'}
 🔄 Session Refresh: ${authFlow.session === 'ok' ? 'OK' : authFlow.session === 'fail' ? `FAIL: ${authFlow.sessionError}` : 'Not run'}
 
 🛠️ APP FIXES STATUS
@@ -974,7 +987,6 @@ Is Claiming: ${isClaiming}`;
                   <div style={{ marginTop: '4px', padding: '4px', background: authUid === user?.id ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)', borderRadius: '4px', textAlign: 'center' }}>{authUid === user?.id ? '✅ IDs Match' : '❌ IDs Mismatch'}</div>
                 </div>
 
-                {/* 🔐 AUTH SECURITY SECTION */}
                 <div style={{ padding: '12px', background: 'rgba(168, 85, 247, 0.1)', borderRadius: '8px', border: '1px solid rgba(168, 85, 247, 0.4)', fontSize: '11px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', color: '#a855f7', fontWeight: 'bold', fontSize: '12px' }}>
                     <Shield size={14} /> AUTH SECURITY
@@ -998,7 +1010,6 @@ Is Claiming: ${isClaiming}`;
                   </div>
                 </div>
 
-                {/* 🆕 🧪 AUTH FLOW TEST SECTION */}
                 <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.4)', fontSize: '11px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#60a5fa', fontWeight: 'bold', fontSize: '12px' }}>
@@ -1031,7 +1042,7 @@ Is Claiming: ${isClaiming}`;
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', background: authFlow.edge === 'ok' ? 'rgba(16, 185, 129, 0.15)' : authFlow.edge === 'fail' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255, 255, 255, 0.05)', borderRadius: '4px' }}>
                       <div>
-                        <div style={{ fontWeight: 'bold', fontSize: '10px' }}> telegram-auth</div>
+                        <div style={{ fontWeight: 'bold', fontSize: '10px' }}>🔌 telegram-auth</div>
                         <div style={{ fontSize: '9px', color: '#94a3b8', marginTop: '2px' }}>
                           signInWithPassword via service_role
                         </div>
@@ -1088,7 +1099,6 @@ Is Claiming: ${isClaiming}`;
                   </div>
                 </div>
 
-                {/* 🆕 🛠️ APP FIXES STATUS SECTION */}
                 <div style={{ padding: '12px', background: 'rgba(34, 197, 94, 0.1)', borderRadius: '8px', border: '1px solid rgba(34, 197, 94, 0.4)', fontSize: '11px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', color: '#22c55e', fontWeight: 'bold', fontSize: '12px' }}>
                     <Wrench size={14} /> APP FIXES STATUS
