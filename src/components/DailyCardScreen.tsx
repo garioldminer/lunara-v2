@@ -287,7 +287,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
   const { user } = useUser();
 
   const [dailyReading, setDailyReading] = useState<DailyReading | null>(null);
-  // ✅ FIX: Added 'loading' stage - starts as loading to prevent flicker
   const [stage, setStage] = useState<'loading' | 'selecting' | 'revealing' | 'revealed'>('loading');
   const [selectedFocus, setSelectedFocus] = useState<FocusArea>('general');
   const [customQuestion, setCustomQuestion] = useState('');
@@ -400,8 +399,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     const loadTodayReading = async () => {
       if (!user) return;
 
-      // ✅ FIX: stage stays as 'loading' during DB fetch
-      // (no flicker - user sees loader, not "Set Your Intention")
       addLog('api', 'Loading today reading from DB');
       const existing = await getTodayReading(user.id);
 
@@ -415,12 +412,10 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         if (existing.reflection_prompt) {
           addLog('info', 'Reflection prompt loaded', { prompt: existing.reflection_prompt });
         }
-        // ✅ FIX: Go directly to revealed (skip 'selecting' entirely)
         setStage('revealed');
       } else {
         addLog('info', 'No reading for today - showing focus selection');
         setDailyReading(null);
-        // ✅ FIX: Only now show 'selecting' after DB confirmed no reading
         setStage('selecting');
       }
     };
@@ -585,7 +580,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
 
   const filteredLogs = logFilter === 'all' ? debugLogs : debugLogs.filter(l => l.type === logFilter);
 
-  // ✅ FIX: Show loader while loading OR no user (prevents flicker)
   if (!user || stage === 'loading') {
     return (
       <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', background: '#000002' }}>
@@ -634,61 +628,60 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         {toast && <ToastNotification toast={toast} onClose={() => setToast(null)} />}
       </AnimatePresence>
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingLeft: '5px', paddingRight: '5px', position: 'relative', zIndex: 1 }}>
-        <button onClick={() => onNavigate?.('home')} style={{ background: 'rgba(10, 8, 20, 0.5)', border: '1px solid rgba(197, 160, 89, 0.4)', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C5A059', cursor: 'pointer', backdropFilter: 'blur(12px)' }}>
-          <ArrowLeft size={20} />
-        </button>
-        <div style={{ fontSize: '11px', color: '#94a3b8', letterSpacing: '1px', textTransform: 'uppercase', background: 'rgba(10, 8, 20, 0.4)', padding: '6px 12px', borderRadius: '20px', backdropFilter: 'blur(8px)' }}>
-          {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
-        </div>
-        <div style={{ width: '40px' }} />
+      {/* 🎯 DATE - Fixed between Telegram Close & Menu buttons */}
+      <div style={{ 
+        position: 'fixed', 
+        top: 'calc(env(safe-area-inset-top, 0px) + 22px)', 
+        left: '50%', 
+        transform: 'translateX(-50%)', 
+        zIndex: 100, 
+        fontSize: '11px', 
+        color: '#94a3b8', 
+        letterSpacing: '1px', 
+        textTransform: 'uppercase', 
+        background: 'rgba(10, 8, 20, 0.6)', 
+        padding: '6px 12px', 
+        borderRadius: '20px', 
+        backdropFilter: 'blur(8px)', 
+        WebkitBackdropFilter: 'blur(8px)',
+        pointerEvents: 'none',
+        border: '1px solid rgba(197, 160, 89, 0.15)'
+      }}>
+        {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
       </div>
 
-      {streakInfo && streakInfo.current_streak > 0 && (
-        <div
-          style={{
-            margin: '0 10px 12px 10px',
-            padding: '10px 14px',
-            background: 'rgba(10, 8, 20, 0.6)',
-            border: '1px solid rgba(251, 146, 60, 0.3)',
-            borderRadius: '12px',
-            backdropFilter: 'blur(8px)',
-            position: 'relative',
-            zIndex: 1
-          }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '14px' }}>🔥</span>
-              <span style={{ fontSize: '12px', fontWeight: 800, color: '#fb923c' }}>
-                {streakInfo.current_streak} day{streakInfo.current_streak !== 1 ? 's' : ''}
-              </span>
-            </div>
-            {streakInfo.next_milestone ? (
-              <span style={{ fontSize: '10px', color: '#94a3b8' }}>
-                {streakInfo.days_to_next} day{streakInfo.days_to_next !== 1 ? 's' : ''} to {streakInfo.next_milestone.icon_emoji} {streakInfo.next_milestone.name}
-              </span>
-            ) : (
-              <span style={{ fontSize: '10px', color: '#FFD700' }}>💎 Max tier reached!</span>
-            )}
-          </div>
-          {streakInfo.next_milestone && (
-            <div style={{ height: '5px', borderRadius: '999px', overflow: 'hidden', background: 'rgba(255,255,255,0.08)' }}>
+      {/* 🎯 HEADER ROW - Back button + compact streak banner */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px', paddingLeft: '5px', paddingRight: '10px', position: 'relative', zIndex: 1, marginTop: 'calc(env(safe-area-inset-top, 0px) + 50px)' }}>
+        <button onClick={() => onNavigate?.('home')} style={{ background: 'rgba(10, 8, 20, 0.5)', border: '1px solid rgba(197, 160, 89, 0.4)', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C5A059', cursor: 'pointer', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', flexShrink: 0 }}>
+          <ArrowLeft size={20} />
+        </button>
+
+        {streakInfo && streakInfo.current_streak > 0 ? (
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'rgba(10, 8, 20, 0.6)', border: '1px solid rgba(251, 146, 60, 0.3)', borderRadius: '12px', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}>
+            <span style={{ fontSize: '14px', flexShrink: 0 }}>🔥</span>
+            <span style={{ fontSize: '12px', fontWeight: 800, color: '#fb923c', flexShrink: 0 }}>
+              {streakInfo.current_streak} day{streakInfo.current_streak !== 1 ? 's' : ''}
+            </span>
+            <div style={{ flex: 1, height: '4px', borderRadius: '999px', overflow: 'hidden', background: 'rgba(255,255,255,0.08)', minWidth: '40px' }}>
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${streakInfo.percent_to_next}%` }}
                 transition={{ duration: 0.8, ease: 'easeOut' }}
-                style={{
-                  height: '100%',
-                  borderRadius: '999px',
-                  background: 'linear-gradient(90deg, #fb923c, #fbbf24)',
-                  boxShadow: '0 0 8px rgba(251, 146, 60, 0.5)'
-                }}
+                style={{ height: '100%', borderRadius: '999px', background: 'linear-gradient(90deg, #fb923c, #fbbf24)', boxShadow: '0 0 8px rgba(251, 146, 60, 0.5)' }}
               />
             </div>
-          )}
-        </div>
-      )}
+            {streakInfo.next_milestone && (
+              <span style={{ fontSize: '9px', color: '#94a3b8', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                {streakInfo.days_to_next}d → {streakInfo.next_milestone.icon_emoji}
+              </span>
+            )}
+          </div>
+        ) : (
+          <div style={{ flex: 1, fontSize: '15px', color: '#C5A059', fontWeight: 700, letterSpacing: '0.5px' }}>
+            Daily Card
+          </div>
+        )}
+      </div>
 
       <AnimatePresence mode="wait">
         {stage === 'selecting' && (
