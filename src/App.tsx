@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from './lib/supabase';
 import { logger } from './lib/logger';
+import { applyPlatformTokens } from './lib/platform';
 import SplashScreen from './components/SplashScreen';
 import OnboardingWelcome from './components/OnboardingWelcome';
 import OnboardingZodiac from './components/OnboardingZodiac';
@@ -117,7 +118,11 @@ function AppContent() {
   
   const { user, setUser } = useUser();
 
+  // 🎯 PLATFORM DETECTION + CSS TOKENS (ერთხელ, აპის გაშვებისას)
   useEffect(() => {
+    // პლატფორმის იდენტიფიკაცია + tokens-ების დაყენება <html>-ზე
+    applyPlatformTokens();
+
     const tg = (window as any).Telegram?.WebApp;
     if (tg) {
       if (typeof tg.ready === 'function') tg.ready();
