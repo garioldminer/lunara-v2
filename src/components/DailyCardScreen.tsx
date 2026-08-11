@@ -628,7 +628,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         {toast && <ToastNotification toast={toast} onClose={() => setToast(null)} />}
       </AnimatePresence>
 
-      {/* 🎯 DATE - Fixed between Telegram Close & Menu buttons (50px from top) */}
+      {/* 🎯 DATE - Fixed between Telegram Close & Menu buttons */}
       <div style={{ 
         position: 'fixed', 
         top: '50px', 
@@ -650,8 +650,8 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
       </div>
 
-      {/* 🎯 HEADER ROW - Back button + compact streak banner (70px from top - standard for all pages) */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px', paddingLeft: '5px', paddingRight: '10px', position: 'relative', zIndex: 1, marginTop: '70px' }}>
+      {/* 🎯 HEADER ROW - Back button + compact streak banner (no marginTop - global 70px padding handles spacing) */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px', paddingLeft: '5px', paddingRight: '10px', position: 'relative', zIndex: 1 }}>
         <button onClick={() => onNavigate?.('home')} style={{ background: 'rgba(10, 8, 20, 0.5)', border: '1px solid rgba(197, 160, 89, 0.4)', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C5A059', cursor: 'pointer', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', flexShrink: 0 }}>
           <ArrowLeft size={20} />
         </button>
