@@ -175,7 +175,6 @@ export default function DebugPanel(props: DebugPanelProps) {
     selectedCardCheck: true,
   });
 
-  // 🆕 🧪 AUTH FLOW TEST STATE
   const [authFlow, setAuthFlow] = useState<{
     edge: 'idle' | 'testing' | 'ok' | 'fail';
     edgeLatency: number | null;
@@ -387,7 +386,6 @@ export default function DebugPanel(props: DebugPanelProps) {
     return { level, currentLevelXP, xpToNext: xpRequiredForNext };
   };
 
-  // 🆕 🧪 AUTH FLOW TEST - Edge Function + Session
   const runAuthFlowTest = async () => {
     const tg = (window as any).Telegram?.WebApp;
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -395,7 +393,6 @@ export default function DebugPanel(props: DebugPanelProps) {
 
     addDebugLog('info', 'AUTH_FLOW_TEST', '🧪 Starting auth flow test...');
 
-    // Test 1: Edge Function (telegram-auth)
     setAuthFlow(prev => ({ ...prev, edge: 'testing', edgeError: null, edgeStatus: null, edgeResponse: null }));
     
     if (!tg?.initData) {
@@ -438,10 +435,8 @@ export default function DebugPanel(props: DebugPanelProps) {
       }
     }
 
-    // Test 2: Session refresh
     setAuthFlow(prev => ({ ...prev, session: 'testing', sessionError: null }));
     
-    // ✅ FIX: null check for supabase (TypeScript safety)
     if (!supabase) {
       setAuthFlow(prev => ({ 
         ...prev, 
@@ -903,7 +898,12 @@ Quests Loading: ${questsLoading}
 Time Left: ${timeLeft}
 Show Quest Modal: ${showQuestModal}
 Reward Claimed: ${rewardClaimed}
-Is Claiming: ${isClaiming}`;
+Is Claiming: ${isClaiming}
+
+LAST ${debugLogs.length} LOGS:
+${debugLogs.slice(0, 20).map(log => 
+  `[${log.timestamp}] [${log.category}] ${log.type.toUpperCase()}: ${log.message}`
+).join('\n')}`;
     }
 
     navigator.clipboard.writeText(text);
@@ -1824,6 +1824,47 @@ Is Claiming: ${isClaiming}`;
                   <button onClick={checkDatabaseStatus} style={{ padding: '10px', background: '#3b82f6', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}>🩺 CHECK DB</button>
                   <button onClick={refreshUserDataDebug} style={{ padding: '10px', background: '#0ea5e9', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}>🔄 REFRESH USER</button>
                 </div>
+
+                {/* 🆕 📜 ბოლო ლოგები (ტესტის შედეგები) */}
+                <div style={{ padding: '12px', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <div style={{ marginBottom: '8px', color: '#f472b6', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Terminal size={14} /> 📜 ბოლო ლოგები (ტესტის შედეგები)
+                    </span>
+                    <span style={{ fontSize: '9px', color: '#94a3b8', fontWeight: 'normal' }}>
+                      {debugLogs.length} სულ
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '9px', color: '#94a3b8', marginBottom: '8px', padding: '4px', background: 'rgba(251, 191, 36, 0.08)', borderRadius: '4px', lineHeight: '1.4' }}>
+                     <strong>ტესტი:</strong> +10 ⚡ უნდა იყოს ✅ მწვანე (RPC). +100 💎 უნდა იყოს ❌ წითელი (trigger ბლოკავს).
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '200px', overflowY: 'auto' }}>
+                    {debugLogs.slice(0, 10).map((log) => (
+                      <div key={log.id} style={{ padding: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', borderLeft: `3px solid ${log.type === 'error' ? '#ef4444' : log.type === 'success' ? '#10b981' : log.type === 'warning' ? '#fbbf24' : '#64748b'}`, fontSize: '9px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+                          <span style={{ color: '#64748b', fontSize: '8px' }}>{log.timestamp}</span>
+                          <span style={{ 
+                            color: log.type === 'error' ? '#ef4444' : log.type === 'success' ? '#10b981' : log.type === 'warning' ? '#fbbf24' : '#94a3b8', 
+                            fontSize: '8px', 
+                            fontWeight: 'bold',
+                            background: log.type === 'error' ? 'rgba(239, 68, 68, 0.15)' : log.type === 'success' ? 'rgba(16, 185, 129, 0.15)' : log.type === 'warning' ? 'rgba(251, 191, 36, 0.15)' : 'rgba(255,255,255,0.05)',
+                            padding: '1px 4px',
+                            borderRadius: '3px'
+                          }}>
+                            {log.category}
+                          </span>
+                        </div>
+                        <div style={{ color: '#e2e8f0', wordBreak: 'break-word', lineHeight: '1.3' }}>{log.message}</div>
+                      </div>
+                    ))}
+                    {debugLogs.length === 0 && (
+                      <div style={{ color: '#64748b', fontSize: '9px', textAlign: 'center', padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
+                         ლოგები ჯერ არ არის — დააჭირე ტესტის ღილაკებს ზემოთ
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 <button onClick={handleLogoutAndReset} style={{ width: '100%', padding: '10px', background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={14} style={{ marginRight: '4px' }} /> LOGOUT & RESET</button>
               </div>
             )}
