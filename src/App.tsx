@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from './lib/supabase';
+import { logger } from './lib/logger';
 import SplashScreen from './components/SplashScreen';
 import OnboardingWelcome from './components/OnboardingWelcome';
 import OnboardingZodiac from './components/OnboardingZodiac';
@@ -46,7 +47,7 @@ class ErrorBoundary extends React.Component<
     return { hasError: true, errorMessage: error.message, errorStack: error.stack || '' };
   }
   componentDidCatch(error: Error, errorInfo: any) {
-    console.error('🚨 ERROR BOUNDARY:', error, errorInfo);
+    logger.error('🚨 ERROR BOUNDARY:', error, errorInfo);
   }
   render() {
     if (this.state.hasError) {
@@ -74,27 +75,27 @@ function UserLoader({ onReady }: { onReady: () => void }) {
   
   useEffect(() => {
     async function loadUser() {
-      console.log('🔵 [UserLoader] Starting user load & auth...');
+      logger.log('🔵 [UserLoader] Starting user load & auth...');
       try {
         let tgUser = await initializeTelegramAuth();
         if (!tgUser) {
-          console.warn('⚠️ [UserLoader] Edge Auth failed. Using fallback.');
+          logger.warn('⚠️ [UserLoader] Edge Auth failed. Using fallback.');
           tgUser = getTelegramUser();
         }
         if (!tgUser) {
-          console.error('❌ [UserLoader] No Telegram user found at all.');
+          logger.error('❌ [UserLoader] No Telegram user found at all.');
           setLoading(false);
           onReady();
           return;
         }
-        console.log('🔵 [UserLoader] Loading user data from Supabase...');
+        logger.log('🔵 [UserLoader] Loading user data from Supabase...');
         const user = await getOrCreateUser(tgUser);
         if (user) {
           setUser(user);
-          console.log('✅ [UserLoader] User saved to context!');
+          logger.log('✅ [UserLoader] User saved to context!');
         }
       } catch (error) {
-        console.error('❌ [UserLoader] Critical Error:', error);
+        logger.error('❌ [UserLoader] Critical Error:', error);
       } finally {
         setLoading(false);
         onReady();
@@ -112,12 +113,10 @@ function AppContent() {
   const [activeTab, setActiveTab] = useState('home');
   const [userReady, setUserReady] = useState(false);
   
-  // 🆕 🔴 FIX #1: Splash stale closure - state-based approach instead of setInterval
   const [splashFinished, setSplashFinished] = useState(false);
   
   const { user, setUser } = useUser();
 
-  // 🆕 🔴 FIX #4: Add tg.ready() call
   useEffect(() => {
     const tg = (window as any).Telegram?.WebApp;
     if (tg) {
@@ -128,7 +127,6 @@ function AppContent() {
     }
   }, []);
 
-  // 🆕 🔴 FIX #1: useEffect handles splash navigation (no stale closure)
   useEffect(() => {
     if (splashFinished && userReady) {
       if (user?.onboarding_completed) {
@@ -139,7 +137,6 @@ function AppContent() {
     }
   }, [splashFinished, userReady, user]);
 
-  // 🆕 🔴 FIX #2: visibilitychange with named handler + proper cleanup
   useEffect(() => {
     if (!user) return;
     
@@ -147,7 +144,7 @@ function AppContent() {
       try { 
         await updateUserLastActive(user.id); 
       } catch (error) { 
-        console.error('❌ [LastActive] Error:', error); 
+        logger.error('❌ [LastActive] Error:', error); 
       }
     };
     
@@ -199,7 +196,7 @@ function AppContent() {
       if (user && user.is_admin === true) {
         goTo(screen as Screen);
       } else {
-        console.warn('⛔ Unauthorized admin access attempt by user:', user?.id);
+        logger.warn('⛔ Unauthorized admin access attempt by user:', user?.id);
         goTo('home');
       }
     } else if (screen === 'journal-stats') {
@@ -211,7 +208,6 @@ function AppContent() {
 
   const handleUserReady = () => setUserReady(true);
   
-  // 🆕 🔴 FIX #1: Simple state toggle (no polling)
   const handleSplashFinish = () => {
     setSplashFinished(true);
   };
@@ -229,26 +225,44 @@ function AppContent() {
     <div className="app-container">
       {!userReady && <UserLoader onReady={handleUserReady} />}
       
-      {/* 🎯 ONBOARDING SCREENS - NO wrapper padding */}
+      {/* 🎯 ONBOARDING SCREENS - Conditional (one-time use) */}
       {currentScreen === 'splash' && <SplashScreen onFinish={handleSplashFinish} />}
       {currentScreen === 'welcome' && <OnboardingWelcome onFinish={() => goTo('zodiac')} />}
       {currentScreen === 'zodiac' && <OnboardingZodiac onFinish={() => goTo('first-reading')} />}
       {currentScreen === 'first-reading' && <OnboardingFirstReading onFinish={handleOnboardingComplete} />}
       
-      {/* 🎯 SCREEN WRAPPER with single ErrorBoundary for ALL screens */}
-      {/* 🆕 🔴 FIX #3: ErrorBoundary wraps all screens */}
+      {/* 🎯 MAIN SCREENS WRAPPER */}
       <div className="screen-wrapper">
         <ErrorBoundary>
-          {currentScreen === 'home' && <HomeScreen onNavigate={handleNavigate} />}
-          {currentScreen === 'cards' && <CardsScreen onNavigate={handleNavigate} />}
+          
+          {/* ============================================================ */}
+          {/* ✅ KEEP-ALIVE TABS: home, cards, astro, profile              */}
+          {/* Always mounted, state preserved, no reload on tab switch    */}
+          {/* ============================================================ */}
+          <div style={{ display: currentScreen === 'home' ? 'block' : 'none' }}>
+            <HomeScreen onNavigate={handleNavigate} />
+          </div>
+          <div style={{ display: currentScreen === 'cards' ? 'block' : 'none' }}>
+            <CardsScreen onNavigate={handleNavigate} />
+          </div>
+          <div style={{ display: currentScreen === 'astro' ? 'block' : 'none' }}>
+            <AstroScreen onNavigate={handleNavigate} />
+          </div>
+          <div style={{ display: currentScreen === 'profile' ? 'block' : 'none' }}>
+            <ProfileScreen onNavigate={handleNavigate} />
+          </div>
+
+          {/* ============================================================ */}
+          {/* ⚡ CONDITIONAL SCREENS: heavy reading/admin screens         */}
+          {/* Mount/unmount to save memory and keep state clean           */}
+          {/* ============================================================ */}
           {currentScreen === 'reading' && <ReadingScreen onNavigate={handleNavigate} />}
-          {currentScreen === 'astro' && <AstroScreen onNavigate={handleNavigate} />}
           {currentScreen === 'horoscope' && <HoroscopeScreen onNavigate={handleNavigate} />}
           {currentScreen === 'sign-selection' && <SignSelectionScreen onNavigate={handleNavigate} />}
-          {currentScreen === 'profile' && <ProfileScreen onNavigate={handleNavigate} />}
           {currentScreen === 'card-fan' && <CardFanScreen onNavigate={handleNavigate} />}
-          {/* 🆕 🟡 FIX #5: Use !== null to handle card ID 0 */}
-          {currentScreen === 'card-detail' && selectedCardId !== null && <CardDetailScreen cardId={selectedCardId} onNavigate={handleNavigate} />}
+          {currentScreen === 'card-detail' && selectedCardId !== null && (
+            <CardDetailScreen cardId={selectedCardId} onNavigate={handleNavigate} />
+          )}
           {currentScreen === 'daily-card' && <DailyCardScreen onNavigate={handleNavigate} />}
           {currentScreen === 'three-card-reading' && <ThreeCardReadingScreen onNavigate={handleNavigate} />}
           {currentScreen === 'reading-history' && <ReadingHistoryScreen onNavigate={handleNavigate} />}
@@ -261,6 +275,7 @@ function AppContent() {
           {currentScreen === 'ai-management' && <AdminAIManagement onNavigate={handleNavigate} />}
           {currentScreen === 'subscription' && <SubscriptionScreen onNavigate={handleNavigate} />}
           {currentScreen === 'services' && <ServicesScreen onNavigate={handleNavigate} />}
+          
         </ErrorBoundary>
       </div>
       
