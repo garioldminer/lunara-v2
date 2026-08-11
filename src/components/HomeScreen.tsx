@@ -11,6 +11,7 @@ import { getOrCreateUser } from '../lib/userService';
 import { loadUserQuests, trackQuestProgress, type QuestProgress } from '../lib/questService';
 import { getTodayReading } from '../lib/dailyCardService';
 import { getStreakMilestones, getClaimedMilestones } from '../lib/streakService';
+import { logger } from '../lib/logger';
 import { 
   Gem, Zap, Trophy, Flame, X, CheckCircle,
   Sparkles, LayoutGrid, Moon, Hash, 
@@ -715,10 +716,10 @@ export default function HomeScreen({ onNavigate }: Props) {
           cosmic_focus: newEnergy
         }));
         
-        console.log(`⚡ Energy regenerated: +${energyToRegen}, new total: ${newEnergy}`);
+        logger.log(`⚡ Energy regenerated: +${energyToRegen}, new total: ${newEnergy}`);
       }
     } catch (error) {
-      console.error('❌ Error calculating energy:', error);
+      logger.error('❌ Error calculating energy:', error);
     }
   };
 
@@ -739,7 +740,7 @@ export default function HomeScreen({ onNavigate }: Props) {
     });
     
     if (error) {
-      console.error('❌ Error spending energy:', error);
+      logger.error('❌ Error spending energy:', error);
       showToast('Failed to spend energy. Please try again.', 'error');
       return false;
     }
@@ -754,7 +755,7 @@ export default function HomeScreen({ onNavigate }: Props) {
       cosmic_focus: data.new_energy
     }));
     
-    console.log(`⚡ Spent ${requiredEnergy} energy on ${readingType}, remaining: ${data.new_energy}`);
+    logger.log(`⚡ Spent ${requiredEnergy} energy on ${readingType}, remaining: ${data.new_energy}`);
     return true;
   };
 
