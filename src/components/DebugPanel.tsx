@@ -75,7 +75,6 @@ interface AuthSecurityInfo {
   authDate: string | null;
 }
 
-// 🆕 🛠️ APP FIXES STATUS TYPE
 interface AppFixesStatus {
   splashClosure: boolean;
   visibilityCleanup: boolean;
@@ -168,13 +167,27 @@ export default function DebugPanel(props: DebugPanelProps) {
     authDate: null
   });
 
-  // 🆕 🛠️ APP FIXES STATUS
   const [appFixes, setAppFixes] = useState<AppFixesStatus>({
-    splashClosure: true,      // Fix #1: useEffect-based navigation (App.tsx)
-    visibilityCleanup: true,  // Fix #2: named handler + removeEventListener (App.tsx)
-    errorBoundary: true,      // Fix #3: all screens wrapped (App.tsx)
-    telegramReady: false,     // Fix #4: tg.ready() called (App.tsx)
-    selectedCardCheck: true,  // Fix #5: !== null instead of truthy (App.tsx)
+    splashClosure: true,
+    visibilityCleanup: true,
+    errorBoundary: true,
+    telegramReady: false,
+    selectedCardCheck: true,
+  });
+
+  // 🆕 🧪 AUTH FLOW TEST STATE
+  const [authFlow, setAuthFlow] = useState<{
+    edge: 'idle' | 'testing' | 'ok' | 'fail';
+    edgeLatency: number | null;
+    edgeError: string | null;
+    edgeStatus: number | null;
+    edgeResponse: any;
+    session: 'idle' | 'testing' | 'ok' | 'fail';
+    sessionError: string | null;
+    lastRun: string | null;
+  }>({ 
+    edge: 'idle', edgeLatency: null, edgeError: null, edgeStatus: null, edgeResponse: null,
+    session: 'idle', sessionError: null, lastRun: null 
   });
 
   const [functionStatuses, setFunctionStatuses] = useState<FunctionStatus[]>([]);
@@ -228,7 +241,6 @@ export default function DebugPanel(props: DebugPanelProps) {
     checkSystem();
   }, [showDebug]);
 
-  // 🆕 🛠️ CHECK TELEGRAM READY
   useEffect(() => {
     if (!showDebug) return;
     const tg = (window as any).Telegram?.WebApp;
@@ -373,6 +385,77 @@ export default function DebugPanel(props: DebugPanelProps) {
       xpRequiredForNext = getXPToNextLevel(level);
     }
     return { level, currentLevelXP, xpToNext: xpRequiredForNext };
+  };
+
+  // 🆕 🧪 AUTH FLOW TEST - Edge Function + Session
+  const runAuthFlowTest = async () => {
+    const tg = (window as any).Telegram?.WebApp;
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+    addDebugLog('info', 'AUTH_FLOW_TEST', '🧪 Starting auth flow test...');
+
+    // Test 1: Edge Function (telegram-auth)
+    setAuthFlow(prev => ({ ...prev, edge: 'testing', edgeError: null, edgeStatus: null, edgeResponse: null }));
+    
+    if (!tg?.initData) {
+      setAuthFlow(prev => ({ ...prev, edge: 'fail', edgeError: 'No Telegram initData available' }));
+      addDebugLog('error', 'AUTH_FLOW_TEST', '❌ No Telegram initData');
+    } else if (!supabaseUrl) {
+      setAuthFlow(prev => ({ ...prev, edge: 'fail', edgeError: 'No SUPABASE_URL env' }));
+      addDebugLog('error', 'AUTH_FLOW_TEST', '❌ No SUPABASE_URL');
+    } else {
+      const start = performance.now();
+      try {
+        const res = await fetch(`${supabaseUrl}/functions/v1/telegram-auth`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseAnonKey || ''}`
+          },
+          body: JSON.stringify({ initData: tg.initData }),
+        });
+        const latency = Math.round(performance.now() - start);
+        let data: any = null;
+        try {
+          data = await res.json();
+        } catch {
+          data = { raw: await res.text() };
+        }
+        
+        if (res.ok && (data.success || data.access_token || data.session)) {
+          setAuthFlow(prev => ({ ...prev, edge: 'ok', edgeLatency: latency, edgeStatus: res.status, edgeResponse: data }));
+          addDebugLog('success', 'AUTH_FLOW_TEST', `✅ Edge OK (${latency}ms)`, data);
+        } else {
+          const errMsg = data?.error || data?.message || `HTTP ${res.status}`;
+          setAuthFlow(prev => ({ ...prev, edge: 'fail', edgeLatency: latency, edgeStatus: res.status, edgeError: errMsg, edgeResponse: data }));
+          addDebugLog('error', 'AUTH_FLOW_TEST', `❌ Edge fail: ${errMsg} (${res.status})`, data);
+        }
+      } catch (e: any) {
+        const latency = Math.round(performance.now() - start);
+        setAuthFlow(prev => ({ ...prev, edge: 'fail', edgeLatency: latency, edgeError: e.message }));
+        addDebugLog('error', 'AUTH_FLOW_TEST', `💥 Edge exception: ${e.message}`);
+      }
+    }
+
+    // Test 2: Session refresh
+    setAuthFlow(prev => ({ ...prev, session: 'testing', sessionError: null }));
+    try {
+      const { data, error } = await supabase.auth.refreshSession();
+      if (error) {
+        setAuthFlow(prev => ({ ...prev, session: 'fail', sessionError: error.message, lastRun: new Date().toLocaleTimeString('en-US', { hour12: false }) }));
+        addDebugLog('error', 'AUTH_FLOW_TEST', `❌ Session refresh: ${error.message}`);
+      } else if (!data?.session) {
+        setAuthFlow(prev => ({ ...prev, session: 'fail', sessionError: 'No session returned', lastRun: new Date().toLocaleTimeString('en-US', { hour12: false }) }));
+        addDebugLog('error', 'AUTH_FLOW_TEST', '❌ Session refresh: no session');
+      } else {
+        setAuthFlow(prev => ({ ...prev, session: 'ok', lastRun: new Date().toLocaleTimeString('en-US', { hour12: false }) }));
+        addDebugLog('success', 'AUTH_FLOW_TEST', '✅ Session refresh OK');
+      }
+    } catch (e: any) {
+      setAuthFlow(prev => ({ ...prev, session: 'fail', sessionError: e.message, lastRun: new Date().toLocaleTimeString('en-US', { hour12: false }) }));
+      addDebugLog('error', 'AUTH_FLOW_TEST', `💥 Session exception: ${e.message}`);
+    }
   };
 
   const runEnergyCheck = async () => {
@@ -696,6 +779,11 @@ ${authUid === user?.id ? '✅ IDs Match' : '❌ IDs Mismatch'}
 🔗 Raw Hash: ${authSecurity.rawDataHash || 'N/A'}
 📅 initData Age: ${authSecurity.authDate || 'N/A'}
 
+🧪 AUTH FLOW TEST
+Last Run: ${authFlow.lastRun || 'Never'}
+ Edge Function: ${authFlow.edge === 'ok' ? `OK (${authFlow.edgeLatency}ms)` : authFlow.edge === 'fail' ? `FAIL: ${authFlow.edgeError}` : 'Not run'}
+🔄 Session Refresh: ${authFlow.session === 'ok' ? 'OK' : authFlow.session === 'fail' ? `FAIL: ${authFlow.sessionError}` : 'Not run'}
+
 🛠️ APP FIXES STATUS
 1. Splash Stale Closure: ${appFixes.splashClosure ? '✅ FIXED (useEffect-based)' : '❌ BUG'}
 2. visibilitychange Cleanup: ${appFixes.visibilityCleanup ? '✅ FIXED (named handler)' : '❌ LEAK'}
@@ -910,6 +998,96 @@ Is Claiming: ${isClaiming}`;
                   </div>
                 </div>
 
+                {/* 🆕 🧪 AUTH FLOW TEST SECTION */}
+                <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.4)', fontSize: '11px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#60a5fa', fontWeight: 'bold', fontSize: '12px' }}>
+                       🧪 AUTH FLOW TEST
+                    </div>
+                    <button
+                      onClick={runAuthFlowTest}
+                      disabled={authFlow.edge === 'testing' || authFlow.session === 'testing'}
+                      style={{
+                        padding: '4px 10px',
+                        background: (authFlow.edge === 'testing' || authFlow.session === 'testing') ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.2)',
+                        border: '1px solid #60a5fa',
+                        borderRadius: '6px',
+                        color: '#60a5fa',
+                        cursor: (authFlow.edge === 'testing' || authFlow.session === 'testing') ? 'not-allowed' : 'pointer',
+                        fontSize: '10px',
+                        fontWeight: 'bold',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      {(authFlow.edge === 'testing' || authFlow.session === 'testing') ? (
+                        <><RefreshCw size={10} className="animate-spin" /> Testing...</>
+                      ) : (
+                        <><Play size={10} /> Run Test</>
+                      )}
+                    </button>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', background: authFlow.edge === 'ok' ? 'rgba(16, 185, 129, 0.15)' : authFlow.edge === 'fail' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255, 255, 255, 0.05)', borderRadius: '4px' }}>
+                      <div>
+                        <div style={{ fontWeight: 'bold', fontSize: '10px' }}> telegram-auth</div>
+                        <div style={{ fontSize: '9px', color: '#94a3b8', marginTop: '2px' }}>
+                          signInWithPassword via service_role
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontWeight: 'bold', color: authFlow.edge === 'ok' ? '#10b981' : authFlow.edge === 'fail' ? '#ef4444' : '#94a3b8', fontSize: '10px' }}>
+                          {authFlow.edge === 'testing' ? '⏳ ...' 
+                            : authFlow.edge === 'ok' ? `✅ OK (${authFlow.edgeLatency}ms)` 
+                            : authFlow.edge === 'fail' ? `❌ ${authFlow.edgeStatus ? `HTTP ${authFlow.edgeStatus}` : 'FAIL'}` 
+                            : '—'}
+                        </div>
+                      </div>
+                    </div>
+                    {authFlow.edge === 'fail' && authFlow.edgeError && (
+                      <div style={{ padding: '6px 8px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '4px', fontSize: '9px', color: '#fca5a5', wordBreak: 'break-word' }}>
+                         Error: {authFlow.edgeError}
+                      </div>
+                    )}
+                    {authFlow.edge === 'ok' && authFlow.edgeResponse && (
+                      <div style={{ padding: '6px 8px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '4px', fontSize: '9px', color: '#86efac', wordBreak: 'break-word', maxHeight: '60px', overflowY: 'auto' }}>
+                         Response: {JSON.stringify(authFlow.edgeResponse).substring(0, 200)}
+                        {JSON.stringify(authFlow.edgeResponse).length > 200 ? '...' : ''}
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', background: authFlow.session === 'ok' ? 'rgba(16, 185, 129, 0.15)' : authFlow.session === 'fail' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255, 255, 255, 0.05)', borderRadius: '4px' }}>
+                      <div>
+                        <div style={{ fontWeight: 'bold', fontSize: '10px' }}>🔄 Session Refresh</div>
+                        <div style={{ fontSize: '9px', color: '#94a3b8', marginTop: '2px' }}>
+                          supabase.auth.refreshSession()
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontWeight: 'bold', color: authFlow.session === 'ok' ? '#10b981' : authFlow.session === 'fail' ? '#ef4444' : '#94a3b8', fontSize: '10px' }}>
+                          {authFlow.session === 'testing' ? '⏳ ...' 
+                            : authFlow.session === 'ok' ? '✅ OK' 
+                            : authFlow.session === 'fail' ? '❌ FAIL' 
+                            : '—'}
+                        </div>
+                      </div>
+                    </div>
+                    {authFlow.session === 'fail' && authFlow.sessionError && (
+                      <div style={{ padding: '6px 8px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '4px', fontSize: '9px', color: '#fca5a5', wordBreak: 'break-word' }}>
+                         Error: {authFlow.sessionError}
+                      </div>
+                    )}
+                    {authFlow.lastRun && (
+                      <div style={{ fontSize: '9px', color: '#64748b', textAlign: 'right', paddingTop: '4px', borderTop: '1px solid rgba(59, 130, 246, 0.2)' }}>
+                        Last run: {authFlow.lastRun}
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ marginTop: '8px', padding: '6px', background: 'rgba(251, 191, 36, 0.08)', borderRadius: '4px', fontSize: '9px', color: '#fbbf24', lineHeight: '1.4' }}>
+                     <strong>How it works:</strong> Sends initData to Edge Function which calls signInWithPassword with service_role. If Email provider is disabled, this may fail.
+                  </div>
+                </div>
+
                 {/* 🆕 🛠️ APP FIXES STATUS SECTION */}
                 <div style={{ padding: '12px', background: 'rgba(34, 197, 94, 0.1)', borderRadius: '8px', border: '1px solid rgba(34, 197, 94, 0.4)', fontSize: '11px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', color: '#22c55e', fontWeight: 'bold', fontSize: '12px' }}>
@@ -992,7 +1170,6 @@ Is Claiming: ${isClaiming}`;
               </div>
             )}
 
-            {/* STREAK, PROFILE, ENERGY, DIAGNOSTICS, FUNCTIONS, LOGS, ACTIONS TABS - უცვლელი */}
             {activeTab === 'streak' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
