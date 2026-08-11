@@ -9,6 +9,7 @@ import { trackQuestProgress } from '../lib/questService';
 import { useUser } from '../context/UserContext';
 import { getActiveSubscription } from '../lib/subscriptionService';
 import { supabase } from '../lib/supabase';
+import { logger } from '../lib/logger';
 import {
   getTodayReading,
   getDailyCard,
@@ -286,7 +287,8 @@ export default function DailyCardScreen({ onNavigate }: Props) {
   const { user } = useUser();
 
   const [dailyReading, setDailyReading] = useState<DailyReading | null>(null);
-  const [stage, setStage] = useState<'selecting' | 'revealing' | 'revealed'>('selecting');
+  // ✅ FIX: Added 'loading' stage - starts as loading to prevent flicker
+  const [stage, setStage] = useState<'loading' | 'selecting' | 'revealing' | 'revealed'>('loading');
   const [selectedFocus, setSelectedFocus] = useState<FocusArea>('general');
   const [customQuestion, setCustomQuestion] = useState('');
   const [showQuestionInput, setShowQuestionInput] = useState(false);
@@ -321,7 +323,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
       type, message, data
     };
     setDebugLogs(prev => [log, ...prev].slice(0, 100));
-    console.log(`[${type.toUpperCase()}] ${message}`, data || '');
+    logger.log(`[${type.toUpperCase()}] ${message}`, data || '');
   };
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
@@ -398,6 +400,8 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     const loadTodayReading = async () => {
       if (!user) return;
 
+      // ✅ FIX: stage stays as 'loading' during DB fetch
+      // (no flicker - user sees loader, not "Set Your Intention")
       addLog('api', 'Loading today reading from DB');
       const existing = await getTodayReading(user.id);
 
@@ -411,10 +415,12 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         if (existing.reflection_prompt) {
           addLog('info', 'Reflection prompt loaded', { prompt: existing.reflection_prompt });
         }
+        // ✅ FIX: Go directly to revealed (skip 'selecting' entirely)
         setStage('revealed');
       } else {
         addLog('info', 'No reading for today - showing focus selection');
         setDailyReading(null);
+        // ✅ FIX: Only now show 'selecting' after DB confirmed no reading
         setStage('selecting');
       }
     };
@@ -579,7 +585,8 @@ export default function DailyCardScreen({ onNavigate }: Props) {
 
   const filteredLogs = logFilter === 'all' ? debugLogs : debugLogs.filter(l => l.type === logFilter);
 
-  if (!user || (dailyReading === null && stage === 'selecting' && !isCreating && debugLogs.length === 0)) {
+  // ✅ FIX: Show loader while loading OR no user (prevents flicker)
+  if (!user || stage === 'loading') {
     return (
       <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', background: '#000002' }}>
         <Canvas dpr={[1, 1.5]} style={{ position: 'absolute', inset: 0 }}>
@@ -599,7 +606,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
   const meaning = currentCard ? (isReversed ? currentCard.reversed_meaning : currentCard.meaning) : '';
   const keywords = currentCard ? (isReversed ? currentCard.reversed_keywords : currentCard.keywords) : [];
 
-  // 🎯 paddingTop/paddingBottom ამოღებული - handled by .screen-wrapper in App.css
   const containerStyle: React.CSSProperties = {
     minHeight: '100vh', position: 'relative', color: '#fff',
     paddingLeft: '5px', paddingRight: '5px',
