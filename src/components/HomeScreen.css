@@ -1,37 +1,61 @@
 /* ============================================
-   HOME SCREEN - RESPONSIVE GAMIFIED DASHBOARD
+   🎨 HOME SCREEN - RESPONSIVE GAMIFIED DASHBOARD
+   ============================================
+   LUNARA Telegram Mini App
+   Supports: iPhone SE → iPhone Pro Max, Android, Tablets
    ============================================ */
 
    :root {
-    --screen-padding: 3px;
-    --section-gap: 2px;
+    /* 📏 Layout tokens */
+    --screen-padding: clamp(8px, 3vw, 16px);
+    --section-gap: clamp(6px, 2vw, 12px);
     --max-width: 480px;
+    
+    /* 🎨 Telegram theme fallback colors */
+    --home-bg: var(--tg-theme-bg-color, #0a0600);
+    --home-text: var(--tg-theme-text-color, #ffffff);
+    --home-hint: var(--tg-theme-hint-color, #b3a68c);
+    --home-gold: #C5A059;
+    --home-gold-dark: #8B6914;
+    --home-card-bg: linear-gradient(145deg, #1c1712 0%, #12100c 100%);
+    --home-card-border: rgba(197, 160, 89, 0.22);
+    
+    /* ⚡ Safe areas (set by index.html + JS) */
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
   }
   
+  /* ============================================
+     📱 HOME SCREEN ROOT
+     ============================================ */
   .home-screen {
     width: 100%;
     padding: 0 var(--screen-padding);
-    padding-bottom: 80px;
+    /* ✅ CRITICAL: dynamic bottom padding for BottomNav + safe area */
+    padding-bottom: calc(90px + var(--safe-bottom, 0px));
     max-width: var(--max-width);
     margin: 0 auto;
-    color: #fff;
+    color: var(--home-text, #fff);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-    background: radial-gradient(ellipse at 50% 0%, #14101c 0%, #0a0600 55%, #07050a 100%);
+    background: radial-gradient(ellipse at 50% 0%, #14101c 0%, var(--home-bg, #0a0600) 55%, #07050a 100%);
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     box-sizing: border-box;
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
+    min-height: 100dvh;
   }
   
   /* ============================================
-     1. USER HEADER - 52px Perfect Alignment
+     1. USER HEADER - RESPONSIVE ALIGNMENT
      ============================================ */
   .user-header {
-    background: linear-gradient(145deg, #1c1712 0%, #12100c 100%);
-    border: 1px solid rgba(197, 160, 89, 0.22);
+    background: var(--home-card-bg);
+    border: 1px solid var(--home-card-border);
     border-radius: 16px;
-    padding: 12px;
+    padding: clamp(8px, 3vw, 12px);
     margin-bottom: var(--section-gap);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(197, 160, 89, 0.05);
   }
@@ -39,14 +63,14 @@
   .user-main-row {
     display: flex;
     align-items: center;
-    gap: 12px;
-    height: 52px;
+    gap: clamp(8px, 2vw, 12px);
+    height: clamp(48px, 13vw, 52px);
   }
   
   .avatar-section {
     position: relative;
-    width: 52px;
-    height: 52px;
+    width: clamp(48px, 13vw, 52px);
+    height: clamp(48px, 13vw, 52px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -64,6 +88,8 @@
     top: 0;
     left: 0;
     z-index: 1;
+    width: 100%;
+    height: 100%;
   }
   
   .xp-circle-bg {
@@ -78,16 +104,16 @@
   }
   
   .avatar-image {
-    width: 40px;
-    height: 40px;
+    width: calc(100% - 12px);
+    height: calc(100% - 12px);
     border-radius: 50%;
-    background: linear-gradient(135deg, #C5A059, #8B6914);
+    background: linear-gradient(135deg, var(--home-gold), var(--home-gold-dark));
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    font-size: clamp(14px, 4vw, 16px);
     font-weight: 700;
-    color: #0a0600;
+    color: var(--home-bg, #0a0600);
     position: relative;
     z-index: 2;
   }
@@ -98,15 +124,15 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    height: 52px;
-    margin-left: 12px;
+    height: 100%;
+    margin-left: clamp(8px, 2vw, 12px);
   }
   
   .username {
-    font-size: 16px;
+    font-size: clamp(14px, 4vw, 16px);
     font-weight: 700;
     margin: 0;
-    color: #fff;
+    color: var(--home-text, #fff);
     letter-spacing: 0.3px;
     height: 24px;
     line-height: 24px;
@@ -124,7 +150,7 @@
     height: 24px;
     box-sizing: border-box;
     align-self: flex-start;
-    padding: 0 10px;
+    padding: 0 clamp(8px, 2.5vw, 10px);
     background: linear-gradient(135deg, rgba(197, 160, 89, 0.15), rgba(197, 160, 89, 0.08));
     border: 1px solid rgba(197, 160, 89, 0.3);
     border-radius: 12px;
@@ -147,13 +173,13 @@
     height: 24px;
     box-sizing: border-box;
     align-self: flex-start;
-    padding: 0 10px;
+    padding: 0 clamp(8px, 2.5vw, 10px);
     background: rgba(197, 160, 89, 0.1);
     border: 1px dashed rgba(197, 160, 89, 0.4);
     border-radius: 12px;
     cursor: pointer;
-    font-size: 10px;
-    color: #b3a68c;
+    font-size: clamp(9px, 2.5vw, 10px);
+    color: var(--home-hint, #b3a68c);
     transition: all 0.2s ease;
   }
   
@@ -161,7 +187,7 @@
     transform: scale(0.97);
     background: rgba(197, 160, 89, 0.18);
     border-color: rgba(197, 160, 89, 0.6);
-    color: #C5A059;
+    color: var(--home-gold, #C5A059);
   }
   
   .xp-text-inline {
@@ -172,19 +198,20 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    height: 52px;
+    height: 100%;
     flex-shrink: 0;
+    gap: 4px;
   }
   
   .resource {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: clamp(4px, 1.5vw, 6px);
     background: rgba(255, 255, 255, 0.06);
-    padding: 0 8px;
+    padding: 0 clamp(6px, 2vw, 8px);
     border-radius: 12px;
-    font-size: 12px;
+    font-size: clamp(11px, 3vw, 12px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     height: 24px;
     box-sizing: border-box;
@@ -206,14 +233,15 @@
   
   .resource .value {
     font-weight: 600;
-    color: #fff;
-    min-width: 36px;
-    font-size: 12px;
+    color: var(--home-text, #fff);
+    min-width: 30px;
+    font-size: clamp(11px, 3vw, 12px);
+    text-align: center;
   }
   
   .home-screen .add-btn {
-    background: #C5A059;
-    color: #0a0600;
+    background: var(--home-gold, #C5A059);
+    color: var(--home-bg, #0a0600);
     border: none;
     border-radius: 50%;
     width: 18px;
@@ -239,7 +267,7 @@
   }
   
   /* ============================================
-     2. DAILY QUESTS + ACTION BUTTONS
+     2. DAILY QUESTS + ACTION BUTTONS SPLIT
      ============================================ */
   .quests-and-actions-split {
     display: flex;
@@ -252,15 +280,20 @@
   
   .daily-quests-compact {
     flex: 0 0 60%;
-    background: linear-gradient(145deg, #1c1712 0%, #12100c 100%);
-    border: 1px solid rgba(197, 160, 89, 0.22);
+    background: var(--home-card-bg);
+    border: 1px solid var(--home-card-border);
     border-radius: 14px;
-    padding: 8px;
+    padding: clamp(6px, 2vw, 8px);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     display: flex;
     flex-direction: column;
     min-width: 0;
     cursor: pointer;
+    transition: transform 0.2s;
+  }
+  
+  .daily-quests-compact:active {
+    transform: scale(0.99);
   }
   
   .quests-header-compact {
@@ -274,16 +307,16 @@
   
   .quests-header-compact h3 {
     margin: 0;
-    font-size: 9px;
-    color: #C5A059;
+    font-size: clamp(8px, 2.5vw, 9px);
+    color: var(--home-gold, #C5A059);
     letter-spacing: 1px;
     font-weight: 700;
     text-transform: uppercase;
   }
   
   .quests-timer-compact {
-    font-size: 9px;
-    color: #b3a68c;
+    font-size: clamp(8px, 2.5vw, 9px);
+    color: var(--home-hint, #b3a68c);
     font-family: monospace;
   }
   
@@ -306,7 +339,7 @@
   }
   
   .quest-icon-compact {
-    color: #C5A059;
+    color: var(--home-gold, #C5A059);
     flex-shrink: 0;
     display: flex;
     align-items: center;
@@ -326,8 +359,8 @@
   }
   
   .quest-name-compact {
-    font-size: 9px;
-    color: #fff;
+    font-size: clamp(8px, 2.5vw, 9px);
+    color: var(--home-text, #fff);
     font-weight: 500;
     display: block;
     margin-bottom: 2px;
@@ -352,7 +385,7 @@
   
   .progress-fill-compact {
     height: 100%;
-    background: linear-gradient(90deg, #C5A059, #ffe566);
+    background: linear-gradient(90deg, var(--home-gold, #C5A059), #ffe566);
     border-radius: 2px;
     box-shadow: 0 0 4px rgba(197, 160, 89, 0.5);
     transition: width 0.3s ease;
@@ -360,13 +393,13 @@
   
   .progress-text-compact {
     font-size: 8px;
-    color: #b3a68c;
+    color: var(--home-hint, #b3a68c);
     min-width: 18px;
   }
   
   .quest-reward-compact {
-    font-size: 9px;
-    color: #C5A059;
+    font-size: clamp(8px, 2.5vw, 9px);
+    color: var(--home-gold, #C5A059);
     font-weight: 600;
     display: flex;
     align-items: center;
@@ -395,11 +428,11 @@
   }
   
   .action-buttons-panel {
-    flex: 0 0 calc(40% - 2px);
-    background: linear-gradient(145deg, #1c1712 0%, #12100c 100%);
-    border: 1px solid rgba(197, 160, 89, 0.22);
+    flex: 0 0 calc(40% - var(--section-gap));
+    background: var(--home-card-bg);
+    border: 1px solid var(--home-card-border);
     border-radius: 14px;
-    padding: 6px;
+    padding: clamp(4px, 1.5vw, 6px);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     display: flex;
     min-width: 0;
@@ -437,8 +470,8 @@
   
   .action-icon-v {
     filter: drop-shadow(0 0 6px currentColor);
-    width: 20px;
-    height: 20px;
+    width: clamp(18px, 5vw, 20px);
+    height: clamp(18px, 5vw, 20px);
   }
   
   .action-badge {
@@ -446,8 +479,8 @@
     bottom: 3px;
     right: 3px;
     background: rgba(197, 160, 89, 0.9);
-    color: #0a0600;
-    font-size: 7px;
+    color: var(--home-bg, #0a0600);
+    font-size: clamp(6px, 2vw, 7px);
     font-weight: 700;
     padding: 1px 3px;
     border-radius: 3px;
@@ -464,7 +497,7 @@
     right: -4px;
     background: linear-gradient(135deg, #10b981, #059669);
     color: #fff;
-    font-size: 9px;
+    font-size: clamp(8px, 2.2vw, 9px);
     font-weight: 800;
     padding: 2px 5px;
     border-radius: 8px;
@@ -474,11 +507,11 @@
   }
   
   .action-btn-vertical:not(.streak-btn-v):not(.rank-btn-v):not(.upgrade-btn-v):not(.subscription-btn-v) {
-    --glow-color: #C5A059;
+    --glow-color: var(--home-gold, #C5A059);
   }
   
   .action-btn-vertical:not(.streak-btn-v):not(.rank-btn-v):not(.upgrade-btn-v):not(.subscription-btn-v) .action-icon-v {
-    color: #C5A059;
+    color: var(--home-gold, #C5A059);
   }
   
   .streak-btn-v { 
@@ -518,13 +551,13 @@
   }
   
   /* ============================================
-     3. CARD OF THE DAY
+     3. CARD OF THE DAY BANNER
      ============================================ */
   .card-of-day-banner {
-    background: linear-gradient(145deg, #1c1712 0%, #12100c 100%);
-    border: 1px solid rgba(197, 160, 89, 0.22);
+    background: var(--home-card-bg);
+    border: 1px solid var(--home-card-border);
     border-radius: 16px;
-    padding: 12px;
+    padding: clamp(8px, 3vw, 12px);
     margin-bottom: var(--section-gap);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(197, 160, 89, 0.04);
     position: relative;
@@ -559,7 +592,7 @@
   
   .card-image-3d-wrapper {
     position: relative;
-    width: clamp(110px, 28vw, 140px);
+    width: clamp(100px, 28vw, 140px);
     aspect-ratio: 2/3;
     perspective: 800px;
     margin: -16px 0;
@@ -584,7 +617,7 @@
     width: 100%;
     height: 100%;
     border-radius: 8px;
-    border: 2px solid #C5A059;
+    border: 2px solid var(--home-gold, #C5A059);
     box-shadow: 
       0 2px 4px rgba(0, 0, 0, 0.4),
       0 8px 16px rgba(0, 0, 0, 0.5),
@@ -607,11 +640,11 @@
     transform: translate(-50%, -50%);
     background: rgba(10, 8, 20, 0.7);
     backdrop-filter: blur(4px);
-    padding: 6px 16px;
+    padding: clamp(4px, 2vw, 6px) clamp(12px, 4vw, 16px);
     border-radius: 20px;
     border: 1px solid rgba(197, 160, 89, 0.6);
-    color: #C5A059;
-    font-size: 11px;
+    color: var(--home-gold, #C5A059);
+    font-size: clamp(10px, 3vw, 11px);
     font-weight: 700;
     letter-spacing: 2px;
     text-transform: uppercase;
@@ -623,7 +656,7 @@
     width: 100%;
     height: 100%;
     border-radius: 8px;
-    border: 2px solid #C5A059;
+    border: 2px solid var(--home-gold, #C5A059);
     box-shadow: 
       0 2px 4px rgba(0, 0, 0, 0.4),
       0 8px 16px rgba(0, 0, 0, 0.5),
@@ -645,7 +678,7 @@
     height: 100%;
     object-fit: cover;
     border-radius: 8px;
-    border: 2px solid #C5A059;
+    border: 2px solid var(--home-gold, #C5A059);
     box-shadow: 
       0 2px 4px rgba(0, 0, 0, 0.4),
       0 8px 16px rgba(0, 0, 0, 0.5),
@@ -659,7 +692,7 @@
     height: 100%;
     background: linear-gradient(135deg, #2a2215, #1a1510);
     border-radius: 8px;
-    border: 2px solid #C5A059;
+    border: 2px solid var(--home-gold, #C5A059);
     box-shadow: 
       0 2px 4px rgba(0, 0, 0, 0.4),
       0 8px 16px rgba(0, 0, 0, 0.5),
@@ -675,7 +708,7 @@
   .card-number-large {
     font-size: clamp(12px, 3vw, 14px);
     font-weight: 700;
-    color: #C5A059;
+    color: var(--home-gold, #C5A059);
   }
   
   .card-symbol-large {
@@ -686,7 +719,7 @@
   .card-name-large {
     font-size: clamp(8px, 2vw, 10px);
     font-weight: 700;
-    color: #C5A059;
+    color: var(--home-gold, #C5A059);
     text-align: center;
     padding: 0 6px;
   }
@@ -745,7 +778,7 @@
   
   .card-half-right {
     flex: 0 0 55%;
-    padding-left: 12px;
+    padding-left: clamp(8px, 3vw, 12px);
     display: flex;
     align-items: center;
   }
@@ -761,7 +794,7 @@
   
   .card-label {
     font-size: clamp(8px, 2vw, 9px);
-    color: #C5A059;
+    color: var(--home-gold, #C5A059);
     letter-spacing: 2px;
     text-transform: uppercase;
     opacity: 0.7;
@@ -770,7 +803,7 @@
   
   .card-day-label {
     font-size: clamp(8px, 2vw, 9px);
-    color: #C5A059;
+    color: var(--home-gold, #C5A059);
     letter-spacing: 2px;
     text-transform: uppercase;
     opacity: 0.7;
@@ -780,10 +813,13 @@
   .card-title {
     margin: 0;
     font-size: clamp(14px, 4vw, 18px);
-    color: #C5A059;
+    color: var(--home-gold, #C5A059);
     letter-spacing: 0.5px;
     font-weight: 700;
     line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   
   .card-description {
@@ -792,6 +828,10 @@
     color: rgba(255, 255, 255, 0.7);
     font-style: italic;
     line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
   
   .card-meaning {
@@ -810,9 +850,9 @@
   
   .read-guidance-btn {
     background: transparent;
-    border: 1px solid #C5A059;
-    color: #C5A059;
-    padding: 5px 10px;
+    border: 1px solid var(--home-gold, #C5A059);
+    color: var(--home-gold, #C5A059);
+    padding: clamp(4px, 1.5vw, 5px) clamp(8px, 3vw, 10px);
     border-radius: 6px;
     font-size: clamp(8px, 2.5vw, 10px);
     font-weight: 700;
@@ -828,31 +868,34 @@
   }
   
   .read-guidance-btn:active {
-    background: #C5A059;
-    color: #0a0600;
+    background: var(--home-gold, #C5A059);
+    color: var(--home-bg, #0a0600);
   }
   
   /* ============================================
      4. QUICK ACCESS GRID - MYSTICAL TAROT CARDS
+     ✅ RESPONSIVE: auto-fit based on screen width
      ============================================ */
   .quick-access { 
-    margin-bottom: 8px; 
+    margin-bottom: var(--section-gap); 
     width: 100%; 
   }
   
+  /* ✅ DEFAULT: 4 columns on medium/large screens */
   .quick-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 7px;
+    gap: clamp(6px, 2vw, 8px);
   }
   
   .quick-item {
-    border-radius: 14px;
+    border-radius: clamp(12px, 3vw, 14px);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
-    color: #fff;
+    justify-content: center;
+    gap: clamp(4px, 1.5vw, 6px);
+    color: var(--home-text, #fff);
     cursor: pointer;
     transition: all 0.25s ease;
     position: relative;
@@ -860,14 +903,16 @@
     background: linear-gradient(160deg, rgba(var(--glow-color-rgb, 197 160 89), 0.14) 0%, rgba(16, 13, 10, 0.97) 60%);
     border: 1px solid rgba(var(--glow-color-rgb, 197 160 89), 0.28);
     padding: clamp(10px, 3vw, 14px) 4px;
+    min-height: clamp(70px, 18vw, 85px);
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    aspect-ratio: auto;
   }
   
   .quick-item::before {
     content: '';
     position: absolute;
     inset: 4px;
-    border-radius: 10px;
+    border-radius: clamp(8px, 2.5vw, 10px);
     background:
       linear-gradient(var(--glow-color, #C5A059), var(--glow-color, #C5A059)) top left / 10px 1.5px,
       linear-gradient(var(--glow-color, #C5A059), var(--glow-color, #C5A059)) top left / 1.5px 10px,
@@ -907,17 +952,21 @@
   
   .quick-label {
     font-size: clamp(9px, 2.5vw, 10px);
-    color: #fff;
+    color: var(--home-text, #fff);
     font-weight: 600;
     text-align: center;
     line-height: 1.1;
     position: relative;
     z-index: 2;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   
   .q-label { 
     font-size: clamp(9px, 2.5vw, 10px);
-    color: #fff;
+    color: var(--home-text, #fff);
     font-weight: 600;
     text-align: center;
     line-height: 1.1;
@@ -927,16 +976,20 @@
   
   .quick-sublabel {
     font-size: clamp(8px, 2vw, 9px);
-    color: #b3a68c;
+    color: var(--home-hint, #b3a68c);
     text-align: center;
     line-height: 1.1;
     position: relative;
     z-index: 2;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   
   .q-sublabel { 
     font-size: clamp(8px, 2vw, 9px);
-    color: #b3a68c;
+    color: var(--home-hint, #b3a68c);
     text-align: center;
     line-height: 1.1;
     position: relative;
@@ -979,8 +1032,6 @@
     overflow: hidden;
   }
   
-  /* ✅ REMOVED: paywallShine animation (was causing the yellow moving element) */
-  
   .quick-item.services-item .quick-icon,
   .quick-item.services-item .q-icon-wrapper,
   .quick-item.paywall-item .quick-icon,
@@ -990,7 +1041,7 @@
   }
   
   /* ============================================
-     5. QUEST MODAL
+     5. QUEST MODAL - SAFE AWARE
      ============================================ */
   .quest-modal-overlay {
     position: fixed;
@@ -1003,7 +1054,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    /* ✅ Safe area aware padding */
+    padding: calc(20px + var(--safe-top, 0px)) 20px calc(20px + var(--safe-bottom, 0px));
   }
   
   .quest-modal-content {
@@ -1012,7 +1064,7 @@
     border-radius: 16px;
     width: 100%;
     max-width: 400px;
-    max-height: 80vh;
+    max-height: min(80vh, calc(100dvh - var(--safe-top, 0px) - var(--safe-bottom, 0px) - 40px));
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -1028,8 +1080,8 @@
   
   .quest-modal-header h3 {
     margin: 0;
-    color: #C5A059;
-    font-size: 16px;
+    color: var(--home-gold, #C5A059);
+    font-size: clamp(14px, 4vw, 16px);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -1078,6 +1130,8 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    flex: 1;
+    min-width: 0;
   }
   
   .quest-modal-icon {
@@ -1088,28 +1142,34 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #C5A059;
+    color: var(--home-gold, #C5A059);
     flex-shrink: 0;
   }
   
   .quest-modal-item:not(.claimed) .quest-modal-icon {
     background: rgba(197, 160, 89, 0.1);
-    color: #C5A059;
+    color: var(--home-gold, #C5A059);
   }
   
   .quest-modal-title {
-    font-size: 13px;
-    color: #fff;
+    font-size: clamp(12px, 3.5vw, 13px);
+    color: var(--home-text, #fff);
     font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   
   .quest-modal-desc {
-    font-size: 10px;
+    font-size: clamp(9px, 2.5vw, 10px);
     color: #94a3b8;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   
   .quest-modal-reward {
-    font-size: 11px;
+    font-size: clamp(10px, 3vw, 11px);
     color: #fbbf24;
     font-weight: bold;
     display: flex;
@@ -1135,14 +1195,14 @@
   
   .progress-fill-modal {
     height: 100%;
-    background: linear-gradient(90deg, #C5A059, #ffe566);
+    background: linear-gradient(90deg, var(--home-gold, #C5A059), #ffe566);
     border-radius: 2px;
     transition: width 0.3s ease;
   }
   
   .quest-modal-progress-text {
-    font-size: 11px;
-    color: #b3a68c;
+    font-size: clamp(10px, 3vw, 11px);
+    color: var(--home-hint, #b3a68c);
     min-width: 30px;
     text-align: right;
   }
@@ -1154,7 +1214,7 @@
     border-radius: 8px;
     color: #fff;
     padding: 8px;
-    font-size: 12px;
+    font-size: clamp(11px, 3vw, 12px);
     font-weight: bold;
     cursor: pointer;
     display: flex;
@@ -1175,7 +1235,7 @@
     border: 1px solid rgba(16, 185, 129, 0.4);
     border-radius: 8px;
     padding: 8px;
-    font-size: 12px;
+    font-size: clamp(11px, 3vw, 12px);
     font-weight: bold;
     color: #10b981;
     display: flex;
@@ -1194,14 +1254,14 @@
   }
   
   .quest-modal-all-complete-title {
-    font-size: 14px;
+    font-size: clamp(13px, 3.5vw, 14px);
     color: #10b981;
     font-weight: bold;
     margin-bottom: 4px;
   }
   
   .quest-modal-comeback {
-    font-size: 11px;
+    font-size: clamp(10px, 2.8vw, 11px);
     color: #94a3b8;
   }
   
@@ -1222,8 +1282,10 @@
   }
   
   /* ============================================
-     RESPONSIVE
+     📱 RESPONSIVE BREAKPOINTS
      ============================================ */
+  
+  /* 📱 iPhone SE & small Android (320px - 360px) */
   @media (max-width: 360px) {
     .quests-and-actions-split {
       flex-direction: column;
@@ -1232,6 +1294,16 @@
     .daily-quests-compact,
     .action-buttons-panel {
       flex: 1 1 100%;
+    }
+    
+    .action-buttons-panel {
+      min-height: 110px;
+    }
+    
+    /* ✅ 3 columns for quick grid on very small screens */
+    .quick-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
     }
     
     .card-of-day-content {
@@ -1243,20 +1315,124 @@
     .card-half-right {
       flex: 1 1 100%;
       padding: 0;
+      width: 100%;
     }
     
     .card-half-right {
       padding-left: 0;
+      text-align: center;
+    }
+    
+    .card-image-3d-wrapper {
+      width: clamp(110px, 40vw, 140px);
+      margin: 0 auto;
+    }
+    
+    .card-info-section {
+      align-items: center;
+      text-align: center;
+    }
+    
+    .read-guidance-btn {
+      align-self: center;
     }
   }
   
-  @media (min-width: 480px) {
+  /* 📱 Standard phones (361px - 414px): iPhone 12/13/14, most Android */
+  @media (min-width: 361px) and (max-width: 414px) {
+    .quick-grid {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 7px;
+    }
+  }
+  
+  /* 📱 Large phones (415px - 480px): iPhone Pro Max, Samsung Ultra */
+  @media (min-width: 415px) and (max-width: 480px) {
+    .quick-grid {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 9px;
+    }
+    
+    .quick-item {
+      min-height: 85px;
+    }
+  }
+  
+  /* 📱 Tablets (481px+) */
+  @media (min-width: 481px) {
     .home-screen {
       padding: 0 var(--screen-padding);
-      padding-bottom: 80px;
+      padding-bottom: calc(100px + var(--safe-bottom, 0px));
     }
     
     .quick-grid {
-      gap: 9px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    
+    .quick-item {
+      min-height: 95px;
+    }
+  }
+  
+  /* 📱 Landscape mode on phones */
+  @media (orientation: landscape) and (max-height: 500px) {
+    .home-screen {
+      padding-bottom: calc(70px + var(--safe-bottom, 0px));
+    }
+    
+    .quick-grid {
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
+    }
+    
+    .quick-item {
+      min-height: 60px;
+      padding: 8px 2px;
+    }
+    
+    .quick-label,
+    .quick-sublabel {
+      font-size: 8px;
+    }
+  }
+  
+  /* ♿ Accessibility: Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    
+    .card-reversed-indicator-large,
+    .milestone-badge {
+      animation: none !important;
+    }
+  }
+  
+  /* 🌓 Telegram theme sync (light mode) */
+  @media (prefers-color-scheme: light) {
+    .home-screen {
+      background: radial-gradient(ellipse at 50% 0%, #f5f5f5 0%, var(--home-bg, #ffffff) 55%, #fafafa 100%);
+      color: var(--home-text, #0a0600);
+    }
+    
+    .user-header,
+    .daily-quests-compact,
+    .action-buttons-panel,
+    .card-of-day-banner {
+      background: linear-gradient(145deg, #ffffff 0%, #f9f9f9 100%);
+      border-color: rgba(197, 160, 89, 0.3);
+    }
+    
+    .username,
+    .card-title,
+    .card-label,
+    .quest-name-compact,
+    .quick-label {
+      color: var(--home-text, #0a0600);
     }
   }
