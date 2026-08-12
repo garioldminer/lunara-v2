@@ -99,17 +99,24 @@ export function initTelegramApp(): void {
     logger.log('⚠️ tg.expand() failed:', e);
   }
 
+  // 🔧 დაბრუნებულია ზუსტად ისე, როგორც ორიგინალ main.tsx-ში იყო —
+  // იმავე setTimeout(100ms) დაყოვნებით და იმავე პოზიციაზე
+  // (expand()-ისა და disableVerticalSwipes()-ს შორის).
+  setTimeout(() => {
+    try {
+      if (typeof tg.requestFullscreen === 'function') {
+        tg.requestFullscreen();
+      }
+    } catch (e) {
+      logger.log('⚠️ tg.requestFullscreen() failed:', e);
+    }
+  }, 100);
+
   try {
     if (typeof tg.disableVerticalSwipes === 'function') tg.disableVerticalSwipes();
   } catch (e) {
     logger.log('⚠️ tg.disableVerticalSwipes() failed:', e);
   }
-
-  // ⚠️ requestFullscreen() შეგნებულად ამოღებულია აქედან.
-  // ეს რეჟიმი კონფლიქტში მოდის App.css-ის hardcoded header-padding-თან
-  // და მისი მხარდაჭერა incosistent-ია Telegram-კლიენტების ვერსიებს შორის.
-  // თუ მომავალში მაინც დაგჭირდება fullscreen, ჯერ App.css-ის
-  // padding-top ლოგიკა უნდა გახდეს დინამიური (--tg-header-height ცვლადის მეშვეობით).
 
   // Header/background ფერი — ერთი, კონსისტენტური მნიშვნელობა.
   // მანამდე main.tsx აყენებდა 'transparent'-ს, App.tsx კი '#0a0600'-ს —

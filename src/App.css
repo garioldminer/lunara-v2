@@ -1,46 +1,29 @@
 /* ============================================
-   🎨 APP.CSS - LUNARA TELEGRAM MINI APP
-   ============================================
-   Fully responsive layout with Telegram SDK integration
-   Supports: iPhone SE → iPhone Pro Max, Android, Tablets
-   ============================================ */
-
-/* ============================================
-   📱 APP CONTAINER - ROOT LAYOUT
+   APP CONTAINER - ROOT LAYOUT
    ============================================ */
    .app-container {
-    min-height: 100dvh;
-    min-height: var(--actual-height, 100dvh);
-    height: auto;
-    background: var(--app-bg, #0a0600);
+    min-height: 100dvh; /* ✅ FIX: dynamic viewport height */
+    height: auto; /* ✅ FIX: natural flow */
+    background: #0a0600;
     overflow-x: hidden;
-    overflow-y: visible;
+    overflow-y: visible; /* ✅ FIX: allow natural scroll */
     position: relative;
     overscroll-behavior: none;
     -webkit-overflow-scrolling: touch;
-    width: 100%;
-    max-width: 100vw;
   }
   
   /* ============================================
-     🎯 SCREEN WRAPPER - DYNAMIC HEADER OFFSET
+     🎯 GLOBAL TELEGRAM HEADER OFFSET
      ============================================ */
   .screen-wrapper {
-    /* ✅ Dynamic: uses Telegram header height + content safe area (notch/Dynamic Island) */
-    padding-top: calc(var(--tg-header-height, 59px) + var(--content-safe-top, 0px));
-    
-    /* ✅ Dynamic: bottom safe area for home indicator (iPhone) */
-    padding-bottom: var(--safe-bottom, 0px);
-    
+    padding-top: calc(70px + env(safe-area-inset-top, 0px));
     width: 100%;
     box-sizing: border-box;
     overscroll-behavior: none;
-    position: relative;
-    min-height: calc(100dvh - var(--tg-header-height, 59px));
   }
   
   /* ============================================
-     🚫 ONBOARDING SCREENS - FULL BLEED (NO PADDING)
+     🚫 ONBOARDING SCREENS - NO PADDING
      ============================================ */
   .app-container > .splash-screen,
   .app-container > .onboarding-welcome,
@@ -48,10 +31,19 @@
   .app-container > .onboarding-first-reading {
     padding-top: 0 !important;
     padding-bottom: 0 !important;
-    min-height: 100dvh;
-    min-height: var(--actual-height, 100dvh);
-    display: flex;
-    flex-direction: column;
+  }
+  
+  /* ============================================
+     📱 MOBILE OPTIMIZATION
+     ============================================ */
+  body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: none;
+    /* ✅ FIX: მუქი ფონი თეთრის ნაცვლად */
+    background: #0a0600;
   }
   
   /* ============================================
@@ -63,352 +55,42 @@
   
   html {
     scroll-behavior: smooth;
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
   }
   
-  /* ============================================
-     📱 BODY - MOBILE OPTIMIZATION
-     ============================================ */
-  body {
-    margin: 0;
-    padding: 0;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: none;
-    -webkit-overscroll-behavior: none;
-    background: var(--app-bg, #0a0600);
-    color: var(--app-text, #ffffff);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-    max-width: 100vw;
-    width: 100%;
-    position: relative;
-  }
-  
-  /* ============================================
-     🛡️ RUBBER-BAND + SCROLLBAR PREVENTION
-     ============================================ */
-  
-  /* ✅ Block rubber-band overscroll on iOS */
+  /* ✅ FIX: block rubber-band overscroll + hide scrollbar */
   html, body {
     max-width: 100vw;
     overflow-x: hidden;
     overscroll-behavior: none;
     -webkit-overscroll-behavior: none;
     height: auto;
-    
-    /* ✅ Hide scrollbar (Firefox) */
-    scrollbar-width: none;
-    
-    /* ✅ Hide scrollbar (IE/Edge) */
-    -ms-overflow-style: none;
+    scrollbar-width: none; /* ✅ Firefox */
+    -ms-overflow-style: none; /* ✅ IE/Edge */
   }
   
-  /* ✅ Hide scrollbar (Chrome/Safari/Telegram WebView) */
+  /* ✅ FIX: hide scrollbar (Chrome/Safari/Telegram WebView) */
   html::-webkit-scrollbar,
   body::-webkit-scrollbar {
     display: none;
     width: 0;
     height: 0;
-    background: transparent;
   }
   
-  /* ✅ Hide scrollbar on ALL elements */
+  /* ✅ FIX: hide scrollbar on ALL elements */
   * {
     scrollbar-width: none;
   }
-  
   *::-webkit-scrollbar {
     display: none;
     width: 0;
     height: 0;
-    background: transparent;
   }
   
   /* ============================================
-     📱 RESPONSIVE TYPOGRAPHY BASE
+     📱 SAFE AREA SUPPORT (iPhone notch, etc.)
      ============================================ */
-  html {
-    /* ✅ Fluid typography: scales from 14px (320px screens) to 16px (480px+ screens) */
-    font-size: clamp(14px, 4vw, 16px);
-    line-height: 1.5;
-  }
-  
-  /* ============================================
-     📱 SAFE AREA SUPPORT - COMPREHENSIVE
-     ============================================ */
-  
-  /* ✅ Fallback for browsers without env() support */
-  @supports not (padding-top: env(safe-area-inset-top)) {
-    .screen-wrapper {
-      padding-top: var(--tg-header-height, 59px);
-      padding-bottom: 0;
-    }
-  }
-  
-  /* ✅ Full safe area support (iPhone notch, Dynamic Island, home indicator, Android nav) */
   @supports (padding-top: env(safe-area-inset-top)) {
     .screen-wrapper {
-      padding-top: calc(var(--tg-header-height, 59px) + var(--content-safe-top, 0px));
-      padding-bottom: var(--safe-bottom, 0px);
-      padding-left: var(--safe-left, 0px);
-      padding-right: var(--safe-right, 0px);
-    }
-  }
-  
-  /* ============================================
-     📱 DEVICE-SPECIFIC ADJUSTMENTS
-     ============================================ */
-  
-  /* ✅ iPhone SE & small Android phones (320px - 360px) */
-  @media (max-width: 360px) {
-    .screen-wrapper {
-      padding-top: calc(var(--tg-header-height, 50px) + var(--content-safe-top, 0px));
-    }
-    
-    /* Reduce default header height on very small screens */
-    :root {
-      --tg-header-height: 50px;
-    }
-  }
-  
-  /* ✅ Standard phones (361px - 414px): iPhone 12/13/14, most Android */
-  @media (min-width: 361px) and (max-width: 414px) {
-    .screen-wrapper {
-      padding-top: calc(var(--tg-header-height, 59px) + var(--content-safe-top, 0px));
-    }
-  }
-  
-  /* ✅ Large phones (415px - 480px): iPhone Pro Max, Samsung Ultra */
-  @media (min-width: 415px) and (max-width: 480px) {
-    .screen-wrapper {
-      padding-top: calc(var(--tg-header-height, 64px) + var(--content-safe-top, 0px));
-    }
-    
-    :root {
-      --tg-header-height: 64px;
-    }
-  }
-  
-  /* ✅ Tablets (768px+) */
-  @media (min-width: 768px) {
-    .app-container {
-      max-width: 768px;
-      margin: 0 auto;
-    }
-    
-    .screen-wrapper {
-      padding-top: calc(var(--tg-header-height, 70px) + var(--content-safe-top, 0px));
-    }
-    
-    :root {
-      --tg-header-height: 70px;
-    }
-  }
-  
-  /* ============================================
-     🎯 ORIENTATION HANDLING
-     ============================================ */
-  
-  /* ✅ Landscape mode on phones (uncommon but possible) */
-  @media (orientation: landscape) and (max-height: 500px) {
-    .screen-wrapper {
-      padding-top: calc(var(--tg-header-height, 44px) + var(--content-safe-top, 0px));
-      min-height: auto;
-    }
-    
-    :root {
-      --tg-header-height: 44px;
-    }
-    
-    body {
-      font-size: 14px;
-    }
-  }
-  
-  /* ============================================
-     🌓 THEME SUPPORT (LIGHT/DARK MODE)
-     ============================================ */
-  
-  /* ✅ Light mode (auto-synced via Telegram theme) */
-  @media (prefers-color-scheme: light) {
-    :root {
-      --app-bg: var(--tg-theme-bg-color, #ffffff);
-      --app-text: var(--tg-theme-text-color, #0a0600);
-    }
-  }
-  
-  /* ✅ Dark mode (default) */
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --app-bg: var(--tg-theme-bg-color, #0a0600);
-      --app-text: var(--tg-theme-text-color, #ffffff);
-    }
-  }
-  
-  /* ============================================
-     🚫 PREVENT UNWANTED MOBILE BEHAVIORS
-     ============================================ */
-  
-  /* ✅ Prevent iOS tap highlight */
-  * {
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
-  }
-  
-  /* ✅ Prevent text selection on interactive elements */
-  button, 
-  a, 
-  [role="button"],
-  .clickable {
-    -webkit-user-select: none;
-    user-select: none;
-  }
-  
-  /* ✅ Prevent double-tap zoom on iOS */
-  button {
-    touch-action: manipulation;
-  }
-  
-  /* ✅ Smooth transitions for interactive elements */
-  button, a {
-    transition: all 0.2s ease;
-  }
-  
-  /* ============================================
-     🔧 UTILITY CLASSES
-     ============================================ */
-  
-  /* ✅ Full-screen container */
-  .full-screen {
-    min-height: 100dvh;
-    min-height: var(--actual-height, 100dvh);
-    width: 100%;
-    padding: 0;
-    margin: 0;
-  }
-  
-  /* ✅ Safe-area aware container */
-  .safe-area-container {
-    padding-top: var(--safe-top, 0px);
-    padding-bottom: var(--safe-bottom, 0px);
-    padding-left: var(--safe-left, 0px);
-    padding-right: var(--safe-right, 0px);
-  }
-  
-  /* ✅ Hide element but keep in DOM (for keep-alive) */
-  .hidden-screen {
-    display: none !important;
-  }
-  
-  /* ✅ Smooth fade transition */
-  .fade-in {
-    animation: fadeIn 0.3s ease-in;
-  }
-  
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-  
-  /* ============================================
-     📊 PERFORMANCE OPTIMIZATIONS
-     ============================================ */
-  
-  /* ✅ GPU acceleration for animations */
-  .animated,
-  .transition {
-    will-change: transform, opacity;
-    transform: translateZ(0);
-  }
-  
-  /* ✅ Prevent layout thrashing */
-  .sticky-header {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-  }
-  
-  /* ============================================
-     🎨 TELEGRAM-SPECIFIC STYLES
-     ============================================ */
-  
-  /* ✅ Telegram MainButton styling (if used) */
-  .telegram-main-button {
-    background: var(--tg-theme-button-color, #C5A059) !important;
-    color: var(--tg-theme-button-text-color, #ffffff) !important;
-  }
-  
-  /* ✅ Telegram hint text color */
-  .telegram-hint {
-    color: var(--tg-theme-hint-color, #b3a68c);
-  }
-  
-  /* ✅ Telegram link color */
-  .telegram-link {
-    color: var(--tg-theme-link-color, #C5A059);
-  }
-  
-  /* ============================================
-     📱 ACCESSIBILITY
-     ============================================ */
-  
-  /* ✅ Respect user's reduced motion preference */
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-      scroll-behavior: auto !important;
-    }
-  }
-  
-  /* ✅ Focus styles for keyboard navigation */
-  *:focus-visible {
-    outline: 2px solid var(--tg-theme-button-color, #C5A059);
-    outline-offset: 2px;
-    border-radius: 4px;
-  }
-  
-  /* ============================================
-     🐛 DEBUG STYLES (dev only)
-     ============================================ */
-  .debug-outline {
-    outline: 2px solid red !important;
-  }
-  
-  .debug-baseline {
-    background-image: linear-gradient(
-      to bottom,
-      transparent 0%,
-      transparent 50%,
-      rgba(255, 0, 0, 0.1) 50%,
-      rgba(255, 0, 0, 0.1) 100%
-    );
-    background-size: 100% 1.5rem;
-  }
-  
-  /* ============================================
-     📝 PRINT STYLES (just in case)
-     ============================================ */
-  @media print {
-    body {
-      background: white !important;
-      color: black !important;
-    }
-    
-    .no-print {
-      display: none !important;
+      padding-top: calc(70px + env(safe-area-inset-top));
     }
   }
