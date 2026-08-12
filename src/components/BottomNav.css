@@ -1,53 +1,28 @@
-/* ============================================
-   🧭 BOTTOM NAVIGATION - RESPONSIVE FLOATING BAR
-   ============================================
-   LUNARA Telegram Mini App
-   Apple-style floating pill navigation
-   Supports: iPhone SE → Pro Max, Android, Tablets
-   ============================================ */
-
-/* ✅ Safe area variables (set by index.html + JS) */
-:root {
-  --nav-safe-bottom: env(safe-area-inset-bottom, 0px);
-  --nav-height: 60px;
-  --nav-max-width: 480px;
-  --nav-bg: rgba(10, 6, 0, 0.85);
-  --nav-border: rgba(197, 160, 89, 0.2);
-  --nav-gold: #C5A059;
-  --nav-gold-dim: rgba(200, 120, 0, 0.5);
-}
-
-/* ============================================
-   📱 CONTAINER - FIXED FLOATING BAR
-   ============================================ */
+/* Container - FIXED, floating bar */
 .bottom-nav-container {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   z-index: 1000;
-  /* ✅ CRITICAL: dynamic bottom padding for iPhone home indicator */
-  padding: 0 4px calc(12px + var(--nav-safe-bottom, 0px));
+  /* ✅ FIX: მხოლოდ ეს შეიცვალა - safe area bottom padding iPhone home indicator-ისთვის */
+  padding: 0 4px 12px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   pointer-events: none;
-  /* Prevent iOS rubber-band from affecting nav */
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
 }
 
-/* ============================================
-   🎨 MAIN NAVIGATION BAR - FLOATING PILL
-   ============================================ */
+/* Main navigation bar - Apple-style floating pill */
 .bottom-nav {
   position: relative;
   display: flex;
   justify-content: space-around;
   align-items: center;
-  padding: clamp(8px, 2.5vw, 10px) clamp(6px, 2vw, 8px) clamp(12px, 3.5vw, 14px);
-  background: var(--nav-bg, rgba(10, 6, 0, 0.85));
+  padding: 10px 8px 14px;
+  background: rgba(10, 6, 0, 0.85);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid var(--nav-border, rgba(197, 160, 89, 0.2));
-  border-radius: clamp(20px, 6vw, 24px);
+  border: 1px solid rgba(197, 160, 89, 0.2);
+  border-radius: 24px;
   box-shadow: 
     0 8px 32px rgba(0, 0, 0, 0.6),
     0 2px 8px rgba(0, 0, 0, 0.4),
@@ -55,41 +30,32 @@
     inset 0 -1px 0 rgba(0, 0, 0, 0.3);
   pointer-events: auto;
   width: 100%;
-  max-width: calc(var(--nav-max-width, 480px) - 8px);
+  max-width: calc(480px - 8px);
   margin: 0 auto;
   box-sizing: border-box;
-  min-height: var(--nav-height, 60px);
 }
 
-/* ============================================
-   🎯 INDIVIDUAL NAV ITEM
-   ============================================ */
+/* Individual nav item */
 .nav-item {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: clamp(2px, 0.8vw, 3px);
+  gap: 3px;
   background: none;
   border: none;
   cursor: pointer;
-  padding: clamp(4px, 1.5vw, 6px) clamp(6px, 2.5vw, 10px);
+  padding: 6px 10px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   -webkit-tap-highlight-color: transparent;
   flex: 1;
-  min-width: 0;
-  max-width: 80px;
-  touch-action: manipulation;
 }
 
-/* ============================================
-   🔮 ICON WRAPPER WITH 3D EFFECT
-   ============================================ */
+/* Icon wrapper with 3D */
 .icon-wrapper {
   position: relative;
-  width: clamp(28px, 8.5vw, 32px);
-  height: clamp(28px, 8.5vw, 32px);
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -99,12 +65,11 @@
 
 /* Icon */
 .nav-icon {
-  font-size: clamp(18px, 5.3vw, 20px);
+  font-size: 20px;
   opacity: 0.5;
   filter: grayscale(0.2);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateZ(0);
-  line-height: 1;
 }
 
 /* Icon glow (hidden by default) */
@@ -121,33 +86,25 @@
   transition: all 0.3s ease;
 }
 
-/* ============================================
-   🏷️ NAV LABEL
-   ============================================ */
+/* Label */
 .nav-label {
   font-family: 'Georgia', serif;
-  font-size: clamp(7px, 2.1vw, 8px);
-  color: var(--nav-gold-dim, rgba(200, 120, 0, 0.5));
-  letter-spacing: clamp(0.5px, 0.2vw, 0.8px);
+  font-size: 8px;
+  color: rgba(200, 120, 0, 0.5);
+  letter-spacing: 0.8px;
   font-weight: normal;
   transition: all 0.3s ease;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-  text-align: center;
 }
 
-/* ============================================
-   ✨ ACTIVE DOT INDICATOR
-   ============================================ */
+/* Active dot */
 .nav-dot {
   position: absolute;
   bottom: 0;
   width: 3px;
   height: 3px;
   border-radius: 50%;
-  background: var(--nav-gold, #C5A059);
+  background: #C5A059;
   box-shadow: 0 0 6px rgba(197, 160, 89, 0.8);
   transition: all 0.3s ease;
   animation: dotPulse 2s ease-in-out infinite;
@@ -164,15 +121,13 @@
   }
 }
 
-/* ============================================
-   🌟 SHIMMER EFFECT ON ACTIVE
-   ============================================ */
+/* Shimmer effect on active */
 .nav-shimmer {
   position: absolute;
   top: -3px;
   left: 50%;
   transform: translateX(-50%);
-  width: clamp(28px, 9vw, 36px);
+  width: 36px;
   height: 1.5px;
   background: linear-gradient(
     90deg,
@@ -195,9 +150,7 @@
   }
 }
 
-/* ============================================
-   🎯 ACTIVE STATE - 3D FLOAT
-   ============================================ */
+/* ===== ACTIVE STATE - 3D FLOAT ===== */
 .nav-item.active .icon-wrapper {
   transform: translateY(-4px) translateZ(10px);
 }
@@ -216,33 +169,27 @@
 }
 
 .nav-item.active .nav-label {
-  color: var(--nav-gold, #C5A059);
+  color: #C5A059;
   font-weight: bold;
   text-shadow: 0 0 6px rgba(197, 160, 89, 0.5);
   transform: translateY(-2px);
 }
 
-/* ============================================
-   🖱️ HOVER EFFECTS (Desktop/Tablet)
-   ============================================ */
-@media (hover: hover) and (pointer: fine) {
-  .nav-item:not(.active):hover .icon-wrapper {
-    transform: translateY(-2px);
-  }
-
-  .nav-item:not(.active):hover .nav-icon {
-    opacity: 0.7;
-    filter: grayscale(0);
-  }
-
-  .nav-item:not(.active):hover .nav-label {
-    color: #c87800;
-  }
+/* ===== HOVER EFFECTS ===== */
+.nav-item:not(.active):hover .icon-wrapper {
+  transform: translateY(-2px);
 }
 
-/* ============================================
-   👆 PRESS EFFECT (Touch)
-   ============================================ */
+.nav-item:not(.active):hover .nav-icon {
+  opacity: 0.7;
+  filter: grayscale(0);
+}
+
+.nav-item:not(.active):hover .nav-label {
+  color: #c87800;
+}
+
+/* ===== PRESS EFFECT ===== */
 .nav-item:active {
   transform: scale(0.92);
 }
@@ -251,235 +198,29 @@
   transform: translateY(-1px) translateZ(5px);
 }
 
-/* ============================================
-   ✦ ORNAMENTAL DETAILS
-   ============================================ */
+/* ===== ORNAMENTAL DETAILS ===== */
 .bottom-nav::before,
 .bottom-nav::after {
   content: '✦';
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  font-size: clamp(8px, 2.6vw, 10px);
+  font-size: 10px;
   color: rgba(200, 120, 0, 0.25);
   animation: ornamentGlow 3s ease-in-out infinite;
   pointer-events: none;
 }
 
 .bottom-nav::before {
-  left: clamp(6px, 2vw, 8px);
+  left: 8px;
 }
 
 .bottom-nav::after {
-  right: clamp(6px, 2vw, 8px);
+  right: 8px;
   animation-delay: 1.5s;
 }
 
 @keyframes ornamentGlow {
   0%, 100% { opacity: 0.2; }
   50% { opacity: 0.6; }
-}
-
-/* ============================================
-   📱 RESPONSIVE BREAKPOINTS
-   ============================================ */
-
-/* 📱 iPhone SE & small Android (320px - 360px) */
-@media (max-width: 360px) {
-  .bottom-nav {
-    padding: 6px 4px 10px;
-    border-radius: 18px;
-    min-height: 54px;
-  }
-  
-  .nav-item {
-    padding: 3px 4px;
-    gap: 2px;
-  }
-  
-  .icon-wrapper {
-    width: 26px;
-    height: 26px;
-  }
-  
-  .nav-icon {
-    font-size: 17px;
-  }
-  
-  .nav-label {
-    font-size: 6.5px;
-    letter-spacing: 0.4px;
-  }
-  
-  .bottom-nav::before,
-  .bottom-nav::after {
-    display: none; /* Hide ornaments on very small screens */
-  }
-}
-
-/* 📱 Standard phones (361px - 414px): iPhone 12/13/14 */
-@media (min-width: 361px) and (max-width: 414px) {
-  .bottom-nav {
-    min-height: 60px;
-  }
-}
-
-/* 📱 Large phones (415px - 480px): iPhone Pro Max, Samsung Ultra */
-@media (min-width: 415px) and (max-width: 480px) {
-  .bottom-nav {
-    min-height: 64px;
-    padding: 10px 8px 14px;
-  }
-  
-  .icon-wrapper {
-    width: 34px;
-    height: 34px;
-  }
-  
-  .nav-icon {
-    font-size: 21px;
-  }
-  
-  .nav-label {
-    font-size: 8.5px;
-  }
-}
-
-/* 📱 Tablets (481px+) */
-@media (min-width: 481px) {
-  .bottom-nav-container {
-    padding: 0 8px calc(16px + var(--nav-safe-bottom, 0px));
-  }
-  
-  .bottom-nav {
-    min-height: 70px;
-    padding: 12px 12px 16px;
-    border-radius: 28px;
-    max-width: 500px;
-  }
-  
-  .nav-item {
-    padding: 8px 12px;
-    gap: 4px;
-    max-width: 90px;
-  }
-  
-  .icon-wrapper {
-    width: 36px;
-    height: 36px;
-  }
-  
-  .nav-icon {
-    font-size: 22px;
-  }
-  
-  .nav-label {
-    font-size: 9px;
-    letter-spacing: 1px;
-  }
-}
-
-/* 📱 Landscape mode on phones (uncommon but possible) */
-@media (orientation: landscape) and (max-height: 500px) {
-  .bottom-nav-container {
-    padding: 0 4px calc(8px + var(--nav-safe-bottom, 0px));
-  }
-  
-  .bottom-nav {
-    min-height: 48px;
-    padding: 4px 8px 8px;
-    border-radius: 16px;
-  }
-  
-  .nav-item {
-    flex-direction: row;
-    gap: 6px;
-    padding: 4px 8px;
-  }
-  
-  .icon-wrapper {
-    width: 24px;
-    height: 24px;
-  }
-  
-  .nav-icon {
-    font-size: 16px;
-  }
-  
-  .nav-label {
-    font-size: 9px;
-  }
-  
-  /* Hide dot and shimmer in landscape (too cramped) */
-  .nav-dot,
-  .nav-shimmer {
-    display: none;
-  }
-}
-
-/* ============================================
-   ♿ ACCESSIBILITY: REDUCED MOTION
-   ============================================ */
-@media (prefers-reduced-motion: reduce) {
-  .nav-dot,
-  .nav-shimmer,
-  .bottom-nav::before,
-  .bottom-nav::after {
-    animation: none !important;
-  }
-  
-  .nav-item,
-  .icon-wrapper,
-  .nav-icon,
-  .nav-label {
-    transition: none !important;
-  }
-}
-
-/* ============================================
-   🌓 TELEGRAM THEME SYNC (LIGHT MODE)
-   ============================================ */
-@media (prefers-color-scheme: light) {
-  :root {
-    --nav-bg: rgba(255, 255, 255, 0.9);
-    --nav-border: rgba(197, 160, 89, 0.3);
-  }
-  
-  .bottom-nav {
-    background: var(--nav-bg, rgba(255, 255, 255, 0.9));
-    box-shadow: 
-      0 8px 32px rgba(0, 0, 0, 0.15),
-      0 2px 8px rgba(0, 0, 0, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.5),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.05);
-  }
-  
-  .nav-icon {
-    filter: grayscale(0.3);
-  }
-  
-  .nav-item.active .nav-icon {
-    filter: 
-      grayscale(0) 
-      drop-shadow(0 0 8px rgba(197, 160, 89, 0.5));
-  }
-}
-
-/* ============================================
-   🛡️ SAFETY: PREVENT OVERLAP WITH KEYBOARD
-   ============================================ */
-/* When virtual keyboard is open (Telegram input fields) */
-@media (max-height: 400px) {
-  .bottom-nav-container {
-    display: none;
-  }
-}
-
-/* ============================================
-   🖨️ PRINT (just in case)
-   ============================================ */
-@media print {
-  .bottom-nav-container {
-    display: none;
-  }
 }
