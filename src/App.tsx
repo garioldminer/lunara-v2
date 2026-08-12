@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from './lib/supabase';
-import { logger } from './lib/logger';
-import { applyPlatformTokens } from './lib/platform';
 import SplashScreen from './components/SplashScreen';
 import OnboardingWelcome from './components/OnboardingWelcome';
 import OnboardingZodiac from './components/OnboardingZodiac';
@@ -48,7 +46,7 @@ class ErrorBoundary extends React.Component<
     return { hasError: true, errorMessage: error.message, errorStack: error.stack || '' };
   }
   componentDidCatch(error: Error, errorInfo: any) {
-    logger.error('🚨 ERROR BOUNDARY:', error, errorInfo);
+    console.error('🚨 ERROR BOUNDARY:', error, errorInfo);
   }
   render() {
     if (this.state.hasError) {
@@ -76,27 +74,27 @@ function UserLoader({ onReady }: { onReady: () => void }) {
   
   useEffect(() => {
     async function loadUser() {
-      logger.log('🔵 [UserLoader] Starting user load & auth...');
+      console.log('🔵 [UserLoader] Starting user load & auth...');
       try {
         let tgUser = await initializeTelegramAuth();
         if (!tgUser) {
-          logger.warn('⚠️ [UserLoader] Edge Auth failed. Using fallback.');
+          console.warn('⚠️ [UserLoader] Edge Auth failed. Using fallback.');
           tgUser = getTelegramUser();
         }
         if (!tgUser) {
-          logger.error('❌ [UserLoader] No Telegram user found at all.');
+          console.error('❌ [UserLoader] No Telegram user found at all.');
           setLoading(false);
           onReady();
           return;
         }
-        logger.log('🔵 [UserLoader] Loading user data from Supabase...');
+        console.log('🔵 [UserLoader] Loading user data from Supabase...');
         const user = await getOrCreateUser(tgUser);
         if (user) {
           setUser(user);
-          logger.log('✅ [UserLoader] User saved to context!');
+          console.log('✅ [UserLoader] User saved to context!');
         }
       } catch (error) {
-        logger.error('❌ [UserLoader] Critical Error:', error);
+        console.error('❌ [UserLoader] Critical Error:', error);
       } finally {
         setLoading(false);
         onReady();
@@ -113,61 +111,56 @@ function AppContent() {
   const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState('home');
   const [userReady, setUserReady] = useState(false);
-  
+  // 🔧 FIX: სამუშაო "flag", რომ Splash-ის დასრულება reactive გზით დავიჭიროთ
+  // (setInterval-ის ნაცვლად, რომელიც stale closure-ის გამო ჩამოეკიდებოდა ხოლმე)
   const [splashFinished, setSplashFinished] = useState(false);
-  
   const { user, setUser } = useUser();
 
-  // 🎯 PLATFORM DETECTION + CSS TOKENS (ერთხელ, აპის გაშვებისას)
+  // 🔧 FIX: Telegram-ის ready()/expand()/setHeaderColor() ინიციალიზაცია
+  // ახლა მთლიანად main.tsx-ში ხდება (platform.ts-ის initTelegramApp()-ის მეშვეობით).
+  // აქ დუბლირებული useEffect ამოღებულია, რომ აღარ ხდებოდეს
+  // header-color-ის კონფლიქტი main.tsx-სა და App.tsx-ს შორის.
+
   useEffect(() => {
-    // პლატფორმის იდენტიფიკაცია + tokens-ების დაყენება <html>-ზე
-    applyPlatformTokens();
+    if (!user) return;
+    const updateLastActive = async () => {
+      try { 
+        await updateUserLastActive(user.id); 
+      } catch (error) { 
+        console.error('❌ [LastActive] Error:', error); 
+      }
+    };
+    updateLastActive();
+    const interval = setInterval(updateLastActive, 5 * 60 * 1000);
 
-    const tg = (window as any).Telegram?.WebApp;
-    if (tg) {
-      if (typeof tg.ready === 'function') tg.ready();
-      if (typeof tg.setHeaderColor === 'function') tg.setHeaderColor('#0a0600');
-      if (typeof tg.setBackgroundColor === 'function') tg.setBackgroundColor('#0a0600');
-      if (typeof tg.expand === 'function') tg.expand();
-    }
-  }, []);
+    // 🔧 FIX: named handler, რომ cleanup-ში სწორად მოვხსნათ
+    // (მანამდე ეს listener არასდროს იშლებოდა, memory leak-ს იწვევდა
+    //  ყოველ ჯერზე, როცა user ობიექტი შეიცვლებოდა)
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') updateLastActive();
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
 
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [user]);
+
+  // 🔧 FIX: Splash-ის დასრულების ლოგიკა reactive useEffect-ით,
+  // setInterval-ზე დაფუძნებული polling-ის ნაცვლად.
+  // ძველი ვერსია სამუდამოდ "ეკიდებოდა" Splash-ზე, თუ user-მონაცემები
+  // Splash-ის ანიმაციაზე უფრო ნელა იტვირთებოდა (ნელი ინტერნეტის დროს).
   useEffect(() => {
     if (splashFinished && userReady) {
       if (user?.onboarding_completed) {
+        setActiveTab('home');
         setCurrentScreen('home');
       } else {
         setCurrentScreen('welcome');
       }
     }
   }, [splashFinished, userReady, user]);
-
-  useEffect(() => {
-    if (!user) return;
-    
-    const updateLastActive = async () => {
-      try { 
-        await updateUserLastActive(user.id); 
-      } catch (error) { 
-        logger.error('❌ [LastActive] Error:', error); 
-      }
-    };
-    
-    updateLastActive();
-    const interval = setInterval(updateLastActive, 5 * 60 * 1000);
-    
-    const handleVisibility = () => {
-      if (document.visibilityState === 'visible') {
-        updateLastActive();
-      }
-    };
-    document.addEventListener('visibilitychange', handleVisibility);
-    
-    return () => { 
-      clearInterval(interval); 
-      document.removeEventListener('visibilitychange', handleVisibility);
-    };
-  }, [user]);
 
   const goTo = (screen: Screen) => setCurrentScreen(screen);
   const handleTabChange = (tab: string) => { 
@@ -198,10 +191,11 @@ function AppContent() {
     } else if (['home', 'cards', 'astro', 'profile'].includes(screen)) {
       handleTabChange(screen);
     } else if (screen === 'admin' || screen === 'user-analytics' || screen === 'ai-management') {
+      // ✅ ავამოწმებთ is_admin ფლაგს და არა hardcoded ID-ს
       if (user && user.is_admin === true) {
         goTo(screen as Screen);
       } else {
-        logger.warn('⛔ Unauthorized admin access attempt by user:', user?.id);
+        console.warn('⛔ Unauthorized admin access attempt by user:', user?.id);
         goTo('home');
       }
     } else if (screen === 'journal-stats') {
@@ -212,10 +206,10 @@ function AppContent() {
   };
 
   const handleUserReady = () => setUserReady(true);
-  
-  const handleSplashFinish = () => {
-    setSplashFinished(true);
-  };
+
+  // 🔧 FIX: SplashScreen-ის onFinish უბრალოდ state-ს დებს — რეალურ
+  // navigation-ს ზემოთ არსებული useEffect უზრუნველყოფს.
+  const handleSplashFinish = () => setSplashFinished(true);
 
   const handleOnboardingComplete = async () => {
     if (user && supabase) {
@@ -230,60 +224,47 @@ function AppContent() {
     <div className="app-container">
       {!userReady && <UserLoader onReady={handleUserReady} />}
       
-      {/* 🎯 ONBOARDING SCREENS - Conditional (one-time use) */}
+      {/* 🎯 ONBOARDING SCREENS - NO wrapper padding (they have their own full-screen design) */}
       {currentScreen === 'splash' && <SplashScreen onFinish={handleSplashFinish} />}
       {currentScreen === 'welcome' && <OnboardingWelcome onFinish={() => goTo('zodiac')} />}
       {currentScreen === 'zodiac' && <OnboardingZodiac onFinish={() => goTo('first-reading')} />}
       {currentScreen === 'first-reading' && <OnboardingFirstReading onFinish={handleOnboardingComplete} />}
       
-      {/* 🎯 MAIN SCREENS WRAPPER */}
+      {/* 🎯 SCREEN WRAPPER - ყველა main გვერდს აქვს padding Telegram header-ისთვის */}
+      {/* 🔧 FIX: ერთი ErrorBoundary ახვევს ყველა ეკრანს, არა მხოლოდ HoroscopeScreen-ს — */}
+      {/* ადრე runtime error ნებისმიერ სხვა ეკრანზე მთელ აპს crash-ავდა თეთრ ეკრანზე. */}
       <div className="screen-wrapper">
         <ErrorBoundary>
-          
-          {/* ============================================================ */}
-          {/* ✅ KEEP-ALIVE TABS: home, cards, astro, profile              */}
-          {/* Always mounted, state preserved, no reload on tab switch    */}
-          {/* ============================================================ */}
-          <div style={{ display: currentScreen === 'home' ? 'block' : 'none' }}>
-            <HomeScreen onNavigate={handleNavigate} />
-          </div>
-          <div style={{ display: currentScreen === 'cards' ? 'block' : 'none' }}>
-            <CardsScreen onNavigate={handleNavigate} />
-          </div>
-          <div style={{ display: currentScreen === 'astro' ? 'block' : 'none' }}>
-            <AstroScreen onNavigate={handleNavigate} />
-          </div>
-          <div style={{ display: currentScreen === 'profile' ? 'block' : 'none' }}>
-            <ProfileScreen onNavigate={handleNavigate} />
-          </div>
-
-          {/* ============================================================ */}
-          {/* ⚡ CONDITIONAL SCREENS: heavy reading/admin screens         */}
-          {/* Mount/unmount to save memory and keep state clean           */}
-          {/* ============================================================ */}
+          {currentScreen === 'home' && <HomeScreen onNavigate={handleNavigate} />}
+          {currentScreen === 'cards' && <CardsScreen onNavigate={handleNavigate} />}
           {currentScreen === 'reading' && <ReadingScreen onNavigate={handleNavigate} />}
+          {currentScreen === 'astro' && <AstroScreen onNavigate={handleNavigate} />}
           {currentScreen === 'horoscope' && <HoroscopeScreen onNavigate={handleNavigate} />}
           {currentScreen === 'sign-selection' && <SignSelectionScreen onNavigate={handleNavigate} />}
+          {currentScreen === 'profile' && <ProfileScreen onNavigate={handleNavigate} />}
           {currentScreen === 'card-fan' && <CardFanScreen onNavigate={handleNavigate} />}
-          {currentScreen === 'card-detail' && selectedCardId !== null && (
-            <CardDetailScreen cardId={selectedCardId} onNavigate={handleNavigate} />
-          )}
+          {currentScreen === 'card-detail' && selectedCardId !== null && <CardDetailScreen cardId={selectedCardId} onNavigate={handleNavigate} />}
           {currentScreen === 'daily-card' && <DailyCardScreen onNavigate={handleNavigate} />}
           {currentScreen === 'three-card-reading' && <ThreeCardReadingScreen onNavigate={handleNavigate} />}
           {currentScreen === 'reading-history' && <ReadingHistoryScreen onNavigate={handleNavigate} />}
           {currentScreen === 'celtic-cross' && <CelticCrossReadingScreen onNavigate={handleNavigate} />}
           {currentScreen === 'horseshoe' && <HorseshoeReadingScreen onNavigate={handleNavigate} />}
           {currentScreen === 'relationship' && <RelationshipReadingScreen onNavigate={handleNavigate} />}
+
+          {/* 🆕 JOURNAL STATS SCREEN */}
           {currentScreen === 'journal-stats' && <JournalStatsScreen onNavigate={handleNavigate} />}
+
+          {/* ✅ ადმინ ეკრანები */}
           {currentScreen === 'admin' && <AdminScreen onNavigate={handleNavigate} />}
           {currentScreen === 'user-analytics' && <UserAnalytics onNavigate={handleNavigate} />}
           {currentScreen === 'ai-management' && <AdminAIManagement onNavigate={handleNavigate} />}
+
           {currentScreen === 'subscription' && <SubscriptionScreen onNavigate={handleNavigate} />}
           {currentScreen === 'services' && <ServicesScreen onNavigate={handleNavigate} />}
-          
         </ErrorBoundary>
       </div>
       
+      {/* 🎯 BOTTOM NAV - გარეთ wrapper-დან, რომ არ მიიღოს padding-top */}
       {['home', 'cards', 'reading', 'astro', 'horoscope', 'profile'].includes(currentScreen) && (
         <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
       )}

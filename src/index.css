@@ -6,14 +6,19 @@
 
 /* ============================================
    THEME VARIABLES - Dark/Light Mode
+   🔧 FIX: ახლა --app-bg/--app-text (index.html-ის Telegram-theme
+   ცვლადები) გამოიყენება პირველწყაროდ, fallback-ითურთ — მანამდე
+   ეს ორი სისტემა ერთმანეთს "ეჯახებოდა" html/body-ის background-ზე,
+   და index.css ყოველთვის იმარჯვებდა, რაც Telegram-ის რეალურ
+   თემასთან სინქრონიზაციას აქრობდა.
    ============================================ */
 
 :root,
 [data-theme="dark"] {
-  --bg-primary: #0a0600;
+  --bg-primary: var(--app-bg, #0a0600);
   --bg-secondary: #1a1510;
   --bg-tertiary: #0f0c08;
-  --text-primary: #ffffff;
+  --text-primary: var(--app-text, #ffffff);
   --text-secondary: rgba(255, 255, 255, 0.7);
   --text-tertiary: rgba(255, 255, 255, 0.5);
   --accent-primary: #C5A059;
@@ -23,10 +28,10 @@
 }
 
 [data-theme="light"] {
-  --bg-primary: #f5f0e8;
+  --bg-primary: var(--app-bg, #f5f0e8);
   --bg-secondary: #ffffff;
   --bg-tertiary: #faf7f2;
-  --text-primary: #1a1510;
+  --text-primary: var(--app-text, #1a1510);
   --text-secondary: rgba(26, 21, 16, 0.7);
   --text-tertiary: rgba(26, 21, 16, 0.5);
   --accent-primary: #8B6914;
@@ -37,12 +42,15 @@
 
 /* ============================================
    BASE STYLES
+   🔧 FIX: height → min-height (index.html-თან შესათანხმებლად).
+   Fixed height + დინამიური dvh ერთად iOS Safari-ზე ხანდახან
+   "jump"/layout-shift-ს იწვევდა, header-ის გამოჩენა/დაფარვისას.
    ============================================ */
 
 html, body {
   width: 100%;
-  height: 100%;
-  height: 100dvh;
+  min-height: 100%;
+  min-height: 100dvh;
   overflow-x: hidden;
   overflow-y: auto;
   background: var(--bg-primary);
@@ -56,19 +64,8 @@ html, body {
 
 #root {
   width: 100%;
-  height: 100%;
-  height: 100dvh;
-  overflow-x: hidden;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Telegram Web App-ისთვის */
-.screen-container {
-  width: 100%;
-  height: 100%;
-  height: 100dvh;
-  position: relative;
+  min-height: 100%;
+  min-height: 100dvh;
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
