@@ -2,74 +2,296 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#0a0600" />
+    
+    <!-- ✅ CRITICAL: viewport-fit=cover for safe area insets (notch, Dynamic Island, home indicator) -->
+    <meta 
+      name="viewport" 
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content" 
+    />
+    
+    <!-- ✅ Theme colors for Telegram & mobile browsers -->
+    <meta name="theme-color" content="#0a0600" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="color-scheme" content="dark light" />
+    
+    <!-- ✅ iOS-specific meta tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="LUNARA" />
+    <meta name="format-detection" content="telephone=no" />
+    
     <meta name="description" content="LUNARA - Your Mystic Companion" />
     
-    <!-- Telegram Web App Script -->
+    <!-- ✅ Performance: preconnect to Telegram servers -->
+    <link rel="preconnect" href="https://telegram.org" />
+    <link rel="dns-prefetch" href="https://telegram.org" />
+    <link rel="preconnect" href="https://eutavdhcxpfhpfsyaskb.supabase.co" crossorigin />
+    <link rel="dns-prefetch" href="https://eutavdhcxpfhpfsyaskb.supabase.co" />
+    
+    <!-- ✅ Telegram Web App Script (MUST be in <head>, not <body>) -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
     <title>LUNARA</title>
     
+    <!-- ✅ Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🔮%3C/text%3E%3C/svg%3E" />
+    
     <style>
-      /* ✅ სქროლის უფლება html და body-ზე */
+      /* ============================================
+         🎯 TELEGRAM MINI APP - ROOT CSS VARIABLES
+         ============================================ */
+      :root {
+        /* Telegram theme colors (auto-synced by Telegram) */
+        --tg-theme-bg-color-fallback: #0a0600;
+        --tg-theme-text-color-fallback: #ffffff;
+        --tg-theme-hint-color-fallback: #b3a68c;
+        --tg-theme-link-color-fallback: #C5A059;
+        --tg-theme-button-color-fallback: #C5A059;
+        --tg-theme-secondary-bg-color-fallback: #1a1510;
+        
+        /* Telegram viewport variables (set by Telegram SDK) */
+        --tg-viewport-height: 100dvh;
+        --tg-viewport-stable-height: 100dvh;
+        
+        /* Safe area insets (iPhone notch, home indicator, Android nav bar) */
+        --safe-top: env(safe-area-inset-top, 0px);
+        --safe-bottom: env(safe-area-inset-bottom, 0px);
+        --safe-left: env(safe-area-inset-left, 0px);
+        --safe-right: env(safe-area-inset-right, 0px);
+        
+        /* Telegram content safe area (for Dynamic Island/notch) */
+        --content-safe-top: var(--tg-content-safe-area-inset-top, 0px);
+        
+        /* Dynamic header height (set by JavaScript via Telegram SDK) */
+        --tg-header-height: 59px;
+        
+        /* Actual viewport height (updated by JavaScript) */
+        --actual-height: 100dvh;
+        
+        /* App-specific tokens */
+        --app-bg: var(--tg-theme-bg-color, var(--tg-theme-bg-color-fallback));
+        --app-text: var(--tg-theme-text-color, var(--tg-theme-text-color-fallback));
+      }
+
+      /* ============================================
+         📱 GLOBAL HTML/BODY RESET
+         ============================================ */
       html, body {
         margin: 0;
         padding: 0;
         width: 100%;
-        height: 100%;
+        min-height: 100dvh;
+        min-height: var(--actual-height, 100dvh);
         overflow-x: hidden;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
-        background: #0a0600;
+        background: var(--app-bg, #0a0600);
+        color: var(--app-text, #ffffff);
+        overscroll-behavior: none;
+        -webkit-overscroll-behavior: none;
+        touch-action: pan-y;
       }
-      
-      /* ✅ #root-საც სქროლის უფლება */
+
+      /* ✅ Prevent iOS rubber-band effect */
+      body {
+        position: relative;
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+      }
+
+      /* ✅ Prevent tap highlight on iOS */
+      * {
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+      }
+
+      /* ============================================
+         🎨 #ROOT CONTAINER
+         ============================================ */
       #root {
         width: 100%;
-        min-height: 100vh;
+        min-height: 100dvh;
+        min-height: var(--actual-height, 100dvh);
         overflow-x: hidden;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
+        background: var(--app-bg, #0a0600);
       }
-      
-      /* Loading state */
+
+      /* ============================================
+         ⏳ LOADING STATE
+         ============================================ */
       .initial-loading {
         display: flex;
         align-items: center;
         justify-content: center;
-        height: 100vh;
+        height: 100dvh;
+        height: var(--actual-height, 100dvh);
+        width: 100%;
+        background: radial-gradient(ellipse at center, #14101c 0%, #0a0600 100%);
         color: #ffe566;
         font-family: Georgia, serif;
         font-size: 16px;
+        letter-spacing: 1px;
+        animation: loadingPulse 2s ease-in-out infinite;
       }
-      
-      /* Global reset */
+
+      @keyframes loadingPulse {
+        0%, 100% { opacity: 0.6; }
+        50% { opacity: 1; }
+      }
+
+      /* ============================================
+         🌐 GLOBAL RESET
+         ============================================ */
       * {
         box-sizing: border-box;
       }
+
+      /* ✅ Hide scrollbar across all browsers */
+      html::-webkit-scrollbar,
+      body::-webkit-scrollbar,
+      #root::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+      }
+
+      html, body, #root {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+
+      /* ============================================
+         🛡️ PREVENT UNWANTED BEHAVIORS
+         ============================================ */
+      
+      /* ✅ Prevent text selection on interactive elements */
+      button, a, [role="button"] {
+        -webkit-user-select: none;
+        user-select: none;
+      }
+
+      /* ✅ Prevent double-tap zoom on iOS */
+      button {
+        touch-action: manipulation;
+      }
+
+      /* ✅ Prevent iOS pull-to-refresh */
+      html {
+        overscroll-behavior-y: none;
+      }
+
+      /* ============================================
+         📱 RESPONSIVE TYPOGRAPHY BASE
+         ============================================ */
+      html {
+        font-size: clamp(14px, 4vw, 16px);
+        line-height: 1.5;
+      }
+
+      /* ============================================
+         🌓 DARK/LIGHT MODE SUPPORT
+         ============================================ */
+      @media (prefers-color-scheme: light) {
+        :root {
+          --app-bg: var(--tg-theme-bg-color, #ffffff);
+          --app-text: var(--tg-theme-text-color, #0a0600);
+        }
+        
+        .initial-loading {
+          background: radial-gradient(ellipse at center, #f5f5f5 0%, #ffffff 100%);
+          color: #8B6914;
+        }
+      }
     </style>
+    
+    <!-- ✅ Early Telegram SDK initialization (before React loads) -->
+    <script>
+      (function() {
+        try {
+          const tg = window.Telegram?.WebApp;
+          if (tg) {
+            // Initialize Telegram SDK immediately
+            if (typeof tg.ready === 'function') tg.ready();
+            if (typeof tg.expand === 'function') tg.expand();
+            if (typeof tg.disableVerticalSwipes === 'function') tg.disableVerticalSwipes();
+            
+            // Set initial CSS variables from Telegram SDK
+            const root = document.documentElement;
+            
+            // Set header height
+            if (tg.headerHeight) {
+              root.style.setProperty('--tg-header-height', tg.headerHeight + 'px');
+            }
+            
+            // Set initial viewport height
+            if (tg.viewportStableHeight) {
+              root.style.setProperty('--actual-height', tg.viewportStableHeight + 'px');
+            }
+            
+            // Set theme
+            if (tg.colorScheme) {
+              root.setAttribute('data-theme', tg.colorScheme);
+            }
+          }
+        } catch (e) {
+          console.warn('Telegram SDK early init failed:', e);
+        }
+      })();
+    </script>
   </head>
+  
   <body>
     <div id="root">
-      <div class="initial-loading">✦ Loading...</div>
+      <div class="initial-loading">✦ Loading LUNARA...</div>
     </div>
+    
+    <!-- ✅ React entry point -->
     <script type="module" src="/src/main.tsx"></script>
     
-    <!-- Global error handler -->
+    <!-- ✅ Global error handlers -->
     <script>
       window.addEventListener('error', function(e) {
-        console.error('Global error:', e.error);
-        document.getElementById('root').innerHTML = 
-          '<div style="padding:20px;color:#ff6666;font-family:monospace;font-size:12px;">' +
-          '<h3>❌ Error</h3>' +
-          '<pre>' + (e.error?.message || e.message || 'Unknown error') + '</pre>' +
-          '</div>';
+        console.error('🚨 Global error:', e.error);
+        const root = document.getElementById('root');
+        if (root) {
+          root.innerHTML = 
+            '<div style="padding:20px;color:#ff6666;font-family:monospace;font-size:12px;max-width:90vw;margin:20px auto;background:#1a0a0a;border-radius:12px;">' +
+            '<h3 style="color:#ff4444;margin-top:0;">🚨 Application Error</h3>' +
+            '<pre style="white-space:pre-wrap;word-break:break-word;color:#ff8888;">' + 
+            (e.error?.message || e.message || 'Unknown error') + 
+            '</pre>' +
+            '<button onclick="window.location.reload()" style="margin-top:15px;padding:10px 20px;background:#C5A059;color:#0a0600;border:none;border-radius:6px;cursor:pointer;font-weight:bold;width:100%;font-size:14px;">🔄 Reload App</button>' +
+            '</div>';
+        }
       });
       
       window.addEventListener('unhandledrejection', function(e) {
-        console.error('Unhandled promise rejection:', e.reason);
+        console.error('🚨 Unhandled promise rejection:', e.reason);
       });
+      
+      // ✅ Update viewport height on resize/orientation change
+      function updateViewportHeight() {
+        const tg = window.Telegram?.WebApp;
+        const height = tg?.viewportStableHeight || window.innerHeight;
+        document.documentElement.style.setProperty('--actual-height', height + 'px');
+      }
+      
+      window.addEventListener('resize', updateViewportHeight);
+      window.addEventListener('orientationchange', function() {
+        setTimeout(updateViewportHeight, 100);
+      });
+      
+      // ✅ Prevent double-tap zoom on iOS
+      let lastTouchEnd = 0;
+      document.addEventListener('touchend', function(e) {
+        const now = Date.now();
+        if (now - lastTouchEnd <= 300) {
+          e.preventDefault();
+        }
+        lastTouchEnd = now;
+      }, { passive: false });
     </script>
   </body>
 </html>
