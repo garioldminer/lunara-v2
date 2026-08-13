@@ -5,9 +5,9 @@
   left: 0;
   right: 0;
   z-index: 1000;
-  /* ✅ FIX: მხოლოდ ეს შეიცვალა - safe area bottom padding iPhone home indicator-ისთვის */
-  padding: 0 4px 3px;
-  padding-bottom: calc(3px + env(safe-area-inset-bottom, 0px));
+  /* ✅ FIX: ეკრანის ქვედა კიდესთან - მხოლოდ safe area დაშორება */
+  padding: 0 4px 0;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   pointer-events: none;
 }
 
