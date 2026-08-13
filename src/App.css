@@ -8,7 +8,9 @@
     overflow-x: hidden;
     overflow-y: visible; /* ✅ FIX: allow natural scroll */
     position: relative;
-    overscroll-behavior: none;
+    /* ✅ FIX: ბუნებრივი rubber-band effect iOS-ზე, pull-to-refresh გამორთული */
+    overscroll-behavior-x: none;
+    overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;
   }
   
@@ -19,7 +21,8 @@
     padding-top: calc(70px + env(safe-area-inset-top, 0px));
     width: 100%;
     box-sizing: border-box;
-    overscroll-behavior: none;
+    /* ✅ FIX: X ღერძზე არ იმოძრაოს, Y ღერძზე ბუნებრივი დარჩეს */
+    overscroll-behavior-x: none;
   }
   
   /* ============================================
@@ -40,8 +43,10 @@
     margin: 0;
     padding: 0;
     overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch; /* ✅ momentum scrolling iOS-ზე */
+    /* ✅ FIX: ბუნებრივი rubber-band iOS-ზე, მაგრამ pull-to-refresh გამორთული */
+    overscroll-behavior-x: none;
+    overscroll-behavior-y: contain;
     /* ✅ FIX: მუქი ფონი თეთრის ნაცვლად */
     background: #0a0600;
   }
@@ -54,17 +59,19 @@
   }
   
   html {
-    scroll-behavior: smooth;
+    scroll-behavior: smooth; /* ✅ ლამაზი smooth scroll */
   }
   
-  /* ✅ FIX: block rubber-band overscroll + hide scrollbar */
+  /* ✅ FIX: X ღერძზე იმოძრაოს, Y ღერძზე ბუნებრივი rubber-band დარჩეს */
   html, body {
     max-width: 100vw;
     overflow-x: hidden;
-    overscroll-behavior: none;
-    -webkit-overscroll-behavior: none;
+    overscroll-behavior-x: none;
+    overscroll-behavior-y: contain;
+    -webkit-overscroll-behavior-x: none;
+    -webkit-overscroll-behavior-y: contain;
     height: auto;
-    scrollbar-width: none; /* ✅ Firefox */
+    scrollbar-width: none; /* ✅ Firefox - scrollbar დამალული */
     -ms-overflow-style: none; /* ✅ IE/Edge */
   }
   
