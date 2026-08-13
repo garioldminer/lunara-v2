@@ -11,13 +11,11 @@
   .home-screen {
     width: 100%;
     padding: 0 var(--screen-padding);
-    /* ✅ FIX: მხოლოდ ეს შეიცვალა - safe area bottom padding iPhone home indicator-ისთვის */
     padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
     max-width: var(--max-width);
     margin: 0 auto;
     color: #fff;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-    /* ✅ FIX: ბექგრაუნდი ახლა body::before-ზეა (App.css) - უწყვეტი "სცენა" მთელ ეკრანზე */
     background: transparent;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
@@ -835,20 +833,25 @@
   }
   
   /* ============================================
-     4. QUICK ACCESS GRID - MYSTICAL TAROT CARDS
+     4. QUICK ACCESS GRID - 5+4 LAYOUT
      ============================================ */
   .quick-access { 
     margin-bottom: 8px; 
     width: 100%; 
   }
   
+  /* ✅ NEW: Flexbox 5+4 განლაგება */
   .quick-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-content: flex-start;
     gap: 7px;
   }
   
   .quick-item {
+    /* ✅ 5 ღილაკი ერთ ხაზზე (4 gaps × 7px = 28px) */
+    flex: 0 0 calc((100% - 28px) / 5);
     border-radius: 14px;
     display: flex;
     flex-direction: column;
@@ -980,8 +983,6 @@
     position: relative;
     overflow: hidden;
   }
-  
-  /* ✅ REMOVED: paywallShine animation (was causing the yellow moving element) */
   
   .quick-item.services-item .quick-icon,
   .quick-item.services-item .q-icon-wrapper,
@@ -1250,16 +1251,16 @@
     .card-half-right {
       padding-left: 0;
     }
+    
+    /* ✅ 3×3 grid პატარა ეკრანებზე */
+    .quick-item {
+      flex: 0 0 calc((100% - 14px) / 3);
+    }
   }
   
   @media (min-width: 480px) {
     .home-screen {
       padding: 0 var(--screen-padding);
-      /* ✅ FIX: აქაც safe area padding */
       padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
-    }
-    
-    .quick-grid {
-      gap: 9px;
     }
   }
