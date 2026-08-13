@@ -833,14 +833,14 @@
   }
   
   /* ============================================
-     4. QUICK ACCESS GRID - 5+4 LAYOUT
+     4. QUICK ACCESS GRID - ALWAYS 2 ROWS (5+4)
      ============================================ */
   .quick-access { 
     margin-bottom: 8px; 
     width: 100%; 
   }
   
-  /* ✅ NEW: Flexbox 5+4 განლაგება */
+  /* ✅ 2 ხაზი ყველა ეკრანზე: 5 ღილაკი პირველზე, 4 მეორეზე */
   .quick-grid {
     display: flex;
     flex-wrap: wrap;
@@ -1252,9 +1252,27 @@
       padding-left: 0;
     }
     
-    /* ✅ 3×3 grid პატარა ეკრანებზე */
+    /* ✅ პატარა ეკრანებზეც 2 ხაზი (5+4) - უბრალოდ კომპაქტური ღილაკები */
     .quick-item {
-      flex: 0 0 calc((100% - 14px) / 3);
+      padding: 8px 2px;
+    }
+    
+    .quick-icon svg,
+    .q-icon-wrapper svg {
+      width: 22px;
+      height: 22px;
+    }
+    
+    .quick-icon span {
+      font-size: 22px !important;
+    }
+    
+    .quick-label {
+      font-size: 8px;
+    }
+    
+    .quick-sublabel {
+      font-size: 7px;
     }
   }
   
