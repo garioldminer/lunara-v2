@@ -4,7 +4,7 @@
    .app-container {
     min-height: 100dvh; /* ✅ FIX: dynamic viewport height */
     height: auto; /* ✅ FIX: natural flow */
-    background: #0a0600;
+    background: transparent; /* ✅ FIX: ბექგრაუნდი body::before-ზე გადადის */
     overflow-x: hidden;
     overflow-y: visible; /* ✅ FIX: allow natural scroll */
     position: relative;
@@ -47,8 +47,22 @@
     /* ✅ FIX: ბუნებრივი rubber-band iOS-ზე, მაგრამ pull-to-refresh გამორთული */
     overscroll-behavior-x: none;
     overscroll-behavior-y: contain;
-    /* ✅ FIX: მუქი ფონი თეთრის ნაცვლად */
+    /* ✅ FIX: მუქი ფონი თეთრის ნაცვლად (fallback) */
     background: #0a0600;
+    position: relative;
+  }
+  
+  /* ✅ FIX: უწყვეტი "სცენა" მთელ ეკრანზე — არ მოძრაობს სქროლვისას */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(ellipse at 50% 0%, #14101c 0%, #0a0600 55%, #07050a 100%);
+    z-index: -1;
+    pointer-events: none;
   }
   
   /* ============================================
