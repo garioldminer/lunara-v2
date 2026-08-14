@@ -14,13 +14,13 @@
   
   /* ============================================
      🎯 GLOBAL TELEGRAM HEADER OFFSET
-     ✅ FIX: დინამიური offset — სამი დონის ლოგიკა:
-     1. --tg-top-inset (JS-ით, Telegram SDK-დან)
-     2. Fallback: env(safe-area-inset-top) + 48px (CSS-ით)
-     3. + 3px დაშორება Close ღილაკსა და ბანერს შორის
+     ✅ ზუსტი ფორმულა Telegram დოკუმენტაციის მიხედვით:
+     env(safe-area-inset-top) = notch / status bar
+     44px = Telegram native header bar (iOS HIG standard)
+     3px = დაშორება Close ღილაკსა და პროფილის ბანერს შორის
      ============================================ */
   .screen-wrapper {
-    padding-top: calc(var(--tg-top-inset, calc(env(safe-area-inset-top, 0px) + 48px)) + 3px);
+    padding-top: calc(env(safe-area-inset-top, 0px) + 44px + 3px);
     height: 100%;
     width: 100%;
     box-sizing: border-box;
