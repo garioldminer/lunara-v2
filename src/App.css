@@ -104,3 +104,15 @@
     width: 0;
     height: 0;
   }
+  
+  /* ============================================
+     🔒 HOME LOCK - სრული ფიქსაცია
+     ✅ ბლოკავს სქროლსაც და iOS rubber-band bounce-საც
+     მხოლოდ Home გვერდზე (სხვა ეკრანები ისქროლება)
+     ============================================ */
+  body.home-locked,
+  body.home-locked #root,
+  body.home-locked .app-container,
+  body.home-locked .screen-wrapper {
+    overflow: hidden !important;
+  }

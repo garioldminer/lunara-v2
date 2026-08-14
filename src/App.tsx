@@ -207,6 +207,15 @@ function AppContent() {
     };
   }, [user]);
 
+  // ✅ FIX: Home გვერდზე სქროლი სრულად იბლოკება (bounce-ის ჩათვლით)
+  useEffect(() => {
+    if (currentScreen === 'home') {
+      document.body.classList.add('home-locked');
+    } else {
+      document.body.classList.remove('home-locked');
+    }
+  }, [currentScreen]);
+
   const goTo = (screen: Screen) => setCurrentScreen(screen);
   const handleTabChange = (tab: string) => { 
     setActiveTab(tab); 

@@ -27,6 +27,8 @@
     overflow-y: hidden;
     display: flex;
     flex-direction: column;
+    /* ✅ FIX: ბლოკავს თითის წევით pan-ს Home-ზე (bounce-ის თავიდან ასაცილებლად) */
+    touch-action: none;
   }
   
   /* ============================================
