@@ -67,7 +67,7 @@ function FixRow({ label, ok, okT, badT }: { label: string; ok: boolean; okT: str
 }
 
 /* ==========================================
-   📋 INTERFACES (უცვლელი)
+   📋 INTERFACES
    ========================================== */
 interface DiagnosticResult { id: string; name: string; status: 'pass' | 'fail' | 'warning' | 'pending'; message: string; details?: any; timestamp: string; }
 interface HomeDiagnostics { results: DiagnosticResult[]; isRunning: boolean; lastRun: string | null; }
@@ -93,10 +93,11 @@ interface DebugPanelProps {
 type TabType = 'system' | 'user' | 'streak' | 'profile' | 'energy' | 'diagnostics' | 'functions' | 'logs' | 'actions';
 
 export default function DebugPanel(props: DebugPanelProps) {
+  // ✅ FIX: timeLeft და isClaiming ამოღებულია (TS6133)
   const {
     showDebug, setShowDebug, user, economy, debugLogs, dbStatus, activeSubscription, currentStreak, setDebugLogs,
     checkDatabaseStatus, refreshUserDataDebug, handleLogoutAndReset, testAddCoins, testAddXP, testAddEnergy,
-    testSpendEnergy, testCompleteQuest, reloadFromDatabase, questsLoading, timeLeft, showQuestModal, rewardClaimed, isClaiming,
+    testSpendEnergy, testCompleteQuest, reloadFromDatabase, questsLoading, showQuestModal, rewardClaimed,
     runHomeDiagnostics = async () => [], diagnostics = { results: [], isRunning: false, lastRun: null },
     testEnergySystem = () => {}, testLocalStorage = () => {}, testPremiumGate = () => {}, testQuestSystem = () => {},
     testDailyCard = () => {}, testStreakSystem = () => {}, testXPSystem = () => {}, testSupabaseConnection = () => {}
@@ -546,7 +547,7 @@ export default function DebugPanel(props: DebugPanelProps) {
               <Title icon={Heart} color={CLR.pink} right={<><RunBtn onClick={() => runHomeDiagnostics?.()} loading={diagRunning} color={CLR.pink} label="Run All"/><CopyButton tab="diagnostics"/></>}>DIAGNOSTICS</Title>
               {diagLast && <LastRun text={`Last: ${diagLast} | ${diagResults.filter(r=>r.status==='pass').length}/${diagResults.length} passed`}/>}
               <div style={grid(2)}>
-                {([['⚡ Energy',CLR.yellow,testEnergySystem],['💾 Storage',CLR.blue,testLocalStorage],['👑 Premium',CLR.purple,testPremiumGate],['🎯 Quests',CLR.green,testQuestSystem],['🃏 Daily','#f472b6',testDailyCard],['🔥 Streak',CLR.orange,testStreakSystem],['⭐ XP','#3b82f6',testXPSystem],['🗄️ DB','#8b5cf6',testSupabaseConnection]] as any[]).map(([l,c,f]) => <button key={l} onClick={f} style={solidBtn(c, l.includes('Energy')?'#000':'#fff')}>{l}</button>)}
+                {([['⚡ Energy',CLR.yellow,testEnergySystem],['💾 Storage',CLR.blue,testLocalStorage],['👑 Premium',CLR.purple,testPremiumGate],['🎯 Quests',CLR.green,testQuestSystem],['🃏 Daily','#f472b6',testDailyCard],['🔥 Streak',CLR.orange,testStreakSystem],['⭐ XP','#3b82f6',testXPSystem],['🗄️ DB','#8b5cf6',testSupabaseConnection]] as any[]).map(([l,c,f]) => <button key={l} onClick={f as any} style={solidBtn(c, l.includes('Energy')?'#000':'#fff')}>{l}</button>)}
               </div>
               {diagResults.map((r, i) => <CheckRow key={i} status={r.status==='pass'?'pass':r.status==='fail'?'fail':'warn'} title={r.name} msg={r.message} details={r.details?JSON.stringify(r.details):undefined}/>)}
             </div>)}
