@@ -5,9 +5,8 @@
   left: 0;
   right: 0;
   z-index: 1000;
-  /* ✅ FIX: ეკრანის ქვედა კიდესთან - მხოლოდ safe area დაშორება */
-  padding: 0 4px 0;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  /* ✅ FIX: ზუსტად 3px დაშორება ეკრანის ქვედა კიდიდან (env-ის გარეშე) */
+  padding: 0 4px 3px;
   pointer-events: none;
 }
 
