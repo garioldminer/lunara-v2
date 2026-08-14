@@ -133,18 +133,22 @@ function AppContent() {
       // ✅ FIX: დინამიური ზედა offset — აპი თავად ზომავს
       // Telegram-ის ელემენტების (status bar + Close/header) სიმაღლეს
       const applyTopInset = () => {
-        let top = 0;
-        const contentInset = tg.contentSafeAreaInset?.top;
-        const safeInset = tg.safeAreaInset?.top;
-        if (typeof contentInset === 'number' && contentInset > 0) {
-          // ✅ ზუსტი მნიშვნელობა Telegram-დან
-          top = contentInset;
-        } else if (typeof safeInset === 'number' && safeInset > 0) {
-          // ✅ Fallback: notch + სტანდარტული header bar
-          top = safeInset + 48;
+        const content = tg.contentSafeAreaInset?.top;
+        const safe = tg.safeAreaInset?.top;
+        
+        if (typeof content === 'number' && content > 0) {
+          // ✅ Telegram-ის ზუსტი მნიშვნელობა
+          document.documentElement.style.setProperty('--tg-top-inset', `${content}px`);
+          logger.log(`📐 [TopInset] contentSafeAreaInset: ${content}px`);
+        } else if (typeof safe === 'number' && safe > 0) {
+          // ✅ Fallback: notch + header bar
+          document.documentElement.style.setProperty('--tg-top-inset', `${safe + 48}px`);
+          logger.log(`📐 [TopInset] safeAreaInset + 48: ${safe + 48}px`);
+        } else {
+          // ✅ კრიტიკული: წავშალოთ ცვლადი რომ CSS fallback-მა იმუშაოს!
+          document.documentElement.style.removeProperty('--tg-top-inset');
+          logger.log('📐 [TopInset] SDK = 0 → CSS fallback: env() + 48px');
         }
-        document.documentElement.style.setProperty('--tg-top-inset', `${top}px`);
-        logger.log(`📐 [TopInset] Applied: ${top}px`);
       };
 
       applyTopInset();
