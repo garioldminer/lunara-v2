@@ -6,7 +6,7 @@
     --screen-padding: 3px;
     --section-gap: 2px;
     --max-width: 480px;
-    --quick-gap: 7px;  /* ✅ ერთიანი gap - grid + margins */
+    --quick-gap: 7px;
   }
   
   .home-screen {
@@ -842,37 +842,41 @@
   }
   
   /* ============================================
-     4. 🎴 QUICK ACCESS GRID - TAROT CARD DESIGN
-     ✅ PROPORTIONAL LAYOUT: 7px top/gap/bottom
+     4. 🎴 QUICK ACCESS GRID - PROPORTIONAL 2×5
+     ✅ CSS Grid: 5 cols × 2 rows, ავტო-სიმაღლე
+     ✅ არასდროს არ ცდება Bottom Nav-ს
      ============================================ */
   .quick-access { 
-    /* ✅ იღებს მთელ დარჩენილ სივრცეს Card of Day ↔ Bottom Nav შორის */
+    /* ✅ იღებს მთელ დარჩენილ სივრცეს Card of Day ↔ Bottom Nav */
     flex: 1;
     min-height: 0;
     width: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    /* ✅ ზედა და ქვედა padding = grid gap = 7px */
+    /* ✅ ტოლი padding ზემოდან და ქვემოდან = gap */
     padding: var(--quick-gap) 0;
     margin-bottom: 0;
   }
   
   .quick-grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-content: center;
-    /* ✅ ერთიანი gap ყველა რიგს შორის */
+    /* ✅ CSS Grid - ავტომატურად ავსებს მთელ სივრცეს */
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);  /* 5 სვეტი */
+    grid-template-rows: 1fr 1fr;            /* 2 ტოლი რიგი */
     gap: var(--quick-gap);
   }
   
-  /* ✅ ბანქოს კარტის ვიზუალი - ყველა ღილაკი */
+  /* ✅ ბანქოს კარტის ვიზუალი - ავსებს cell-ს (პროპორცია ავტომატური) */
   .quick-item {
-    /* ✅ 5 ღილაკი ერთ რიგზე (4 gaps × 7px = 28px) */
-    flex: 0 0 calc((100% - 28px) / 5);
-    /* ✅ ტაროს კარტის პროპორცია 2:3 */
-    aspect-ratio: 2 / 3;
+    /* ✅ არა aspect-ratio! Grid ავტომატურად აძლევს ზომას */
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+    
     border-radius: 8px;
     display: flex;
     flex-direction: column;
@@ -901,7 +905,7 @@
       0 0 12px rgba(var(--glow-color-rgb, 197 160 89), 0.15);
   }
   
-  /* ✅ ბანქოს კარტის კუთხის დეკორაციები */
+  /* ✅ კუთხის დეკორაციები */
   .quick-item::before {
     content: '';
     position: absolute;
@@ -923,7 +927,7 @@
     z-index: 1;
   }
   
-  /* 🎴 შიდა ჩარჩო (როგორც ნამდვილ ტაროს კარტს) */
+  /* 🎴 შიდა ჩარჩო */
   .quick-item::after {
     content: '';
     position: absolute;
@@ -1294,9 +1298,8 @@
       padding-left: 0;
     }
     
-    /* პატარა ეკრანებზეც 2 ხაზი (5+5) */
     .quick-item {
-      padding: 4px 2px;
+      padding: 2px;
     }
     
     .quick-icon svg {
