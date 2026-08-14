@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { useUser } from '../context/UserContext';
@@ -268,6 +268,31 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [dbDebugInfo, setDbDebugInfo] = useState<DatabaseDebugInfo>({
     lastQuery: null, lastResponse: null, economyData: null, queryHistory: []
   });
+
+  const screenRef = useRef<HTMLDivElement>(null);
+
+  // ✅ უნივერსალური სიმაღლე: JS ითვლის რეალურ პიქსელებს
+  // არ არის დამოკიდებული CSS ჯაჭვზე — მუშაობს ნებისმიერ რეზოლუციაზე!
+  useEffect(() => {
+    const applyHeight = () => {
+      const el = screenRef.current;
+      if (!el) return;
+      const top = el.getBoundingClientRect().top;
+      const h = window.innerHeight - top;
+      if (h > 0) el.style.height = `${h}px`;
+    };
+    applyHeight();
+    const t1 = setTimeout(applyHeight, 100);
+    const t2 = setTimeout(applyHeight, 500);
+    window.addEventListener('resize', applyHeight);
+    window.addEventListener('orientationchange', applyHeight);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      window.removeEventListener('resize', applyHeight);
+      window.removeEventListener('orientationchange', applyHeight);
+    };
+  }, []);
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     setToast({ message, type });
@@ -609,7 +634,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     setUnclaimedMilestoneCount(0);
   };
 
-  // ✅ FIX: Telegram WebApp - TypeScript-safe with optional chaining
   useEffect(() => {
     try {
       const tg = (window as any).Telegram?.WebApp;
@@ -619,7 +643,7 @@ export default function HomeScreen({ onNavigate }: Props) {
         tg.disableVerticalSwipes?.();
       }
     } catch (e) {
-      // silently ignore - not in Telegram context
+      // silently ignore
     }
   }, []);
 
@@ -955,7 +979,6 @@ export default function HomeScreen({ onNavigate }: Props) {
   const handleQuickAction = async (action: string) => {
     addDebugLog('info', 'NAVIGATION', 'Quick action clicked', { action });
     
-    // ✅ NEW: მე-10 placeholder ღილაკის handlerი
     if (action === 'Placeholder10') {
       showToast('✨ Coming Soon! ეს ფუნქცია მალე დაემატება...', 'info');
       return;
@@ -995,7 +1018,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     }
   };
 
-  // ✅ NEW: 9 რეალური ღილაკი + 1 placeholder (მე-10 ღილაკი)
   const quickActions = [
     { icon: <Sparkles size={28} />, label: t('home.quickAccess.daily'), sublabel: t('home.quickAccess.card'), color: '#C5A059', action: 'Daily' },
     { icon: <LayoutGrid size={28} />, label: t('home.quickAccess.threeCards'), sublabel: t('home.quickAccess.reading'), color: '#a78bfa', action: '3Cards' },
@@ -1006,7 +1028,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     { icon: <span style={{ fontSize: '28px' }}>🐎</span>, label: t('home.quickAccess.horseshoe'), sublabel: t('home.quickAccess.sevenCards'), color: '#fb923c', action: 'Horseshoe', isPremium: true },
     { icon: <span style={{ fontSize: '28px' }}>❤️</span>, label: t('home.quickAccess.love'), sublabel: t('home.quickAccess.spread'), color: '#f472b6', action: 'Relationship', isPremium: true },
     { icon: <Sparkles size={28} />, label: t('home.quickAccess.services'), sublabel: t('home.quickAccess.shop'), color: '#FFD700', action: 'Services', isServices: true },
-    // ✅ მე-10 ღილაკი - ცარიელი, მომავალი ფუნქციისთვის
     { icon: <span style={{ fontSize: '28px' }}>✨</span>, label: 'Coming', sublabel: 'Soon', color: '#8b5cf6', action: 'Placeholder10', isPlaceholder: true },
   ];
 
@@ -1041,7 +1062,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     }
   };
 
-  // ✅ Badge inline styles (override CSS cache issues)
   const premiumBadgeStyle: React.CSSProperties = {
     position: 'absolute',
     top: '3px',
@@ -1079,13 +1099,12 @@ export default function HomeScreen({ onNavigate }: Props) {
   };
 
   return (
-    <div className="home-screen">
+    <div className="home-screen" ref={screenRef}>
       <AnimatePresence>
         {toast && <ToastNotification toast={toast} onClose={() => setToast(null)} />}
         {showLevelUpModal && <LevelUpModal level={leveledUpTo} onClose={() => setShowLevelUpModal(false)} t={t} />}
       </AnimatePresence>
 
-      {/* ✅ ADMIN FLOATING BUTTONS - ეკრანის შუა მარჯვენა კიდეზე (მხოლოდ admin-ისთვის) */}
       {isUserAdmin && (
         <div style={{
           position: 'fixed',
@@ -1098,7 +1117,6 @@ export default function HomeScreen({ onNavigate }: Props) {
           zIndex: 9990,
           pointerEvents: 'auto'
         }}>
-          {/* Admin Panel ღილაკი */}
           <button
             onClick={() => onNavigate?.('admin')}
             style={{
@@ -1122,7 +1140,6 @@ export default function HomeScreen({ onNavigate }: Props) {
             <Shield size={20} />
           </button>
 
-          {/* Debug Panel ღილაკი */}
           <button
             onClick={() => setShowDebug(true)}
             style={{
@@ -1681,7 +1698,6 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </motion.div>
 
-      {/* ✨ MYSTICAL TAROT CARDS - Quick Actions (9 + 1 placeholder = 10 ღილაკი, 5+5) */}
       <div className="quick-access">
         <div className="quick-grid">
           {quickActions.map((action) => (
