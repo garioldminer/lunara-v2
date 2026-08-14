@@ -340,7 +340,7 @@ export default function DebugPanel(props: DebugPanelProps) {
     <>
       {/* ✅ ლურჯი floating ღილაკი ამოღებულია - იხსნება HomeScreen-ის ღილაკით */}
       {showDebug && (
-        <div style={{ position: 'fixed', top: 10, bottom: 10, left: 10, right: 10, zIndex: 10000, maxWidth: 450, margin: '0 auto', background: 'rgba(10,6,0,0.98)', border: '2px solid rgba(255,229,102,0.5)', borderRadius: 16, boxShadow: '0 8px 32px rgba(0,0,0,0.8)', fontFamily: 'monospace', fontSize: 11, color: '#ffe566', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div style={{ position: 'fixed', top: 100, bottom: 10, left: 10, right: 10, zIndex: 10000, maxWidth: 450, margin: '0 auto', background: 'rgba(10,6,0,0.98)', border: '2px solid rgba(255,229,102,0.5)', borderRadius: 16, boxShadow: '0 8px 32px rgba(0,0,0,0.8)', fontFamily: 'monospace', fontSize: 11, color: '#ffe566', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,229,102,0.3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <strong style={{ fontSize: 14, color: '#ffe566', display: 'flex', alignItems: 'center', gap: 8 }}><Bug size={16}/> ADMIN DEBUG</strong>
             <button onClick={() => setShowDebug(false)} style={{ background: 'none', border: 'none', color: CLR.red, cursor: 'pointer', padding: 4 }}><X size={18}/></button>

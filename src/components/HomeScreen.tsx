@@ -955,6 +955,12 @@ export default function HomeScreen({ onNavigate }: Props) {
   const handleQuickAction = async (action: string) => {
     addDebugLog('info', 'NAVIGATION', 'Quick action clicked', { action });
     
+    // ✅ NEW: მე-10 placeholder ღილაკის handlerი
+    if (action === 'Placeholder10') {
+      showToast('✨ Coming Soon! ეს ფუნქცია მალე დაემატება...', 'info');
+      return;
+    }
+    
     if (action === 'CelticCross') {
       const canProceed = await checkAndSpendEnergy('celtic_cross', 6);
       if (canProceed) onNavigate?.('celtic-cross');
@@ -989,7 +995,7 @@ export default function HomeScreen({ onNavigate }: Props) {
     }
   };
 
-  // ✅ FIX: 9 რეალური ღილაკი + 1 placeholder (Admin ამოღებულია, floating buttons-ში გადავიდა)
+  // ✅ NEW: 9 რეალური ღილაკი + 1 placeholder (მე-10 ღილაკი)
   const quickActions = [
     { icon: <Sparkles size={28} />, label: t('home.quickAccess.daily'), sublabel: t('home.quickAccess.card'), color: '#C5A059', action: 'Daily' },
     { icon: <LayoutGrid size={28} />, label: t('home.quickAccess.threeCards'), sublabel: t('home.quickAccess.reading'), color: '#a78bfa', action: '3Cards' },
@@ -1000,8 +1006,8 @@ export default function HomeScreen({ onNavigate }: Props) {
     { icon: <span style={{ fontSize: '28px' }}>🐎</span>, label: t('home.quickAccess.horseshoe'), sublabel: t('home.quickAccess.sevenCards'), color: '#fb923c', action: 'Horseshoe', isPremium: true },
     { icon: <span style={{ fontSize: '28px' }}>❤️</span>, label: t('home.quickAccess.love'), sublabel: t('home.quickAccess.spread'), color: '#f472b6', action: 'Relationship', isPremium: true },
     { icon: <Sparkles size={28} />, label: t('home.quickAccess.services'), sublabel: t('home.quickAccess.shop'), color: '#FFD700', action: 'Services', isServices: true },
-    // ✅ Placeholder ღილაკი (Admin-ის ყოფილი ადგილი) - უხილავი, 2x5 grid-ისთვის
-    { icon: <span style={{ fontSize: '28px', opacity: 0 }}>⬜</span>, label: '', sublabel: '', color: 'transparent', action: 'Placeholder', isPlaceholder: true },
+    // ✅ მე-10 ღილაკი - ცარიელი, მომავალი ფუნქციისთვის
+    { icon: <span style={{ fontSize: '28px' }}>✨</span>, label: 'Coming', sublabel: 'Soon', color: '#8b5cf6', action: 'Placeholder10', isPlaceholder: true },
   ];
 
   const dailyCardName = dailyCard?.name || 'THE FOOL';
