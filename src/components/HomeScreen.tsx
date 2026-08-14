@@ -273,29 +273,30 @@ export default function HomeScreen({ onNavigate }: Props) {
 
   const screenRef = useRef<HTMLDivElement>(null);
 
-  // ✅ უნივერსალური სიმაღლე: პირდაპირ ზომავს მანძილს nav-ის ზედა კიდემდე!
+  // ✅ უნივერსალური სიმაღლე: ზომავს მხოლოდ მაშინ როცა გვერდი დაჯდომილია
   useEffect(() => {
     const applyHeight = () => {
       const el = screenRef.current;
       if (!el) return;
-      const top = el.getBoundingClientRect().top;
       const nav = document.querySelector('.bottom-nav-container') as HTMLElement | null;
-      let h;
-      if (nav) {
-        h = nav.getBoundingClientRect().top - top - 8;
-      } else {
-        h = window.innerHeight - top - 100;
-      }
+      if (!nav) return;
+      const top = el.getBoundingClientRect().top;
+      // ✅ თუ გვერდი ჯერ არ დაჯდა (top ძალიან პატარაა), არ დააყენო — სცადე ხელახლა
+      if (top < 20) return;
+      const h = nav.getBoundingClientRect().top - top - 8;
       if (h > 0) el.style.height = `${h}px`;
     };
     applyHeight();
-    const timers = [100, 300, 600, 1000, 1500, 2500].map(ms => setTimeout(applyHeight, ms));
-    window.addEventListener('resize', applyHeight);
-    window.addEventListener('orientationchange', applyHeight);
+    const timers = [100, 300, 600, 1000, 1500, 2500, 4000, 6000].map(ms => setTimeout(applyHeight, ms));
+    const onScroll = () => requestAnimationFrame(applyHeight);
+    window.addEventListener('scroll', onScroll);
+    window.addEventListener('resize', onScroll);
+    window.addEventListener('orientationchange', onScroll);
     return () => {
       timers.forEach(clearTimeout);
-      window.removeEventListener('resize', applyHeight);
-      window.removeEventListener('orientationchange', applyHeight);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      window.removeEventListener('orientationchange', onScroll);
     };
   }, []);
 
