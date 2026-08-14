@@ -273,7 +273,7 @@ export default function HomeScreen({ onNavigate }: Props) {
 
   const screenRef = useRef<HTMLDivElement>(null);
 
-  // ✅ უნივერსალური სიმაღლე: ყოველთვის აყენებს, არ ბლოკავს
+  // ✅ უნივერსალური სიმაღლე: განუწყვეტლივ ზომავს სანამ layout სრულად დაჯდება
   useEffect(() => {
     const applyHeight = () => {
       const el = screenRef.current;
@@ -282,22 +282,23 @@ export default function HomeScreen({ onNavigate }: Props) {
       const top = el.getBoundingClientRect().top;
       let h;
       if (nav) {
-        // ✅ ზუსტი: nav-ის ზედა კიდე − home-ის ზედა კიდე − 8px მარჟა
         h = nav.getBoundingClientRect().top - top - 8;
       } else {
-        // ✅ fallback თუ nav ჯერ არ არის DOM-ში
         h = window.innerHeight - top - 100;
       }
       if (h > 0) el.style.height = `${h}px`;
     };
     applyHeight();
-    const timers = [100, 300, 600, 1000, 1500, 2500, 4000, 6000].map(ms => setTimeout(applyHeight, ms));
+    // ✅ ყოველ 500ms გაზომვა პირველი 10 წამი — სანამ layout სრულად დაჯდება
+    const interval = setInterval(applyHeight, 500);
+    const stop = setTimeout(() => clearInterval(interval), 10000);
     const onScroll = () => requestAnimationFrame(applyHeight);
     window.addEventListener('scroll', onScroll);
     window.addEventListener('resize', onScroll);
     window.addEventListener('orientationchange', onScroll);
     return () => {
-      timers.forEach(clearTimeout);
+      clearInterval(interval);
+      clearTimeout(stop);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
       window.removeEventListener('orientationchange', onScroll);
