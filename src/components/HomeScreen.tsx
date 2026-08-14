@@ -15,7 +15,8 @@ import { logger } from '../lib/logger';
 import { 
   Gem, Zap, Trophy, Flame, X, CheckCircle,
   Sparkles, LayoutGrid, Moon, 
-  Crown, Scroll, ChevronRight, Gift, Shield, Infinity as InfinityIcon, RefreshCw, TrendingUp
+  Crown, Scroll, ChevronRight, Gift, Shield, Infinity as InfinityIcon, RefreshCw, TrendingUp,
+  Bug
 } from 'lucide-react';
 import DebugPanel from './DebugPanel';
 import DiamondShopModal from './DiamondShopModal';
@@ -982,13 +983,13 @@ export default function HomeScreen({ onNavigate }: Props) {
       else if (action === 'Cards') onNavigate('cards');
       else if (action === 'History') onNavigate('reading-history');
       else if (action === 'Horoscope') onNavigate('horoscope');
-      else if (action === 'Admin') onNavigate('admin');
       else if (action === 'Subscription') onNavigate('subscription');
       else if (action === 'Services') onNavigate('services');
       else if (action === 'Stats') onNavigate('journal-stats');
     }
   };
 
+  // ✅ FIX: 9 რეალური ღილაკი + 1 placeholder (Admin ამოღებულია, floating buttons-ში გადავიდა)
   const quickActions = [
     { icon: <Sparkles size={28} />, label: t('home.quickAccess.daily'), sublabel: t('home.quickAccess.card'), color: '#C5A059', action: 'Daily' },
     { icon: <LayoutGrid size={28} />, label: t('home.quickAccess.threeCards'), sublabel: t('home.quickAccess.reading'), color: '#a78bfa', action: '3Cards' },
@@ -999,11 +1000,9 @@ export default function HomeScreen({ onNavigate }: Props) {
     { icon: <span style={{ fontSize: '28px' }}>🐎</span>, label: t('home.quickAccess.horseshoe'), sublabel: t('home.quickAccess.sevenCards'), color: '#fb923c', action: 'Horseshoe', isPremium: true },
     { icon: <span style={{ fontSize: '28px' }}>❤️</span>, label: t('home.quickAccess.love'), sublabel: t('home.quickAccess.spread'), color: '#f472b6', action: 'Relationship', isPremium: true },
     { icon: <Sparkles size={28} />, label: t('home.quickAccess.services'), sublabel: t('home.quickAccess.shop'), color: '#FFD700', action: 'Services', isServices: true },
+    // ✅ Placeholder ღილაკი (Admin-ის ყოფილი ადგილი) - უხილავი, 2x5 grid-ისთვის
+    { icon: <span style={{ fontSize: '28px', opacity: 0 }}>⬜</span>, label: '', sublabel: '', color: 'transparent', action: 'Placeholder', isPlaceholder: true },
   ];
-
-  if (isUserAdmin) {
-    quickActions.push({ icon: <Shield size={28} />, label: t('home.quickAccess.admin'), sublabel: t('home.quickAccess.panel'), color: '#ef4444', action: 'Admin' });
-  }
 
   const dailyCardName = dailyCard?.name || 'THE FOOL';
   const dailyCardMeaning = isDailyReversed ? (dailyCard?.reversed_keywords?.[0] || 'Reflection') : (dailyCard?.keywords?.[0] || 'New Beginnings');
@@ -1079,6 +1078,69 @@ export default function HomeScreen({ onNavigate }: Props) {
         {toast && <ToastNotification toast={toast} onClose={() => setToast(null)} />}
         {showLevelUpModal && <LevelUpModal level={leveledUpTo} onClose={() => setShowLevelUpModal(false)} t={t} />}
       </AnimatePresence>
+
+      {/* ✅ ADMIN FLOATING BUTTONS - ეკრანის შუა მარჯვენა კიდეზე (მხოლოდ admin-ისთვის) */}
+      {isUserAdmin && (
+        <div style={{
+          position: 'fixed',
+          top: '50%',
+          right: '8px',
+          transform: 'translateY(-50%)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+          zIndex: 9990,
+          pointerEvents: 'auto'
+        }}>
+          {/* Admin Panel ღილაკი */}
+          <button
+            onClick={() => onNavigate?.('admin')}
+            style={{
+              width: '44px',
+              height: '44px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.95), rgba(185, 28, 28, 0.95))',
+              border: '2px solid rgba(255, 255, 255, 0.2)',
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              boxShadow: '0 4px 16px rgba(239, 68, 68, 0.5), 0 0 20px rgba(239, 68, 68, 0.3)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              transition: 'all 0.2s ease'
+            }}
+            title="Admin Panel"
+          >
+            <Shield size={20} />
+          </button>
+
+          {/* Debug Panel ღილაკი */}
+          <button
+            onClick={() => setShowDebug(true)}
+            style={{
+              width: '44px',
+              height: '44px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.95), rgba(109, 40, 217, 0.95))',
+              border: '2px solid rgba(255, 255, 255, 0.2)',
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              boxShadow: '0 4px 16px rgba(139, 92, 246, 0.5), 0 0 20px rgba(139, 92, 246, 0.3)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              transition: 'all 0.2s ease'
+            }}
+            title="Debug Panel"
+          >
+            <Bug size={20} />
+          </button>
+        </div>
+      )}
 
       <AnimatePresence>
         {currentStreak > 0 && !isDailyRevealed && !streakBannerDismissed && (
@@ -1613,18 +1675,22 @@ export default function HomeScreen({ onNavigate }: Props) {
         </div>
       </motion.div>
 
-      {/* ✨ MYSTICAL TAROT CARDS - Quick Actions */}
+      {/* ✨ MYSTICAL TAROT CARDS - Quick Actions (9 + 1 placeholder = 10 ღილაკი, 5+5) */}
       <div className="quick-access">
         <div className="quick-grid">
           {quickActions.map((action) => (
             <button 
               key={action.action} 
-              className={`quick-item ${action.isPremium ? 'premium-item' : ''} ${action.action === 'Admin' ? 'admin-item' : ''} ${(action as any).isServices ? 'services-item' : ''}`} 
+              className={`quick-item ${action.isPremium ? 'premium-item' : ''} ${(action as any).isServices ? 'services-item' : ''} ${(action as any).isPlaceholder ? 'placeholder-item' : ''}`} 
               style={{ 
                 '--glow-color': action.color,
                 '--glow-color-rgb': hexToRgbVars(action.color),
-                background: `linear-gradient(160deg, ${hexToRgba(action.color, 0.14)} 0%, rgba(16, 13, 10, 0.97) 60%)`,
-                border: `1px solid ${hexToRgba(action.color, (action as any).isPremium || (action as any).isServices ? 0.45 : 0.28)}`,
+                background: (action as any).isPlaceholder 
+                  ? 'transparent' 
+                  : `linear-gradient(160deg, ${hexToRgba(action.color, 0.14)} 0%, rgba(16, 13, 10, 0.97) 60%)`,
+                border: (action as any).isPlaceholder 
+                  ? '1px dashed rgba(255, 255, 255, 0.05)' 
+                  : `1px solid ${hexToRgba(action.color, (action as any).isPremium || (action as any).isServices ? 0.45 : 0.28)}`,
                 borderRadius: '14px',
                 padding: 'clamp(10px, 3vw, 14px) 4px',
                 display: 'flex',
@@ -1632,13 +1698,15 @@ export default function HomeScreen({ onNavigate }: Props) {
                 alignItems: 'center',
                 gap: '6px',
                 color: '#fff',
-                cursor: 'pointer',
+                cursor: (action as any).isPlaceholder ? 'default' : 'pointer',
                 position: 'relative',
                 overflow: 'visible',
-                boxShadow: '0 4px 14px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06)',
-                transition: 'all 0.25s ease'
+                boxShadow: (action as any).isPlaceholder ? 'none' : '0 4px 14px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06)',
+                transition: 'all 0.25s ease',
+                opacity: (action as any).isPlaceholder ? 0.3 : 1,
+                pointerEvents: (action as any).isPlaceholder ? 'none' : 'auto'
               } as React.CSSProperties} 
-              onClick={() => handleQuickAction(action.action)}
+              onClick={() => !(action as any).isPlaceholder && handleQuickAction(action.action)}
             >
               {action.isPremium && (
                 <div style={premiumBadgeStyle}>💎</div>
@@ -1646,8 +1714,8 @@ export default function HomeScreen({ onNavigate }: Props) {
               {(action as any).isServices && (
                 <div style={servicesBadgeStyle}>🛍️</div>
               )}
-              <div className="quick-icon" style={{ filter: `drop-shadow(0 0 6px ${action.color})`, color: action.color }}>{action.icon}</div>
-              <span className="quick-label">{action.label}</span>
+              <div className="quick-icon" style={{ filter: (action as any).isPlaceholder ? 'none' : `drop-shadow(0 0 6px ${action.color})`, color: action.color }}>{action.icon}</div>
+              {action.label && <span className="quick-label">{action.label}</span>}
               {action.sublabel && <span className="quick-sublabel">{action.sublabel}</span>}
             </button>
           ))}

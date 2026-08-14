@@ -41,7 +41,7 @@
     padding: 12px;
     margin-bottom: var(--section-gap);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(197, 160, 89, 0.05);
-    flex-shrink: 0; /* ✅ FIX: არ იკუმშება */
+    flex-shrink: 0;
   }
   
   .user-main-row {
@@ -256,7 +256,7 @@
     margin-bottom: var(--section-gap);
     width: 100%;
     align-items: stretch;
-    flex-shrink: 0; /* ✅ FIX: არ იკუმშება */
+    flex-shrink: 0;
   }
   
   .daily-quests-compact {
@@ -538,7 +538,7 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(197, 160, 89, 0.04);
     position: relative;
     overflow: visible;
-    flex-shrink: 0; /* ✅ FIX: არ იკუმშება */
+    flex-shrink: 0;
   }
   
   .clickable-card {
@@ -843,12 +843,11 @@
   }
   
   /* ============================================
-     4. QUICK ACCESS GRID - ALWAYS 2 ROWS (5+4)
+     4. QUICK ACCESS GRID - ALWAYS 2 ROWS (5+5)
      ============================================ */
   .quick-access { 
     margin-bottom: 8px; 
     width: 100%; 
-    /* ✅ FIX: იღებს დარჩენილ სივრცეს და ცენტრში ალაგებს */
     flex: 1;
     min-height: 0;
     display: flex;
@@ -856,17 +855,15 @@
     justify-content: center;
   }
   
-  /* ✅ 2 ხაზი ყველა ეკრანზე: 5 ღილაკი პირველზე, 4 მეორეზე */
   .quick-grid {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    align-content: center; /* ✅ ვერტიკალური ცენტრირება */
+    align-content: center;
     gap: 7px;
   }
   
   .quick-item {
-    /* ✅ 5 ღილაკი ერთ ხაზზე (4 gaps × 7px = 28px) */
     flex: 0 0 calc((100% - 28px) / 5);
     border-radius: 14px;
     display: flex;
@@ -1006,6 +1003,24 @@
   .quick-item.paywall-item .q-icon-wrapper {
     color: #FFD700 !important;
     filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.7));
+  }
+  
+  /* ✅ NEW: Placeholder ღილაკი (Admin-ის ყოფილი ადგილი) - 2x5 grid-ის შესანარჩუნებლად */
+  .quick-item.placeholder-item {
+    background: transparent;
+    border: 1px dashed rgba(255, 255, 255, 0.05);
+    box-shadow: none;
+    opacity: 0.3;
+    pointer-events: none;
+    cursor: default;
+  }
+  
+  .quick-item.placeholder-item::before {
+    display: none;
+  }
+  
+  .quick-item.placeholder-item:active {
+    transform: none;
   }
   
   /* ============================================
@@ -1268,7 +1283,7 @@
       padding-left: 0;
     }
     
-    /* ✅ პატარა ეკრანებზეც 2 ხაზი (5+4) - უბრალოდ კომპაქტური ღილაკები */
+    /* ✅ პატარა ეკრანებზეც 2 ხაზი (5+5) - უბრალოდ კომპაქტური ღილაკები */
     .quick-item {
       padding: 8px 2px;
     }
