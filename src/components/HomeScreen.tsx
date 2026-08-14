@@ -271,27 +271,28 @@ export default function HomeScreen({ onNavigate }: Props) {
 
   const screenRef = useRef<HTMLDivElement>(null);
 
-  // ✅ უნივერსალური სიმაღლე: აკლებს Bottom Nav-ის რეალურ სიმაღლეს!
+  // ✅ უნივერსალური სიმაღლე: პირდაპირ ზომავს მანძილს nav-ის ზედა კიდემდე!
   useEffect(() => {
     const applyHeight = () => {
       const el = screenRef.current;
       if (!el) return;
       const top = el.getBoundingClientRect().top;
       const nav = document.querySelector('.bottom-nav-container') as HTMLElement | null;
-      const navH = nav ? nav.offsetHeight : 90;
-      const h = window.innerHeight - top - navH - 8;
+      let h;
+      if (nav) {
+        // ✅ ზუსტი რეალური სივრცე: nav-ის ზედა კიდე − home-screen-ის დასაწყისი
+        h = nav.getBoundingClientRect().top - top - 8;
+      } else {
+        h = window.innerHeight - top - 100;
+      }
       if (h > 0) el.style.height = `${h}px`;
     };
     applyHeight();
-    const t1 = setTimeout(applyHeight, 100);
-    const t2 = setTimeout(applyHeight, 400);
-    const t3 = setTimeout(applyHeight, 1000);
+    const timers = [100, 300, 600, 1000, 1500, 2500].map(ms => setTimeout(applyHeight, ms));
     window.addEventListener('resize', applyHeight);
     window.addEventListener('orientationchange', applyHeight);
     return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
+      timers.forEach(clearTimeout);
       window.removeEventListener('resize', applyHeight);
       window.removeEventListener('orientationchange', applyHeight);
     };
