@@ -273,17 +273,21 @@ export default function HomeScreen({ onNavigate }: Props) {
 
   const screenRef = useRef<HTMLDivElement>(null);
 
-  // ✅ უნივერსალური სიმაღლე: ზომავს მხოლოდ მაშინ როცა გვერდი დაჯდომილია
+  // ✅ უნივერსალური სიმაღლე: ყოველთვის აყენებს, არ ბლოკავს
   useEffect(() => {
     const applyHeight = () => {
       const el = screenRef.current;
       if (!el) return;
       const nav = document.querySelector('.bottom-nav-container') as HTMLElement | null;
-      if (!nav) return;
       const top = el.getBoundingClientRect().top;
-      // ✅ თუ გვერდი ჯერ არ დაჯდა (top ძალიან პატარაა), არ დააყენო — სცადე ხელახლა
-      if (top < 20) return;
-      const h = nav.getBoundingClientRect().top - top - 8;
+      let h;
+      if (nav) {
+        // ✅ ზუსტი: nav-ის ზედა კიდე − home-ის ზედა კიდე − 8px მარჟა
+        h = nav.getBoundingClientRect().top - top - 8;
+      } else {
+        // ✅ fallback თუ nav ჯერ არ არის DOM-ში
+        h = window.innerHeight - top - 100;
+      }
       if (h > 0) el.style.height = `${h}px`;
     };
     applyHeight();
