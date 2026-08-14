@@ -23,8 +23,8 @@
     box-sizing: border-box;
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
-    /* ✅ ჯავშნი: სიმაღლე პირდაპირ viewport-დან, ჯაჭვის გარეშე! */
-    height: calc(100dvh - (70px + env(safe-area-inset-top, 0px)));
+    /* ✅ უნივერსალური ჯავშნი: სიმაღლე პირდაპირ viewport-დან */
+    height: 100%;  /* ✅ ჯაჭვიდან: ზუსტად screen-wrapper-ის შიდა სიმაღლე */
     overflow-y: hidden;
     display: flex;
     flex-direction: column;
@@ -843,41 +843,34 @@
   }
   
   /* ============================================
-     4. 🎴 QUICK ACCESS GRID - PROPORTIONAL 2×5
-     ✅ სიმაღლე პირდაპირ viewport-დან (ჯაჭვის გარეშე)
-     ✅ ABSOLUTE INSET - ნამდვილად ავსებს მთელ სივრცეს
+     4. 🎴 QUICK ACCESS GRID - UNIVERSAL 2×5
+     ✅ ნებისმიერი რეზოლუცია: grid ავსებს მთელ სივრცეს
      ============================================ */
   .quick-access { 
-    /* ✅ იღებს მთელ დარჩენილ სივრცეს Card of Day ↔ Bottom Nav */
     flex: 1;
     min-height: 0;
     width: 100%;
-    position: relative;  /* ✅ anchor grid-ისთვის */
+    position: relative;
     margin-bottom: 0;
   }
   
   .quick-grid {
-    /* ✅ ABSOLUTE INSET - ძალით იკავებს მთელ სივრცეს! */
     position: absolute;
     top: var(--quick-gap);
     left: 0;
     right: 0;
     bottom: var(--quick-gap);
-    
     display: grid;
-    grid-template-columns: repeat(5, 1fr);  /* 5 სვეტი */
-    grid-template-rows: 1fr 1fr;            /* 2 ტოლი რიგი */
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: 1fr 1fr;
     gap: var(--quick-gap);
   }
   
-  /* ✅ ბანქოს კარტის ვიზუალი - ავსებს cell-ს (პროპორცია ავტომატური) */
   .quick-item {
-    /* ✅ არა aspect-ratio! Grid ავტომატურად აძლევს ზომას */
     width: 100%;
     height: 100%;
     min-height: 0;
     min-width: 0;
-    
     border-radius: 8px;
     display: flex;
     flex-direction: column;
@@ -889,15 +882,11 @@
     transition: all 0.25s ease;
     position: relative;
     overflow: hidden;
-    
-    /* 🎴 ბანქოს კარტის სტილი */
     background: linear-gradient(160deg, 
       rgba(var(--glow-color-rgb, 197 160 89), 0.18) 0%, 
       rgba(20, 16, 10, 0.98) 50%,
       rgba(12, 10, 6, 1) 100%);
     border: 1.5px solid rgba(var(--glow-color-rgb, 197 160 89), 0.45);
-    
-    /* 🎴 3D ჩრდილი + glow */
     box-shadow: 
       0 4px 12px rgba(0, 0, 0, 0.55),
       0 2px 4px rgba(0, 0, 0, 0.4),
@@ -906,7 +895,6 @@
       0 0 12px rgba(var(--glow-color-rgb, 197 160 89), 0.15);
   }
   
-  /* ✅ კუთხის დეკორაციები */
   .quick-item::before {
     content: '';
     position: absolute;
@@ -928,7 +916,6 @@
     z-index: 1;
   }
   
-  /* 🎴 შიდა ჩარჩო */
   .quick-item::after {
     content: '';
     position: absolute;
@@ -1020,7 +1007,6 @@
     filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.7));
   }
   
-  /* ✅ Placeholder - ნახევრად უხილავი */
   .quick-item.placeholder-item {
     background: transparent;
     border: 1px dashed rgba(255, 255, 255, 0.1);

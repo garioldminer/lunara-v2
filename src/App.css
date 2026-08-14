@@ -2,7 +2,7 @@
    APP CONTAINER - ROOT LAYOUT
    ============================================ */
    .app-container {
-    height: 100%; /* ✅ FIX: ზუსტად WebView-ის სიმაღლე */
+    height: 100%; /* ✅ ზუსტად WebView-ის სიმაღლე */
     background: transparent;
     overflow-x: hidden;
     overflow-y: visible;
@@ -14,8 +14,7 @@
   
   /* ============================================
      🎯 GLOBAL TELEGRAM HEADER OFFSET
-     ✅ ზუსტი ფორმულა Telegram დოკუმენტაციის მიხედვით:
-     env(safe-area-inset-top) = notch / status bar
+     ✅ env(safe-area-inset-top) = notch / status bar
      44px = Telegram native header bar (iOS HIG standard)
      3px = დაშორება Close ღილაკსა და პროფილის ბანერს შორის
      ============================================ */
