@@ -5,1869 +5,608 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { 
-  getAllFunctionStatuses, 
-  getRecentLogs, 
-  testFunction,
-  type FunctionStatus,
-  type FunctionLog,
-  EDGE_FUNCTIONS
+  getAllFunctionStatuses, getRecentLogs, testFunction,
+  type FunctionStatus, type FunctionLog, EDGE_FUNCTIONS
 } from '../lib/adminService';
 
-interface DiagnosticResult {
-  id: string;
-  name: string;
-  status: 'pass' | 'fail' | 'warning' | 'pending';
-  message: string;
-  details?: any;
-  timestamp: string;
+/* ==========================================
+   🎨 UI PRIMITIVES - კომპაქტური სტილები
+   ========================================== */
+const CLR = {
+  green: '#10b981', red: '#ef4444', yellow: '#fbbf24', blue: '#60a5fa',
+  purple: '#a78bfa', orange: '#fb923c', pink: '#ec4899', gold: '#C5A059',
+  gray: '#94a3b8', dark: '#64748b', light: '#e2e8f0'
+};
+type CS = React.CSSProperties;
+
+const card = (c: string, x?: CS): CS => ({ padding: 12, background: `${c}1a`, borderRadius: 8, border: `1px solid ${c}66`, fontSize: 11, ...x });
+const btnS = (c: string, x?: CS): CS => ({ padding: '6px 10px', background: `${c}33`, border: `1px solid ${c}`, borderRadius: 6, color: c, cursor: 'pointer', fontSize: 10, fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: 4, ...x });
+const solidBtn = (bg: string, fg = '#fff', x?: CS): CS => ({ padding: 8, background: bg, border: 'none', borderRadius: 6, color: fg, cursor: 'pointer', fontWeight: 'bold', fontSize: 10, ...x });
+const grid = (n: number): CS => ({ display: 'grid', gridTemplateColumns: `repeat(${n}, 1fr)`, gap: 8 });
+const rowS = (x?: CS): CS => ({ display: 'flex', justifyContent: 'space-between', alignItems: 'center', ...x });
+const colS: CS = { display: 'flex', flexDirection: 'column', gap: 12 };
+const stColor = (ok: boolean | null) => (ok === null ? CLR.yellow : ok ? CLR.green : CLR.red);
+
+function Title({ icon: Icon, color, children, right }: { icon: any; color: string; children: React.ReactNode; right?: React.ReactNode }) {
+  return (
+    <div style={rowS({ marginBottom: 4 })}>
+      <span style={{ color, fontWeight: 'bold', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}><Icon size={14} /> {children}</span>
+      <div style={{ display: 'flex', gap: 6 }}>{right}</div>
+    </div>
+  );
+}
+function LastRun({ text }: { text: string }) {
+  return <div style={{ padding: 8, background: 'rgba(255,255,255,0.06)', borderRadius: 6, border: '1px solid rgba(255,255,255,0.15)', fontSize: 10, textAlign: 'center' }}>{text}</div>;
+}
+function Empty({ icon: Icon, children }: { icon: any; children: React.ReactNode }) {
+  return (
+    <div style={{ textAlign: 'center', padding: '24px 12px', color: CLR.gray, fontSize: 11 }}>
+      <Icon size={28} style={{ opacity: 0.4, marginBottom: 8 }} />
+      <div>{children}</div>
+    </div>
+  );
+}
+function CheckRow({ status, title, msg, details }: { status: 'pass' | 'warn' | 'fail'; title: string; msg: string; details?: string }) {
+  const c = status === 'pass' ? CLR.green : status === 'warn' ? CLR.yellow : CLR.red;
+  const ic = status === 'pass' ? '✅' : status === 'warn' ? '⚠️' : '❌';
+  return (
+    <div style={{ padding: 10, background: 'rgba(0,0,0,0.3)', borderRadius: 8, border: `1px solid ${c}80` }}>
+      <div style={{ fontSize: 11, fontWeight: 'bold', color: CLR.light, marginBottom: 4 }}>{ic} {title}</div>
+      <div style={{ fontSize: 10, color: '#cbd5e1', marginBottom: details ? 4 : 0 }}>{msg}</div>
+      {details && <div style={{ fontSize: 9, color: CLR.gray, padding: 4, background: 'rgba(0,0,0,0.5)', borderRadius: 4, wordBreak: 'break-word' }}>{details}</div>}
+    </div>
+  );
+}
+function FixRow({ label, ok, okT, badT }: { label: string; ok: boolean; okT: string; badT: string }) {
+  return (
+    <div style={rowS({ padding: '4px 6px', background: ok ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', borderRadius: 4 })}>
+      <span>{label}</span>
+      <span style={{ color: ok ? '#22c55e' : CLR.red, fontWeight: 'bold', fontSize: 10 }}>{ok ? okT : badT}</span>
+    </div>
+  );
 }
 
-interface HomeDiagnostics {
-  results: DiagnosticResult[];
-  isRunning: boolean;
-  lastRun: string | null;
-}
-
-interface ProfileCheck {
-  id: string;
-  element: string;
-  status: 'pass' | 'warn' | 'fail';
-  message: string;
-  details?: string;
-}
-
-interface EnergyTransaction {
-  id: string;
-  amount: number;
-  transaction_type: string;
-  reference_id: string | null;
-  balance_after: number;
-  created_at: string;
-}
-
-interface ReadingCost {
-  reading_type: string;
-  energy_cost: number;
-  description: string;
-}
-
-interface EnergyCheckData {
-  uiEnergy: number;
-  uiMax: number;
-  dbEnergy: number;
-  dbMax: number;
-  lastUpdate: string | null;
-  boostMultiplier: number;
-  minutesPassed: number;
-  energyToRegen: number;
-  minutesUntilNext: number;
-  transactions: EnergyTransaction[];
-  costs: ReadingCost[];
-  match: boolean;
-}
-
-interface AuthSecurityInfo {
-  signatureVerified: boolean | null;
-  tokenAge: number | null;
-  expiresIn: number | null;
-  authMethod: 'signIn' | 'createUser' | 'unknown';
-  rawDataHash: string | null;
-  authDate: string | null;
-}
-
-interface AppFixesStatus {
-  splashClosure: boolean;
-  visibilityCleanup: boolean;
-  errorBoundary: boolean;
-  telegramReady: boolean;
-  selectedCardCheck: boolean;
-}
-
+/* ==========================================
+   📋 INTERFACES (უცვლელი)
+   ========================================== */
+interface DiagnosticResult { id: string; name: string; status: 'pass' | 'fail' | 'warning' | 'pending'; message: string; details?: any; timestamp: string; }
+interface HomeDiagnostics { results: DiagnosticResult[]; isRunning: boolean; lastRun: string | null; }
+interface ProfileCheck { id: string; element: string; status: 'pass' | 'warn' | 'fail'; message: string; details?: string; }
+interface EnergyTransaction { id: string; amount: number; transaction_type: string; reference_id: string | null; balance_after: number; created_at: string; }
+interface ReadingCost { reading_type: string; energy_cost: number; description: string; }
+interface EnergyCheckData { uiEnergy: number; uiMax: number; dbEnergy: number; dbMax: number; lastUpdate: string | null; boostMultiplier: number; minutesPassed: number; energyToRegen: number; minutesUntilNext: number; transactions: EnergyTransaction[]; costs: ReadingCost[]; match: boolean; }
+interface AuthSecurityInfo { signatureVerified: boolean | null; tokenAge: number | null; expiresIn: number | null; authMethod: 'signIn' | 'createUser' | 'unknown'; rawDataHash: string | null; authDate: string | null; }
+interface AppFixesStatus { splashClosure: boolean; visibilityCleanup: boolean; errorBoundary: boolean; telegramReady: boolean; selectedCardCheck: boolean; }
 interface DebugPanelProps {
-  showDebug: boolean;
-  setShowDebug: (show: boolean) => void;
-  user: any;
-  economy: any;
-  dbDebugInfo: any;
-  debugLogs: any[];
-  dbStatus: string;
-  activeSubscription: any;
-  questsLoading: boolean;
-  dailyQuests: any[];
-  activeDailyQuest: any;
-  isClaimingQuest: boolean;
-  timeLeft: string;
-  showQuestModal: boolean;
-  rewardClaimed: boolean;
-  isClaiming: boolean;
-  currentStreak: number;
-  setDebugLogs: React.Dispatch<React.SetStateAction<any[]>>;
-  checkDatabaseStatus: () => void;
-  refreshUserDataDebug: () => void;
-  handleLogoutAndReset: () => void;
-  testAddCoins: (amount: number) => void;
-  testAddXP: (amount: number) => void;
-  testAddEnergy: (amount: number) => void;
-  testSpendEnergy: (amount: number) => void;
-  testCompleteQuest: () => void;
-  reloadFromDatabase: () => void;
-  testAddXPWithLevel: (amount: number) => void;
-  forceRecalcLevel: () => void;
-  xpTestLogs: string[];
-  runHomeDiagnostics?: () => Promise<DiagnosticResult[]>;
-  diagnostics?: HomeDiagnostics;
-  testEnergySystem?: () => void;
-  testLocalStorage?: () => void;
-  testPremiumGate?: () => void;
-  testQuestSystem?: () => void;
-  testDailyCard?: () => void;
-  testStreakSystem?: () => void;
-  testXPSystem?: () => void;
-  testSupabaseConnection?: () => void;
+  showDebug: boolean; setShowDebug: (s: boolean) => void; user: any; economy: any; dbDebugInfo: any;
+  debugLogs: any[]; dbStatus: string; activeSubscription: any; questsLoading: boolean; dailyQuests: any[];
+  activeDailyQuest: any; isClaimingQuest: boolean; timeLeft: string; showQuestModal: boolean; rewardClaimed: boolean;
+  isClaiming: boolean; currentStreak: number; setDebugLogs: React.Dispatch<React.SetStateAction<any[]>>;
+  checkDatabaseStatus: () => void; refreshUserDataDebug: () => void; handleLogoutAndReset: () => void;
+  testAddCoins: (n: number) => void; testAddXP: (n: number) => void; testAddEnergy: (n: number) => void;
+  testSpendEnergy: (n: number) => void; testCompleteQuest: () => void; reloadFromDatabase: () => void;
+  testAddXPWithLevel: (n: number) => void; forceRecalcLevel: () => void; xpTestLogs: string[];
+  runHomeDiagnostics?: () => Promise<DiagnosticResult[]>; diagnostics?: HomeDiagnostics;
+  testEnergySystem?: () => void; testLocalStorage?: () => void; testPremiumGate?: () => void; testQuestSystem?: () => void;
+  testDailyCard?: () => void; testStreakSystem?: () => void; testXPSystem?: () => void; testSupabaseConnection?: () => void;
 }
-
 type TabType = 'system' | 'user' | 'streak' | 'profile' | 'energy' | 'diagnostics' | 'functions' | 'logs' | 'actions';
 
 export default function DebugPanel(props: DebugPanelProps) {
   const {
-    showDebug, setShowDebug, user, economy, debugLogs, dbStatus,
-    activeSubscription, currentStreak, setDebugLogs,
-    checkDatabaseStatus, refreshUserDataDebug, handleLogoutAndReset, 
-    testAddCoins, testAddXP, testAddEnergy, testSpendEnergy, 
-    testCompleteQuest, reloadFromDatabase, questsLoading, timeLeft, 
-    showQuestModal, rewardClaimed, isClaiming,
-    runHomeDiagnostics = async () => [],
-    diagnostics = { results: [], isRunning: false, lastRun: null },
-    testEnergySystem = () => {},
-    testLocalStorage = () => {},
-    testPremiumGate = () => {},
-    testQuestSystem = () => {},
-    testDailyCard = () => {},
-    testStreakSystem = () => {},
-    testXPSystem = () => {},
-    testSupabaseConnection = () => {}
+    showDebug, setShowDebug, user, economy, debugLogs, dbStatus, activeSubscription, currentStreak, setDebugLogs,
+    checkDatabaseStatus, refreshUserDataDebug, handleLogoutAndReset, testAddCoins, testAddXP, testAddEnergy,
+    testSpendEnergy, testCompleteQuest, reloadFromDatabase, questsLoading, timeLeft, showQuestModal, rewardClaimed, isClaiming,
+    runHomeDiagnostics = async () => [], diagnostics = { results: [], isRunning: false, lastRun: null },
+    testEnergySystem = () => {}, testLocalStorage = () => {}, testPremiumGate = () => {}, testQuestSystem = () => {},
+    testDailyCard = () => {}, testStreakSystem = () => {}, testXPSystem = () => {}, testSupabaseConnection = () => {}
   } = props;
 
   const [activeTab, setActiveTab] = useState<TabType>('system');
   const [activeCopyTab, setActiveCopyTab] = useState<string | null>(null);
-  
+  const [logFilter, setLogFilter] = useState('');
   const [authStatus, setAuthStatus] = useState<'checking' | 'active' | 'inactive'>('checking');
   const [authUid, setAuthUid] = useState<string | null>(null);
   const [tgAvailable, setTgAvailable] = useState(false);
   const [hasInitData, setHasInitData] = useState(false);
-  const [bootTime, setBootTime] = useState<number>(0);
+  const [bootTime, setBootTime] = useState(0);
   const [localStorageData, setLocalStorageData] = useState<Record<string, any>>({});
-
-  const [authSecurity, setAuthSecurity] = useState<AuthSecurityInfo>({
-    signatureVerified: null,
-    tokenAge: null,
-    expiresIn: null,
-    authMethod: 'unknown',
-    rawDataHash: null,
-    authDate: null
-  });
-
-  const [appFixes, setAppFixes] = useState<AppFixesStatus>({
-    splashClosure: true,
-    visibilityCleanup: true,
-    errorBoundary: true,
-    telegramReady: false,
-    selectedCardCheck: true,
-  });
-
-  const [authFlow, setAuthFlow] = useState<{
-    edge: 'idle' | 'testing' | 'ok' | 'fail';
-    edgeLatency: number | null;
-    edgeError: string | null;
-    edgeStatus: number | null;
-    edgeResponse: any;
-    session: 'idle' | 'testing' | 'ok' | 'fail';
-    sessionError: string | null;
-    lastRun: string | null;
-  }>({ 
-    edge: 'idle', edgeLatency: null, edgeError: null, edgeStatus: null, edgeResponse: null,
-    session: 'idle', sessionError: null, lastRun: null 
-  });
-
+  const [authSecurity, setAuthSecurity] = useState<AuthSecurityInfo>({ signatureVerified: null, tokenAge: null, expiresIn: null, authMethod: 'unknown', rawDataHash: null, authDate: null });
+  const [appFixes, setAppFixes] = useState<AppFixesStatus>({ splashClosure: true, visibilityCleanup: true, errorBoundary: true, telegramReady: false, selectedCardCheck: true });
+  const [authFlow, setAuthFlow] = useState<any>({ edge: 'idle', edgeLatency: null, edgeError: null, edgeStatus: null, edgeResponse: null, session: 'idle', sessionError: null, lastRun: null });
   const [functionStatuses, setFunctionStatuses] = useState<FunctionStatus[]>([]);
   const [functionsLoading, setFunctionsLoading] = useState(false);
   const [testingFunction, setTestingFunction] = useState<string | null>(null);
   const [expandedFunction, setExpandedFunction] = useState<string | null>(null);
   const [functionLogs, setFunctionLogs] = useState<Record<string, FunctionLog[]>>({});
-
   const [expandedLog, setExpandedLog] = useState<number | null>(null);
-
   const [profileChecks, setProfileChecks] = useState<ProfileCheck[]>([]);
   const [profileChecking, setProfileChecking] = useState(false);
   const [profileLastRun, setProfileLastRun] = useState<string | null>(null);
-
   const [energyData, setEnergyData] = useState<EnergyCheckData | null>(null);
   const [energyChecking, setEnergyChecking] = useState(false);
   const [energyLastRun, setEnergyLastRun] = useState<string | null>(null);
-
   const [streakData, setStreakData] = useState<any>(null);
   const [streakChecking, setStreakChecking] = useState(false);
   const [streakLastRun, setStreakLastRun] = useState<string | null>(null);
   const [streakActionLoading, setStreakActionLoading] = useState<string | null>(null);
 
+  const addDebugLog = (type: 'info' | 'success' | 'error' | 'warning', category: string, message: string, data?: any) => {
+    setDebugLogs(prev => [{ id: Date.now(), timestamp: new Date().toLocaleTimeString('en-US', { hour12: false }), type, category, message, data }, ...prev].slice(0, 100));
+  };
+  const getXPToNextLevel = (l: number): number => { if (l===1) return 100; if (l===2) return 250; if (l===3) return 500; if (l===4) return 1000; if (l===5) return 2000; return Math.floor(2000*Math.pow(1.8,l-5)); };
+  const getLevelFromTotalXP = (t: number) => { let lv=1, need=getXPToNextLevel(1), cur=t; while (cur>=need) { cur-=need; lv++; need=getXPToNextLevel(lv); } return { level: lv, currentLevelXP: cur, xpToNext: need }; };
+
   useEffect(() => {
     if (!showDebug) return;
-    const checkSystem = async () => {
-      const startTime = performance.now();
+    const check = async () => {
+      const t0 = performance.now();
       const tg = (window as any).Telegram?.WebApp;
-      setTgAvailable(!!tg);
-      setHasInitData(!!tg?.initData);
-
+      setTgAvailable(!!tg); setHasInitData(!!tg?.initData);
       if (supabase) {
-        try {
-          const { data: { user: authUser }, error } = await supabase.auth.getUser();
-          if (error || !authUser) { setAuthStatus('inactive'); setAuthUid(null); } 
-          else { setAuthStatus('active'); setAuthUid(authUser.id); }
+        try { const { data: { user: au }, error } = await supabase.auth.getUser();
+          if (error || !au) { setAuthStatus('inactive'); setAuthUid(null); } else { setAuthStatus('active'); setAuthUid(au.id); }
         } catch { setAuthStatus('inactive'); setAuthUid(null); }
-      } else { setAuthStatus('inactive'); }
-
-      const lsData: Record<string, any> = {};
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key) {
-          try { lsData[key] = localStorage.getItem(key)?.substring(0, 100) || ''; } 
-          catch { lsData[key] = '[Error reading]'; }
-        }
-      }
-      setLocalStorageData(lsData);
-      setBootTime(Math.round(performance.now() - startTime));
+      } else setAuthStatus('inactive');
+      const ls: Record<string, any> = {};
+      for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k) { try { ls[k] = localStorage.getItem(k)?.substring(0,100) || ''; } catch { ls[k] = '[Error]'; } } }
+      setLocalStorageData(ls); setBootTime(Math.round(performance.now() - t0));
     };
-    checkSystem();
+    check();
   }, [showDebug]);
+
+  useEffect(() => { if (showDebug && (window as any).Telegram?.WebApp?.version) setAppFixes(p => ({ ...p, telegramReady: true })); }, [showDebug]);
 
   useEffect(() => {
     if (!showDebug) return;
-    const tg = (window as any).Telegram?.WebApp;
-    if (tg && tg.version) {
-      setAppFixes(prev => ({ ...prev, telegramReady: true }));
-    }
-  }, [showDebug]);
-
-  useEffect(() => {
-    if (!showDebug) return;
-    
-    const checkAuthSecurity = async () => {
-      const securityInfo: AuthSecurityInfo = {
-        signatureVerified: null,
-        tokenAge: null,
-        expiresIn: null,
-        authMethod: 'unknown',
-        rawDataHash: null,
-        authDate: null
-      };
-
+    const run = async () => {
+      const s: AuthSecurityInfo = { signatureVerified: null, tokenAge: null, expiresIn: null, authMethod: 'unknown', rawDataHash: null, authDate: null };
       try {
         if (supabase) {
           const { data: { session } } = await supabase.auth.getSession();
-          
           if (session?.access_token) {
-            try {
-              const tokenParts = session.access_token.split('.');
-              if (tokenParts.length === 3) {
-                const payload = JSON.parse(atob(tokenParts[1]));
-                const now = Math.floor(Date.now() / 1000);
-                securityInfo.tokenAge = now - (payload.iat || now);
-                securityInfo.expiresIn = (payload.exp || now) - now;
-                
-                if (payload.auth_method) {
-                  securityInfo.authMethod = payload.auth_method;
-                }
-              }
-            } catch (e) {
-              console.warn('Failed to parse JWT:', e);
-            }
-            
-            securityInfo.signatureVerified = true;
-          } else {
-            securityInfo.signatureVerified = false;
-          }
+            try { const p = session.access_token.split('.'); if (p.length===3) { const pl = JSON.parse(atob(p[1])); const now = Math.floor(Date.now()/1000); s.tokenAge = now-(pl.iat||now); s.expiresIn = (pl.exp||now)-now; if (pl.auth_method) s.authMethod = pl.auth_method; } } catch {}
+            s.signatureVerified = true;
+          } else s.signatureVerified = false;
         }
-
         const tg = (window as any).Telegram?.WebApp;
         if (tg?.initData) {
-          const params = new URLSearchParams(tg.initData);
-          const hash = params.get('hash');
-          const authDate = params.get('auth_date');
-          
-          if (hash) {
-            securityInfo.rawDataHash = hash.substring(0, 16) + '...';
-          }
-          if (authDate) {
-            const age = Math.floor(Date.now() / 1000) - parseInt(authDate, 10);
-            securityInfo.authDate = `${age}s ago`;
-            
-            if (age > 86400) {
-              securityInfo.signatureVerified = false;
-            }
-          }
+          const pr = new URLSearchParams(tg.initData); const h = pr.get('hash'); const ad = pr.get('auth_date');
+          if (h) s.rawDataHash = h.substring(0,16)+'...';
+          if (ad) { const age = Math.floor(Date.now()/1000)-parseInt(ad,10); s.authDate = `${age}s ago`; if (age>86400) s.signatureVerified = false; }
         }
-
-        const authLogs = debugLogs.filter(l => 
-          l.category === 'TELEGRAM_AUTH' || l.message?.includes('signed in') || l.message?.includes('User created')
-        );
-        if (authLogs.length > 0) {
-          const lastAuthLog = authLogs[0];
-          if (lastAuthLog.message?.includes('New user') || lastAuthLog.message?.includes('created')) {
-            securityInfo.authMethod = 'createUser';
-          } else if (lastAuthLog.message?.includes('signed in')) {
-            securityInfo.authMethod = 'signIn';
-          }
-        }
-
-        setAuthSecurity(securityInfo);
-      } catch (err) {
-        console.error('Auth security check failed:', err);
-      }
+        const logs = debugLogs.filter(l => l.category==='TELEGRAM_AUTH' || l.message?.includes('signed in') || l.message?.includes('User created'));
+        if (logs[0]) s.authMethod = logs[0].message?.includes('created') ? 'createUser' : logs[0].message?.includes('signed in') ? 'signIn' : s.authMethod;
+        setAuthSecurity(s);
+      } catch (e) { console.error('Auth security check failed:', e); }
     };
-
-    checkAuthSecurity();
+    run();
   }, [showDebug, debugLogs]);
 
   const loadFunctionStatuses = useCallback(async () => {
     if (!user?.id) return;
     setFunctionsLoading(true);
     try {
-      const statuses = await getAllFunctionStatuses(user.id);
-      setFunctionStatuses(statuses);
-      const logsMap: Record<string, FunctionLog[]> = {};
-      for (const func of EDGE_FUNCTIONS) {
-        const logs = await getRecentLogs(user.id, 5);
-        logsMap[func.name] = logs.filter(l => l.function_name === func.name);
-      }
-      setFunctionLogs(logsMap);
-    } catch (error) { console.error('Failed to load function statuses:', error); } 
-    finally { setFunctionsLoading(false); }
+      const st = await getAllFunctionStatuses(user.id); setFunctionStatuses(st);
+      const m: Record<string, FunctionLog[]> = {};
+      for (const f of EDGE_FUNCTIONS) { const l = await getRecentLogs(user.id, 5); m[f.name] = l.filter(x => x.function_name === f.name); }
+      setFunctionLogs(m);
+    } catch (e) { console.error(e); } finally { setFunctionsLoading(false); }
   }, [user?.id]);
 
-  useEffect(() => {
-    if (showDebug && activeTab === 'functions') {
-      loadFunctionStatuses();
-      const interval = setInterval(loadFunctionStatuses, 30000);
-      return () => clearInterval(interval);
-    }
-  }, [showDebug, activeTab, loadFunctionStatuses]);
+  useEffect(() => { if (showDebug && activeTab==='functions') { loadFunctionStatuses(); const i = setInterval(loadFunctionStatuses, 30000); return () => clearInterval(i); } }, [showDebug, activeTab, loadFunctionStatuses]);
 
-  const handleTestFunction = async (functionName: string) => {
-    if (!user?.id) return;
-    setTestingFunction(functionName);
-    try {
-      const result = await testFunction(user.id, functionName);
-      if (result.success) addDebugLog('success', 'FUNCTION_TEST', `✅ ${functionName} executed successfully`, result.log);
-      else addDebugLog('error', 'FUNCTION_TEST', `❌ ${functionName} failed: ${result.error}`);
+  const handleTestFunction = async (n: string) => {
+    if (!user?.id) return; setTestingFunction(n);
+    try { const r = await testFunction(user.id, n);
+      if (r.success) addDebugLog('success','FUNCTION_TEST',`✅ ${n} executed successfully`, r.log); else addDebugLog('error','FUNCTION_TEST',`❌ ${n} failed: ${r.error}`);
       await loadFunctionStatuses();
-    } catch (error: any) { addDebugLog('error', 'FUNCTION_TEST', `💥 ${functionName} exception: ${error.message}`); } 
-    finally { setTestingFunction(null); }
-  };
-
-  const addDebugLog = (type: 'info' | 'success' | 'error' | 'warning', category: string, message: string, data?: any) => {
-    setDebugLogs(prev => [{ id: Date.now(), timestamp: new Date().toLocaleTimeString('en-US', { hour12: false }), type, category, message, data }, ...prev].slice(0, 100));
-  };
-
-  const getXPToNextLevel = (level: number): number => {
-    if (level === 1) return 100; if (level === 2) return 250; if (level === 3) return 500;
-    if (level === 4) return 1000; if (level === 5) return 2000;
-    return Math.floor(2000 * Math.pow(1.8, level - 5));
-  };
-
-  const getLevelFromTotalXP = (totalXP: number) => {
-    let level = 1;
-    let xpRequiredForNext = getXPToNextLevel(level);
-    let currentLevelXP = totalXP;
-    while (currentLevelXP >= xpRequiredForNext) {
-      currentLevelXP -= xpRequiredForNext;
-      level++;
-      xpRequiredForNext = getXPToNextLevel(level);
-    }
-    return { level, currentLevelXP, xpToNext: xpRequiredForNext };
+    } catch (e: any) { addDebugLog('error','FUNCTION_TEST',`💥 ${n} exception: ${e.message}`); } finally { setTestingFunction(null); }
   };
 
   const runAuthFlowTest = async () => {
     const tg = (window as any).Telegram?.WebApp;
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-    addDebugLog('info', 'AUTH_FLOW_TEST', '🧪 Starting auth flow test...');
-
-    setAuthFlow(prev => ({ ...prev, edge: 'testing', edgeError: null, edgeStatus: null, edgeResponse: null }));
-    
-    if (!tg?.initData) {
-      setAuthFlow(prev => ({ ...prev, edge: 'fail', edgeError: 'No Telegram initData available' }));
-      addDebugLog('error', 'AUTH_FLOW_TEST', '❌ No Telegram initData');
-    } else if (!supabaseUrl) {
-      setAuthFlow(prev => ({ ...prev, edge: 'fail', edgeError: 'No SUPABASE_URL env' }));
-      addDebugLog('error', 'AUTH_FLOW_TEST', '❌ No SUPABASE_URL');
-    } else {
-      const start = performance.now();
+    const url = import.meta.env.VITE_SUPABASE_URL; const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    const ts = () => new Date().toLocaleTimeString('en-US', { hour12: false });
+    addDebugLog('info','AUTH_FLOW_TEST','🧪 Starting auth flow test...');
+    setAuthFlow((p: any) => ({ ...p, edge: 'testing', edgeError: null, edgeStatus: null, edgeResponse: null }));
+    if (!tg?.initData) { setAuthFlow((p: any) => ({ ...p, edge: 'fail', edgeError: 'No Telegram initData' })); addDebugLog('error','AUTH_FLOW_TEST','❌ No initData'); }
+    else if (!url) { setAuthFlow((p: any) => ({ ...p, edge: 'fail', edgeError: 'No SUPABASE_URL' })); addDebugLog('error','AUTH_FLOW_TEST','❌ No SUPABASE_URL'); }
+    else {
+      const t0 = performance.now();
       try {
-        const res = await fetch(`${supabaseUrl}/functions/v1/telegram-auth`, {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${supabaseAnonKey || ''}`
-          },
-          body: JSON.stringify({ initData: tg.initData }),
-        });
-        const latency = Math.round(performance.now() - start);
-        let data: any = null;
-        try {
-          data = await res.json();
-        } catch {
-          data = { raw: await res.text() };
-        }
-        
-        if (res.ok && (data.success || data.access_token || data.session)) {
-          setAuthFlow(prev => ({ ...prev, edge: 'ok', edgeLatency: latency, edgeStatus: res.status, edgeResponse: data }));
-          addDebugLog('success', 'AUTH_FLOW_TEST', `✅ Edge OK (${latency}ms)`, data);
-        } else {
-          const errMsg = data?.error || data?.message || `HTTP ${res.status}`;
-          setAuthFlow(prev => ({ ...prev, edge: 'fail', edgeLatency: latency, edgeStatus: res.status, edgeError: errMsg, edgeResponse: data }));
-          addDebugLog('error', 'AUTH_FLOW_TEST', `❌ Edge fail: ${errMsg} (${res.status})`, data);
-        }
-      } catch (e: any) {
-        const latency = Math.round(performance.now() - start);
-        setAuthFlow(prev => ({ ...prev, edge: 'fail', edgeLatency: latency, edgeError: e.message }));
-        addDebugLog('error', 'AUTH_FLOW_TEST', `💥 Edge exception: ${e.message}`);
-      }
+        const res = await fetch(`${url}/functions/v1/telegram-auth`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key||''}` }, body: JSON.stringify({ initData: tg.initData }) });
+        const lat = Math.round(performance.now()-t0); let d: any = null; try { d = await res.json(); } catch { d = { raw: await res.text() }; }
+        if (res.ok && (d.success||d.access_token||d.session)) { setAuthFlow((p: any) => ({ ...p, edge: 'ok', edgeLatency: lat, edgeStatus: res.status, edgeResponse: d })); addDebugLog('success','AUTH_FLOW_TEST',`✅ Edge OK (${lat}ms)`, d); }
+        else { const em = d?.error||d?.message||`HTTP ${res.status}`; setAuthFlow((p: any) => ({ ...p, edge: 'fail', edgeLatency: lat, edgeStatus: res.status, edgeError: em, edgeResponse: d })); addDebugLog('error','AUTH_FLOW_TEST',`❌ Edge fail: ${em} (${res.status})`, d); }
+      } catch (e: any) { setAuthFlow((p: any) => ({ ...p, edge: 'fail', edgeLatency: Math.round(performance.now()-t0), edgeError: e.message })); addDebugLog('error','AUTH_FLOW_TEST',`💥 Edge exception: ${e.message}`); }
     }
-
-    setAuthFlow(prev => ({ ...prev, session: 'testing', sessionError: null }));
-    
-    if (!supabase) {
-      setAuthFlow(prev => ({ 
-        ...prev, 
-        session: 'fail', 
-        sessionError: 'No supabase client available',
-        lastRun: new Date().toLocaleTimeString('en-US', { hour12: false }) 
-      }));
-      addDebugLog('error', 'AUTH_FLOW_TEST', '❌ No supabase client');
-      return;
-    }
-    
+    setAuthFlow((p: any) => ({ ...p, session: 'testing', sessionError: null }));
+    if (!supabase) { setAuthFlow((p: any) => ({ ...p, session: 'fail', sessionError: 'No supabase client', lastRun: ts() })); addDebugLog('error','AUTH_FLOW_TEST','❌ No supabase client'); return; }
     try {
       const { data, error } = await supabase.auth.refreshSession();
-      if (error) {
-        setAuthFlow(prev => ({ ...prev, session: 'fail', sessionError: error.message, lastRun: new Date().toLocaleTimeString('en-US', { hour12: false }) }));
-        addDebugLog('error', 'AUTH_FLOW_TEST', `❌ Session refresh: ${error.message}`);
-      } else if (!data?.session) {
-        setAuthFlow(prev => ({ ...prev, session: 'fail', sessionError: 'No session returned', lastRun: new Date().toLocaleTimeString('en-US', { hour12: false }) }));
-        addDebugLog('error', 'AUTH_FLOW_TEST', '❌ Session refresh: no session');
-      } else {
-        setAuthFlow(prev => ({ ...prev, session: 'ok', lastRun: new Date().toLocaleTimeString('en-US', { hour12: false }) }));
-        addDebugLog('success', 'AUTH_FLOW_TEST', '✅ Session refresh OK');
-      }
-    } catch (e: any) {
-      setAuthFlow(prev => ({ ...prev, session: 'fail', sessionError: e.message, lastRun: new Date().toLocaleTimeString('en-US', { hour12: false }) }));
-      addDebugLog('error', 'AUTH_FLOW_TEST', `💥 Session exception: ${e.message}`);
-    }
+      if (error) { setAuthFlow((p: any) => ({ ...p, session: 'fail', sessionError: error.message, lastRun: ts() })); addDebugLog('error','AUTH_FLOW_TEST',`❌ Session: ${error.message}`); }
+      else if (!data?.session) { setAuthFlow((p: any) => ({ ...p, session: 'fail', sessionError: 'No session', lastRun: ts() })); addDebugLog('error','AUTH_FLOW_TEST','❌ Session: no session'); }
+      else { setAuthFlow((p: any) => ({ ...p, session: 'ok', lastRun: ts() })); addDebugLog('success','AUTH_FLOW_TEST','✅ Session refresh OK'); }
+    } catch (e: any) { setAuthFlow((p: any) => ({ ...p, session: 'fail', sessionError: e.message, lastRun: ts() })); addDebugLog('error','AUTH_FLOW_TEST',`💥 Session: ${e.message}`); }
   };
 
   const runEnergyCheck = async () => {
     if (!user?.id || !supabase) return;
-    setEnergyChecking(true);
-    addDebugLog('info', 'ENERGY_CHECK', '⚡ Starting energy system check...');
+    setEnergyChecking(true); addDebugLog('info','ENERGY_CHECK','⚡ Starting energy check...');
     try {
-      const { data: ecoData } = await supabase
-        .from('user_economy')
-        .select('cosmic_focus, max_focus, last_energy_update, energy_boost_multiplier')
-        .eq('user_id', user.id)
-        .single();
-
-      const { data: txData } = await supabase
-        .from('energy_transactions')
-        .select('id, amount, transaction_type, reference_id, balance_after, created_at')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      const { data: costData } = await supabase
-        .from('reading_costs')
-        .select('reading_type, energy_cost, description')
-        .order('energy_cost', { ascending: true });
-
-      if (ecoData) {
-        const boost = parseFloat(ecoData.energy_boost_multiplier) || 1.0;
-        const now = new Date();
-        const lastUpdate = new Date(ecoData.last_energy_update);
-        const minutesPassed = (now.getTime() - lastUpdate.getTime()) / 1000 / 60;
-        const regenRate = 30 / boost;
-        const energyToRegen = Math.floor(minutesPassed / regenRate);
-        const minutesUntilNext = Math.max(0, Math.ceil(regenRate - (minutesPassed % regenRate)));
-
-        setEnergyData({
-          uiEnergy: economy?.cosmic_focus ?? 0,
-          uiMax: economy?.max_focus ?? 20,
-          dbEnergy: ecoData.cosmic_focus,
-          dbMax: ecoData.max_focus,
-          lastUpdate: ecoData.last_energy_update,
-          boostMultiplier: boost,
-          minutesPassed: Math.floor(minutesPassed),
-          energyToRegen,
-          minutesUntilNext,
-          transactions: txData || [],
-          costs: costData || [],
-          match: (economy?.cosmic_focus ?? 0) === ecoData.cosmic_focus && (economy?.max_focus ?? 20) === ecoData.max_focus
-        });
-        addDebugLog('success', 'ENERGY_CHECK', `✅ Check complete: UI ${economy?.cosmic_focus}/${economy?.max_focus} | DB ${ecoData.cosmic_focus}/${ecoData.max_focus}`);
-      } else {
-        addDebugLog('error', 'ENERGY_CHECK', '❌ No economy data found');
-      }
-
+      const { data: eco } = await supabase.from('user_economy').select('cosmic_focus, max_focus, last_energy_update, energy_boost_multiplier').eq('user_id', user.id).single();
+      const { data: tx } = await supabase.from('energy_transactions').select('id, amount, transaction_type, reference_id, balance_after, created_at').eq('user_id', user.id).order('created_at', { ascending: false }).limit(10);
+      const { data: cost } = await supabase.from('reading_costs').select('reading_type, energy_cost, description').order('energy_cost', { ascending: true });
+      if (eco) {
+        const boost = parseFloat(eco.energy_boost_multiplier)||1; const now = new Date(); const last = new Date(eco.last_energy_update);
+        const mins = (now.getTime()-last.getTime())/1000/60; const rate = 30/boost;
+        setEnergyData({ uiEnergy: economy?.cosmic_focus??0, uiMax: economy?.max_focus??20, dbEnergy: eco.cosmic_focus, dbMax: eco.max_focus, lastUpdate: eco.last_energy_update, boostMultiplier: boost, minutesPassed: Math.floor(mins), energyToRegen: Math.floor(mins/rate), minutesUntilNext: Math.max(0, Math.ceil(rate-(mins%rate))), transactions: tx||[], costs: cost||[], match: (economy?.cosmic_focus??0)===eco.cosmic_focus && (economy?.max_focus??20)===eco.max_focus });
+        addDebugLog('success','ENERGY_CHECK',`✅ UI ${economy?.cosmic_focus}/${economy?.max_focus} | DB ${eco.cosmic_focus}/${eco.max_focus}`);
+      } else addDebugLog('error','ENERGY_CHECK','❌ No economy data');
       setEnergyLastRun(new Date().toLocaleTimeString('en-US', { hour12: false }));
-    } catch (err: any) {
-      addDebugLog('error', 'ENERGY_CHECK', `❌ ${err.message}`);
-    }
+    } catch (e: any) { addDebugLog('error','ENERGY_CHECK',`❌ ${e.message}`); }
     setEnergyChecking(false);
   };
 
   const runProfileBannerCheck = async () => {
-    setProfileChecking(true);
-    addDebugLog('info', 'PROFILE_BANNER', '🔍 Starting profile banner check...');
-    const checks: ProfileCheck[] = [];
-
-    let dbData: any = null;
-    if (user?.id && supabase) {
-      try {
-        const { data, error } = await supabase
-          .from('user_economy')
-          .select('cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus')
-          .eq('user_id', user.id)
-          .single();
-        if (!error) dbData = data;
-      } catch (err: any) {
-        addDebugLog('error', 'PROFILE_BANNER', `DB query failed: ${err.message}`);
-      }
-    }
-
-    const avatarLetter = user?.display_name?.charAt(0).toUpperCase() || 'U';
-    checks.push({
-      id: 'avatar',
-      element: '🖼️ ავატარი + ასო',
-      status: user ? (user.display_name ? 'pass' : 'warn') : 'fail',
-      message: user 
-        ? (user.display_name ? `ჩანს ასო: "${avatarLetter}"` : 'სახელი ცარიელია → fallback "U"')
-        : 'user არ არის ჩატვირთული!',
-      details: `display_name: ${user?.display_name || 'null'}`
-    });
-
-    const xp = economy?.xp ?? 0;
-    const levelData = getLevelFromTotalXP(xp);
-    const xpPercent = levelData.xpToNext > 0 ? Math.min((levelData.currentLevelXP / levelData.xpToNext) * 100, 100) : 0;
-    const circumference = 2 * Math.PI * 22;
-    const strokeDashoffset = circumference - (xpPercent / 100) * circumference;
-    checks.push({
-      id: 'xp-circle',
-      element: '⭕ XP წრე (პროგრესი)',
-      status: xp >= 0 && xpPercent >= 0 && xpPercent <= 100 ? 'pass' : 'fail',
-      message: `XP: ${xp} → პროგრესი: ${xpPercent.toFixed(1)}%`,
-      details: `currentLevelXP: ${levelData.currentLevelXP} / ${levelData.xpToNext} | dashoffset: ${strokeDashoffset.toFixed(1)}`
-    });
-
-    const computedLevel = levelData.level;
-    const storedLevel = economy?.level ?? 1;
-    checks.push({
-      id: 'level-badge',
-      element: '🏅 ლეველი badge',
-      status: computedLevel === storedLevel ? 'pass' : 'warn',
-      message: computedLevel === storedLevel 
-        ? `ლეველი: ${storedLevel} ✅ (თანხვედრა)`
-        : `განსხვავება! badge-ზე: ${computedLevel}, state-ში: ${storedLevel}`,
-      details: `XP-დან გამოთვლილი: ${computedLevel} | economy.level: ${storedLevel}`
-    });
-
-    checks.push({
-      id: 'username',
-      element: '👤 მომხმარებლის სახელი',
-      status: user?.display_name ? 'pass' : 'warn',
-      message: user?.display_name ? `ჩანს: "${user.display_name}"` : 'ჩანს fallback: "LunaraSeeker"',
-      details: `display_name: ${user?.display_name || 'null'}`
-    });
-
-    if (activeSubscription) {
-      const expiresOk = new Date(activeSubscription.expires_at) > new Date();
-      checks.push({
-        id: 'premium-badge',
-        element: '👑 Premium badge',
-        status: expiresOk ? 'pass' : 'fail',
-        message: expiresOk 
-          ? `აქტიურია (${activeSubscription.plan_type}) → badge ჩანს`
-          : 'ვადა გასულია! badge არ უნდა ჩანდეს',
-        details: `expires_at: ${activeSubscription.expires_at}`
-      });
-    } else {
-      checks.push({
-        id: 'premium-badge',
-        element: '👑 Premium badge',
-        status: 'warn',
-        message: 'subscription არ არის → badge არ ჩანს (ნორმალურია)',
-        details: 'activeSubscription: null'
-      });
-    }
-
-    const uiCoins = economy?.cosmic_coins ?? 0;
-    const dbCoins = dbData?.cosmic_coins ?? null;
-    checks.push({
-      id: 'coins',
-      element: '💎 Coins',
-      status: dbCoins === null ? 'warn' : (uiCoins === dbCoins ? 'pass' : 'warn'),
-      message: dbCoins === null 
-        ? `UI: ${uiCoins} (DB ვერ წავიკითხე)`
-        : (uiCoins === dbCoins ? `UI: ${uiCoins} = DB: ${dbCoins} ✅` : `განსხვავება! UI: ${uiCoins}, DB: ${dbCoins}`),
-      details: `economy.cosmic_coins: ${uiCoins} | database: ${dbCoins}`
-    });
-
-    const uiEnergy = economy?.cosmic_focus ?? 0;
-    const uiMax = economy?.max_focus ?? 20;
-    const dbEnergy = dbData?.cosmic_focus ?? null;
-    const dbMax = dbData?.max_focus ?? null;
-    const energyValid = uiEnergy >= 0 && uiEnergy <= uiMax;
-    checks.push({
-      id: 'energy',
-      element: '⚡ ენერგია',
-      status: !energyValid ? 'fail' : (dbMax !== null && dbMax !== uiMax ? 'warn' : 'pass'),
-      message: !energyValid 
-        ? `არასწორია! ${uiEnergy}/${uiMax}`
-        : `UI: ${uiEnergy}/${uiMax} | DB: ${dbEnergy}/${dbMax}`,
-      details: `cosmic_focus: ${uiEnergy} | max_focus: ${uiMax} (უნდა იყოს 20)`
-    });
-
-    const dbStreak = dbData?.current_streak ?? null;
-    checks.push({
-      id: 'streak',
-      element: '🔥 Streak',
-      status: dbStreak === null ? 'warn' : (currentStreak === dbStreak ? 'pass' : 'warn'),
-      message: dbStreak === null 
-        ? `State: ${currentStreak} (DB ვერ წავიკითხე)`
-        : (currentStreak === dbStreak ? `State: ${currentStreak} = DB: ${dbStreak} ✅` : `განსხვავება! State: ${currentStreak}, DB: ${dbStreak}`),
-      details: `currentStreak state: ${currentStreak} | economy.current_streak: ${economy?.current_streak} | DB: ${dbStreak}`
-    });
-
-    setProfileChecks(checks);
-    const passCount = checks.filter(c => c.status === 'pass').length;
-    const warnCount = checks.filter(c => c.status === 'warn').length;
-    const failCount = checks.filter(c => c.status === 'fail').length;
-    const ts = new Date().toLocaleTimeString('en-US', { hour12: false });
-    setProfileLastRun(ts);
-    addDebugLog('success', 'PROFILE_BANNER', `✅ Check complete: ${passCount} pass, ${warnCount} warn, ${failCount} fail`);
+    setProfileChecking(true); addDebugLog('info','PROFILE_BANNER','🔍 Starting profile banner check...');
+    const c: ProfileCheck[] = []; let db: any = null;
+    if (user?.id && supabase) { try { const { data, error } = await supabase.from('user_economy').select('cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus').eq('user_id', user.id).single(); if (!error) db = data; } catch (e: any) { addDebugLog('error','PROFILE_BANNER',`DB: ${e.message}`); } }
+    const letter = user?.display_name?.charAt(0).toUpperCase()||'U';
+    c.push({ id:'avatar', element:'🖼️ ავატარი + ასო', status: user ? (user.display_name?'pass':'warn') : 'fail', message: user ? (user.display_name?`ჩანს ასო: "${letter}"`:'სახელი ცარიელია → "U"') : 'user არ ჩატვირთულა!', details: `display_name: ${user?.display_name||'null'}` });
+    const xp = economy?.xp??0; const ld = getLevelFromTotalXP(xp); const pct = ld.xpToNext>0 ? Math.min((ld.currentLevelXP/ld.xpToNext)*100,100) : 0;
+    c.push({ id:'xp-circle', element:'⭕ XP წრე', status: (xp>=0&&pct>=0&&pct<=100)?'pass':'fail', message:`XP: ${xp} → ${pct.toFixed(1)}%`, details:`${ld.currentLevelXP}/${ld.xpToNext}` });
+    c.push({ id:'level-badge', element:'🏅 ლეველი badge', status: ld.level===(economy?.level??1)?'pass':'warn', message: ld.level===(economy?.level??1)?`ლეველი: ${economy?.level} ✅`:`განსხვავება! badge: ${ld.level}, state: ${economy?.level}`, details:`XP-დან: ${ld.level} | economy.level: ${economy?.level}` });
+    c.push({ id:'username', element:'👤 სახელი', status: user?.display_name?'pass':'warn', message: user?.display_name?`ჩანს: "${user.display_name}"`:'fallback: "LunaraSeeker"', details:`display_name: ${user?.display_name||'null'}` });
+    if (activeSubscription) { const ok = new Date(activeSubscription.expires_at)>new Date(); c.push({ id:'premium-badge', element:'👑 Premium badge', status: ok?'pass':'fail', message: ok?`აქტიურია (${activeSubscription.plan_type})`:'ვადა გასულია!', details:`expires_at: ${activeSubscription.expires_at}` }); }
+    else c.push({ id:'premium-badge', element:'👑 Premium badge', status:'warn', message:'subscription არ არის (ნორმალურია)', details:'activeSubscription: null' });
+    const uc = economy?.cosmic_coins??0; const dc = db?.cosmic_coins??null;
+    c.push({ id:'coins', element:'💎 Coins', status: dc===null?'warn':(uc===dc?'pass':'warn'), message: dc===null?`UI: ${uc} (DB ვერ წავიკითხე)`:(uc===dc?`UI: ${uc} = DB: ${dc} ✅`:`განსხვავება! UI: ${uc}, DB: ${dc}`), details:`economy: ${uc} | db: ${dc}` });
+    const ue = economy?.cosmic_focus??0; const um = economy?.max_focus??20; const de = db?.cosmic_focus??null; const dm = db?.max_focus??null;
+    c.push({ id:'energy', element:'⚡ ენერგია', status: !(ue>=0&&ue<=um)?'fail':(dm!==null&&dm!==um?'warn':'pass'), message: !(ue>=0&&ue<=um)?`არასწორია! ${ue}/${um}`:`UI: ${ue}/${um} | DB: ${de}/${dm}`, details:`cosmic_focus: ${ue} | max: ${um}` });
+    const ds = db?.current_streak??null;
+    c.push({ id:'streak', element:'🔥 Streak', status: ds===null?'warn':(currentStreak===ds?'pass':'warn'), message: ds===null?`State: ${currentStreak} (DB ვერ წავიკითხე)`:(currentStreak===ds?`State: ${currentStreak} = DB: ${ds} ✅`:`განსხვავება! State: ${currentStreak}, DB: ${ds}`), details:`state: ${currentStreak} | db: ${ds}` });
+    setProfileChecks(c);
+    const p = c.filter(x=>x.status==='pass').length, w = c.filter(x=>x.status==='warn').length, f = c.filter(x=>x.status==='fail').length;
+    setProfileLastRun(new Date().toLocaleTimeString('en-US', { hour12: false }));
+    addDebugLog('success','PROFILE_BANNER',`✅ ${p} pass, ${w} warn, ${f} fail`);
     setProfileChecking(false);
   };
 
   const runStreakCheck = async () => {
-    if (!user?.id) return;
-    setStreakChecking(true);
-    addDebugLog('info', 'STREAK_CHECK', '🔥 Starting streak system check...');
-    
-    try {
-      const { getStreakDiagnostics } = await import('../lib/streakService');
-      const data = await getStreakDiagnostics(user.id);
-      
-      if (data) {
-        setStreakData(data);
-        setStreakLastRun(new Date().toLocaleTimeString('en-US', { hour12: false }));
-        addDebugLog('success', 'STREAK_CHECK', 
-          `✅ Streak: ${data.streak_info?.current_streak || 0} | ` +
-          `Milestones: ${data.stats.claimed_count}/${data.stats.total_milestones} claimed | ` +
-          `Unclaimed: ${data.stats.unclaimed_count}`);
-      } else {
-        addDebugLog('error', 'STREAK_CHECK', '❌ Failed to get streak data');
-      }
-    } catch (err: any) {
-      addDebugLog('error', 'STREAK_CHECK', `❌ ${err.message}`);
-    }
-    
+    if (!user?.id) return; setStreakChecking(true); addDebugLog('info','STREAK_CHECK','🔥 Starting streak check...');
+    try { const { getStreakDiagnostics } = await import('../lib/streakService'); const d = await getStreakDiagnostics(user.id);
+      if (d) { setStreakData(d); setStreakLastRun(new Date().toLocaleTimeString('en-US', { hour12: false })); addDebugLog('success','STREAK_CHECK',`✅ Streak: ${d.streak_info?.current_streak||0} | Unclaimed: ${d.stats.unclaimed_count}`); }
+      else addDebugLog('error','STREAK_CHECK','❌ Failed');
+    } catch (e: any) { addDebugLog('error','STREAK_CHECK',`❌ ${e.message}`); }
     setStreakChecking(false);
   };
+  const handleSetStreak = async (d: number) => { if (!user?.id) return; setStreakActionLoading('set'); addDebugLog('info','STREAK_ACTION',`🔧 Set streak ${d}d`);
+    try { const { forceSetStreak } = await import('../lib/streakService'); const r = await forceSetStreak(user.id, d);
+      if (r.success) { addDebugLog('success','STREAK_ACTION',`✅ Streak → ${r.new_streak}`); await runStreakCheck(); } else addDebugLog('error','STREAK_ACTION',`❌ ${r.error}`);
+    } catch (e: any) { addDebugLog('error','STREAK_ACTION',`❌ ${e.message}`); } setStreakActionLoading(null); };
+  const handleResetMilestones = async () => { if (!user?.id) return; if (!confirm('⚠️ Delete ALL claimed milestones?')) return; setStreakActionLoading('reset'); addDebugLog('info','STREAK_ACTION','🗑️ Reset milestones');
+    try { const { resetClaimedMilestones } = await import('../lib/streakService'); const r = await resetClaimedMilestones(user.id);
+      if (r.success) { addDebugLog('success','STREAK_ACTION',`✅ Deleted ${r.deleted_count}`); await runStreakCheck(); } else addDebugLog('error','STREAK_ACTION',`❌ ${r.error}`);
+    } catch (e: any) { addDebugLog('error','STREAK_ACTION',`❌ ${e.message}`); } setStreakActionLoading(null); };
+  const handleForceClaim = async () => { if (!user?.id) return; setStreakActionLoading('claim'); addDebugLog('info','STREAK_ACTION','🎯 Force claim');
+    try { const { claimStreakMilestone } = await import('../lib/streakService'); const r = await claimStreakMilestone();
+      if (r.success && r.data) { addDebugLog('success','STREAK_ACTION',`✅ Claimed ${r.data.milestones_claimed.length}! +${r.data.total_coins}💎 +${r.data.total_xp}XP`); await runStreakCheck(); }
+      else addDebugLog('warning','STREAK_ACTION',`⚠️ ${r.error||'No milestones'}`);
+    } catch (e: any) { addDebugLog('error','STREAK_ACTION',`❌ ${e.message}`); } setStreakActionLoading(null); };
 
-  const handleSetStreak = async (days: number) => {
-    if (!user?.id) return;
-    setStreakActionLoading('set');
-    addDebugLog('info', 'STREAK_ACTION', `🔧 Setting streak to ${days} days...`);
-    
-    try {
-      const { forceSetStreak } = await import('../lib/streakService');
-      const result = await forceSetStreak(user.id, days);
-      
-      if (result.success) {
-        addDebugLog('success', 'STREAK_ACTION', `✅ Streak set to ${result.new_streak}`);
-        await runStreakCheck();
-      } else {
-        addDebugLog('error', 'STREAK_ACTION', `❌ Failed: ${result.error}`);
-      }
-    } catch (err: any) {
-      addDebugLog('error', 'STREAK_ACTION', `❌ ${err.message}`);
-    }
-    
-    setStreakActionLoading(null);
-  };
-
-  const handleResetMilestones = async () => {
-    if (!user?.id) return;
-    if (!confirm('⚠️ Delete ALL claimed milestones? This cannot be undone.')) return;
-    
-    setStreakActionLoading('reset');
-    addDebugLog('info', 'STREAK_ACTION', '🗑️ Resetting all claimed milestones...');
-    
-    try {
-      const { resetClaimedMilestones } = await import('../lib/streakService');
-      const result = await resetClaimedMilestones(user.id);
-      
-      if (result.success) {
-        addDebugLog('success', 'STREAK_ACTION', `✅ Deleted ${result.deleted_count} claimed milestones`);
-        await runStreakCheck();
-      } else {
-        addDebugLog('error', 'STREAK_ACTION', `❌ Failed: ${result.error}`);
-      }
-    } catch (err: any) {
-      addDebugLog('error', 'STREAK_ACTION', `❌ ${err.message}`);
-    }
-    
-    setStreakActionLoading(null);
-  };
-
-  const handleForceClaim = async () => {
-    if (!user?.id) return;
-    setStreakActionLoading('claim');
-    addDebugLog('info', 'STREAK_ACTION', '🎯 Force claiming milestones via Edge Function...');
-    
-    try {
-      const { claimStreakMilestone } = await import('../lib/streakService');
-      const result = await claimStreakMilestone();
-      
-      if (result.success && result.data) {
-        const claimedCount = result.data.milestones_claimed.length;
-        addDebugLog('success', 'STREAK_ACTION', 
-          `✅ Claimed ${claimedCount} milestone(s)! ` +
-          `+${result.data.total_coins} coins, +${result.data.total_xp} XP`);
-        await runStreakCheck();
-      } else {
-        addDebugLog('warning', 'STREAK_ACTION', `⚠️ ${result.error || 'No milestones to claim'}`);
-      }
-    } catch (err: any) {
-      addDebugLog('error', 'STREAK_ACTION', `❌ ${err.message}`);
-    }
-    
-    setStreakActionLoading(null);
-  };
-
-  const xpToNext = getXPToNextLevel(economy.level || 1);
-  const currentLevelXP = (() => {
-    let remaining = economy.xp || 0; let lvl = 1;
-    while (lvl < (economy.level || 1)) { remaining -= getXPToNextLevel(lvl); lvl++; }
-    return Math.max(0, remaining);
-  })();
-  const xpPercent = Math.min((currentLevelXP / xpToNext) * 100, 100);
+  const xpToNext = getXPToNextLevel(economy.level||1);
+  const currentLevelXP = (() => { let r = economy.xp||0, l = 1; while (l < (economy.level||1)) { r -= getXPToNextLevel(l); l++; } return Math.max(0, r); })();
+  const xpPercent = Math.min((currentLevelXP/xpToNext)*100, 100);
 
   const handleCopyTab = (tab: string) => {
     let text = '';
-    if (tab === 'system') {
-      text = `SYSTEM STATUS
-⚡ Boot Time: ${bootTime}ms
-🗄️ DB Status: ${dbStatus.toUpperCase()}
-🔑 Auth: ${authStatus === 'active' ? 'ACTIVE ✅' : 'INACTIVE ❌'}
-🛡️ Admin: ${user?.is_admin ? 'YES ✅' : 'NO ❌'}
-
-TELEGRAM SDK
-📱 WebApp: ${tgAvailable ? 'YES ✅' : 'NO ❌'}
-🔐 initData: ${hasInitData ? 'YES ✅' : 'NO ❌'}
-
-IDENTITY CHECK
-🆔 Auth UID: ${authUid ? authUid.substring(0, 8) + '...' : 'NULL'}
-🆔 DB ID: ${user?.id ? user.id.substring(0, 8) + '...' : 'NULL'}
-${authUid === user?.id ? '✅ IDs Match' : '❌ IDs Mismatch'}
-
-🔐 AUTH SECURITY
-🔑 HMAC Signature: ${authSecurity.signatureVerified === true ? 'VERIFIED ✅' : authSecurity.signatureVerified === false ? 'FAILED ❌' : 'CHECKING...'}
-⏱️ Token Age: ${authSecurity.tokenAge !== null ? `${authSecurity.tokenAge}s` : 'N/A'}
-⏰ Expires In: ${authSecurity.expiresIn !== null ? `${authSecurity.expiresIn}s (~${Math.floor((authSecurity.expiresIn || 0) / 60)} min)` : 'N/A'}
-📊 Auth Method: ${authSecurity.authMethod}
-🔗 Raw Hash: ${authSecurity.rawDataHash || 'N/A'}
-📅 initData Age: ${authSecurity.authDate || 'N/A'}
-
-🧪 AUTH FLOW TEST
-Last Run: ${authFlow.lastRun || 'Never'}
-🔌 Edge Function: ${authFlow.edge === 'ok' ? `OK (${authFlow.edgeLatency}ms)` : authFlow.edge === 'fail' ? `FAIL: ${authFlow.edgeError}` : 'Not run'}
-🔄 Session Refresh: ${authFlow.session === 'ok' ? 'OK' : authFlow.session === 'fail' ? `FAIL: ${authFlow.sessionError}` : 'Not run'}
-
-🛠️ APP FIXES STATUS
-1. Splash Stale Closure: ${appFixes.splashClosure ? '✅ FIXED (useEffect-based)' : '❌ BUG'}
-2. visibilitychange Cleanup: ${appFixes.visibilityCleanup ? '✅ FIXED (named handler)' : '❌ LEAK'}
-3. ErrorBoundary (all screens): ${appFixes.errorBoundary ? '✅ FIXED' : '❌ RISK'}
-4. Telegram SDK ready(): ${appFixes.telegramReady ? '✅ CALLED' : '⏳ PENDING'}
-5. selectedCardId !== null: ${appFixes.selectedCardCheck ? '✅ FIXED' : '❌ EDGE CASE'}
-
-LOCALSTORAGE (${Object.keys(localStorageData).length} keys)
-${Object.entries(localStorageData).map(([key, value]) => `${key}\n${value}`).join('\n\n')}`;
-    } else if (tab === 'user') {
-      text = `PROFILE
-👤 Name: ${user?.display_name || 'N/A'}
-📧 Username: ${user?.username || 'N/A'}
-♏ Sun Sign: ${user?.sun_sign || 'Not set'}
-✅ Onboarding: ${user?.onboarding_completed ? 'Complete' : 'Pending'}
-
-ECONOMY
-💎 Gems: ${economy.cosmic_coins}
-⚡ Energy: ${economy.cosmic_focus}/${economy.max_focus}
-⭐ Level: ${economy.level}
-🔥 Streak: ${currentStreak}
-📊 XP: ${currentLevelXP}/${xpToNext} (${xpPercent.toFixed(1)}%)
-
-SUBSCRIPTION
-Status: ${activeSubscription ? 'Active ✅' : 'None ❌'}
-${activeSubscription ? `Plan: ${activeSubscription.plan_type}\nExpires: ${new Date(activeSubscription.expires_at).toLocaleDateString()}` : ''}`;
-    } else if (tab === 'streak') {
-      if (!streakData) {
-        text = 'STREAK SYSTEM\n\nNo data yet - run check first';
-      } else {
-        text = `STREAK SYSTEM DIAGNOSTICS
-Last Run: ${streakLastRun || 'Never'}
-
-CURRENT STREAK:
-Current: ${streakData.streak_info?.current_streak || 0}
-Longest: ${streakData.streak_info?.longest_streak || 0}
-Last Active: ${streakData.economy?.last_active_date || 'N/A'}
-Last Claim: ${streakData.economy?.last_daily_claim || 'N/A'}
-Next Milestone: ${streakData.streak_info?.next_milestone?.name || 'None'} (${streakData.streak_info?.days_to_next || 0} days)
-
-STATS:
-Achieved: ${streakData.stats.achieved_count}/${streakData.stats.total_milestones}
-Claimed: ${streakData.stats.claimed_count}
-Unclaimed: ${streakData.stats.unclaimed_count}
-Active Days (30d): ${streakData.stats.active_days}
-Missed Days: ${streakData.stats.missed_days}
-
-MILESTONES:
-${streakData.milestones.map((m: any) => 
-  `${m.is_claimed ? '✅' : m.is_achieved ? '🎁' : '🔒'} ${m.name} (${m.days_required}d) - +${m.reward_coins}💎 +${m.reward_xp}XP${m.reward_premium_days > 0 ? ` +${m.reward_premium_days}d👑` : ''}`
-).join('\n')}`;
-      }
-    } else if (tab === 'profile') {
-      text = `PROFILE BANNER CHECK (${profileChecks.length} elements)
-Last Run: ${profileLastRun || 'Never'}
-
-${profileChecks.map(c => 
-  `${c.status === 'pass' ? '✅' : c.status === 'warn' ? '⚠️' : '❌'} ${c.element}
-   ${c.message}
-   ${c.details || ''}`
-).join('\n\n')}`;
-    } else if (tab === 'energy') {
-      text = `ENERGY SYSTEM CHECK
-Last Run: ${energyLastRun || 'Never'}
-
-UI: ${energyData?.uiEnergy}/${energyData?.uiMax} | DB: ${energyData?.dbEnergy}/${energyData?.dbMax} | Match: ${energyData?.match ? 'YES ✅' : 'NO ❌'}
-Boost: ${energyData?.boostMultiplier}x | Minutes passed: ${energyData?.minutesPassed}
-Pending regen: +${energyData?.energyToRegen} | Next +1 in: ${energyData?.minutesUntilNext} min
-
-READING COSTS:
-${energyData?.costs.map(c => `- ${c.reading_type}: ${c.energy_cost}⚡ (${c.description})`).join('\n') || 'None'}
-
-LAST TRANSACTIONS:
-${energyData?.transactions.map(t => `- [${t.created_at}] ${t.amount > 0 ? '+' : ''}${t.amount} (${t.transaction_type}) → balance: ${t.balance_after}`).join('\n') || 'None'}`;
-    } else if (tab === 'diagnostics') {
-      const diagResults = diagnostics?.results || [];
-      text = `HOME DIAGNOSTICS (${diagResults.length} checks)
-Last Run: ${diagnostics?.lastRun || 'Never'}
-Passed: ${diagResults.filter(r => r.status === 'pass').length}/${diagResults.length}
-
-${diagResults.map(r => 
-  `${r.status === 'pass' ? '✅' : r.status === 'fail' ? '❌' : r.status === 'warning' ? '⚠️' : '⏳'} ${r.name}
-   Status: ${r.status.toUpperCase()}
-   Message: ${r.message}
-   Details: ${JSON.stringify(r.details)}
-   Time: ${r.timestamp}`
-).join('\n\n')}`;
-    } else if (tab === 'functions') {
-      text = `EDGE FUNCTIONS STATUS
-${functionStatuses.map(func => 
-  `${func.name}
-Runs: ${func.totalRuns} | Success: ${func.successRate.toFixed(0)}% | Avg: ${func.avgResponseTime}ms
-Last Run: ${func.lastRun ? new Date(func.lastRun.created_at).toLocaleString() + ' (' + func.lastRun.status + ')' : 'Never'}
-Recent Logs:
-${functionLogs[func.name]?.map(log => `  - [${log.status}] ${log.response_time_ms}ms: ${log.error_message || 'Success'}`).join('\n') || '  No logs'}
-`).join('\n')}`;
-    } else if (tab === 'logs') {
-      text = `LIVE LOGS (${debugLogs.length})\n\n` + debugLogs.map(log => 
-        `[${log.timestamp}] [${log.category}] ${log.type.toUpperCase()}: ${log.message}${log.data ? '\n' + JSON.stringify(log.data, null, 2) : ''}`
-      ).join('\n\n');
-    } else if (tab === 'actions') {
-      text = `ADMIN ACTIONS STATE
-Quests Loading: ${questsLoading}
-Time Left: ${timeLeft}
-Show Quest Modal: ${showQuestModal}
-Reward Claimed: ${rewardClaimed}
-Is Claiming: ${isClaiming}
-
-LAST ${debugLogs.length} LOGS:
-${debugLogs.slice(0, 20).map(log => 
-  `[${log.timestamp}] [${log.category}] ${log.type.toUpperCase()}: ${log.message}`
-).join('\n')}`;
-    }
-
-    navigator.clipboard.writeText(text);
-    setActiveCopyTab(tab);
-    setTimeout(() => setActiveCopyTab(null), 2000);
+    if (tab==='system') text = `SYSTEM STATUS\n⚡ Boot: ${bootTime}ms\n🗄️ DB: ${dbStatus.toUpperCase()}\n🔑 Auth: ${authStatus==='active'?'ACTIVE ✅':'INACTIVE ❌'}\n🛡️ Admin: ${user?.is_admin?'YES':'NO'}\n📱 WebApp: ${tgAvailable?'YES':'NO'}\n🔐 initData: ${hasInitData?'YES':'NO'}\n🆔 UID: ${authUid||'NULL'}\n🆔 DB: ${user?.id||'NULL'}\n${authUid===user?.id?'✅ Match':'❌ Mismatch'}\n🔑 HMAC: ${authSecurity.signatureVerified===true?'VERIFIED':authSecurity.signatureVerified===false?'FAILED':'...'}\n⏱️ Age: ${authSecurity.tokenAge??'N/A'}s | Exp: ${authSecurity.expiresIn??'N/A'}s\n📊 Method: ${authSecurity.authMethod}\n🧪 Edge: ${authFlow.edge==='ok'?`OK ${authFlow.edgeLatency}ms`:authFlow.edge==='fail'?`FAIL ${authFlow.edgeError}`:'-'}\n🔄 Session: ${authFlow.session}\n\nLOCALSTORAGE (${Object.keys(localStorageData).length})\n${Object.entries(localStorageData).map(([k,v])=>`${k}\n${v}`).join('\n\n')}`;
+    else if (tab==='user') text = `PROFILE\n👤 ${user?.display_name||'N/A'} | 📧 ${user?.username||'N/A'} | ♏ ${user?.sun_sign||'-'}\n💎 ${economy.cosmic_coins} | ⚡ ${economy.cosmic_focus}/${economy.max_focus} | ⭐ ${economy.level} | 🔥 ${currentStreak}\n📊 XP: ${currentLevelXP}/${xpToNext} (${xpPercent.toFixed(1)}%)\nSub: ${activeSubscription?activeSubscription.plan_type:'None'}`;
+    else if (tab==='streak') text = streakData ? `STREAK\nCurrent: ${streakData.streak_info?.current_streak||0} | Longest: ${streakData.streak_info?.longest_streak||0}\nClaimed: ${streakData.stats.claimed_count} | Unclaimed: ${streakData.stats.unclaimed_count}\n${streakData.milestones.map((m:any)=>`${m.is_claimed?'✅':m.is_achieved?'🎁':''} ${m.name} (${m.days_required}d)`).join('\n')}` : 'STREAK\nNo data';
+    else if (tab==='profile') text = `PROFILE CHECK\n${profileChecks.map(c=>`${c.status==='pass'?'✅':c.status==='warn'?'⚠️':'❌'} ${c.element}\n${c.message}`).join('\n\n')}`;
+    else if (tab==='energy') text = `ENERGY\nUI: ${energyData?.uiEnergy}/${energyData?.uiMax} | DB: ${energyData?.dbEnergy}/${energyData?.dbMax} | Match: ${energyData?.match?'YES':'NO'}\nBoost: ${energyData?.boostMultiplier}x | Next +1: ${energyData?.minutesUntilNext}min\n${energyData?.costs.map(c=>`- ${c.reading_type}: ${c.energy_cost}⚡`).join('\n')}`;
+    else if (tab==='diagnostics') text = `DIAGNOSTICS\n${(diagnostics?.results||[]).map(r=>`${r.status==='pass'?'✅':r.status==='fail'?'❌':'️'} ${r.name}\n${r.message}`).join('\n\n')}`;
+    else if (tab==='functions') text = `EDGE FUNCTIONS\n${functionStatuses.map(f=>`${f.name}\nRuns: ${f.totalRuns} | ${f.successRate.toFixed(0)}% | ${f.avgResponseTime}ms`).join('\n\n')}`;
+    else if (tab==='logs') text = debugLogs.map(l=>`[${l.timestamp}] [${l.category}] ${l.type.toUpperCase()}: ${l.message}`).join('\n\n');
+    else text = `ACTIONS\nQuests: ${questsLoading} | Modal: ${showQuestModal} | Claimed: ${rewardClaimed}`;
+    navigator.clipboard.writeText(text); setActiveCopyTab(tab); setTimeout(() => setActiveCopyTab(null), 2000);
   };
 
   const tabs = [
-    { id: 'system' as TabType, label: 'System', icon: Activity },
-    { id: 'user' as TabType, label: 'User', icon: Users },
-    { id: 'streak' as TabType, label: 'Streak', icon: Flame },
-    { id: 'profile' as TabType, label: 'Profile', icon: Crown },
-    { id: 'energy' as TabType, label: 'Energy', icon: Zap },
-    { id: 'diagnostics' as TabType, label: 'Diag', icon: Heart },
-    { id: 'functions' as TabType, label: 'Funcs', icon: Server },
-    { id: 'logs' as TabType, label: 'Logs', icon: Terminal },
+    { id: 'system' as TabType, label: 'System', icon: Activity }, { id: 'user' as TabType, label: 'User', icon: Users },
+    { id: 'streak' as TabType, label: 'Streak', icon: Flame }, { id: 'profile' as TabType, label: 'Profile', icon: Crown },
+    { id: 'energy' as TabType, label: 'Energy', icon: Zap }, { id: 'diagnostics' as TabType, label: 'Diag', icon: Heart },
+    { id: 'functions' as TabType, label: 'Funcs', icon: Server }, { id: 'logs' as TabType, label: 'Logs', icon: Terminal },
     { id: 'actions' as TabType, label: 'Actions', icon: Settings },
   ];
-
   const CopyButton = ({ tab }: { tab: string }) => (
-    <button 
-      onClick={() => handleCopyTab(tab)} 
-      style={{ 
-        padding: '4px 8px', background: activeCopyTab === tab ? 'rgba(16, 185, 129, 0.3)' : 'rgba(96, 165, 250, 0.2)', 
-        border: `1px solid ${activeCopyTab === tab ? '#10b981' : '#60a5fa'}`, borderRadius: '6px', 
-        color: activeCopyTab === tab ? '#10b981' : '#60a5fa', cursor: 'pointer', fontSize: '10px', fontWeight: 'bold',
-        display: 'flex', alignItems: 'center', gap: '4px', transition: 'all 0.2s'
-      }}
-    >
-      {activeCopyTab === tab ? <Check size={12} /> : <Copy size={12} />} 
-      {activeCopyTab === tab ? 'Copied!' : 'Copy'}
+    <button onClick={() => handleCopyTab(tab)} style={btnS(activeCopyTab===tab?CLR.green:CLR.blue, { padding: '4px 8px' })}>
+      {activeCopyTab===tab?<Check size={12}/>:<Copy size={12}/>} {activeCopyTab===tab?'Copied!':'Copy'}
+    </button>
+  );
+  const RunBtn = ({ onClick, loading, color, label }: any) => (
+    <button onClick={onClick} disabled={loading} style={btnS(color, { opacity: loading?0.6:1 })}>
+      <RefreshCw size={12} className={loading?'animate-spin':''}/> {loading?'...':label}
     </button>
   );
 
-  const diagResults = diagnostics?.results || [];
-  const diagIsRunning = diagnostics?.isRunning || false;
-  const diagLastRun = diagnostics?.lastRun || null;
+  const diagResults = diagnostics?.results||[]; const diagRunning = diagnostics?.isRunning||false; const diagLast = diagnostics?.lastRun||null;
+  const filteredLogs = debugLogs.filter(l => !logFilter || l.category.toLowerCase().includes(logFilter.toLowerCase()) || l.message.toLowerCase().includes(logFilter.toLowerCase()));
 
   return (
     <>
-      <button onClick={() => setShowDebug(!showDebug)} style={{ position: 'fixed', bottom: '20px', right: '20px', width: '50px', height: '50px', borderRadius: '50%', background: showDebug ? '#ef4444' : '#3b82f6', border: '3px solid rgba(255,255,255,0.3)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.5)', zIndex: 10001, transition: 'background 0.3s ease' }}>
-        {showDebug ? <X size={24} /> : <Bug size={24} />}
-      </button>
-
+      {/* ✅ ლურჯი floating ღილაკი ამოღებულია - იხსნება HomeScreen-ის ღილაკით */}
       {showDebug && (
-        <div style={{ position: 'fixed', bottom: '80px', right: '10px', left: '10px', zIndex: 10000, maxWidth: '450px', margin: '0 auto', maxHeight: '80vh', background: 'rgba(10, 6, 0, 0.98)', border: '2px solid rgba(255, 229, 102, 0.5)', borderRadius: '16px', boxShadow: '0 8px 32px rgba(0,0,0,0.8)', fontFamily: 'monospace', fontSize: '11px', color: '#ffe566', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255, 229, 102, 0.3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(10, 6, 0, 0.98)' }}>
-            <strong style={{ fontSize: '14px', color: '#ffe566', display: 'flex', alignItems: 'center', gap: '8px' }}><Bug size={16} /> ADMIN DEBUG</strong>
-            <button onClick={() => setShowDebug(false)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}><X size={18} /></button>
+        <div style={{ position: 'fixed', top: 10, bottom: 10, left: 10, right: 10, zIndex: 10000, maxWidth: 450, margin: '0 auto', background: 'rgba(10,6,0,0.98)', border: '2px solid rgba(255,229,102,0.5)', borderRadius: 16, boxShadow: '0 8px 32px rgba(0,0,0,0.8)', fontFamily: 'monospace', fontSize: 11, color: '#ffe566', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,229,102,0.3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <strong style={{ fontSize: 14, color: '#ffe566', display: 'flex', alignItems: 'center', gap: 8 }}><Bug size={16}/> ADMIN DEBUG</strong>
+            <button onClick={() => setShowDebug(false)} style={{ background: 'none', border: 'none', color: CLR.red, cursor: 'pointer', padding: 4 }}><X size={18}/></button>
           </div>
-
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '4px', padding: '8px 12px', borderBottom: '1px solid rgba(255, 229, 102, 0.2)', background: 'rgba(0,0,0,0.3)' }}>
-            {tabs.map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ flex: '1 1 22%', minWidth: '50px', padding: '6px 4px', background: activeTab === tab.id ? 'rgba(255, 229, 102, 0.2)' : 'transparent', border: activeTab === tab.id ? '1px solid rgba(255, 229, 102, 0.5)' : '1px solid transparent', borderRadius: '8px', color: activeTab === tab.id ? '#ffe566' : '#94a3b8', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', fontSize: '9px', fontWeight: 'bold', transition: 'all 0.2s' }}>
-                <tab.icon size={14} />{tab.label}
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 4, padding: '8px 12px', borderBottom: '1px solid rgba(255,229,102,0.2)', background: 'rgba(0,0,0,0.3)' }}>
+            {tabs.map(t => (
+              <button key={t.id} onClick={() => setActiveTab(t.id)} style={{ flex: '1 1 22%', minWidth: 50, padding: '6px 4px', background: activeTab===t.id?'rgba(255,229,102,0.2)':'transparent', border: activeTab===t.id?'1px solid rgba(255,229,102,0.5)':'1px solid transparent', borderRadius: 8, color: activeTab===t.id?'#ffe566':CLR.gray, cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, fontSize: 9, fontWeight: 'bold' }}>
+                <t.icon size={14}/>{t.label}
               </button>
             ))}
           </div>
+          <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
 
-          <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
-            
-            {activeTab === 'system' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <span style={{ color: '#10b981', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}><Activity size={14} /> SYSTEM STATUS</span>
-                  <CopyButton tab="system" />
+            {activeTab==='system' && (<div style={colS}>
+              <Title icon={Activity} color={CLR.green} right={<CopyButton tab="system"/>}>SYSTEM STATUS</Title>
+              <div style={card(CLR.green, grid(2))}>
+                <div>⚡ Boot: <strong>{bootTime}ms</strong></div>
+                <div>🗄️ DB: <strong style={{ color: dbStatus==='connected'?CLR.green:CLR.red }}>{dbStatus.toUpperCase()}</strong></div>
+                <div>🔑 Auth: <strong style={{ color: authStatus==='active'?CLR.green:CLR.red }}>{authStatus==='active'?'ACTIVE ✅':'INACTIVE ❌'}</strong></div>
+                <div>🛡️ Admin: <strong style={{ color: user?.is_admin?CLR.green:CLR.red }}>{user?.is_admin?'YES ✅':'NO ❌'}</strong></div>
+              </div>
+              <div style={card(CLR.blue, grid(2))}>
+                <div>📱 WebApp: <strong style={{ color: tgAvailable?CLR.green:CLR.red }}>{tgAvailable?'YES':'NO'}</strong></div>
+                <div>🔐 initData: <strong style={{ color: hasInitData?CLR.green:CLR.red }}>{hasInitData?'YES':'NO'}</strong></div>
+              </div>
+              <div style={card(CLR.purple)}>
+                <div>🆔 UID: <span style={{ color: authUid?CLR.green:CLR.red, wordBreak: 'break-all' }}>{authUid?`${authUid.substring(0,8)}...`:'NULL'}</span></div>
+                <div>🆔 DB: <span style={{ color: user?.id?CLR.green:CLR.red, wordBreak: 'break-all' }}>{user?.id?`${user.id.substring(0,8)}...`:'NULL'}</span></div>
+                <div style={{ marginTop: 4, padding: 4, background: authUid===user?.id?'rgba(16,185,129,0.2)':'rgba(239,68,68,0.2)', borderRadius: 4, textAlign: 'center' }}>{authUid===user?.id?'✅ IDs Match':'❌ IDs Mismatch'}</div>
+              </div>
+              <div style={card('#a855f7')}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, color: '#a855f7', fontWeight: 'bold', fontSize: 12 }}><Shield size={14}/> AUTH SECURITY</div>
+                <div style={grid(2)}>
+                  <div>🔑 HMAC: <strong style={{ color: stColor(authSecurity.signatureVerified) }}>{authSecurity.signatureVerified===true?'VERIFIED ✅':authSecurity.signatureVerified===false?'FAILED ❌':'...'}</strong></div>
+                  <div>⏱️ Age: <strong style={{ color: CLR.yellow }}>{authSecurity.tokenAge!==null?`${authSecurity.tokenAge}s`:'N/A'}</strong></div>
+                  <div>⏰ Exp: <strong style={{ color: CLR.blue }}>{authSecurity.expiresIn!==null?`${authSecurity.expiresIn}s`:'N/A'}</strong></div>
+                  <div>📊 Method: <strong style={{ color: CLR.purple }}>{authSecurity.authMethod}</strong></div>
                 </div>
-                <div style={{ padding: '12px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)', fontSize: '11px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                  <div>⚡ Boot Time: <strong>{bootTime}ms</strong></div>
-                  <div>🗄️ DB Status: <strong style={{ color: dbStatus === 'connected' ? '#10b981' : '#ef4444' }}>{dbStatus.toUpperCase()}</strong></div>
-                  <div>🔑 Auth: <span style={{ color: authStatus === 'active' ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>{authStatus === 'active' ? 'ACTIVE ✅' : 'INACTIVE ❌'}</span></div>
-                  <div>🛡️ Admin: <span style={{ color: user?.is_admin ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>{user?.is_admin ? 'YES ✅' : 'NO ❌'}</span></div>
-                </div>
-                <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.3)', fontSize: '11px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                  <div>📱 WebApp: <span style={{ color: tgAvailable ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>{tgAvailable ? 'YES ✅' : 'NO ❌'}</span></div>
-                  <div>🔐 initData: <span style={{ color: hasInitData ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>{hasInitData ? 'YES ✅' : 'NO ❌'}</span></div>
-                </div>
-                <div style={{ padding: '12px', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(139, 92, 246, 0.3)', fontSize: '11px' }}>
-                  <div>🆔 Auth UID: <span style={{ color: authUid ? '#10b981' : '#ef4444', wordBreak: 'break-all' }}>{authUid ? `${authUid.substring(0, 8)}...` : 'NULL'}</span></div>
-                  <div>🆔 DB ID: <span style={{ color: user?.id ? '#10b981' : '#ef4444', wordBreak: 'break-all' }}>{user?.id ? `${user.id.substring(0, 8)}...` : 'NULL'}</span></div>
-                  <div style={{ marginTop: '4px', padding: '4px', background: authUid === user?.id ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)', borderRadius: '4px', textAlign: 'center' }}>{authUid === user?.id ? '✅ IDs Match' : '❌ IDs Mismatch'}</div>
-                </div>
-
-                <div style={{ padding: '12px', background: 'rgba(168, 85, 247, 0.1)', borderRadius: '8px', border: '1px solid rgba(168, 85, 247, 0.4)', fontSize: '11px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', color: '#a855f7', fontWeight: 'bold', fontSize: '12px' }}>
-                    <Shield size={14} /> AUTH SECURITY
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                    <div>
-                      🔑 HMAC: <span style={{ 
-                        color: authSecurity.signatureVerified === true ? '#10b981' : authSecurity.signatureVerified === false ? '#ef4444' : '#fbbf24', 
-                        fontWeight: 'bold' 
-                      }}>
-                        {authSecurity.signatureVerified === true ? 'VERIFIED ✅' : authSecurity.signatureVerified === false ? 'FAILED ❌' : 'CHECKING...'}
-                      </span>
-                    </div>
-                    <div>⏱️ Token Age: <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>{authSecurity.tokenAge !== null ? `${authSecurity.tokenAge}s` : 'N/A'}</span></div>
-                    <div>⏰ Expires: <span style={{ color: '#60a5fa', fontWeight: 'bold' }}>{authSecurity.expiresIn !== null ? `${authSecurity.expiresIn}s` : 'N/A'}</span></div>
-                    <div>📊 Method: <span style={{ color: '#a78bfa', fontWeight: 'bold' }}>{authSecurity.authMethod}</span></div>
-                  </div>
-                  <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(168, 85, 247, 0.2)', fontSize: '10px' }}>
-                    <div>🔗 Hash: <span style={{ color: '#94a3b8', fontFamily: 'monospace', fontSize: '9px' }}>{authSecurity.rawDataHash || 'N/A'}</span></div>
-                    <div>📅 initData Age: <span style={{ color: '#94a3b8' }}>{authSecurity.authDate || 'N/A'}</span></div>
-                  </div>
-                </div>
-
-                <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.4)', fontSize: '11px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#60a5fa', fontWeight: 'bold', fontSize: '12px' }}>
-                       🧪 AUTH FLOW TEST
-                    </div>
-                    <button
-                      onClick={runAuthFlowTest}
-                      disabled={authFlow.edge === 'testing' || authFlow.session === 'testing'}
-                      style={{
-                        padding: '4px 10px',
-                        background: (authFlow.edge === 'testing' || authFlow.session === 'testing') ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.2)',
-                        border: '1px solid #60a5fa',
-                        borderRadius: '6px',
-                        color: '#60a5fa',
-                        cursor: (authFlow.edge === 'testing' || authFlow.session === 'testing') ? 'not-allowed' : 'pointer',
-                        fontSize: '10px',
-                        fontWeight: 'bold',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}
-                    >
-                      {(authFlow.edge === 'testing' || authFlow.session === 'testing') ? (
-                        <><RefreshCw size={10} className="animate-spin" /> Testing...</>
-                      ) : (
-                        <><Play size={10} /> Run Test</>
-                      )}
-                    </button>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', background: authFlow.edge === 'ok' ? 'rgba(16, 185, 129, 0.15)' : authFlow.edge === 'fail' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255, 255, 255, 0.05)', borderRadius: '4px' }}>
-                      <div>
-                        <div style={{ fontWeight: 'bold', fontSize: '10px' }}>🔌 telegram-auth</div>
-                        <div style={{ fontSize: '9px', color: '#94a3b8', marginTop: '2px' }}>
-                          signInWithPassword via service_role
-                        </div>
-                      </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontWeight: 'bold', color: authFlow.edge === 'ok' ? '#10b981' : authFlow.edge === 'fail' ? '#ef4444' : '#94a3b8', fontSize: '10px' }}>
-                          {authFlow.edge === 'testing' ? '⏳ ...' 
-                            : authFlow.edge === 'ok' ? `✅ OK (${authFlow.edgeLatency}ms)` 
-                            : authFlow.edge === 'fail' ? `❌ ${authFlow.edgeStatus ? `HTTP ${authFlow.edgeStatus}` : 'FAIL'}` 
-                            : '—'}
-                        </div>
-                      </div>
-                    </div>
-                    {authFlow.edge === 'fail' && authFlow.edgeError && (
-                      <div style={{ padding: '6px 8px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '4px', fontSize: '9px', color: '#fca5a5', wordBreak: 'break-word' }}>
-                         Error: {authFlow.edgeError}
-                      </div>
-                    )}
-                    {authFlow.edge === 'ok' && authFlow.edgeResponse && (
-                      <div style={{ padding: '6px 8px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '4px', fontSize: '9px', color: '#86efac', wordBreak: 'break-word', maxHeight: '60px', overflowY: 'auto' }}>
-                         Response: {JSON.stringify(authFlow.edgeResponse).substring(0, 200)}
-                        {JSON.stringify(authFlow.edgeResponse).length > 200 ? '...' : ''}
-                      </div>
-                    )}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', background: authFlow.session === 'ok' ? 'rgba(16, 185, 129, 0.15)' : authFlow.session === 'fail' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255, 255, 255, 0.05)', borderRadius: '4px' }}>
-                      <div>
-                        <div style={{ fontWeight: 'bold', fontSize: '10px' }}>🔄 Session Refresh</div>
-                        <div style={{ fontSize: '9px', color: '#94a3b8', marginTop: '2px' }}>
-                          supabase.auth.refreshSession()
-                        </div>
-                      </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontWeight: 'bold', color: authFlow.session === 'ok' ? '#10b981' : authFlow.session === 'fail' ? '#ef4444' : '#94a3b8', fontSize: '10px' }}>
-                          {authFlow.session === 'testing' ? '⏳ ...' 
-                            : authFlow.session === 'ok' ? '✅ OK' 
-                            : authFlow.session === 'fail' ? '❌ FAIL' 
-                            : '—'}
-                        </div>
-                      </div>
-                    </div>
-                    {authFlow.session === 'fail' && authFlow.sessionError && (
-                      <div style={{ padding: '6px 8px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '4px', fontSize: '9px', color: '#fca5a5', wordBreak: 'break-word' }}>
-                         Error: {authFlow.sessionError}
-                      </div>
-                    )}
-                    {authFlow.lastRun && (
-                      <div style={{ fontSize: '9px', color: '#64748b', textAlign: 'right', paddingTop: '4px', borderTop: '1px solid rgba(59, 130, 246, 0.2)' }}>
-                        Last run: {authFlow.lastRun}
-                      </div>
-                    )}
-                  </div>
-                  <div style={{ marginTop: '8px', padding: '6px', background: 'rgba(251, 191, 36, 0.08)', borderRadius: '4px', fontSize: '9px', color: '#fbbf24', lineHeight: '1.4' }}>
-                     <strong>How it works:</strong> Sends initData to Edge Function which calls signInWithPassword with service_role. If Email provider is disabled, this may fail.
-                  </div>
-                </div>
-
-                <div style={{ padding: '12px', background: 'rgba(34, 197, 94, 0.1)', borderRadius: '8px', border: '1px solid rgba(34, 197, 94, 0.4)', fontSize: '11px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', color: '#22c55e', fontWeight: 'bold', fontSize: '12px' }}>
-                    <Wrench size={14} /> APP FIXES STATUS
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 6px', background: appFixes.splashClosure ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)', borderRadius: '4px' }}>
-                      <span>1. Splash Stale Closure</span>
-                      <span style={{ color: appFixes.splashClosure ? '#22c55e' : '#ef4444', fontWeight: 'bold', fontSize: '10px' }}>
-                        {appFixes.splashClosure ? '✅ FIXED' : '❌ BUG'}
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 6px', background: appFixes.visibilityCleanup ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)', borderRadius: '4px' }}>
-                      <span>2. visibilitychange Cleanup</span>
-                      <span style={{ color: appFixes.visibilityCleanup ? '#22c55e' : '#ef4444', fontWeight: 'bold', fontSize: '10px' }}>
-                        {appFixes.visibilityCleanup ? '✅ FIXED' : '❌ LEAK'}
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 6px', background: appFixes.errorBoundary ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)', borderRadius: '4px' }}>
-                      <span>3. ErrorBoundary (all screens)</span>
-                      <span style={{ color: appFixes.errorBoundary ? '#22c55e' : '#ef4444', fontWeight: 'bold', fontSize: '10px' }}>
-                        {appFixes.errorBoundary ? '✅ FIXED' : '❌ RISK'}
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 6px', background: appFixes.telegramReady ? 'rgba(34, 197, 94, 0.15)' : 'rgba(251, 191, 36, 0.15)', borderRadius: '4px' }}>
-                      <span>4. Telegram SDK ready()</span>
-                      <span style={{ color: appFixes.telegramReady ? '#22c55e' : '#fbbf24', fontWeight: 'bold', fontSize: '10px' }}>
-                        {appFixes.telegramReady ? '✅ CALLED' : '⏳ PENDING'}
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 6px', background: appFixes.selectedCardCheck ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)', borderRadius: '4px' }}>
-                      <span>5. selectedCardId !== null</span>
-                      <span style={{ color: appFixes.selectedCardCheck ? '#22c55e' : '#ef4444', fontWeight: 'bold', fontSize: '10px' }}>
-                        {appFixes.selectedCardCheck ? '✅ FIXED' : '❌ EDGE'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{ padding: '12px', background: 'rgba(251, 191, 36, 0.1)', borderRadius: '8px', border: '1px solid rgba(251, 191, 36, 0.3)', fontSize: '10px', maxHeight: '120px', overflowY: 'auto' }}>
-                  <div style={{ fontWeight: 'bold', marginBottom: '6px' }}>LOCALSTORAGE ({Object.keys(localStorageData).length} keys)</div>
-                  {Object.entries(localStorageData).map(([key, value]) => (
-                    <div key={key} style={{ marginBottom: '6px', padding: '6px', background: 'rgba(0,0,0,0.3)', borderRadius: '4px' }}>
-                      <div style={{ color: '#fbbf24', fontWeight: 'bold', fontSize: '9px' }}>{key}</div>
-                      <div style={{ color: '#94a3b8', fontSize: '9px', wordBreak: 'break-all' }}>{value}</div>
-                    </div>
-                  ))}
+                <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(168,85,247,0.2)', fontSize: 10 }}>
+                  <div>🔗 Hash: <span style={{ color: CLR.gray, fontSize: 9 }}>{authSecurity.rawDataHash||'N/A'}</span></div>
+                  <div>📅 initData: <span style={{ color: CLR.gray }}>{authSecurity.authDate||'N/A'}</span></div>
                 </div>
               </div>
-            )}
-
-            {activeTab === 'user' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <span style={{ color: '#60a5fa', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}><Users size={14} /> USER & ECONOMY</span>
-                  <CopyButton tab="user" />
+              <div style={card(CLR.blue)}>
+                <div style={rowS({ marginBottom: 8 })}>
+                  <span style={{ color: CLR.blue, fontWeight: 'bold', fontSize: 12 }}>🧪 AUTH FLOW TEST</span>
+                  <button onClick={runAuthFlowTest} disabled={authFlow.edge==='testing'||authFlow.session==='testing'} style={btnS(CLR.blue)}>
+                    {authFlow.edge==='testing'||authFlow.session==='testing'?<><RefreshCw size={10} className="animate-spin"/> Testing</>:<><Play size={10}/> Run Test</>}
+                  </button>
                 </div>
-                <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.3)', fontSize: '11px' }}>
-                  <div>👤 Name: <strong>{user?.display_name || 'N/A'}</strong></div>
-                  <div>📧 Username: <strong>{user?.username || 'N/A'}</strong></div>
-                  <div>♏ Sun Sign: <strong>{user?.sun_sign || 'Not set'}</strong></div>
-                  <div>✅ Onboarding: <strong>{user?.onboarding_completed ? 'Complete' : 'Pending'}</strong></div>
-                </div>
-                <div style={{ padding: '12px', background: 'rgba(251, 191, 36, 0.1)', borderRadius: '8px', border: '1px solid rgba(251, 191, 36, 0.3)', fontSize: '11px' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
-                    <div>💎 Gems: <strong>{economy.cosmic_coins}</strong></div>
-                    <div>⚡ Energy: <strong>{economy.cosmic_focus}/{economy.max_focus}</strong></div>
-                    <div>⭐ Level: <strong>{economy.level}</strong></div>
-                    <div>🔥 Streak: <strong>{currentStreak}</strong></div>
+                <div style={colS}>
+                  <div style={rowS({ padding: '6px 8px', background: authFlow.edge==='ok'?'rgba(16,185,129,0.15)':authFlow.edge==='fail'?'rgba(239,68,68,0.15)':'rgba(255,255,255,0.05)', borderRadius: 4 })}>
+                    <div><div style={{ fontWeight: 'bold', fontSize: 10 }}>🔌 telegram-auth</div><div style={{ fontSize: 9, color: CLR.gray }}>signInWithPassword via service_role</div></div>
+                    <strong style={{ color: authFlow.edge==='ok'?CLR.green:authFlow.edge==='fail'?CLR.red:CLR.gray, fontSize: 10 }}>{authFlow.edge==='testing'?'⏳':authFlow.edge==='ok'?`✅ ${authFlow.edgeLatency}ms`:authFlow.edge==='fail'?`❌ ${authFlow.edgeStatus??''}`:'—'}</strong>
                   </div>
-                  <div style={{ height: '6px', borderRadius: '3px', background: 'rgba(255,255,255,0.1)', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${xpPercent}%`, background: 'linear-gradient(90deg, #fbbf24, #ffe566)', borderRadius: '3px' }} />
+                  {authFlow.edge==='fail'&&authFlow.edgeError && <div style={{ padding: '6px 8px', background: 'rgba(239,68,68,0.1)', borderRadius: 4, fontSize: 9, color: '#fca5a5' }}>Error: {authFlow.edgeError}</div>}
+                  <div style={rowS({ padding: '6px 8px', background: authFlow.session==='ok'?'rgba(16,185,129,0.15)':authFlow.session==='fail'?'rgba(239,68,68,0.15)':'rgba(255,255,255,0.05)', borderRadius: 4 })}>
+                    <div><div style={{ fontWeight: 'bold', fontSize: 10 }}>🔄 Session Refresh</div><div style={{ fontSize: 9, color: CLR.gray }}>supabase.auth.refreshSession()</div></div>
+                    <strong style={{ color: authFlow.session==='ok'?CLR.green:authFlow.session==='fail'?CLR.red:CLR.gray, fontSize: 10 }}>{authFlow.session==='testing'?'⏳':authFlow.session==='ok'?'✅ OK':authFlow.session==='fail'?'❌ FAIL':'—'}</strong>
                   </div>
-                  <div style={{ fontSize: '9px', color: '#94a3b8', marginTop: '4px', textAlign: 'right' }}>{xpPercent.toFixed(1)}% to Level {(economy.level || 1) + 1}</div>
-                </div>
-                <div style={{ padding: '12px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)', fontSize: '11px' }}>
-                  <div>Status: <strong style={{ color: activeSubscription ? '#10b981' : '#ef4444' }}>{activeSubscription ? 'Active ✅' : 'None ❌'}</strong></div>
-                  {activeSubscription && <div>Plan: <strong>{activeSubscription.plan_type}</strong> | Expires: <strong>{new Date(activeSubscription.expires_at).toLocaleDateString()}</strong></div>}
+                  {authFlow.session==='fail'&&authFlow.sessionError && <div style={{ padding: '6px 8px', background: 'rgba(239,68,68,0.1)', borderRadius: 4, fontSize: 9, color: '#fca5a5' }}>Error: {authFlow.sessionError}</div>}
+                  {authFlow.lastRun && <div style={{ fontSize: 9, color: CLR.dark, textAlign: 'right' }}>Last run: {authFlow.lastRun}</div>}
                 </div>
               </div>
-            )}
-
-            {activeTab === 'streak' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <span style={{ color: '#fb923c', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Flame size={14} /> STREAK SYSTEM
-                  </span>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    <button 
-                      onClick={runStreakCheck}
-                      disabled={streakChecking}
-                      style={{ 
-                        padding: '6px 12px', 
-                        background: streakChecking ? 'rgba(251, 191, 36, 0.3)' : 'rgba(251, 146, 60, 0.2)', 
-                        border: `1px solid #fb923c`, 
-                        borderRadius: '6px', 
-                        color: '#fb923c', 
-                        cursor: streakChecking ? 'not-allowed' : 'pointer', 
-                        fontSize: '10px', 
-                        fontWeight: 'bold',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}
-                    >
-                      <RefreshCw size={12} className={streakChecking ? 'animate-spin' : ''} /> 
-                      {streakChecking ? 'Checking...' : 'Run Check'}
-                    </button>
-                    <CopyButton tab="streak" />
-                  </div>
+              <div style={card('#22c55e')}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, color: '#22c55e', fontWeight: 'bold', fontSize: 12 }}><Wrench size={14}/> APP FIXES</div>
+                <div style={colS}>
+                  <FixRow label="1. Splash Stale Closure" ok={appFixes.splashClosure} okT="✅ FIXED" badT="❌ BUG"/>
+                  <FixRow label="2. visibilitychange" ok={appFixes.visibilityCleanup} okT="✅ FIXED" badT="❌ LEAK"/>
+                  <FixRow label="3. ErrorBoundary" ok={appFixes.errorBoundary} okT="✅ FIXED" badT="❌ RISK"/>
+                  <FixRow label="4. Telegram ready()" ok={appFixes.telegramReady} okT="✅ CALLED" badT="⏳ PENDING"/>
+                  <FixRow label="5. selectedCardId" ok={appFixes.selectedCardCheck} okT="✅ FIXED" badT="❌ EDGE"/>
                 </div>
-
-                {streakLastRun && streakData && (
-                  <div style={{ padding: '8px', background: 'rgba(251, 146, 60, 0.1)', borderRadius: '6px', border: '1px solid rgba(251, 146, 60, 0.3)', fontSize: '10px', textAlign: 'center' }}>
-                    Last run: {streakLastRun} | 🔥 {streakData.streak_info?.current_streak || 0} days | 🎯 {streakData.stats.unclaimed_count} unclaimed
-                  </div>
-                )}
-
-                {!streakData ? (
-                  <div style={{ textAlign: 'center', padding: '24px 12px', color: '#94a3b8', fontSize: '11px' }}>
-                    <Flame size={28} style={{ opacity: 0.4, marginBottom: '8px' }} />
-                    <div>დააჭირე "Run Check"-ს რომ შეამოწმო<br/>streak system</div>
-                  </div>
-                ) : (
-                  <>
-                    <div style={{ padding: '12px', background: 'rgba(251, 146, 60, 0.1)', borderRadius: '8px', border: '1px solid rgba(251, 146, 60, 0.3)', fontSize: '11px' }}>
-                      <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#fb923c' }}>🔥 მიმდინარე Streak</div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                        <div>Current: <strong>{streakData.streak_info?.current_streak || 0}</strong></div>
-                        <div>Longest: <strong>{streakData.streak_info?.longest_streak || 0}</strong></div>
-                        <div>Last Active: <strong style={{ fontSize: '9px' }}>{streakData.economy?.last_active_date || 'N/A'}</strong></div>
-                        <div>Last Claim: <strong style={{ fontSize: '9px' }}>{streakData.economy?.last_daily_claim || 'N/A'}</strong></div>
-                      </div>
-                      {streakData.streak_info?.next_milestone && (
-                        <div style={{ marginTop: '8px', padding: '6px', background: 'rgba(251, 191, 36, 0.2)', borderRadius: '4px', fontSize: '10px' }}>
-                          🎯 Next: <strong>{streakData.streak_info.next_milestone.icon_emoji} {streakData.streak_info.next_milestone.name}</strong>
-                          <br/>
-                          📅 {streakData.streak_info.days_to_next} days left ({streakData.streak_info.percent_to_next.toFixed(0)}%)
-                        </div>
-                      )}
-                    </div>
-
-                    <div style={{ padding: '12px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)', fontSize: '11px' }}>
-                      <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#10b981' }}>📊 სტატისტიკა</div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
-                        <div style={{ textAlign: 'center' }}>
-                          <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#fb923c' }}>{streakData.stats.achieved_count}</div>
-                          <div style={{ fontSize: '9px', color: '#94a3b8' }}>Achieved</div>
-                        </div>
-                        <div style={{ textAlign: 'center' }}>
-                          <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#10b981' }}>{streakData.stats.claimed_count}</div>
-                          <div style={{ fontSize: '9px', color: '#94a3b8' }}>Claimed</div>
-                        </div>
-                        <div style={{ textAlign: 'center' }}>
-                          <div style={{ fontSize: '16px', fontWeight: 'bold', color: streakData.stats.unclaimed_count > 0 ? '#fbbf24' : '#94a3b8' }}>
-                            {streakData.stats.unclaimed_count}
-                          </div>
-                          <div style={{ fontSize: '9px', color: '#94a3b8' }}>Unclaimed</div>
-                        </div>
-                      </div>
-                      <div style={{ marginTop: '8px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '10px' }}>
-                        <div>📅 Active Days (30d): <strong>{streakData.stats.active_days}</strong></div>
-                        <div>❌ Missed Days: <strong style={{ color: streakData.stats.missed_days > 0 ? '#ef4444' : '#10b981' }}>{streakData.stats.missed_days}</strong></div>
-                      </div>
-                    </div>
-
-                    <div style={{ padding: '12px', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(139, 92, 246, 0.3)', fontSize: '11px' }}>
-                      <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#a78bfa' }}>🎯 Milestones ({streakData.milestones.length})</div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '200px', overflowY: 'auto' }}>
-                        {streakData.milestones.map((m: any) => {
-                          const status = m.is_claimed ? 'claimed' : m.is_achieved ? 'ready' : 'locked';
-                          const colors = {
-                            claimed: { bg: 'rgba(16, 185, 129, 0.2)', border: 'rgba(16, 185, 129, 0.4)', text: '#10b981', label: '✅ Claimed' },
-                            ready: { bg: 'rgba(251, 191, 36, 0.2)', border: 'rgba(251, 191, 36, 0.4)', text: '#fbbf24', label: '🎁 Ready' },
-                            locked: { bg: 'rgba(0,0,0,0.3)', border: 'rgba(255,255,255,0.1)', text: '#94a3b8', label: '🔒 Locked' }
-                          };
-                          const c = colors[status];
-                          
-                          return (
-                            <div 
-                              key={m.id} 
-                              style={{ 
-                                padding: '8px', 
-                                background: c.bg, 
-                                border: `1px solid ${c.border}`, 
-                                borderRadius: '6px',
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center'
-                              }}
-                            >
-                              <div style={{ flex: 1 }}>
-                                <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#e2e8f0' }}>
-                                  {m.icon_emoji} {m.name} <span style={{ color: c.text, fontSize: '9px' }}>({m.days_required}d)</span>
-                                </div>
-                                <div style={{ fontSize: '9px', color: '#94a3b8' }}>
-                                  +{m.reward_coins}💎 +{m.reward_xp}XP {m.reward_premium_days > 0 && `+${m.reward_premium_days}d👑`}
-                                </div>
-                              </div>
-                              <div style={{ fontSize: '9px', color: c.text, fontWeight: 'bold', textAlign: 'right' }}>
-                                {c.label}
-                                {m.claim_record && (
-                                  <div style={{ fontSize: '8px', color: '#64748b', marginTop: '2px' }}>
-                                    @ {m.claim_record.streak_at_claim}d
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.3)', fontSize: '11px' }}>
-                      <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#60a5fa' }}>📅 ბოლო 30 დღე</div>
-                      <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(7, 1fr)',
-                        gap: '3px'
-                      }}>
-                        {streakData.calendar.map((day: any, idx: number) => (
-                          <div
-                            key={idx}
-                            title={`${day.date} ${day.has_reading ? '✓' : '✗'}`}
-                            style={{
-                              aspectRatio: '1',
-                              borderRadius: '3px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: '8px',
-                              fontWeight: day.is_today ? 700 : 400,
-                              background: day.is_today
-                                ? 'linear-gradient(135deg, #fbbf24, #d97706)'
-                                : day.has_reading
-                                ? 'linear-gradient(135deg, #10b981, #059669)'
-                                : day.is_future
-                                ? 'rgba(255,255,255,0.02)'
-                                : 'rgba(239, 68, 68, 0.3)',
-                              color: day.is_future ? '#64748b' : '#fff',
-                              border: day.is_today ? '1px solid #ffe566' : '1px solid transparent'
-                            }}
-                          >
-                            {day.has_reading ? '✓' : day.is_today ? '★' : day.is_future ? '' : '✗'}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div style={{ padding: '12px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.3)', fontSize: '11px' }}>
-                      <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#ef4444' }}>🔧 TEST ACTIONS</div>
-                      
-                      <div style={{ marginBottom: '8px', fontSize: '10px', color: '#94a3b8' }}>Force Set Streak:</div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '4px', marginBottom: '12px' }}>
-                        <button 
-                          onClick={() => handleSetStreak(0)} 
-                          disabled={streakActionLoading === 'set'}
-                          style={{ padding: '6px', background: '#64748b', border: 'none', borderRadius: '4px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}
-                        >
-                          0d
-                        </button>
-                        <button 
-                          onClick={() => handleSetStreak(3)} 
-                          disabled={streakActionLoading === 'set'}
-                          style={{ padding: '6px', background: '#10b981', border: 'none', borderRadius: '4px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}
-                        >
-                          3d 🌱
-                        </button>
-                        <button 
-                          onClick={() => handleSetStreak(7)} 
-                          disabled={streakActionLoading === 'set'}
-                          style={{ padding: '6px', background: '#fb923c', border: 'none', borderRadius: '4px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}
-                        >
-                          7d 🔥
-                        </button>
-                        <button 
-                          onClick={() => handleSetStreak(30)} 
-                          disabled={streakActionLoading === 'set'}
-                          style={{ padding: '6px', background: '#fbbf24', border: 'none', borderRadius: '4px', color: '#000', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}
-                        >
-                          30d 👑
-                        </button>
-                      </div>
-
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
-                        <button 
-                          onClick={handleForceClaim}
-                          disabled={streakActionLoading === 'claim'}
-                          style={{ 
-                            padding: '8px', 
-                            background: streakActionLoading === 'claim' ? 'rgba(251, 191, 36, 0.3)' : '#fbbf24', 
-                            border: 'none', 
-                            borderRadius: '6px', 
-                            color: '#000', 
-                            cursor: streakActionLoading === 'claim' ? 'not-allowed' : 'pointer', 
-                            fontWeight: 'bold', 
-                            fontSize: '10px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '4px'
-                          }}
-                        >
-                          {streakActionLoading === 'claim' ? <RefreshCw size={10} className="animate-spin" /> : <Play size={10} />}
-                          Force Claim
-                        </button>
-                        <button 
-                          onClick={handleResetMilestones}
-                          disabled={streakActionLoading === 'reset'}
-                          style={{ 
-                            padding: '8px', 
-                            background: 'rgba(239, 68, 68, 0.3)', 
-                            border: '1px solid #ef4444', 
-                            borderRadius: '6px', 
-                            color: '#ef4444', 
-                            cursor: streakActionLoading === 'reset' ? 'not-allowed' : 'pointer', 
-                            fontWeight: 'bold', 
-                            fontSize: '10px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '4px'
-                          }}
-                        >
-                          {streakActionLoading === 'reset' ? <RefreshCw size={10} className="animate-spin" /> : <X size={10} />}
-                          Reset All
-                        </button>
-                      </div>
-                    </div>
-                  </>
-                )}
               </div>
-            )}
+              <div style={card(CLR.yellow, { maxHeight: 120, overflowY: 'auto' })}>
+                <div style={{ fontWeight: 'bold', marginBottom: 6 }}>LOCALSTORAGE ({Object.keys(localStorageData).length})</div>
+                {Object.entries(localStorageData).map(([k,v]) => (
+                  <div key={k} style={{ marginBottom: 6, padding: 6, background: 'rgba(0,0,0,0.3)', borderRadius: 4 }}>
+                    <div style={{ color: CLR.yellow, fontWeight: 'bold', fontSize: 9 }}>{k}</div>
+                    <div style={{ color: CLR.gray, fontSize: 9, wordBreak: 'break-all' }}>{v}</div>
+                  </div>
+                ))}
+              </div>
+            </div>)}
 
-            {activeTab === 'profile' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <span style={{ color: '#C5A059', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Crown size={14} /> PROFILE BANNER
-                  </span>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    <button 
-                      onClick={runProfileBannerCheck}
-                      disabled={profileChecking}
-                      style={{ 
-                        padding: '6px 12px', 
-                        background: profileChecking ? 'rgba(251, 191, 36, 0.3)' : 'rgba(197, 160, 89, 0.2)', 
-                        border: `1px solid ${profileChecking ? '#fbbf24' : '#C5A059'}`, 
-                        borderRadius: '6px', 
-                        color: profileChecking ? '#fbbf24' : '#C5A059', 
-                        cursor: profileChecking ? 'not-allowed' : 'pointer', 
-                        fontSize: '10px', 
-                        fontWeight: 'bold',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}
-                    >
-                      <RefreshCw size={12} className={profileChecking ? 'animate-spin' : ''} /> 
-                      {profileChecking ? 'Checking...' : 'Run Check'}
-                    </button>
-                    <CopyButton tab="profile" />
+            {activeTab==='user' && (<div style={colS}>
+              <Title icon={Users} color={CLR.blue} right={<CopyButton tab="user"/>}>USER & ECONOMY</Title>
+              <div style={card(CLR.blue)}>
+                <div>👤 Name: <strong>{user?.display_name||'N/A'}</strong></div>
+                <div>📧 Username: <strong>{user?.username||'N/A'}</strong></div>
+                <div>♏ Sun Sign: <strong>{user?.sun_sign||'Not set'}</strong></div>
+                <div>✅ Onboarding: <strong>{user?.onboarding_completed?'Complete':'Pending'}</strong></div>
+              </div>
+              <div style={card(CLR.yellow)}>
+                <div style={grid(2)}>
+                  <div>💎 Gems: <strong>{economy.cosmic_coins}</strong></div>
+                  <div>⚡ Energy: <strong>{economy.cosmic_focus}/{economy.max_focus}</strong></div>
+                  <div>⭐ Level: <strong>{economy.level}</strong></div>
+                  <div>🔥 Streak: <strong>{currentStreak}</strong></div>
+                </div>
+                <div style={{ height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.1)', overflow: 'hidden', marginTop: 8 }}>
+                  <div style={{ height: '100%', width: `${xpPercent}%`, background: 'linear-gradient(90deg,#fbbf24,#ffe566)', borderRadius: 3 }}/>
+                </div>
+                <div style={{ fontSize: 9, color: CLR.gray, marginTop: 4, textAlign: 'right' }}>{xpPercent.toFixed(1)}% → Level {(economy.level||1)+1}</div>
+              </div>
+              <div style={card(CLR.green)}>
+                <div>Status: <strong style={{ color: activeSubscription?CLR.green:CLR.red }}>{activeSubscription?'Active ✅':'None ❌'}</strong></div>
+                {activeSubscription && <div>Plan: <strong>{activeSubscription.plan_type}</strong> | Exp: <strong>{new Date(activeSubscription.expires_at).toLocaleDateString()}</strong></div>}
+              </div>
+            </div>)}
+
+            {activeTab==='streak' && (<div style={colS}>
+              <Title icon={Flame} color={CLR.orange} right={<><RunBtn onClick={runStreakCheck} loading={streakChecking} color={CLR.orange} label="Run Check"/><CopyButton tab="streak"/></>}>STREAK SYSTEM</Title>
+              {streakLastRun&&streakData && <LastRun text={`Last: ${streakLastRun} | 🔥 ${streakData.streak_info?.current_streak||0}d | 🎯 ${streakData.stats.unclaimed_count} unclaimed`}/>}
+              {!streakData ? <Empty icon={Flame}>დააჭირე "Run Check"-ს</Empty> : (<>
+                <div style={card(CLR.orange)}>
+                  <div style={{ fontWeight: 'bold', marginBottom: 8, color: CLR.orange }}>🔥 მიმდინარე Streak</div>
+                  <div style={grid(2)}>
+                    <div>Current: <strong>{streakData.streak_info?.current_streak||0}</strong></div>
+                    <div>Longest: <strong>{streakData.streak_info?.longest_streak||0}</strong></div>
+                    <div>Last Active: <strong style={{ fontSize: 9 }}>{streakData.economy?.last_active_date||'N/A'}</strong></div>
+                    <div>Last Claim: <strong style={{ fontSize: 9 }}>{streakData.economy?.last_daily_claim||'N/A'}</strong></div>
+                  </div>
+                  {streakData.streak_info?.next_milestone && <div style={{ marginTop: 8, padding: 6, background: 'rgba(251,191,36,0.2)', borderRadius: 4, fontSize: 10 }}>🎯 Next: <strong>{streakData.streak_info.next_milestone.icon_emoji} {streakData.streak_info.next_milestone.name}</strong> ({streakData.streak_info.days_to_next}d)</div>}
+                </div>
+                <div style={card(CLR.green)}>
+                  <div style={grid(3)}>
+                    <div style={{ textAlign: 'center' }}><div style={{ fontSize: 16, fontWeight: 'bold', color: CLR.orange }}>{streakData.stats.achieved_count}</div><div style={{ fontSize: 9, color: CLR.gray }}>Achieved</div></div>
+                    <div style={{ textAlign: 'center' }}><div style={{ fontSize: 16, fontWeight: 'bold', color: CLR.green }}>{streakData.stats.claimed_count}</div><div style={{ fontSize: 9, color: CLR.gray }}>Claimed</div></div>
+                    <div style={{ textAlign: 'center' }}><div style={{ fontSize: 16, fontWeight: 'bold', color: streakData.stats.unclaimed_count>0?CLR.yellow:CLR.gray }}>{streakData.stats.unclaimed_count}</div><div style={{ fontSize: 9, color: CLR.gray }}>Unclaimed</div></div>
                   </div>
                 </div>
-
-                {profileLastRun && (
-                  <div style={{ padding: '8px', background: 'rgba(197, 160, 89, 0.1)', borderRadius: '6px', border: '1px solid rgba(197, 160, 89, 0.3)', fontSize: '10px', textAlign: 'center' }}>
-                    Last run: {profileLastRun} | ✅ {profileChecks.filter(c => c.status === 'pass').length} | ⚠️ {profileChecks.filter(c => c.status === 'warn').length} | ❌ {profileChecks.filter(c => c.status === 'fail').length}
-                  </div>
-                )}
-
-                {profileChecks.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '24px 12px', color: '#94a3b8', fontSize: '11px' }}>
-                    <Crown size={28} style={{ opacity: 0.4, marginBottom: '8px' }} />
-                    <div>დააჭირე "Run Check"-ს რომ შეამოწმო<br/>პროფილის ბანერის ყველა ელემენტი</div>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {profileChecks.map((check) => (
-                      <div 
-                        key={check.id}
-                        style={{ 
-                          padding: '10px', 
-                          background: 'rgba(0,0,0,0.3)', 
-                          borderRadius: '8px', 
-                          border: `1px solid ${
-                            check.status === 'pass' ? 'rgba(16, 185, 129, 0.5)' :
-                            check.status === 'warn' ? 'rgba(251, 191, 36, 0.5)' :
-                            'rgba(239, 68, 68, 0.5)'
-                          }`
-                        }}
-                      >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                          <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#e2e8f0' }}>
-                            {check.status === 'pass' && '✅'}
-                            {check.status === 'warn' && '⚠️'}
-                            {check.status === 'fail' && '❌'}
-                            {' '}{check.element}
-                          </div>
-                        </div>
-                        <div style={{ fontSize: '10px', color: '#cbd5e1', marginBottom: check.details ? '4px' : '0' }}>{check.message}</div>
-                        {check.details && (
-                          <div style={{ fontSize: '9px', color: '#94a3b8', padding: '4px', background: 'rgba(0,0,0,0.5)', borderRadius: '4px', wordBreak: 'break-word' }}>
-                            {check.details}
-                          </div>
-                        )}
+                <div style={card(CLR.purple, { maxHeight: 200, overflowY: 'auto' })}>
+                  <div style={{ fontWeight: 'bold', marginBottom: 8, color: CLR.purple }}>🎯 Milestones</div>
+                  {streakData.milestones.map((m: any) => {
+                    const st = m.is_claimed?'claimed':m.is_achieved?'ready':'locked';
+                    const cc = st==='claimed'?{bg:'rgba(16,185,129,0.2)',bd:'rgba(16,185,129,0.4)',tx:CLR.green,lb:'✅'}:st==='ready'?{bg:'rgba(251,191,36,0.2)',bd:'rgba(251,191,36,0.4)',tx:CLR.yellow,lb:'🎁'}:{bg:'rgba(0,0,0,0.3)',bd:'rgba(255,255,255,0.1)',tx:CLR.gray,lb:'🔒'};
+                    return (<div key={m.id} style={{ padding: 8, background: cc.bg, border: `1px solid ${cc.bd}`, borderRadius: 6, display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                      <div><div style={{ fontSize: 11, fontWeight: 'bold', color: CLR.light }}>{m.icon_emoji} {m.name} <span style={{ color: cc.tx, fontSize: 9 }}>({m.days_required}d)</span></div><div style={{ fontSize: 9, color: CLR.gray }}>+{m.reward_coins}💎 +{m.reward_xp}XP</div></div>
+                      <div style={{ fontSize: 9, color: cc.tx, fontWeight: 'bold' }}>{cc.lb}</div>
+                    </div>);
+                  })}
+                </div>
+                <div style={card(CLR.blue)}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 3 }}>
+                    {streakData.calendar?.map((d: any, i: number) => (
+                      <div key={i} style={{ aspectRatio: '1', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, background: d.is_today?'linear-gradient(135deg,#fbbf24,#d97706)':d.has_reading?'linear-gradient(135deg,#10b981,#059669)':d.is_future?'rgba(255,255,255,0.02)':'rgba(239,68,68,0.3)', color: '#fff' }}>
+                        {d.has_reading?'✓':d.is_today?'★':d.is_future?'':'✗'}
                       </div>
                     ))}
                   </div>
-                )}
+                </div>
+                <div style={card(CLR.red)}>
+                  <div style={{ fontWeight: 'bold', marginBottom: 8, color: CLR.red }}>🔧 TEST ACTIONS</div>
+                  <div style={grid(4)}>
+                    {[0,3,7,30].map(d => <button key={d} onClick={() => handleSetStreak(d)} disabled={streakActionLoading==='set'} style={solidBtn(d===0?'#64748b':d===3?CLR.green:d===7?CLR.orange:CLR.yellow, d===30?'#000':'#fff')}>{d}d</button>)}
+                  </div>
+                  <div style={grid(2)}>
+                    <button onClick={handleForceClaim} disabled={streakActionLoading==='claim'} style={solidBtn(CLR.yellow, '#000')}>{streakActionLoading==='claim'?'...':'Force Claim'}</button>
+                    <button onClick={handleResetMilestones} disabled={streakActionLoading==='reset'} style={btnS(CLR.red)}>{streakActionLoading==='reset'?'...':'Reset All'}</button>
+                  </div>
+                </div>
+              </>)}
+            </div>)}
+
+            {activeTab==='profile' && (<div style={colS}>
+              <Title icon={Crown} color={CLR.gold} right={<><RunBtn onClick={runProfileBannerCheck} loading={profileChecking} color={CLR.gold} label="Run Check"/><CopyButton tab="profile"/></>}>PROFILE BANNER</Title>
+              {profileLastRun && <LastRun text={`Last: ${profileLastRun} | ✅ ${profileChecks.filter(c=>c.status==='pass').length} ⚠️ ${profileChecks.filter(c=>c.status==='warn').length} ❌ ${profileChecks.filter(c=>c.status==='fail').length}`}/>}
+              {profileChecks.length===0 ? <Empty icon={Crown}>დააჭირე "Run Check"-ს</Empty> : profileChecks.map(c => <CheckRow key={c.id} status={c.status} title={c.element} msg={c.message} details={c.details}/>)}
+            </div>)}
+
+            {activeTab==='energy' && (<div style={colS}>
+              <Title icon={Zap} color={CLR.yellow} right={<><RunBtn onClick={runEnergyCheck} loading={energyChecking} color={CLR.yellow} label="Run Check"/><CopyButton tab="energy"/></>}>ENERGY SYSTEM</Title>
+              {energyLastRun&&energyData && <LastRun text={`Last: ${energyLastRun} | ${energyData.match?'✅ UI=DB':'❌ UI≠DB'}`}/>}
+              {!energyData ? <Empty icon={Zap}>დააჭირე "Run Check"-ს</Empty> : (<>
+                <div style={card(CLR.yellow, { border: `1px solid ${energyData.match?'rgba(16,185,129,0.5)':'rgba(239,68,68,0.5)'}` })}>
+                  <div style={grid(2)}><div>UI: <strong>{energyData.uiEnergy}/{energyData.uiMax}</strong></div><div>DB: <strong>{energyData.dbEnergy}/{energyData.dbMax}</strong></div></div>
+                  <div style={{ marginTop: 6, padding: 4, borderRadius: 4, textAlign: 'center', background: energyData.match?'rgba(16,185,129,0.2)':'rgba(239,68,68,0.2)' }}>{energyData.match?'✅ თანხვედრა':'❌ sync საჭიროა'}</div>
+                </div>
+                <div style={card(CLR.blue)}>
+                  <div style={grid(2)}>
+                    <div>წუთები: <strong>{energyData.minutesPassed}</strong></div><div>Boost: <strong>{energyData.boostMultiplier}x</strong></div>
+                    <div>+<strong style={{ color: energyData.energyToRegen>0?CLR.green:CLR.gray }}>{energyData.energyToRegen}</strong></div><div>Next: <strong>{energyData.minutesUntilNext}min</strong></div>
+                  </div>
+                </div>
+                <div style={card(CLR.purple)}>
+                  <div style={{ fontWeight: 'bold', marginBottom: 8, color: CLR.purple }}>💰 ხარჯები</div>
+                  {energyData.costs.map(c => <div key={c.reading_type} style={rowS({ padding: '4px 6px', background: 'rgba(0,0,0,0.3)', borderRadius: 4, marginBottom: 4 })}><span>{c.reading_type}</span><strong style={{ color: c.energy_cost===0?CLR.green:CLR.yellow }}>{c.energy_cost===0?'FREE':`${c.energy_cost}⚡`}</strong></div>)}
+                </div>
+                <div style={card(CLR.green, { maxHeight: 180, overflowY: 'auto' })}>
+                  <div style={{ fontWeight: 'bold', marginBottom: 8, color: CLR.green }}>📜 ტრანზაქციები</div>
+                  {energyData.transactions.map(t => <div key={t.id} style={rowS({ padding: '4px 6px', background: 'rgba(0,0,0,0.3)', borderRadius: 4, marginBottom: 4 })}><span style={{ color: t.amount>0?CLR.green:CLR.red, fontWeight: 'bold' }}>{t.amount>0?'+':''}{t.amount}</span><span style={{ color: CLR.gray, fontSize: 9 }}>→ {t.balance_after}</span></div>)}
+                </div>
+                <div style={grid(4)}>
+                  <button onClick={() => { testAddEnergy(1); setTimeout(runEnergyCheck, 1000); }} style={solidBtn(CLR.yellow, '#000')}>+1⚡</button>
+                  <button onClick={() => { testSpendEnergy(1); setTimeout(runEnergyCheck, 1000); }} style={solidBtn(CLR.red)}>-1⚡</button>
+                  <button onClick={() => { testAddEnergy(10); setTimeout(runEnergyCheck, 1000); }} style={solidBtn(CLR.green)}>+10⚡</button>
+                  <button onClick={runEnergyCheck} style={solidBtn('#3b82f6')}>🔄</button>
+                </div>
+              </>)}
+            </div>)}
+
+            {activeTab==='diagnostics' && (<div style={colS}>
+              <Title icon={Heart} color={CLR.pink} right={<><RunBtn onClick={() => runHomeDiagnostics?.()} loading={diagRunning} color={CLR.pink} label="Run All"/><CopyButton tab="diagnostics"/></>}>DIAGNOSTICS</Title>
+              {diagLast && <LastRun text={`Last: ${diagLast} | ${diagResults.filter(r=>r.status==='pass').length}/${diagResults.length} passed`}/>}
+              <div style={grid(2)}>
+                {([['⚡ Energy',CLR.yellow,testEnergySystem],['💾 Storage',CLR.blue,testLocalStorage],['👑 Premium',CLR.purple,testPremiumGate],['🎯 Quests',CLR.green,testQuestSystem],['🃏 Daily','#f472b6',testDailyCard],['🔥 Streak',CLR.orange,testStreakSystem],['⭐ XP','#3b82f6',testXPSystem],['🗄️ DB','#8b5cf6',testSupabaseConnection]] as any[]).map(([l,c,f]) => <button key={l} onClick={f} style={solidBtn(c, l.includes('Energy')?'#000':'#fff')}>{l}</button>)}
               </div>
-            )}
+              {diagResults.map((r, i) => <CheckRow key={i} status={r.status==='pass'?'pass':r.status==='fail'?'fail':'warn'} title={r.name} msg={r.message} details={r.details?JSON.stringify(r.details):undefined}/>)}
+            </div>)}
 
-            {activeTab === 'energy' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <span style={{ color: '#fbbf24', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Zap size={14} /> ENERGY SYSTEM
-                  </span>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    <button 
-                      onClick={runEnergyCheck}
-                      disabled={energyChecking}
-                      style={{ 
-                        padding: '6px 12px', 
-                        background: energyChecking ? 'rgba(251, 191, 36, 0.3)' : 'rgba(251, 191, 36, 0.2)', 
-                        border: `1px solid #fbbf24`, 
-                        borderRadius: '6px', 
-                        color: '#fbbf24', 
-                        cursor: energyChecking ? 'not-allowed' : 'pointer', 
-                        fontSize: '10px', 
-                        fontWeight: 'bold',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}
-                    >
-                      <RefreshCw size={12} className={energyChecking ? 'animate-spin' : ''} /> 
-                      {energyChecking ? 'Checking...' : 'Run Check'}
-                    </button>
-                    <CopyButton tab="energy" />
+            {activeTab==='functions' && (<div style={colS}>
+              <Title icon={Server} color={CLR.purple} right={<><RunBtn onClick={loadFunctionStatuses} loading={functionsLoading} color={CLR.purple} label="Refresh"/><CopyButton tab="functions"/></>}>EDGE FUNCTIONS</Title>
+              {functionsLoading ? <div style={{ color: CLR.gray, textAlign: 'center', padding: 20 }}>Loading...</div> : functionStatuses.map(f => (
+                <div key={f.name} style={{ padding: 10, background: 'rgba(0,0,0,0.3)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <div style={rowS({ marginBottom: 6 })}>
+                    <div><div style={{ color: CLR.light, fontWeight: 'bold', fontSize: 11 }}>{f.name}</div><div style={{ fontSize: 9, color: CLR.gray }}>Runs: {f.totalRuns} | {f.successRate.toFixed(0)}% | {f.avgResponseTime}ms</div></div>
+                    <button onClick={() => handleTestFunction(f.name)} disabled={testingFunction===f.name} style={btnS(testingFunction===f.name?CLR.yellow:CLR.green)}>{testingFunction===f.name?'...':'Test'}</button>
                   </div>
+                  <button onClick={() => setExpandedFunction(expandedFunction===f.name?null:f.name)} style={{ width: '100%', padding: 4, background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 4, color: CLR.gray, cursor: 'pointer', fontSize: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+                    {expandedFunction===f.name?<ChevronDown size={10}/>:<Eye size={10}/>} Logs
+                  </button>
+                  {expandedFunction===f.name&&functionLogs[f.name] && <div style={{ marginTop: 6, maxHeight: 120, overflowY: 'auto', background: 'rgba(0,0,0,0.5)', borderRadius: 4, padding: 6 }}>
+                    {functionLogs[f.name].map((l, i) => <div key={i} style={{ padding: 4, marginBottom: 3, background: 'rgba(255,255,255,0.03)', borderRadius: 3, fontSize: 9 }}><span style={{ color: l.status==='success'?CLR.green:CLR.red }}>{l.status}</span> <span style={{ color: CLR.dark }}>{l.response_time_ms}ms</span></div>)}
+                  </div>}
                 </div>
+              ))}
+            </div>)}
 
-                {energyLastRun && energyData && (
-                  <div style={{ padding: '8px', background: 'rgba(251, 191, 36, 0.1)', borderRadius: '6px', border: '1px solid rgba(251, 191, 36, 0.3)', fontSize: '10px', textAlign: 'center' }}>
-                    Last run: {energyLastRun} | {energyData.match ? '✅ UI = DB' : '❌ UI ≠ DB'}
+            {activeTab==='logs' && (<div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+              <Title icon={Terminal} color="#f472b6" right={<><button onClick={() => setDebugLogs([])} style={btnS(CLR.red, { padding: '4px 8px' })}>Clear</button><CopyButton tab="logs"/></>}>LIVE LOGS ({debugLogs.length})</Title>
+              <input value={logFilter} onChange={e => setLogFilter(e.target.value)} placeholder="🔍 Filter..." style={{ padding: 6, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 6, color: '#fff', fontSize: 10, marginBottom: 8 }}/>
+              <div style={{ flex: 1, overflowY: 'auto', background: 'rgba(0,0,0,0.5)', borderRadius: 8, padding: 8 }}>
+                {filteredLogs.length===0 && <div style={{ color: CLR.dark, textAlign: 'center', padding: 20 }}>No logs.</div>}
+                {filteredLogs.slice().reverse().map((l, i) => (
+                  <div key={i} onClick={() => l.data && setExpandedLog(expandedLog===i?null:i)} style={{ padding: 8, marginBottom: 6, background: 'rgba(255,255,255,0.05)', borderRadius: 6, borderLeft: `3px solid ${l.type==='error'?CLR.red:l.type==='success'?CLR.green:CLR.yellow}`, cursor: l.data?'pointer':'default' }}>
+                    <div style={rowS({ marginBottom: 4 })}><span style={{ color: CLR.dark, fontSize: 9 }}>{l.timestamp}</span><span style={{ fontSize: 9, color: l.type==='error'?CLR.red:l.type==='success'?CLR.green:CLR.yellow, fontWeight: 'bold' }}>{l.category}</span></div>
+                    <div style={{ color: CLR.light, fontSize: 10, wordBreak: 'break-word' }}>{l.message}</div>
+                    {l.data && expandedLog===i && <div style={{ marginTop: 4, padding: 6, background: 'rgba(0,0,0,0.5)', borderRadius: 4, fontSize: 9, color: CLR.gray, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{typeof l.data==='object'?JSON.stringify(l.data,null,2):l.data}</div>}
                   </div>
-                )}
-
-                {!energyData ? (
-                  <div style={{ textAlign: 'center', padding: '24px 12px', color: '#94a3b8', fontSize: '11px' }}>
-                    <Zap size={28} style={{ opacity: 0.4, marginBottom: '8px' }} />
-                    <div>დააჭირე "Run Check"-ს რომ შეამოწმო<br/>ენერგიის სისტემა</div>
-                  </div>
-                ) : (
-                  <>
-                    <div style={{ padding: '12px', background: 'rgba(251, 191, 36, 0.1)', borderRadius: '8px', border: `1px solid ${energyData.match ? 'rgba(16, 185, 129, 0.5)' : 'rgba(239, 68, 68, 0.5)'}`, fontSize: '11px' }}>
-                      <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#fbbf24' }}>⚡ მიმდინარე ენერგია</div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                        <div>UI: <strong>{energyData.uiEnergy}/{energyData.uiMax}</strong></div>
-                        <div>DB: <strong>{energyData.dbEnergy}/{energyData.dbMax}</strong></div>
-                      </div>
-                      <div style={{ marginTop: '6px', padding: '4px', borderRadius: '4px', textAlign: 'center', background: energyData.match ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)' }}>
-                        {energyData.match ? '✅ UI და DB თანხვედრაშია' : '❌ განსხვავება! საჭიროა sync'}
-                      </div>
-                    </div>
-
-                    <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.3)', fontSize: '11px' }}>
-                      <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#60a5fa' }}>🔄 რეგენერაცია (30 წუთში +1)</div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                        <div>გასული წუთები: <strong>{energyData.minutesPassed}</strong></div>
-                        <div>Boost: <strong>{energyData.boostMultiplier}x</strong></div>
-                        <div>დასამატებელი: <strong style={{ color: energyData.energyToRegen > 0 ? '#10b981' : '#94a3b8' }}>+{energyData.energyToRegen}</strong></div>
-                        <div>შემდეგი +1: <strong>{energyData.minutesUntilNext} წუთში</strong></div>
-                      </div>
-                      {energyData.dbEnergy >= energyData.dbMax && (
-                        <div style={{ marginTop: '6px', padding: '4px', borderRadius: '4px', textAlign: 'center', background: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24' }}>
-                          🔋 ენერგია სრულია - რეგენერაცია პაუზაზეა
-                        </div>
-                      )}
-                    </div>
-
-                    <div style={{ padding: '12px', background: 'rgba(167, 139, 250, 0.1)', borderRadius: '8px', border: '1px solid rgba(167, 139, 250, 0.3)', fontSize: '11px' }}>
-                      <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#a78bfa' }}>💰 ხარჯვის ღირებულებები (reading_costs)</div>
-                      {energyData.costs.length === 0 ? (
-                        <div style={{ color: '#94a3b8', textAlign: 'center' }}>ცხრილი ცარიელია</div>
-                      ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          {energyData.costs.map((cost) => (
-                            <div key={cost.reading_type} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 6px', background: 'rgba(0,0,0,0.3)', borderRadius: '4px' }}>
-                              <span style={{ color: '#e2e8f0' }}>{cost.reading_type}</span>
-                              <span style={{ color: cost.energy_cost === 0 ? '#10b981' : '#fbbf24', fontWeight: 'bold' }}>
-                                {cost.energy_cost === 0 ? 'FREE' : `${cost.energy_cost}⚡`}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    <div style={{ padding: '12px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)', fontSize: '11px' }}>
-                      <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#10b981' }}>📜 ბოლო 10 ტრანზაქცია</div>
-                      {energyData.transactions.length === 0 ? (
-                        <div style={{ color: '#94a3b8', textAlign: 'center' }}>ტრანზაქციები არ არის</div>
-                      ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '180px', overflowY: 'auto' }}>
-                          {energyData.transactions.map((tx) => (
-                            <div key={tx.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 6px', background: 'rgba(0,0,0,0.3)', borderRadius: '4px' }}>
-                              <div>
-                                <span style={{ color: tx.amount > 0 ? '#10b981' : tx.amount < 0 ? '#ef4444' : '#94a3b8', fontWeight: 'bold' }}>
-                                  {tx.amount > 0 ? '+' : ''}{tx.amount}
-                                </span>
-                                <span style={{ color: '#94a3b8', fontSize: '9px', marginLeft: '6px' }}>{tx.transaction_type}</span>
-                              </div>
-                              <div style={{ textAlign: 'right' }}>
-                                <div style={{ color: '#e2e8f0', fontSize: '9px' }}>→ {tx.balance_after}</div>
-                                <div style={{ color: '#64748b', fontSize: '8px' }}>{new Date(tx.created_at).toLocaleTimeString('en-US', { hour12: false })}</div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
-                      <button onClick={() => { testAddEnergy(1); setTimeout(runEnergyCheck, 1000); }} style={{ padding: '8px', background: '#fbbf24', border: 'none', borderRadius: '6px', color: '#000', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>+1 ⚡</button>
-                      <button onClick={() => { testSpendEnergy(1); setTimeout(runEnergyCheck, 1000); }} style={{ padding: '8px', background: '#ef4444', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>-1 ⚡</button>
-                      <button onClick={() => { testAddEnergy(10); setTimeout(runEnergyCheck, 1000); }} style={{ padding: '8px', background: '#10b981', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>+10 ⚡</button>
-                      <button onClick={runEnergyCheck} style={{ padding: '8px', background: '#3b82f6', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>🔄 Refresh</button>
-                    </div>
-                  </>
-                )}
+                ))}
               </div>
-            )}
+            </div>)}
 
-            {activeTab === 'diagnostics' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <span style={{ color: '#ec4899', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Heart size={14} /> DIAGNOSTICS
-                  </span>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    <button 
-                      onClick={() => runHomeDiagnostics?.()} 
-                      disabled={diagIsRunning}
-                      style={{ 
-                        padding: '6px 12px', 
-                        background: diagIsRunning ? 'rgba(251, 191, 36, 0.3)' : 'rgba(236, 72, 153, 0.2)', 
-                        border: `1px solid ${diagIsRunning ? '#fbbf24' : '#ec4899'}`, 
-                        borderRadius: '6px', 
-                        color: diagIsRunning ? '#fbbf24' : '#ec4899', 
-                        cursor: diagIsRunning ? 'not-allowed' : 'pointer', 
-                        fontSize: '10px', 
-                        fontWeight: 'bold',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}
-                    >
-                      <RefreshCw size={12} className={diagIsRunning ? 'animate-spin' : ''} /> 
-                      {diagIsRunning ? 'Running...' : 'Run All'}
-                    </button>
-                    <CopyButton tab="diagnostics" />
-                  </div>
-                </div>
-
-                {diagLastRun && (
-                  <div style={{ padding: '8px', background: 'rgba(236, 72, 153, 0.1)', borderRadius: '6px', border: '1px solid rgba(236, 72, 153, 0.3)', fontSize: '10px', textAlign: 'center' }}>
-                    Last run: {diagLastRun} | {diagResults.filter(r => r.status === 'pass').length}/{diagResults.length} passed
-                  </div>
-                )}
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
-                  <button onClick={testEnergySystem} style={{ padding: '8px', background: '#fbbf24', border: 'none', borderRadius: '6px', color: '#000', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>⚡ Energy</button>
-                  <button onClick={testLocalStorage} style={{ padding: '8px', background: '#60a5fa', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>💾 Storage</button>
-                  <button onClick={testPremiumGate} style={{ padding: '8px', background: '#a78bfa', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>👑 Premium</button>
-                  <button onClick={testQuestSystem} style={{ padding: '8px', background: '#10b981', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>🎯 Quests</button>
-                  <button onClick={testDailyCard} style={{ padding: '8px', background: '#f472b6', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>🃏 Daily</button>
-                  <button onClick={testStreakSystem} style={{ padding: '8px', background: '#fb923c', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>🔥 Streak</button>
-                  <button onClick={testXPSystem} style={{ padding: '8px', background: '#3b82f6', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>⭐ XP</button>
-                  <button onClick={testSupabaseConnection} style={{ padding: '8px', background: '#8b5cf6', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '10px' }}>🗄️ DB</button>
-                </div>
-
-                {diagResults.length > 0 && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '300px', overflowY: 'auto' }}>
-                    {diagResults.map((result, idx) => (
-                      <div 
-                        key={idx} 
-                        style={{ 
-                          padding: '10px', 
-                          background: 'rgba(0,0,0,0.3)', 
-                          borderRadius: '8px', 
-                          border: `1px solid ${
-                            result.status === 'pass' ? 'rgba(16, 185, 129, 0.5)' :
-                            result.status === 'fail' ? 'rgba(239, 68, 68, 0.5)' :
-                            result.status === 'warning' ? 'rgba(251, 191, 36, 0.5)' :
-                            'rgba(148, 163, 184, 0.3)'
-                          }`
-                        }}
-                      >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                          <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#e2e8f0' }}>
-                            {result.status === 'pass' && '✅'}
-                            {result.status === 'fail' && '❌'}
-                            {result.status === 'warning' && '⚠️'}
-                            {result.status === 'pending' && '⏳'}
-                            {' '}{result.name}
-                          </div>
-                          <div style={{ fontSize: '9px', color: '#94a3b8' }}>{result.timestamp}</div>
-                        </div>
-                        <div style={{ fontSize: '10px', color: '#cbd5e1', marginBottom: '4px' }}>{result.message}</div>
-                        {result.details && (
-                          <div style={{ fontSize: '9px', color: '#94a3b8', padding: '4px', background: 'rgba(0,0,0,0.5)', borderRadius: '4px', overflowX: 'auto' }}>
-                            <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                              {JSON.stringify(result.details, null, 2)}
-                            </pre>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
+            {activeTab==='actions' && (<div style={colS}>
+              <Title icon={Settings} color={CLR.purple} right={<CopyButton tab="actions"/>}>ADMIN ACTIONS</Title>
+              <div style={card(CLR.purple)}>
+                <div style={{ marginBottom: 8, color: CLR.purple, fontWeight: 'bold' }}>⚡ ENERGY</div>
+                <div style={grid(2)}><button onClick={() => testAddEnergy(10)} style={solidBtn(CLR.yellow, '#000')}>+10 ⚡</button><button onClick={() => testSpendEnergy(2)} style={solidBtn(CLR.red)}>Spend 2 ⚡</button></div>
               </div>
-            )}
-
-            {activeTab === 'functions' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <span style={{ color: '#a78bfa', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}><Server size={14} /> EDGE FUNCTIONS</span>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    <button onClick={loadFunctionStatuses} disabled={functionsLoading} style={{ padding: '4px 8px', background: 'rgba(139, 92, 246, 0.3)', border: '1px solid rgba(139, 92, 246, 0.5)', borderRadius: '6px', color: '#a78bfa', cursor: 'pointer', fontSize: '10px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <RefreshCw size={10} className={functionsLoading ? 'animate-spin' : ''} /> Refresh
-                    </button>
-                    <CopyButton tab="functions" />
-                  </div>
-                </div>
-                {functionsLoading ? <div style={{ color: '#94a3b8', fontSize: '11px', textAlign: 'center', padding: '20px' }}>Loading...</div> : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {functionStatuses.map((func) => (
-                      <div key={func.name} style={{ padding: '10px', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ color: '#e2e8f0', fontWeight: 'bold', fontSize: '11px' }}>{func.name}</div>
-                            <div style={{ display: 'flex', gap: '8px', fontSize: '9px', color: '#94a3b8' }}>
-                              <span>Runs: {func.totalRuns}</span><span>Success: {func.successRate.toFixed(0)}%</span><span>Avg: {func.avgResponseTime}ms</span>
-                            </div>
-                          </div>
-                          <button onClick={() => handleTestFunction(func.name)} disabled={testingFunction === func.name} style={{ padding: '6px 10px', background: testingFunction === func.name ? 'rgba(251, 191, 36, 0.3)' : 'rgba(16, 185, 129, 0.2)', border: `1px solid ${testingFunction === func.name ? '#fbbf24' : '#10b981'}`, borderRadius: '6px', color: testingFunction === func.name ? '#fbbf24' : '#10b981', cursor: 'pointer', fontSize: '10px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            {testingFunction === func.name ? <RefreshCw size={10} className="animate-spin" /> : <Play size={10} />} {testingFunction === func.name ? 'Testing' : 'Test'}
-                          </button>
-                        </div>
-                        {func.lastRun && <div style={{ fontSize: '9px', color: '#94a3b8', marginBottom: '6px' }}>Last: {new Date(func.lastRun.created_at).toLocaleString()} | <span style={{ color: func.lastRun.status === 'success' ? '#10b981' : '#ef4444' }}>{func.lastRun.status}</span></div>}
-                        <button onClick={() => setExpandedFunction(expandedFunction === func.name ? null : func.name)} style={{ width: '100%', padding: '4px', background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '4px', color: '#94a3b8', cursor: 'pointer', fontSize: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                          {expandedFunction === func.name ? <ChevronDown size={10} /> : <Eye size={10} />} {expandedFunction === func.name ? 'Hide Logs' : 'Show Recent Logs'}
-                        </button>
-                        {expandedFunction === func.name && functionLogs[func.name] && (
-                          <div style={{ marginTop: '6px', maxHeight: '120px', overflowY: 'auto', background: 'rgba(0,0,0,0.5)', borderRadius: '4px', padding: '6px' }}>
-                            {functionLogs[func.name].length === 0 ? <div style={{ color: '#64748b', fontSize: '9px', textAlign: 'center' }}>No logs</div> : functionLogs[func.name].map((log, i) => (
-                              <div key={i} style={{ padding: '4px', marginBottom: '3px', background: 'rgba(255,255,255,0.03)', borderRadius: '3px', fontSize: '9px' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: log.status === 'success' ? '#10b981' : '#ef4444' }}>{log.status}</span><span style={{ color: '#64748b' }}>{log.response_time_ms}ms</span></div>
-                                {log.error_message && <div style={{ color: '#ef4444', fontSize: '8px', wordBreak: 'break-word' }}>{log.error_message.substring(0, 80)}</div>}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
+              <div style={card(CLR.blue)}>
+                <div style={{ marginBottom: 8, color: CLR.blue, fontWeight: 'bold' }}>💎 ECONOMY</div>
+                <div style={grid(2)}><button onClick={() => testAddCoins(100)} style={solidBtn(CLR.purple)}>+100 💎</button><button onClick={() => testAddXP(100)} style={solidBtn('#3b82f6')}>+100 XP</button></div>
               </div>
-            )}
-
-            {activeTab === 'logs' && (
-              <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <span style={{ color: '#f472b6', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}><Terminal size={14} /> LIVE LOGS ({debugLogs.length})</span>
-                  <div style={{ display: 'flex', gap: '4px' }}>
-                    <button onClick={() => setDebugLogs([])} style={{ padding: '4px 8px', background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontSize: '10px', fontWeight: 'bold' }}>Clear</button>
-                    <CopyButton tab="logs" />
-                  </div>
-                </div>
-                <div style={{ flex: 1, overflowY: 'auto', background: 'rgba(0,0,0,0.5)', borderRadius: '8px', padding: '8px' }}>
-                  {debugLogs.length === 0 && <div style={{ color: '#64748b', fontSize: '11px', textAlign: 'center', padding: '20px' }}>No logs yet.</div>}
-                  {debugLogs.slice().reverse().map((log, i) => (
-                    <div key={i} style={{ padding: '8px', marginBottom: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', borderLeft: `3px solid ${log.type === 'error' ? '#ef4444' : log.type === 'success' ? '#10b981' : '#fbbf24'}`, cursor: log.data ? 'pointer' : 'default' }} onClick={() => log.data && setExpandedLog(expandedLog === i ? null : i)}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                        <span style={{ color: '#64748b', fontSize: '9px' }}>{log.timestamp}</span>
-                        <span style={{ fontSize: '9px', color: log.type === 'error' ? '#ef4444' : log.type === 'success' ? '#10b981' : '#fbbf24', fontWeight: 'bold' }}>{log.category}</span>
-                      </div>
-                      <div style={{ color: '#e2e8f0', fontSize: '10px', wordBreak: 'break-word', marginBottom: log.data ? '4px' : '0' }}>{log.message}</div>
-                      {log.data && <div style={{ marginTop: '4px', padding: '6px', background: 'rgba(0,0,0,0.5)', borderRadius: '4px', fontSize: '9px', color: '#94a3b8', overflowX: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-word', display: expandedLog === i ? 'block' : 'none' }}>{typeof log.data === 'object' ? JSON.stringify(log.data, null, 2) : log.data}</div>}
-                      {log.data && <div style={{ textAlign: 'right', marginTop: '2px', color: '#64748b', fontSize: '9px' }}>{expandedLog === i ? '▲ Collapse' : '▼ Expand'}</div>}
-                    </div>
-                  ))}
-                </div>
+              <div style={grid(2)}>
+                <button onClick={reloadFromDatabase} style={solidBtn(CLR.green)}>🔄 RELOAD DB</button>
+                <button onClick={testCompleteQuest} style={solidBtn('#8b5cf6')}>🎯 TEST QUEST</button>
+                <button onClick={checkDatabaseStatus} style={solidBtn('#3b82f6')}>🩺 CHECK DB</button>
+                <button onClick={refreshUserDataDebug} style={solidBtn('#0ea5e9')}>🔄 REFRESH USER</button>
               </div>
-            )}
-
-            {activeTab === 'actions' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <span style={{ color: '#a78bfa', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}><Settings size={14} /> ADMIN ACTIONS</span>
-                  <CopyButton tab="actions" />
-                </div>
-                <div style={{ padding: '12px', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
-                  <div style={{ marginBottom: '8px', color: '#a78bfa', fontWeight: 'bold', fontSize: '12px' }}>⚡ ENERGY</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                    <button onClick={() => testAddEnergy(10)} style={{ padding: '8px', background: '#fbbf24', border: 'none', borderRadius: '6px', color: '#000', cursor: 'pointer', fontWeight: 'bold' }}>+10 ⚡</button>
-                    <button onClick={() => testSpendEnergy(2)} style={{ padding: '8px', background: '#ef4444', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}>Spend 2 ⚡</button>
-                  </div>
-                </div>
-                <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
-                  <div style={{ marginBottom: '8px', color: '#60a5fa', fontWeight: 'bold', fontSize: '12px' }}>💎 ECONOMY</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                    <button onClick={() => testAddCoins(100)} style={{ padding: '8px', background: '#a78bfa', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}>+100 💎</button>
-                    <button onClick={() => testAddXP(100)} style={{ padding: '8px', background: '#3b82f6', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}>+100 XP</button>
-                  </div>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                  <button onClick={reloadFromDatabase} style={{ padding: '10px', background: '#10b981', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}>🔄 RELOAD DB</button>
-                  <button onClick={testCompleteQuest} style={{ padding: '10px', background: '#8b5cf6', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}>🎯 TEST QUEST</button>
-                  <button onClick={checkDatabaseStatus} style={{ padding: '10px', background: '#3b82f6', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}>🩺 CHECK DB</button>
-                  <button onClick={refreshUserDataDebug} style={{ padding: '10px', background: '#0ea5e9', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}>🔄 REFRESH USER</button>
-                </div>
-
-                {/* 🆕 📜 ბოლო ლოგები (ტესტის შედეგები) */}
-                <div style={{ padding: '12px', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                  <div style={{ marginBottom: '8px', color: '#f472b6', fontWeight: 'bold', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Terminal size={14} /> 📜 ბოლო ლოგები (ტესტის შედეგები)
-                    </span>
-                    <span style={{ fontSize: '9px', color: '#94a3b8', fontWeight: 'normal' }}>
-                      {debugLogs.length} სულ
-                    </span>
-                  </div>
-                  <div style={{ fontSize: '9px', color: '#94a3b8', marginBottom: '8px', padding: '4px', background: 'rgba(251, 191, 36, 0.08)', borderRadius: '4px', lineHeight: '1.4' }}>
-                     <strong>ტესტი:</strong> +10 ⚡ უნდა იყოს ✅ მწვანე (RPC). +100 💎 უნდა იყოს ❌ წითელი (trigger ბლოკავს).
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '200px', overflowY: 'auto' }}>
-                    {debugLogs.slice(0, 10).map((log) => (
-                      <div key={log.id} style={{ padding: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', borderLeft: `3px solid ${log.type === 'error' ? '#ef4444' : log.type === 'success' ? '#10b981' : log.type === 'warning' ? '#fbbf24' : '#64748b'}`, fontSize: '9px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
-                          <span style={{ color: '#64748b', fontSize: '8px' }}>{log.timestamp}</span>
-                          <span style={{ 
-                            color: log.type === 'error' ? '#ef4444' : log.type === 'success' ? '#10b981' : log.type === 'warning' ? '#fbbf24' : '#94a3b8', 
-                            fontSize: '8px', 
-                            fontWeight: 'bold',
-                            background: log.type === 'error' ? 'rgba(239, 68, 68, 0.15)' : log.type === 'success' ? 'rgba(16, 185, 129, 0.15)' : log.type === 'warning' ? 'rgba(251, 191, 36, 0.15)' : 'rgba(255,255,255,0.05)',
-                            padding: '1px 4px',
-                            borderRadius: '3px'
-                          }}>
-                            {log.category}
-                          </span>
-                        </div>
-                        <div style={{ color: '#e2e8f0', wordBreak: 'break-word', lineHeight: '1.3' }}>{log.message}</div>
-                      </div>
-                    ))}
-                    {debugLogs.length === 0 && (
-                      <div style={{ color: '#64748b', fontSize: '9px', textAlign: 'center', padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
-                         ლოგები ჯერ არ არის — დააჭირე ტესტის ღილაკებს ზემოთ
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <button onClick={handleLogoutAndReset} style={{ width: '100%', padding: '10px', background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={14} style={{ marginRight: '4px' }} /> LOGOUT & RESET</button>
+              <div style={card('rgba(0,0,0,0.3)')}>
+                <div style={{ marginBottom: 8, color: '#f472b6', fontWeight: 'bold' }}>📜 ბოლო ლოგები</div>
+                {debugLogs.slice(0,10).map(l => <div key={l.id} style={{ padding: 6, background: 'rgba(255,255,255,0.05)', borderRadius: 4, borderLeft: `3px solid ${l.type==='error'?CLR.red:l.type==='success'?CLR.green:CLR.yellow}`, fontSize: 9, marginBottom: 4 }}><div style={{ color: CLR.light, wordBreak: 'break-word' }}>{l.message}</div></div>)}
               </div>
-            )}
+              <button onClick={handleLogoutAndReset} style={btnS(CLR.red, { width: '100%', justifyContent: 'center', padding: 10 })}><X size={14}/> LOGOUT & RESET</button>
+            </div>)}
+
           </div>
         </div>
       )}
