@@ -2,7 +2,6 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!-- ✅ FIX: viewport-fit=cover დაემატა safe area insets-ისთვის -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta name="theme-color" content="#0a0600" />
     <meta name="description" content="LUNARA - Your Mystic Companion" />
@@ -25,10 +24,11 @@
         background: #0a0600;
       }
       
-      /* ✅ #root-საც სქროლის უფლება */
+      /* ✅ FIX: min-height: 100vh → height: 100%
+         (100vh iOS-ში მთელ ეკრანს ზომავს და სქროლს ქმნის!) */
       #root {
         width: 100%;
-        min-height: 100vh;
+        height: 100%;
         overflow-x: hidden;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
@@ -39,7 +39,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        height: 100vh;
+        height: 100%;
         color: #ffe566;
         font-family: Georgia, serif;
         font-size: 16px;
