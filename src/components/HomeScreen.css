@@ -23,7 +23,8 @@
     box-sizing: border-box;
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
-    height: 100%;
+    /* ✅ ჯავშნი: სიმაღლე პირდაპირ viewport-დან, ჯაჭვის გარეშე! */
+    height: calc(100dvh - (70px + env(safe-area-inset-top, 0px)));
     overflow-y: hidden;
     display: flex;
     flex-direction: column;
@@ -843,8 +844,8 @@
   
   /* ============================================
      4. 🎴 QUICK ACCESS GRID - PROPORTIONAL 2×5
+     ✅ სიმაღლე პირდაპირ viewport-დან (ჯაჭვის გარეშე)
      ✅ ABSOLUTE INSET - ნამდვილად ავსებს მთელ სივრცეს
-     ✅ მუშაობს ნებისმიერ WebView-ში (WebKit/Chromium)
      ============================================ */
   .quick-access { 
     /* ✅ იღებს მთელ დარჩენილ სივრცეს Card of Day ↔ Bottom Nav */
