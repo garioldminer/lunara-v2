@@ -2,13 +2,11 @@
    APP CONTAINER - ROOT LAYOUT
    ============================================ */
    .app-container {
-    min-height: 100dvh; /* ✅ FIX: dynamic viewport height */
-    height: auto; /* ✅ FIX: natural flow */
-    background: transparent; /* ✅ FIX: ბექგრაუნდი body::before-ზე გადადის */
+    height: 100%; /* ✅ FIX: min-height 100dvh → height 100% */
+    background: transparent;
     overflow-x: hidden;
-    overflow-y: visible; /* ✅ FIX: allow natural scroll */
+    overflow-y: visible;
     position: relative;
-    /* ✅ FIX: ბუნებრივი rubber-band effect iOS-ზე, pull-to-refresh გამორთული */
     overscroll-behavior-x: none;
     overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;
@@ -16,12 +14,13 @@
   
   /* ============================================
      🎯 GLOBAL TELEGRAM HEADER OFFSET
+     ✅ FIX: 3px დაშორება (Telegram header უკვე გარეთ არის)
      ============================================ */
   .screen-wrapper {
-    padding-top: calc(70px + env(safe-area-inset-top, 0px));
+    padding-top: 3px;
+    height: 100%; /* ✅ FIX: ზუსტად WebView-ის სიმაღლე */
     width: 100%;
     box-sizing: border-box;
-    /* ✅ FIX: X ღერძზე არ იმოძრაოს, Y ღერძზე ბუნებრივი დარჩეს */
     overscroll-behavior-x: none;
   }
   
@@ -43,16 +42,14 @@
     margin: 0;
     padding: 0;
     overflow-x: hidden;
-    -webkit-overflow-scrolling: touch; /* ✅ momentum scrolling iOS-ზე */
-    /* ✅ FIX: ბუნებრივი rubber-band iOS-ზე, მაგრამ pull-to-refresh გამორთული */
+    -webkit-overflow-scrolling: touch;
     overscroll-behavior-x: none;
     overscroll-behavior-y: contain;
-    /* ✅ FIX: მუქი ფონი თეთრის ნაცვლად (fallback) */
     background: #0a0600;
     position: relative;
   }
   
-  /* ✅ FIX: უწყვეტი "სცენა" მთელ ეკრანზე — არ მოძრაობს სქროლვისას */
+  /* ✅ უწყვეტი "სცენა" მთელ ეკრანზე — არ მოძრაობს სქროლვისას */
   body::before {
     content: '';
     position: fixed;
@@ -73,10 +70,9 @@
   }
   
   html {
-    scroll-behavior: smooth; /* ✅ ლამაზი smooth scroll */
+    scroll-behavior: smooth;
   }
   
-  /* ✅ FIX: X ღერძზე იმოძრაოს, Y ღერძზე ბუნებრივი rubber-band დარჩეს */
   html, body {
     max-width: 100vw;
     overflow-x: hidden;
@@ -84,12 +80,11 @@
     overscroll-behavior-y: contain;
     -webkit-overscroll-behavior-x: none;
     -webkit-overscroll-behavior-y: contain;
-    height: auto;
-    scrollbar-width: none; /* ✅ Firefox - scrollbar დამალული */
-    -ms-overflow-style: none; /* ✅ IE/Edge */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
   
-  /* ✅ FIX: hide scrollbar (Chrome/Safari/Telegram WebView) */
+  /* ✅ hide scrollbar (Chrome/Safari/Telegram WebView) */
   html::-webkit-scrollbar,
   body::-webkit-scrollbar {
     display: none;
@@ -97,7 +92,7 @@
     height: 0;
   }
   
-  /* ✅ FIX: hide scrollbar on ALL elements */
+  /* ✅ hide scrollbar on ALL elements */
   * {
     scrollbar-width: none;
   }
@@ -105,13 +100,4 @@
     display: none;
     width: 0;
     height: 0;
-  }
-  
-  /* ============================================
-     📱 SAFE AREA SUPPORT (iPhone notch, etc.)
-     ============================================ */
-  @supports (padding-top: env(safe-area-inset-top)) {
-    .screen-wrapper {
-      padding-top: calc(70px + env(safe-area-inset-top));
-    }
   }

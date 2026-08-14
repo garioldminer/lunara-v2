@@ -22,8 +22,8 @@
     box-sizing: border-box;
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
-    /* ✅ FIX: FIXED LAYOUT - ზუსტად ეკრანის სიმაღლე, სქროლი გამორთული */
-    height: calc(100dvh - (70px + env(safe-area-inset-top, 0px)));
+    /* ✅ FIX: FIXED LAYOUT - ზუსტად მშობლის (screen-wrapper) სიმაღლე, სქროლი გამორთული */
+    height: 100%;
     overflow-y: hidden;
     display: flex;
     flex-direction: column;

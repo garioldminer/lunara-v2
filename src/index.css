@@ -6,11 +6,6 @@
 
 /* ============================================
    THEME VARIABLES - Dark/Light Mode
-   🔧 FIX: ახლა --app-bg/--app-text (index.html-ის Telegram-theme
-   ცვლადები) გამოიყენება პირველწყაროდ, fallback-ითურთ — მანამდე
-   ეს ორი სისტემა ერთმანეთს "ეჯახებოდა" html/body-ის background-ზე,
-   და index.css ყოველთვის იმარჯვებდა, რაც Telegram-ის რეალურ
-   თემასთან სინქრონიზაციას აქრობდა.
    ============================================ */
 
 :root,
@@ -42,15 +37,13 @@
 
 /* ============================================
    BASE STYLES
-   🔧 FIX: height → min-height (index.html-თან შესათანხმებლად).
-   Fixed height + დინამიური dvh ერთად iOS Safari-ზე ხანდახან
-   "jump"/layout-shift-ს იწვევდა, header-ის გამოჩენა/დაფარვისას.
+   ✅ FIX: height: 100% — ზუსტად WebView-ის რეალური სიმაღლე
+   (100dvh iOS Telegram-ში მთელ ეკრანს ზომავს და სქროლს იწვევს)
    ============================================ */
 
 html, body {
   width: 100%;
-  min-height: 100%;
-  min-height: 100dvh;
+  height: 100%;
   overflow-x: hidden;
   overflow-y: auto;
   background: var(--bg-primary);
@@ -64,8 +57,7 @@ html, body {
 
 #root {
   width: 100%;
-  min-height: 100%;
-  min-height: 100dvh;
+  height: 100%;
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
