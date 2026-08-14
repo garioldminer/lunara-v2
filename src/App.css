@@ -2,7 +2,7 @@
    APP CONTAINER - ROOT LAYOUT
    ============================================ */
    .app-container {
-    height: 100%; /* ✅ FIX: min-height 100dvh → height 100% */
+    height: 100%; /* ✅ FIX: ზუსტად WebView-ის სიმაღლე */
     background: transparent;
     overflow-x: hidden;
     overflow-y: visible;
@@ -14,11 +14,12 @@
   
   /* ============================================
      🎯 GLOBAL TELEGRAM HEADER OFFSET
-     ✅ FIX: 3px დაშორება (Telegram header უკვე გარეთ არის)
+     ✅ FIX: დინამიური offset — Telegram-ის ელემენტების
+     სიმაღლე (JS-ით გამოთვლილი) + 3px დაშორება
      ============================================ */
   .screen-wrapper {
-    padding-top: 3px;
-    height: 100%; /* ✅ FIX: ზუსტად WebView-ის სიმაღლე */
+    padding-top: calc(var(--tg-top-inset, 0px) + 3px);
+    height: 100%;
     width: 100%;
     box-sizing: border-box;
     overscroll-behavior-x: none;
