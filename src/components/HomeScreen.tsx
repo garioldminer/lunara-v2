@@ -271,24 +271,27 @@ export default function HomeScreen({ onNavigate }: Props) {
 
   const screenRef = useRef<HTMLDivElement>(null);
 
-  // ✅ უნივერსალური სიმაღლე: JS ითვლის რეალურ პიქსელებს
-  // არ არის დამოკიდებული CSS ჯაჭვზე — მუშაობს ნებისმიერ რეზოლუციაზე!
+  // ✅ უნივერსალური სიმაღლე: აკლებს Bottom Nav-ის რეალურ სიმაღლეს!
   useEffect(() => {
     const applyHeight = () => {
       const el = screenRef.current;
       if (!el) return;
       const top = el.getBoundingClientRect().top;
-      const h = window.innerHeight - top;
+      const nav = document.querySelector('.bottom-nav-container') as HTMLElement | null;
+      const navH = nav ? nav.offsetHeight : 90;
+      const h = window.innerHeight - top - navH - 8;
       if (h > 0) el.style.height = `${h}px`;
     };
     applyHeight();
     const t1 = setTimeout(applyHeight, 100);
-    const t2 = setTimeout(applyHeight, 500);
+    const t2 = setTimeout(applyHeight, 400);
+    const t3 = setTimeout(applyHeight, 1000);
     window.addEventListener('resize', applyHeight);
     window.addEventListener('orientationchange', applyHeight);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
+      clearTimeout(t3);
       window.removeEventListener('resize', applyHeight);
       window.removeEventListener('orientationchange', applyHeight);
     };

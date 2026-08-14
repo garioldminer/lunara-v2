@@ -12,7 +12,7 @@
   .home-screen {
     width: 100%;
     padding: 0 var(--screen-padding);
-    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: 8px;  /* ✅ nav-ის ადგილს JS ტოვებს, აქ მხოლოდ მცირე მარჟა */
     max-width: var(--max-width);
     margin: 0 auto;
     color: #fff;
@@ -23,7 +23,6 @@
     box-sizing: border-box;
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
-    /* ✅ უნივერსალური ჯავშნი: სიმაღლე პირდაპირ viewport-დან */
     height: 100%;  /* ✅ ჯაჭვიდან: ზუსტად screen-wrapper-ის შიდა სიმაღლე */
     overflow-y: hidden;
     display: flex;
@@ -1310,6 +1309,6 @@
   @media (min-width: 480px) {
     .home-screen {
       padding: 0 var(--screen-padding);
-      padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+      padding-bottom: 8px;
     }
   }
