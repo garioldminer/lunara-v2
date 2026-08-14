@@ -843,26 +843,26 @@
   
   /* ============================================
      4. 🎴 QUICK ACCESS GRID - PROPORTIONAL 2×5
-     ✅ CSS Grid: 5 cols × 2 rows, ავტო-სიმაღლე
-     ✅ არასდროს არ ცდება Bottom Nav-ს
+     ✅ ABSOLUTE INSET - ნამდვილად ავსებს მთელ სივრცეს
+     ✅ მუშაობს ნებისმიერ WebView-ში (WebKit/Chromium)
      ============================================ */
   .quick-access { 
     /* ✅ იღებს მთელ დარჩენილ სივრცეს Card of Day ↔ Bottom Nav */
     flex: 1;
     min-height: 0;
     width: 100%;
-    display: flex;
-    flex-direction: column;
-    /* ✅ ტოლი padding ზემოდან და ქვემოდან = gap */
-    padding: var(--quick-gap) 0;
+    position: relative;  /* ✅ anchor grid-ისთვის */
     margin-bottom: 0;
   }
   
   .quick-grid {
-    /* ✅ CSS Grid - ავტომატურად ავსებს მთელ სივრცეს */
-    flex: 1;
-    min-height: 0;
-    width: 100%;
+    /* ✅ ABSOLUTE INSET - ძალით იკავებს მთელ სივრცეს! */
+    position: absolute;
+    top: var(--quick-gap);
+    left: 0;
+    right: 0;
+    bottom: var(--quick-gap);
+    
     display: grid;
     grid-template-columns: repeat(5, 1fr);  /* 5 სვეტი */
     grid-template-rows: 1fr 1fr;            /* 2 ტოლი რიგი */
