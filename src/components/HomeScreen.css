@@ -6,6 +6,7 @@
     --screen-padding: 3px;
     --section-gap: 2px;
     --max-width: 480px;
+    --quick-gap: 7px;  /* ✅ ერთიანი gap - grid + margins */
   }
   
   .home-screen {
@@ -22,17 +23,15 @@
     box-sizing: border-box;
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
-    /* ✅ FIX: FIXED LAYOUT - ზუსტად მშობლის (screen-wrapper) სიმაღლე, სქროლი გამორთული */
     height: 100%;
     overflow-y: hidden;
     display: flex;
     flex-direction: column;
-    /* ✅ FIX: ბლოკავს თითის წევით pan-ს Home-ზე (bounce-ის თავიდან ასაცილებლად) */
     touch-action: none;
   }
   
   /* ============================================
-     1. USER HEADER - 52px Perfect Alignment
+     1. USER HEADER
      ============================================ */
   .user-header {
     background: linear-gradient(145deg, #1c1712 0%, #12100c 100%);
@@ -843,16 +842,20 @@
   }
   
   /* ============================================
-     4. QUICK ACCESS GRID - ALWAYS 2 ROWS (5+5)
+     4. 🎴 QUICK ACCESS GRID - TAROT CARD DESIGN
+     ✅ PROPORTIONAL LAYOUT: 7px top/gap/bottom
      ============================================ */
   .quick-access { 
-    margin-bottom: 8px; 
-    width: 100%; 
+    /* ✅ იღებს მთელ დარჩენილ სივრცეს Card of Day ↔ Bottom Nav შორის */
     flex: 1;
     min-height: 0;
+    width: 100%;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    /* ✅ ზედა და ქვედა padding = grid gap = 7px */
+    padding: var(--quick-gap) 0;
+    margin-bottom: 0;
   }
   
   .quick-grid {
@@ -860,50 +863,87 @@
     flex-wrap: wrap;
     justify-content: center;
     align-content: center;
-    gap: 7px;
+    /* ✅ ერთიანი gap ყველა რიგს შორის */
+    gap: var(--quick-gap);
   }
   
+  /* ✅ ბანქოს კარტის ვიზუალი - ყველა ღილაკი */
   .quick-item {
+    /* ✅ 5 ღილაკი ერთ რიგზე (4 gaps × 7px = 28px) */
     flex: 0 0 calc((100% - 28px) / 5);
-    border-radius: 14px;
+    /* ✅ ტაროს კარტის პროპორცია 2:3 */
+    aspect-ratio: 2 / 3;
+    border-radius: 8px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    gap: 4px;
     color: #fff;
     cursor: pointer;
     transition: all 0.25s ease;
     position: relative;
     overflow: hidden;
-    background: linear-gradient(160deg, rgba(var(--glow-color-rgb, 197 160 89), 0.14) 0%, rgba(16, 13, 10, 0.97) 60%);
-    border: 1px solid rgba(var(--glow-color-rgb, 197 160 89), 0.28);
-    padding: clamp(10px, 3vw, 14px) 4px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    
+    /* 🎴 ბანქოს კარტის სტილი */
+    background: linear-gradient(160deg, 
+      rgba(var(--glow-color-rgb, 197 160 89), 0.18) 0%, 
+      rgba(20, 16, 10, 0.98) 50%,
+      rgba(12, 10, 6, 1) 100%);
+    border: 1.5px solid rgba(var(--glow-color-rgb, 197 160 89), 0.45);
+    
+    /* 🎴 3D ჩრდილი + glow */
+    box-shadow: 
+      0 4px 12px rgba(0, 0, 0, 0.55),
+      0 2px 4px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      inset 0 -1px 2px rgba(0, 0, 0, 0.3),
+      0 0 12px rgba(var(--glow-color-rgb, 197 160 89), 0.15);
   }
   
+  /* ✅ ბანქოს კარტის კუთხის დეკორაციები */
   .quick-item::before {
     content: '';
     position: absolute;
     inset: 4px;
-    border-radius: 10px;
+    border-radius: 5px;
     background:
-      linear-gradient(var(--glow-color, #C5A059), var(--glow-color, #C5A059)) top left / 10px 1.5px,
-      linear-gradient(var(--glow-color, #C5A059), var(--glow-color, #C5A059)) top left / 1.5px 10px,
-      linear-gradient(var(--glow-color, #C5A059), var(--glow-color, #C5A059)) bottom right / 10px 1.5px,
-      linear-gradient(var(--glow-color, #C5A059), var(--glow-color, #C5A059)) bottom right / 1.5px 10px;
+      linear-gradient(var(--glow-color, #C5A059), var(--glow-color, #C5A059)) top left / 8px 1px,
+      linear-gradient(var(--glow-color, #C5A059), var(--glow-color, #C5A059)) top left / 1px 8px,
+      linear-gradient(var(--glow-color, #C5A059), var(--glow-color, #C5A059)) top right / 8px 1px,
+      linear-gradient(var(--glow-color, #C5A059), var(--glow-color, #C5A059)) top right / 1px 8px,
+      linear-gradient(var(--glow-color, #C5A059), var(--glow-color, #C5A059)) bottom left / 8px 1px,
+      linear-gradient(var(--glow-color, #C5A059), var(--glow-color, #C5A059)) bottom left / 1px 8px,
+      linear-gradient(var(--glow-color, #C5A059), var(--glow-color, #C5A059)) bottom right / 8px 1px,
+      linear-gradient(var(--glow-color, #C5A059), var(--glow-color, #C5A059)) bottom right / 1px 8px;
     background-repeat: no-repeat;
-    opacity: 0.5;
+    opacity: 0.6;
     pointer-events: none;
     transition: opacity 0.25s ease;
     z-index: 1;
   }
   
+  /* 🎴 შიდა ჩარჩო (როგორც ნამდვილ ტაროს კარტს) */
+  .quick-item::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border: 1px solid rgba(var(--glow-color-rgb, 197 160 89), 0.25);
+    border-radius: 5px;
+    pointer-events: none;
+    z-index: 1;
+  }
+  
   .quick-item:active { 
-    transform: scale(0.96) translateY(1px);
+    transform: translateY(1px);
   }
   
   .quick-item:active::before {
-    opacity: 0.95;
+    opacity: 1;
+  }
+  
+  .quick-item:active::after {
+    border-color: rgba(var(--glow-color-rgb, 197 160 89), 0.5);
   }
   
   .quick-icon {
@@ -912,15 +952,7 @@
     justify-content: center;
     position: relative;
     z-index: 2;
-  }
-  
-  .q-icon-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    z-index: 2;
-    filter: drop-shadow(0 0 8px var(--glow-color, #C5A059));
+    filter: drop-shadow(0 0 6px var(--glow-color, #C5A059));
   }
   
   .quick-label {
@@ -933,54 +965,36 @@
     z-index: 2;
   }
   
-  .q-label { 
-    font-size: clamp(9px, 2.5vw, 10px);
-    color: #fff;
-    font-weight: 600;
-    text-align: center;
-    line-height: 1.1;
-    position: relative;
-    z-index: 2;
-  }
-  
   .quick-sublabel {
-    font-size: clamp(8px, 2vw, 9px);
-    color: #b3a68c;
+    font-size: clamp(7px, 1.8vw, 8px);
+    color: rgba(var(--glow-color-rgb, 197 160 89), 0.85);
     text-align: center;
     line-height: 1.1;
     position: relative;
     z-index: 2;
-  }
-  
-  .q-sublabel { 
-    font-size: clamp(8px, 2vw, 9px);
-    color: #b3a68c;
-    text-align: center;
-    line-height: 1.1;
-    position: relative;
-    z-index: 2;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
   
   .quick-item.premium-item {
     background: linear-gradient(160deg, rgba(197, 160, 89, 0.22) 0%, rgba(16, 13, 10, 0.97) 60%);
-    border: 1px solid rgba(197, 160, 89, 0.5);
+    border: 1.5px solid rgba(197, 160, 89, 0.55);
     box-shadow: 
-      0 4px 14px rgba(0, 0, 0, 0.45),
+      0 4px 12px rgba(0, 0, 0, 0.55),
       inset 0 1px 0 rgba(255, 215, 0, 0.1),
-      0 0 15px rgba(197, 160, 89, 0.15);
+      0 0 15px rgba(197, 160, 89, 0.25);
   }
   
   .quick-item.admin-item {
     background: linear-gradient(160deg, rgba(239, 68, 68, 0.2) 0%, rgba(16, 13, 10, 0.97) 60%);
-    border: 1px solid rgba(239, 68, 68, 0.5);
+    border: 1.5px solid rgba(239, 68, 68, 0.5);
     box-shadow: 
       0 4px 14px rgba(0, 0, 0, 0.45),
       inset 0 1px 0 rgba(255, 100, 100, 0.1),
       0 0 15px rgba(239, 68, 68, 0.2);
   }
   
-  .quick-item.admin-item .quick-icon,
-  .quick-item.admin-item .q-icon-wrapper {
+  .quick-item.admin-item .quick-icon {
     color: #ef4444 !important;
     filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.7));
   }
@@ -988,34 +1002,31 @@
   .quick-item.paywall-item,
   .quick-item.services-item {
     background: linear-gradient(160deg, rgba(255, 215, 0, 0.22) 0%, rgba(16, 13, 10, 0.97) 60%);
-    border: 1px solid rgba(255, 215, 0, 0.5);
+    border: 1.5px solid rgba(255, 215, 0, 0.55);
     box-shadow: 
       0 4px 14px rgba(0, 0, 0, 0.45),
       inset 0 1px 0 rgba(255, 215, 0, 0.15),
-      0 0 15px rgba(255, 215, 0, 0.2);
-    position: relative;
-    overflow: hidden;
+      0 0 15px rgba(255, 215, 0, 0.25);
   }
   
   .quick-item.services-item .quick-icon,
-  .quick-item.services-item .q-icon-wrapper,
-  .quick-item.paywall-item .quick-icon,
-  .quick-item.paywall-item .q-icon-wrapper {
+  .quick-item.paywall-item .quick-icon {
     color: #FFD700 !important;
     filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.7));
   }
   
-  /* ✅ NEW: Placeholder ღილაკი (Admin-ის ყოფილი ადგილი) - 2x5 grid-ის შესანარჩუნებლად */
+  /* ✅ Placeholder - ნახევრად უხილავი */
   .quick-item.placeholder-item {
     background: transparent;
-    border: 1px dashed rgba(255, 255, 255, 0.05);
+    border: 1px dashed rgba(255, 255, 255, 0.1);
     box-shadow: none;
-    opacity: 0.3;
+    opacity: 0.35;
     pointer-events: none;
     cursor: default;
   }
   
-  .quick-item.placeholder-item::before {
+  .quick-item.placeholder-item::before,
+  .quick-item.placeholder-item::after {
     display: none;
   }
   
@@ -1283,19 +1294,18 @@
       padding-left: 0;
     }
     
-    /* ✅ პატარა ეკრანებზეც 2 ხაზი (5+5) - უბრალოდ კომპაქტური ღილაკები */
+    /* პატარა ეკრანებზეც 2 ხაზი (5+5) */
     .quick-item {
-      padding: 8px 2px;
+      padding: 4px 2px;
     }
     
-    .quick-icon svg,
-    .q-icon-wrapper svg {
-      width: 22px;
-      height: 22px;
+    .quick-icon svg {
+      width: 20px;
+      height: 20px;
     }
     
     .quick-icon span {
-      font-size: 22px !important;
+      font-size: 20px !important;
     }
     
     .quick-label {
