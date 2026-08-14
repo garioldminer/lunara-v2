@@ -16,12 +16,13 @@ import {
   Gem, Zap, Trophy, Flame, X, CheckCircle,
   Sparkles, LayoutGrid, Moon, 
   Crown, Scroll, ChevronRight, Gift, Shield, Infinity as InfinityIcon, RefreshCw, TrendingUp,
-  Bug
+  Bug, Ruler
 } from 'lucide-react';
 import DebugPanel from './DebugPanel';
 import DiamondShopModal from './DiamondShopModal';
 import StreakModal from './StreakModal';
 import LeaderboardModal from './LeaderboardModal';
+import HomeLayoutDebugger from './HomeLayoutDebugger';
 import './HomeScreen.css';
 
 // ==========================================
@@ -263,6 +264,7 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [streakBannerDismissed, setStreakBannerDismissed] = useState(false);
 
   const [showDebug, setShowDebug] = useState(false);
+  const [showLayoutDebug, setShowLayoutDebug] = useState(false);
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
   const [dbStatus, setDbStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
   const [dbDebugInfo, setDbDebugInfo] = useState<DatabaseDebugInfo>({
@@ -280,7 +282,6 @@ export default function HomeScreen({ onNavigate }: Props) {
       const nav = document.querySelector('.bottom-nav-container') as HTMLElement | null;
       let h;
       if (nav) {
-        // ✅ ზუსტი რეალური სივრცე: nav-ის ზედა კიდე − home-screen-ის დასაწყისი
         h = nav.getBoundingClientRect().top - top - 8;
       } else {
         h = window.innerHeight - top - 100;
@@ -1166,6 +1167,29 @@ export default function HomeScreen({ onNavigate }: Props) {
           >
             <Bug size={20} />
           </button>
+
+          <button
+            onClick={() => setShowLayoutDebug(true)}
+            style={{
+              width: '44px',
+              height: '44px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.95), rgba(5, 150, 105, 0.95))',
+              border: '2px solid rgba(255, 255, 255, 0.2)',
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              boxShadow: '0 4px 16px rgba(16, 185, 129, 0.5), 0 0 20px rgba(16, 185, 129, 0.3)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              transition: 'all 0.2s ease'
+            }}
+            title="Layout Debugger"
+          >
+            <Ruler size={20} />
+          </button>
         </div>
       )}
 
@@ -1812,6 +1836,8 @@ export default function HomeScreen({ onNavigate }: Props) {
           xpTestLogs={xpTestLogs}
         />
       )}
+
+      <HomeLayoutDebugger open={showLayoutDebug} onClose={() => setShowLayoutDebug(false)} />
     </div>
   );
 }
