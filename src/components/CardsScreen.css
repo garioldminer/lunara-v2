@@ -6,12 +6,12 @@
   font-family: 'Georgia', serif;
   background: transparent;
   min-height: 100vh;
-  padding-top: calc(env(safe-area-inset-top, 0px) + 44px + 46px);
+  padding-top: calc(env(safe-area-inset-top, 0px) + 44px + 44px + 5px);
   padding-bottom: 200px;
   overflow-x: hidden;
 }
 
-/* ✅ TOP TITLE — Telegram Back-ის ხაზში, ცენტრში, transparent რომ არ შექმნას ხაზი */
+/* ✅ TOP TITLE */
 .cards-topbar {
   position: fixed;
   top: 0; left: 0; right: 0;
@@ -20,7 +20,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
+  background: #0a0600;
   pointer-events: none;
   z-index: 40;
 }
@@ -37,7 +37,7 @@
   text-shadow: 0 0 20px rgba(197, 160, 89, 0.3);
 }
 
-/* ✅ FIXED SUB-BAR: back + filters ერთ ხაზზე, app ფონით (არა შავი ხაზი) */
+/* ✅ FIXED SUB-BAR */
 .cards-subbar {
   position: fixed;
   top: calc(env(safe-area-inset-top, 0px) + 44px);
@@ -87,12 +87,14 @@
 }
 .filter-tab-compact .count { font-size: 8px; opacity: 0.7; }
 
-/* ✅ GRID — scroll-დება fixed header-ის ქვემოთ */
+/* ✅ GRID — დაბალი z-index */
 .cards-grid-enhanced {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 6px;
-  padding: 8px 12px;
+  padding: 0 12px;
 }
 
 .card-item-enhanced {
@@ -146,14 +148,22 @@
 .quick-preview-info p { margin: 0; font-size: 11px; color: rgba(255,255,255,0.6); }
 .quick-meaning { font-style: italic; margin-top: 6px; color: rgba(255,255,255,0.4); }
 
+/* ✅ FLOATING PREVIEW — ცენტრში left/right-ით (არა transform, რადგან framer-motion მართავს transform-ს) */
 .floating-preview-enhanced {
-  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
-  width: calc(100% - 24px); max-width: 456px;
+  position: fixed;
+  bottom: 80px;
+  left: 12px;
+  right: 12px;
+  max-width: 456px;
+  margin: 0 auto;
   background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
-  border: 1px solid rgba(197,160,89,0.3); border-radius: 16px;
-  padding: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.8);
+  border: 1px solid rgba(197, 160, 89, 0.3);
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
   z-index: 99;
 }
+
 .preview-card-enhanced { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
 .preview-card-image-enhanced {
   width: 50px; height: 75px;

@@ -15,8 +15,9 @@ interface CardStat { card_id: string; times_drawn: number; }
 export default function CardsScreen({ onNavigate }: Props) {
   const { user } = useUser();
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
-  const [selectedCard, setSelectedCard] = useState(tarotCards[0]);
-  const [showPreview, setShowPreview] = useState(true);
+  // ✅ null თავიდან — preview მხოლოდ დაჭერის შემდეგ
+  const [selectedCard, setSelectedCard] = useState<typeof tarotCards[0] | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
   const [cardStats, setCardStats] = useState<CardStat[]>([]);
   const [longPressCard, setLongPressCard] = useState<typeof tarotCards[0] | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
@@ -60,21 +61,15 @@ export default function CardsScreen({ onNavigate }: Props) {
     if (stored) { try { setFavorites(new Set(JSON.parse(stored) as string[])); } catch {} }
   }, []);
 
-  useEffect(() => {
-    const tg = (window as any).Telegram?.WebApp;
-    if (tg) {
-      tg.BackButton.show();
-      tg.BackButton.onClick(() => { if (onNavigate) onNavigate('home'); });
-    }
-    return () => { if (tg) tg.BackButton.hide(); };
-  }, [onNavigate]);
-
+  // Auto-hide preview on scroll
   useEffect(() => {
     const handleScroll = () => {
       const currentY = window.scrollY;
       if (currentY > lastScrollY.current && showPreview) setShowPreview(false);
       if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-      scrollTimeout.current = setTimeout(() => setShowPreview(true), 2000);
+      scrollTimeout.current = setTimeout(() => {
+        if (selectedCard) setShowPreview(true);
+      }, 2000);
       lastScrollY.current = currentY;
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -82,9 +77,13 @@ export default function CardsScreen({ onNavigate }: Props) {
       window.removeEventListener('scroll', handleScroll);
       if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
     };
-  }, [showPreview]);
+  }, [showPreview, selectedCard]);
 
-  const handleCardSelect = (card: typeof tarotCards[0]) => { setSelectedCard(card); setShowPreview(true); };
+  // ✅ Preview ჩნდება მხოლოდ ბარათზე დაჭერისას
+  const handleCardSelect = (card: typeof tarotCards[0]) => {
+    setSelectedCard(card);
+    setShowPreview(true);
+  };
 
   const handlePointerDown = (card: typeof tarotCards[0]) => {
     longPressTimer.current = setTimeout(() => {
@@ -137,7 +136,7 @@ export default function CardsScreen({ onNavigate }: Props) {
         <h1 className="cards-title-top">Tarot Cards</h1>
       </div>
 
-      {/* ✅ FIXED SUB-BAR: [back] + [ALL][MAJOR][MINOR] ერთ ხაზზე */}
+      {/* ✅ FIXED SUB-BAR: [back] + [ALL][MAJOR][MINOR] */}
       <div className="cards-subbar">
         <button className="cards-back-btn" onClick={handleBack}>
           <ArrowLeft size={16} />
@@ -153,7 +152,7 @@ export default function CardsScreen({ onNavigate }: Props) {
         </button>
       </div>
 
-      {/* ✅ GRID — მხოლოდ ეს scroll-დება */}
+      {/* ✅ GRID */}
       <div className="cards-grid-enhanced">
         {filteredCards.map((card) => {
           const timesDrawn = getCardTimesDrawn(card.id);
@@ -190,6 +189,7 @@ export default function CardsScreen({ onNavigate }: Props) {
         })}
       </div>
 
+      {/* Long Press Quick Preview */}
       <AnimatePresence>
         {longPressCard && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="quick-preview-popup">
@@ -205,9 +205,15 @@ export default function CardsScreen({ onNavigate }: Props) {
         )}
       </AnimatePresence>
 
+      {/* ✅ FLOATING PREVIEW — მხოლოდ დაჭერის შემდეგ, ცენტრში (left/right, არა transform) */}
       <AnimatePresence>
         {selectedCard && showPreview && (
-          <motion.div initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 100 }} className="floating-preview-enhanced">
+          <motion.div
+            initial={{ opacity: 0, y: 100 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 100 }}
+            className="floating-preview-enhanced"
+          >
             <div className="preview-card-enhanced">
               <div className="preview-card-image-enhanced">
                 {selectedCard.image_url ? (
