@@ -22,7 +22,8 @@ export default function CardsScreen({ onNavigate }: Props) {
   const [longPressCard, setLongPressCard] = useState<typeof tarotCards[0] | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [showCardsDebug, setShowCardsDebug] = useState(false);
-  const lastScrollY = useRef(0);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const lastScrollTop = useRef(0);
   const scrollTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
   const longPressTimer = useRef<NodeJS.Timeout | undefined>(undefined);
 
@@ -62,53 +63,39 @@ export default function CardsScreen({ onNavigate }: Props) {
     if (stored) { try { setFavorites(new Set(JSON.parse(stored) as string[])); } catch {} }
   }, []);
 
+  // ✅ Auto-hide preview on INNER scroll (scroll area-ზე, არა window-ზე)
   useEffect(() => {
+    const area = scrollAreaRef.current;
+    if (!area) return;
     const handleScroll = () => {
-      const currentY = window.scrollY;
-      if (currentY > lastScrollY.current && showPreview) setShowPreview(false);
+      const cur = area.scrollTop;
+      if (cur > lastScrollTop.current && showPreview) setShowPreview(false);
       if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-      scrollTimeout.current = setTimeout(() => {
-        if (selectedCard) setShowPreview(true);
-      }, 2000);
-      lastScrollY.current = currentY;
+      scrollTimeout.current = setTimeout(() => { if (selectedCard) setShowPreview(true); }, 2000);
+      lastScrollTop.current = cur;
     };
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    area.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      area.removeEventListener('scroll', handleScroll);
       if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
     };
   }, [showPreview, selectedCard]);
 
-  // ✅ სმარტ Layout v2: ზომავს რეალურ პოზიციებს და პირდაპირ აკორექტირებს
+  // ✅ სმარტ Layout v3: flex + inner scroll. აყენებს მხოლოდ horizontal + bottom.
   useEffect(() => {
     const apply = () => {
-      const screen = document.querySelector('.cards-screen') as HTMLElement;
-      const header = document.querySelector('.cards-fixed-header') as HTMLElement;
+      const scrollArea = document.querySelector('.cards-scroll-area') as HTMLElement;
       const grid = document.querySelector('.cards-grid-enhanced') as HTMLElement;
       const nav = document.querySelector('.bottom-nav-container') as HTMLElement;
-      if (!screen || !grid) return;
+      if (!scrollArea || !grid) return;
 
-      // 1) ✅ VERTICAL: grid-ის პირველი ხაზი = header-ის ქვედა კიდე + 5px
-      if (header) {
-        const hb = header.getBoundingClientRect();
-        const gb = grid.getBoundingClientRect();
-        const currentMT = parseFloat(getComputedStyle(grid).marginTop) || 0;
-        const delta = (hb.bottom + 5) - gb.top;
-        grid.style.marginTop = `${currentMT + delta}px`;
-      }
-
-      // 2) ✅ HORIZONTAL: grid კიდეები = nav ბანერის კიდეები (თანაბარი padding)
       if (nav) {
         const nb = nav.getBoundingClientRect();
+        // ✅ HORIZONTAL: grid კიდეები = nav კიდეები
         grid.style.paddingLeft = `${Math.round(nb.left)}px`;
         grid.style.paddingRight = `${Math.round(window.innerWidth - nb.right)}px`;
-      }
-
-      // 3) ✅ BOTTOM: ბოლოში ცარიელი ≤ 5px
-      if (nav) {
-        const nb = nav.getBoundingClientRect();
-        const padBottom = Math.round(window.innerHeight - nb.top) + 5;
-        if (padBottom > 0) screen.style.paddingBottom = `${padBottom}px`;
+        // ✅ BOTTOM: ბოლო კარტი დაჯდება nav-ის ზემოთ + 5px
+        scrollArea.style.paddingBottom = `${Math.round(window.innerHeight - nb.top) + 5}px`;
       }
     };
     apply();
@@ -129,10 +116,7 @@ export default function CardsScreen({ onNavigate }: Props) {
     setShowPreview(true);
   };
 
-  const handleClosePreview = () => {
-    setSelectedCard(null);
-    setShowPreview(false);
-  };
+  const handleClosePreview = () => { setSelectedCard(null); setShowPreview(false); };
 
   const handlePointerDown = (card: typeof tarotCards[0]) => {
     longPressTimer.current = setTimeout(() => {
@@ -147,9 +131,7 @@ export default function CardsScreen({ onNavigate }: Props) {
   const handleViewCard = async () => {
     if (onNavigate && selectedCard) {
       onNavigate(`card-detail-${selectedCard.id}`);
-      if (user) {
-        try { await trackQuestProgress(user.id, 'view_gallery', 1); } catch (e) {}
-      }
+      if (user) { try { await trackQuestProgress(user.id, 'view_gallery', 1); } catch (e) {} }
     }
   };
 
@@ -180,24 +162,63 @@ export default function CardsScreen({ onNavigate }: Props) {
 
   return (
     <div className="cards-screen">
-      {/* ✅ ერთი fixed header container: title + subbar ერთად */}
-      <div className="cards-fixed-header">
-        <div className="cards-topbar">
-          <h1 className="cards-title-top">Tarot Cards</h1>
-        </div>
-        <div className="cards-subbar">
-          <button className="cards-back-btn" onClick={handleBack}>
-            <ArrowLeft size={16} />
-          </button>
-          <button className={`filter-tab-compact ${activeFilter === 'all' ? 'active' : ''}`} onClick={() => setActiveFilter('all')}>
-            ALL <span className="count">({counts.all})</span>
-          </button>
-          <button className={`filter-tab-compact ${activeFilter === 'major' ? 'active' : ''}`} onClick={() => setActiveFilter('major')}>
-            MAJOR <span className="count">({counts.major})</span>
-          </button>
-          <button className={`filter-tab-compact ${activeFilter === 'minor' ? 'active' : ''}`} onClick={() => setActiveFilter('minor')}>
-            MINOR <span className="count">({counts.minor})</span>
-          </button>
+      {/* ✅ TOPBAR — Telegram header ზონაში, flex-shrink:0 */}
+      <div className="cards-topbar">
+        <h1 className="cards-title-top">Tarot Cards</h1>
+      </div>
+
+      {/* ✅ SUBBAR — flex-shrink:0, არასდროს დაიფარება */}
+      <div className="cards-subbar">
+        <button className="cards-back-btn" onClick={handleBack}>
+          <ArrowLeft size={16} />
+        </button>
+        <button className={`filter-tab-compact ${activeFilter === 'all' ? 'active' : ''}`} onClick={() => setActiveFilter('all')}>
+          ALL <span className="count">({counts.all})</span>
+        </button>
+        <button className={`filter-tab-compact ${activeFilter === 'major' ? 'active' : ''}`} onClick={() => setActiveFilter('major')}>
+          MAJOR <span className="count">({counts.major})</span>
+        </button>
+        <button className={`filter-tab-compact ${activeFilter === 'minor' ? 'active' : ''}`} onClick={() => setActiveFilter('minor')}>
+          MINOR <span className="count">({counts.minor})</span>
+        </button>
+      </div>
+
+      {/* ✅ SCROLL AREA — მხოლოდ ეს სქროლდება */}
+      <div className="cards-scroll-area" ref={scrollAreaRef}>
+        <div className="cards-grid-enhanced">
+          {filteredCards.map((card) => {
+            const timesDrawn = getCardTimesDrawn(card.id);
+            const cardIdStr = String(card.id);
+            const isFavorite = favorites.has(cardIdStr);
+            const suitColor = getSuitColor(card);
+            return (
+              <motion.div
+                key={card.id}
+                className={`card-item-enhanced ${selectedCard?.id === card.id ? 'selected' : ''}`}
+                onClick={() => handleCardSelect(card)}
+                onPointerDown={() => handlePointerDown(card)}
+                onPointerUp={handlePointerUp}
+                onPointerLeave={handlePointerUp}
+                whileTap={{ scale: 0.95 }}
+                style={{ '--suit-color': suitColor } as React.CSSProperties}
+              >
+                {card.image_url ? (
+                  <img src={card.image_url} alt={card.name} className="card-image-enhanced" loading="lazy" />
+                ) : (
+                  <div className="card-image-placeholder-enhanced">
+                    <span className="placeholder-number">{card.number}</span>
+                    <span className="placeholder-text">{card.name}</span>
+                  </div>
+                )}
+                {isFavorite && (
+                  <div className="favorite-indicator"><Heart size={12} fill="#ef4444" color="#ef4444" /></div>
+                )}
+                {timesDrawn > 0 && (
+                  <div className="times-drawn-badge"><TrendingUp size={10} /><span>{timesDrawn}</span></div>
+                )}
+              </motion.div>
+            );
+          })}
         </div>
       </div>
 
@@ -220,42 +241,6 @@ export default function CardsScreen({ onNavigate }: Props) {
           <Ruler size={18} />
         </button>
       )}
-
-      <div className="cards-grid-enhanced">
-        {filteredCards.map((card) => {
-          const timesDrawn = getCardTimesDrawn(card.id);
-          const cardIdStr = String(card.id);
-          const isFavorite = favorites.has(cardIdStr);
-          const suitColor = getSuitColor(card);
-          return (
-            <motion.div
-              key={card.id}
-              className={`card-item-enhanced ${selectedCard?.id === card.id ? 'selected' : ''}`}
-              onClick={() => handleCardSelect(card)}
-              onPointerDown={() => handlePointerDown(card)}
-              onPointerUp={handlePointerUp}
-              onPointerLeave={handlePointerUp}
-              whileTap={{ scale: 0.95 }}
-              style={{ '--suit-color': suitColor } as React.CSSProperties}
-            >
-              {card.image_url ? (
-                <img src={card.image_url} alt={card.name} className="card-image-enhanced" loading="lazy" />
-              ) : (
-                <div className="card-image-placeholder-enhanced">
-                  <span className="placeholder-number">{card.number}</span>
-                  <span className="placeholder-text">{card.name}</span>
-                </div>
-              )}
-              {isFavorite && (
-                <div className="favorite-indicator"><Heart size={12} fill="#ef4444" color="#ef4444" /></div>
-              )}
-              {timesDrawn > 0 && (
-                <div className="times-drawn-badge"><TrendingUp size={10} /><span>{timesDrawn}</span></div>
-              )}
-            </motion.div>
-          );
-        })}
-      </div>
 
       <AnimatePresence>
         {longPressCard && (
