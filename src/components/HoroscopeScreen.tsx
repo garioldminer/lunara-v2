@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useHoroscope } from '../hooks/useHoroscope';
 import { useUser } from '../context/UserContext';
 import { ZODIAC_SIGNS, BACKGROUND_IMAGE } from '../data/zodiacData';
@@ -303,8 +304,8 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* ✅ DEBUG ღილაკი — ეკრანის შუაში, მარჯვნივ, z-index 999999 */}
-      {isAdmin && (
+      {/* ✅ DEBUG ღილაკი — createPortal-ით document.body-ში, ვერაფერი დაფარავს */}
+      {isAdmin && createPortal(
         <button
           onClick={() => setShowHoroDebug(true)}
           style={{
@@ -322,14 +323,15 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
-            zIndex: 999999,
+            zIndex: 2147483647,
             boxShadow: '0 6px 24px rgba(217,182,111,0.9), 0 0 40px rgba(217,182,111,0.5)',
             animation: 'horoDebugPulse 2s ease-in-out infinite',
           }}
           title="Horoscope Layout Debugger"
         >
           <Ruler size={24} strokeWidth={2.5} />
-        </button>
+        </button>,
+        document.body
       )}
 
       <PredictionModal openModal={openModal} horoscope={fixedHoroscope} onClose={() => setOpenModal(null)} />
@@ -349,6 +351,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         onShareAffirmation={() => { setIsReadFullOpen(false); setIsShareModalOpen(true); }}
       />
 
+      {/* ✅ Debugger-იც portal-ში */}
       {isAdmin && (
         <HoroscopeLayoutDebugger open={showHoroDebug} onClose={() => setShowHoroDebug(false)} />
       )}

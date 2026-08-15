@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { X, RefreshCw, Ruler, Copy, Check } from 'lucide-react';
 
 interface Metric { label: string; value: string; ok?: boolean; bad?: boolean; }
@@ -12,7 +13,7 @@ export default function HoroscopeLayoutDebugger({ open, onClose }: { open: boole
 
   const q = (sel: string) => document.querySelector(sel) as HTMLElement | null;
   const rect = (el: HTMLElement | null) => (el ? el.getBoundingClientRect() : null);
-  const gapCheck = (g: number, expected = 3) => ({ ok: Math.abs(g - expected) <= 1, bad: Math.abs(g - expected) > 1 });
+  const gapCheck = (g: number, expected = 5) => ({ ok: Math.abs(g - expected) <= 1, bad: Math.abs(g - expected) > 1 });
 
   const measure = useCallback(() => {
     const topbar = q('.horoscope-topbar');
@@ -97,9 +98,9 @@ export default function HoroscopeLayoutDebugger({ open, onClose }: { open: boole
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div style={{
-      position: 'fixed', top: 60, right: 8, left: 8, zIndex: 999999,
+      position: 'fixed', top: 60, right: 8, left: 8, zIndex: 2147483647,
       maxWidth: 360, margin: '0 auto', maxHeight: '70vh',
       background: 'rgba(10, 6, 0, 0.97)', border: '2px solid rgba(217, 182, 111, 0.8)',
       borderRadius: 14, boxShadow: '0 10px 60px rgba(217,182,111,0.6), 0 0 80px rgba(0,0,0,0.8)',
@@ -133,6 +134,7 @@ export default function HoroscopeLayoutDebugger({ open, onClose }: { open: boole
         ))}
         <div style={{ color: '#64748b', fontSize: 9, marginTop: 6, textAlign: 'right' }}>განახლდა: {lastUpdate}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
