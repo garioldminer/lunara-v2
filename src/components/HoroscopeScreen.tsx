@@ -1051,15 +1051,25 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   return (
     <>
       <div className="horoscope-screen premium-design">
-        {/* ✅ TOPBAR — Telegram-ის header-ში, ცენტრში (Close ⨯ და Settings ⋯ შორის) */}
+        {/* ✅ UNIFIED BACKGROUND — Telegram header-ის უკანაც */}
+        <div className="cosmic-background" style={{ backgroundImage: `url(${BACKGROUND_IMAGE})` }} />
+        <div className="aurora-layer" />
+        <div className="floating-particles">
+          {[...Array(10)].map((_, i) => (
+            <span key={i} className="particle" style={{
+              left: `${(i * 37) % 100}%`,
+              animationDelay: `${i * 1.4}s`,
+              animationDuration: `${10 + (i % 5) * 2}s`
+            }} />
+          ))}
+        </div>
+
+        {/* ✅ TOPBAR — Telegram-ის header-ში, ცენტრში (refresh ამოღებული) */}
         <div className="horoscope-topbar">
           <div className="horoscope-topbar-text">
             <h1 className="horoscope-sign-name">{userSign.toUpperCase()}</h1>
             <p className="horoscope-date-small">{formattedDate}</p>
           </div>
-          <button className="horoscope-refresh-btn" onClick={refetch} aria-label="Refresh">
-            <RotateCcw size={14} />
-          </button>
         </div>
 
         {/* ✅ SUBBAR — Back + 4 tabs (5px gap topbar-დან) */}
@@ -1080,20 +1090,8 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           </div>
         </div>
 
-        {/* ✅ SCROLL AREA — main content */}
+        {/* ✅ SCROLL AREA — NO SCROLL, flex column, ყველაფერი ეტევა ეკრანზე */}
         <div className="horoscope-scroll-area">
-          <div className="cosmic-background" style={{ backgroundImage: `url(${BACKGROUND_IMAGE})` }} />
-          <div className="aurora-layer" />
-          <div className="floating-particles">
-            {[...Array(10)].map((_, i) => (
-              <span key={i} className="particle" style={{
-                left: `${(i * 37) % 100}%`,
-                animationDelay: `${i * 1.4}s`,
-                animationDuration: `${10 + (i % 5) * 2}s`
-              }} />
-            ))}
-          </div>
-
           <AnimatePresence>
             {toast && (
               <ToastNotification toast={toast} onClose={() => setToast(null)} />
@@ -1122,6 +1120,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           </AnimatePresence>
 
           <div className="horoscope-content premium-content">
+            {/* HERO — compact */}
             <motion.div
               className="premium-hero-banner"
               initial={{ opacity: 0, y: 20 }}
@@ -1176,13 +1175,8 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
               </div>
             </motion.div>
 
+            {/* ✅ ENERGY — "COSMIC ENERGY LEVELS" სათაური ამოღებული */}
             <div className="premium-section">
-              <h3 className="premium-section-title">
-                <Sparkles size={12} />
-                COSMIC ENERGY LEVELS
-                <Sparkles size={12} />
-              </h3>
-              
               <div className="premium-energy-grid">
                 <motion.div className="premium-energy-card energy" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
                   <div className="premium-energy-icon"><Zap size={32} /></div>
@@ -1225,6 +1219,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
               </div>
             </div>
 
+            {/* MOON — compact */}
             <motion.div className="premium-moon-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
               <div className="premium-moon-image-container">
                 <div className="premium-moon-image" />
@@ -1237,6 +1232,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
               </div>
             </motion.div>
 
+            {/* PREDICTIONS — compact */}
             <div className="premium-section">
               <h3 className="premium-section-title">
                 <Sparkles size={12} />
@@ -1279,6 +1275,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           </div>
         </div>
 
+        {/* MODALS */}
         <AnimatePresence>
           {openModal && (
             <motion.div className="modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpenModal(null)}>
