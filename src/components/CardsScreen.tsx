@@ -79,6 +79,30 @@ export default function CardsScreen({ onNavigate }: Props) {
     };
   }, [showPreview, selectedCard]);
 
+  // ✅ ზუსტი padding: grid იწყება ზუსტად subbar-ის ქვემოთ + 5px (ორმაგი padding-ის გასწორება)
+  useEffect(() => {
+    const apply = () => {
+      const screen = document.querySelector('.cards-screen') as HTMLElement;
+      const subbar = document.querySelector('.cards-subbar') as HTMLElement;
+      if (!screen || !subbar) return;
+      const screenTop = screen.getBoundingClientRect().top;
+      const subbarBottom = subbar.getBoundingClientRect().bottom;
+      const pad = Math.round(subbarBottom - screenTop) + 5;
+      if (pad > 0) screen.style.paddingTop = `${pad}px`;
+    };
+    apply();
+    const t1 = setTimeout(apply, 300);
+    const t2 = setTimeout(apply, 800);
+    const t3 = setTimeout(apply, 1500);
+    window.addEventListener('resize', apply);
+    window.addEventListener('orientationchange', apply);
+    return () => {
+      clearTimeout(t1); clearTimeout(t2); clearTimeout(t3);
+      window.removeEventListener('resize', apply);
+      window.removeEventListener('orientationchange', apply);
+    };
+  }, []);
+
   const handleCardSelect = (card: typeof tarotCards[0]) => {
     setSelectedCard(card);
     setShowPreview(true);

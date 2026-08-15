@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
-import { X, RefreshCw, Ruler } from 'lucide-react';
+import { X, RefreshCw, Ruler, Copy, Check } from 'lucide-react';
 
 interface Metric { label: string; value: string; ok?: boolean; bad?: boolean; }
 
 export default function CardsLayoutDebugger({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [metrics, setMetrics] = useState<Metric[]>([]);
   const [lastUpdate, setLastUpdate] = useState('');
+  const [copied, setCopied] = useState(false);
 
   const q = (sel: string) => document.querySelector(sel) as HTMLElement | null;
   const rect = (el: HTMLElement | null) => (el ? el.getBoundingClientRect() : null);
@@ -16,21 +17,21 @@ export default function CardsLayoutDebugger({ open, onClose }: { open: boolean; 
     const grid = q('.cards-grid-enhanced');
     const firstCard = q('.card-item-enhanced');
     const preview = q('.floating-preview-enhanced');
+    const screen = q('.cards-screen');
 
-    const topbarR = rect(topbar), subbarR = rect(subbar), gridR = rect(grid), firstR = rect(firstCard), prevR = rect(preview);
+    const topbarR = rect(topbar), subbarR = rect(subbar), gridR = rect(grid), firstR = rect(firstCard), prevR = rect(preview), screenR = rect(screen);
     const m: Metric[] = [];
 
     m.push({ label: 'window.innerHeight', value: `${window.innerHeight}px` });
     if ((window as any).visualViewport) m.push({ label: 'visualViewport.height', value: `${Math.round((window as any).visualViewport.height)}px` });
-
+    if (screenR) m.push({ label: 'screen paddingTop', value: `${getComputedStyle(screen!).paddingTop}` });
     if (topbarR) m.push({ label: 'topbar (title)', value: `top:${Math.round(topbarR.top)} h:${Math.round(topbarR.height)}` });
-    if (subbarR) m.push({ label: 'subbar (back+filters)', value: `top:${Math.round(subbarR.top)} h:${Math.round(subbarR.height)} bottom:${Math.round(subbarR.bottom)}` });
+    if (subbarR) m.push({ label: 'subbar (back+filters)', value: `top:${Math.round(subbarR.top)} bottom:${Math.round(subbarR.bottom)} h:${Math.round(subbarR.height)}` });
     if (firstR && subbarR) {
       const gap = Math.round(firstR.top - subbarR.bottom);
       m.push({ label: 'gap subbar→1st card', value: `${gap}px`, ok: gap >= 0 && gap <= 10, bad: gap < 0 || gap > 10 });
     }
     if (gridR) m.push({ label: 'grid top', value: `${Math.round(gridR.top)}px` });
-
     if (prevR) {
       const centered = Math.abs(prevR.left - prevR.right) < 4;
       m.push({ label: 'preview left', value: `${Math.round(prevR.left)}px`, ok: centered, bad: !centered });
@@ -52,6 +53,19 @@ export default function CardsLayoutDebugger({ open, onClose }: { open: boolean; 
     window.addEventListener('resize', measure);
     return () => { clearInterval(id); window.removeEventListener('resize', measure); };
   }, [open, measure]);
+
+  // ✅ COPY — ყველა metric ერთ ტექსტად
+  const copyAll = () => {
+    const lines = [
+      '=== CARDS LAYOUT DEBUG ===',
+      `Time: ${lastUpdate}`,
+      ...metrics.map(m => `${m.label}: ${m.value}`),
+    ];
+    navigator.clipboard.writeText(lines.join('\n')).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
 
   if (!open) return null;
 
@@ -76,6 +90,9 @@ export default function CardsLayoutDebugger({ open, onClose }: { open: boolean; 
       <div style={{ display: 'flex', gap: 6, padding: '8px 12px', borderBottom: '1px solid rgba(16,185,129,0.2)' }}>
         <button onClick={measure} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: 7, background: 'rgba(59,130,246,0.2)', border: '1px solid #3b82f6', borderRadius: 8, color: '#60a5fa', fontWeight: 700, cursor: 'pointer', fontSize: 10 }}>
           <RefreshCw size={12} /> გაზომვა
+        </button>
+        <button onClick={copyAll} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: 7, background: copied ? 'rgba(16,185,129,0.3)' : 'rgba(16,185,129,0.2)', border: `1px solid ${copied ? '#10b981' : 'rgba(16,185,129,0.5)'}`, borderRadius: 8, color: '#34d399', fontWeight: 700, cursor: 'pointer', fontSize: 10 }}>
+          {copied ? <Check size={12} /> : <Copy size={12} />} {copied ? 'დაკოპირდა!' : 'Copy'}
         </button>
       </div>
 
