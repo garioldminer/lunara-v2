@@ -12,13 +12,13 @@
   overflow: hidden;
 }
 
-/* ✅ TOPBAR — Telegram header ზონა */
+/* ✅ TOPBAR — Telegram header ზონა — იგივე ფერი რაც მთელი გვერდი (არანაირი გადასვლა) */
 .cards-topbar {
   flex-shrink: 0;
   height: calc(env(safe-area-inset-top, 0px) + 44px);
   padding-top: env(safe-area-inset-top, 0px);
   display: flex; align-items: center; justify-content: center;
-  background: transparent;
+  background: #0a0600;
   pointer-events: none;
   z-index: 40;
 }
@@ -114,24 +114,42 @@
 .quick-preview-info p { margin: 0; font-size: 11px; color: rgba(255,255,255,0.6); }
 .quick-meaning { font-style: italic; margin-top: 6px; color: rgba(255,255,255,0.4); }
 
+/* ✅ FLOATING PREVIEW — კომპაქტური ზედა ნაწილი, X ნახევრად გარეთ */
 .floating-preview-enhanced {
   position: fixed; bottom: 80px; left: 12px; right: 12px;
   max-width: 456px; margin: 0 auto;
   background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
   border: 1px solid rgba(197,160,89,0.3); border-radius: 16px;
-  padding: 12px; padding-top: 38px;
+  padding: 12px;
+  overflow: visible;
   box-shadow: 0 8px 32px rgba(0,0,0,0.8); z-index: 99;
 }
+
+/* ✅ X CLOSE — ნახევრად გარეთ კუთხიდან, ლამაზი წრიული */
 .preview-close-btn {
-  position: absolute; top: 8px; right: 8px;
-  width: 28px; height: 28px; border-radius: 50%;
-  background: rgba(197,160,89,0.15); border: 1px solid rgba(197,160,89,0.35);
-  color: #C5A059; display: flex; align-items: center; justify-content: center;
-  cursor: pointer; transition: all 0.25s ease; z-index: 10; padding: 0;
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2a2215 0%, #1a1510 100%);
+  border: 1.5px solid rgba(197,160,89,0.5);
+  color: #C5A059;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  z-index: 10; padding: 0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.6), 0 0 10px rgba(197,160,89,0.25);
   backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
 }
-.preview-close-btn:hover { background: rgba(197,160,89,0.3); border-color: #C5A059; transform: rotate(90deg) scale(1.05); }
+.preview-close-btn:hover {
+  background: rgba(197,160,89,0.25);
+  border-color: #C5A059;
+  transform: rotate(90deg) scale(1.08);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.7), 0 0 14px rgba(197,160,89,0.4);
+}
 .preview-close-btn:active { transform: rotate(90deg) scale(0.92); }
+
 .preview-card-enhanced { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
 .preview-card-image-enhanced {
   width: 50px; height: 75px; background: rgba(197,160,89,0.05);
