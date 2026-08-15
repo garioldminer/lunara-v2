@@ -99,10 +99,10 @@ export default function HoroscopeLayoutDebugger({ open, onClose }: { open: boole
 
   return (
     <div style={{
-      position: 'fixed', top: 60, right: 8, left: 8, zIndex: 10005,
+      position: 'fixed', top: 60, right: 8, left: 8, zIndex: 999999,
       maxWidth: 360, margin: '0 auto', maxHeight: '70vh',
-      background: 'rgba(10, 6, 0, 0.97)', border: '1px solid rgba(217, 182, 111, 0.5)',
-      borderRadius: 14, boxShadow: '0 10px 40px rgba(0,0,0,0.8)',
+      background: 'rgba(10, 6, 0, 0.97)', border: '2px solid rgba(217, 182, 111, 0.8)',
+      borderRadius: 14, boxShadow: '0 10px 60px rgba(217,182,111,0.6), 0 0 80px rgba(0,0,0,0.8)',
       display: 'flex', flexDirection: 'column', overflow: 'hidden',
       fontFamily: 'monospace', fontSize: 11, color: '#ffe566'
     }}>

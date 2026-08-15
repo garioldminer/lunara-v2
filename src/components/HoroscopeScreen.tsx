@@ -303,20 +303,32 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* ✅ DEBUG ღილაკი — screen-ის გარეთ რომ არ დაიმალოს */}
+      {/* ✅ DEBUG ღილაკი — ეკრანის შუაში, მარჯვნივ, z-index 999999 */}
       {isAdmin && (
         <button
           onClick={() => setShowHoroDebug(true)}
           style={{
-            position: 'fixed', top: '70px', right: '10px', width: 44, height: 44, borderRadius: '50%',
-            background: 'linear-gradient(135deg, #D9B66F, #8B6914)',
-            border: '2px solid rgba(255,255,255,0.3)', color: '#0a0600',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', zIndex: 99999, boxShadow: '0 4px 16px rgba(217,182,111,0.7)',
+            position: 'fixed',
+            top: '50%',
+            right: '10px',
+            transform: 'translateY(-50%)',
+            width: 56,
+            height: 56,
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #D9B66F 0%, #F4D47C 50%, #D9B66F 100%)',
+            border: '3px solid #fff',
+            color: '#0a0600',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            zIndex: 999999,
+            boxShadow: '0 6px 24px rgba(217,182,111,0.9), 0 0 40px rgba(217,182,111,0.5)',
+            animation: 'horoDebugPulse 2s ease-in-out infinite',
           }}
           title="Horoscope Layout Debugger"
         >
-          <Ruler size={20} />
+          <Ruler size={24} strokeWidth={2.5} />
         </button>
       )}
 
