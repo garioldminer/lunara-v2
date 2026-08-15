@@ -23,14 +23,20 @@ export default function CardsScreen({ onNavigate }: Props) {
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [selectedCard, setSelectedCard] = useState(tarotCards[0]);
   const [showPreview, setShowPreview] = useState(true);
-  const [recentlyViewed, setRecentlyViewed] = useState<typeof tarotCards[0][]>([]);
+  const [recentlyViewedIds, setRecentlyViewedIds] = useState<string[]>([]);
   const [cardStats, setCardStats] = useState<CardStat[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [longPressCard, setLongPressCard] = useState<typeof tarotCards[0] | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const lastScrollY = useRef(0);
-  const scrollTimeout = useRef<NodeJS.Timeout>();
+  const scrollTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
+  const longPressTimer = useRef<NodeJS.Timeout | undefined>(undefined);
+
+  // ✅ Convert recently viewed IDs to cards
+  const recentlyViewed = recentlyViewedIds
+    .map(id => tarotCards.find(c => String(c.id) === id))
+    .filter((c): c is typeof tarotCards[0] => c !== undefined);
 
   // Filter cards
   const filteredCards = tarotCards.filter((card) => {
@@ -49,23 +55,25 @@ export default function CardsScreen({ onNavigate }: Props) {
     minor: tarotCards.filter(c => c.arcana === 'minor').length,
   };
 
-  // Load card statistics
+  // ✅ Load card statistics with null check
   useEffect(() => {
     if (!user || !supabase) return;
     
     const loadStats = async () => {
       try {
-        const { data, error } = await supabase
+        const { data, error } = await supabase!
           .from('readings')
           .select('cards')
           .eq('user_id', user.id);
         
-        if (error) return;
+        if (error || !data) return;
         
         const cardCounts: Record<string, number> = {};
-        data?.forEach(reading => {
-          reading.cards?.forEach((card: any) => {
-            cardCounts[card.id] = (cardCounts[card.id] || 0) + 1;
+        data.forEach(reading => {
+          const cards = reading.cards as any[];
+          cards?.forEach((card: any) => {
+            const cid = String(card.id);
+            cardCounts[cid] = (cardCounts[cid] || 0) + 1;
           });
         });
         
@@ -87,9 +95,10 @@ export default function CardsScreen({ onNavigate }: Props) {
   useEffect(() => {
     const stored = localStorage.getItem('recently_viewed_cards');
     if (stored) {
-      const ids = JSON.parse(stored) as string[];
-      const cards = ids.map(id => tarotCards.find(c => c.id === id)).filter(Boolean) as typeof tarotCards[];
-      setRecentlyViewed(cards);
+      try {
+        const ids = JSON.parse(stored) as string[];
+        setRecentlyViewedIds(ids);
+      } catch {}
     }
   }, []);
 
@@ -97,7 +106,9 @@ export default function CardsScreen({ onNavigate }: Props) {
   useEffect(() => {
     const stored = localStorage.getItem('favorite_cards');
     if (stored) {
-      setFavorites(new Set(JSON.parse(stored)));
+      try {
+        setFavorites(new Set(JSON.parse(stored) as string[]));
+      } catch {}
     }
   }, []);
 
@@ -125,7 +136,6 @@ export default function CardsScreen({ onNavigate }: Props) {
         setShowPreview(false);
       }
       
-      // Show preview after 2 seconds of no scroll
       if (scrollTimeout.current) {
         clearTimeout(scrollTimeout.current);
       }
@@ -148,17 +158,29 @@ export default function CardsScreen({ onNavigate }: Props) {
     setShowPreview(true);
   };
 
-  const handleLongPress = (card: typeof tarotCards[0]) => {
-    setLongPressCard(card);
-    setTimeout(() => setLongPressCard(null), 3000);
+  // ✅ Custom long press implementation
+  const handlePointerDown = (card: typeof tarotCards[0]) => {
+    longPressTimer.current = setTimeout(() => {
+      setLongPressCard(card);
+      setTimeout(() => setLongPressCard(null), 3000);
+    }, 500);
+  };
+
+  const handlePointerUp = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = undefined;
+    }
   };
 
   const handleViewCard = async () => {
     if (onNavigate && selectedCard) {
+      const cardIdStr = String(selectedCard.id);
+      
       // Add to recently viewed
-      const updated = [selectedCard, ...recentlyViewed.filter(c => c.id !== selectedCard.id)].slice(0, 5);
-      setRecentlyViewed(updated);
-      localStorage.setItem('recently_viewed_cards', JSON.stringify(updated.map(c => c.id)));
+      const updated = [cardIdStr, ...recentlyViewedIds.filter(id => id !== cardIdStr)].slice(0, 5);
+      setRecentlyViewedIds(updated);
+      localStorage.setItem('recently_viewed_cards', JSON.stringify(updated));
       
       onNavigate(`card-detail-${selectedCard.id}`);
       
@@ -199,8 +221,8 @@ export default function CardsScreen({ onNavigate }: Props) {
     return 'Minor Arcana';
   };
 
-  const getCardTimesDrawn = (cardId: string): number => {
-    const stat = cardStats.find(s => s.card_id === cardId);
+  const getCardTimesDrawn = (cardId: number): number => {
+    const stat = cardStats.find(s => s.card_id === String(cardId));
     return stat?.times_drawn || 0;
   };
 
@@ -209,10 +231,10 @@ export default function CardsScreen({ onNavigate }: Props) {
     if (!card.suit) return '#C5A059';
     
     const colors: Record<string, string> = {
-      wands: '#fb923c',    // orange
-      cups: '#60a5fa',     // blue
-      swords: '#cbd5e1',   // silver
-      pentacles: '#34d399' // green
+      wands: '#fb923c',
+      cups: '#60a5fa',
+      swords: '#cbd5e1',
+      pentacles: '#34d399'
     };
     
     return colors[card.suit] || '#C5A059';
@@ -264,7 +286,9 @@ export default function CardsScreen({ onNavigate }: Props) {
                 className="recent-card-item"
                 onClick={() => handleCardSelect(card)}
               >
-                <img src={card.image_url} alt={card.name} loading="lazy" />
+                {card.image_url && (
+                  <img src={card.image_url} alt={card.name} loading="lazy" />
+                )}
               </div>
             ))}
           </div>
@@ -307,7 +331,8 @@ export default function CardsScreen({ onNavigate }: Props) {
       <div className="cards-grid-enhanced">
         {filteredCards.map((card) => {
           const timesDrawn = getCardTimesDrawn(card.id);
-          const isFavorite = favorites.has(card.id);
+          const cardIdStr = String(card.id);
+          const isFavorite = favorites.has(cardIdStr);
           const suitColor = getSuitColor(card);
           
           return (
@@ -315,7 +340,9 @@ export default function CardsScreen({ onNavigate }: Props) {
               key={card.id}
               className={`card-item-enhanced ${selectedCard?.id === card.id ? 'selected' : ''}`}
               onClick={() => handleCardSelect(card)}
-              onLongPress={() => handleLongPress(card)}
+              onPointerDown={() => handlePointerDown(card)}
+              onPointerUp={handlePointerUp}
+              onPointerLeave={handlePointerUp}
               whileTap={{ scale: 0.95 }}
               style={{
                 '--suit-color': suitColor,
@@ -364,7 +391,9 @@ export default function CardsScreen({ onNavigate }: Props) {
             className="quick-preview-popup"
           >
             <div className="quick-preview-content">
-              <img src={longPressCard.image_url} alt={longPressCard.name} />
+              {longPressCard.image_url && (
+                <img src={longPressCard.image_url} alt={longPressCard.name} />
+              )}
               <div className="quick-preview-info">
                 <h4>{longPressCard.name}</h4>
                 <p>{getCardMeta(longPressCard)}</p>
@@ -413,12 +442,12 @@ export default function CardsScreen({ onNavigate }: Props) {
               </div>
               <button
                 className="favorite-btn"
-                onClick={(e) => toggleFavorite(selectedCard.id, e)}
+                onClick={(e) => toggleFavorite(String(selectedCard.id), e)}
               >
                 <Heart
                   size={18}
-                  fill={favorites.has(selectedCard.id) ? '#ef4444' : 'none'}
-                  color={favorites.has(selectedCard.id) ? '#ef4444' : '#C5A059'}
+                  fill={favorites.has(String(selectedCard.id)) ? '#ef4444' : 'none'}
+                  color={favorites.has(String(selectedCard.id)) ? '#ef4444' : '#C5A059'}
                 />
               </button>
             </div>
