@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { ArrowLeft, Sparkles, Moon, Tags, Info } from 'lucide-react';
+import { useEffect, useState, useRef } from 'react';
+import { ArrowLeft, Sparkles, Moon, Tags, Info, Home, Layers, Star, Orbit, User } from 'lucide-react';
 import { tarotCards, SUITS } from '../data/tarotCards';
 import './CardDetailScreen.css';
 
@@ -11,13 +11,15 @@ interface Props {
 export default function CardDetailScreen({ cardId, onNavigate }: Props) {
   const card = tarotCards.find(c => c.id === cardId);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [showBottomNav, setShowBottomNav] = useState(false);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoaded(true), 100);
     return () => clearTimeout(timer);
   }, []);
 
-  // ✅ სმარტ layout: nav inset + bottom padding (Cards-ის მსგავსი)
+  // ✅ სმარტ layout: nav inset + bottom padding
   useEffect(() => {
     const apply = () => {
       const nav = document.querySelector('.bottom-nav-container') as HTMLElement;
@@ -25,7 +27,6 @@ export default function CardDetailScreen({ cardId, onNavigate }: Props) {
       if (nav) {
         const inner = (nav.querySelector('.bottom-nav') || nav.firstElementChild || nav) as HTMLElement;
         document.documentElement.style.setProperty('--nav-inset', `${Math.round(inner.getBoundingClientRect().left)}px`);
-        if (scrollArea) scrollArea.style.paddingBottom = `${Math.round(window.innerHeight - nav.getBoundingClientRect().top) + 5}px`;
       }
     };
     apply();
@@ -33,6 +34,18 @@ export default function CardDetailScreen({ cardId, onNavigate }: Props) {
     const t2 = setTimeout(apply, 800);
     window.addEventListener('resize', apply);
     return () => { clearTimeout(t1); clearTimeout(t2); window.removeEventListener('resize', apply); };
+  }, []);
+
+  // ✅ ქვედა nav ამოდის ბოლომდე სქროლვისას
+  useEffect(() => {
+    const area = scrollAreaRef.current;
+    if (!area) return;
+    const onScroll = () => {
+      const nearBottom = area.scrollTop + area.clientHeight >= area.scrollHeight - 60;
+      setShowBottomNav(nearBottom);
+    };
+    area.addEventListener('scroll', onScroll, { passive: true });
+    return () => area.removeEventListener('scroll', onScroll);
   }, []);
 
   if (!card) {
@@ -64,12 +77,10 @@ export default function CardDetailScreen({ cardId, onNavigate }: Props) {
 
   return (
     <div className={`card-detail-screen ${isLoaded ? 'loaded' : ''}`} style={{ '--suit-color': suitColor } as React.CSSProperties}>
-      {/* ✅ TOPBAR — Telegram header ზონა */}
       <div className="detail-topbar">
         <h1 className="detail-title-top">Card Details</h1>
       </div>
 
-      {/* ✅ SUBBAR — back + სახელი */}
       <div className="detail-subbar">
         <button className="detail-back-btn" onClick={handleBack}>
           <ArrowLeft size={16} />
@@ -77,10 +88,8 @@ export default function CardDetailScreen({ cardId, onNavigate }: Props) {
         <span className="detail-subbar-name">{card.name}</span>
       </div>
 
-      {/* ✅ SCROLL AREA */}
-      <div className="detail-scroll-area">
+      <div className="detail-scroll-area" ref={scrollAreaRef}>
         <div className="detail-content">
-          {/* Card Image with glow */}
           <div className="detail-card-image-container">
             {card.image_url ? (
               <img src={card.image_url} alt={card.name} className="detail-card-image" />
@@ -92,7 +101,6 @@ export default function CardDetailScreen({ cardId, onNavigate }: Props) {
             )}
           </div>
 
-          {/* Card Info */}
           <div className="detail-card-info">
             <div className="detail-card-number">{card.number}</div>
             <h1 className="detail-card-title">{card.name}</h1>
@@ -104,7 +112,7 @@ export default function CardDetailScreen({ cardId, onNavigate }: Props) {
               <p className="detail-section-text">{card.meaning}</p>
             </div>
 
-            <div className="detail-section">
+            <div className="detail-section reversed">
               <h2 className="detail-section-title"><Moon size={14} /> Reversed Meaning</h2>
               <p className="detail-section-text">{card.reversed_meaning}</p>
             </div>
@@ -118,7 +126,7 @@ export default function CardDetailScreen({ cardId, onNavigate }: Props) {
               </div>
             </div>
 
-            <div className="detail-section">
+            <div className="detail-section reversed">
               <h2 className="detail-section-title"><Tags size={14} /> Reversed Keywords</h2>
               <div className="detail-keywords">
                 {card.reversed_keywords.map((keyword: string, idx: number) => (
@@ -150,6 +158,15 @@ export default function CardDetailScreen({ cardId, onNavigate }: Props) {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* ✅ ქვედა nav — ამოდის ბოლომდე სქროლვისას */}
+      <div className={`detail-bottom-nav ${showBottomNav ? 'visible' : ''}`}>
+        <button onClick={() => onNavigate?.('home')}><Home size={18} /><span>Home</span></button>
+        <button onClick={() => onNavigate?.('cards')} className="active"><Layers size={18} /><span>Cards</span></button>
+        <button onClick={() => onNavigate?.('horoscope')}><Star size={18} /><span>Horoscope</span></button>
+        <button onClick={() => onNavigate?.('astro')}><Orbit size={18} /><span>Astro</span></button>
+        <button onClick={() => onNavigate?.('profile')}><User size={18} /><span>Profile</span></button>
       </div>
     </div>
   );

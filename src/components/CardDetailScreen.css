@@ -1,4 +1,3 @@
-/* ✅ FIXED FULL-SCREEN FLEX COLUMN — ერთგვაროვანი ფონი */
 .card-detail-screen {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -7,12 +6,10 @@
   background: #0a0600; color: #fff;
   font-family: 'Georgia', serif;
   overflow: hidden;
-  opacity: 0;
-  transition: opacity 0.5s ease;
+  opacity: 0; transition: opacity 0.5s ease;
 }
 .card-detail-screen.loaded { opacity: 1; }
 
-/* ✅ TOPBAR — Telegram header ზონა */
 .detail-topbar {
   flex-shrink: 0;
   height: calc(env(safe-area-inset-top, 0px) + 44px);
@@ -26,12 +23,9 @@
   font-style: italic; text-shadow: 0 0 20px rgba(197,160,89,0.3);
 }
 
-/* ✅ SUBBAR — back + სახელი */
 .detail-subbar {
-  flex-shrink: 0;
-  display: flex; align-items: center; gap: 8px;
-  padding: 6px 12px;
-  background: #0a0600; z-index: 40;
+  flex-shrink: 0; display: flex; align-items: center; gap: 8px;
+  padding: 6px 12px; background: #0a0600; z-index: 40;
 }
 .detail-back-btn {
   background: rgba(197,160,89,0.1); border: 1px solid rgba(197,160,89,0.3);
@@ -39,90 +33,80 @@
   cursor: pointer; display: flex; align-items: center; justify-content: center;
   flex-shrink: 0; transition: all 0.2s;
 }
-.detail-back-btn:hover { background: rgba(197,160,89,0.2); transform: scale(1.05); }
 .detail-back-btn:active { transform: scale(0.95); }
 .detail-subbar-name {
   font-size: 12px; color: #C5A059; font-weight: 600; letter-spacing: 0.5px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-/* ✅ SCROLL AREA — მხოლოდ ეს სქროლდება */
 .detail-scroll-area {
   flex: 1; overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  padding: 12px var(--nav-inset, 4px) 100px;
+  padding: 12px var(--nav-inset, 4px) 40px;
 }
 .detail-content { display: flex; flex-direction: column; align-items: center; gap: 16px; }
 
-/* ✅ Card Image — დიდი, glow, float ანიმაცია */
 .detail-card-image-container {
-  position: relative;
-  width: min(58%, 210px);
-  aspect-ratio: 2/3;
+  position: relative; width: min(58%, 210px); aspect-ratio: 2/3;
   animation: detailFloat 4s ease-in-out infinite, slideUp 0.6s cubic-bezier(0.4,0,0.2,1);
 }
-@keyframes detailFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
+@keyframes detailFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 .detail-card-image {
-  width: 100%; height: 100%; object-fit: cover;
-  border-radius: 12px;
+  width: 100%; height: 100%; object-fit: cover; border-radius: 12px;
   border: 2px solid var(--suit-color, #C5A059);
   box-shadow: 0 10px 40px rgba(0,0,0,0.7), 0 0 25px -6px var(--suit-color, #C5A059);
   display: block;
 }
 .detail-card-placeholder {
-  width: 100%; height: 100%;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; height: 100%; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 8px;
   background: linear-gradient(135deg, #2a2215 0%, #1a1510 100%);
   border-radius: 12px; border: 2px solid var(--suit-color, #C5A059);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
-.detail-placeholder-number { font-size: 32px; color: #C5A059; font-weight: 700; letter-spacing: 2px; text-shadow: 0 0 20px rgba(197,160,89,0.5); }
-.detail-placeholder-name { font-size: 13px; color: rgba(255,255,255,0.7); text-align: center; padding: 0 8px; }
+.detail-placeholder-number { font-size: 32px; color: #C5A059; font-weight: 700; }
+.detail-placeholder-name { font-size: 13px; color: rgba(255,255,255,0.7); text-align: center; }
 
-/* ✅ Card Info */
-.detail-card-info {
-  width: 100%;
-  display: flex; flex-direction: column; align-items: center;
-  text-align: center; gap: 6px;
-}
+.detail-card-info { width: 100%; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; }
 .detail-card-number {
-  font-size: 11px; color: var(--suit-color, #C5A059);
-  letter-spacing: 3px; font-weight: 700;
+  font-size: 11px; color: var(--suit-color, #C5A059); letter-spacing: 3px; font-weight: 700;
   background: rgba(197,160,89,0.08); border: 1px solid rgba(197,160,89,0.25);
   border-radius: 12px; padding: 3px 14px;
 }
-.detail-card-title {
-  margin: 4px 0 0; font-size: 26px; color: #C5A059; font-weight: 700; letter-spacing: 2px;
-  text-shadow: 0 0 20px rgba(197,160,89,0.3);
-}
+.detail-card-title { margin: 4px 0 0; font-size: 26px; color: #C5A059; font-weight: 700; letter-spacing: 2px; text-shadow: 0 0 20px rgba(197,160,89,0.3); }
 .detail-card-meta { margin: 0; font-size: 11px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1.5px; }
 .detail-ornament { font-size: 11px; color: #C5A059; opacity: 0.5; letter-spacing: 2px; margin: 8px 0; }
 
-/* ✅ Sections — elegant ბარათები + slideUp ანიმაცია */
+/* ✅ PREMIUM სექციები — ზედა glow-line + suit აქცენტი */
 .detail-section {
   width: 100%;
-  background: linear-gradient(145deg, #1c1712 0%, #12100c 100%);
-  border: 1px solid rgba(197,160,89,0.22);
-  border-radius: 14px;
-  padding: 14px;
+  background: linear-gradient(160deg, rgba(197,160,89,0.07) 0%, rgba(18,16,12,0.92) 45%);
+  border: 1px solid rgba(197,160,89,0.25);
+  border-radius: 16px;
+  padding: 16px;
   text-align: left;
+  position: relative; overflow: hidden;
   box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-  animation: slideUp 0.6s cubic-bezier(0.4,0,0.2,1);
-  animation-fill-mode: both;
+  animation: slideUp 0.6s cubic-bezier(0.4,0,0.2,1); animation-fill-mode: both;
+}
+.detail-section::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--suit-color, #C5A059), transparent);
+  opacity: 0.6;
 }
 .detail-section:nth-of-type(1) { animation-delay: 0.1s; }
 .detail-section:nth-of-type(2) { animation-delay: 0.2s; }
 .detail-section:nth-of-type(3) { animation-delay: 0.3s; }
 .detail-section:nth-of-type(4) { animation-delay: 0.4s; }
 .detail-section:nth-of-type(5) { animation-delay: 0.5s; }
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ✅ Reversed — იისფერი აქცენტი */
+.detail-section.reversed { border-color: rgba(167,139,250,0.3); background: linear-gradient(160deg, rgba(167,139,250,0.07) 0%, rgba(18,16,12,0.92) 45%); }
+.detail-section.reversed::before { background: linear-gradient(90deg, transparent, #a78bfa, transparent); }
+.detail-section.reversed .detail-section-title { color: #a78bfa; }
+.detail-section.reversed .detail-section-text { color: rgba(167,139,250,0.85); font-style: italic; }
+
 .detail-section-title {
   display: flex; align-items: center; gap: 6px;
   margin: 0 0 10px; font-size: 12px; color: var(--suit-color, #C5A059);
@@ -130,29 +114,46 @@
 }
 .detail-section-text { margin: 0; font-size: 13px; color: rgba(255,255,255,0.85); line-height: 1.7; }
 
-/* ✅ Keywords + hover */
 .detail-keywords { display: flex; flex-wrap: wrap; gap: 7px; }
 .detail-keyword-tag {
   background: rgba(197,160,89,0.1); border: 1px solid rgba(197,160,89,0.3);
   border-radius: 16px; padding: 5px 12px;
-  font-size: 10px; color: var(--suit-color, #C5A059); letter-spacing: 0.5px;
-  transition: all 0.2s;
+  font-size: 10px; color: var(--suit-color, #C5A059); letter-spacing: 0.5px; transition: all 0.2s;
 }
-.detail-keyword-tag:hover { background: rgba(197,160,89,0.2); transform: translateY(-2px); }
+.detail-keyword-tag:active { transform: scale(0.95); }
 .detail-keyword-tag.reversed { background: rgba(167,139,250,0.12); border-color: rgba(167,139,250,0.35); color: #a78bfa; }
-.detail-keyword-tag.reversed:hover { background: rgba(167,139,250,0.25); transform: translateY(-2px); }
 
-/* ✅ Info Grid */
 .detail-info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .detail-info-item {
   background: rgba(197,160,89,0.05); border: 1px solid rgba(197,160,89,0.2);
   border-radius: 12px; padding: 10px 6px;
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
-  transition: all 0.2s;
+  display: flex; flex-direction: column; align-items: center; gap: 4px; transition: all 0.2s;
 }
-.detail-info-item:hover { background: rgba(197,160,89,0.1); border-color: rgba(197,160,89,0.4); }
 .detail-info-label { font-size: 9px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; }
-.detail-info-value { font-size: 12px; color: #C5A059; font-weight: 700; letter-spacing: 0.5px; text-transform: capitalize; }
+.detail-info-value { font-size: 12px; color: #C5A059; font-weight: 700; text-transform: capitalize; }
+
+/* ✅ ქვედა nav — slide-up ბოლომდე სქროლვისას */
+.detail-bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  max-width: 480px; margin: 0 auto;
+  display: flex;
+  background: rgba(26,21,16,0.96);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border-top: 1px solid rgba(197,160,89,0.25);
+  padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px));
+  transform: translateY(110%);
+  transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+  z-index: 100;
+}
+.detail-bottom-nav.visible { transform: translateY(0); }
+.detail-bottom-nav button {
+  flex: 1; background: none; border: none; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  color: rgba(255,255,255,0.5); font-size: 9px; font-family: 'Georgia', serif;
+  padding: 4px 0; transition: color 0.2s;
+}
+.detail-bottom-nav button.active { color: #C5A059; }
+.detail-bottom-nav button:active { transform: scale(0.95); }
 
 .error-message {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -162,6 +163,5 @@
 .error-message button {
   background: linear-gradient(135deg, #C5A059, #8B6914);
   border: none; border-radius: 8px; padding: 12px 24px;
-  color: #0a0600; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+  color: #0a0600; font-size: 14px; font-weight: 700; cursor: pointer;
 }
-.error-message button:hover { transform: scale(1.05); }
