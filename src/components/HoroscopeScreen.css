@@ -113,7 +113,7 @@
   box-shadow: 0 3px 15px rgba(217, 182, 111, 0.25), inset 0 0 0 1px rgba(217, 182, 111, 0.3);
 }
 
-/* ✅ SCROLL AREA + CONTENT — ჭკვიანი gap სისტემა */
+/* ✅ SCROLL AREA + CONTENT */
 .horoscope-scroll-area {
   flex: 1; display: flex; flex-direction: column;
   overflow: hidden; position: relative;
@@ -127,8 +127,8 @@
   height: 100%;
   width: 100%; max-width: 600px; margin: 0 auto;
   display: flex; flex-direction: column;
-  gap: var(--gap);                              /* ✅ 3px ყველგან */
-  padding: var(--gap) 8px var(--gap);          /* ✅ 3px padding ზემოდან და ქვემოდან */
+  gap: var(--gap);
+  padding: var(--gap) 8px var(--gap);
   overflow: hidden;
 }
 
@@ -207,7 +207,7 @@
 .horoscope-empty p { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: var(--text-cream); opacity: 0.7; font-style: italic; }
 
 /* ============================================
-   ✅ HERO BANNER — იწოვს სივრცეს პროპორციულად
+   ✅ HERO BANNER
    ============================================ */
 .premium-hero-banner {
   position: relative; width: 100%;
@@ -219,7 +219,7 @@
   display: flex; align-items: center; justify-content: space-between;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   transition: opacity 0.3s var(--ease-smooth);
-  flex: 1.35;  /* ✅ იწოვს სივრცეს პროპორციულად */
+  flex: 1.35;
   min-height: 0;
 }
 
@@ -241,12 +241,11 @@
   50% { opacity: 1; transform: translateX(-50%) scaleX(1.15); }
 }
 
-/* ✅ HERO LEFT — space-between + stretch */
 .premium-hero-left {
   flex: 1;
   display: flex; flex-direction: column;
-  justify-content: space-between;  /* ✅ subtitle/title ზემოთ, button ქვემოთ */
-  align-self: stretch;              /* ✅ მთელი სიმაღლე */
+  justify-content: space-between;
+  align-self: stretch;
   gap: 5px;
   position: relative; z-index: 2;
   max-width: 55%; min-width: 0;
@@ -375,16 +374,16 @@
 .premium-energy-dots .dot.active { background: var(--gold); box-shadow: 0 0 8px rgba(217, 182, 111, 0.6); }
 
 /* ============================================
-   MOON CARD
+   ✅ MOON CARD — შემცირებული სიმაღლე
    ============================================ */
 .premium-moon-card {
   position: relative; display: flex;
   align-items: center; gap: 10px;
-  margin: 0; padding: 8px 12px;
+  margin: 0; padding: 6px 10px;   /* ✅ შემცირებული padding */
   background: linear-gradient(135deg, rgba(100, 80, 180, 0.15), rgba(100, 80, 180, 0.08));
   border: 1px solid rgba(100, 80, 180, 0.3);
   border-radius: 14px; overflow: hidden;
-  flex: 0.85;
+  flex: 0 0 auto;                   /* ✅ არ იწელება — ფიქსირებული პატარა ზომა */
   min-height: 0; align-self: stretch;
   transition: all 0.3s var(--ease-smooth);
 }
@@ -392,7 +391,7 @@
 .premium-moon-card::before { content: ''; position: absolute; top: -50%; right: -30%; width: 200px; height: 200px; background: radial-gradient(circle, rgba(217, 182, 111, 0.15), transparent 70%); pointer-events: none; }
 
 .premium-moon-image-container {
-  flex-shrink: 0; width: 46px; height: 46px;
+  flex-shrink: 0; width: 40px; height: 40px;   /* ✅ 46→40 */
   border-radius: 50%;
   background: linear-gradient(135deg, rgba(217, 182, 111, 0.2), rgba(100, 80, 180, 0.2));
   border: 2px solid rgba(217, 182, 111, 0.4);
@@ -401,7 +400,7 @@
   position: relative; overflow: hidden; z-index: 2;
 }
 .premium-moon-image {
-  width: 42px; height: 42px;
+  width: 36px; height: 36px;   /* ✅ 42→36 */
   background-image: url('https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/planets/moon.webp');
   background-size: cover; background-position: center; background-repeat: no-repeat;
   border-radius: 50%;
@@ -410,14 +409,14 @@
 }
 @keyframes moonRotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-.premium-moon-content { flex: 1; display: flex; flex-direction: column; gap: 2px; z-index: 2; }
-.premium-moon-label { font-family: 'Cinzel', serif; font-size: 7px; font-weight: 700; color: rgba(217, 182, 111, 0.7); letter-spacing: 2px; margin: 0; }
-.premium-moon-phase { font-family: 'Cinzel', serif; font-size: 13px; font-weight: 900; color: var(--text-cream); margin: 0; letter-spacing: 1px; line-height: 1.2; }
-.premium-moon-sign { font-family: 'Cinzel', serif; font-size: 8px; font-weight: 700; color: var(--gold); margin: 0; letter-spacing: 1.5px; }
+.premium-moon-content { flex: 1; display: flex; flex-direction: column; gap: 1px; z-index: 2; }
+.premium-moon-label { font-family: 'Cinzel', serif; font-size: 6px; font-weight: 700; color: rgba(217, 182, 111, 0.7); letter-spacing: 2px; margin: 0; }
+.premium-moon-phase { font-family: 'Cinzel', serif; font-size: 12px; font-weight: 900; color: var(--text-cream); margin: 0; letter-spacing: 1px; line-height: 1.1; }
+.premium-moon-sign { font-family: 'Cinzel', serif; font-size: 7px; font-weight: 700; color: var(--gold); margin: 0; letter-spacing: 1.5px; }
 .premium-moon-desc {
-  font-family: 'Cormorant Garamond', serif; font-size: 9px;
+  font-family: 'Cormorant Garamond', serif; font-size: 8px;
   color: rgba(247, 243, 235, 0.7); margin: 0;
-  font-style: italic; line-height: 1.3;
+  font-style: italic; line-height: 1.2;
   display: -webkit-box; -webkit-line-clamp: 1;
   -webkit-box-orient: vertical; overflow: hidden;
 }
@@ -427,7 +426,7 @@
 .premium-zodiac-symbol { font-size: 22px; color: var(--gold); filter: drop-shadow(0 0 8px rgba(217, 182, 111, 0.6)); }
 
 /* ============================================
-   PREDICTIONS GRID
+   PREDICTIONS GRID (title ამოღებულია TSX-ში)
    ============================================ */
 .premium-predictions-grid {
   display: grid; grid-template-columns: repeat(5, 1fr);
@@ -700,10 +699,10 @@
   .premium-energy-level { font-size: 7px; }
   .premium-energy-subtitle { font-size: 9px; }
   
-  .premium-moon-card { padding: 7px 10px; gap: 8px; }
-  .premium-moon-image-container { width: 42px; height: 42px; }
-  .premium-moon-image { width: 38px; height: 38px; }
-  .premium-moon-phase { font-size: 12px; }
+  .premium-moon-card { padding: 5px 8px; gap: 8px; }
+  .premium-moon-image-container { width: 38px; height: 38px; }
+  .premium-moon-image { width: 34px; height: 34px; }
+  .premium-moon-phase { font-size: 11px; }
   .premium-moon-sign { font-size: 7px; }
   .premium-moon-desc { font-size: 8px; }
   
