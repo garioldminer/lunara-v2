@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { tarotCards, SUITS } from '../data/tarotCards';
-import { ArrowLeft, Search, Clock, TrendingUp, Heart } from 'lucide-react';
+import { ArrowLeft, TrendingUp, Heart } from 'lucide-react';
 import { trackQuestProgress } from '../lib/questService';
 import { useUser } from '../context/UserContext';
 import { supabase } from '../lib/supabase';
@@ -23,26 +23,15 @@ export default function CardsScreen({ onNavigate }: Props) {
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [selectedCard, setSelectedCard] = useState(tarotCards[0]);
   const [showPreview, setShowPreview] = useState(true);
-  const [recentlyViewedIds, setRecentlyViewedIds] = useState<string[]>([]);
   const [cardStats, setCardStats] = useState<CardStat[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showSearch, setShowSearch] = useState(false);
   const [longPressCard, setLongPressCard] = useState<typeof tarotCards[0] | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const lastScrollY = useRef(0);
   const scrollTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
   const longPressTimer = useRef<NodeJS.Timeout | undefined>(undefined);
 
-  // ✅ Convert recently viewed IDs to cards
-  const recentlyViewed = recentlyViewedIds
-    .map(id => tarotCards.find(c => String(c.id) === id))
-    .filter((c): c is typeof tarotCards[0] => c !== undefined);
-
   // Filter cards
   const filteredCards = tarotCards.filter((card) => {
-    if (searchQuery) {
-      return card.name.toLowerCase().includes(searchQuery.toLowerCase());
-    }
     if (activeFilter === 'all') return true;
     if (activeFilter === 'major') return card.arcana === 'major';
     return card.arcana === 'minor';
@@ -55,7 +44,7 @@ export default function CardsScreen({ onNavigate }: Props) {
     minor: tarotCards.filter(c => c.arcana === 'minor').length,
   };
 
-  // ✅ Load card statistics with null check
+  // Load card statistics
   useEffect(() => {
     if (!user || !supabase) return;
     
@@ -77,12 +66,7 @@ export default function CardsScreen({ onNavigate }: Props) {
           });
         });
         
-        const stats: CardStat[] = Object.entries(cardCounts).map(([card_id, times_drawn]) => ({
-          card_id,
-          times_drawn,
-        }));
-        
-        setCardStats(stats);
+        setCardStats(Object.entries(cardCounts).map(([card_id, times_drawn]) => ({ card_id, times_drawn })));
       } catch (err) {
         console.error('Failed to load card stats:', err);
       }
@@ -90,17 +74,6 @@ export default function CardsScreen({ onNavigate }: Props) {
     
     loadStats();
   }, [user]);
-
-  // Load recently viewed from localStorage
-  useEffect(() => {
-    const stored = localStorage.getItem('recently_viewed_cards');
-    if (stored) {
-      try {
-        const ids = JSON.parse(stored) as string[];
-        setRecentlyViewedIds(ids);
-      } catch {}
-    }
-  }, []);
 
   // Load favorites from localStorage
   useEffect(() => {
@@ -136,12 +109,8 @@ export default function CardsScreen({ onNavigate }: Props) {
         setShowPreview(false);
       }
       
-      if (scrollTimeout.current) {
-        clearTimeout(scrollTimeout.current);
-      }
-      scrollTimeout.current = setTimeout(() => {
-        setShowPreview(true);
-      }, 2000);
+      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+      scrollTimeout.current = setTimeout(() => setShowPreview(true), 2000);
       
       lastScrollY.current = currentY;
     };
@@ -158,7 +127,7 @@ export default function CardsScreen({ onNavigate }: Props) {
     setShowPreview(true);
   };
 
-  // ✅ Custom long press implementation
+  // Custom long press
   const handlePointerDown = (card: typeof tarotCards[0]) => {
     longPressTimer.current = setTimeout(() => {
       setLongPressCard(card);
@@ -175,13 +144,6 @@ export default function CardsScreen({ onNavigate }: Props) {
 
   const handleViewCard = async () => {
     if (onNavigate && selectedCard) {
-      const cardIdStr = String(selectedCard.id);
-      
-      // Add to recently viewed
-      const updated = [cardIdStr, ...recentlyViewedIds.filter(id => id !== cardIdStr)].slice(0, 5);
-      setRecentlyViewedIds(updated);
-      localStorage.setItem('recently_viewed_cards', JSON.stringify(updated));
-      
       onNavigate(`card-detail-${selectedCard.id}`);
       
       if (user) {
@@ -196,28 +158,21 @@ export default function CardsScreen({ onNavigate }: Props) {
   };
 
   const handleBack = () => {
-    if (onNavigate) {
-      onNavigate('home');
-    }
+    if (onNavigate) onNavigate('home');
   };
 
   const toggleFavorite = (cardId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     const newFavorites = new Set(favorites);
-    if (newFavorites.has(cardId)) {
-      newFavorites.delete(cardId);
-    } else {
-      newFavorites.add(cardId);
-    }
+    if (newFavorites.has(cardId)) newFavorites.delete(cardId);
+    else newFavorites.add(cardId);
     setFavorites(newFavorites);
     localStorage.setItem('favorite_cards', JSON.stringify([...newFavorites]));
   };
 
   const getCardMeta = (card: typeof tarotCards[0]) => {
     if (card.arcana === 'major') return 'Major Arcana';
-    if (card.suit && SUITS[card.suit]) {
-      return `${SUITS[card.suit].name} · ${SUITS[card.suit].element}`;
-    }
+    if (card.suit && SUITS[card.suit]) return `${SUITS[card.suit].name} · ${SUITS[card.suit].element}`;
     return 'Minor Arcana';
   };
 
@@ -229,103 +184,47 @@ export default function CardsScreen({ onNavigate }: Props) {
   const getSuitColor = (card: typeof tarotCards[0]): string => {
     if (card.arcana === 'major') return '#C5A059';
     if (!card.suit) return '#C5A059';
-    
     const colors: Record<string, string> = {
       wands: '#fb923c',
       cups: '#60a5fa',
       swords: '#cbd5e1',
       pentacles: '#34d399'
     };
-    
     return colors[card.suit] || '#C5A059';
   };
 
   return (
     <div className="cards-screen">
-      {/* Compact Header with Back + Filters + Title */}
+      {/* ✅ Header: Back (left) + Title CENTERED + Spacer (right) */}
       <div className="cards-header-compact">
-        <div className="header-left">
-          <button className="cards-back-btn" onClick={handleBack}>
-            <ArrowLeft size={16} />
-          </button>
-          <div className="filter-tabs-inline">
-            <button
-              className={`filter-tab-compact ${activeFilter === 'all' ? 'active' : ''}`}
-              onClick={() => setActiveFilter('all')}
-            >
-              ALL <span className="count">({counts.all})</span>
-            </button>
-            <button
-              className={`filter-tab-compact ${activeFilter === 'major' ? 'active' : ''}`}
-              onClick={() => setActiveFilter('major')}
-            >
-              MAJOR <span className="count">({counts.major})</span>
-            </button>
-            <button
-              className={`filter-tab-compact ${activeFilter === 'minor' ? 'active' : ''}`}
-              onClick={() => setActiveFilter('minor')}
-            >
-              MINOR <span className="count">({counts.minor})</span>
-            </button>
-          </div>
-        </div>
+        <button className="cards-back-btn" onClick={handleBack}>
+          <ArrowLeft size={16} />
+        </button>
         <h1 className="cards-title-compact">Tarot Cards</h1>
+        <div className="header-spacer" />
       </div>
 
-      {/* Recently Viewed Section */}
-      {recentlyViewed.length > 0 && (
-        <div className="recently-viewed-section">
-          <div className="section-header">
-            <Clock size={14} />
-            <span>Recently Viewed</span>
-          </div>
-          <div className="recently-viewed-carousel">
-            {recentlyViewed.map((card) => (
-              <div
-                key={card.id}
-                className="recent-card-item"
-                onClick={() => handleCardSelect(card)}
-              >
-                {card.image_url && (
-                  <img src={card.image_url} alt={card.name} loading="lazy" />
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Search Toggle */}
-      <div className="search-toggle">
+      {/* Filter Tabs - full width row */}
+      <div className="filter-tabs-row">
         <button
-          className={`search-btn ${showSearch ? 'active' : ''}`}
-          onClick={() => setShowSearch(!showSearch)}
+          className={`filter-tab-compact ${activeFilter === 'all' ? 'active' : ''}`}
+          onClick={() => setActiveFilter('all')}
         >
-          <Search size={16} />
-          {showSearch ? 'Hide' : 'Search'}
+          ALL <span className="count">({counts.all})</span>
+        </button>
+        <button
+          className={`filter-tab-compact ${activeFilter === 'major' ? 'active' : ''}`}
+          onClick={() => setActiveFilter('major')}
+        >
+          MAJOR <span className="count">({counts.major})</span>
+        </button>
+        <button
+          className={`filter-tab-compact ${activeFilter === 'minor' ? 'active' : ''}`}
+          onClick={() => setActiveFilter('minor')}
+        >
+          MINOR <span className="count">({counts.minor})</span>
         </button>
       </div>
-
-      {/* Search Bar (collapsible) */}
-      <AnimatePresence>
-        {showSearch && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="search-bar-container"
-          >
-            <input
-              type="text"
-              className="search-input"
-              placeholder="Search cards by name..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              autoFocus
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Cards Grid - 5 Columns */}
       <div className="cards-grid-enhanced">
@@ -344,17 +243,10 @@ export default function CardsScreen({ onNavigate }: Props) {
               onPointerUp={handlePointerUp}
               onPointerLeave={handlePointerUp}
               whileTap={{ scale: 0.95 }}
-              style={{
-                '--suit-color': suitColor,
-              } as React.CSSProperties}
+              style={{ '--suit-color': suitColor } as React.CSSProperties}
             >
               {card.image_url ? (
-                <img 
-                  src={card.image_url} 
-                  alt={card.name}
-                  className="card-image-enhanced"
-                  loading="lazy"
-                />
+                <img src={card.image_url} alt={card.name} className="card-image-enhanced" loading="lazy" />
               ) : (
                 <div className="card-image-placeholder-enhanced">
                   <span className="placeholder-number">{card.number}</span>
@@ -362,14 +254,12 @@ export default function CardsScreen({ onNavigate }: Props) {
                 </div>
               )}
               
-              {/* Favorite Heart */}
               {isFavorite && (
                 <div className="favorite-indicator">
                   <Heart size={12} fill="#ef4444" color="#ef4444" />
                 </div>
               )}
               
-              {/* Times Drawn Badge */}
               {timesDrawn > 0 && (
                 <div className="times-drawn-badge">
                   <TrendingUp size={10} />
@@ -416,22 +306,14 @@ export default function CardsScreen({ onNavigate }: Props) {
             <div className="preview-card-enhanced">
               <div className="preview-card-image-enhanced">
                 {selectedCard.image_url ? (
-                  <img 
-                    src={selectedCard.image_url} 
-                    alt={selectedCard.name}
-                    className="preview-image-enhanced"
-                  />
+                  <img src={selectedCard.image_url} alt={selectedCard.name} className="preview-image-enhanced" />
                 ) : (
-                  <div className="preview-placeholder">
-                    <span>{selectedCard.name}</span>
-                  </div>
+                  <div className="preview-placeholder"><span>{selectedCard.name}</span></div>
                 )}
               </div>
               <div className="preview-info-enhanced">
                 <h3>{selectedCard.name}</h3>
-                <p className="preview-arcana-enhanced">
-                  {getCardMeta(selectedCard)}
-                </p>
+                <p className="preview-arcana-enhanced">{getCardMeta(selectedCard)}</p>
                 <p className="preview-meaning-enhanced">{selectedCard.meaning}</p>
                 {getCardTimesDrawn(selectedCard.id) > 0 && (
                   <div className="preview-stats">
@@ -440,10 +322,7 @@ export default function CardsScreen({ onNavigate }: Props) {
                   </div>
                 )}
               </div>
-              <button
-                className="favorite-btn"
-                onClick={(e) => toggleFavorite(String(selectedCard.id), e)}
-              >
+              <button className="favorite-btn" onClick={(e) => toggleFavorite(String(selectedCard.id), e)}>
                 <Heart
                   size={18}
                   fill={favorites.has(String(selectedCard.id)) ? '#ef4444' : 'none'}
