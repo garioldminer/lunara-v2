@@ -25,9 +25,176 @@
 }
 
 /* ============================================
-   BASE STYLES
+   ✅ HOROSCOPE SCREEN — FIXED FLEX LAYOUT
    ============================================ */
-.horoscope-screen {
+.horoscope-screen.premium-design {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  background: #0a0600;
+  overflow: hidden;
+  font-family: 'Cormorant Garamond', serif;
+  color: #F7F3EB;
+}
+
+/* ✅ TOPBAR — Telegram header ზონაში (Close ⨯ და Settings ⋯ შორის) */
+.horoscope-topbar {
+  flex-shrink: 0;
+  height: calc(env(safe-area-inset-top, 0px) + 44px);
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: 12px;
+  padding-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: transparent;
+  pointer-events: none;
+  z-index: 40;
+}
+.horoscope-topbar-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+.horoscope-sign-name {
+  margin: 0;
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #D9B66F;
+  letter-spacing: 3px;
+  text-shadow: 0 0 15px rgba(217, 182, 111, 0.4);
+  line-height: 1.1;
+  background: linear-gradient(135deg, #F7F3EB 30%, #D9B66F 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.horoscope-date-small {
+  margin: 0;
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  font-weight: 600;
+  color: rgba(247, 243, 235, 0.75);
+  letter-spacing: 1.5px;
+  line-height: 1.1;
+}
+.horoscope-refresh-btn {
+  position: absolute;
+  right: 52px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px; height: 28px;
+  background: rgba(217, 182, 111, 0.1);
+  border: 1px solid rgba(217, 182, 111, 0.3);
+  border-radius: 50%;
+  color: #D9B66F;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.horoscope-refresh-btn:hover {
+  background: rgba(217, 182, 111, 0.2);
+  border-color: rgba(217, 182, 111, 0.5);
+}
+.horoscope-refresh-btn:active { 
+  transform: translateY(-50%) scale(0.9) rotate(180deg); 
+}
+
+/* ✅ SUBBAR — Back + 4 tabs, 5px gap topbar-დან */
+.horoscope-subbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #0a0600;
+  margin-top: 5px;
+  z-index: 40;
+}
+.horoscope-back-btn {
+  background: rgba(217, 182, 111, 0.1);
+  border: 1px solid rgba(217, 182, 111, 0.3);
+  color: #D9B66F;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+.horoscope-back-btn:hover {
+  background: rgba(217, 182, 111, 0.2);
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(217, 182, 111, 0.3);
+}
+.horoscope-back-btn:active { transform: scale(0.95); }
+.horoscope-tabs {
+  flex: 1;
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  background: rgba(217, 182, 111, 0.05);
+  border: 1px solid rgba(217, 182, 111, 0.15);
+  border-radius: 22px;
+}
+.horoscope-tab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-radius: 18px;
+  padding: 7px 4px;
+  color: rgba(247, 243, 235, 0.6);
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.horoscope-tab:hover {
+  color: #D9B66F;
+}
+.horoscope-tab:active { transform: scale(0.97); }
+.horoscope-tab.active {
+  background: linear-gradient(135deg, rgba(217, 182, 111, 0.25) 0%, rgba(217, 182, 111, 0.12) 100%);
+  color: #D9B66F;
+  box-shadow: 0 3px 15px rgba(217, 182, 111, 0.25), inset 0 0 0 1px rgba(217, 182, 111, 0.3);
+}
+
+/* ✅ SCROLL AREA — main content */
+.horoscope-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  position: relative;
+  padding-bottom: 100px;
+}
+.horoscope-scroll-area .cosmic-background,
+.horoscope-scroll-area .aurora-layer,
+.horoscope-scroll-area .floating-particles {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.horoscope-scroll-area .horoscope-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================================
+   BASE STYLES (for error/empty/loading states)
+   ============================================ */
+.horoscope-screen:not(.premium-design) {
   position: relative;
   width: 100%;
   min-height: 100vh;
@@ -131,87 +298,6 @@
 .horoscope-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; text-align: center; position: relative; z-index: 10; }
 .empty-moon { color: #D9B66F; opacity: 0.5; margin-bottom: 20px; filter: drop-shadow(0 0 15px rgba(217, 182, 111, 0.3)); }
 .horoscope-empty p { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: #F7F3EB; opacity: 0.7; font-style: italic; }
-
-/* ============================================
-   ✅ PREMIUM HEADER
-   🎯 padding-top ამოღებული - handled by .screen-wrapper in App.css
-   ============================================ */
-.premium-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 20px 10px 20px;
-  background: transparent;
-  backdrop-filter: none;
-  border-bottom: none;
-}
-
-.premium-back-btn {
-  background: rgba(217, 182, 111, 0.1);
-  border: 1px solid rgba(217, 182, 111, 0.3);
-  border-radius: 50%;
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #D9B66F;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  flex-shrink: 0;
-}
-
-.premium-back-btn:hover {
-  background: rgba(217, 182, 111, 0.2);
-  transform: scale(1.1);
-  box-shadow: 0 0 20px rgba(217, 182, 111, 0.3);
-}
-
-.premium-header-center {
-  position: absolute;
-  left: 50%;
-  top: calc(50% + 5px);
-  transform: translate(-50%, -50%);
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: max-content;
-  z-index: 10;
-}
-
-.premium-sign-name {
-  font-family: 'Cinzel', serif;
-  font-size: 30px;
-  font-weight: 900;
-  color: #D9B66F;
-  margin: 0;
-  letter-spacing: 5px;
-  text-shadow: 0 0 25px rgba(217, 182, 111, 0.6);
-  background: linear-gradient(135deg, #F7F3EB 30%, #D9B66F 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  line-height: 1.1;
-}
-
-.premium-date {
-  font-family: 'Cinzel', serif;
-  font-size: 14px;
-  font-weight: 600;
-  color: rgba(247, 243, 235, 0.8);
-  margin: 3px 0 0 0;
-  font-style: normal;
-  letter-spacing: 1.5px;
-}
-
-.premium-refresh-btn {
-  display: none !important;
-}
 
 /* ============================================
    ✅ PREMIUM CONTENT
@@ -503,57 +589,6 @@
 .premium-card-sign-name,
 .card-corner {
   display: none !important;
-}
-
-/* ============================================
-   ✅ PREMIUM TAB NAVIGATION
-   ============================================ */
-.premium-tab-nav {
-  display: flex;
-  gap: 4px;
-  margin: 3px 0 0 0;
-  padding: 6px;
-  background: rgba(217, 182, 111, 0.05);
-  border: 1px solid rgba(217, 182, 111, 0.15);
-  border-radius: 30px;
-  position: relative;
-}
-
-.premium-tab {
-  flex: 1;
-  position: relative;
-  padding: 10px 12px;
-  background: transparent;
-  border: none;
-  border-radius: 25px;
-  color: rgba(247, 243, 235, 0.6);
-  font-family: 'Cinzel', serif;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
-}
-
-.premium-tab:hover {
-  color: #D9B66F;
-}
-
-.premium-tab.active {
-  color: #D9B66F;
-  background: linear-gradient(135deg, rgba(217, 182, 111, 0.15) 0%, rgba(217, 182, 111, 0.08) 100%);
-  box-shadow: 0 3px 15px rgba(217, 182, 111, 0.2), inset 0 0 0 1px rgba(217, 182, 111, 0.3);
-}
-
-.premium-tab-underline {
-  position: absolute;
-  bottom: 0;
-  left: 20%;
-  right: 20%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #D9B66F, transparent);
-  border-radius: 2px;
 }
 
 /* ============================================
@@ -1482,20 +1517,8 @@
 
 /* ============================================
    RESPONSIVE
-   🎯 padding-top values updated for screen-wrapper
    ============================================ */
 @media (max-width: 768px) {
-  .premium-header { 
-    padding: 10px 16px 10px 16px;
-  }
-  .premium-sign-name { 
-    font-size: 28px; 
-    letter-spacing: 4px; 
-  }
-  .premium-date { 
-    font-size: 13px; 
-  }
-  
   .premium-hero-banner { 
     min-height: 180px; 
     padding: 16px 14px; 
@@ -1511,8 +1534,8 @@
   }
   .premium-card-glow { right: -30px; width: 75px; height: 210px; filter: blur(28px); }
   
-  .premium-tab-nav { padding: 5px; }
-  .premium-tab { padding: 9px 10px; font-size: 9px; }
+  .horoscope-tabs { padding: 3px; gap: 3px; }
+  .horoscope-tab { padding: 6px 3px; font-size: 8px; }
   
   .premium-energy-grid { 
     grid-template-columns: repeat(3, 1fr); 
@@ -1615,21 +1638,12 @@
 }
 
 @media (max-width: 480px) {
-  .premium-header { 
-    padding: 10px 12px 8px 12px;
-  }
-  .premium-back-btn,
-  .premium-refresh-btn { width: 38px; height: 38px; }
-  .premium-back-btn svg,
-  .premium-refresh-btn svg { width: 20px; height: 20px; }
-  .premium-sign-name { 
-    font-size: 24px; 
-    letter-spacing: 3px; 
-  }
-  .premium-date { 
-    font-size: 11px; 
-    letter-spacing: 1px;
-  }
+  .horoscope-sign-name { font-size: 13px; letter-spacing: 2px; }
+  .horoscope-date-small { font-size: 8px; }
+  .horoscope-refresh-btn { width: 26px; height: 26px; right: 48px; }
+  .horoscope-back-btn { width: 30px; height: 30px; }
+  .horoscope-tabs { padding: 2px; gap: 2px; }
+  .horoscope-tab { padding: 6px 2px; font-size: 7px; letter-spacing: 0.3px; }
   
   .premium-hero-banner { 
     min-height: 160px; 
@@ -1652,9 +1666,6 @@
     height: 180px; 
     filter: blur(28px);
   }
-  
-  .premium-tab-nav { padding: 4px; }
-  .premium-tab { padding: 8px 6px; font-size: 7px; letter-spacing: 0.5px; }
   
   .premium-energy-grid { 
     grid-template-columns: repeat(3, 1fr); 
