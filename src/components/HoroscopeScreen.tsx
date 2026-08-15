@@ -7,11 +7,12 @@ import {
   ArrowLeft, Moon, Star, Activity,
   Sparkles, RotateCcw, Share2, Sun, ChevronRight,
   X, Download, Heart, Briefcase, Palette, Hash, DollarSign, Zap, Briefcase as BriefcaseIcon,
-  ChevronDown, Bug, CheckCircle, AlertCircle, Clock, TrendingUp, Copy, Shield
+  ChevronDown, Bug, CheckCircle, AlertCircle, Clock, TrendingUp, Copy, Shield, Ruler
 } from 'lucide-react';
 import ShareCardPreview from './ShareCardPreview';
 import LoadingScreen from './LoadingScreen';
 import SignSelectionScreen from './SignSelectionScreen';
+import HoroscopeLayoutDebugger from './HoroscopeLayoutDebugger';
 import { logReading } from '../lib/adminService';
 import { trackQuestProgress } from '../lib/questService';
 import './HoroscopeScreen.css';
@@ -565,6 +566,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const [isReadFullOpen, setIsReadFullOpen] = useState(false);
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
+  const [showHoroDebug, setShowHoroDebug] = useState(false);
 
   const ADMIN_USER_ID = 'c9dbe3be-5c02-4034-8bfd-1d693eb02754';
   const isAdmin = user?.id === ADMIN_USER_ID;
@@ -578,6 +580,11 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const [diagnostics, setDiagnostics] = useState<{ type: 'success' | 'error' | 'warn'; message: string }[]>([]);
   const prevLoadingRef = useRef<boolean | null>(null);
   const prevHoroscopeRef = useRef<any>(null);
+
+  // ✅ ჭკვიანი ტექსტის refs
+  const heroLeftRef = useRef<HTMLDivElement>(null);
+  const subtitleRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
 
   const [signValidation, setSignValidation] = useState<SignValidation>({
     userSign: '',
@@ -697,6 +704,42 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   );
   
   const userSign = user?.sun_sign?.toLowerCase() || '';
+
+  // ✅ ჭკვიანი ტექსტი — subtitle და title ყოველთვის ერთ ხაზზე
+  useEffect(() => {
+    const fit = () => {
+      const left = heroLeftRef.current;
+      const subtitle = subtitleRef.current;
+      const title = titleRef.current;
+      if (!left) return;
+      const avail = left.clientWidth;
+
+      if (subtitle) {
+        subtitle.style.fontSize = '';
+        subtitle.style.whiteSpace = 'nowrap';
+        let size = parseFloat(getComputedStyle(subtitle).fontSize);
+        while (subtitle.scrollWidth > avail && size > 5) {
+          size -= 0.5;
+          subtitle.style.fontSize = `${size}px`;
+        }
+      }
+      if (title) {
+        title.style.fontSize = '';
+        title.style.whiteSpace = 'nowrap';
+        let size = parseFloat(getComputedStyle(title).fontSize);
+        while (title.scrollWidth > avail && size > 10) {
+          size -= 0.5;
+          title.style.fontSize = `${size}px`;
+        }
+      }
+    };
+    fit();
+    const t1 = setTimeout(fit, 300);
+    const t2 = setTimeout(fit, 800);
+    const t3 = setTimeout(fit, 1500);
+    window.addEventListener('resize', fit);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); window.removeEventListener('resize', fit); };
+  }, [activeTab, horoscope]);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -1051,7 +1094,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   return (
     <>
       <div className="horoscope-screen premium-design">
-        {/* ✅ UNIFIED BACKGROUND — Telegram header-ის უკანაც */}
+        {/* ✅ UNIFIED BACKGROUND */}
         <div className="cosmic-background" style={{ backgroundImage: `url(${BACKGROUND_IMAGE})` }} />
         <div className="aurora-layer" />
         <div className="floating-particles">
@@ -1064,7 +1107,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           ))}
         </div>
 
-        {/* ✅ TOPBAR — Telegram-ის header-ში, ცენტრში (refresh ამოღებული) */}
+        {/* ✅ TOPBAR */}
         <div className="horoscope-topbar">
           <div className="horoscope-topbar-text">
             <h1 className="horoscope-sign-name">{userSign.toUpperCase()}</h1>
@@ -1072,7 +1115,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           </div>
         </div>
 
-        {/* ✅ SUBBAR — Back + 4 tabs (5px gap topbar-დან) */}
+        {/* ✅ SUBBAR */}
         <div className="horoscope-subbar">
           <button className="horoscope-back-btn" onClick={() => onNavigate?.('home')}>
             <ArrowLeft size={16} />
@@ -1090,7 +1133,26 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           </div>
         </div>
 
-        {/* ✅ SCROLL AREA — NO SCROLL, flex column, ყველაფერი ეტევა ეკრანზე */}
+        {/* ✅ LAYOUT DEBUG ღილაკი — მხოლოდ admin */}
+        {isAdmin && (
+          <button
+            onClick={() => setShowHoroDebug(true)}
+            style={{
+              position: 'fixed', top: '50%', right: 8, transform: 'translateY(-50%)',
+              width: 40, height: 40, borderRadius: '50%',
+              background: 'linear-gradient(135deg, rgba(217,182,111,0.95), rgba(139,105,20,0.95))',
+              border: '2px solid rgba(255,255,255,0.2)', color: '#fff',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', zIndex: 9990,
+              boxShadow: '0 4px 16px rgba(217,182,111,0.5)',
+            }}
+            title="Horoscope Layout Debugger"
+          >
+            <Ruler size={18} />
+          </button>
+        )}
+
+        {/* ✅ SCROLL AREA */}
         <div className="horoscope-scroll-area">
           <AnimatePresence>
             {toast && (
@@ -1120,7 +1182,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           </AnimatePresence>
 
           <div className="horoscope-content premium-content">
-            {/* HERO — compact */}
+            {/* HERO */}
             <motion.div
               className="premium-hero-banner"
               initial={{ opacity: 0, y: 20 }}
@@ -1135,14 +1197,16 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
               <div className="premium-glowing-ring" />
 
-              <div className="premium-hero-left">
-                <div className="premium-hero-subtitle">
-                  <span className="subtitle-star">✦</span>
-                  <span>{TAB_LABELS[activeTab]}</span>
-                  <span className="subtitle-star">✦</span>
+              <div className="premium-hero-left" ref={heroLeftRef}>
+                <div className="premium-hero-texts">
+                  <div className="premium-hero-subtitle" ref={subtitleRef}>
+                    <span className="subtitle-star">✦</span>
+                    <span>{TAB_LABELS[activeTab]}</span>
+                    <span className="subtitle-star">✦</span>
+                  </div>
+                  
+                  <h2 className="premium-hero-title" ref={titleRef}>{heroTitle}</h2>
                 </div>
-                
-                <h2 className="premium-hero-title">{heroTitle}</h2>
                 <p className="premium-hero-description">{heroDescription}</p>
                 
                 <motion.button 
@@ -1175,8 +1239,8 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
               </div>
             </motion.div>
 
-            {/* ✅ ENERGY — "COSMIC ENERGY LEVELS" სათაური ამოღებული */}
-            <div className="premium-section">
+            {/* ✅ ENERGY */}
+            <div className="premium-section energy-section">
               <div className="premium-energy-grid">
                 <motion.div className="premium-energy-card energy" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
                   <div className="premium-energy-icon"><Zap size={32} /></div>
@@ -1219,7 +1283,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
               </div>
             </div>
 
-            {/* MOON — compact */}
+            {/* MOON */}
             <motion.div className="premium-moon-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
               <div className="premium-moon-image-container">
                 <div className="premium-moon-image" />
@@ -1232,8 +1296,8 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
               </div>
             </motion.div>
 
-            {/* PREDICTIONS — compact */}
-            <div className="premium-section">
+            {/* ✅ PREDICTIONS */}
+            <div className="premium-section predictions-section">
               <h3 className="premium-section-title">
                 <Sparkles size={12} />
                 {TAB_PREDICTIONS_TITLE[activeTab]}
@@ -1599,6 +1663,11 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           )}
         </AnimatePresence>
       </div>
+
+      {/* ✅ LAYOUT DEBUGGER — მხოლოდ admin */}
+      {isAdmin && (
+        <HoroscopeLayoutDebugger open={showHoroDebug} onClose={() => setShowHoroDebug(false)} />
+      )}
 
       {isAdmin && (
         <DebugPanel 
