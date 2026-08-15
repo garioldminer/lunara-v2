@@ -96,6 +96,68 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
   if (!user?.sun_sign) return <SignSelectionScreen onNavigate={onNavigate} />;
 
+  if (loading && !horoscope) {
+    return (
+      <>
+        <LoadingScreen message="Reading the stars" />
+        {isAdmin && (
+          <DebugPanel logs={debug.debugLogs} metrics={debug.performanceMetrics} diagnostics={debug.diagnostics}
+            isVisible={debug.debugVisible} onToggle={() => debug.setDebugVisible(!debug.debugVisible)}
+            onCopy={() => navigator.clipboard.writeText(JSON.stringify(debug.handleCopyDebug(), null, 2))}
+            signValidation={debug.signValidation} horoscopeData={null} />
+        )}
+      </>
+    );
+  }
+
+  if (error && !horoscope) {
+    return (
+      <>
+        <div className="horoscope-screen">
+          <div className="cosmic-background" style={{ backgroundImage: `url(${BACKGROUND_IMAGE})` }} />
+          <div className="aurora-layer" />
+          <div className="horoscope-error">
+            <motion.div className="error-icon" animate={{ rotate: [0, -10, 10, -10, 0] }} transition={{ duration: 0.5 }}>
+              <Moon size={48} className="error-moon" />
+            </motion.div>
+            <p className="error-message">{ERROR_MESSAGES[Math.floor(Math.random() * ERROR_MESSAGES.length)]}</p>
+            <motion.button className="retry-button" onClick={refetch} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <RotateCcw size={16} /><span>Try Again</span>
+            </motion.button>
+          </div>
+        </div>
+        {isAdmin && (
+          <DebugPanel logs={debug.debugLogs} metrics={debug.performanceMetrics} diagnostics={debug.diagnostics}
+            isVisible={debug.debugVisible} onToggle={() => debug.setDebugVisible(!debug.debugVisible)}
+            onCopy={() => navigator.clipboard.writeText(JSON.stringify(debug.handleCopyDebug(), null, 2))}
+            signValidation={debug.signValidation} horoscopeData={null} />
+        )}
+      </>
+    );
+  }
+
+  if (!horoscope) {
+    return (
+      <>
+        <div className="horoscope-screen">
+          <div className="cosmic-background" style={{ backgroundImage: `url(${BACKGROUND_IMAGE})` }} />
+          <div className="aurora-layer" />
+          <div className="horoscope-empty">
+            <Moon size={48} className="empty-moon" />
+            <p>The cosmos has no message for you today.</p>
+          </div>
+        </div>
+        {isAdmin && (
+          <DebugPanel logs={debug.debugLogs} metrics={debug.performanceMetrics} diagnostics={debug.diagnostics}
+            isVisible={debug.debugVisible} onToggle={() => debug.setDebugVisible(!debug.debugVisible)}
+            onCopy={() => navigator.clipboard.writeText(JSON.stringify(debug.handleCopyDebug(), null, 2))}
+            signValidation={debug.signValidation} horoscopeData={null} />
+        )}
+      </>
+    );
+  }
+
+  // ✅ აქ horoscope definitely not null
   const zodiacData = ZODIAC_SIGNS[userSign] || ZODIAC_SIGNS['leo'];
 
   const wrongSignsDetected: string[] = [];
@@ -139,7 +201,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         if (!blob) { showToast('Failed to generate image!', 'error'); return; }
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
-        link.download = `lunara-${userSign}-${horoscope?.date}.png`;
+        link.download = `lunara-${userSign}-${fixedHoroscope.date}.png`;
         link.href = url;
         link.click();
         URL.revokeObjectURL(url);
@@ -152,7 +214,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
   const handleShareToTelegram = () => {
     const shareText = `Check out my ${userSign} horoscope on Lunara! 🔮✨`;
-    const shareUrl = `https://lunara.app/horoscope?sign=${userSign}&date=${horoscope?.date}`;
+    const shareUrl = `https://lunara.app/horoscope?sign=${userSign}&date=${fixedHoroscope.date}`;
     const telegram = (window as any).Telegram?.WebApp;
     if (telegram) telegram.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`);
     else window.open(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`, '_blank');
@@ -164,64 +226,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
       .then(() => showToast('Debug data copied! 📋', 'success'))
       .catch(() => showToast('Copy failed', 'error'));
   };
-
-  if (loading && !horoscope) {
-    return (
-      <>
-        <LoadingScreen message="Reading the stars" />
-        {isAdmin && (
-          <DebugPanel logs={debug.debugLogs} metrics={debug.performanceMetrics} diagnostics={debug.diagnostics}
-            isVisible={debug.debugVisible} onToggle={() => debug.setDebugVisible(!debug.debugVisible)}
-            onCopy={handleCopyDebugPanel} signValidation={debug.signValidation} horoscopeData={horoscope} />
-        )}
-      </>
-    );
-  }
-
-  if (error && !horoscope) {
-    return (
-      <>
-        <div className="horoscope-screen">
-          <div className="cosmic-background" style={{ backgroundImage: `url(${BACKGROUND_IMAGE})` }} />
-          <div className="aurora-layer" />
-          <div className="horoscope-error">
-            <motion.div className="error-icon" animate={{ rotate: [0, -10, 10, -10, 0] }} transition={{ duration: 0.5 }}>
-              <Moon size={48} className="error-moon" />
-            </motion.div>
-            <p className="error-message">{ERROR_MESSAGES[Math.floor(Math.random() * ERROR_MESSAGES.length)]}</p>
-            <motion.button className="retry-button" onClick={refetch} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <RotateCcw size={16} /><span>Try Again</span>
-            </motion.button>
-          </div>
-        </div>
-        {isAdmin && (
-          <DebugPanel logs={debug.debugLogs} metrics={debug.performanceMetrics} diagnostics={debug.diagnostics}
-            isVisible={debug.debugVisible} onToggle={() => debug.setDebugVisible(!debug.debugVisible)}
-            onCopy={handleCopyDebugPanel} signValidation={debug.signValidation} horoscopeData={horoscope} />
-        )}
-      </>
-    );
-  }
-
-  if (!horoscope) {
-    return (
-      <>
-        <div className="horoscope-screen">
-          <div className="cosmic-background" style={{ backgroundImage: `url(${BACKGROUND_IMAGE})` }} />
-          <div className="aurora-layer" />
-          <div className="horoscope-empty">
-            <Moon size={48} className="empty-moon" />
-            <p>The cosmos has no message for you today.</p>
-          </div>
-        </div>
-        {isAdmin && (
-          <DebugPanel logs={debug.debugLogs} metrics={debug.performanceMetrics} diagnostics={debug.diagnostics}
-            isVisible={debug.debugVisible} onToggle={() => debug.setDebugVisible(!debug.debugVisible)}
-            onCopy={handleCopyDebugPanel} signValidation={debug.signValidation} horoscopeData={horoscope} />
-        )}
-      </>
-    );
-  }
 
   const tabs: { id: TabType; label: string }[] = [
     { id: 'today', label: 'TODAY' },
