@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { tarotCards, SUITS } from '../data/tarotCards';
-import { ArrowLeft, TrendingUp, Heart } from 'lucide-react';
+import { ArrowLeft, TrendingUp, Heart, X } from 'lucide-react';
 import { trackQuestProgress } from '../lib/questService';
 import { useUser } from '../context/UserContext';
 import { supabase } from '../lib/supabase';
@@ -15,7 +15,6 @@ interface CardStat { card_id: string; times_drawn: number; }
 export default function CardsScreen({ onNavigate }: Props) {
   const { user } = useUser();
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
-  // ✅ null თავიდან — preview მხოლოდ დაჭერის შემდეგ
   const [selectedCard, setSelectedCard] = useState<typeof tarotCards[0] | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [cardStats, setCardStats] = useState<CardStat[]>([]);
@@ -61,7 +60,6 @@ export default function CardsScreen({ onNavigate }: Props) {
     if (stored) { try { setFavorites(new Set(JSON.parse(stored) as string[])); } catch {} }
   }, []);
 
-  // Auto-hide preview on scroll
   useEffect(() => {
     const handleScroll = () => {
       const currentY = window.scrollY;
@@ -79,10 +77,14 @@ export default function CardsScreen({ onNavigate }: Props) {
     };
   }, [showPreview, selectedCard]);
 
-  // ✅ Preview ჩნდება მხოლოდ ბარათზე დაჭერისას
   const handleCardSelect = (card: typeof tarotCards[0]) => {
     setSelectedCard(card);
     setShowPreview(true);
+  };
+
+  const handleClosePreview = () => {
+    setSelectedCard(null);
+    setShowPreview(false);
   };
 
   const handlePointerDown = (card: typeof tarotCards[0]) => {
@@ -131,12 +133,10 @@ export default function CardsScreen({ onNavigate }: Props) {
 
   return (
     <div className="cards-screen">
-      {/* ✅ TOP TITLE — Telegram Back-ის ხაზში, ცენტრში */}
       <div className="cards-topbar">
         <h1 className="cards-title-top">Tarot Cards</h1>
       </div>
 
-      {/* ✅ FIXED SUB-BAR: [back] + [ALL][MAJOR][MINOR] */}
       <div className="cards-subbar">
         <button className="cards-back-btn" onClick={handleBack}>
           <ArrowLeft size={16} />
@@ -152,7 +152,6 @@ export default function CardsScreen({ onNavigate }: Props) {
         </button>
       </div>
 
-      {/* ✅ GRID */}
       <div className="cards-grid-enhanced">
         {filteredCards.map((card) => {
           const timesDrawn = getCardTimesDrawn(card.id);
@@ -189,7 +188,6 @@ export default function CardsScreen({ onNavigate }: Props) {
         })}
       </div>
 
-      {/* Long Press Quick Preview */}
       <AnimatePresence>
         {longPressCard && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="quick-preview-popup">
@@ -205,7 +203,6 @@ export default function CardsScreen({ onNavigate }: Props) {
         )}
       </AnimatePresence>
 
-      {/* ✅ FLOATING PREVIEW — მხოლოდ დაჭერის შემდეგ, ცენტრში (left/right, არა transform) */}
       <AnimatePresence>
         {selectedCard && showPreview && (
           <motion.div
@@ -214,6 +211,15 @@ export default function CardsScreen({ onNavigate }: Props) {
             exit={{ opacity: 0, y: 100 }}
             className="floating-preview-enhanced"
           >
+            {/* ✅ X CLOSE BUTTON — ზემოთ მარჯვნივ */}
+            <button 
+              className="preview-close-btn" 
+              onClick={handleClosePreview}
+              aria-label="Close preview"
+            >
+              <X size={14} />
+            </button>
+
             <div className="preview-card-enhanced">
               <div className="preview-card-image-enhanced">
                 {selectedCard.image_url ? (

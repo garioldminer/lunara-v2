@@ -11,7 +11,9 @@
   overflow-x: hidden;
 }
 
-/* ✅ TOP TITLE */
+/* ============================================
+   TOP TITLE
+   ============================================ */
 .cards-topbar {
   position: fixed;
   top: 0; left: 0; right: 0;
@@ -37,7 +39,9 @@
   text-shadow: 0 0 20px rgba(197, 160, 89, 0.3);
 }
 
-/* ✅ FIXED SUB-BAR */
+/* ============================================
+   FIXED SUB-BAR
+   ============================================ */
 .cards-subbar {
   position: fixed;
   top: calc(env(safe-area-inset-top, 0px) + 44px);
@@ -87,7 +91,9 @@
 }
 .filter-tab-compact .count { font-size: 8px; opacity: 0.7; }
 
-/* ✅ GRID — დაბალი z-index */
+/* ============================================
+   GRID
+   ============================================ */
 .cards-grid-enhanced {
   position: relative;
   z-index: 1;
@@ -134,6 +140,9 @@
   font-size: 8px; font-weight: 700; color: #fff;
 }
 
+/* ============================================
+   QUICK PREVIEW POPUP (Long Press)
+   ============================================ */
 .quick-preview-popup {
   position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
   width: calc(100% - 32px); max-width: 320px;
@@ -148,9 +157,11 @@
 .quick-preview-info p { margin: 0; font-size: 11px; color: rgba(255,255,255,0.6); }
 .quick-meaning { font-style: italic; margin-top: 6px; color: rgba(255,255,255,0.4); }
 
-/* ✅ FLOATING PREVIEW — ცენტრში left/right-ით (არა transform, რადგან framer-motion მართავს transform-ს) */
+/* ============================================
+   FLOATING PREVIEW (ცენტრში left/right-ით)
+   ============================================ */
 .floating-preview-enhanced {
-  position: fixed;
+  position: relative;
   bottom: 80px;
   left: 12px;
   right: 12px;
@@ -160,8 +171,42 @@
   border: 1px solid rgba(197, 160, 89, 0.3);
   border-radius: 16px;
   padding: 12px;
+  padding-top: 38px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
   z-index: 99;
+}
+
+/* ✅ X CLOSE BUTTON — ზემოთ მარჯვნივ */
+.preview-close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(197, 160, 89, 0.15);
+  border: 1px solid rgba(197, 160, 89, 0.35);
+  color: #C5A059;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  z-index: 10;
+  padding: 0;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.preview-close-btn:hover {
+  background: rgba(197, 160, 89, 0.3);
+  border-color: #C5A059;
+  transform: rotate(90deg) scale(1.05);
+  box-shadow: 0 0 12px rgba(197, 160, 89, 0.4);
+}
+
+.preview-close-btn:active {
+  transform: rotate(90deg) scale(0.92);
 }
 
 .preview-card-enhanced { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
