@@ -4,73 +4,64 @@
   margin: 0 auto;
   color: #fff;
   font-family: 'Georgia', serif;
-  background: #0a0600;
+  background: transparent;
   min-height: 100vh;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 44px + 46px);
   padding-bottom: 200px;
   overflow-x: hidden;
 }
 
-/* ============================================
-   ✅ COMPACT HEADER: Back | Title CENTERED | Spacer
-   ============================================ */
-.cards-header-compact {
+/* ✅ TOP TITLE — Telegram Back-ის ხაზში, ცენტრში, transparent რომ არ შექმნას ხაზი */
+.cards-topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: calc(env(safe-area-inset-top, 0px) + 44px);
+  padding-top: env(safe-area-inset-top, 0px);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 10px 12px;
-  background: linear-gradient(180deg, #0a0600 0%, rgba(10, 6, 0, 0.95) 100%);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  border-bottom: 1px solid rgba(197, 160, 89, 0.1);
+  justify-content: center;
+  background: transparent;
+  pointer-events: none;
+  z-index: 40;
+}
+
+.cards-title-top {
+  margin: 0;
+  font-family: 'Georgia', serif;
+  font-size: 15px;
+  font-weight: 400;
+  color: #C5A059;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-style: italic;
+  text-shadow: 0 0 20px rgba(197, 160, 89, 0.3);
+}
+
+/* ✅ FIXED SUB-BAR: back + filters ერთ ხაზზე, app ფონით (არა შავი ხაზი) */
+.cards-subbar {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 44px);
+  left: 0; right: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #0a0600;
+  z-index: 45;
 }
 
 .cards-back-btn {
   background: rgba(197, 160, 89, 0.1);
   border: 1px solid rgba(197, 160, 89, 0.3);
   color: #C5A059;
-  width: 32px;
-  height: 32px;
+  width: 32px; height: 32px;
   border-radius: 50%;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
+  transition: all 0.2s;
 }
-
 .cards-back-btn:active { transform: scale(0.95); }
-
-/* ✅ Spacer same width as back button → title truly centered */
-.header-spacer { width: 32px; flex-shrink: 0; }
-
-.cards-title-compact {
-  flex: 1;
-  text-align: center;
-  font-family: 'Georgia', serif;
-  font-size: 15px;
-  font-weight: 400;
-  color: #C5A059;
-  letter-spacing: 2px;
-  margin: 0;
-  text-transform: uppercase;
-  font-style: italic;
-  text-shadow: 0 0 20px rgba(197, 160, 89, 0.3);
-}
-
-/* ============================================
-   FILTER TABS - full width row
-   ============================================ */
-.filter-tabs-row {
-  display: flex;
-  gap: 4px;
-  padding: 8px 12px;
-  position: sticky;
-  top: 53px;
-  z-index: 99;
-  background: rgba(10, 6, 0, 0.95);
-}
 
 .filter-tab-compact {
   flex: 1;
@@ -85,26 +76,18 @@
   letter-spacing: 0.3px;
   cursor: pointer;
   transition: all 0.3s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
+  display: flex; align-items: center; justify-content: center; gap: 3px;
 }
-
 .filter-tab-compact:active { transform: scale(0.97); }
-
 .filter-tab-compact.active {
   background: linear-gradient(135deg, #C5A059, #8B6914);
   border-color: #C5A059;
   color: #0a0600;
   box-shadow: 0 2px 8px rgba(197, 160, 89, 0.3);
 }
-
 .filter-tab-compact .count { font-size: 8px; opacity: 0.7; }
 
-/* ============================================
-   CARDS GRID
-   ============================================ */
+/* ✅ GRID — scroll-დება fixed header-ის ქვემოთ */
 .cards-grid-enhanced {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -114,7 +97,6 @@
 
 .card-item-enhanced {
   cursor: pointer;
-  transition: all 0.2s;
   width: 100%;
   aspect-ratio: 2/3;
   border-radius: 6px;
@@ -124,72 +106,54 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
   position: relative;
 }
-
 .card-item-enhanced.selected {
   border-color: var(--suit-color, #C5A059);
   box-shadow: 0 0 12px rgba(197, 160, 89, 0.6);
 }
-
 .card-image-enhanced { width: 100%; height: 100%; object-fit: cover; display: block; }
-
 .card-image-placeholder-enhanced {
   width: 100%; height: 100%;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 4px; padding: 4px; box-sizing: border-box;
 }
-
 .placeholder-number { font-size: 10px; color: #C5A059; font-weight: 700; }
 .placeholder-text { font-size: 7px; color: rgba(255,255,255,0.5); text-align: center; line-height: 1.1; }
-
 .favorite-indicator {
   position: absolute; top: 2px; left: 2px;
   background: rgba(0,0,0,0.6); border-radius: 50%;
   width: 16px; height: 16px;
   display: flex; align-items: center; justify-content: center;
 }
-
 .times-drawn-badge {
   position: absolute; top: 2px; right: 2px;
   background: linear-gradient(135deg, #10b981, #059669);
   border-radius: 8px; padding: 2px 4px;
   display: flex; align-items: center; gap: 2px;
   font-size: 8px; font-weight: 700; color: #fff;
-  box-shadow: 0 2px 4px rgba(16,185,129,0.4);
 }
 
-/* ============================================
-   QUICK PREVIEW POPUP (Long Press)
-   ============================================ */
 .quick-preview-popup {
-  position: fixed; top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
   width: calc(100% - 32px); max-width: 320px;
   background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
   border: 2px solid #C5A059; border-radius: 16px;
   padding: 16px; z-index: 1000;
   box-shadow: 0 20px 60px rgba(0,0,0,0.9);
 }
-
 .quick-preview-content { display: flex; gap: 12px; align-items: center; }
 .quick-preview-content img { width: 80px; height: 120px; object-fit: cover; border-radius: 8px; border: 2px solid #C5A059; }
 .quick-preview-info h4 { margin: 0 0 4px; font-size: 16px; color: #C5A059; }
 .quick-preview-info p { margin: 0; font-size: 11px; color: rgba(255,255,255,0.6); }
 .quick-meaning { font-style: italic; margin-top: 6px; color: rgba(255,255,255,0.4); }
 
-/* ============================================
-   FLOATING PREVIEW
-   ============================================ */
 .floating-preview-enhanced {
-  position: fixed; bottom: 80px; left: 50%;
-  transform: translateX(-50%);
+  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
   width: calc(100% - 24px); max-width: 456px;
   background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
   border: 1px solid rgba(197,160,89,0.3); border-radius: 16px;
   padding: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.8);
   z-index: 99;
 }
-
 .preview-card-enhanced { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
 .preview-card-image-enhanced {
   width: 50px; height: 75px;
@@ -205,17 +169,11 @@
 .preview-arcana-enhanced { margin: 0 0 3px; font-size: 9px; color: rgba(255,255,255,0.5); text-transform: capitalize; }
 .preview-meaning-enhanced { margin: 0; font-size: 9px; color: rgba(255,255,255,0.4); font-style: italic; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .preview-stats { display: flex; align-items: center; gap: 4px; margin-top: 4px; font-size: 9px; color: #10b981; }
-.favorite-btn { background: none; border: none; cursor: pointer; padding: 8px; transition: all 0.2s; }
-.favorite-btn:active { transform: scale(1.1); }
-
+.favorite-btn { background: none; border: none; cursor: pointer; padding: 8px; }
 .view-card-btn-enhanced {
   background: linear-gradient(135deg, #C5A059, #8B6914);
   border: none; border-radius: 10px;
   padding: 10px 16px; color: #0a0600;
   font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
-  cursor: pointer; transition: all 0.2s;
-  box-shadow: 0 4px 10px rgba(197,160,89,0.3);
-  width: 100%; font-family: inherit;
+  cursor: pointer; width: 100%; font-family: inherit;
 }
-
-.view-card-btn-enhanced:active { transform: scale(1.02); }
