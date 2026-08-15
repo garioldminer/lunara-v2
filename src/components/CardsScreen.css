@@ -68,11 +68,12 @@
   padding-bottom: 100px; /* JS დააყენებს ზუსტს */
 }
 
-/* ✅ GRID — padding მხოლოდ JS აყენებს (CSS-ში აღარ არის hardcoded) */
+/* ✅ GRID — padding ემთხვევა nav inset-ს (CSS variable + fallback 4px) */
 .cards-grid-enhanced {
   position: relative; z-index: 1;
   display: grid; grid-template-columns: repeat(5, 1fr);
   gap: 6px;
+  padding: 0 var(--nav-inset, 4px);
 }
 .card-item-enhanced {
   cursor: pointer; width: 100%; aspect-ratio: 2/3; border-radius: 6px; overflow: hidden;
