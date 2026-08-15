@@ -3,6 +3,8 @@ import { X, RefreshCw, Ruler, Copy, Check } from 'lucide-react';
 
 interface Metric { label: string; value: string; ok?: boolean; bad?: boolean; }
 
+const r = (n: number) => Math.round(n);
+
 export default function CardsLayoutDebugger({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [metrics, setMetrics] = useState<Metric[]>([]);
   const [lastUpdate, setLastUpdate] = useState('');
@@ -17,14 +19,11 @@ export default function CardsLayoutDebugger({ open, onClose }: { open: boolean; 
     const scrollArea = q('.cards-scroll-area');
     const grid = q('.cards-grid-enhanced');
     const firstCard = q('.card-item-enhanced');
-    const cards = grid ? (Array.from(grid.children) as HTMLElement[]) : [];
-    const lastCard = cards.length ? cards[cards.length - 1] : null;
     const nav = q('.bottom-nav-container');
     const preview = q('.floating-preview-enhanced');
 
     const topbarR = rect(topbar), subbarR = rect(subbar), areaR = rect(scrollArea),
-          gridR = rect(grid), firstR = rect(firstCard), lastR = rect(lastCard),
-          navR = rect(nav), prevR = rect(preview);
+          firstR = rect(firstCard), navR = rect(nav), prevR = rect(preview);
     const m: Metric[] = [];
 
     m.push({ label: 'innerHeight', value: `${window.innerHeight}px` });
@@ -37,20 +36,34 @@ export default function CardsLayoutDebugger({ open, onClose }: { open: boolean; 
       const gap = r(areaR.top - subbarR.bottom);
       m.push({ label: 'gap subbar→scrollArea', value: `${gap}px`, ok: gap >= 0 && gap <= 6, bad: gap < 0 || gap > 6 });
     }
-    if (gridR) m.push({ label: 'grid padL/padR', value: `${getComputedStyle(grid!).paddingLeft} / ${getComputedStyle(grid!).paddingRight}` });
-    if (navR) m.push({ label: 'nav left/right', value: `${r(navR.left)} / ${r(window.innerWidth - navR.right)}` });
-    if (gridR && navR) {
-      const lDiff = r(Math.abs(parseFloat(getComputedStyle(grid!).paddingLeft) - navR.left));
-      m.push({ label: 'grid↔nav კიდეები სწორია?', value: lDiff <= 2 ? '✅ დიახ' : `❌ ${lDiff}px`, ok: lDiff <= 2, bad: lDiff > 2 });
+
+    if (nav) {
+      const inner = (nav.querySelector('.bottom-nav') || nav.firstElementChild || nav) as HTMLElement;
+      const nb = inner.getBoundingClientRect();
+      const cb = nav.getBoundingClientRect();
+      m.push({ label: 'nav inner L/R', value: `${r(nb.left)} / ${r(window.innerWidth - nb.right)}` });
+      m.push({ label: 'nav top (container)', value: `${r(cb.top)}px` });
+
+      if (grid) {
+        const gl = parseFloat(getComputedStyle(grid).paddingLeft);
+        const gr = parseFloat(getComputedStyle(grid).paddingRight);
+        const lDiff = r(Math.abs(gl - nb.left));
+        const rDiff = r(Math.abs(gr - (window.innerWidth - nb.right)));
+        m.push({ label: 'grid↔nav კიდეები სწორია?', value: (lDiff <= 2 && rDiff <= 2) ? '✅ დიახ' : `❌ L:${lDiff} R:${rDiff}`, ok: (lDiff <= 2 && rDiff <= 2), bad: (lDiff > 2 || rDiff > 2) });
+      }
+      if (scrollArea) {
+        const padB = parseFloat(getComputedStyle(scrollArea).paddingBottom);
+        const navH = window.innerHeight - cb.top;
+        const lastGap = r(padB - navH);
+        m.push({ label: 'last card→nav (ბოლომდე სქროლზე)', value: `${lastGap}px`, ok: lastGap >= 0 && lastGap <= 8, bad: lastGap < 0 || lastGap > 8 });
+      }
     }
+
     if (firstR && subbarR) {
       const gap = r(firstR.top - subbarR.bottom);
       m.push({ label: 'gap subbar→1st card', value: `${gap}px`, ok: gap >= 0 && gap <= 8, bad: gap < 0 || gap > 8 });
     }
-    if (lastR && navR) {
-      const gap = r(navR.top - lastR.bottom);
-      m.push({ label: 'gap last card→nav', value: `${gap}px`, ok: gap >= 0 && gap <= 8, bad: gap < 0 || gap > 8 });
-    }
+
     if (prevR) {
       const centered = Math.abs(prevR.left - prevR.right) < 4;
       m.push({ label: 'preview ცენტრშია?', value: centered ? '✅ დიახ' : '❌ არა', ok: centered, bad: !centered });
@@ -61,8 +74,6 @@ export default function CardsLayoutDebugger({ open, onClose }: { open: boolean; 
     setMetrics(m);
     setLastUpdate(new Date().toLocaleTimeString('en-US', { hour12: false }));
   }, []);
-
-  const r = (n: number) => Math.round(n);
 
   useEffect(() => {
     if (!open) return;

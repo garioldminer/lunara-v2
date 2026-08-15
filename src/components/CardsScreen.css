@@ -1,4 +1,4 @@
-/* ✅ FIXED FULL-SCREEN FLEX COLUMN — header არასდროს დაიფარება */
+/* ✅ FIXED FULL-SCREEN FLEX COLUMN — opaque background (შავი კიდის გასაქრობად) */
 .cards-screen {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -8,7 +8,7 @@
   flex-direction: column;
   color: #fff;
   font-family: 'Georgia', serif;
-  background: transparent;
+  background: #0a0600;
   overflow: hidden;
 }
 
@@ -58,16 +58,17 @@
 }
 .filter-tab-compact .count { font-size: 8px; opacity: 0.7; }
 
-/* ✅ SCROLL AREA — მხოლოდ ეს სქროლდება, 5px gap ზემოთ */
+/* ✅ SCROLL AREA — მხოლოდ ეს სქროლდება + overscroll control */
 .cards-scroll-area {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   padding-top: 5px;
   padding-bottom: 100px; /* JS დააყენებს ზუსტს */
 }
 
-/* ✅ GRID — padding JS დააყენებს nav კიდეებზე */
+/* ✅ GRID — padding JS დააყენებს nav შიგნით კიდეებზე */
 .cards-grid-enhanced {
   position: relative; z-index: 1;
   display: grid; grid-template-columns: repeat(5, 1fr);

@@ -63,7 +63,7 @@ export default function CardsScreen({ onNavigate }: Props) {
     if (stored) { try { setFavorites(new Set(JSON.parse(stored) as string[])); } catch {} }
   }, []);
 
-  // ✅ Auto-hide preview on INNER scroll (scroll area-ზე, არა window-ზე)
+  // ✅ Auto-hide preview on INNER scroll
   useEffect(() => {
     const area = scrollAreaRef.current;
     if (!area) return;
@@ -81,7 +81,7 @@ export default function CardsScreen({ onNavigate }: Props) {
     };
   }, [showPreview, selectedCard]);
 
-  // ✅ სმარტ Layout v3: flex + inner scroll. აყენებს მხოლოდ horizontal + bottom.
+  // ✅ სმარტ Layout v4: კითხულობს შიგნით ბანერის კიდეებს (არა container-ის)
   useEffect(() => {
     const apply = () => {
       const scrollArea = document.querySelector('.cards-scroll-area') as HTMLElement;
@@ -90,12 +90,15 @@ export default function CardsScreen({ onNavigate }: Props) {
       if (!scrollArea || !grid) return;
 
       if (nav) {
-        const nb = nav.getBoundingClientRect();
-        // ✅ HORIZONTAL: grid კიდეები = nav კიდეები
+        // ✅ შიგნით ბანერი (ვიზუალური), არა full-width container
+        const inner = (nav.querySelector('.bottom-nav') || nav.firstElementChild || nav) as HTMLElement;
+        const nb = inner.getBoundingClientRect();
         grid.style.paddingLeft = `${Math.round(nb.left)}px`;
         grid.style.paddingRight = `${Math.round(window.innerWidth - nb.right)}px`;
+
         // ✅ BOTTOM: ბოლო კარტი დაჯდება nav-ის ზემოთ + 5px
-        scrollArea.style.paddingBottom = `${Math.round(window.innerHeight - nb.top) + 5}px`;
+        const cb = nav.getBoundingClientRect();
+        scrollArea.style.paddingBottom = `${Math.round(window.innerHeight - cb.top) + 5}px`;
       }
     };
     apply();
@@ -162,12 +165,12 @@ export default function CardsScreen({ onNavigate }: Props) {
 
   return (
     <div className="cards-screen">
-      {/* ✅ TOPBAR — Telegram header ზონაში, flex-shrink:0 */}
+      {/* ✅ TOPBAR — Telegram header ზონაში */}
       <div className="cards-topbar">
         <h1 className="cards-title-top">Tarot Cards</h1>
       </div>
 
-      {/* ✅ SUBBAR — flex-shrink:0, არასდროს დაიფარება */}
+      {/* ✅ SUBBAR — flex-shrink:0 */}
       <div className="cards-subbar">
         <button className="cards-back-btn" onClick={handleBack}>
           <ArrowLeft size={16} />
