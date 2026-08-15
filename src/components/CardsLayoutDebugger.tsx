@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { X, RefreshCw, Ruler, Wrench } from 'lucide-react';
+import { X, RefreshCw, Ruler } from 'lucide-react';
 
 interface Metric { label: string; value: string; ok?: boolean; bad?: boolean; }
 
