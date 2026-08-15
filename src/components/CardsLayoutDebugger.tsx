@@ -22,8 +22,9 @@ export default function CardsLayoutDebugger({ open, onClose }: { open: boolean; 
     const nav = q('.bottom-nav-container');
     const preview = q('.floating-preview-enhanced');
 
+    // ✅ ამოღებულია unused navR ცვლადი
     const topbarR = rect(topbar), subbarR = rect(subbar), areaR = rect(scrollArea),
-          firstR = rect(firstCard), navR = rect(nav), prevR = rect(preview);
+          firstR = rect(firstCard), prevR = rect(preview);
     const m: Metric[] = [];
 
     m.push({ label: 'innerHeight', value: `${window.innerHeight}px` });
