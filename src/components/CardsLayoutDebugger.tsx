@@ -36,7 +36,7 @@ export default function CardsLayoutDebugger({ open, onClose }: { open: boolean; 
       m.push({ label: 'preview left', value: `${Math.round(prevR.left)}px`, ok: centered, bad: !centered });
       m.push({ label: 'preview right', value: `${Math.round(prevR.right)}px`, ok: centered, bad: !centered });
       m.push({ label: 'preview width', value: `${Math.round(prevR.width)}px` });
-      m.push({ label: 'preview center-შია?', value: centered ? '✅ დიახ' : '❌ არა', ok: centered, bad: !centered });
+      m.push({ label: 'preview ცენტრშია?', value: centered ? '✅ დიახ' : '❌ არა', ok: centered, bad: !centered });
     } else {
       m.push({ label: 'preview', value: 'დამალულია (კარგია სანამ არ დააჭერ)' });
     }

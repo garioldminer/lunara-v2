@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { tarotCards, SUITS } from '../data/tarotCards';
-import { ArrowLeft, TrendingUp, Heart, X } from 'lucide-react';
+import { ArrowLeft, TrendingUp, Heart, X, Ruler } from 'lucide-react';
 import { trackQuestProgress } from '../lib/questService';
 import { useUser } from '../context/UserContext';
 import { supabase } from '../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
+import CardsLayoutDebugger from './CardsLayoutDebugger';
 import './CardsScreen.css';
 
 type FilterType = 'all' | 'major' | 'minor';
@@ -20,6 +21,7 @@ export default function CardsScreen({ onNavigate }: Props) {
   const [cardStats, setCardStats] = useState<CardStat[]>([]);
   const [longPressCard, setLongPressCard] = useState<typeof tarotCards[0] | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [showCardsDebug, setShowCardsDebug] = useState(false);
   const lastScrollY = useRef(0);
   const scrollTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
   const longPressTimer = useRef<NodeJS.Timeout | undefined>(undefined);
@@ -152,6 +154,37 @@ export default function CardsScreen({ onNavigate }: Props) {
         </button>
       </div>
 
+      {/* ✅ DEBUG BUTTON — მხოლოდ admin-ისთვის */}
+      {user?.is_admin && (
+        <button
+          onClick={() => setShowCardsDebug(true)}
+          style={{
+            position: 'fixed',
+            top: '50%',
+            right: 8,
+            transform: 'translateY(-50%)',
+            width: 40,
+            height: 40,
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, rgba(16,185,129,0.95), rgba(5,150,105,0.95))',
+            border: '2px solid rgba(255,255,255,0.2)',
+            color: '#fff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            zIndex: 9990,
+            boxShadow: '0 4px 16px rgba(16,185,129,0.5), 0 0 20px rgba(16,185,129,0.3)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            transition: 'all 0.2s ease'
+          }}
+          title="Cards Layout Debugger"
+        >
+          <Ruler size={18} />
+        </button>
+      )}
+
       <div className="cards-grid-enhanced">
         {filteredCards.map((card) => {
           const timesDrawn = getCardTimesDrawn(card.id);
@@ -211,12 +244,7 @@ export default function CardsScreen({ onNavigate }: Props) {
             exit={{ opacity: 0, y: 100 }}
             className="floating-preview-enhanced"
           >
-            {/* ✅ X CLOSE BUTTON — ზემოთ მარჯვნივ */}
-            <button 
-              className="preview-close-btn" 
-              onClick={handleClosePreview}
-              aria-label="Close preview"
-            >
+            <button className="preview-close-btn" onClick={handleClosePreview} aria-label="Close preview">
               <X size={14} />
             </button>
 
@@ -244,6 +272,11 @@ export default function CardsScreen({ onNavigate }: Props) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ✅ DEBAGGER — მხოლოდ admin-ისთვის */}
+      {user?.is_admin && (
+        <CardsLayoutDebugger open={showCardsDebug} onClose={() => setShowCardsDebug(false)} />
+      )}
     </div>
   );
 }
