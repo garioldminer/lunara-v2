@@ -19,11 +19,10 @@ export default function CardDetailScreen({ cardId, onNavigate }: Props) {
     return () => clearTimeout(timer);
   }, []);
 
-  // ✅ სმარტ layout: nav inset + bottom padding
+  // ✅ სმარტ layout: nav inset (ამოღებულია unused scrollArea ცვლადი)
   useEffect(() => {
     const apply = () => {
       const nav = document.querySelector('.bottom-nav-container') as HTMLElement;
-      const scrollArea = document.querySelector('.detail-scroll-area') as HTMLElement;
       if (nav) {
         const inner = (nav.querySelector('.bottom-nav') || nav.firstElementChild || nav) as HTMLElement;
         document.documentElement.style.setProperty('--nav-inset', `${Math.round(inner.getBoundingClientRect().left)}px`);
