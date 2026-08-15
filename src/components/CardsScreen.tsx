@@ -79,23 +79,32 @@ export default function CardsScreen({ onNavigate }: Props) {
     };
   }, [showPreview, selectedCard]);
 
-  // ✅ სმარტ Layout: ზუსტად აყენებს 5px / 5px / ≤5px დაშორებებს ნებისმიერ ეკრანზე
+  // ✅ სმარტ Layout v2: ზომავს რეალურ პოზიციებს და პირდაპირ აკორექტირებს
   useEffect(() => {
     const apply = () => {
       const screen = document.querySelector('.cards-screen') as HTMLElement;
       const header = document.querySelector('.cards-fixed-header') as HTMLElement;
+      const grid = document.querySelector('.cards-grid-enhanced') as HTMLElement;
       const nav = document.querySelector('.bottom-nav-container') as HTMLElement;
-      if (!screen) return;
+      if (!screen || !grid) return;
 
-      // 1) grid იწყება ზუსტად fixed header-ის ქვემოთ + 5px
+      // 1) ✅ VERTICAL: grid-ის პირველი ხაზი = header-ის ქვედა კიდე + 5px
       if (header) {
         const hb = header.getBoundingClientRect();
-        const st = screen.getBoundingClientRect().top;
-        const padTop = Math.round(hb.bottom - st) + 5;
-        if (padTop > 0) screen.style.paddingTop = `${padTop}px`;
+        const gb = grid.getBoundingClientRect();
+        const currentMT = parseFloat(getComputedStyle(grid).marginTop) || 0;
+        const delta = (hb.bottom + 5) - gb.top;
+        grid.style.marginTop = `${currentMT + delta}px`;
       }
 
-      // 2) ბოლოში ცარიელი ≤ 5px: padding-bottom = nav-ის სიმაღლე + 5
+      // 2) ✅ HORIZONTAL: grid კიდეები = nav ბანერის კიდეები (თანაბარი padding)
+      if (nav) {
+        const nb = nav.getBoundingClientRect();
+        grid.style.paddingLeft = `${Math.round(nb.left)}px`;
+        grid.style.paddingRight = `${Math.round(window.innerWidth - nb.right)}px`;
+      }
+
+      // 3) ✅ BOTTOM: ბოლოში ცარიელი ≤ 5px
       if (nav) {
         const nb = nav.getBoundingClientRect();
         const padBottom = Math.round(window.innerHeight - nb.top) + 5;
