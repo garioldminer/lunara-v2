@@ -22,7 +22,6 @@ export default function CardsLayoutDebugger({ open, onClose }: { open: boolean; 
     const nav = q('.bottom-nav-container');
     const preview = q('.floating-preview-enhanced');
 
-    // ✅ ამოღებულია unused navR ცვლადი
     const topbarR = rect(topbar), subbarR = rect(subbar), areaR = rect(scrollArea),
           firstR = rect(firstCard), prevR = rect(preview);
     const m: Metric[] = [];
@@ -50,6 +49,7 @@ export default function CardsLayoutDebugger({ open, onClose }: { open: boolean; 
         const gr = parseFloat(getComputedStyle(grid).paddingRight);
         const lDiff = r(Math.abs(gl - nb.left));
         const rDiff = r(Math.abs(gr - (window.innerWidth - nb.right)));
+        m.push({ label: 'grid actual padL/R', value: `${r(gl)} / ${r(gr)}` });
         m.push({ label: 'grid↔nav კიდეები სწორია?', value: (lDiff <= 2 && rDiff <= 2) ? '✅ დიახ' : `❌ L:${lDiff} R:${rDiff}`, ok: (lDiff <= 2 && rDiff <= 2), bad: (lDiff > 2 || rDiff > 2) });
       }
       if (scrollArea) {

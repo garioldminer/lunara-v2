@@ -81,26 +81,49 @@ export default function CardsScreen({ onNavigate }: Props) {
     };
   }, [showPreview, selectedCard]);
 
-  // ✅ სმარტ Layout v4: კითხულობს შიგნით ბანერის კიდეებს (არა container-ის)
+  // ✅ სმარტ Layout v5: debug logging + CSS override
   useEffect(() => {
     const apply = () => {
       const scrollArea = document.querySelector('.cards-scroll-area') as HTMLElement;
       const grid = document.querySelector('.cards-grid-enhanced') as HTMLElement;
       const nav = document.querySelector('.bottom-nav-container') as HTMLElement;
-      if (!scrollArea || !grid) return;
+      if (!scrollArea || !grid) {
+        console.warn('[Layout] scrollArea or grid not found');
+        return;
+      }
 
       if (nav) {
-        // ✅ შიგნით ბანერი (ვიზუალური), არა full-width container
-        const inner = (nav.querySelector('.bottom-nav') || nav.firstElementChild || nav) as HTMLElement;
+        // ✅ შიგნით ბანერი — ვცადოთ რამდენიმე selector
+        const inner = (
+          nav.querySelector('.bottom-nav') ||
+          nav.querySelector('nav') ||
+          nav.querySelector('[class*="bottom"]') ||
+          nav.firstElementChild ||
+          nav
+        ) as HTMLElement;
+        
         const nb = inner.getBoundingClientRect();
-        grid.style.paddingLeft = `${Math.round(nb.left)}px`;
-        grid.style.paddingRight = `${Math.round(window.innerWidth - nb.right)}px`;
+        const leftPad = Math.round(nb.left);
+        const rightPad = Math.round(window.innerWidth - nb.right);
+        
+        // ✅ CSS-ის padding override — inline !important
+        grid.style.setProperty('padding-left', `${leftPad}px`, 'important');
+        grid.style.setProperty('padding-right', `${rightPad}px`, 'important');
+        
+        console.log(`[Layout] nav inner L/R: ${leftPad}/${rightPad}`);
+        console.log(`[Layout] grid padding set to: ${leftPad}px / ${rightPad}px`);
 
         // ✅ BOTTOM: ბოლო კარტი დაჯდება nav-ის ზემოთ + 5px
         const cb = nav.getBoundingClientRect();
-        scrollArea.style.paddingBottom = `${Math.round(window.innerHeight - cb.top) + 5}px`;
+        const padBottom = Math.round(window.innerHeight - cb.top) + 5;
+        scrollArea.style.paddingBottom = `${padBottom}px`;
+        console.log(`[Layout] scrollArea paddingBottom: ${padBottom}px`);
+      } else {
+        console.warn('[Layout] nav container not found');
       }
     };
+    
+    console.log('[Layout] Starting layout calculation...');
     apply();
     const t1 = setTimeout(apply, 300);
     const t2 = setTimeout(apply, 800);
