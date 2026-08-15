@@ -79,16 +79,28 @@ export default function CardsScreen({ onNavigate }: Props) {
     };
   }, [showPreview, selectedCard]);
 
-  // ✅ ზუსტი padding: grid იწყება ზუსტად subbar-ის ქვემოთ + 5px (ორმაგი padding-ის გასწორება)
+  // ✅ სმარტ Layout: ზუსტად აყენებს 5px / 5px / ≤5px დაშორებებს ნებისმიერ ეკრანზე
   useEffect(() => {
     const apply = () => {
       const screen = document.querySelector('.cards-screen') as HTMLElement;
-      const subbar = document.querySelector('.cards-subbar') as HTMLElement;
-      if (!screen || !subbar) return;
-      const screenTop = screen.getBoundingClientRect().top;
-      const subbarBottom = subbar.getBoundingClientRect().bottom;
-      const pad = Math.round(subbarBottom - screenTop) + 5;
-      if (pad > 0) screen.style.paddingTop = `${pad}px`;
+      const header = document.querySelector('.cards-fixed-header') as HTMLElement;
+      const nav = document.querySelector('.bottom-nav-container') as HTMLElement;
+      if (!screen) return;
+
+      // 1) grid იწყება ზუსტად fixed header-ის ქვემოთ + 5px
+      if (header) {
+        const hb = header.getBoundingClientRect();
+        const st = screen.getBoundingClientRect().top;
+        const padTop = Math.round(hb.bottom - st) + 5;
+        if (padTop > 0) screen.style.paddingTop = `${padTop}px`;
+      }
+
+      // 2) ბოლოში ცარიელი ≤ 5px: padding-bottom = nav-ის სიმაღლე + 5
+      if (nav) {
+        const nb = nav.getBoundingClientRect();
+        const padBottom = Math.round(window.innerHeight - nb.top) + 5;
+        if (padBottom > 0) screen.style.paddingBottom = `${padBottom}px`;
+      }
     };
     apply();
     const t1 = setTimeout(apply, 300);
@@ -159,49 +171,40 @@ export default function CardsScreen({ onNavigate }: Props) {
 
   return (
     <div className="cards-screen">
-      <div className="cards-topbar">
-        <h1 className="cards-title-top">Tarot Cards</h1>
+      {/* ✅ ერთი fixed header container: title + subbar ერთად */}
+      <div className="cards-fixed-header">
+        <div className="cards-topbar">
+          <h1 className="cards-title-top">Tarot Cards</h1>
+        </div>
+        <div className="cards-subbar">
+          <button className="cards-back-btn" onClick={handleBack}>
+            <ArrowLeft size={16} />
+          </button>
+          <button className={`filter-tab-compact ${activeFilter === 'all' ? 'active' : ''}`} onClick={() => setActiveFilter('all')}>
+            ALL <span className="count">({counts.all})</span>
+          </button>
+          <button className={`filter-tab-compact ${activeFilter === 'major' ? 'active' : ''}`} onClick={() => setActiveFilter('major')}>
+            MAJOR <span className="count">({counts.major})</span>
+          </button>
+          <button className={`filter-tab-compact ${activeFilter === 'minor' ? 'active' : ''}`} onClick={() => setActiveFilter('minor')}>
+            MINOR <span className="count">({counts.minor})</span>
+          </button>
+        </div>
       </div>
 
-      <div className="cards-subbar">
-        <button className="cards-back-btn" onClick={handleBack}>
-          <ArrowLeft size={16} />
-        </button>
-        <button className={`filter-tab-compact ${activeFilter === 'all' ? 'active' : ''}`} onClick={() => setActiveFilter('all')}>
-          ALL <span className="count">({counts.all})</span>
-        </button>
-        <button className={`filter-tab-compact ${activeFilter === 'major' ? 'active' : ''}`} onClick={() => setActiveFilter('major')}>
-          MAJOR <span className="count">({counts.major})</span>
-        </button>
-        <button className={`filter-tab-compact ${activeFilter === 'minor' ? 'active' : ''}`} onClick={() => setActiveFilter('minor')}>
-          MINOR <span className="count">({counts.minor})</span>
-        </button>
-      </div>
-
-      {/* ✅ DEBUG BUTTON — მხოლოდ admin-ისთვის */}
+      {/* ✅ DEBUG BUTTON — მხოლოდ admin */}
       {user?.is_admin && (
         <button
           onClick={() => setShowCardsDebug(true)}
           style={{
-            position: 'fixed',
-            top: '50%',
-            right: 8,
-            transform: 'translateY(-50%)',
-            width: 40,
-            height: 40,
-            borderRadius: '50%',
+            position: 'fixed', top: '50%', right: 8, transform: 'translateY(-50%)',
+            width: 40, height: 40, borderRadius: '50%',
             background: 'linear-gradient(135deg, rgba(16,185,129,0.95), rgba(5,150,105,0.95))',
-            border: '2px solid rgba(255,255,255,0.2)',
-            color: '#fff',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            zIndex: 9990,
+            border: '2px solid rgba(255,255,255,0.2)', color: '#fff',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', zIndex: 9990,
             boxShadow: '0 4px 16px rgba(16,185,129,0.5), 0 0 20px rgba(16,185,129,0.3)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-            transition: 'all 0.2s ease'
+            backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
           }}
           title="Cards Layout Debugger"
         >
@@ -271,7 +274,6 @@ export default function CardsScreen({ onNavigate }: Props) {
             <button className="preview-close-btn" onClick={handleClosePreview} aria-label="Close preview">
               <X size={14} />
             </button>
-
             <div className="preview-card-enhanced">
               <div className="preview-card-image-enhanced">
                 {selectedCard.image_url ? (
@@ -297,7 +299,6 @@ export default function CardsScreen({ onNavigate }: Props) {
         )}
       </AnimatePresence>
 
-      {/* ✅ DEBAGGER — მხოლოდ admin-ისთვის */}
       {user?.is_admin && (
         <CardsLayoutDebugger open={showCardsDebug} onClose={() => setShowCardsDebug(false)} />
       )}

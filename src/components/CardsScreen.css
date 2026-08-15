@@ -6,20 +6,25 @@
   font-family: 'Georgia', serif;
   background: transparent;
   min-height: 100vh;
-  padding-top: calc(env(safe-area-inset-top, 0px) + 44px + 44px + 5px);
-  padding-bottom: 200px;
+  padding-top: 100px; /* JS დააყენებს ზუსტს */
+  padding-bottom: 100px; /* JS დააყენებს ზუსტს */
   overflow-x: hidden;
 }
 
-.cards-topbar {
+/* ✅ ერთი fixed header container */
+.cards-fixed-header {
   position: fixed;
   top: 0; left: 0; right: 0;
+  z-index: 45;
+  background: transparent;
+}
+
+.cards-topbar {
   height: calc(env(safe-area-inset-top, 0px) + 44px);
   padding-top: env(safe-area-inset-top, 0px);
   display: flex; align-items: center; justify-content: center;
-  background: #0a0600;
+  background: transparent;
   pointer-events: none;
-  z-index: 40;
 }
 .cards-title-top {
   margin: 0; font-family: 'Georgia', serif; font-size: 15px; font-weight: 400;
@@ -28,13 +33,9 @@
 }
 
 .cards-subbar {
-  position: fixed;
-  top: calc(env(safe-area-inset-top, 0px) + 44px);
-  left: 0; right: 0;
   display: flex; align-items: center; gap: 6px;
   padding: 6px 12px;
   background: #0a0600;
-  z-index: 45;
 }
 .cards-back-btn {
   background: rgba(197,160,89,0.1); border: 1px solid rgba(197,160,89,0.3);
@@ -102,23 +103,14 @@
 .quick-preview-info p { margin: 0; font-size: 11px; color: rgba(255,255,255,0.6); }
 .quick-meaning { font-style: italic; margin-top: 6px; color: rgba(255,255,255,0.4); }
 
-/* ✅ FLOATING PREVIEW — FIXED (ცენტრში left/right+margin, არა transform) */
 .floating-preview-enhanced {
-  position: fixed;
-  bottom: 80px;
-  left: 12px;
-  right: 12px;
-  max-width: 456px;
-  margin: 0 auto;
+  position: fixed; bottom: 80px; left: 12px; right: 12px;
+  max-width: 456px; margin: 0 auto;
   background: linear-gradient(135deg, #1a1510 0%, #0f0c08 100%);
-  border: 1px solid rgba(197,160,89,0.3);
-  border-radius: 16px;
-  padding: 12px;
-  padding-top: 38px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.8);
-  z-index: 99;
+  border: 1px solid rgba(197,160,89,0.3); border-radius: 16px;
+  padding: 12px; padding-top: 38px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.8); z-index: 99;
 }
-
 .preview-close-btn {
   position: absolute; top: 8px; right: 8px;
   width: 28px; height: 28px; border-radius: 50%;
@@ -129,7 +121,6 @@
 }
 .preview-close-btn:hover { background: rgba(197,160,89,0.3); border-color: #C5A059; transform: rotate(90deg) scale(1.05); }
 .preview-close-btn:active { transform: rotate(90deg) scale(0.92); }
-
 .preview-card-enhanced { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
 .preview-card-image-enhanced {
   width: 50px; height: 75px; background: rgba(197,160,89,0.05);
