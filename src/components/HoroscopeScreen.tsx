@@ -925,13 +925,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     showToast('Opening Telegram...', 'info');
   };
 
-  const handleCopyAffirmation = () => {
-    if (fixedHoroscope.affirmation) {
-      navigator.clipboard.writeText(fixedHoroscope.affirmation);
-      showToast('Affirmation copied! ✨', 'success');
-    }
-  };
-
   if (loading && !horoscope) {
     return (
       <>
@@ -1029,6 +1022,13 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     hero_description: fixHoroscopeText(horoscope.hero_description, userSign, detectWrongSign)
   };
 
+  const handleCopyAffirmation = () => {
+    if (fixedHoroscope.affirmation) {
+      navigator.clipboard.writeText(fixedHoroscope.affirmation);
+      showToast('Affirmation copied! ✨', 'success');
+    }
+  };
+
   const safeTransits = Array.isArray(fixedHoroscope.key_transits) 
     ? fixedHoroscope.key_transits.map(safeExtractTransit)
     : [];
@@ -1051,223 +1051,230 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   return (
     <>
       <div className="horoscope-screen premium-design">
-        <div className="cosmic-background" style={{ backgroundImage: `url(${BACKGROUND_IMAGE})` }} />
-        <div className="aurora-layer" />
-        <div className="floating-particles">
-          {[...Array(10)].map((_, i) => (
-            <span key={i} className="particle" style={{
-              left: `${(i * 37) % 100}%`,
-              animationDelay: `${i * 1.4}s`,
-              animationDuration: `${10 + (i % 5) * 2}s`
-            }} />
-          ))}
-        </div>
-
-        <AnimatePresence>
-          {toast && (
-            <ToastNotification toast={toast} onClose={() => setToast(null)} />
-          )}
-        </AnimatePresence>
-
-        <AnimatePresence>
-          {refreshing && (
-            <motion.div 
-              className="refreshing-indicator"
-              initial={{ opacity: 0, y: -50 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -50 }}
-              transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-            >
-              <motion.div 
-                className="refreshing-icon"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-              >
-                <RotateCcw size={14} />
-              </motion.div>
-              <span>Updating cosmic energies...</span>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <div className="premium-header">
-          <button className="premium-back-btn" onClick={() => onNavigate?.('home')}>
-            <ArrowLeft size={24} />
-          </button>
-          <div className="premium-header-center">
-            <h1 className="premium-sign-name">{userSign.toUpperCase()}</h1>
-            <p className="premium-date">{formattedDate}</p>
+        {/* ✅ TOPBAR — Telegram-ის header-ში, ცენტრში (Close ⨯ და Settings ⋯ შორის) */}
+        <div className="horoscope-topbar">
+          <div className="horoscope-topbar-text">
+            <h1 className="horoscope-sign-name">{userSign.toUpperCase()}</h1>
+            <p className="horoscope-date-small">{formattedDate}</p>
           </div>
-          <button className="premium-refresh-btn" onClick={refetch}>
-            <RotateCcw size={24} />
+          <button className="horoscope-refresh-btn" onClick={refetch} aria-label="Refresh">
+            <RotateCcw size={14} />
           </button>
         </div>
 
-        <div className="horoscope-content premium-content">
-          <motion.div
-            className="premium-hero-banner"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            style={{ opacity: refreshing ? 0.7 : 1 }}
-          >
-            <div className="premium-hero-cosmic-bg">
-              <div className="cosmic-nebula nebula-1" />
-              <div className="cosmic-nebula nebula-2" />
-            </div>
-
-            <div className="premium-glowing-ring" />
-
-            <div className="premium-hero-left">
-              <div className="premium-hero-subtitle">
-                <span className="subtitle-star">✦</span>
-                <span>{TAB_LABELS[activeTab]}</span>
-                <span className="subtitle-star">✦</span>
-              </div>
-              
-              <h2 className="premium-hero-title">{heroTitle}</h2>
-              <p className="premium-hero-description">{heroDescription}</p>
-              
-              <motion.button 
-                className="premium-read-full-btn"
-                whileHover={{ scale: 1.02, x: 3 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setIsReadFullOpen(true)}
-              >
-                READ FULL <ChevronRight size={18} />
-              </motion.button>
-            </div>
-
-            <div className="premium-hero-right">
-              <motion.div
-                className="premium-tarot-card"
-                initial={{ opacity: 0, rotateY: -20, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, rotateY: 0, scale: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 1, ease: "easeOut" }}
-              >
-                <div className="premium-card-glow" />
-                <div className="premium-card-frame">
-                  <div className="premium-card-inner">
-                    <div className="premium-card-numeral">VIII</div>
-                    <img src={zodiacData.imageUrl} alt={userSign} className="premium-card-image" />
-                    <div className="premium-card-symbol">{zodiacData.symbol}</div>
-                    <div className="premium-card-sign-name">{userSign.toUpperCase()}</div>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          </motion.div>
-
-          <div className="premium-tab-nav">
+        {/* ✅ SUBBAR — Back + 4 tabs (5px gap topbar-დან) */}
+        <div className="horoscope-subbar">
+          <button className="horoscope-back-btn" onClick={() => onNavigate?.('home')}>
+            <ArrowLeft size={16} />
+          </button>
+          <div className="horoscope-tabs">
             {tabs.map((tab) => (
               <button 
                 key={tab.id} 
-                className={`premium-tab ${activeTab === tab.id ? 'active' : ''}`}
+                className={`horoscope-tab ${activeTab === tab.id ? 'active' : ''}`}
                 onClick={() => setActiveTab(tab.id)}
               >
                 {tab.label}
               </button>
             ))}
           </div>
+        </div>
 
-          <div className="premium-section">
-            <h3 className="premium-section-title">
-              <Sparkles size={12} />
-              COSMIC ENERGY LEVELS
-              <Sparkles size={12} />
-            </h3>
-            
-            <div className="premium-energy-grid">
-              <motion.div className="premium-energy-card energy" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-                <div className="premium-energy-icon"><Zap size={32} /></div>
-                <p className="premium-energy-level">{safeString(fixedHoroscope.cosmic_energy_level || 'MEDIUM').toUpperCase()}</p>
-                <p className="premium-energy-subtitle">Energy</p>
-                <div className="premium-energy-dots">
-                  {[...Array(5)].map((_, i) => {
-                    const level = safeString(fixedHoroscope.cosmic_energy_level).toLowerCase();
-                    const active = i < (level.includes('very') ? 5 : level.includes('high') ? 4 : level.includes('medium') ? 3 : 2);
-                    return <div key={i} className={`dot ${active ? 'active' : ''}`} />;
-                  })}
-                </div>
-              </motion.div>
-
-              <motion.div className="premium-energy-card love" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                <div className="premium-energy-icon"><Heart size={32} /></div>
-                <p className="premium-energy-level">{safeString(fixedHoroscope.love_energy_level || 'MEDIUM').toUpperCase()}</p>
-                <p className="premium-energy-subtitle">Emotions</p>
-                <div className="premium-energy-dots">
-                  {[...Array(5)].map((_, i) => {
-                    const level = safeString(fixedHoroscope.love_energy_level).toLowerCase();
-                    const active = i < (level.includes('very') ? 5 : level.includes('high') ? 4 : level.includes('medium') ? 3 : 2);
-                    return <div key={i} className={`dot ${active ? 'active' : ''}`} />;
-                  })}
-                </div>
-              </motion.div>
-
-              <motion.div className="premium-energy-card career" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-                <div className="premium-energy-icon"><BriefcaseIcon size={32} /></div>
-                <p className="premium-energy-level">{safeString(fixedHoroscope.career_energy_level || 'MEDIUM').toUpperCase()}</p>
-                <p className="premium-energy-subtitle">Opportunities</p>
-                <div className="premium-energy-dots">
-                  {[...Array(5)].map((_, i) => {
-                    const level = safeString(fixedHoroscope.career_energy_level).toLowerCase();
-                    const active = i < (level.includes('very') ? 5 : level.includes('high') ? 4 : level.includes('medium') ? 3 : 2);
-                    return <div key={i} className={`dot ${active ? 'active' : ''}`} />;
-                  })}
-                </div>
-              </motion.div>
-            </div>
+        {/* ✅ SCROLL AREA — main content */}
+        <div className="horoscope-scroll-area">
+          <div className="cosmic-background" style={{ backgroundImage: `url(${BACKGROUND_IMAGE})` }} />
+          <div className="aurora-layer" />
+          <div className="floating-particles">
+            {[...Array(10)].map((_, i) => (
+              <span key={i} className="particle" style={{
+                left: `${(i * 37) % 100}%`,
+                animationDelay: `${i * 1.4}s`,
+                animationDuration: `${10 + (i % 5) * 2}s`
+              }} />
+            ))}
           </div>
 
-          <motion.div className="premium-moon-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-            <div className="premium-moon-image-container">
-              <div className="premium-moon-image" />
+          <AnimatePresence>
+            {toast && (
+              <ToastNotification toast={toast} onClose={() => setToast(null)} />
+            )}
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {refreshing && (
+              <motion.div 
+                className="refreshing-indicator"
+                initial={{ opacity: 0, y: -50 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -50 }}
+                transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+              >
+                <motion.div 
+                  className="refreshing-icon"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                >
+                  <RotateCcw size={14} />
+                </motion.div>
+                <span>Updating cosmic energies...</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div className="horoscope-content premium-content">
+            <motion.div
+              className="premium-hero-banner"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              style={{ opacity: refreshing ? 0.7 : 1 }}
+            >
+              <div className="premium-hero-cosmic-bg">
+                <div className="cosmic-nebula nebula-1" />
+                <div className="cosmic-nebula nebula-2" />
+              </div>
+
+              <div className="premium-glowing-ring" />
+
+              <div className="premium-hero-left">
+                <div className="premium-hero-subtitle">
+                  <span className="subtitle-star">✦</span>
+                  <span>{TAB_LABELS[activeTab]}</span>
+                  <span className="subtitle-star">✦</span>
+                </div>
+                
+                <h2 className="premium-hero-title">{heroTitle}</h2>
+                <p className="premium-hero-description">{heroDescription}</p>
+                
+                <motion.button 
+                  className="premium-read-full-btn"
+                  whileHover={{ scale: 1.02, x: 3 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setIsReadFullOpen(true)}
+                >
+                  READ FULL <ChevronRight size={18} />
+                </motion.button>
+              </div>
+
+              <div className="premium-hero-right">
+                <motion.div
+                  className="premium-tarot-card"
+                  initial={{ opacity: 0, rotateY: -20, scale: 0.9, y: 20 }}
+                  animate={{ opacity: 1, rotateY: 0, scale: 1, y: 0 }}
+                  transition={{ delay: 0.3, duration: 1, ease: "easeOut" }}
+                >
+                  <div className="premium-card-glow" />
+                  <div className="premium-card-frame">
+                    <div className="premium-card-inner">
+                      <div className="premium-card-numeral">VIII</div>
+                      <img src={zodiacData.imageUrl} alt={userSign} className="premium-card-image" />
+                      <div className="premium-card-symbol">{zodiacData.symbol}</div>
+                      <div className="premium-card-sign-name">{userSign.toUpperCase()}</div>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+            </motion.div>
+
+            <div className="premium-section">
+              <h3 className="premium-section-title">
+                <Sparkles size={12} />
+                COSMIC ENERGY LEVELS
+                <Sparkles size={12} />
+              </h3>
+              
+              <div className="premium-energy-grid">
+                <motion.div className="premium-energy-card energy" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                  <div className="premium-energy-icon"><Zap size={32} /></div>
+                  <p className="premium-energy-level">{safeString(fixedHoroscope.cosmic_energy_level || 'MEDIUM').toUpperCase()}</p>
+                  <p className="premium-energy-subtitle">Energy</p>
+                  <div className="premium-energy-dots">
+                    {[...Array(5)].map((_, i) => {
+                      const level = safeString(fixedHoroscope.cosmic_energy_level).toLowerCase();
+                      const active = i < (level.includes('very') ? 5 : level.includes('high') ? 4 : level.includes('medium') ? 3 : 2);
+                      return <div key={i} className={`dot ${active ? 'active' : ''}`} />;
+                    })}
+                  </div>
+                </motion.div>
+
+                <motion.div className="premium-energy-card love" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                  <div className="premium-energy-icon"><Heart size={32} /></div>
+                  <p className="premium-energy-level">{safeString(fixedHoroscope.love_energy_level || 'MEDIUM').toUpperCase()}</p>
+                  <p className="premium-energy-subtitle">Emotions</p>
+                  <div className="premium-energy-dots">
+                    {[...Array(5)].map((_, i) => {
+                      const level = safeString(fixedHoroscope.love_energy_level).toLowerCase();
+                      const active = i < (level.includes('very') ? 5 : level.includes('high') ? 4 : level.includes('medium') ? 3 : 2);
+                      return <div key={i} className={`dot ${active ? 'active' : ''}`} />;
+                    })}
+                  </div>
+                </motion.div>
+
+                <motion.div className="premium-energy-card career" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+                  <div className="premium-energy-icon"><BriefcaseIcon size={32} /></div>
+                  <p className="premium-energy-level">{safeString(fixedHoroscope.career_energy_level || 'MEDIUM').toUpperCase()}</p>
+                  <p className="premium-energy-subtitle">Opportunities</p>
+                  <div className="premium-energy-dots">
+                    {[...Array(5)].map((_, i) => {
+                      const level = safeString(fixedHoroscope.career_energy_level).toLowerCase();
+                      const active = i < (level.includes('very') ? 5 : level.includes('high') ? 4 : level.includes('medium') ? 3 : 2);
+                      return <div key={i} className={`dot ${active ? 'active' : ''}`} />;
+                    })}
+                  </div>
+                </motion.div>
+              </div>
             </div>
-            <div className="premium-moon-content">
-              <h4 className="premium-moon-label">MOON INFO</h4>
-              <h3 className="premium-moon-phase">{safeString(fixedHoroscope.moon_phase)}</h3>
-              <p className="premium-moon-sign">IN {safeString(fixedHoroscope.moon_sign).toUpperCase()}</p>
-              <p className="premium-moon-desc">{moonDescription}</p>
-            </div>
-          </motion.div>
 
-          <div className="premium-section">
-            <h3 className="premium-section-title">
-              <Sparkles size={12} />
-              {TAB_PREDICTIONS_TITLE[activeTab]}
-              <Sparkles size={12} />
-            </h3>
-            
-            <div className="premium-predictions-grid">
-              <motion.div className="premium-prediction-card general" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} onClick={() => setOpenModal('general')} whileHover={{ y: -5, scale: 1.02 }}>
-                <div className="premium-prediction-icon"><Sparkles size={28} /></div>
-                <h4>GENERAL</h4>
-                <p>{getPredictionSubtitle('general', safeDate)}</p>
-              </motion.div>
+            <motion.div className="premium-moon-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+              <div className="premium-moon-image-container">
+                <div className="premium-moon-image" />
+              </div>
+              <div className="premium-moon-content">
+                <h4 className="premium-moon-label">MOON INFO</h4>
+                <h3 className="premium-moon-phase">{safeString(fixedHoroscope.moon_phase)}</h3>
+                <p className="premium-moon-sign">IN {safeString(fixedHoroscope.moon_sign).toUpperCase()}</p>
+                <p className="premium-moon-desc">{moonDescription}</p>
+              </div>
+            </motion.div>
 
-              <motion.div className="premium-prediction-card love" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} onClick={() => setOpenModal('love')} whileHover={{ y: -5, scale: 1.02 }}>
-                <div className="premium-prediction-icon"><Heart size={28} /></div>
-                <h4>LOVE</h4>
-                <p>{getPredictionSubtitle('love', safeDate)}</p>
-              </motion.div>
+            <div className="premium-section">
+              <h3 className="premium-section-title">
+                <Sparkles size={12} />
+                {TAB_PREDICTIONS_TITLE[activeTab]}
+                <Sparkles size={12} />
+              </h3>
+              
+              <div className="premium-predictions-grid">
+                <motion.div className="premium-prediction-card general" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} onClick={() => setOpenModal('general')} whileHover={{ y: -5, scale: 1.02 }}>
+                  <div className="premium-prediction-icon"><Sparkles size={28} /></div>
+                  <h4>GENERAL</h4>
+                  <p>{getPredictionSubtitle('general', safeDate)}</p>
+                </motion.div>
 
-              <motion.div className="premium-prediction-card career" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} onClick={() => setOpenModal('career')} whileHover={{ y: -5, scale: 1.02 }}>
-                <div className="premium-prediction-icon"><BriefcaseIcon size={28} /></div>
-                <h4>CAREER</h4>
-                <p>{getPredictionSubtitle('career', safeDate)}</p>
-              </motion.div>
+                <motion.div className="premium-prediction-card love" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} onClick={() => setOpenModal('love')} whileHover={{ y: -5, scale: 1.02 }}>
+                  <div className="premium-prediction-icon"><Heart size={28} /></div>
+                  <h4>LOVE</h4>
+                  <p>{getPredictionSubtitle('love', safeDate)}</p>
+                </motion.div>
 
-              <motion.div className="premium-prediction-card health" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} onClick={() => setOpenModal('health')} whileHover={{ y: -5, scale: 1.02 }}>
-                <div className="premium-prediction-icon"><Activity size={28} /></div>
-                <h4>HEALTH</h4>
-                <p>{getPredictionSubtitle('health', safeDate)}</p>
-              </motion.div>
+                <motion.div className="premium-prediction-card career" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} onClick={() => setOpenModal('career')} whileHover={{ y: -5, scale: 1.02 }}>
+                  <div className="premium-prediction-icon"><BriefcaseIcon size={28} /></div>
+                  <h4>CAREER</h4>
+                  <p>{getPredictionSubtitle('career', safeDate)}</p>
+                </motion.div>
 
-              <motion.div className="premium-prediction-card finance" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }} onClick={() => setOpenModal('finance')} whileHover={{ y: -5, scale: 1.02 }}>
-                <div className="premium-prediction-icon"><DollarSign size={28} /></div>
-                <h4>FINANCE</h4>
-                <p>{getPredictionSubtitle('finance', safeDate)}</p>
-              </motion.div>
+                <motion.div className="premium-prediction-card health" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} onClick={() => setOpenModal('health')} whileHover={{ y: -5, scale: 1.02 }}>
+                  <div className="premium-prediction-icon"><Activity size={28} /></div>
+                  <h4>HEALTH</h4>
+                  <p>{getPredictionSubtitle('health', safeDate)}</p>
+                </motion.div>
+
+                <motion.div className="premium-prediction-card finance" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }} onClick={() => setOpenModal('finance')} whileHover={{ y: -5, scale: 1.02 }}>
+                  <div className="premium-prediction-icon"><DollarSign size={28} /></div>
+                  <h4>FINANCE</h4>
+                  <p>{getPredictionSubtitle('finance', safeDate)}</p>
+                </motion.div>
+              </div>
             </div>
           </div>
         </div>
