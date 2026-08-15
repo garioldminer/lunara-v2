@@ -19,7 +19,7 @@ export default function CardDetailScreen({ cardId, onNavigate }: Props) {
     return () => clearTimeout(timer);
   }, []);
 
-  // ✅ სმარტ layout: nav inset (ამოღებულია unused scrollArea ცვლადი)
+  // ✅ სმარტ layout: nav inset
   useEffect(() => {
     const apply = () => {
       const nav = document.querySelector('.bottom-nav-container') as HTMLElement;
@@ -46,6 +46,24 @@ export default function CardDetailScreen({ cardId, onNavigate }: Props) {
     area.addEventListener('scroll', onScroll, { passive: true });
     return () => area.removeEventListener('scroll', onScroll);
   }, []);
+
+  // ✅ paddingBottom დინამიურად — 5px დაშორება Card Details → nav
+  useEffect(() => {
+    const area = scrollAreaRef.current;
+    const nav = document.querySelector('.detail-bottom-nav') as HTMLElement;
+    if (!area || !nav) return;
+
+    const timer = setTimeout(() => {
+      if (showBottomNav) {
+        const navHeight = nav.getBoundingClientRect().height;
+        area.style.paddingBottom = `${Math.round(navHeight) + 5}px`;
+      } else {
+        area.style.paddingBottom = '40px';
+      }
+    }, 50);
+
+    return () => clearTimeout(timer);
+  }, [showBottomNav]);
 
   if (!card) {
     return (
