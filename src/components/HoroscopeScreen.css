@@ -118,13 +118,13 @@
   box-shadow: 0 3px 15px rgba(217, 182, 111, 0.25), inset 0 0 0 1px rgba(217, 182, 111, 0.3);
 }
 
-/* ✅ SCROLL AREA — padding-bottom 86px */
+/* SCROLL AREA */
 .horoscope-scroll-area {
   flex: 1; display: flex; flex-direction: column;
   overflow: hidden; position: relative;
   touch-action: none;
   user-select: none; -webkit-user-select: none;
-  padding-bottom: 86px;
+  padding-bottom: 90px;
 }
 
 .horoscope-content.premium-content {
@@ -274,24 +274,28 @@
   50% { opacity: 1; transform: scale(1.1); }
 }
 
-/* ✅ HERO TITLE — display: block !important (flex-ზე nowrap არ მუშაობს iOS-ში) */
+/* ✅ HERO TITLE — iOS fix: background-clip ამოღებულია (ბაგი!), solid color + max-height */
 .premium-hero-title {
   display: block !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
-  font-family: 'Cinzel', serif; font-size: 15px; font-weight: 900;
-  letter-spacing: 0.5px; line-height: 1.1; margin: 0;
-  background: linear-gradient(135deg, var(--text-cream) 0%, var(--gold) 60%, var(--gold-light) 100%);
-  -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent;
+  max-height: 1.4em !important;
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.3px;
+  line-height: 1.2;
+  margin: auto 0;
+  color: var(--gold);
   min-width: 0;
   width: 100%;
-  flex: 1;
 }
 .premium-hero-title > span {
-  white-space: nowrap !important;
   display: inline;
+  white-space: inherit;
+  overflow: inherit;
+  text-overflow: inherit;
 }
 .premium-hero-description { display: none; }
 
@@ -701,8 +705,7 @@
   .premium-hero-banner { padding: 6px 12px; }
   .premium-hero-left { max-width: 55%; gap: 3px; padding: 4px 0 0; }
   .premium-hero-right { margin-left: 10px; }
-  .premium-hero-title { font-size: 14px !important; letter-spacing: 0.3px; }
-  .premium-hero-title > span { white-space: nowrap !important; }
+  .premium-hero-title { font-size: 13px !important; letter-spacing: 0.3px; }
   .premium-read-full-btn { padding: 5px 14px; font-size: 9px; }
   
   .premium-tarot-card { width: 96px; height: 150px; margin-top: -16px; }
