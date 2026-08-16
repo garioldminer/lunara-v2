@@ -119,13 +119,13 @@
   box-shadow: 0 3px 15px rgba(217, 182, 111, 0.25), inset 0 0 0 1px rgba(217, 182, 111, 0.3);
 }
 
-/* SCROLL AREA + CONTENT */
+/* ✅ SCROLL AREA — padding-bottom 110px (predictions→nav gap fix) */
 .horoscope-scroll-area {
   flex: 1; display: flex; flex-direction: column;
   overflow: hidden; position: relative;
   touch-action: none;
   user-select: none; -webkit-user-select: none;
-  padding-bottom: 85px;
+  padding-bottom: 110px;
 }
 
 /* ✅ CONTENT padding = nav კიდეები */
@@ -277,6 +277,7 @@
   50% { opacity: 1; transform: scale(1.1); }
 }
 
+/* ✅ HERO TITLE — span wrapper-ით nowrap მუშაობს */
 .premium-hero-title {
   flex: 1;
   display: flex; align-items: center;
@@ -285,14 +286,22 @@
   background: linear-gradient(135deg, var(--text-cream) 0%, var(--gold) 60%, var(--gold-light) 100%);
   -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent;
-  white-space: nowrap; min-width: 0;
+  min-width: 0;
   overflow: hidden;
+}
+.premium-hero-title > span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  width: 100%;
 }
 .premium-hero-description { display: none; }
 
+/* ✅ READ FULL — margin-top: auto (card-ის bottom-თან) */
 .premium-read-full-btn {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 7px 18px; margin-top: 4px;
+  padding: 7px 18px; margin-top: auto;
   background: rgba(217, 182, 111, 0.08);
   border: 2px solid rgba(217, 182, 111, 0.6);
   border-radius: 30px; color: var(--gold);
@@ -699,6 +708,7 @@
   .premium-hero-left { max-width: 55%; gap: 3px; padding: 4px 0 0; }
   .premium-hero-right { margin-left: 10px; }
   .premium-hero-title { font-size: 17px; }
+  .premium-hero-title > span { white-space: nowrap; }
   .premium-read-full-btn { padding: 5px 14px; font-size: 9px; }
   
   .premium-tarot-card { width: 96px; height: 150px; margin-top: -16px; }

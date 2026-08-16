@@ -40,7 +40,10 @@ export function HeroBanner({ activeTab, refreshing, userSign, heroTitle, onReadF
           <span className="subtitle-star">✦</span>
         </div>
 
-        <h2 className="premium-hero-title" ref={titleRef}>{heroTitle}</h2>
+        {/* ✅ span wrapper-ით white-space: nowrap იმუშავებს */}
+        <h2 className="premium-hero-title" ref={titleRef}>
+          <span>{heroTitle}</span>
+        </h2>
 
         <motion.button
           className="premium-read-full-btn"
