@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { X, RefreshCw, Ruler, Copy, Check, Camera, Download, Eye } from 'lucide-react';
+import { X, RefreshCw, Ruler, Copy, Check, Download, Eye } from 'lucide-react';
 
 interface Metric {
   label: string;
@@ -25,7 +25,6 @@ export default function HoroscopeLayoutDebugger({ open, onClose }: { open: boole
   const [lastUpdate, setLastUpdate] = useState('');
   const [copied, setCopied] = useState(false);
   const [activeSection, setActiveSection] = useState<'gaps' | 'elements' | 'text' | 'fonts'>('gaps');
-  const [highlightElement, setHighlightElement] = useState<string | null>(null);
 
   const q = (sel: string) => document.querySelector(sel) as HTMLElement | null;
   const rect = (el: HTMLElement | null) => (el ? el.getBoundingClientRect() : null);
@@ -49,14 +48,12 @@ export default function HoroscopeLayoutDebugger({ open, onClose }: { open: boole
   const measure = useCallback(() => {
     const m: Metric[] = [];
 
-    // Window info
     m.push({
       label: '📐 Window Size',
       value: `${window.innerWidth} × ${window.innerHeight}`,
       details: `DPR: ${window.devicePixelRatio}`,
     });
 
-    // Get all elements
     const topbar = getElementInfo('.horoscope-topbar');
     const subbar = getElementInfo('.horoscope-subbar');
     const hero = getElementInfo('.premium-hero-banner');
@@ -185,7 +182,7 @@ export default function HoroscopeLayoutDebugger({ open, onClose }: { open: boole
       });
     }
 
-    // === FONTS ===
+    // === FONTS / VARS ===
     const navInset = getComputedStyle(document.documentElement).getPropertyValue('--nav-inset').trim();
     m.push({
       label: '📏 --nav-inset',
@@ -216,7 +213,6 @@ export default function HoroscopeLayoutDebugger({ open, onClose }: { open: boole
   }, [open, measure]);
 
   const highlight = (selector: string) => {
-    setHighlightElement(selector);
     const el = q(selector);
     if (el) {
       const originalOutline = el.style.outline;
@@ -227,7 +223,6 @@ export default function HoroscopeLayoutDebugger({ open, onClose }: { open: boole
       setTimeout(() => {
         el.style.outline = originalOutline;
         el.style.outlineOffset = originalOutlineOffset;
-        setHighlightElement(null);
       }, 3000);
     }
   };
