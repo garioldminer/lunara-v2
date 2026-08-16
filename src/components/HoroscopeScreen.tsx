@@ -31,7 +31,8 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [showHoroDebug, setShowHoroDebug] = useState(false);
 
-  const isAdmin = user?.id === ADMIN_USER_ID;
+  // ✅ Robust admin check — is_admin field-იც ამოწმებს
+  const isAdmin = (user as any)?.is_admin === true || user?.id === ADMIN_USER_ID;
   const userSign = user?.sun_sign?.toLowerCase() || '';
 
   const heroLeftRef = useRef<HTMLDivElement>(null);
@@ -304,7 +305,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* ✅ DEBUG ღილაკი — createPortal-ით document.body-ში, ვერაფერი დაფარავს */}
+      {/* ✅ DEBUG ღილაკი — createPortal-ით document.body-ში */}
       {isAdmin && createPortal(
         <button
           onClick={() => setShowHoroDebug(true)}
@@ -331,6 +332,34 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         >
           <Ruler size={24} strokeWidth={2.5} />
         </button>,
+        document.body
+      )}
+
+      {/* ✅ დროებითი დიაგნოსტიკა — portal-ით, წაშალე როცა გაამოწმებ */}
+      {createPortal(
+        <div style={{
+          position: 'fixed',
+          bottom: 110,
+          left: 10,
+          zIndex: 2147483647,
+          background: isAdmin ? 'rgba(16,185,129,0.95)' : 'rgba(239,68,68,0.95)',
+          color: '#fff',
+          padding: '8px 12px',
+          borderRadius: 10,
+          fontSize: 10,
+          fontFamily: 'monospace',
+          maxWidth: 220,
+          border: `2px solid ${isAdmin ? '#10b981' : '#ef4444'}`,
+          boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
+        }}>
+          <div style={{ fontWeight: 'bold', marginBottom: 4 }}>
+            {isAdmin ? '✅ ADMIN' : '❌ NOT ADMIN'}
+          </div>
+          <div>user.id: {(user?.id || 'NO-USER').slice(0, 12)}...</div>
+          <div>expected: {ADMIN_USER_ID?.slice(0, 12) || 'UNDEF'}...</div>
+          <div>is_admin: {String((user as any)?.is_admin)}</div>
+          <div>isAdmin result: {String(isAdmin)}</div>
+        </div>,
         document.body
       )}
 
