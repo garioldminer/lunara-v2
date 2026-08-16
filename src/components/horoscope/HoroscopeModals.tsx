@@ -119,7 +119,7 @@ export function ReadFullModal({ isOpen, onClose, userSign, zodiacSymbol, safeDat
     return null;
   };
 
-  // ✅ Bottom nav: იმალება როცა modal ღიაა
+  // ✅ Bottom nav: იმალება როცა modal ღიაა, ბრუნდება დახურვისას
   useEffect(() => {
     if (!isOpen) return;
     const nav = findNav();
@@ -134,7 +134,7 @@ export function ReadFullModal({ isOpen, onClose, userSign, zodiacSymbol, safeDat
     };
   }, [isOpen]);
 
-  // ✅ Bottom nav reveal: ამოდის ბოლომდე სქროლვისას
+  // ✅ Bottom nav reveal: ამოდის ბოლომდე სქროლვისას (footer ჩანს ბოლომდე)
   useEffect(() => {
     if (!isOpen) return;
     const el = scrollRef.current;
@@ -143,7 +143,7 @@ export function ReadFullModal({ isOpen, onClose, userSign, zodiacSymbol, safeDat
 
     const onScroll = () => {
       if (!nav) return;
-      const atEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 40;
+      const atEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 15;
       if (atEnd) {
         nav.classList.remove('rf-hidden');
         nav.classList.add('rf-revealed');
@@ -175,22 +175,26 @@ export function ReadFullModal({ isOpen, onClose, userSign, zodiacSymbol, safeDat
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div className="read-full-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
+        <motion.div
+          className="read-full-overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+        >
           <motion.div
             className="read-full-modal"
-            initial={{ scale: 0.9, y: 30, opacity: 0 }}
-            animate={{ scale: 1, y: 0, opacity: 1 }}
-            exit={{ scale: 0.9, y: 30, opacity: 0 }}
+            initial={{ y: -30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -30, opacity: 0 }}
             transition={{ type: 'spring', damping: 28, stiffness: 280 }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="rf-glow" />
 
+            {/* ✅ მხოლოდ Back ღილაკი (close წაშლილია) */}
             <button className="rf-back" onClick={onClose} aria-label="Back">
-              <ArrowLeft size={22} />
-            </button>
-            <button className="rf-close" onClick={onClose} aria-label="Close">
-              <X size={22} />
+              <ArrowLeft size={20} />
             </button>
 
             <div className="rf-scroll" ref={scrollRef}>
