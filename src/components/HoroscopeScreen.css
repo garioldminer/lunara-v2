@@ -118,13 +118,13 @@
   box-shadow: 0 3px 15px rgba(217, 182, 111, 0.25), inset 0 0 0 1px rgba(217, 182, 111, 0.3);
 }
 
-/* SCROLL AREA */
+/* ✅ SCROLL AREA — padding-bottom 86px */
 .horoscope-scroll-area {
   flex: 1; display: flex; flex-direction: column;
   overflow: hidden; position: relative;
   touch-action: none;
   user-select: none; -webkit-user-select: none;
-  padding-bottom: 90px;
+  padding-bottom: 86px;
 }
 
 .horoscope-content.premium-content {
@@ -211,7 +211,7 @@
 .empty-moon { color: var(--gold); opacity: 0.5; margin-bottom: 20px; filter: drop-shadow(0 0 15px rgba(217, 182, 111, 0.3)); }
 .horoscope-empty p { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: var(--text-cream); opacity: 0.7; font-style: italic; }
 
-/* HERO BANNER */
+/* ✅ HERO BANNER — flex: none, height: 110px */
 .premium-hero-banner {
   position: relative; width: 100%;
   min-height: 0; margin: 0;
@@ -222,8 +222,8 @@
   display: flex; align-items: stretch; justify-content: space-between;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   transition: opacity 0.3s var(--ease-smooth);
-  flex: 1.2;
-  min-height: 0;
+  flex: none;
+  height: 110px;
 }
 
 .premium-hero-cosmic-bg { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
@@ -244,13 +244,14 @@
   50% { opacity: 1; transform: translateX(-50%) scaleX(1.15); }
 }
 
+/* ✅ HERO LEFT — gap: 2px, padding: 2px 0 0 */
 .premium-hero-left {
   flex: 1;
   display: flex; flex-direction: column;
   justify-content: space-between;
   align-self: stretch;
-  gap: 4px;
-  padding: 6px 0 2px;
+  gap: 2px;
+  padding: 2px 0 0;
   position: relative; z-index: 2;
   max-width: 55%; min-width: 0;
 }
@@ -274,7 +275,7 @@
   50% { opacity: 1; transform: scale(1.1); }
 }
 
-/* ✅ HERO TITLE — iOS fix: background-clip ამოღებულია (ბაგი!), solid color + max-height */
+/* ✅ HERO TITLE — iOS fix: solid color + max-height */
 .premium-hero-title {
   display: block !important;
   white-space: nowrap !important;
@@ -318,11 +319,12 @@
   align-self: stretch;
 }
 
+/* ✅ TAROT CARD — 90x140px, margin-top: -12px */
 .premium-tarot-card {
-  position: relative; width: 102px; height: 158px;
+  position: relative; width: 90px; height: 140px;
   perspective: 1000px;
   transform: rotateY(12deg) rotateX(8deg) rotateZ(2deg);
-  margin-top: -18px;
+  margin-top: -12px;
   animation: cardFloat 4s ease-in-out infinite; will-change: transform;
 }
 @keyframes cardFloat {
@@ -702,13 +704,15 @@
   .horoscope-tabs { padding: 2px; gap: 2px; height: 30px; }
   .horoscope-tab { padding: 0 2px; font-size: 7px; letter-spacing: 0.3px; }
   
-  .premium-hero-banner { padding: 6px 12px; }
-  .premium-hero-left { max-width: 55%; gap: 3px; padding: 4px 0 0; }
+  /* ✅ Hero responsive — height: 105px */
+  .premium-hero-banner { padding: 6px 12px; height: 105px; }
+  .premium-hero-left { max-width: 55%; gap: 2px; padding: 2px 0 0; }
   .premium-hero-right { margin-left: 10px; }
   .premium-hero-title { font-size: 13px !important; letter-spacing: 0.3px; }
   .premium-read-full-btn { padding: 5px 14px; font-size: 9px; }
   
-  .premium-tarot-card { width: 96px; height: 150px; margin-top: -16px; }
+  /* ✅ Tarot card responsive — 85x135px */
+  .premium-tarot-card { width: 85px; height: 135px; margin-top: -10px; }
   .premium-card-glow { right: -20px; width: 50px; height: 140px; filter: blur(22px); }
   
   .premium-energy-grid { gap: 5px; }
