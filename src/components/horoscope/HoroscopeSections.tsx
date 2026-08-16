@@ -10,14 +10,13 @@ interface HeroBannerProps {
   refreshing: boolean;
   userSign: string;
   heroTitle: string;
-  heroDescription: string;
   onReadFull: () => void;
   heroLeftRef: Ref<HTMLDivElement>;
   subtitleRef: Ref<HTMLDivElement>;
   titleRef: Ref<HTMLHeadingElement>;
 }
 
-export function HeroBanner({ activeTab, refreshing, userSign, heroTitle, heroDescription, onReadFull, heroLeftRef, subtitleRef, titleRef }: HeroBannerProps) {
+export function HeroBanner({ activeTab, refreshing, userSign, heroTitle, onReadFull, heroLeftRef, subtitleRef, titleRef }: HeroBannerProps) {
   const zodiacData = ZODIAC_SIGNS[userSign] || ZODIAC_SIGNS['leo'];
   return (
     <motion.div
@@ -34,7 +33,6 @@ export function HeroBanner({ activeTab, refreshing, userSign, heroTitle, heroDes
 
       <div className="premium-glowing-ring" />
 
-      {/* ✅ subtitle ზემოთ, title ცენტრში, button ქვემოთ — ცალკე flex items */}
       <div className="premium-hero-left" ref={heroLeftRef}>
         <div className="premium-hero-subtitle" ref={subtitleRef}>
           <span className="subtitle-star">✦</span>
@@ -54,7 +52,6 @@ export function HeroBanner({ activeTab, refreshing, userSign, heroTitle, heroDes
         </motion.button>
       </div>
 
-      {/* ✅ ბანქოს კარტი — გადიდებული, ოდნავ ზემოდან გადადის */}
       <div className="premium-hero-right">
         <motion.div
           className="premium-tarot-card"

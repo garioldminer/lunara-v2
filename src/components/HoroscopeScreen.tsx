@@ -31,11 +31,10 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [showHoroDebug, setShowHoroDebug] = useState(false);
 
-  // ✅ Robust admin check — UUID, Telegram ID, is_admin — ყველაფერი
   const ADMIN_IDS = [
     ADMIN_USER_ID,
     'c9dbe3be-5c02-4034-8bfd-1d693eb02754',
-    '1436756556',  // Telegram ID
+    '1436756556',
   ];
   const isAdmin = 
     (user as any)?.is_admin === true || 
@@ -56,7 +55,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => setToast({ message, type });
 
-  /* ✅ ჭკვიანი ტექსტი — subtitle/title ერთ ხაზზე */
   useEffect(() => {
     const fit = () => {
       const left = heroLeftRef.current;
@@ -85,7 +83,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); window.removeEventListener('resize', fit); };
   }, [activeTab, horoscope]);
 
-  /* ✅ ბანერების კიდეები = nav კიდეები (როგორც CARDS ტაბზე) */
   useEffect(() => {
     const apply = () => {
       const nav = document.querySelector('.bottom-nav-container') as HTMLElement;
@@ -101,7 +98,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     return () => { clearTimeout(t1); clearTimeout(t2); window.removeEventListener('resize', apply); };
   }, []);
 
-  /* ✅ Reading log + quest */
   useEffect(() => {
     if (!user || !horoscope || loading || !userSign) return;
     if (!isInitialLoadRef.current) return;
@@ -207,7 +203,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const heroTitle = fixedHoroscope.hero_description
     ? safeString(fixedHoroscope.hero_description).split(' ').slice(0, 2).join(' ').toUpperCase()
     : TAB_HERO_FALLBACK[activeTab].split(' ').slice(0, 2).join(' ').toUpperCase();
-  const heroDescription = safeString(fixedHoroscope.hero_description || TAB_HERO_FALLBACK[activeTab]);
   const moonDescription = getMoonDescription(safeString(fixedHoroscope.moon_phase));
 
   const handleCopyAffirmation = () => {
@@ -314,7 +309,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           <div className="horoscope-content premium-content">
             <HeroBanner
               activeTab={activeTab} refreshing={refreshing} userSign={userSign}
-              heroTitle={heroTitle} heroDescription={heroDescription}
+              heroTitle={heroTitle}
               onReadFull={() => setIsReadFullOpen(true)}
               heroLeftRef={heroLeftRef} subtitleRef={subtitleRef} titleRef={titleRef}
             />
