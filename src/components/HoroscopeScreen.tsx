@@ -56,6 +56,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => setToast({ message, type });
 
+  /* ✅ ჭკვიანი ტექსტი — subtitle/title ერთ ხაზზე */
   useEffect(() => {
     const fit = () => {
       const left = heroLeftRef.current;
@@ -84,6 +85,23 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); window.removeEventListener('resize', fit); };
   }, [activeTab, horoscope]);
 
+  /* ✅ ბანერების კიდეები = nav კიდეები (როგორც CARDS ტაბზე) */
+  useEffect(() => {
+    const apply = () => {
+      const nav = document.querySelector('.bottom-nav-container') as HTMLElement;
+      if (nav) {
+        const inner = (nav.querySelector('.bottom-nav') || nav.firstElementChild || nav) as HTMLElement;
+        document.documentElement.style.setProperty('--nav-inset', `${Math.round(inner.getBoundingClientRect().left)}px`);
+      }
+    };
+    apply();
+    const t1 = setTimeout(apply, 300);
+    const t2 = setTimeout(apply, 800);
+    window.addEventListener('resize', apply);
+    return () => { clearTimeout(t1); clearTimeout(t2); window.removeEventListener('resize', apply); };
+  }, []);
+
+  /* ✅ Reading log + quest */
   useEffect(() => {
     if (!user || !horoscope || loading || !userSign) return;
     if (!isInitialLoadRef.current) return;

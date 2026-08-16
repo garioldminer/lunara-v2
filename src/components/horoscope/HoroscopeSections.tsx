@@ -31,18 +31,19 @@ export function HeroBanner({ activeTab, refreshing, userSign, heroTitle, heroDes
         <div className="cosmic-nebula nebula-1" />
         <div className="cosmic-nebula nebula-2" />
       </div>
+
       <div className="premium-glowing-ring" />
 
+      {/* ✅ subtitle ზემოთ, title ცენტრში, button ქვემოთ — ცალკე flex items */}
       <div className="premium-hero-left" ref={heroLeftRef}>
-        <div className="premium-hero-texts">
-          <div className="premium-hero-subtitle" ref={subtitleRef}>
-            <span className="subtitle-star">✦</span>
-            <span>{TAB_LABELS[activeTab]}</span>
-            <span className="subtitle-star">✦</span>
-          </div>
-          <h2 className="premium-hero-title" ref={titleRef}>{heroTitle}</h2>
+        <div className="premium-hero-subtitle" ref={subtitleRef}>
+          <span className="subtitle-star">✦</span>
+          <span>{TAB_LABELS[activeTab]}</span>
+          <span className="subtitle-star">✦</span>
         </div>
-        <p className="premium-hero-description">{heroDescription}</p>
+
+        <h2 className="premium-hero-title" ref={titleRef}>{heroTitle}</h2>
+
         <motion.button
           className="premium-read-full-btn"
           whileHover={{ scale: 1.02, x: 3 }}
@@ -53,6 +54,7 @@ export function HeroBanner({ activeTab, refreshing, userSign, heroTitle, heroDes
         </motion.button>
       </div>
 
+      {/* ✅ ბანქოს კარტი — გადიდებული, ოდნავ ზემოდან გადადის */}
       <div className="premium-hero-right">
         <motion.div
           className="premium-tarot-card"

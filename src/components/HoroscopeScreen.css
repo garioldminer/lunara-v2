@@ -15,6 +15,7 @@
   --green: #7CE8A6;
   --purple: rgba(100, 80, 180);
   --gap: 5px;
+  --nav-inset: 8px;
 }
 
 /* ============================================
@@ -90,8 +91,11 @@
   box-shadow: 0 0 15px rgba(217, 182, 111, 0.3);
 }
 .horoscope-back-btn:active { transform: scale(0.95); }
+
+/* ✅ TABS = back ღილაკის სიმაღლე (32px) */
 .horoscope-tabs {
-  flex: 1; display: flex; gap: 4px; padding: 3px;
+  flex: 1; display: flex; gap: 4px; padding: 2px;
+  height: 32px;
   background: rgba(217, 182, 111, 0.05);
   border: 1px solid rgba(217, 182, 111, 0.15);
   border-radius: 22px;
@@ -99,7 +103,9 @@
 }
 .horoscope-tab {
   flex: 1; background: transparent; border: none;
-  border-radius: 18px; padding: 7px 4px;
+  border-radius: 18px; padding: 0 4px;
+  height: 100%;
+  display: flex; align-items: center; justify-content: center;
   color: rgba(247, 243, 235, 0.6);
   font-family: 'Cinzel', serif;
   font-size: 9px; font-weight: 700; letter-spacing: 0.8px;
@@ -122,13 +128,14 @@
   padding-bottom: 85px;
 }
 
+/* ✅ CONTENT padding = nav კიდეები */
 .horoscope-content.premium-content {
   flex: 1;
   height: 100%;
   width: 100%; max-width: 600px; margin: 0 auto;
   display: flex; flex-direction: column;
   gap: var(--gap);
-  padding: var(--gap) 8px var(--gap);
+  padding: var(--gap) var(--nav-inset, 8px) var(--gap);
   overflow: hidden;
 }
 
@@ -206,14 +213,14 @@
 .empty-moon { color: var(--gold); opacity: 0.5; margin-bottom: 20px; filter: drop-shadow(0 0 15px rgba(217, 182, 111, 0.3)); }
 .horoscope-empty p { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: var(--text-cream); opacity: 0.7; font-style: italic; }
 
-/* HERO BANNER */
+/* ✅ HERO BANNER — overflow: visible (კარტი ზემოდან გადადის) */
 .premium-hero-banner {
   position: relative; width: 100%;
   min-height: 0; margin: 0;
-  padding: 8px 14px;
+  padding: 10px 14px;
   background: linear-gradient(135deg, var(--bg-dark) 0%, #1a0f3e 40%, #2d1b69 70%, var(--bg-dark) 100%);
   border: 1px solid rgba(217, 182, 111, 0.2);
-  border-radius: 20px; overflow: hidden;
+  border-radius: 20px; overflow: visible;
   display: flex; align-items: stretch; justify-content: space-between;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   transition: opacity 0.3s var(--ease-smooth);
@@ -239,12 +246,14 @@
   50% { opacity: 1; transform: translateX(-50%) scaleX(1.15); }
 }
 
+/* ✅ HERO LEFT — subtitle ზემოთ, title ცენტრში, button ქვემოთ */
 .premium-hero-left {
   flex: 1;
   display: flex; flex-direction: column;
   justify-content: space-between;
   align-self: stretch;
   gap: 4px;
+  padding: 6px 0 2px;
   position: relative; z-index: 2;
   max-width: 55%; min-width: 0;
 }
@@ -257,7 +266,8 @@
 .premium-hero-subtitle {
   display: flex; align-items: center; gap: 6px;
   font-family: 'Cinzel', serif; font-size: 8px; font-weight: 700;
-  color: var(--gold); letter-spacing: 2px; margin: 0;
+  color: var(--gold); letter-spacing: 2px;
+  margin: 6px 0 0 0;
   white-space: nowrap; min-width: 0;
   overflow: hidden;
 }
@@ -268,6 +278,8 @@
 }
 
 .premium-hero-title {
+  flex: 1;
+  display: flex; align-items: center;
   font-family: 'Cinzel', serif; font-size: 18px; font-weight: 900;
   letter-spacing: 1px; line-height: 1.1; margin: 0;
   background: linear-gradient(135deg, var(--text-cream) 0%, var(--gold) 60%, var(--gold-light) 100%);
@@ -280,22 +292,32 @@
 
 .premium-read-full-btn {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 6px 14px; margin-top: 0;
-  background: transparent; border: 2px solid rgba(217, 182, 111, 0.6);
+  padding: 7px 18px; margin-top: 4px;
+  background: rgba(217, 182, 111, 0.08);
+  border: 2px solid rgba(217, 182, 111, 0.6);
   border-radius: 30px; color: var(--gold);
   font-family: 'Cinzel', serif; font-size: 9px; font-weight: 700; letter-spacing: 1.5px;
   cursor: pointer; transition: all 0.3s var(--ease-smooth);
   align-self: flex-start;
   box-shadow: 0 0 20px rgba(217, 182, 111, 0.15);
 }
-.premium-read-full-btn:hover { background: rgba(217, 182, 111, 0.1); border-color: rgba(217, 182, 111, 0.9); box-shadow: 0 0 30px rgba(217, 182, 111, 0.3); transform: translateX(3px); }
+.premium-read-full-btn:hover { background: rgba(217, 182, 111, 0.15); border-color: rgba(217, 182, 111, 0.9); box-shadow: 0 0 30px rgba(217, 182, 111, 0.3); transform: translateX(3px); }
 
+/* ✅ HERO RIGHT — z-index: 3 (კარტი banner-ზე ზემოდან) */
 .premium-hero-right {
-  flex-shrink: 0; margin-left: 10px; position: relative; z-index: 2;
+  flex-shrink: 0; margin-left: 10px; position: relative; z-index: 3;
   display: flex; align-items: stretch; justify-content: center;
   align-self: stretch;
 }
-.premium-tarot-card { position: relative; width: 88px; height: 135px; perspective: 1000px; transform: rotateY(12deg) rotateX(8deg) rotateZ(2deg); animation: cardFloat 4s ease-in-out infinite; will-change: transform; }
+
+/* ✅ TAROT CARD — გადიდებული + ზემოთ გადადის */
+.premium-tarot-card {
+  position: relative; width: 102px; height: 158px;
+  perspective: 1000px;
+  transform: rotateY(12deg) rotateX(8deg) rotateZ(2deg);
+  margin-top: -18px;
+  animation: cardFloat 4s ease-in-out infinite; will-change: transform;
+}
 @keyframes cardFloat {
   0%, 100% { transform: rotateY(12deg) rotateX(8deg) rotateZ(2deg) translateY(0); }
   50% { transform: rotateY(12deg) rotateX(8deg) rotateZ(2deg) translateY(-8px); }
@@ -670,16 +692,16 @@
   .horoscope-sign-name { font-size: 13px; letter-spacing: 2px; }
   .horoscope-date-small { font-size: 8px; }
   .horoscope-back-btn { width: 30px; height: 30px; }
-  .horoscope-tabs { padding: 2px; gap: 2px; }
-  .horoscope-tab { padding: 6px 2px; font-size: 7px; letter-spacing: 0.3px; }
+  .horoscope-tabs { padding: 2px; gap: 2px; height: 30px; }
+  .horoscope-tab { padding: 0 2px; font-size: 7px; letter-spacing: 0.3px; }
   
   .premium-hero-banner { padding: 7px 12px; }
-  .premium-hero-left { max-width: 55%; gap: 3px; }
+  .premium-hero-left { max-width: 55%; gap: 3px; padding: 4px 0 0; }
   .premium-hero-right { margin-left: 10px; }
   .premium-hero-title { font-size: 17px; }
-  .premium-read-full-btn { padding: 5px 12px; font-size: 9px; }
+  .premium-read-full-btn { padding: 5px 14px; font-size: 9px; }
   
-  .premium-tarot-card { width: 85px; height: 130px; }
+  .premium-tarot-card { width: 96px; height: 150px; margin-top: -16px; }
   .premium-card-glow { right: -20px; width: 50px; height: 140px; filter: blur(22px); }
   
   .premium-energy-grid { gap: 5px; }
