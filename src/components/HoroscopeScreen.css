@@ -67,7 +67,7 @@
   letter-spacing: 1.5px; line-height: 1.1;
 }
 
-/* SUBBAR — 5px gap topbar-დან */
+/* SUBBAR */
 .horoscope-subbar {
   flex-shrink: 0; display: flex;
   align-items: center; gap: 6px;
@@ -118,13 +118,13 @@
   box-shadow: 0 3px 15px rgba(217, 182, 111, 0.25), inset 0 0 0 1px rgba(217, 182, 111, 0.3);
 }
 
-/* ✅ SCROLL AREA — padding-bottom 90px */
+/* ✅ SCROLL AREA — padding-bottom 86px */
 .horoscope-scroll-area {
   flex: 1; display: flex; flex-direction: column;
   overflow: hidden; position: relative;
   touch-action: none;
   user-select: none; -webkit-user-select: none;
-  padding-bottom: 90px;
+  padding-bottom: 86px;
 }
 
 .horoscope-content.premium-content {
@@ -138,7 +138,7 @@
 }
 
 /* ============================================
-   BASE STYLES (error/empty/loading)
+   BASE STYLES
    ============================================ */
 .horoscope-screen:not(.premium-design) {
   position: relative; width: 100%; min-height: 100vh;
@@ -211,7 +211,7 @@
 .empty-moon { color: var(--gold); opacity: 0.5; margin-bottom: 20px; filter: drop-shadow(0 0 15px rgba(217, 182, 111, 0.3)); }
 .horoscope-empty p { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: var(--text-cream); opacity: 0.7; font-style: italic; }
 
-/* ✅ HERO BANNER — padding 8px, flex 1.2 */
+/* HERO BANNER */
 .premium-hero-banner {
   position: relative; width: 100%;
   min-height: 0; margin: 0;
@@ -274,26 +274,24 @@
   50% { opacity: 1; transform: scale(1.1); }
 }
 
-/* ✅ HERO TITLE — 15px, nowrap, ellipsis */
+/* ✅ HERO TITLE — display: block !important (flex-ზე nowrap არ მუშაობს iOS-ში) */
 .premium-hero-title {
-  flex: 1;
-  display: flex; align-items: center;
+  display: block !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
   font-family: 'Cinzel', serif; font-size: 15px; font-weight: 900;
   letter-spacing: 0.5px; line-height: 1.1; margin: 0;
   background: linear-gradient(135deg, var(--text-cream) 0%, var(--gold) 60%, var(--gold-light) 100%);
   -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent;
-  white-space: nowrap;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  width: 100%;
+  flex: 1;
 }
 .premium-hero-title > span {
-  white-space: inherit;
-  overflow: inherit;
-  text-overflow: inherit;
-  display: block;
-  width: 100%;
+  white-space: nowrap !important;
+  display: inline;
 }
 .premium-hero-description { display: none; }
 
@@ -700,12 +698,11 @@
   .horoscope-tabs { padding: 2px; gap: 2px; height: 30px; }
   .horoscope-tab { padding: 0 2px; font-size: 7px; letter-spacing: 0.3px; }
   
-  /* ✅ Hero responsive — 14px title, 6px padding */
   .premium-hero-banner { padding: 6px 12px; }
   .premium-hero-left { max-width: 55%; gap: 3px; padding: 4px 0 0; }
   .premium-hero-right { margin-left: 10px; }
-  .premium-hero-title { font-size: 14px; letter-spacing: 0.3px; }
-  .premium-hero-title > span { white-space: nowrap; }
+  .premium-hero-title { font-size: 14px !important; letter-spacing: 0.3px; }
+  .premium-hero-title > span { white-space: nowrap !important; }
   .premium-read-full-btn { padding: 5px 14px; font-size: 9px; }
   
   .premium-tarot-card { width: 96px; height: 150px; margin-top: -16px; }
@@ -762,9 +759,7 @@
   .starTwinkle, .edgeGlowPulse, .horoDebugPulse { animation: none !important; }
 }
 
-/* ============================================
-   ✅ DEBUG BUTTON PULSE ANIMATION
-   ============================================ */
+/* DEBUG BUTTON PULSE */
 @keyframes horoDebugPulse {
   0%, 100% { 
     transform: translateY(-50%) scale(1);
