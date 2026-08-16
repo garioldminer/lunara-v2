@@ -118,23 +118,20 @@
   box-shadow: 0 3px 15px rgba(217, 182, 111, 0.25), inset 0 0 0 1px rgba(217, 182, 111, 0.3);
 }
 
-/* ✅ SCROLL AREA — padding-bottom 86px */
+/* SCROLL AREA */
 .horoscope-scroll-area {
   flex: 1; display: flex; flex-direction: column;
-  overflow: hidden; position: relative;
-  touch-action: none;
-  user-select: none; -webkit-user-select: none;
-  padding-bottom: 86px;
+  overflow-y: auto; overflow-x: hidden; position: relative;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 90px;
 }
 
 .horoscope-content.premium-content {
-  flex: 1;
-  height: 100%;
   width: 100%; max-width: 600px; margin: 0 auto;
   display: flex; flex-direction: column;
   gap: var(--gap);
   padding: var(--gap) var(--nav-inset, 8px) var(--gap);
-  overflow: hidden;
 }
 
 /* ============================================
@@ -211,7 +208,7 @@
 .empty-moon { color: var(--gold); opacity: 0.5; margin-bottom: 20px; filter: drop-shadow(0 0 15px rgba(217, 182, 111, 0.3)); }
 .horoscope-empty p { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: var(--text-cream); opacity: 0.7; font-style: italic; }
 
-/* ✅ HERO BANNER — flex: none, height: 110px */
+/* HERO BANNER */
 .premium-hero-banner {
   position: relative; width: 100%;
   min-height: 0; margin: 0;
@@ -244,7 +241,6 @@
   50% { opacity: 1; transform: translateX(-50%) scaleX(1.15); }
 }
 
-/* ✅ HERO LEFT — gap: 2px, padding: 2px 0 0 */
 .premium-hero-left {
   flex: 1;
   display: flex; flex-direction: column;
@@ -275,7 +271,6 @@
   50% { opacity: 1; transform: scale(1.1); }
 }
 
-/* ✅ HERO TITLE — iOS fix: solid color + max-height */
 .premium-hero-title {
   display: block !important;
   white-space: nowrap !important;
@@ -319,7 +314,6 @@
   align-self: stretch;
 }
 
-/* ✅ TAROT CARD — 90x140px, margin-top: -12px */
 .premium-tarot-card {
   position: relative; width: 90px; height: 140px;
   perspective: 1000px;
@@ -342,14 +336,12 @@
 .premium-card-inner::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, transparent 30%, transparent 70%, rgba(0, 0, 0, 0.2) 100%); z-index: 2; pointer-events: none; }
 .premium-card-numeral, .premium-card-symbol, .premium-card-sign-name, .card-corner { display: none !important; }
 
-/* SECTION TITLE */
+/* ✅ SECTION — flex: none (არ გაიზარდოს!) */
 .premium-section {
   margin: 0;
   display: flex; flex-direction: column;
-  min-height: 0;
+  flex: none;
 }
-.premium-section.energy-section { flex: 1; }
-.premium-section.predictions-section { flex: 1; }
 
 .premium-section-title {
   font-family: 'Cinzel', serif; font-size: 9px; font-weight: 700;
@@ -360,48 +352,46 @@
 }
 .premium-section-title svg { width: 10px; height: 10px; color: var(--gold); filter: drop-shadow(0 0 4px rgba(217, 182, 111, 0.6)); }
 
-/* ENERGY GRID */
+/* ✅ ENERGY GRID — შემცირებული სიმაღლე: 80px */
 .premium-energy-grid {
   display: grid; grid-template-columns: repeat(3, 1fr);
   gap: 6px;
-  flex: 1; min-height: 0;
-  grid-auto-rows: 1fr;
+  grid-auto-rows: 80px;
 }
 .premium-energy-card {
   position: relative;
   background: linear-gradient(135deg, rgba(217, 182, 111, 0.08), rgba(217, 182, 111, 0.03));
   border: 1px solid rgba(217, 182, 111, 0.2);
-  border-radius: 16px; padding: 6px 6px;
+  border-radius: 12px; padding: 5px 4px;
   display: flex; flex-direction: column; align-items: center;
-  justify-content: space-evenly;
-  gap: 2px;
+  justify-content: space-between;
+  gap: 1px;
   transition: all 0.3s var(--ease-smooth);
   overflow: hidden;
-  min-height: 0;
 }
 .premium-energy-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(217, 182, 111, 0.2); border-color: rgba(217, 182, 111, 0.4); }
 .premium-energy-card::before { content: ''; position: absolute; top: -50%; right: -50%; width: 100px; height: 100px; background: radial-gradient(circle, rgba(217, 182, 111, 0.15), transparent 70%); pointer-events: none; }
 
 .premium-energy-icon,
 .premium-prediction-icon {
-  width: 32px; height: 32px;
+  width: 26px; height: 26px;
   display: flex; align-items: center; justify-content: center;
   border-radius: 50%; margin-bottom: 0;
   position: relative;
   flex-shrink: 0;
 }
 .premium-energy-icon svg,
-.premium-prediction-icon svg { width: 17px; height: 17px; }
+.premium-prediction-icon svg { width: 14px; height: 14px; }
 
 .premium-energy-card.energy .premium-energy-icon { background: linear-gradient(135deg, rgba(244, 212, 124, 0.2), rgba(217, 182, 111, 0.1)); border: 2px solid rgba(244, 212, 124, 0.4); color: var(--gold-light); box-shadow: 0 0 20px rgba(244, 212, 124, 0.3); }
 .premium-energy-card.love .premium-energy-icon { background: linear-gradient(135deg, rgba(232, 115, 138, 0.2), rgba(232, 115, 138, 0.1)); border: 2px solid rgba(232, 115, 138, 0.4); color: var(--rose); box-shadow: 0 0 20px rgba(232, 115, 138, 0.3); }
 .premium-energy-card.career .premium-energy-icon { background: linear-gradient(135deg, rgba(124, 179, 232, 0.2), rgba(124, 179, 232, 0.1)); border: 2px solid rgba(124, 179, 232, 0.4); color: var(--blue); box-shadow: 0 0 20px rgba(124, 179, 232, 0.3); }
 
-.premium-energy-level { font-family: 'Cinzel', serif; font-size: 8px; font-weight: 900; color: var(--gold); letter-spacing: 1px; margin: 0; text-align: center; }
-.premium-energy-subtitle { font-family: 'Cormorant Garamond', serif; font-size: 10px; color: rgba(247, 243, 235, 0.7); margin: 0; font-style: italic; }
+.premium-energy-level { font-family: 'Cinzel', serif; font-size: 7px; font-weight: 900; color: var(--gold); letter-spacing: 0.5px; margin: 0; text-align: center; }
+.premium-energy-subtitle { font-family: 'Cormorant Garamond', serif; font-size: 9px; color: rgba(247, 243, 235, 0.7); margin: 0; font-style: italic; }
 
-.premium-energy-dots { display: flex; gap: 3px; margin-top: 0; flex-shrink: 0; }
-.premium-energy-dots .dot { width: 4px; height: 4px; border-radius: 50%; background: rgba(217, 182, 111, 0.2); border: 1px solid rgba(217, 182, 111, 0.3); transition: all 0.3s var(--ease-smooth); }
+.premium-energy-dots { display: flex; gap: 2px; margin-top: 0; flex-shrink: 0; }
+.premium-energy-dots .dot { width: 3px; height: 3px; border-radius: 50%; background: rgba(217, 182, 111, 0.2); border: 1px solid rgba(217, 182, 111, 0.3); transition: all 0.3s var(--ease-smooth); }
 .premium-energy-dots .dot.active { background: var(--gold); box-shadow: 0 0 8px rgba(217, 182, 111, 0.6); }
 
 /* MOON CARD */
@@ -413,7 +403,7 @@
   border: 1px solid rgba(100, 80, 180, 0.3);
   border-radius: 14px; overflow: hidden;
   flex: 0 0 auto;
-  min-height: 0; align-self: stretch;
+  align-self: stretch;
   transition: all 0.3s var(--ease-smooth);
 }
 .premium-moon-card:hover { border-color: rgba(100, 80, 180, 0.5); box-shadow: 0 4px 20px rgba(100, 80, 180, 0.15); }
@@ -450,30 +440,27 @@
   -webkit-box-orient: vertical; overflow: hidden;
 }
 
-.premium-moon-symbol { flex-shrink: 0; position: relative; z-index: 2; }
-.premium-symbol-circle { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, rgba(217, 182, 111, 0.2), rgba(217, 182, 111, 0.1)); border: 2px solid rgba(217, 182, 111, 0.4); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(217, 182, 111, 0.3); }
-.premium-zodiac-symbol { font-size: 22px; color: var(--gold); filter: drop-shadow(0 0 8px rgba(217, 182, 111, 0.6)); }
-
-/* PREDICTIONS GRID */
+/* ✅ PREDICTIONS GRID — ბანკის კარტის პროპორცია 8:5 (1.6:1) */
 .premium-predictions-grid {
-  display: grid; grid-template-columns: repeat(5, 1fr);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
   gap: 4px;
-  flex: 1; min-height: 0;
-  grid-auto-rows: 1fr;
+  grid-auto-rows: auto;
 }
 .premium-prediction-card {
   position: relative;
   background: linear-gradient(135deg, rgba(217, 182, 111, 0.05), rgba(217, 182, 111, 0.02));
   border: 1px solid rgba(217, 182, 111, 0.15);
-  border-radius: 16px; padding: 6px 4px;
+  border-radius: 12px;
+  padding: 6px 3px;
   display: flex; flex-direction: column; align-items: center;
-  justify-content: space-evenly;
-  gap: 2px;
+  justify-content: center;
+  gap: 3px;
   cursor: pointer; transition: all 0.3s var(--ease-smooth);
   overflow: hidden;
-  min-height: 0;
+  aspect-ratio: 5 / 7;
 }
-.premium-prediction-card:hover { transform: translateY(-5px) scale(1.02); border-color: rgba(217, 182, 111, 0.4); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 15px rgba(217, 182, 111, 0.1); }
+.premium-prediction-card:hover { transform: translateY(-3px) scale(1.02); border-color: rgba(217, 182, 111, 0.4); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 15px rgba(217, 182, 111, 0.1); }
 .premium-prediction-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 150px; height: 150px; background: radial-gradient(circle, var(--glow-color, rgba(217, 182, 111, 0.15)), transparent 70%); pointer-events: none; opacity: 0; transition: opacity 0.3s var(--ease-smooth); }
 .premium-prediction-card:hover::before { opacity: 1; }
 
@@ -489,7 +476,7 @@
 .premium-prediction-card.health .premium-prediction-icon { background: linear-gradient(135deg, rgba(124, 232, 166, 0.2), rgba(124, 232, 166, 0.1)); border: 2px solid rgba(124, 232, 166, 0.4); color: var(--green); box-shadow: 0 0 20px rgba(124, 232, 166, 0.3); }
 .premium-prediction-card.finance .premium-prediction-icon { background: linear-gradient(135deg, rgba(244, 212, 124, 0.2), rgba(255, 165, 0, 0.1)); border: 2px solid rgba(244, 212, 124, 0.4); color: var(--gold-light); box-shadow: 0 0 20px rgba(244, 212, 124, 0.3); }
 
-.premium-prediction-card h4 { font-family: 'Cinzel', serif; font-size: 7px; font-weight: 900; color: var(--gold); letter-spacing: 0.3px; margin: 0; text-align: center; }
+.premium-prediction-card h4 { font-family: 'Cinzel', serif; font-size: 6px; font-weight: 900; color: var(--gold); letter-spacing: 0.2px; margin: 0; text-align: center; }
 .premium-prediction-card p { display: none; }
 
 /* REFRESHING & TOAST */
@@ -704,23 +691,22 @@
   .horoscope-tabs { padding: 2px; gap: 2px; height: 30px; }
   .horoscope-tab { padding: 0 2px; font-size: 7px; letter-spacing: 0.3px; }
   
-  /* ✅ Hero responsive — height: 105px */
   .premium-hero-banner { padding: 6px 12px; height: 105px; }
   .premium-hero-left { max-width: 55%; gap: 2px; padding: 2px 0 0; }
   .premium-hero-right { margin-left: 10px; }
   .premium-hero-title { font-size: 13px !important; letter-spacing: 0.3px; }
   .premium-read-full-btn { padding: 5px 14px; font-size: 9px; }
   
-  /* ✅ Tarot card responsive — 85x135px */
   .premium-tarot-card { width: 85px; height: 135px; margin-top: -10px; }
   .premium-card-glow { right: -20px; width: 50px; height: 140px; filter: blur(22px); }
   
-  .premium-energy-grid { gap: 5px; }
-  .premium-energy-card { padding: 6px 5px; gap: 2px; }
-  .premium-energy-icon { width: 30px; height: 30px; }
-  .premium-energy-icon svg { width: 16px; height: 16px; }
-  .premium-energy-level { font-size: 7px; }
-  .premium-energy-subtitle { font-size: 9px; }
+  /* ✅ Energy responsive — 75px */
+  .premium-energy-grid { gap: 5px; grid-auto-rows: 75px; }
+  .premium-energy-card { padding: 4px 3px; gap: 1px; }
+  .premium-energy-icon { width: 24px; height: 24px; }
+  .premium-energy-icon svg { width: 13px; height: 13px; }
+  .premium-energy-level { font-size: 6px; }
+  .premium-energy-subtitle { font-size: 8px; }
   
   .premium-moon-card { padding: 5px 8px; gap: 8px; }
   .premium-moon-image-container { width: 38px; height: 38px; }
@@ -729,11 +715,12 @@
   .premium-moon-sign { font-size: 7px; }
   .premium-moon-desc { font-size: 8px; }
   
+  /* ✅ Predictions responsive — aspect-ratio 5/7 */
   .premium-predictions-grid { gap: 3px; }
-  .premium-prediction-card { padding: 6px 3px; }
-  .premium-prediction-icon { width: 30px; height: 30px; }
-  .premium-prediction-icon svg { width: 16px; height: 16px; }
-  .premium-prediction-card h4 { font-size: 7px; }
+  .premium-prediction-card { padding: 4px 2px; border-radius: 10px; }
+  .premium-prediction-icon { width: 22px; height: 22px; }
+  .premium-prediction-icon svg { width: 12px; height: 12px; }
+  .premium-prediction-card h4 { font-size: 5px; }
   
   .toast { min-width: 240px; padding: 10px 14px; font-size: 10px; bottom: 80px; }
   .toast-icon { font-size: 14px; }
