@@ -31,8 +31,17 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [showHoroDebug, setShowHoroDebug] = useState(false);
 
-  // ✅ Robust admin check — is_admin field-იც ამოწმებს
-  const isAdmin = (user as any)?.is_admin === true || user?.id === ADMIN_USER_ID;
+  // ✅ Robust admin check — UUID, Telegram ID, is_admin — ყველაფერი
+  const ADMIN_IDS = [
+    ADMIN_USER_ID,
+    'c9dbe3be-5c02-4034-8bfd-1d693eb02754',
+    '1436756556',  // Telegram ID
+  ];
+  const isAdmin = 
+    (user as any)?.is_admin === true || 
+    ADMIN_IDS.includes(user?.id || '') ||
+    ADMIN_IDS.includes(String((user as any)?.telegram_id || ''));
+  
   const userSign = user?.sun_sign?.toLowerCase() || '';
 
   const heroLeftRef = useRef<HTMLDivElement>(null);
@@ -47,7 +56,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => setToast({ message, type });
 
-  /* ✅ ჭკვიანი ტექსტი — subtitle/title ერთ ხაზზე */
   useEffect(() => {
     const fit = () => {
       const left = heroLeftRef.current;
@@ -76,7 +84,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); window.removeEventListener('resize', fit); };
   }, [activeTab, horoscope]);
 
-  /* ✅ Reading log + quest */
   useEffect(() => {
     if (!user || !horoscope || loading || !userSign) return;
     if (!isInitialLoadRef.current) return;
@@ -159,7 +166,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     );
   }
 
-  // ✅ აქ horoscope definitely not null
   const zodiacData = ZODIAC_SIGNS[userSign] || ZODIAC_SIGNS['leo'];
 
   const wrongSignsDetected: string[] = [];
@@ -305,7 +311,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {/* ✅ DEBUG ღილაკი — createPortal-ით document.body-ში */}
       {isAdmin && createPortal(
         <button
           onClick={() => setShowHoroDebug(true)}
@@ -335,34 +340,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         document.body
       )}
 
-      {/* ✅ დროებითი დიაგნოსტიკა — portal-ით, წაშალე როცა გაამოწმებ */}
-      {createPortal(
-        <div style={{
-          position: 'fixed',
-          bottom: 110,
-          left: 10,
-          zIndex: 2147483647,
-          background: isAdmin ? 'rgba(16,185,129,0.95)' : 'rgba(239,68,68,0.95)',
-          color: '#fff',
-          padding: '8px 12px',
-          borderRadius: 10,
-          fontSize: 10,
-          fontFamily: 'monospace',
-          maxWidth: 220,
-          border: `2px solid ${isAdmin ? '#10b981' : '#ef4444'}`,
-          boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
-        }}>
-          <div style={{ fontWeight: 'bold', marginBottom: 4 }}>
-            {isAdmin ? '✅ ADMIN' : '❌ NOT ADMIN'}
-          </div>
-          <div>user.id: {(user?.id || 'NO-USER').slice(0, 12)}...</div>
-          <div>expected: {ADMIN_USER_ID?.slice(0, 12) || 'UNDEF'}...</div>
-          <div>is_admin: {String((user as any)?.is_admin)}</div>
-          <div>isAdmin result: {String(isAdmin)}</div>
-        </div>,
-        document.body
-      )}
-
       <PredictionModal openModal={openModal} horoscope={fixedHoroscope} onClose={() => setOpenModal(null)} />
 
       <ShareModal
@@ -380,7 +357,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         onShareAffirmation={() => { setIsReadFullOpen(false); setIsShareModalOpen(true); }}
       />
 
-      {/* ✅ Debugger-იც portal-ში */}
       {isAdmin && (
         <HoroscopeLayoutDebugger open={showHoroDebug} onClose={() => setShowHoroDebug(false)} />
       )}
