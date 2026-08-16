@@ -575,7 +575,7 @@
 .share-action-btn.primary:hover { background: rgba(217, 182, 111, 0.4); box-shadow: 0 6px 18px rgba(217, 182, 111, 0.3); }
 
 /* ============================================
-   ✅ READ FULL MODAL — FIXED SCROLL
+   READ FULL MODAL
    ============================================ */
 .read-full-overlay {
   position: fixed; inset: 0;
@@ -583,16 +583,16 @@
   z-index: 1100;
   display: flex;
   justify-content: center;
-  overflow: hidden;               /* ✅ არ ისქროლება overlay */
-  overscroll-behavior: contain;  /* ✅ body არ ისქროლება */
+  overflow: hidden;
+  overscroll-behavior: contain;
 }
 
 .read-full-modal {
   position: relative;
   width: 100%;
   max-width: 480px;
-  height: 100%;                  /* ✅ სრული სიმაღლე */
-  display: flex;                 /* ✅ flex column */
+  height: 100%;
+  display: flex;
   flex-direction: column;
   background: linear-gradient(160deg, rgba(26, 15, 52, 0.98), rgba(12, 6, 25, 0.98));
   border-left: 1.5px solid rgba(217, 182, 111, 0.15);
@@ -609,33 +609,49 @@
 
 .rf-glow { position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 300px; height: 300px; background: radial-gradient(circle, rgba(217, 182, 111, 0.12), transparent 65%); pointer-events: none; z-index: 0; }
 
-/* ✅ SCROLL — მუშაობს სწორად, Telegram top bar + 5px + back ღილაკი */
+/* TOPBAR — ნიშანი + თარიღი Telegram close/settings შორის */
+.rf-topbar {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: calc(env(safe-area-inset-top, 0px) + 44px);
+  padding: env(safe-area-inset-top, 0px) 60px 0;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none; z-index: 6;
+}
+.rf-topbar-text { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.rf-topbar-sign {
+  font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700;
+  letter-spacing: 3px; line-height: 1.1;
+  background: linear-gradient(135deg, var(--text-cream) 30%, var(--gold) 100%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.rf-topbar-date {
+  font-family: 'Cinzel', serif; font-size: 8px; font-weight: 600;
+  color: rgba(247, 243, 235, 0.75); letter-spacing: 1.5px; line-height: 1.1;
+}
+
+/* SCROLL — scrollbar დამალულია */
 .rf-scroll {
   position: relative;
   z-index: 2;
-  flex: 1;                                   /* ✅ იღებს დარჩენილ სიმაღლეს */
+  flex: 1;
   min-height: 0;
-  overflow-y: auto;                          /* ✅ მხოლოდ ეს ისქროლება */
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  /* ✅ Telegram close (44px) + 5px gap + back ღილაკი (38px) + 5px = 92px */
   padding-top: calc(env(safe-area-inset-top, 0px) + 92px);
-  padding-bottom: 70px;                      /* ✅ footer + nav reveal space */
+  padding-bottom: 70px;
   padding-left: 16px;
   padding-right: 16px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(217, 182, 111, 0.3) transparent;
   box-sizing: border-box;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
+.rf-scroll::-webkit-scrollbar { display: none; width: 0; }
 
-.rf-scroll::-webkit-scrollbar { width: 4px; }
-.rf-scroll::-webkit-scrollbar-track { background: transparent; }
-.rf-scroll::-webkit-scrollbar-thumb { background: rgba(217, 182, 111, 0.3); border-radius: 2px; }
-
-/* ✅ BACK ღილაკი — Telegram close-ის ქვემოთ + 5px */
+/* BACK ღილაკი — Telegram close-ის ქვემოთ + 5px */
 .rf-back {
   position: absolute;
-  top: calc(env(safe-area-inset-top, 0px) + 49px);  /* ✅ 44px close + 5px gap */
+  top: calc(env(safe-area-inset-top, 0px) + 49px);
   left: 14px;
   z-index: 10;
   background: rgba(217, 182, 111, 0.1);
@@ -1073,6 +1089,9 @@ nav[class*="nav"].rf-revealed {
   .refreshing-indicator svg { width: 12px; height: 12px; }
   
   .read-full-overlay { padding: 0; }
+  .rf-topbar { padding: env(safe-area-inset-top, 0px) 56px 0; }
+  .rf-topbar-sign { font-size: 12px; letter-spacing: 2px; }
+  .rf-topbar-date { font-size: 7px; }
   .rf-back {
     top: calc(env(safe-area-inset-top, 0px) + 47px);
     left: 12px;

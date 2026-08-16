@@ -99,6 +99,19 @@ export function ReadFullModal({ isOpen, onClose, userSign, zodiacSymbol, safeDat
   const toggleAccordion = (s: string) => setOpenAccordion(openAccordion === s ? null : s);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // ✅ თარიღი ფორმატირებული ზედა ბარისთვის (Telegram close/settings შორის)
+  const formattedDate = (() => {
+    try {
+      return new Date(safeDate).toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    } catch {
+      return safeDate;
+    }
+  })();
+
   // ✅ Helper: ვპოულობთ nav-ს ყველა შესაძლო selector-ით
   const findNav = (): HTMLElement | null => {
     const selectors = [
@@ -192,6 +205,14 @@ export function ReadFullModal({ isOpen, onClose, userSign, zodiacSymbol, safeDat
           >
             <div className="rf-glow" />
 
+            {/* ✅ TOPBAR — ნიშანი + თარიღი Telegram close/settings შორის */}
+            <div className="rf-topbar">
+              <div className="rf-topbar-text">
+                <span className="rf-topbar-sign">{userSign.toUpperCase()}</span>
+                <span className="rf-topbar-date">{formattedDate}</span>
+              </div>
+            </div>
+
             {/* ✅ მხოლოდ Back ღილაკი (close წაშლილია) */}
             <button className="rf-back" onClick={onClose} aria-label="Back">
               <ArrowLeft size={20} />
@@ -204,7 +225,7 @@ export function ReadFullModal({ isOpen, onClose, userSign, zodiacSymbol, safeDat
                 <h1 className="rf-sign-name">{userSign.toUpperCase()}</h1>
                 <div className="rf-date-row">
                   <span className="rf-divider-line" />
-                  <span className="rf-date">{safeDate}</span>
+                  <span className="rf-date">{formattedDate}</span>
                   <span className="rf-divider-line" />
                 </div>
               </div>
