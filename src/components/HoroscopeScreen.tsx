@@ -55,6 +55,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => setToast({ message, type });
 
+  /* ✅ ჭკვიანი ტექსტი — title-ის span-ზეც ამოწმებს scrollWidth-ს */
   useEffect(() => {
     const fit = () => {
       const left = heroLeftRef.current;
@@ -71,8 +72,14 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
       if (title) {
         title.style.fontSize = '';
         title.style.whiteSpace = 'nowrap';
+        const titleSpan = title.querySelector('span') as HTMLElement;
         let size = parseFloat(getComputedStyle(title).fontSize);
-        while (title.scrollWidth > avail && size > 10) { size -= 0.5; title.style.fontSize = `${size}px`; }
+        const checkEl = titleSpan || title;
+        while (checkEl.scrollWidth > avail && size > 8) {
+          size -= 0.5;
+          title.style.fontSize = `${size}px`;
+          if (titleSpan) titleSpan.style.fontSize = `${size}px`;
+        }
       }
     };
     fit();
@@ -83,6 +90,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); window.removeEventListener('resize', fit); };
   }, [activeTab, horoscope]);
 
+  /* ✅ ბანერების კიდეები = nav კიდეები */
   useEffect(() => {
     const apply = () => {
       const nav = document.querySelector('.bottom-nav-container') as HTMLElement;
@@ -98,6 +106,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     return () => { clearTimeout(t1); clearTimeout(t2); window.removeEventListener('resize', apply); };
   }, []);
 
+  /* ✅ Reading log + quest */
   useEffect(() => {
     if (!user || !horoscope || loading || !userSign) return;
     if (!isInitialLoadRef.current) return;
