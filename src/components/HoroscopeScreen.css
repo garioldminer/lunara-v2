@@ -29,7 +29,7 @@
 ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, var(--gold-light), var(--gold)); }
 
 /* ============================================
-   HOROSCOPE SCREEN — FIXED FLEX LAYOUT
+   HOROSCOPE SCREEN
    ============================================ */
 .horoscope-screen.premium-design {
   position: fixed; inset: 0;
@@ -297,9 +297,9 @@
 
 .premium-read-full-btn {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 7px 18px; margin-top: auto;
+  padding: 5px 14px; margin-top: 6px;
   background: rgba(217, 182, 111, 0.08);
-  border: 2px solid rgba(217, 182, 111, 0.6);
+  border: 1.5px solid rgba(217, 182, 111, 0.6);
   border-radius: 30px; color: var(--gold);
   font-family: 'Cinzel', serif; font-size: 9px; font-weight: 700; letter-spacing: 1.5px;
   cursor: pointer; transition: all 0.3s var(--ease-smooth);
@@ -343,14 +343,20 @@
   flex: none;
 }
 
+/* ✅ SECTION TITLE — დამალულია main screen-ზე (height: 0) */
 .premium-section-title {
   font-family: 'Cinzel', serif; font-size: 9px; font-weight: 700;
   color: var(--gold); text-align: center;
-  letter-spacing: 1.5px; margin: 0 0 3px 0;
+  letter-spacing: 1.5px;
   display: flex; align-items: center; justify-content: center; gap: 6px;
-  flex-shrink: 0;
+  height: 0 !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none;
 }
-.premium-section-title svg { width: 10px; height: 10px; color: var(--gold); filter: drop-shadow(0 0 4px rgba(217, 182, 111, 0.6)); }
+.premium-section-title svg { width: 0; height: 0; }
 
 /* ENERGY GRID */
 .premium-energy-grid {
@@ -439,6 +445,10 @@
   display: -webkit-box; -webkit-line-clamp: 1;
   -webkit-box-orient: vertical; overflow: hidden;
 }
+
+.premium-moon-symbol { flex-shrink: 0; position: relative; z-index: 2; }
+.premium-symbol-circle { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, rgba(217, 182, 111, 0.2), rgba(217, 182, 111, 0.1)); border: 2px solid rgba(217, 182, 111, 0.4); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(217, 182, 111, 0.3); }
+.premium-zodiac-symbol { font-size: 22px; color: var(--gold); filter: drop-shadow(0 0 8px rgba(217, 182, 111, 0.6)); }
 
 /* PREDICTIONS GRID */
 .premium-predictions-grid {
@@ -946,19 +956,40 @@
 }
 
 /* ============================================
-   BOTTOM NAV — REVEAL ON SCROLL END
+   BOTTOM NAV — REVEAL ON SCROLL END (ALL CLASSES)
    ============================================ */
-.bottom-nav-container {
-  transition: transform 0.45s var(--ease-smooth);
+.bottom-nav-container,
+.bottom-nav,
+.nav-bar,
+.main-nav,
+.bottom-navbar,
+[class*="bottom-nav"],
+[class*="BottomNav"],
+nav[class*="nav"] {
+  transition: transform 0.45s var(--ease-smooth) !important;
   will-change: transform;
 }
 
-.bottom-nav-container.rf-hidden {
-  transform: translateY(110%);
+.bottom-nav-container.rf-hidden,
+.bottom-nav.rf-hidden,
+.nav-bar.rf-hidden,
+.main-nav.rf-hidden,
+.bottom-navbar.rf-hidden,
+[class*="bottom-nav"].rf-hidden,
+[class*="BottomNav"].rf-hidden,
+nav[class*="nav"].rf-hidden {
+  transform: translateY(110%) !important;
 }
 
-.bottom-nav-container.rf-revealed {
-  transform: translateY(0);
+.bottom-nav-container.rf-revealed,
+.bottom-nav.rf-revealed,
+.nav-bar.rf-revealed,
+.main-nav.rf-revealed,
+.bottom-navbar.rf-revealed,
+[class*="bottom-nav"].rf-revealed,
+[class*="BottomNav"].rf-revealed,
+nav[class*="nav"].rf-revealed {
+  transform: translateY(0) !important;
   z-index: 1200 !important;
 }
 
@@ -976,7 +1007,7 @@
   .premium-hero-left { max-width: 55%; gap: 2px; padding: 2px 0 0; }
   .premium-hero-right { margin-left: 10px; }
   .premium-hero-title { font-size: 13px !important; letter-spacing: 0.3px; }
-  .premium-read-full-btn { padding: 5px 14px; font-size: 9px; }
+  .premium-read-full-btn { padding: 5px 12px; font-size: 8px; }
   
   .premium-tarot-card { width: 85px; height: 135px; margin-top: -10px; }
   .premium-card-glow { right: -20px; width: 50px; height: 140px; filter: blur(22px); }

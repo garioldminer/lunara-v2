@@ -99,28 +99,51 @@ export function ReadFullModal({ isOpen, onClose, userSign, zodiacSymbol, safeDat
   const toggleAccordion = (s: string) => setOpenAccordion(openAccordion === s ? null : s);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // ✅ Helper: ვპოულობთ nav-ს ყველა შესაძლო selector-ით
+  const findNav = (): HTMLElement | null => {
+    const selectors = [
+      '.bottom-nav-container',
+      '.bottom-nav',
+      '.nav-bar',
+      '.main-nav',
+      '.bottom-navbar',
+      '[class*="bottom-nav"]',
+      '[class*="BottomNav"]',
+      'nav[class*="nav"]',
+      'nav'
+    ];
+    for (const sel of selectors) {
+      const el = document.querySelector(sel) as HTMLElement | null;
+      if (el) return el;
+    }
+    return null;
+  };
+
   // ✅ Bottom nav: იმალება როცა modal ღიაა
   useEffect(() => {
-    const nav = document.querySelector('.bottom-nav-container') as HTMLElement | null;
-    if (!nav) return;
-    if (isOpen) {
+    if (!isOpen) return;
+    const nav = findNav();
+    if (nav) {
       nav.classList.add('rf-hidden');
     }
     return () => {
-      nav.classList.remove('rf-hidden');
-      nav.classList.remove('rf-revealed');
+      if (nav) {
+        nav.classList.remove('rf-hidden');
+        nav.classList.remove('rf-revealed');
+      }
     };
   }, [isOpen]);
 
-  // ✅ Bottom nav reveal: ამოდის ლამაზად როცა ბოლომდე აისქროლება
+  // ✅ Bottom nav reveal: ამოდის ბოლომდე სქროლვისას
   useEffect(() => {
     if (!isOpen) return;
     const el = scrollRef.current;
     if (!el) return;
+    const nav = findNav();
+
     const onScroll = () => {
-      const nav = document.querySelector('.bottom-nav-container') as HTMLElement | null;
       if (!nav) return;
-      const atEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 60;
+      const atEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 40;
       if (atEnd) {
         nav.classList.remove('rf-hidden');
         nav.classList.add('rf-revealed');
@@ -163,7 +186,6 @@ export function ReadFullModal({ isOpen, onClose, userSign, zodiacSymbol, safeDat
           >
             <div className="rf-glow" />
 
-            {/* ✅ BACK BUTTON */}
             <button className="rf-back" onClick={onClose} aria-label="Back">
               <ArrowLeft size={22} />
             </button>
