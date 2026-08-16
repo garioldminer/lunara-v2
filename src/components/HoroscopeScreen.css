@@ -208,7 +208,7 @@
 .empty-moon { color: var(--gold); opacity: 0.5; margin-bottom: 20px; filter: drop-shadow(0 0 15px rgba(217, 182, 111, 0.3)); }
 .horoscope-empty p { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: var(--text-cream); opacity: 0.7; font-style: italic; }
 
-/* ✅ HERO BANNER — height: 130px */
+/* HERO BANNER */
 .premium-hero-banner {
   position: relative; width: 100%;
   min-height: 0; margin: 0;
@@ -352,7 +352,7 @@
 }
 .premium-section-title svg { width: 10px; height: 10px; color: var(--gold); filter: drop-shadow(0 0 4px rgba(217, 182, 111, 0.6)); }
 
-/* ✅ ENERGY GRID — grid-auto-rows: 92px */
+/* ENERGY GRID */
 .premium-energy-grid {
   display: grid; grid-template-columns: repeat(3, 1fr);
   gap: 6px;
@@ -372,7 +372,6 @@
 .premium-energy-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(217, 182, 111, 0.2); border-color: rgba(217, 182, 111, 0.4); }
 .premium-energy-card::before { content: ''; position: absolute; top: -50%; right: -50%; width: 100px; height: 100px; background: radial-gradient(circle, rgba(217, 182, 111, 0.15), transparent 70%); pointer-events: none; }
 
-/* ✅ ICONS — 32px, svg 17px */
 .premium-energy-icon,
 .premium-prediction-icon {
   width: 32px; height: 32px;
@@ -388,7 +387,6 @@
 .premium-energy-card.love .premium-energy-icon { background: linear-gradient(135deg, rgba(232, 115, 138, 0.2), rgba(232, 115, 138, 0.1)); border: 2px solid rgba(232, 115, 138, 0.4); color: var(--rose); box-shadow: 0 0 20px rgba(232, 115, 138, 0.3); }
 .premium-energy-card.career .premium-energy-icon { background: linear-gradient(135deg, rgba(124, 179, 232, 0.2), rgba(124, 179, 232, 0.1)); border: 2px solid rgba(124, 179, 232, 0.4); color: var(--blue); box-shadow: 0 0 20px rgba(124, 179, 232, 0.3); }
 
-/* ✅ Energy level 8px, subtitle 10px */
 .premium-energy-level { font-family: 'Cinzel', serif; font-size: 8px; font-weight: 900; color: var(--gold); letter-spacing: 0.5px; margin: 0; text-align: center; }
 .premium-energy-subtitle { font-family: 'Cormorant Garamond', serif; font-size: 10px; color: rgba(247, 243, 235, 0.7); margin: 0; font-style: italic; }
 
@@ -396,7 +394,7 @@
 .premium-energy-dots .dot { width: 3px; height: 3px; border-radius: 50%; background: rgba(217, 182, 111, 0.2); border: 1px solid rgba(217, 182, 111, 0.3); transition: all 0.3s var(--ease-smooth); }
 .premium-energy-dots .dot.active { background: var(--gold); box-shadow: 0 0 8px rgba(217, 182, 111, 0.6); }
 
-/* ✅ MOON CARD — padding: 9px 12px */
+/* MOON CARD */
 .premium-moon-card {
   position: relative; display: flex;
   align-items: center; gap: 10px;
@@ -411,7 +409,6 @@
 .premium-moon-card:hover { border-color: rgba(100, 80, 180, 0.5); box-shadow: 0 4px 20px rgba(100, 80, 180, 0.15); }
 .premium-moon-card::before { content: ''; position: absolute; top: -50%; right: -30%; width: 200px; height: 200px; background: radial-gradient(circle, rgba(217, 182, 111, 0.15), transparent 70%); pointer-events: none; }
 
-/* ✅ Moon image container 46px, image 42px */
 .premium-moon-image-container {
   flex-shrink: 0; width: 46px; height: 46px;
   border-radius: 50%;
@@ -479,7 +476,6 @@
 .premium-prediction-card.health .premium-prediction-icon { background: linear-gradient(135deg, rgba(124, 232, 166, 0.2), rgba(124, 232, 166, 0.1)); border: 2px solid rgba(124, 232, 166, 0.4); color: var(--green); box-shadow: 0 0 20px rgba(124, 232, 166, 0.3); }
 .premium-prediction-card.finance .premium-prediction-icon { background: linear-gradient(135deg, rgba(244, 212, 124, 0.2), rgba(255, 165, 0, 0.1)); border: 2px solid rgba(244, 212, 124, 0.4); color: var(--gold-light); box-shadow: 0 0 20px rgba(244, 212, 124, 0.3); }
 
-/* ✅ Prediction h4 — 8px */
 .premium-prediction-card h4 { font-family: 'Cinzel', serif; font-size: 8px; font-weight: 900; color: var(--gold); letter-spacing: 0.3px; margin: 0; text-align: center; }
 .premium-prediction-card p { display: none; }
 
@@ -584,7 +580,7 @@
 }
 .rf-glow { position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 300px; height: 300px; background: radial-gradient(circle, rgba(217, 182, 111, 0.12), transparent 65%); pointer-events: none; z-index: 0; }
 .rf-close { position: absolute; top: 16px; right: 16px; z-index: 10; background: rgba(217, 182, 111, 0.1); border: 1px solid rgba(217, 182, 111, 0.3); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: var(--gold); cursor: pointer; transition: all 0.3s var(--ease-smooth); }
-.rf-close:hover { background: rgba(217, 182, 111, 0.25); border-color: rgba(217, 182, 111, 0.6); transform: rotate(90deg); }
+.rf-close:hover { background: rgba(217, 182, 111, 0.25); border-color: rgba(217, 182, 111, 0.6); transform: rotate(90deg) scale(1.1); box-shadow: 0 0 20px rgba(217, 182, 111, 0.4); }
 
 .rf-scroll { position: relative; z-index: 2; max-height: 90vh; overflow-y: auto; padding: 30px 24px; scrollbar-width: thin; scrollbar-color: rgba(217, 182, 111, 0.3) transparent; }
 .rf-scroll::-webkit-scrollbar { width: 4px; }
@@ -615,7 +611,7 @@
 
 .rf-sections { display: flex; flex-direction: column; gap: 20px; margin-bottom: 24px; }
 .rf-section { padding: 18px 16px; background: rgba(217, 182, 111, 0.04); border: 1px solid rgba(217, 182, 111, 0.12); border-radius: 12px; transition: all 0.3s var(--ease-smooth); }
-.rf-section:hover { background: rgba(217, 182, 111, 0.08); border-color: rgba(217, 182, 111, 0.25); }
+.rf-section:hover { background: rgba(217, 182, 111, 0.08); border-color: rgba(217, 182, 111, 0.25); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); }
 
 .rf-section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
 .rf-section-header.love .rf-section-icon { color: var(--rose); filter: drop-shadow(0 0 8px rgba(232, 115, 138, 0.4)); }
@@ -639,20 +635,157 @@
 .rf-accordion-header:hover { background: rgba(217, 182, 111, 0.04); }
 .rf-accordion-title { display: flex; align-items: center; gap: 10px; font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700; color: var(--gold); letter-spacing: 1px; }
 .rf-accordion-title svg { color: var(--gold); filter: drop-shadow(0 0 6px rgba(217, 182, 111, 0.5)); }
-.rf-accordion-arrow { display: flex; align-items: center; justify-content: center; color: var(--gold); filter: drop-shadow(0 0 4px rgba(217, 182, 111, 0.4)); transition: transform 0.3s var(--ease-smooth); }
+.rf-accordion-arrow {
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gold);
+  filter: drop-shadow(0 0 4px rgba(217, 182, 111, 0.4));
+  transition: transform 0.3s var(--ease-smooth);
+}
+.rf-accordion-arrow.open {
+  transform: rotate(180deg);
+}
 .rf-accordion-content { overflow: hidden; border-top: 1px solid rgba(217, 182, 111, 0.15); padding: 16px 18px; }
 
+/* TRANSITS LIST */
 .rf-accordion .rf-transits-list { display: flex; flex-direction: column; gap: 8px; }
-.rf-accordion .rf-transit-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; background: rgba(10, 6, 0, 0.3); border: 1px solid rgba(217, 182, 111, 0.15); border-radius: 10px; transition: all 0.3s var(--ease-smooth); }
-.rf-accordion .rf-transit-item:hover { background: rgba(10, 6, 0, 0.5); border-color: rgba(217, 182, 111, 0.3); }
 
+.rf-transit-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(10, 6, 0, 0.3);
+  border: 1px solid rgba(217, 182, 111, 0.15);
+  border-radius: 10px;
+  transition: all 0.3s var(--ease-smooth);
+}
+.rf-transit-item:hover {
+  background: rgba(10, 6, 0, 0.5);
+  border-color: rgba(217, 182, 111, 0.3);
+  transform: translateX(2px);
+}
+
+.rf-transit-main {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-cream);
+}
+
+.rf-transit-planet {
+  color: var(--text-cream);
+}
+
+.rf-transit-aspect {
+  color: var(--gold);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  background: rgba(217, 182, 111, 0.1);
+  border-radius: 6px;
+  border: 1px solid rgba(217, 182, 111, 0.2);
+}
+
+.rf-transit-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 10px;
+  font-family: 'Cinzel', serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.rf-transit-badge.harmonious {
+  background: rgba(124, 232, 166, 0.15);
+  border: 1px solid rgba(124, 232, 166, 0.4);
+  color: var(--green);
+}
+
+.rf-transit-badge.challenging {
+  background: rgba(232, 115, 138, 0.15);
+  border: 1px solid rgba(232, 115, 138, 0.4);
+  color: var(--rose);
+}
+
+.rf-transit-badge.neutral {
+  background: rgba(217, 182, 111, 0.1);
+  border: 1px solid rgba(217, 182, 111, 0.3);
+  color: var(--gold);
+}
+
+.rf-badge-icon {
+  font-size: 10px;
+}
+
+.rf-badge-text {
+  font-size: 8px;
+}
+
+/* LUCKY ITEMS */
 .rf-accordion .rf-lucky-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-.rf-accordion .rf-lucky-item { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 8px; background: rgba(10, 6, 0, 0.3); border: 1px solid rgba(217, 182, 111, 0.15); border-radius: 10px; transition: all 0.3s var(--ease-smooth); }
-.rf-accordion .rf-lucky-item:hover { background: rgba(10, 6, 0, 0.5); border-color: rgba(217, 182, 111, 0.3); }
-.rf-accordion .rf-lucky-icon { color: var(--gold); filter: drop-shadow(0 0 6px rgba(217, 182, 111, 0.4)); }
+.rf-accordion .rf-lucky-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 8px;
+  background: rgba(10, 6, 0, 0.3);
+  border: 1px solid rgba(217, 182, 111, 0.15);
+  border-radius: 10px;
+  transition: all 0.3s var(--ease-smooth);
+}
+.rf-accordion .rf-lucky-item:hover {
+  background: rgba(10, 6, 0, 0.5);
+  border-color: rgba(217, 182, 111, 0.3);
+}
+
+.rf-lucky-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.rf-lucky-icon-wrapper.color-pink {
+  background: rgba(236, 72, 153, 0.15);
+  color: #ec4899;
+  border: 1px solid rgba(236, 72, 153, 0.3);
+}
+
+.rf-lucky-icon-wrapper.color-indigo {
+  background: rgba(99, 102, 241, 0.15);
+  color: #6366f1;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.rf-lucky-icon-wrapper.color-amber {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.rf-lucky-icon-wrapper.color-emerald {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
 .rf-accordion .rf-lucky-label { font-family: 'Cinzel', serif; font-size: 7px; font-weight: 600; color: rgba(247, 243, 235, 0.5); letter-spacing: 1px; text-transform: uppercase; }
 .rf-accordion .rf-lucky-value { font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700; color: var(--gold); }
 
+/* MOON INFO */
 .rf-moon-info-expanded { display: flex; align-items: flex-start; gap: 16px; padding: 8px 0; }
 .rf-moon-icon-large { color: var(--gold); filter: drop-shadow(0 0 12px rgba(217, 182, 111, 0.6)); flex-shrink: 0; }
 .rf-moon-details-expanded { display: flex; flex-direction: column; gap: 6px; flex: 1; }
@@ -661,10 +794,68 @@
 .rf-moon-desc-expanded { font-family: 'Cormorant Garamond', serif; font-size: 14px; font-style: italic; line-height: 1.6; color: rgba(247, 243, 235, 0.8); margin-top: 4px; }
 
 /* AFFIRMATION */
-.rf-affirmation { text-align: center; padding: 24px 20px; background: linear-gradient(135deg, rgba(100, 80, 180, 0.1), rgba(100, 80, 180, 0.04)); border: 1px solid rgba(100, 80, 180, 0.25); border-radius: 14px; position: relative; overflow: hidden; margin-bottom: 24px; }
+.rf-affirmation {
+  text-align: center;
+  padding: 24px 20px;
+  background: linear-gradient(135deg, rgba(100, 80, 180, 0.1), rgba(100, 80, 180, 0.04));
+  border: 1px solid rgba(100, 80, 180, 0.25);
+  border-radius: 14px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 24px;
+  transition: all 0.3s var(--ease-smooth);
+}
+.rf-affirmation:hover {
+  border-color: rgba(100, 80, 180, 0.4);
+  box-shadow: 0 0 25px rgba(100, 80, 180, 0.15);
+}
 .rf-aff-glow { position: absolute; top: -50%; left: 50%; transform: translateX(-50%); width: 120px; height: 120px; background: radial-gradient(circle, rgba(100, 80, 180, 0.2), transparent 60%); pointer-events: none; }
 .rf-aff-icon { font-size: 22px; filter: drop-shadow(0 0 8px rgba(100, 80, 180, 0.5)); position: relative; margin-bottom: 8px; }
-.rf-aff-title { font-family: 'Cinzel', serif; font-size: 11px; font-weight: 700; color: var(--gold); letter-spacing: 1.5px; margin: 0 0 10px 0; position: relative; }
+
+.rf-aff-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 2;
+}
+
+.rf-aff-title {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 1.5px;
+  margin: 0;
+  position: relative;
+}
+
+.rf-aff-copy-btn {
+  background: rgba(217, 182, 111, 0.15);
+  border: 1px solid rgba(217, 182, 111, 0.3);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--gold);
+  transition: all 0.3s var(--ease-smooth);
+  flex-shrink: 0;
+}
+.rf-aff-copy-btn:hover {
+  background: rgba(217, 182, 111, 0.25);
+  border-color: rgba(217, 182, 111, 0.5);
+  transform: scale(1.1);
+  box-shadow: 0 0 15px rgba(217, 182, 111, 0.3);
+}
+.rf-aff-copy-btn:active {
+  transform: scale(0.95);
+}
+
 .rf-aff-text { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-style: italic; line-height: 1.6; color: var(--text-cream); margin: 0 0 14px 0; position: relative; }
 
 .share-affirmation-btn {
@@ -675,8 +866,25 @@
   border-radius: 20px; color: var(--gold);
   font-family: 'Cinzel', serif; font-size: 10px; font-weight: 600; letter-spacing: 1px;
   cursor: pointer; transition: all 0.3s var(--ease-smooth);
+  position: relative;
+  overflow: hidden;
 }
-.share-affirmation-btn:hover { background: rgba(217, 182, 111, 0.2); border-color: rgba(217, 182, 111, 0.5); box-shadow: 0 0 15px rgba(217, 182, 111, 0.3); }
+.share-affirmation-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent, rgba(217, 182, 111, 0.1), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s;
+}
+.share-affirmation-btn:hover::before {
+  transform: translateX(100%);
+}
+.share-affirmation-btn:hover {
+  background: rgba(217, 182, 111, 0.2);
+  border-color: rgba(217, 182, 111, 0.5);
+  box-shadow: 0 0 15px rgba(217, 182, 111, 0.3);
+}
 
 .rf-share-bottom { display: flex; justify-content: center; margin: 24px 0 16px 0; padding-top: 16px; border-top: 1px solid rgba(217, 182, 111, 0.15); }
 
@@ -684,10 +892,79 @@
 .rf-footer-divider { display: flex; align-items: center; justify-content: center; margin-bottom: 12px; position: relative; }
 .rf-footer-divider::before, .rf-footer-divider::after { content: ''; width: 60px; height: 1px; background: linear-gradient(90deg, transparent, rgba(217, 182, 111, 0.3)); }
 .rf-footer-divider::after { background: linear-gradient(90deg, rgba(217, 182, 111, 0.3), transparent); }
-.rf-fd-star { color: var(--gold); font-size: 10px; margin: 0 12px; filter: drop-shadow(0 0 4px rgba(217, 182, 111, 0.6)); }
+.rf-fd-star {
+  color: var(--gold);
+  font-size: 10px;
+  margin: 0 12px;
+  filter: drop-shadow(0 0 4px rgba(217, 182, 111, 0.6));
+  animation: rfStarPulse 3s ease-in-out infinite;
+}
+@keyframes rfStarPulse {
+  0%, 100% {
+    opacity: 0.6;
+    filter: drop-shadow(0 0 4px rgba(217, 182, 111, 0.6));
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 8px rgba(217, 182, 111, 1));
+    transform: scale(1.2);
+  }
+}
 .rf-footer-text { font-family: 'Cormorant Garamond', serif; font-size: 12px; font-style: italic; color: rgba(217, 182, 111, 0.5); line-height: 1.6; margin: 0; letter-spacing: 0.3px; }
 
-/* RESPONSIVE */
+/* ============================================
+   READ FULL — BACK BUTTON
+   ============================================ */
+.rf-back {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+  background: rgba(217, 182, 111, 0.1);
+  border: 1px solid rgba(217, 182, 111, 0.3);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold);
+  cursor: pointer;
+  transition: all 0.3s var(--ease-smooth);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.rf-back:hover {
+  background: rgba(217, 182, 111, 0.25);
+  border-color: rgba(217, 182, 111, 0.6);
+  transform: translateX(-3px);
+  box-shadow: 0 0 20px rgba(217, 182, 111, 0.4);
+}
+.rf-back:active {
+  transform: translateX(-3px) scale(0.92);
+}
+
+/* ============================================
+   BOTTOM NAV — REVEAL ON SCROLL END
+   ============================================ */
+.bottom-nav-container {
+  transition: transform 0.45s var(--ease-smooth);
+  will-change: transform;
+}
+
+.bottom-nav-container.rf-hidden {
+  transform: translateY(110%);
+}
+
+.bottom-nav-container.rf-revealed {
+  transform: translateY(0);
+  z-index: 1200 !important;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
 @media (max-width: 480px) {
   .horoscope-sign-name { font-size: 13px; letter-spacing: 2px; }
   .horoscope-date-small { font-size: 8px; }
@@ -695,7 +972,6 @@
   .horoscope-tabs { padding: 2px; gap: 2px; height: 30px; }
   .horoscope-tab { padding: 0 2px; font-size: 7px; letter-spacing: 0.3px; }
   
-  /* ✅ Hero responsive — 125px */
   .premium-hero-banner { padding: 6px 12px; height: 125px; }
   .premium-hero-left { max-width: 55%; gap: 2px; padding: 2px 0 0; }
   .premium-hero-right { margin-left: 10px; }
@@ -705,7 +981,6 @@
   .premium-tarot-card { width: 85px; height: 135px; margin-top: -10px; }
   .premium-card-glow { right: -20px; width: 50px; height: 140px; filter: blur(22px); }
   
-  /* ✅ Energy responsive — 88px, icon 30px */
   .premium-energy-grid { gap: 5px; grid-auto-rows: 88px; }
   .premium-energy-card { padding: 5px 3px; gap: 2px; }
   .premium-energy-icon { width: 30px; height: 30px; }
@@ -713,7 +988,6 @@
   .premium-energy-level { font-size: 7px; }
   .premium-energy-subtitle { font-size: 9px; }
   
-  /* ✅ Moon responsive — 7px 10px, container 44px, image 40px */
   .premium-moon-card { padding: 7px 10px; gap: 8px; }
   .premium-moon-image-container { width: 44px; height: 44px; }
   .premium-moon-image { width: 40px; height: 40px; }
@@ -721,7 +995,6 @@
   .premium-moon-sign { font-size: 7px; }
   .premium-moon-desc { font-size: 8px; }
   
-  /* ✅ Predictions responsive — icon 30px, h4 7px */
   .premium-predictions-grid { gap: 3px; }
   .premium-prediction-card { padding: 5px 2px; border-radius: 10px; }
   .premium-prediction-icon { width: 30px; height: 30px; }
@@ -735,16 +1008,47 @@
   .refreshing-indicator svg { width: 12px; height: 12px; }
   
   .read-full-overlay { padding: 16px 3px; }
-  .rf-close { top: 16px; width: 36px; height: 36px; }
+  .rf-back {
+    top: 14px;
+    left: 14px;
+    width: 36px;
+    height: 36px;
+  }
+  .rf-back svg {
+    width: 18px;
+    height: 18px;
+  }
+  .rf-close { top: 14px; width: 36px; height: 36px; }
   .rf-scroll { padding: 20px 16px; }
   .rf-accordion-header { padding: 12px 14px; }
   .rf-accordion-title { font-size: 11px; gap: 8px; }
   .rf-accordion-title svg { width: 14px; height: 14px; }
   .rf-accordion-arrow svg { width: 16px; height: 16px; }
   .rf-accordion-content { padding: 12px 14px; }
-  .rf-accordion .rf-lucky-grid { gap: 8px; }
-  .rf-accordion .rf-lucky-item { padding: 10px 6px; }
-  .rf-accordion .rf-lucky-value { font-size: 12px; }
+  .rf-transit-main {
+    font-size: 10px;
+  }
+  .rf-transit-aspect {
+    font-size: 9px;
+    padding: 1px 4px;
+  }
+  .rf-transit-badge {
+    padding: 3px 6px;
+  }
+  .rf-badge-text {
+    font-size: 7px;
+  }
+  .rf-lucky-grid { gap: 8px; }
+  .rf-lucky-item { padding: 10px 6px; }
+  .rf-lucky-value { font-size: 12px; }
+  .rf-lucky-icon-wrapper {
+    width: 36px;
+    height: 36px;
+  }
+  .rf-aff-copy-btn {
+    width: 28px;
+    height: 28px;
+  }
   .rf-moon-info-expanded { gap: 10px; }
   .rf-moon-icon-large { width: 20px; height: 20px; }
   .rf-moon-phase-large { font-size: 13px; }
@@ -756,7 +1060,7 @@
 @media (prefers-reduced-motion: reduce) {
   .premiumGlowPulse, .moonRotate, .iconGlowPulse, .rfSignFloat, .rfMoonGlow,
   .aurora-layer, .particle, .cardFloat, .cardGlowPulse, .ringPulse,
-  .starTwinkle, .edgeGlowPulse, .horoDebugPulse { animation: none !important; }
+  .starTwinkle, .edgeGlowPulse, .horoDebugPulse, .rfStarPulse { animation: none !important; }
 }
 
 /* DEBUG BUTTON PULSE */

@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Download, Share2, Sparkles, Heart, Briefcase, Activity, DollarSign,
-  Star, Moon, Palette, Hash, Sun, ChevronDown, Copy
+  Star, Moon, Palette, Hash, Sun, ChevronDown, Copy, ArrowLeft
 } from 'lucide-react';
 import ShareCardPreview from '../ShareCardPreview';
 import { TabType, safeString, getEnergyEmojis } from './horoscopeData';
@@ -97,6 +97,41 @@ interface ReadFullModalProps {
 export function ReadFullModal({ isOpen, onClose, userSign, zodiacSymbol, safeDate, horoscope, safeTransits, moonDescription, activeTab, onCopyAffirmation, onShareAffirmation }: ReadFullModalProps) {
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const toggleAccordion = (s: string) => setOpenAccordion(openAccordion === s ? null : s);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // ✅ Bottom nav: იმალება როცა modal ღიაა
+  useEffect(() => {
+    const nav = document.querySelector('.bottom-nav-container') as HTMLElement | null;
+    if (!nav) return;
+    if (isOpen) {
+      nav.classList.add('rf-hidden');
+    }
+    return () => {
+      nav.classList.remove('rf-hidden');
+      nav.classList.remove('rf-revealed');
+    };
+  }, [isOpen]);
+
+  // ✅ Bottom nav reveal: ამოდის ლამაზად როცა ბოლომდე აისქროლება
+  useEffect(() => {
+    if (!isOpen) return;
+    const el = scrollRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const nav = document.querySelector('.bottom-nav-container') as HTMLElement | null;
+      if (!nav) return;
+      const atEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 60;
+      if (atEnd) {
+        nav.classList.remove('rf-hidden');
+        nav.classList.add('rf-revealed');
+      } else {
+        nav.classList.remove('rf-revealed');
+        nav.classList.add('rf-hidden');
+      }
+    };
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, [isOpen]);
 
   const sections = [
     { key: 'general', icon: <Sparkles size={18} className="rf-section-icon" />, cls: '', title: 'General Energy', text: horoscope?.general_prediction },
@@ -106,15 +141,38 @@ export function ReadFullModal({ isOpen, onClose, userSign, zodiacSymbol, safeDat
     { key: 'finance', icon: <DollarSign size={18} className="rf-section-icon" />, cls: 'finance', title: 'Finance & Money', text: horoscope?.finance_prediction },
   ];
 
+  const tabLabel = activeTab === 'weekly' ? 'Weekly' : activeTab === 'monthly' ? 'Monthly' : 'Daily';
+
+  const getInfluenceIcon = (influence: string) => {
+    if (influence === 'harmonious') return '🟢';
+    if (influence === 'challenging') return '🔴';
+    return '⚪';
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div className="read-full-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
-          <motion.div className="read-full-modal" initial={{ scale: 0.85, y: 40, opacity: 0 }} animate={{ scale: 1, y: 0, opacity: 1 }} exit={{ scale: 0.85, y: 40, opacity: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 250 }} onClick={(e) => e.stopPropagation()}>
+          <motion.div
+            className="read-full-modal"
+            initial={{ scale: 0.9, y: 30, opacity: 0 }}
+            animate={{ scale: 1, y: 0, opacity: 1 }}
+            exit={{ scale: 0.9, y: 30, opacity: 0 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="rf-glow" />
-            <button className="rf-close" onClick={onClose}><X size={22} /></button>
 
-            <div className="rf-scroll">
+            {/* ✅ BACK BUTTON */}
+            <button className="rf-back" onClick={onClose} aria-label="Back">
+              <ArrowLeft size={22} />
+            </button>
+            <button className="rf-close" onClick={onClose} aria-label="Close">
+              <X size={22} />
+            </button>
+
+            <div className="rf-scroll" ref={scrollRef}>
+              {/* HEADER */}
               <div className="rf-header">
                 <div className="rf-sign-icon">{zodiacSymbol}</div>
                 <h1 className="rf-sign-name">{userSign.toUpperCase()}</h1>
@@ -125,6 +183,7 @@ export function ReadFullModal({ isOpen, onClose, userSign, zodiacSymbol, safeDat
                 </div>
               </div>
 
+              {/* ENERGY OVERVIEW */}
               <div className="rf-energy-overview">
                 <div className="rf-energy-item">
                   <span className="rf-energy-emoji">{getEnergyEmojis(safeString(horoscope?.cosmic_energy_level), '⚡')}</span>
@@ -145,64 +204,79 @@ export function ReadFullModal({ isOpen, onClose, userSign, zodiacSymbol, safeDat
                 </div>
               </div>
 
+              {/* SECTIONS */}
               <div className="rf-sections">
                 {sections.filter(s => s.text).map(s => (
-                  <div className="rf-section" key={s.key}>
+                  <motion.div
+                    className="rf-section"
+                    key={s.key}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                  >
                     <div className={`rf-section-header ${s.cls}`}>
                       {s.icon}
                       <h3>{s.title}</h3>
                     </div>
                     <p className="rf-section-text">{safeString(s.text)}</p>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
 
+              {/* AFFIRMATION */}
               {horoscope?.affirmation && (
-                <div className="rf-affirmation">
+                <motion.div
+                  className="rf-affirmation"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                >
                   <div className="rf-aff-glow" />
                   <div className="rf-aff-icon">✨</div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                    <h3 className="rf-aff-title" style={{ margin: 0 }}>
-                      {activeTab === 'weekly' ? 'Weekly' : activeTab === 'monthly' ? 'Monthly' : 'Daily'} Affirmation
-                    </h3>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={onCopyAffirmation}
-                      style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#ffe566' }}
-                    >
-                      <Copy size={16} />
-                    </motion.button>
+                  <div className="rf-aff-header">
+                    <h3 className="rf-aff-title">{tabLabel} Affirmation</h3>
+                    <button className="rf-aff-copy-btn" onClick={onCopyAffirmation} aria-label="Copy affirmation">
+                      <Copy size={14} />
+                    </button>
                   </div>
                   <p className="rf-aff-text">"{safeString(horoscope.affirmation)}"</p>
-                </div>
+                </motion.div>
               )}
 
+              {/* ACCORDIONS */}
               <div className="rf-accordion-container">
+                {/* TRANSITS */}
                 {safeTransits.length > 0 && (
                   <div className="rf-accordion">
                     <button className="rf-accordion-header" onClick={() => toggleAccordion('transits')}>
-                      <div className="rf-accordion-title"><Star size={16} /><span>Key Transits</span></div>
-                      <motion.div className="rf-accordion-arrow" animate={{ rotate: openAccordion === 'transits' ? 180 : 0 }} transition={{ duration: 0.3 }}>
+                      <div className="rf-accordion-title">
+                        <Star size={16} />
+                        <span>Key Transits</span>
+                      </div>
+                      <div className={`rf-accordion-arrow ${openAccordion === 'transits' ? 'open' : ''}`}>
                         <ChevronDown size={18} />
-                      </motion.div>
+                      </div>
                     </button>
                     <AnimatePresence>
                       {openAccordion === 'transits' && (
-                        <motion.div className="rf-accordion-content" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3 }}>
+                        <motion.div
+                          className="rf-accordion-content"
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3, ease: 'easeInOut' }}
+                        >
                           <div className="rf-transits-list">
                             {safeTransits.slice(0, 5).map((transit, index) => (
-                              <div key={index} className={`rf-transit-item ${transit.influence}`}>
+                              <div key={index} className={`rf-transit-item ${transit.influence || 'neutral'}`}>
                                 <div className="rf-transit-main">
-                                  <span className="rf-transit-planets">
-                                    {transit.planet1} <span className="rf-transit-aspect">{transit.aspect_type}</span> {transit.planet2}
-                                  </span>
+                                  <span className="rf-transit-planet">{transit.planet1}</span>
+                                  <span className="rf-transit-aspect">{transit.aspect_type}</span>
+                                  <span className="rf-transit-planet">{transit.planet2}</span>
                                 </div>
-                                <div className={`rf-transit-badge ${transit.influence}`}>
-                                  {transit.influence === 'harmonious' && '🟢'}
-                                  {transit.influence === 'challenging' && '🔴'}
-                                  {transit.influence === 'neutral' && '⚪'}
-                                  {transit.influence}
+                                <div className={`rf-transit-badge ${transit.influence || 'neutral'}`}>
+                                  <span className="rf-badge-icon">{getInfluenceIcon(transit.influence)}</span>
+                                  <span className="rf-badge-text">{transit.influence}</span>
                                 </div>
                               </div>
                             ))}
@@ -213,35 +287,45 @@ export function ReadFullModal({ isOpen, onClose, userSign, zodiacSymbol, safeDat
                   </div>
                 )}
 
+                {/* LUCKY ELEMENTS */}
                 <div className="rf-accordion">
                   <button className="rf-accordion-header" onClick={() => toggleAccordion('lucky')}>
-                    <div className="rf-accordion-title"><Sparkles size={16} /><span>Lucky Elements</span></div>
-                    <motion.div className="rf-accordion-arrow" animate={{ rotate: openAccordion === 'lucky' ? 180 : 0 }} transition={{ duration: 0.3 }}>
+                    <div className="rf-accordion-title">
+                      <Sparkles size={16} />
+                      <span>Lucky Elements</span>
+                    </div>
+                    <div className={`rf-accordion-arrow ${openAccordion === 'lucky' ? 'open' : ''}`}>
                       <ChevronDown size={18} />
-                    </motion.div>
+                    </div>
                   </button>
                   <AnimatePresence>
                     {openAccordion === 'lucky' && (
-                      <motion.div className="rf-accordion-content" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3 }}>
+                      <motion.div
+                        className="rf-accordion-content"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                      >
                         <div className="rf-lucky-grid">
                           <div className="rf-lucky-item">
-                            <div className="rf-lucky-icon-wrapper" style={{ background: 'rgba(236, 72, 153, 0.1)', color: '#ec4899' }}><Palette size={20} /></div>
+                            <div className="rf-lucky-icon-wrapper color-pink"><Palette size={20} /></div>
                             <span className="rf-lucky-label">Color</span>
                             <span className="rf-lucky-value">{safeString(horoscope?.lucky_color || 'Gold')}</span>
                           </div>
                           <div className="rf-lucky-item">
-                            <div className="rf-lucky-icon-wrapper" style={{ background: 'rgba(99, 102, 241, 0.1)', color: '#6366f1' }}><Hash size={20} /></div>
+                            <div className="rf-lucky-icon-wrapper color-indigo"><Hash size={20} /></div>
                             <span className="rf-lucky-label">Number</span>
                             <span className="rf-lucky-value">{Number(horoscope?.lucky_number) || 7}</span>
                           </div>
                           <div className="rf-lucky-item">
-                            <div className="rf-lucky-icon-wrapper" style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}><Sun size={20} /></div>
+                            <div className="rf-lucky-icon-wrapper color-amber"><Sun size={20} /></div>
                             <span className="rf-lucky-label">Planet</span>
                             <span className="rf-lucky-value">{safeString(horoscope?.lucky_planet)}</span>
                           </div>
                           {horoscope?.lucky_crystal && (
                             <div className="rf-lucky-item">
-                              <div className="rf-lucky-icon-wrapper" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}><Star size={20} /></div>
+                              <div className="rf-lucky-icon-wrapper color-emerald"><Star size={20} /></div>
                               <span className="rf-lucky-label">Crystal</span>
                               <span className="rf-lucky-value">{safeString(horoscope.lucky_crystal)}</span>
                             </div>
@@ -252,16 +336,26 @@ export function ReadFullModal({ isOpen, onClose, userSign, zodiacSymbol, safeDat
                   </AnimatePresence>
                 </div>
 
+                {/* MOON INFO */}
                 <div className="rf-accordion">
                   <button className="rf-accordion-header" onClick={() => toggleAccordion('moon')}>
-                    <div className="rf-accordion-title"><Moon size={16} /><span>Moon Info</span></div>
-                    <motion.div className="rf-accordion-arrow" animate={{ rotate: openAccordion === 'moon' ? 180 : 0 }} transition={{ duration: 0.3 }}>
+                    <div className="rf-accordion-title">
+                      <Moon size={16} />
+                      <span>Moon Info</span>
+                    </div>
+                    <div className={`rf-accordion-arrow ${openAccordion === 'moon' ? 'open' : ''}`}>
                       <ChevronDown size={18} />
-                    </motion.div>
+                    </div>
                   </button>
                   <AnimatePresence>
                     {openAccordion === 'moon' && (
-                      <motion.div className="rf-accordion-content" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3 }}>
+                      <motion.div
+                        className="rf-accordion-content"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                      >
                         <div className="rf-moon-info-expanded">
                           <Moon size={24} className="rf-moon-icon-large" />
                           <div className="rf-moon-details-expanded">
@@ -276,17 +370,25 @@ export function ReadFullModal({ isOpen, onClose, userSign, zodiacSymbol, safeDat
                 </div>
               </div>
 
+              {/* SHARE BOTTOM */}
               {horoscope?.affirmation && (
                 <div className="rf-share-bottom">
                   <button className="share-affirmation-btn" onClick={onShareAffirmation}>
-                    <Share2 size={12} /><span>Share Affirmation</span>
+                    <Share2 size={12} />
+                    <span>Share Affirmation</span>
                   </button>
                 </div>
               )}
 
+              {/* FOOTER */}
               <div className="rf-footer">
-                <div className="rf-footer-divider"><span className="rf-fd-star">✦</span></div>
-                <p className="rf-footer-text">The stars have spoken.<br />Trust your intuition.</p>
+                <div className="rf-footer-divider">
+                  <span className="rf-fd-star">✦</span>
+                </div>
+                <p className="rf-footer-text">
+                  The stars have spoken.<br />
+                  Trust your intuition.
+                </p>
               </div>
             </div>
           </motion.div>
