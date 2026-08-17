@@ -94,7 +94,8 @@ interface ReadFullModalProps {
   onShareAffirmation: () => void;
 }
 
-export function ReadFullModal({ isOpen, onClose, userSign, zodiacSymbol, safeDate, horoscope, safeTransits, moonDescription, activeTab, onCopyAffirmation, onShareAffirmation }: ReadFullModalProps) {
+// ✅ zodiacSymbol ამოღებულია destructuring-დან (interface-ში რჩება parent-ისთვის)
+export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, safeTransits, moonDescription, activeTab, onCopyAffirmation, onShareAffirmation }: ReadFullModalProps) {
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const toggleAccordion = (s: string) => setOpenAccordion(openAccordion === s ? null : s);
   const scrollRef = useRef<HTMLDivElement>(null);
