@@ -2,303 +2,201 @@ import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 /* ============================================
-   🌀 LUNARA — "THE CELESTIAL MANDALA" LOADER
-   ერთიანი ბრენდირებული ლოადინგ კომპონენტი
-   (CSS ჩაშენებულია — ცალკე ფაილი არ გჭირდება)
+   🌙 LUNARA — MINIMAL LUNAR LOADER
+   Elegant, lightweight, premium feel
    ============================================ */
 
 const loaderCSS = `
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,400;1,400&display=swap');
 
-.app-loader {
+.minimal-loader {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: radial-gradient(ellipse at 50% 42%, #17103a 0%, #0a0600 78%);
+  background: radial-gradient(ellipse at center, #0f0720 0%, #050208 100%);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 40px;
   overflow: hidden;
-  font-family: 'Cormorant Garamond', serif;
 }
 
-/* ---------- ფონი: ნისლეულები ---------- */
-.al-bg { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
-
-.al-nebula { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.45; }
-
-.al-nebula-1 {
-  width: 420px; height: 420px;
-  background: radial-gradient(circle, rgba(147, 51, 234, 0.5), transparent 70%);
-  top: -120px; right: -90px;
-  animation: alNebula1 9s ease-in-out infinite alternate;
-}
-.al-nebula-2 {
-  width: 360px; height: 360px;
-  background: radial-gradient(circle, rgba(217, 182, 111, 0.28), transparent 70%);
-  bottom: -100px; left: -70px;
-  animation: alNebula2 11s ease-in-out infinite alternate;
-}
-.al-nebula-3 {
-  width: 300px; height: 300px;
-  background: radial-gradient(circle, rgba(236, 72, 153, 0.22), transparent 70%);
-  top: 45%; left: 55%;
-  animation: alNebula3 13s ease-in-out infinite alternate;
-}
-
-@keyframes alNebula1 { 0% { transform: translate(0,0) scale(1); } 100% { transform: translate(-25px,20px) scale(1.12); } }
-@keyframes alNebula2 { 0% { transform: translate(0,0) scale(1); } 100% { transform: translate(25px,-18px) scale(1.15); } }
-@keyframes alNebula3 { 0% { transform: translate(-50%,-50%) scale(1); opacity: .3; } 100% { transform: translate(-45%,-55%) scale(1.2); opacity: .5; } }
-
-/* ---------- ვარსკვლავები ---------- */
-.al-stars { position: absolute; inset: 0; pointer-events: none; }
-
-.al-star {
+/* ============================================
+   ✨ SUBTLE STAR FIELD (15-20 twinkling dots)
+   ============================================ */
+.ml-stars {
   position: absolute;
-  color: #D9B66F;
-  filter: drop-shadow(0 0 4px rgba(217, 182, 111, 0.8));
-  animation: alStarTwinkle ease-in-out infinite;
-  line-height: 1;
-}
-
-@keyframes alStarTwinkle {
-  0%, 100% { opacity: 0.15; transform: scale(0.8); }
-  50% { opacity: 1; transform: scale(1.25); }
-}
-
-/* ---------- ფონზე ტაროს ბარათები ---------- */
-.al-tarot {
-  position: absolute;
-  width: 92px; height: 148px;
-  border-radius: 10px;
-  border: 2px solid rgba(217, 182, 111, 0.45);
-  background:
-    repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(217, 182, 111, 0.06) 8px, rgba(217, 182, 111, 0.06) 16px),
-    linear-gradient(160deg, #1c1240 0%, #120a2a 100%);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 0 18px rgba(217, 182, 111, 0.12);
-  display: flex; align-items: center; justify-content: center;
-  filter: blur(1.6px);
-  opacity: 0.55;
+  inset: 0;
   pointer-events: none;
 }
 
-.al-tarot-inner {
-  font-size: 34px;
-  color: rgba(217, 182, 111, 0.8);
-  text-shadow: 0 0 14px rgba(217, 182, 111, 0.7);
-}
-
-.al-tarot-left {
-  left: 7%; top: 14%;
-  transform: rotate(-14deg);
-  animation: alTarotFloatL 10s ease-in-out infinite alternate;
-}
-.al-tarot-right {
-  right: 7%; top: 12%;
-  transform: rotate(13deg);
-  animation: alTarotFloatR 12s ease-in-out infinite alternate;
-}
-
-@keyframes alTarotFloatL {
-  0% { transform: rotate(-14deg) translate(0, 0); }
-  100% { transform: rotate(-10deg) translate(8px, 14px); }
-}
-@keyframes alTarotFloatR {
-  0% { transform: rotate(13deg) translate(0, 0); }
-  100% { transform: rotate(9deg) translate(-8px, 12px); }
-}
-
-/* ---------- მანდალა ---------- */
-.al-mandala {
-  position: relative;
-  width: 320px; height: 320px;
-  display: flex; align-items: center; justify-content: center;
-  margin-bottom: 26px;
-}
-
-/* პროგრეს-რკალი */
-.al-ring-svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
-
-.al-ring-track {
-  fill: none;
-  stroke: rgba(217, 182, 111, 0.14);
-  stroke-width: 2.5;
-}
-.al-ring-arc {
-  fill: none;
-  stroke: #D9B66F;
-  stroke-width: 3;
-  stroke-linecap: round;
-  filter: drop-shadow(0 0 6px rgba(217, 182, 111, 0.8));
-  transition: stroke-dashoffset 0.25s ease-out;
-}
-
-/* ნათელი წერტილი რკალის თავზე */
-.al-ring-tip {
-  position: absolute; inset: 0;
-  display: flex; justify-content: center;
-  pointer-events: none;
-  transition: transform 0.25s ease-out;
-}
-.al-ring-tip span {
-  width: 10px; height: 10px;
-  margin-top: -1px;
+.ml-star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
   border-radius: 50%;
   background: #F4D47C;
-  box-shadow: 0 0 14px 4px rgba(244, 212, 124, 0.85);
+  box-shadow: 0 0 4px rgba(244, 212, 124, 0.6);
+  animation: mlTwinkle ease-in-out infinite;
 }
 
-/* ბორბალი — ნელა ბრუნავს */
-.al-wheel {
-  position: absolute;
-  inset: 14px;
-  animation: alSpin 80s linear infinite;
-}
-
-/* პლანეტების ორბიტა — საპირისპიროდ */
-.al-planets { position: absolute; inset: 0; animation: alSpinRev 45s linear infinite; }
-
-@keyframes alSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-@keyframes alSpinRev { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
-
-/* ბორბლის რგოლები */
-.al-wheel-ring {
-  position: absolute;
-  border-radius: 50%;
-  border: 1.5px solid rgba(217, 182, 111, 0.5);
-  box-shadow: 0 0 12px rgba(217, 182, 111, 0.25), inset 0 0 12px rgba(217, 182, 111, 0.15);
-}
-.al-wheel-outer { inset: 0; }
-.al-wheel-mid { inset: 34px; border-color: rgba(217, 182, 111, 0.4); }
-.al-wheel-inner { inset: 66px; border-color: rgba(217, 182, 111, 0.45); }
-
-/* სპიკები — სახელები / სიმბოლოები / პლანეტები წრიულად */
-.al-spoke {
-  position: absolute; inset: 0;
-  display: flex; justify-content: center;
-  pointer-events: none;
-}
-.al-spoke > span { display: block; line-height: 1; }
-
-.al-spoke-name > span {
-  transform: translateY(-146px);
-  font-family: 'Cinzel', serif;
-  font-size: 9px; font-weight: 600;
-  letter-spacing: 1.5px;
-  color: rgba(247, 243, 235, 0.75);
-}
-
-.al-spoke-symbol > span {
-  transform: translateY(-108px);
-  font-size: 17px;
-  color: #D9B66F;
-  text-shadow: 0 0 8px rgba(217, 182, 111, 0.7);
-  animation: alSymbolGlow 3s ease-in-out infinite;
-}
-
-.al-spoke-planet > span {
-  transform: translateY(-78px);
-  font-size: 15px;
-  filter: drop-shadow(0 0 6px rgba(217, 182, 111, 0.5));
-}
-
-@keyframes alSymbolGlow {
-  0%, 100% { opacity: 0.55; }
-  50% { opacity: 1; }
-}
-
-/* ცენტრი — მთვარე + რიცხვი */
-.al-center {
-  position: absolute;
-  width: 118px; height: 118px;
-  border-radius: 50%;
-  border: 2px solid rgba(217, 182, 111, 0.65);
-  background: radial-gradient(circle at 40% 35%, #241650 0%, #120a2a 70%);
-  box-shadow: 0 0 26px rgba(217, 182, 111, 0.45), inset 0 0 22px rgba(217, 182, 111, 0.18);
-  display: flex; align-items: center; justify-content: center;
-  gap: 6px;
-  animation: alCenterPulse 2.6s ease-in-out infinite;
-}
-
-@keyframes alCenterPulse {
-  0%, 100% { box-shadow: 0 0 20px rgba(217, 182, 111, 0.35), inset 0 0 18px rgba(217, 182, 111, 0.14); }
-  50% { box-shadow: 0 0 34px rgba(217, 182, 111, 0.6), inset 0 0 26px rgba(217, 182, 111, 0.24); }
-}
-
-.al-center-moon {
-  font-size: 44px;
-  color: #F4D47C;
-  text-shadow: 0 0 18px rgba(244, 212, 124, 0.9);
-  line-height: 1;
-}
-
-.al-center-number {
-  font-family: 'Cinzel', serif;
-  font-size: 26px; font-weight: 700;
-  color: #D9B66F;
-  text-shadow: 0 0 12px rgba(217, 182, 111, 0.8);
-  line-height: 1;
-}
-
-/* ---------- ქვედა ნაწილი ---------- */
-.al-bottom {
-  position: absolute;
-  left: 0; right: 0;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 22px);
-  display: flex; flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  z-index: 2;
-}
-
-.al-message {
-  margin: 0;
-  min-height: 22px;
-  font-size: 17px;
-  font-style: italic;
-  color: #F7F3EB;
-  letter-spacing: 0.5px;
-  text-align: center;
-  padding: 0 20px;
-}
-
-.al-dots { display: flex; gap: 6px; }
-.al-dots span {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: #D9B66F;
-  box-shadow: 0 0 8px rgba(217, 182, 111, 0.7);
-  animation: alDotPulse 1.2s ease-in-out infinite;
-}
-@keyframes alDotPulse {
-  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+@keyframes mlTwinkle {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
   50% { opacity: 1; transform: scale(1.2); }
 }
 
-.al-brand {
-  font-family: 'Cinzel', serif;
-  font-size: 11px; font-weight: 700;
-  letter-spacing: 3px;
-  color: rgba(217, 182, 111, 0.75);
-  text-shadow: 0 0 10px rgba(217, 182, 111, 0.5);
+/* ============================================
+   🌙 CENTRAL CRESCENT (the hero)
+   ============================================ */
+.ml-crescent {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  animation: mlFloat 4s ease-in-out infinite;
 }
 
-/* ---------- Responsive ---------- */
+.ml-moon {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%,
+    #fff9d6 0%,
+    #F4D47C 30%,
+    #D9B66F 60%,
+    #8B6914 100%);
+  box-shadow:
+    0 0 0 2px rgba(244, 212, 124, 0.4),
+    0 0 30px rgba(244, 212, 124, 0.5),
+    0 0 60px rgba(217, 182, 111, 0.3),
+    inset -8px -8px 20px rgba(0, 0, 0, 0.5),
+    inset 6px 6px 12px rgba(255, 255, 255, 0.15);
+}
+
+/* Moon craters (subtle) */
+.ml-moon::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 25% 35%, rgba(0,0,0,0.2) 0%, transparent 8%),
+    radial-gradient(circle at 60% 25%, rgba(0,0,0,0.15) 0%, transparent 6%),
+    radial-gradient(circle at 45% 65%, rgba(0,0,0,0.2) 0%, transparent 7%);
+  mix-blend-mode: multiply;
+}
+
+/* Crescent shadow (the key element) */
+.ml-shadow {
+  position: absolute;
+  top: 12%;
+  right: 8%;
+  width: 55%;
+  height: 55%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 60% 60%,
+    rgba(5, 2, 8, 0.85) 0%,
+    rgba(5, 2, 8, 0.4) 60%,
+    transparent 100%);
+  filter: blur(4px);
+  animation: mlRotate 12s linear infinite;
+  transform-origin: 70% 70%;
+}
+
+@keyframes mlFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes mlRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   ● ● ● LOADING DOTS
+   ============================================ */
+.ml-dots {
+  display: flex;
+  gap: 12px;
+}
+
+.ml-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0%, #F4D47C 50%, #D9B66F 100%);
+  box-shadow:
+    0 0 8px rgba(244, 212, 124, 1),
+    0 0 16px rgba(217, 182, 111, 0.6);
+  animation: mlPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes mlPulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.7); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+/* ============================================
+   💫 BRAND TEXT
+   ============================================ */
+.ml-brand {
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 8px;
+  background: linear-gradient(180deg, #fff 0%, #F4D47C 50%, #8B6914 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)) drop-shadow(0 0 10px rgba(217,182,111,0.4));
+  animation: mlTextGlow 3s ease-in-out infinite;
+}
+
+@keyframes mlTextGlow {
+  0%, 100% { 
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)) drop-shadow(0 0 10px rgba(217,182,111,0.4));
+  }
+  50% { 
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)) drop-shadow(0 0 20px rgba(244,212,124,0.7));
+  }
+}
+
+/* ============================================
+   💬 OPTIONAL MESSAGE
+   ============================================ */
+.ml-message {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 15px;
+  font-style: italic;
+  color: #F7F3EB;
+  letter-spacing: 1.5px;
+  text-align: center;
+  margin: 0;
+  text-shadow:
+    0 0 8px rgba(244, 212, 124, 0.4),
+    0 1px 2px rgba(0,0,0,0.8);
+  animation: mlFade 1.6s ease-in-out infinite;
+}
+
+@keyframes mlFade {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
 @media (max-width: 480px) {
-  .al-mandala { width: 270px; height: 270px; margin-bottom: 20px; }
-  .al-spoke-name > span { transform: translateY(-122px); font-size: 8px; }
-  .al-spoke-symbol > span { transform: translateY(-90px); font-size: 15px; }
-  .al-spoke-planet > span { transform: translateY(-64px); font-size: 13px; }
-  .al-wheel-mid { inset: 28px; }
-  .al-wheel-inner { inset: 55px; }
-  .al-center { width: 100px; height: 100px; }
-  .al-center-moon { font-size: 36px; }
-  .al-center-number { font-size: 22px; }
-  .al-tarot { width: 74px; height: 120px; }
-  .al-tarot-inner { font-size: 26px; }
-  .al-tarot-left { left: 4%; top: 12%; }
-  .al-tarot-right { right: 4%; top: 10%; }
-  .al-message { font-size: 15px; }
-  .al-brand { font-size: 10px; }
+  .ml-crescent { width: 100px; height: 100px; }
+  .ml-brand { font-size: 12px; letter-spacing: 6px; }
+  .ml-message { font-size: 13px; letter-spacing: 1px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ml-crescent, .ml-star, .ml-dot, .ml-shadow, .ml-brand, .ml-message {
+    animation: none !important;
+  }
 }
 `;
 
@@ -309,194 +207,83 @@ const loaderCSS = `
 interface AppLoaderProps {
   isLoading: boolean;
   context?: 'horoscope' | 'tarot' | 'astro' | 'numerology' | 'profile' | 'default';
+  message?: string;
 }
 
-const ZODIAC_SYMBOLS = ['♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓'];
-const ZODIAC_NAMES = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
-const PLANETS = ['🌞', '🌙', '☿', '♀', '♂', '♃', '♄', '🪐'];
-const LUCKY_NUMBERS = [3, 7, 11, 22, 33];
-
-const MESSAGES: Record<string, string[]> = {
-  horoscope: ['Aligning your stars...', 'Reading the cosmic currents...', 'The universe is speaking...'],
-  tarot: ['Shuffling the cards...', 'Drawing your destiny...', 'The arcana awaken...'],
-  astro: ['Charting the planets...', 'Mapping your sky...', 'The orbs are moving...'],
-  numerology: ['Counting your numbers...', 'Decoding your vibrations...', 'The digits align...'],
-  profile: ['Gathering your essence...', 'Reading your aura...'],
-  default: ['Aligning your stars...', 'Shuffling the cards...', 'Charting the planets...', 'Counting your numbers...'],
+const MESSAGES: Record<string, string> = {
+  horoscope: 'Aligning your stars...',
+  tarot: 'Shuffling the cards...',
+  astro: 'Charting the planets...',
+  numerology: 'Counting your numbers...',
+  profile: 'Gathering your essence...',
+  default: 'Loading...',
 };
 
-const RING_R = 156;
-const RING_CIRC = 2 * Math.PI * RING_R;
+export function AppLoader({ isLoading, context = 'default', message }: AppLoaderProps) {
+  const displayMessage = message || MESSAGES[context] || MESSAGES.default;
 
-export function AppLoader({ isLoading, context = 'default' }: AppLoaderProps) {
-  const [msgIndex, setMsgIndex] = useState(0);
-  const [numIndex, setNumIndex] = useState(1); // 7-დან იწყებს
-  const [progress, setProgress] = useState(0);
-
-  const messages = MESSAGES[context] || MESSAGES.default;
-
-  // ✅ ციკლური ანიმაციები — ტექსტი, რიცხვი, პროგრესი
-  useEffect(() => {
-    if (!isLoading) return;
-    setProgress(0);
-    setMsgIndex(0);
-    const msgInt = setInterval(() => setMsgIndex((p) => (p + 1) % messages.length), 1600);
-    const numInt = setInterval(() => setNumIndex((p) => (p + 1) % LUCKY_NUMBERS.length), 1400);
-    const progInt = setInterval(() => {
-      setProgress((p) => (p >= 96 ? p : p + Math.random() * 5 + 2));
-    }, 180);
-    return () => { clearInterval(msgInt); clearInterval(numInt); clearInterval(progInt); };
-  }, [isLoading, messages.length]);
-
-  // ✅ ვარსკვლავები — სტაბილური პოზიციები (არ გადახტება re-render-ზე)
-  const stars = useMemo(
-    () =>
-      Array.from({ length: 40 }, (_, i) => ({
-        id: i,
-        left: Math.random() * 100,
-        top: Math.random() * 100,
-        delay: Math.random() * 4,
-        dur: 2 + Math.random() * 3,
-        size: 5 + Math.random() * 9,
-      })),
+  // Subtle twinkling stars
+  const stars = useMemo(() =>
+    Array.from({ length: 18 }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      delay: Math.random() * 5,
+      dur: 2 + Math.random() * 3,
+      size: 1 + Math.random() * 1.5,
+    })),
     []
   );
-
-  const clamped = Math.min(progress, 100);
-  const ringAngle = clamped * 3.6;
 
   return (
     <AnimatePresence>
       {isLoading && (
         <motion.div
-          className="app-loader"
+          className="minimal-loader"
           initial={{ opacity: 1 }}
-          exit={{ opacity: 0, scale: 1.06 }}
-          transition={{ duration: 0.55, ease: 'easeInOut' }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5, ease: 'easeInOut' }}
         >
-          {/* ✅ ჩაშენებული სტილები */}
           <style>{loaderCSS}</style>
 
-          {/* 🌌 ფონი — ნისლეულები */}
-          <div className="al-bg">
-            <div className="al-nebula al-nebula-1" />
-            <div className="al-nebula al-nebula-2" />
-            <div className="al-nebula al-nebula-3" />
-          </div>
-
-          {/* ✨ ვარსკვლავები */}
-          <div className="al-stars">
+          {/* ✨ Subtle twinkling stars */}
+          <div className="ml-stars">
             {stars.map((s) => (
               <span
                 key={s.id}
-                className="al-star"
+                className="ml-star"
                 style={{
                   left: `${s.left}%`,
                   top: `${s.top}%`,
+                  width: `${s.size}px`,
+                  height: `${s.size}px`,
                   animationDelay: `${s.delay}s`,
                   animationDuration: `${s.dur}s`,
-                  fontSize: `${s.size}px`,
                 }}
-              >
-                ✦
-              </span>
+              />
             ))}
           </div>
 
-          {/* 🃏 ფონზე ტაროს ბარათები — ბუნდოვანი, მოცურავე */}
-          <div className="al-tarot al-tarot-left">
-            <div className="al-tarot-inner">✦</div>
-          </div>
-          <div className="al-tarot al-tarot-right">
-            <div className="al-tarot-inner">☽</div>
+          {/* 🌙 Central crescent moon */}
+          <div className="ml-crescent">
+            <div className="ml-moon" />
+            <div className="ml-shadow" />
           </div>
 
-          {/* 🌀 მანდალა */}
-          <div className="al-mandala">
-            {/* 💫 პროგრეს-რკალი */}
-            <svg className="al-ring-svg" viewBox="0 0 320 320">
-              <circle className="al-ring-track" cx="160" cy="160" r={RING_R} />
-              <circle
-                className="al-ring-arc"
-                cx="160"
-                cy="160"
-                r={RING_R}
-                strokeDasharray={RING_CIRC}
-                strokeDashoffset={RING_CIRC * (1 - clamped / 100)}
-              />
-            </svg>
-            {/* ნათელი წერტილი რკალის თავზე */}
-            <div className="al-ring-tip" style={{ transform: `rotate(${ringAngle}deg)` }}>
-              <span />
-            </div>
-
-            {/* 🎡 ბორბალი — სახელები + სიმბოლოები (ნელა ბრუნავს) */}
-            <div className="al-wheel">
-              <div className="al-wheel-ring al-wheel-outer" />
-              <div className="al-wheel-ring al-wheel-mid" />
-              <div className="al-wheel-ring al-wheel-inner" />
-
-              {ZODIAC_NAMES.map((name, i) => (
-                <div key={name} className="al-spoke al-spoke-name" style={{ transform: `rotate(${i * 30 + 15}deg)` }}>
-                  <span>{name}</span>
-                </div>
-              ))}
-
-              {ZODIAC_SYMBOLS.map((sym, i) => (
-                <div key={sym} className="al-spoke al-spoke-symbol" style={{ transform: `rotate(${i * 30}deg)` }}>
-                  <span>{sym}</span>
-                </div>
-              ))}
-
-              {/* 🪐 პლანეტები — საპირისპიროდ ბრუნავს */}
-              <div className="al-planets">
-                {PLANETS.map((p, i) => (
-                  <div key={i} className="al-spoke al-spoke-planet" style={{ transform: `rotate(${i * 45}deg)` }}>
-                    <span>{p}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* ☽ ცენტრი — მთვარე + ბედის რიცხვი */}
-            <div className="al-center">
-              <span className="al-center-moon">☽</span>
-              <AnimatePresence mode="wait">
-                <motion.span
-                  key={LUCKY_NUMBERS[numIndex]}
-                  className="al-center-number"
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {LUCKY_NUMBERS[numIndex]}
-                </motion.span>
-              </AnimatePresence>
-            </div>
+          {/* ● ● ● Pulsing dots */}
+          <div className="ml-dots">
+            <span className="ml-dot" style={{ animationDelay: '0s' }} />
+            <span className="ml-dot" style={{ animationDelay: '0.2s' }} />
+            <span className="ml-dot" style={{ animationDelay: '0.4s' }} />
           </div>
 
-          {/* 💬 ქვედა ნაწილი — ტექსტი + ბრენდი */}
-          <div className="al-bottom">
-            <AnimatePresence mode="wait">
-              <motion.p
-                key={msgIndex}
-                className="al-message"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.35 }}
-              >
-                {messages[msgIndex]}
-              </motion.p>
-            </AnimatePresence>
-            <div className="al-dots">
-              <span style={{ animationDelay: '0s' }} />
-              <span style={{ animationDelay: '0.2s' }} />
-              <span style={{ animationDelay: '0.4s' }} />
-            </div>
-            <div className="al-brand">✦ LUNARA ✦</div>
-          </div>
+          {/* 💫 Brand name */}
+          <div className="ml-brand">LUNARA</div>
+
+          {/* 💬 Optional message */}
+          {displayMessage !== 'Loading...' && (
+            <p className="ml-message">{displayMessage}</p>
+          )}
         </motion.div>
       )}
     </AnimatePresence>
