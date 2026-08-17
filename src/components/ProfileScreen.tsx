@@ -483,7 +483,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
     }
   }, [isUserAdmin, user, userData, stats, recentReadings, achievements, notifications, preferencesData, lastDbAction, testResult, language, settings.theme]);
 
-  // ✅ AppLoader — ბრენდირებული ლოადინგი (ძველი loading-ის ნაცვლად)
+  // ✅ AppLoader — ბრენდირებული ლოადინგის (ძველი loading-ის ნაცვლად)
   if (userLoading || !userData) {
     return <AppLoader isLoading={true} context="profile" />;
   }
