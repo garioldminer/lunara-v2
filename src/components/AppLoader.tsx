@@ -1,207 +1,122 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 /* ============================================
-   🌙 LUNARA — MINIMAL LUNAR LOADER
-   Elegant, lightweight, premium feel
+   ✦ LUNARA — CONSTELLATION LOADER
+   Quiet-luxury motion design. No emoji, no
+   stock icon glyphs — pure SVG / gradient geometry.
    ============================================ */
 
 const loaderCSS = `
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,400;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Fraunces:opsz,wght@9..144,340&display=swap');
 
-.minimal-loader {
+.loader {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: radial-gradient(ellipse at center, #0f0720 0%, #050208 100%);
+  background: radial-gradient(ellipse 130% 90% at 50% 32%, #16131C 0%, #0A0910 48%, #030304 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 40px;
   overflow: hidden;
 }
 
-/* ============================================
-   ✨ SUBTLE STAR FIELD (15-20 twinkling dots)
-   ============================================ */
-.ml-stars {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
+/* filmic grain */
+.ld-grain {
+  position: absolute; inset: 0; z-index: 6; opacity: 0.05; pointer-events: none; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-.ml-star {
-  position: absolute;
-  width: 2px;
-  height: 2px;
-  border-radius: 50%;
-  background: #F4D47C;
-  box-shadow: 0 0 4px rgba(244, 212, 124, 0.6);
-  animation: mlTwinkle ease-in-out infinite;
+.ld-vignette {
+  position: absolute; inset: 0; z-index: 5; pointer-events: none;
+  background: radial-gradient(ellipse 85% 75% at 50% 42%, transparent 40%, rgba(2,2,3,0.8) 100%);
 }
 
-@keyframes mlTwinkle {
-  0%, 100% { opacity: 0.2; transform: scale(0.8); }
-  50% { opacity: 1; transform: scale(1.2); }
+/* drifting motes */
+.ld-field { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.ld-mote { position: absolute; border-radius: 50%; background: #D8CBAE; animation: ldDrift ease-in-out infinite; }
+@keyframes ldDrift { 0%, 100% { opacity: 0.12; transform: translateY(0); } 50% { opacity: 0.45; transform: translateY(-10px); } }
+
+/* stage */
+.ld-stage { position: relative; width: 280px; height: 280px; z-index: 3; margin-bottom: 36px; }
+
+.ld-arc-motif { position: absolute; inset: 0; }
+.ld-arc-motif svg { width: 100%; height: 100%; }
+
+.ld-orbit {
+  position: absolute; inset: 34px; border-radius: 50%; border: 1px solid rgba(216,203,174,0.14);
+  animation: ldSpin 46s linear infinite;
+}
+.ld-orbit::before {
+  content: ''; position: absolute; top: -2px; left: 50%; width: 4px; height: 4px; margin-left: -2px;
+  background: #E8D9AE; border-radius: 50%; box-shadow: 0 0 8px 2px rgba(232,217,174,0.75);
+}
+@keyframes ldSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.ld-orbit-2 {
+  position: absolute; inset: 8px; border-radius: 50%; border: 1px solid rgba(216,203,174,0.07);
+  animation: ldSpinRev 70s linear infinite;
+}
+@keyframes ldSpinRev { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+
+.ld-constellation { position: absolute; inset: 0; }
+.ld-constellation svg { width: 100%; height: 100%; overflow: visible; }
+.ld-cline {
+  fill: none; stroke: rgba(216,203,174,0.55); stroke-width: 0.8; stroke-linecap: round;
+  stroke-dasharray: 400; stroke-dashoffset: 400; animation: ldDraw 5.5s ease-in-out infinite;
+}
+.ld-ccore { fill: #0A0910; stroke: rgba(232,217,174,0.6); stroke-width: 0.6; opacity: 0; animation: ldAppear 5.5s ease-in-out infinite; }
+@keyframes ldDraw { 0% { stroke-dashoffset: 400; } 45%, 100% { stroke-dashoffset: 0; } }
+@keyframes ldAppear { 0% { opacity: 0; } 18% { opacity: 1; } 100% { opacity: 1; } }
+
+.ld-core {
+  position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, rgba(232,217,174,0.85), rgba(216,203,174,0.15) 55%, transparent 78%);
+  filter: blur(0.3px);
+}
+.ld-core::after {
+  content: ''; position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(232,217,174,0.45);
+  box-shadow: 0 0 24px 6px rgba(232,217,174,0.28); animation: ldBreathe 3.4s ease-in-out infinite;
+}
+@keyframes ldBreathe { 0%, 100% { opacity: 0.55; transform: scale(0.94); } 50% { opacity: 1; transform: scale(1.04); } }
+
+.ld-progress-wrap { width: 150px; z-index: 4; margin-bottom: 26px; }
+.ld-progress-track { position: relative; width: 100%; height: 1px; background: rgba(216,203,174,0.16); overflow: hidden; }
+.ld-progress-fill { position: absolute; left: 0; top: 0; height: 100%; background: #E8D9AE; transition: width 0.3s ease; }
+.ld-progress-sheen {
+  position: absolute; top: 0; left: -40%; width: 40%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
+  animation: ldSheen 2.4s ease-in-out infinite;
+}
+@keyframes ldSheen { 0% { left: -40%; } 100% { left: 100%; } }
+
+.ld-word { display: flex; z-index: 4; margin-bottom: 14px; }
+.ld-word span {
+  font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 15px; letter-spacing: 9px;
+  color: #EDE3CB; opacity: 0; transform: translateY(4px); animation: ldLetterIn 0.6s ease forwards;
+  text-transform: uppercase;
+}
+@keyframes ldLetterIn { to { opacity: 1; transform: translateY(0); } }
+
+.ld-message {
+  font-family: 'Fraunces', serif; font-weight: 340; font-style: italic; font-size: 14px; letter-spacing: 0.4px;
+  color: rgba(237,227,203,0.7); z-index: 4; text-align: center; min-height: 20px; padding: 0 30px;
 }
 
-/* ============================================
-   🌙 CENTRAL CRESCENT (the hero)
-   ============================================ */
-.ml-crescent {
-  position: relative;
-  width: 120px;
-  height: 120px;
-  animation: mlFloat 4s ease-in-out infinite;
-}
-
-.ml-moon {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%,
-    #fff9d6 0%,
-    #F4D47C 30%,
-    #D9B66F 60%,
-    #8B6914 100%);
-  box-shadow:
-    0 0 0 2px rgba(244, 212, 124, 0.4),
-    0 0 30px rgba(244, 212, 124, 0.5),
-    0 0 60px rgba(217, 182, 111, 0.3),
-    inset -8px -8px 20px rgba(0, 0, 0, 0.5),
-    inset 6px 6px 12px rgba(255, 255, 255, 0.15);
-}
-
-/* Moon craters (subtle) */
-.ml-moon::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 25% 35%, rgba(0,0,0,0.2) 0%, transparent 8%),
-    radial-gradient(circle at 60% 25%, rgba(0,0,0,0.15) 0%, transparent 6%),
-    radial-gradient(circle at 45% 65%, rgba(0,0,0,0.2) 0%, transparent 7%);
-  mix-blend-mode: multiply;
-}
-
-/* Crescent shadow (the key element) */
-.ml-shadow {
-  position: absolute;
-  top: 12%;
-  right: 8%;
-  width: 55%;
-  height: 55%;
-  border-radius: 50%;
-  background: radial-gradient(circle at 60% 60%,
-    rgba(5, 2, 8, 0.85) 0%,
-    rgba(5, 2, 8, 0.4) 60%,
-    transparent 100%);
-  filter: blur(4px);
-  animation: mlRotate 12s linear infinite;
-  transform-origin: 70% 70%;
-}
-
-@keyframes mlFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
-
-@keyframes mlRotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* ============================================
-   ● ● ● LOADING DOTS
-   ============================================ */
-.ml-dots {
-  display: flex;
-  gap: 12px;
-}
-
-.ml-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: radial-gradient(circle, #fff 0%, #F4D47C 50%, #D9B66F 100%);
-  box-shadow:
-    0 0 8px rgba(244, 212, 124, 1),
-    0 0 16px rgba(217, 182, 111, 0.6);
-  animation: mlPulse 1.4s ease-in-out infinite;
-}
-
-@keyframes mlPulse {
-  0%, 100% { opacity: 0.4; transform: scale(0.7); }
-  50% { opacity: 1; transform: scale(1.1); }
-}
-
-/* ============================================
-   💫 BRAND TEXT
-   ============================================ */
-.ml-brand {
-  font-family: 'Cinzel', serif;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 8px;
-  background: linear-gradient(180deg, #fff 0%, #F4D47C 50%, #8B6914 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)) drop-shadow(0 0 10px rgba(217,182,111,0.4));
-  animation: mlTextGlow 3s ease-in-out infinite;
-}
-
-@keyframes mlTextGlow {
-  0%, 100% { 
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)) drop-shadow(0 0 10px rgba(217,182,111,0.4));
-  }
-  50% { 
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)) drop-shadow(0 0 20px rgba(244,212,124,0.7));
-  }
-}
-
-/* ============================================
-   💬 OPTIONAL MESSAGE
-   ============================================ */
-.ml-message {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 15px;
-  font-style: italic;
-  color: #F7F3EB;
-  letter-spacing: 1.5px;
-  text-align: center;
-  margin: 0;
-  text-shadow:
-    0 0 8px rgba(244, 212, 124, 0.4),
-    0 1px 2px rgba(0,0,0,0.8);
-  animation: mlFade 1.6s ease-in-out infinite;
-}
-
-@keyframes mlFade {
-  0%, 100% { opacity: 0.7; }
-  50% { opacity: 1; }
-}
-
-/* ============================================
-   RESPONSIVE
-   ============================================ */
-@media (max-width: 480px) {
-  .ml-crescent { width: 100px; height: 100px; }
-  .ml-brand { font-size: 12px; letter-spacing: 6px; }
-  .ml-message { font-size: 13px; letter-spacing: 1px; }
+@media (max-width: 380px) {
+  .ld-stage { width: 240px; height: 240px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ml-crescent, .ml-star, .ml-dot, .ml-shadow, .ml-brand, .ml-message {
+  .ld-orbit, .ld-orbit-2, .ld-cline, .ld-ccore, .ld-core::after, .ld-mote, .ld-progress-sheen {
     animation: none !important;
   }
 }
 `;
 
 /* ============================================
-   კომპონენტი
+   Component
    ============================================ */
 
 interface AppLoaderProps {
@@ -210,80 +125,160 @@ interface AppLoaderProps {
   message?: string;
 }
 
-const MESSAGES: Record<string, string> = {
-  horoscope: 'Aligning your stars...',
-  tarot: 'Shuffling the cards...',
-  astro: 'Charting the planets...',
-  numerology: 'Counting your numbers...',
-  profile: 'Gathering your essence...',
-  default: 'Loading...',
+const MESSAGES: Record<string, string[]> = {
+  horoscope: ['Aligning your stars', 'Reading the currents', 'The sky is unfolding'],
+  tarot: ['Shuffling the arcana', 'Drawing your card', 'The pattern is forming'],
+  astro: ['Charting the sky', 'Mapping the transits', 'The orbs are moving'],
+  numerology: ['Counting your numbers', 'Decoding the pattern'],
+  profile: ['Gathering your essence', 'Reading your chart'],
+  default: ['Aligning your stars', 'Reading the currents', 'The sky is unfolding'],
 };
 
-export function AppLoader({ isLoading, context = 'default', message }: AppLoaderProps) {
-  const displayMessage = message || MESSAGES[context] || MESSAGES.default;
+const NODES = [
+  { cx: 90, cy: 70, r: 3, delay: 0 },
+  { cx: 130, cy: 100, r: 2.4, delay: 0.5 },
+  { cx: 150, cy: 150, r: 2.8, delay: 1 },
+  { cx: 190, cy: 165, r: 2.2, delay: 1.5 },
+  { cx: 210, cy: 130, r: 2.6, delay: 1.9 },
+  { cx: 100, cy: 150, r: 2, delay: 1.2 },
+];
 
-  // Subtle twinkling stars
-  const stars = useMemo(() =>
-    Array.from({ length: 18 }, (_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      top: Math.random() * 100,
-      delay: Math.random() * 5,
-      dur: 2 + Math.random() * 3,
-      size: 1 + Math.random() * 1.5,
-    })),
+export function AppLoader({ isLoading, context = 'default', message }: AppLoaderProps) {
+  const messages = useMemo(() => (message ? [message] : MESSAGES[context] || MESSAGES.default), [message, context]);
+  const [msgIndex, setMsgIndex] = useState(0);
+  const [progress, setProgress] = useState(8);
+  const progressRef = useRef(8);
+
+  // message cycling
+  useEffect(() => {
+    if (!isLoading || messages.length <= 1) return;
+    setMsgIndex(0);
+    const id = setInterval(() => setMsgIndex((p) => (p + 1) % messages.length), 3600);
+    return () => clearInterval(id);
+  }, [isLoading, messages]);
+
+  // progress creep
+  useEffect(() => {
+    if (!isLoading) return;
+    progressRef.current = 8;
+    setProgress(8);
+    const id = setInterval(() => {
+      progressRef.current = Math.min(progressRef.current + Math.random() * 4 + 1, 97);
+      setProgress(progressRef.current);
+    }, 260);
+    return () => clearInterval(id);
+  }, [isLoading]);
+
+  // stable drifting motes
+  const motes = useMemo(
+    () =>
+      Array.from({ length: 22 }, (_, i) => ({
+        id: i,
+        left: Math.random() * 100,
+        top: Math.random() * 100,
+        size: +(0.6 + Math.random() * 1.1).toFixed(1),
+        delay: +(Math.random() * 5).toFixed(2),
+        dur: +(4 + Math.random() * 4).toFixed(2),
+      })),
     []
   );
+
+  const letters = 'LUNARA'.split('');
 
   return (
     <AnimatePresence>
       {isLoading && (
         <motion.div
-          className="minimal-loader"
+          className="loader"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5, ease: 'easeInOut' }}
         >
           <style>{loaderCSS}</style>
 
-          {/* ✨ Subtle twinkling stars */}
-          <div className="ml-stars">
-            {stars.map((s) => (
+          <div className="ld-grain" />
+
+          <div className="ld-field">
+            {motes.map((m) => (
               <span
-                key={s.id}
-                className="ml-star"
+                key={m.id}
+                className="ld-mote"
                 style={{
-                  left: `${s.left}%`,
-                  top: `${s.top}%`,
-                  width: `${s.size}px`,
-                  height: `${s.size}px`,
-                  animationDelay: `${s.delay}s`,
-                  animationDuration: `${s.dur}s`,
+                  left: `${m.left}%`,
+                  top: `${m.top}%`,
+                  width: `${m.size}px`,
+                  height: `${m.size}px`,
+                  animationDelay: `${m.delay}s`,
+                  animationDuration: `${m.dur}s`,
                 }}
               />
             ))}
           </div>
 
-          {/* 🌙 Central crescent moon */}
-          <div className="ml-crescent">
-            <div className="ml-moon" />
-            <div className="ml-shadow" />
+          <div className="ld-stage">
+            <div className="ld-arc-motif">
+              <svg viewBox="0 0 280 280">
+                <path
+                  d="M 46 96 A 120 120 0 1 1 46 184"
+                  fill="none"
+                  stroke="rgba(216,203,174,0.16)"
+                  strokeWidth="0.7"
+                />
+              </svg>
+            </div>
+
+            <div className="ld-orbit-2" />
+            <div className="ld-orbit" />
+
+            <div className="ld-constellation">
+              <svg viewBox="0 0 280 280">
+                <path className="ld-cline" d="M 90 70 L 130 100 L 150 150 L 190 165 L 210 130" />
+                <path className="ld-cline" d="M 130 100 L 100 150" style={{ animationDelay: '0.3s' }} />
+                {NODES.map((n, i) => (
+                  <circle
+                    key={i}
+                    className="ld-ccore"
+                    cx={n.cx}
+                    cy={n.cy}
+                    r={n.r}
+                    style={{ animationDelay: `${n.delay}s` }}
+                  />
+                ))}
+              </svg>
+            </div>
+
+            <div className="ld-core" />
           </div>
 
-          {/* ● ● ● Pulsing dots */}
-          <div className="ml-dots">
-            <span className="ml-dot" style={{ animationDelay: '0s' }} />
-            <span className="ml-dot" style={{ animationDelay: '0.2s' }} />
-            <span className="ml-dot" style={{ animationDelay: '0.4s' }} />
+          <div className="ld-word">
+            {letters.map((ch, i) => (
+              <span key={i} style={{ animationDelay: `${0.05 + i * 0.07}s` }}>
+                {ch}
+              </span>
+            ))}
           </div>
 
-          {/* 💫 Brand name */}
-          <div className="ml-brand">LUNARA</div>
+          <div className="ld-progress-wrap">
+            <div className="ld-progress-track">
+              <div className="ld-progress-fill" style={{ width: `${progress}%` }} />
+              <div className="ld-progress-sheen" />
+            </div>
+          </div>
 
-          {/* 💬 Optional message */}
-          {displayMessage !== 'Loading...' && (
-            <p className="ml-message">{displayMessage}</p>
-          )}
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={msgIndex}
+              className="ld-message"
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.5, ease: 'easeInOut' }}
+            >
+              {messages[msgIndex]}
+            </motion.p>
+          </AnimatePresence>
+
+          <div className="ld-vignette" />
         </motion.div>
       )}
     </AnimatePresence>

@@ -1,41 +1,27 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { supabase } from './lib/supabase';
 import { logger } from './lib/logger';
 import { applyPlatformTokens } from './lib/platform';
 import { queryClient, initSessionGuard } from './lib/queryClient';
+
+// ✅ Regular imports (always loaded - onboarding)
 import SplashScreen from './components/SplashScreen';
 import OnboardingWelcome from './components/OnboardingWelcome';
 import OnboardingZodiac from './components/OnboardingZodiac';
 import OnboardingFirstReading from './components/OnboardingFirstReading';
-import HomeScreen from './components/HomeScreen';
-import CardsScreen from './components/CardsScreen';
-import ReadingScreen from './components/ReadingScreen';
-import AstroScreen from './components/AstroScreen';
-import ProfileScreen from './components/ProfileScreen';
-import CardFanScreen from './components/CardFanScreen';
-import CardDetailScreen from './components/CardDetailScreen';
-import DailyCardScreen from './components/DailyCardScreen';
-import ThreeCardReadingScreen from './components/ThreeCardReadingScreen';
-import ReadingHistoryScreen from './components/ReadingHistoryScreen';
-import CelticCrossReadingScreen from './components/CelticCrossReadingScreen';
-import HorseshoeReadingScreen from './components/HorseshoeReadingScreen';
-import RelationshipReadingScreen from './components/RelationshipReadingScreen';
-import HoroscopeScreen from './components/HoroscopeScreen';
-import SignSelectionScreen from './components/SignSelectionScreen';
-import AdminScreen from './components/AdminScreen';
-import AdminAIManagement from './components/AdminAIManagement';
-import UserAnalytics from './components/UserAnalytics';
-import SubscriptionScreen from './components/SubscriptionScreen';
-import ServicesScreen from './components/ServicesScreen';
 import BottomNav from './components/BottomNav';
+import { AppLoader } from './components/AppLoader';
+
+// 🚀 Lazy imports (loaded on demand)
+import * as Lazy from './components/LazyScreens';
+
 import { UserProvider, useUser } from './context/UserContext';
 import { SettingsProvider } from './context/SettingsContext';
 import { TranslationProvider } from './i18n/TranslationContext';
 import { initializeTelegramAuth, getTelegramUser } from './lib/telegramAuth';
 import { getOrCreateUser, completeOnboarding } from './lib/userService';
 import { updateUserLastActive } from './lib/adminService';
-import JournalStatsScreen from './components/JournalStatsScreen';
 import './App.css';
 
 class ErrorBoundary extends React.Component<
@@ -120,7 +106,6 @@ function AppContent() {
   
   const { user, setUser } = useUser();
 
-  // 🎯 PLATFORM DETECTION + CSS TOKENS (ერთხელ, აპის გაშვებისას)
   useEffect(() => {
     applyPlatformTokens();
 
@@ -165,7 +150,6 @@ function AppContent() {
     }
   }, []);
 
-  // 🛡️ SESSION GUARD — 5+ წუთი background-ში = cache clear (ახალი ციკლი)
   useEffect(() => {
     const cleanup = initSessionGuard();
     return cleanup;
@@ -273,11 +257,14 @@ function AppContent() {
     goTo('home');
   };
 
+  // 🎯 Lazy loading fallback — AppLoader ჩნდება chunk-ის ჩატვირთვის დროს
+  const loadingFallback = <AppLoader isLoading={true} context="default" message="Loading..." />;
+
   return (
     <div className="app-container">
       {!userReady && <UserLoader onReady={handleUserReady} />}
       
-      {/* 🎯 ONBOARDING SCREENS - Conditional (one-time use) */}
+      {/* 🎯 ONBOARDING SCREENS — regular imports (always loaded first) */}
       {currentScreen === 'splash' && <SplashScreen onFinish={handleSplashFinish} />}
       {currentScreen === 'welcome' && <OnboardingWelcome onFinish={() => goTo('zodiac')} />}
       {currentScreen === 'zodiac' && <OnboardingZodiac onFinish={() => goTo('first-reading')} />}
@@ -286,42 +273,35 @@ function AppContent() {
       {/* 🎯 MAIN SCREENS WRAPPER */}
       <div className="screen-wrapper">
         <ErrorBoundary>
-          
-          {/* ✅ KEEP-ALIVE TABS */}
-          <div style={{ display: currentScreen === 'home' ? 'block' : 'none' }}>
-            <HomeScreen onNavigate={handleNavigate} />
-          </div>
-          <div style={{ display: currentScreen === 'cards' ? 'block' : 'none' }}>
-            <CardsScreen onNavigate={handleNavigate} />
-          </div>
-          <div style={{ display: currentScreen === 'astro' ? 'block' : 'none' }}>
-            <AstroScreen onNavigate={handleNavigate} />
-          </div>
-          <div style={{ display: currentScreen === 'profile' ? 'block' : 'none' }}>
-            <ProfileScreen onNavigate={handleNavigate} />
-          </div>
+          <Suspense fallback={loadingFallback}>
+            
+            {/* 🚀 LAZY-LOADED SCREENS (ჩაიტვირთება demand-ზე) */}
+            {currentScreen === 'home' && <Lazy.HomeScreen onNavigate={handleNavigate} />}
+            {currentScreen === 'cards' && <Lazy.CardsScreen onNavigate={handleNavigate} />}
+            {currentScreen === 'astro' && <Lazy.AstroScreen onNavigate={handleNavigate} />}
+            {currentScreen === 'profile' && <Lazy.ProfileScreen onNavigate={handleNavigate} />}
 
-          {/* ⚡ CONDITIONAL SCREENS */}
-          {currentScreen === 'reading' && <ReadingScreen onNavigate={handleNavigate} />}
-          {currentScreen === 'horoscope' && <HoroscopeScreen onNavigate={handleNavigate} />}
-          {currentScreen === 'sign-selection' && <SignSelectionScreen onNavigate={handleNavigate} />}
-          {currentScreen === 'card-fan' && <CardFanScreen onNavigate={handleNavigate} />}
-          {currentScreen === 'card-detail' && selectedCardId !== null && (
-            <CardDetailScreen cardId={selectedCardId} onNavigate={handleNavigate} />
-          )}
-          {currentScreen === 'daily-card' && <DailyCardScreen onNavigate={handleNavigate} />}
-          {currentScreen === 'three-card-reading' && <ThreeCardReadingScreen onNavigate={handleNavigate} />}
-          {currentScreen === 'reading-history' && <ReadingHistoryScreen onNavigate={handleNavigate} />}
-          {currentScreen === 'celtic-cross' && <CelticCrossReadingScreen onNavigate={handleNavigate} />}
-          {currentScreen === 'horseshoe' && <HorseshoeReadingScreen onNavigate={handleNavigate} />}
-          {currentScreen === 'relationship' && <RelationshipReadingScreen onNavigate={handleNavigate} />}
-          {currentScreen === 'journal-stats' && <JournalStatsScreen onNavigate={handleNavigate} />}
-          {currentScreen === 'admin' && <AdminScreen onNavigate={handleNavigate} />}
-          {currentScreen === 'user-analytics' && <UserAnalytics onNavigate={handleNavigate} />}
-          {currentScreen === 'ai-management' && <AdminAIManagement onNavigate={handleNavigate} />}
-          {currentScreen === 'subscription' && <SubscriptionScreen onNavigate={handleNavigate} />}
-          {currentScreen === 'services' && <ServicesScreen onNavigate={handleNavigate} />}
-          
+            {currentScreen === 'reading' && <Lazy.ReadingScreen onNavigate={handleNavigate} />}
+            {currentScreen === 'horoscope' && <Lazy.HoroscopeScreen onNavigate={handleNavigate} />}
+            {currentScreen === 'sign-selection' && <Lazy.SignSelectionScreen onNavigate={handleNavigate} />}
+            {currentScreen === 'card-fan' && <Lazy.CardFanScreen onNavigate={handleNavigate} />}
+            {currentScreen === 'card-detail' && selectedCardId !== null && (
+              <Lazy.CardDetailScreen cardId={selectedCardId} onNavigate={handleNavigate} />
+            )}
+            {currentScreen === 'daily-card' && <Lazy.DailyCardScreen onNavigate={handleNavigate} />}
+            {currentScreen === 'three-card-reading' && <Lazy.ThreeCardReadingScreen onNavigate={handleNavigate} />}
+            {currentScreen === 'reading-history' && <Lazy.ReadingHistoryScreen onNavigate={handleNavigate} />}
+            {currentScreen === 'celtic-cross' && <Lazy.CelticCrossReadingScreen onNavigate={handleNavigate} />}
+            {currentScreen === 'horseshoe' && <Lazy.HorseshoeReadingScreen onNavigate={handleNavigate} />}
+            {currentScreen === 'relationship' && <Lazy.RelationshipReadingScreen onNavigate={handleNavigate} />}
+            {currentScreen === 'journal-stats' && <Lazy.JournalStatsScreen onNavigate={handleNavigate} />}
+            {currentScreen === 'admin' && <Lazy.AdminScreen onNavigate={handleNavigate} />}
+            {currentScreen === 'user-analytics' && <Lazy.UserAnalytics onNavigate={handleNavigate} />}
+            {currentScreen === 'ai-management' && <Lazy.AdminAIManagement onNavigate={handleNavigate} />}
+            {currentScreen === 'subscription' && <Lazy.SubscriptionScreen onNavigate={handleNavigate} />}
+            {currentScreen === 'services' && <Lazy.ServicesScreen onNavigate={handleNavigate} />}
+            
+          </Suspense>
         </ErrorBoundary>
       </div>
       
