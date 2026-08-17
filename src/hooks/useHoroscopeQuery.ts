@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { Horoscope } from './useHoroscope';
 import { TabType } from '../components/horoscope/horoscopeData';
@@ -94,8 +94,6 @@ export function useHoroscopeQuery(
   sunSign: string,
   readingType: TabType = 'today'
 ): UseHoroscopeResult {
-  const queryClient = useQueryClient();
-
   const {
     data: horoscope = null,
     isLoading,
@@ -141,14 +139,3 @@ export function useHoroscopeQuery(
     refetch: handleRefetch
   };
 }
-
-/**
- * 🛠️ Manual invalidation (თუ საჭიროა)
- * გამოყენება: useHoroscopeQuery.invalidate(userId, sunSign)
- */
-useHoroscopeQuery.invalidate = (userId: string, sunSign: string) => {
-  import('@tanstack/react-query').then(({ QueryClient }) => {
-    // ეს არის static helper — საჭიროების შემთხვევაში
-    console.warn('[Query] Manual invalidation — use queryClient.invalidateQueries instead');
-  });
-};
