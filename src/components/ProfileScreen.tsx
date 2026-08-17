@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import './ProfileScreen.css';
 import { useUser } from '../context/UserContext';
 import { useSettings } from '../context/SettingsContext';
@@ -7,13 +7,14 @@ import { getActiveSubscription } from '../lib/subscriptionService';
 import { supabase } from '../lib/supabase';
 import { Bug, X, Star, Heart, BookOpen, Lock, User, Trophy, Gem, Settings, LogOut, ChevronRight, Shuffle, Bell, Mail, Sun, Moon, RefreshCw, Trash2 } from 'lucide-react';
 import { useTranslation, LANGUAGE_META, type Language } from '../i18n/TranslationContext';
+import { AppLoader } from './AppLoader';
 
 interface Props {
   onNavigate?: (screen: string) => void;
 }
 
 // ==========================================
-// Dynamic data helpers
+// Static Data
 // ==========================================
 const ZODIAC_DATA: Record<string, { symbol: string; element: string; planet: string }> = {
   Aries: { symbol: '♈', element: 'Fire', planet: 'Mars' },
@@ -30,25 +31,25 @@ const ZODIAC_DATA: Record<string, { symbol: string; element: string; planet: str
   Pisces: { symbol: '♓', element: 'Water', planet: 'Neptune' },
 };
 
-// Supabase Storage URLs for sign images
 const SUPABASE_BASE_URL = 'https://eutavdhcxpfhpfsyaskb.supabase.co/storage/v1/object/public/assets/Horoscope';
 
-// Map sign names to image filenames (some have different filenames)
 const SIGN_IMAGE_MAP: Record<string, string> = {
-  Aries: 'Aries',
-  Taurus: 'Taurus',
-  Gemini: 'Gemini',
-  Cancer: 'Cancer1',
-  Leo: 'Leo1',
-  Virgo: 'Virgo',
-  Libra: 'Libra',
-  Scorpio: 'Scorpio',
-  Sagittarius: 'Sagittarius',
-  Capricorn: 'Capricorn',
-  Aquarius: 'Aquarius',
-  Pisces: 'Pisces',
+  Aries: 'Aries', Taurus: 'Taurus', Gemini: 'Gemini', Cancer: 'Cancer1',
+  Leo: 'Leo1', Virgo: 'Virgo', Libra: 'Libra', Scorpio: 'Scorpio',
+  Sagittarius: 'Sagittarius', Capricorn: 'Capricorn', Aquarius: 'Aquarius', Pisces: 'Pisces',
 };
 
+const LANGUAGE_ORDER: Language[] = ['en', 'ru', 'de', 'es', 'ka'];
+const LANGUAGE_FLAGS: Record<Language, string> = {
+  en: '🇬🇧', ru: '🇷🇺', de: '🇩🇪', es: '🇪🇸', ka: '🇬🇪'
+};
+
+const MOON_PHASES = ['newMoon', 'waxingCrescent', 'firstQuarter', 'waxingGibbous', 'fullMoon', 'waningGibbous', 'lastQuarter', 'waningCrescent'];
+const MOON_SYMBOLS = ['🌑', '🌒', '🌓', '🌔', '🌕', '🌖', '🌗', '🌘'];
+
+// ==========================================
+// Helper Functions (pure, outside component)
+// ==========================================
 const getSignImageUrl = (signName: string): string => {
   if (!signName) return '';
   const capitalized = signName.charAt(0).toUpperCase() + signName.slice(1).toLowerCase();
@@ -69,36 +70,29 @@ const getSignInfo = (signName: string, t: (key: string) => string) => {
 
 const getDayOfYear = (date: Date): number => {
   const start = new Date(date.getFullYear(), 0, 0);
-  const diff = date.getTime() - start.getTime();
-  return Math.floor(diff / (1000 * 60 * 60 * 24));
+  return Math.floor((date.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
 };
 
 const getDynamicMoonPhase = (t: (key: string) => string) => {
   const dayOfYear = getDayOfYear(new Date());
   const lunarCycle = 29.53;
   const phaseIndex = Math.floor(((dayOfYear % lunarCycle) / lunarCycle) * 8) % 8;
-  const phases = ['newMoon', 'waxingCrescent', 'firstQuarter', 'waxingGibbous', 'fullMoon', 'waningGibbous', 'lastQuarter', 'waningCrescent'];
-  const current = phases[phaseIndex];
-  const illumination = Math.floor(((dayOfYear % lunarCycle) / lunarCycle) * 100);
-
+  const current = MOON_PHASES[phaseIndex];
   return {
     phase: t(`moonPhase.${current}`),
-    symbol: ['🌑', '🌒', '🌓', '🌔', '🌕', '🌖', '🌗', '🌘'][phaseIndex],
-    illumination: illumination,
+    symbol: MOON_SYMBOLS[phaseIndex],
+    illumination: Math.floor(((dayOfYear % lunarCycle) / lunarCycle) * 100),
     bestFor: t(`moonPhase.bestFor.${current}`)
   };
 };
 
 const timeAgo = (dateString: string) => {
-  const seconds = Math.floor((new Date().getTime() - new Date(dateString).getTime()) / 1000);
+  const seconds = Math.floor((Date.now() - new Date(dateString).getTime()) / 1000);
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
   if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`;
   return `${Math.floor(seconds / 86400)}d`;
 };
 
-// ==========================================
-// Level logic
-// ==========================================
 const getXPToNextLevel = (level: number): number => {
   if (level === 1) return 100;
   if (level === 2) return 250;
@@ -119,63 +113,27 @@ const getLevelFromTotalXP = (totalXP: number) => {
   let level = 1;
   let xpRequiredForNext = getXPToNextLevel(level);
   let currentLevelXP = totalXP;
-
   while (currentLevelXP >= xpRequiredForNext) {
     currentLevelXP -= xpRequiredForNext;
     level++;
     xpRequiredForNext = getXPToNextLevel(level);
   }
-
   return { level, currentLevelXP, xpToNext: xpRequiredForNext };
 };
 
 // ==========================================
 // Interfaces
 // ==========================================
-interface Achievement {
-  id: string;
-  icon: string;
-  title: string;
-  description: string;
-  unlocked: boolean;
-  progress: number;
-  total: number;
-}
-
-interface Stat {
-  label: string;
-  value: string | number;
-  icon: string;
-}
-
-interface Reading {
-  id: string;
-  type: string;
-  icon: string;
-  date: string;
-  cards: string[];
-}
-
-interface Notifications {
-  push: boolean;
-  email: boolean;
-  dailyHoroscope: boolean;
-  moonPhase: boolean;
-}
-
-const LANGUAGE_ORDER: Language[] = ['en', 'ru', 'de', 'es', 'ka'];
-
-const LANGUAGE_FLAGS: Record<Language, string> = {
-  en: '🇬🇧',
-  ru: '🇷🇺',
-  de: '🇩🇪',
-  es: '🇪🇸',
-  ka: '🇬🇪'
-};
+interface Achievement { id: string; icon: string; title: string; description: string; unlocked: boolean; progress: number; total: number; }
+interface Stat { label: string; value: string | number; icon: string; }
+interface Reading { id: string; type: string; icon: string; date: string; cards: string[]; }
+interface Notifications { push: boolean; email: boolean; dailyHoroscope: boolean; moonPhase: boolean; }
 
 export default function ProfileScreen({ onNavigate }: Props) {
   const { t, language, setLanguage } = useTranslation();
-  
+  const { user, setUser, loading: userLoading } = useUser();
+  const { settings, updateSetting } = useSettings();
+
   const [activeTab, setActiveTab] = useState<'profile' | 'achievements' | 'settings'>('profile');
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showBirthInfo, setShowBirthInfo] = useState(false);
@@ -187,13 +145,8 @@ export default function ProfileScreen({ onNavigate }: Props) {
   const [recentReadings, setRecentReadings] = useState<Reading[]>([]);
   const [isUserAdmin, setIsUserAdmin] = useState(false);
   const [notifications, setNotifications] = useState<Notifications>({
-    push: true,
-    email: false,
-    dailyHoroscope: true,
-    moonPhase: true
+    push: true, email: false, dailyHoroscope: true, moonPhase: true
   });
-
-  // 🆕 Extended debugging states
   const [showDebug, setShowDebug] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [lastDbAction, setLastDbAction] = useState<string>('None');
@@ -201,81 +154,96 @@ export default function ProfileScreen({ onNavigate }: Props) {
   const [isTestingNotification, setIsTestingNotification] = useState(false);
   const [testResult, setTestResult] = useState<any>(null);
   const [isTgDetected, setIsTgDetected] = useState(false);
-  
-  // 🆕 Economy state to ensure we get the latest XP and Level
   const [economyData, setEconomyData] = useState<any>(null);
 
-  const { user, setUser, loading } = useUser();
-  const { settings, updateSetting } = useSettings();
+  // ✅ Unmount flag — race conditions-ის თავიდან ასაცილებლად
+  const isMountedRef = useRef(true);
 
+  // ✅ Admin check (memoized)
   useEffect(() => {
     setMounted(true);
+    const tg = (window as any).Telegram?.WebApp;
+    setIsTgDetected(!!tg);
+
     if (user?.id === 'c9dbe3be-5c02-4034-8bfd-1d693eb02754') {
       setIsUserAdmin(true);
     }
-    
-    const tg = (window as any).Telegram?.WebApp;
-    setIsTgDetected(!!tg);
-  }, [user]);
 
-  // 🆕 Fetch latest economy data (XP and Level) to match HomeScreen
+    return () => { isMountedRef.current = false; };
+  }, [user?.id]);
+
+  // ✅ Load economy data
   useEffect(() => {
+    if (!user || !supabase) return;
+    let cancelled = false;
+
     const loadEconomy = async () => {
-      if (!user || !supabase) return;
       const { data, error } = await supabase
         .from('user_economy')
         .select('xp, level, cosmic_coins, current_streak')
         .eq('user_id', user.id)
         .single();
-      
-      if (!error && data) {
+
+      if (!cancelled && !error && data) {
         setEconomyData(data);
       }
     };
     loadEconomy();
-  }, [user]);
 
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+  // ✅ Load subscription + readings
   useEffect(() => {
-    if (user) {
-      getActiveSubscription(user.id).then(setActiveSubscription);
+    if (!user) return;
+    let cancelled = false;
 
-      if (supabase) {
-        supabase
-          .from('reading_history')
-          .select('reading_type, created_at, cards')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(4)
-          .then(({ data }) => {
-            if (data && data.length > 0) {
-              setRecentReadings(data.map((r: any, idx: number) => ({
-                id: `r-${idx}`,
-                type: r.reading_type || 'Unknown Reading',
-                icon: '🔮',
-                date: timeAgo(r.created_at),
-                cards: r.cards || []
-              })));
-            }
-          });
-      }
+    getActiveSubscription(user.id).then(sub => {
+      if (!cancelled) setActiveSubscription(sub);
+    });
+
+    if (supabase) {
+      supabase
+        .from('reading_history')
+        .select('reading_type, created_at, cards')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(4)
+        .then(({ data }) => {
+          if (cancelled) return;
+          if (data && data.length > 0) {
+            setRecentReadings(data.map((r: any, idx: number) => ({
+              id: `r-${idx}`,
+              type: r.reading_type || 'Unknown Reading',
+              icon: '🔮',
+              date: timeAgo(r.created_at),
+              cards: r.cards || []
+            })));
+          }
+        });
     }
-  }, [user]);
 
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+  // ✅ Load preferences
   useEffect(() => {
+    if (!user || !supabase) return;
+    let cancelled = false;
+
     const loadPreferences = async () => {
-      if (!user || !supabase) return;
-      
-      console.log('📥 Loading preferences for user:', user.id);
       const { data, error } = await supabase
         .from('user_preferences')
         .select('*')
         .eq('user_id', user.id)
         .single();
 
+      if (cancelled) return;
+
       if (error) {
-        console.log('ℹ️ No preferences found yet, using defaults.');
+        if (isUserAdmin) console.log('ℹ️ No preferences found yet, using defaults.');
       } else if (data) {
-        console.log('✅ Preferences loaded:', data);
+        if (isUserAdmin) console.log('✅ Preferences loaded:', data);
         setPreferencesData(data);
         setNotifications({
           push: data.push_notifications ?? true,
@@ -287,53 +255,70 @@ export default function ProfileScreen({ onNavigate }: Props) {
       }
     };
     loadPreferences();
-  }, [user]);
 
-  // 🆕 Use economyData XP if available, otherwise fallback to user.xp
-  const currentXP = economyData?.xp ?? user?.xp ?? 0;
-  const userLevelData = getLevelFromTotalXP(currentXP);
-  
-  const userData = user ? {
-    displayName: user.display_name || 'User',
-    sunSign: user.sun_sign || '',
-    moonSign: user.moon_sign || '',
-    risingSign: user.rising_sign || '',
-    zodiac: user.sun_sign || '',
-    zodiacSymbol: getSignInfo(user.sun_sign || '', t).symbol,
-    element: getSignInfo(user.sun_sign || '', t).element,
-    level: userLevelData.level,
-    levelTitle: getLevelTitle(userLevelData.level),
-    xp: userLevelData.currentLevelXP,
-    xpToNext: userLevelData.xpToNext,
-    avatar: user.display_name?.charAt(0).toUpperCase() || 'U',
-    currentPlan: user.current_plan || 'FREE',
-    gems: economyData?.cosmic_coins ?? user?.gems ?? 0,
-    streak: economyData?.current_streak ?? user?.streak ?? 0,
-    readingsCount: (user as any).readings_count || 0,
-    cardsCollected: (user as any).cards_collected || 0,
-    birthDate: user.birth_date || '',
-    birthTime: user.birth_time || '',
-    birthPlace: user.birth_place || '',
-  } : null;
+    return () => { cancelled = true; };
+  }, [user?.id, isUserAdmin]);
 
-  const stats: Stat[] = userData ? [
+  // ✅ Memoized user data
+  const userData = useMemo(() => {
+    if (!user) return null;
+    const currentXP = economyData?.xp ?? user?.xp ?? 0;
+    const userLevelData = getLevelFromTotalXP(currentXP);
+
+    return {
+      displayName: user.display_name || 'User',
+      sunSign: user.sun_sign || '',
+      moonSign: user.moon_sign || '',
+      risingSign: user.rising_sign || '',
+      zodiac: user.sun_sign || '',
+      zodiacSymbol: getSignInfo(user.sun_sign || '', t).symbol,
+      element: getSignInfo(user.sun_sign || '', t).element,
+      level: userLevelData.level,
+      levelTitle: getLevelTitle(userLevelData.level),
+      xp: userLevelData.currentLevelXP,
+      xpToNext: userLevelData.xpToNext,
+      avatar: user.display_name?.charAt(0).toUpperCase() || 'U',
+      currentPlan: user.current_plan || 'FREE',
+      gems: economyData?.cosmic_coins ?? user?.gems ?? 0,
+      streak: economyData?.current_streak ?? user?.streak ?? 0,
+      readingsCount: (user as any).readings_count || 0,
+      cardsCollected: (user as any).cards_collected || 0,
+      birthDate: user.birth_date || '',
+      birthTime: user.birth_time || '',
+      birthPlace: user.birth_place || '',
+    };
+  }, [user, economyData, t]);
+
+  // ✅ Memoized stats
+  const stats: Stat[] = useMemo(() => userData ? [
     { label: t('profile.stats.readings'), value: userData.readingsCount || recentReadings.length, icon: '🔮' },
     { label: t('profile.stats.cards'), value: `${userData.cardsCollected}/78`, icon: '🃏' },
     { label: t('profile.stats.streak'), value: userData.streak, icon: '🔥' },
     { label: t('profile.stats.gems'), value: userData.gems, icon: '💎' },
-  ] : [];
+  ] : [], [userData, recentReadings.length, t]);
 
-  const achievements: Achievement[] = userData ? [
-    { id: '1', icon: '🎯', title: t('achievements.firstReading'), description: t('achievements.firstReadingDesc'), unlocked: (userData.readingsCount || recentReadings.length) >= 1, progress: Math.min((userData.readingsCount || recentReadings.length), 1), total: 1 },
+  // ✅ Memoized achievements
+  const achievements: Achievement[] = useMemo(() => userData ? [
+    { id: '1', icon: '🎯', title: t('achievements.firstReading'), description: t('achievements.firstReadingDesc'), unlocked: (userData.readingsCount || recentReadings.length) >= 1, progress: Math.min(userData.readingsCount || recentReadings.length, 1), total: 1 },
     { id: '2', icon: '🔥', title: t('achievements.streak7'), description: t('achievements.streak7Desc'), unlocked: userData.streak >= 7, progress: Math.min(userData.streak, 7), total: 7 },
     { id: '3', icon: '📚', title: t('achievements.collector'), description: t('achievements.collectorDesc'), unlocked: userData.cardsCollected >= 78, progress: userData.cardsCollected, total: 78 },
     { id: '4', icon: '💕', title: t('achievements.loveExpert'), description: t('achievements.loveExpertDesc'), unlocked: false, progress: 12, total: 50 },
     { id: '5', icon: '🌙', title: t('achievements.moonMaster'), description: t('achievements.moonMasterDesc'), unlocked: false, progress: 3, total: 10 },
-  ] : [];
+  ] : [], [userData, recentReadings.length, t]);
 
-  const moonPhase = getDynamicMoonPhase(t);
+  const moonPhase = useMemo(() => getDynamicMoonPhase(t), [t]);
+  const bigThreeSigns = useMemo(() => userData ? [
+    { type: '☀️ Sun', sign: userData.sunSign, info: getSignInfo(userData.sunSign, t) },
+    { type: '🌙 Moon', sign: userData.moonSign, info: getSignInfo(userData.moonSign, t) },
+    { type: '🌅 Rising', sign: userData.risingSign, info: getSignInfo(userData.risingSign, t) },
+  ] : [], [userData, t]);
 
-  const handleSettingClick = async (setting: string) => {
+  const xpProgress = userData ? (userData.xp / userData.xpToNext) * 100 : 0;
+  const circumference = 2 * Math.PI * 24;
+  const strokeDashoffset = circumference - (xpProgress / 100) * circumference;
+
+  // ✅ Callbacks
+  const handleSettingClick = useCallback(async (setting: string) => {
     if (setting === 'subscription' && onNavigate) {
       onNavigate(activeSubscription ? 'subscription' : 'services');
     } else if (setting === 'logout') {
@@ -350,13 +335,13 @@ export default function ProfileScreen({ onNavigate }: Props) {
         alert('Logout failed.');
       }
     }
-  };
+  }, [activeSubscription, onNavigate, user]);
 
-  const handleChangeSign = () => {
+  const handleChangeSign = useCallback(() => {
     if (onNavigate) onNavigate('sign-selection');
-  };
+  }, [onNavigate]);
 
-  const handleResetSign = async () => {
+  const handleResetSign = useCallback(async () => {
     if (!user) return;
     setResetting(true);
     try {
@@ -371,9 +356,9 @@ export default function ProfileScreen({ onNavigate }: Props) {
     } finally {
       setResetting(false);
     }
-  };
+  }, [user, onNavigate, setUser]);
 
-  const handleSaveEdit = async (section: string, data: any) => {
+  const handleSaveEdit = useCallback(async (section: string, data: any) => {
     if (!user) return;
     const updates: any = {};
     if (section === 'personal') {
@@ -389,28 +374,23 @@ export default function ProfileScreen({ onNavigate }: Props) {
     }
     const updatedUser = await updateUser(user.id, updates);
     if (updatedUser) setUser(updatedUser);
-  };
+  }, [user, setUser]);
 
-  const handleSaveBirthInfo = async (date: string, time: string, place: string) => {
+  const handleSaveBirthInfo = useCallback(async (date: string, time: string, place: string) => {
     if (!user) { setShowBirthInfo(false); return; }
     const updatedUser = await updateUser(user.id, { birth_date: date, birth_time: time, birth_place: place });
     if (updatedUser) setUser(updatedUser);
     setShowBirthInfo(false);
-  };
+  }, [user, setUser]);
 
-  const handleNotificationToggle = async (key: keyof Notifications) => {
+  const handleNotificationToggle = useCallback(async (key: keyof Notifications) => {
     if (!user || !supabase) {
-      console.warn('⚠️ Toggle failed: No user or supabase instance');
+      if (isUserAdmin) console.warn('⚠️ Toggle failed: No user or supabase instance');
       setLastDbAction('⚠️ No user/supabase');
       return;
     }
 
-    const newNotifications = {
-      ...notifications,
-      [key]: !notifications[key]
-    };
-    
-    console.log(`🔄 Attempting to toggle ${key} to:`, newNotifications[key]);
+    const newNotifications = { ...notifications, [key]: !notifications[key] };
     setNotifications(newNotifications);
 
     const dbKey = key === 'push' ? 'push_notifications' :
@@ -418,7 +398,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
                   key === 'dailyHoroscope' ? 'daily_horoscope' : 'moon_phase_alerts';
 
     const payload = { user_id: user.id, [dbKey]: newNotifications[key] };
-    console.log('💾 Sending to DB (upsert):', payload);
 
     const { data, error } = await supabase
       .from('user_preferences')
@@ -426,16 +405,16 @@ export default function ProfileScreen({ onNavigate }: Props) {
       .select();
 
     if (error) {
-      console.error('❌ DB Error saving preferences:', error);
+      if (isUserAdmin) console.error('❌ DB Error:', error);
       setLastDbAction(`❌ Error: ${error.message}`);
       setNotifications(notifications);
     } else {
-      console.log('✅ DB Success! Saved data:', data);
+      if (isUserAdmin) console.log('✅ DB Success:', data);
       setLastDbAction(`✅ Success: ${key} = ${newNotifications[key]}`);
     }
-  };
+  }, [user, notifications, isUserAdmin]);
 
-  const testSendNotification = async () => {
+  const testSendNotification = useCallback(async () => {
     if (!user || !supabase) {
       setTestResult({ success: false, error: 'No user or supabase instance' });
       return;
@@ -443,22 +422,16 @@ export default function ProfileScreen({ onNavigate }: Props) {
 
     setIsTestingNotification(true);
     setTestResult(null);
-    console.log('🧪 Starting notification test...');
 
     try {
       const supabaseClient = supabase as any;
       const anonKey = supabaseClient.supabaseKey;
 
-      console.log('📤 Sending request to Edge Function (using anon key)...');
-
       const response = await fetch(
         'https://eutavdhcxpfhpfsyaskb.supabase.co/functions/v1/send-telegram-notification',
         {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': anonKey
-          },
+          headers: { 'Content-Type': 'application/json', 'apikey': anonKey },
           body: JSON.stringify({
             user_id: user.id,
             message: '🎉 Congratulations! Test successful. Push Notifications are working!',
@@ -468,8 +441,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
       );
 
       const result = await response.json();
-      console.log('📥 Server response:', result);
-
       setTestResult({
         success: result.success,
         message: result.message,
@@ -477,26 +448,16 @@ export default function ProfileScreen({ onNavigate }: Props) {
         httpStatus: response.status
       });
 
-      if (result.success) {
-        setLastDbAction('✅ Test notification sent');
-      } else {
-        setLastDbAction(`❌ Test failed: ${result.error}`);
-      }
-
+      setLastDbAction(result.success ? '✅ Test notification sent' : `❌ Test failed: ${result.error}`);
     } catch (error: any) {
-      console.error('❌ Test error:', error);
       setTestResult({ success: false, error: error.message });
       setLastDbAction(`❌ Test error: ${error.message}`);
     } finally {
       setIsTestingNotification(false);
     }
-  };
+  }, [user]);
 
-  const xpProgress = userData ? (userData.xp / userData.xpToNext) * 100 : 0;
-  const circumference = 2 * Math.PI * 24;
-  const strokeDashoffset = circumference - (xpProgress / 100) * circumference;
-
-  const copyDebugData = async () => {
+  const copyDebugData = useCallback(async () => {
     const debugText = JSON.stringify({
       isAdmin: isUserAdmin,
       userId: user?.id,
@@ -518,24 +479,11 @@ export default function ProfileScreen({ onNavigate }: Props) {
     } catch (err) {
       console.error('Failed to copy:', err);
     }
-  };
+  }, [isUserAdmin, user, userData, stats, recentReadings, achievements, notifications, preferencesData, lastDbAction, testResult, language, settings.theme]);
 
-  // ✨ Helper for Big Three display
-  const bigThreeSigns = userData ? [
-    { type: '☀️ Sun', sign: userData.sunSign, info: getSignInfo(userData.sunSign, t) },
-    { type: '🌙 Moon', sign: userData.moonSign, info: getSignInfo(userData.moonSign, t) },
-    { type: '🌅 Rising', sign: userData.risingSign, info: getSignInfo(userData.risingSign, t) },
-  ] : [];
-
-  if (loading || !userData) {
-    return (
-      <div className="screen-container profile profile-screen">
-        <div className="profile-loading">
-          <div className="loading-glyph">✦</div>
-          <span>{t('profile.loading')}</span>
-        </div>
-      </div>
-    );
+  // ✅ AppLoader — ბრენდირებული ლოადინგი (ძველი loading-ის ნაცვლად)
+  if (userLoading || !userData) {
+    return <AppLoader isLoading={true} context="profile" />;
   }
 
   const zodiacName = userData.zodiac ? t(`zodiac.${userData.zodiac.charAt(0).toUpperCase() + userData.zodiac.slice(1)}`) : '';
@@ -613,7 +561,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
               ))}
             </div>
 
-            {/* ✨ BIRTH CHART DISPLAY - Big Three */}
             <section className="panel animate-fade-in stagger-2">
               <div className="panel-head">
                 <h3 className="panel-title">✨ YOUR COSMIC BLUEPRINT</h3>
@@ -627,13 +574,11 @@ export default function ProfileScreen({ onNavigate }: Props) {
                   {bigThreeSigns.map((item, index) => (
                     <div key={index} className="big-three-card">
                       <div className="sign-image-wrapper">
-                        <img 
+                        <img
                           src={getSignImageUrl(item.sign)}
                           alt={item.sign || 'Unknown'}
                           className="sign-image"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                          }}
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                         />
                       </div>
                       <div className="sign-info">
@@ -651,7 +596,6 @@ export default function ProfileScreen({ onNavigate }: Props) {
                   ))}
                 </div>
 
-                {/* Birth Info Strip */}
                 {(userData.birthDate || userData.birthTime || userData.birthPlace) && (
                   <div className="birth-info-strip">
                     {userData.birthDate && (
@@ -776,46 +720,22 @@ export default function ProfileScreen({ onNavigate }: Props) {
               <div className="setting-row setting-row--compact">
                 <span className="setting-row-icon"><Bell size={16} /></span>
                 <span className="setting-row-label">{t('settings.pushNotifications')}</span>
-                <button 
-                  className={`toggle-switch toggle-switch--small ${notifications.push ? 'is-active' : ''}`}
-                  onClick={() => handleNotificationToggle('push')}
-                  aria-label="Toggle push notifications"
-                >
-                  <span className="toggle-knob" />
-                </button>
+                <button className={`toggle-switch toggle-switch--small ${notifications.push ? 'is-active' : ''}`} onClick={() => handleNotificationToggle('push')} aria-label="Toggle push notifications"><span className="toggle-knob" /></button>
               </div>
               <div className="setting-row setting-row--compact">
                 <span className="setting-row-icon"><Mail size={16} /></span>
                 <span className="setting-row-label">{t('settings.emailNotifications')}</span>
-                <button 
-                  className={`toggle-switch toggle-switch--small ${notifications.email ? 'is-active' : ''}`}
-                  onClick={() => handleNotificationToggle('email')}
-                  aria-label="Toggle email notifications"
-                >
-                  <span className="toggle-knob" />
-                </button>
+                <button className={`toggle-switch toggle-switch--small ${notifications.email ? 'is-active' : ''}`} onClick={() => handleNotificationToggle('email')} aria-label="Toggle email notifications"><span className="toggle-knob" /></button>
               </div>
               <div className="setting-row setting-row--compact">
                 <span className="setting-row-icon"><Sun size={16} /></span>
                 <span className="setting-row-label">{t('settings.dailyHoroscope')}</span>
-                <button 
-                  className={`toggle-switch toggle-switch--small ${notifications.dailyHoroscope ? 'is-active' : ''}`}
-                  onClick={() => handleNotificationToggle('dailyHoroscope')}
-                  aria-label="Toggle daily horoscope"
-                >
-                  <span className="toggle-knob" />
-                </button>
+                <button className={`toggle-switch toggle-switch--small ${notifications.dailyHoroscope ? 'is-active' : ''}`} onClick={() => handleNotificationToggle('dailyHoroscope')} aria-label="Toggle daily horoscope"><span className="toggle-knob" /></button>
               </div>
               <div className="setting-row setting-row--compact">
                 <span className="setting-row-icon"><Moon size={16} /></span>
                 <span className="setting-row-label">{t('settings.moonPhaseAlerts')}</span>
-                <button 
-                  className={`toggle-switch toggle-switch--small ${notifications.moonPhase ? 'is-active' : ''}`}
-                  onClick={() => handleNotificationToggle('moonPhase')}
-                  aria-label="Toggle moon phase alerts"
-                >
-                  <span className="toggle-knob" />
-                </button>
+                <button className={`toggle-switch toggle-switch--small ${notifications.moonPhase ? 'is-active' : ''}`} onClick={() => handleNotificationToggle('moonPhase')} aria-label="Toggle moon phase alerts"><span className="toggle-knob" /></button>
               </div>
             </div>
 
@@ -866,7 +786,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
         )}
       </div>
 
-      {/* 🆕 Extended and refined Debug Panel */}
+      {/* Debug Panel */}
       {isUserAdmin && showDebug && (
         <div className="debug-panel">
           <div className="debug-head">
@@ -880,15 +800,15 @@ export default function ProfileScreen({ onNavigate }: Props) {
             <div className="debug-section">
               <h4>📡 System Status</h4>
               <div className="debug-item">
-                <span>Supabase:</span> 
+                <span>Supabase:</span>
                 <code style={{ color: supabase ? '#10b981' : '#ef4444' }}>
                   {supabase ? '✅ Connected' : '❌ Disconnected'}
                 </code>
               </div>
               <div className="debug-item">
-                <span>Telegram WebApp:</span> 
+                <span>Telegram WebApp:</span>
                 <code style={{ color: isTgDetected ? '#10b981' : '#fbbf24' }}>
-                  {isTgDetected ? '✅ Detected' : '⚠️ Not Detected (Browser?)'}
+                  {isTgDetected ? '✅ Detected' : '⚠️ Not Detected'}
                 </code>
               </div>
             </div>
@@ -899,11 +819,11 @@ export default function ProfileScreen({ onNavigate }: Props) {
               <div className="debug-item"><span>Name:</span> <code>{userData.displayName}</code></div>
               <div className="debug-item"><span>Plan:</span> <code>{userData.currentPlan}</code></div>
             </div>
-            
+
             <div className="debug-section">
               <h4>🔔 Notifications & DB</h4>
               <div className="debug-item">
-                <span>Last Action:</span> 
+                <span>Last Action:</span>
                 <code style={{ color: lastDbAction.includes('Error') || lastDbAction.includes('⚠️') ? '#ef4444' : '#10b981', fontSize: '9px' }}>
                   {lastDbAction}
                 </code>
@@ -927,31 +847,22 @@ export default function ProfileScreen({ onNavigate }: Props) {
                     {preferencesData?.telegram_chat_id || 'Not Found!'}
                   </code>
                 </div>
-                
-                <button 
+
+                <button
                   onClick={testSendNotification}
                   disabled={isTestingNotification || !preferencesData?.telegram_chat_id}
                   style={{
-                    width: '100%',
-                    padding: '8px',
+                    width: '100%', padding: '8px',
                     background: isTestingNotification ? 'rgba(251, 191, 36, 0.3)' : (!preferencesData?.telegram_chat_id ? 'rgba(100, 116, 139, 0.3)' : 'rgba(16, 185, 129, 0.3)'),
                     border: `1px solid ${isTestingNotification ? '#fbbf24' : (!preferencesData?.telegram_chat_id ? '#64748b' : '#10b981')}`,
                     borderRadius: '6px',
                     color: isTestingNotification ? '#fbbf24' : (!preferencesData?.telegram_chat_id ? '#94a3b8' : '#10b981'),
                     cursor: (isTestingNotification || !preferencesData?.telegram_chat_id) ? 'not-allowed' : 'pointer',
-                    fontSize: '11px',
-                    fontWeight: 'bold',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px'
+                    fontSize: '11px', fontWeight: 'bold',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
                   }}
                 >
-                  {isTestingNotification ? (
-                    <><RefreshCw size={12} className="spin" /> Sending...</>
-                  ) : (
-                    <><Bell size={12} /> Send Test Notification</>
-                  )}
+                  {isTestingNotification ? (<><RefreshCw size={12} className="spin" /> Sending...</>) : (<><Bell size={12} /> Send Test Notification</>)}
                 </button>
 
                 {testResult && (
@@ -959,17 +870,13 @@ export default function ProfileScreen({ onNavigate }: Props) {
                     padding: '8px',
                     background: testResult.success ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
                     border: `1px solid ${testResult.success ? '#10b981' : '#ef4444'}`,
-                    borderRadius: '6px',
-                    fontSize: '10px',
+                    borderRadius: '6px', fontSize: '10px',
                     color: testResult.success ? '#10b981' : '#ef4444',
                     wordBreak: 'break-word'
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                       <strong>{testResult.success ? '✅ Success' : '❌ Error'}</strong>
-                      <button 
-                        onClick={() => setTestResult(null)}
-                        style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: 0 }}
-                      >
+                      <button onClick={() => setTestResult(null)} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: 0 }}>
                         <Trash2 size={12} />
                       </button>
                     </div>
