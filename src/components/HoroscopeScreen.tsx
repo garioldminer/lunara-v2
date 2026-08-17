@@ -131,7 +131,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [horoscope, loading, user, activeTab, userSign]);
 
-  // ✅ ადრეული return — sun_sign არ არის. (ScreenLoader-ის გარეთ)
+  // ✅ ადრეული return — sun_sign არ არის (ScreenLoader-ის გარეთ)
   if (!user?.sun_sign) return <SignSelectionScreen onNavigate={onNavigate} />;
 
   // ✅ მთავარი return — ScreenLoader wrap-ავს ყველაფერს
@@ -370,17 +370,6 @@ function HoroscopeContent(props: HoroscopeContentProps) {
         <div className="horoscope-scroll-area">
           <AnimatePresence>
             {toast && <ToastNotification toast={toast} onClose={() => setToast(null)} />}
-          </AnimatePresence>
-
-          <AnimatePresence>
-            {refreshing && (
-              <motion.div className="refreshing-indicator" initial={{ opacity: 0, y: -50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -50 }} transition={{ type: 'spring', damping: 20, stiffness: 300 }}>
-                <motion.div className="refreshing-icon" animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>
-                  <RotateCcw size={14} />
-                </motion.div>
-                <span>Updating cosmic energies...</span>
-              </motion.div>
-            )}
           </AnimatePresence>
 
           <div className="horoscope-content premium-content">
