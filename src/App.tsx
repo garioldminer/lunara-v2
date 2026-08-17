@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { supabase } from './lib/supabase';
 import { logger } from './lib/logger';
 import { applyPlatformTokens } from './lib/platform';
+import { queryClient, initSessionGuard } from './lib/queryClient';
 import SplashScreen from './components/SplashScreen';
 import OnboardingWelcome from './components/OnboardingWelcome';
 import OnboardingZodiac from './components/OnboardingZodiac';
@@ -120,7 +122,6 @@ function AppContent() {
 
   // 🎯 PLATFORM DETECTION + CSS TOKENS (ერთხელ, აპის გაშვებისას)
   useEffect(() => {
-    // პლატფორმის იდენტიფიკაცია + tokens-ების დაყენება <html>-ზე
     applyPlatformTokens();
 
     const tg = (window as any).Telegram?.WebApp;
@@ -130,22 +131,17 @@ function AppContent() {
       if (typeof tg.setBackgroundColor === 'function') tg.setBackgroundColor('#0a0600');
       if (typeof tg.expand === 'function') tg.expand();
 
-      // ✅ FIX: დინამიური ზედა offset — აპი თავად ზომავს
-      // Telegram-ის ელემენტების (status bar + Close/header) სიმაღლეს
       const applyTopInset = () => {
         const content = tg.contentSafeAreaInset?.top;
         const safe = tg.safeAreaInset?.top;
         
         if (typeof content === 'number' && content > 0) {
-          // ✅ Telegram-ის ზუსტი მნიშვნელობა
           document.documentElement.style.setProperty('--tg-top-inset', `${content}px`);
           logger.log(`📐 [TopInset] contentSafeAreaInset: ${content}px`);
         } else if (typeof safe === 'number' && safe > 0) {
-          // ✅ Fallback: notch + header bar
           document.documentElement.style.setProperty('--tg-top-inset', `${safe + 48}px`);
           logger.log(`📐 [TopInset] safeAreaInset + 48: ${safe + 48}px`);
         } else {
-          // ✅ კრიტიკული: წავშალოთ ცვლადი რომ CSS fallback-მა იმუშაოს!
           document.documentElement.style.removeProperty('--tg-top-inset');
           logger.log('📐 [TopInset] SDK = 0 → CSS fallback: env() + 48px');
         }
@@ -153,7 +149,6 @@ function AppContent() {
 
       applyTopInset();
 
-      // ✅ დინამიური განახლება (ორიენტაცია / viewport ცვლილება)
       if (typeof tg.onEvent === 'function') {
         tg.onEvent('viewportChanged', applyTopInset);
         tg.onEvent('safeAreaChanged', applyTopInset);
@@ -168,6 +163,12 @@ function AppContent() {
         }
       };
     }
+  }, []);
+
+  // 🛡️ SESSION GUARD — 5+ წუთი background-ში = cache clear (ახალი ციკლი)
+  useEffect(() => {
+    const cleanup = initSessionGuard();
+    return cleanup;
   }, []);
 
   useEffect(() => {
@@ -207,7 +208,6 @@ function AppContent() {
     };
   }, [user]);
 
-  // ✅ FIX: Home გვერდზე სქროლი სრულად იბლოკება (bounce-ის ჩათვლით)
   useEffect(() => {
     if (currentScreen === 'home') {
       document.body.classList.add('home-locked');
@@ -334,13 +334,15 @@ function AppContent() {
 
 function App() {
   return (
-    <UserProvider>
-      <SettingsProvider>
-        <TranslationProvider>
-          <AppContent />
-        </TranslationProvider>
-      </SettingsProvider>
-    </UserProvider>
+    <QueryClientProvider client={queryClient}>
+      <UserProvider>
+        <SettingsProvider>
+          <TranslationProvider>
+            <AppContent />
+          </TranslationProvider>
+        </SettingsProvider>
+      </UserProvider>
+    </QueryClientProvider>
   );
 }
 
