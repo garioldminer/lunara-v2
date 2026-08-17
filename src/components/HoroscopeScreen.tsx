@@ -131,7 +131,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [horoscope, loading, user, activeTab, userSign]);
 
-  // ✅ ადრეული return — sun_sign არ არის (ScreenLoader-ის გარეთ)
+  // ✅ ადრეული return — sun_sign არ არის. (ScreenLoader-ის გარეთ)
   if (!user?.sun_sign) return <SignSelectionScreen onNavigate={onNavigate} />;
 
   // ✅ მთავარი return — ScreenLoader wrap-ავს ყველაფერს
