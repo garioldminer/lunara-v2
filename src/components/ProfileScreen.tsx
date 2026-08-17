@@ -178,6 +178,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
     let cancelled = false;
 
     const loadEconomy = async () => {
+      if (!supabase) return; // ✅ TypeScript null check
       const { data, error } = await supabase
         .from('user_economy')
         .select('xp, level, cosmic_coins, current_streak')
@@ -232,6 +233,7 @@ export default function ProfileScreen({ onNavigate }: Props) {
     let cancelled = false;
 
     const loadPreferences = async () => {
+      if (!supabase) return; // ✅ TypeScript null check
       const { data, error } = await supabase
         .from('user_preferences')
         .select('*')
