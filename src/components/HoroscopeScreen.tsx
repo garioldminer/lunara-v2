@@ -8,6 +8,7 @@ import { ArrowLeft, Moon, RotateCcw, Ruler } from 'lucide-react';
 import LoadingScreen from './LoadingScreen';
 import SignSelectionScreen from './SignSelectionScreen';
 import HoroscopeLayoutDebugger from './HoroscopeLayoutDebugger';
+import { AppLoader } from './AppLoader';
 import { logReading } from '../lib/adminService';
 import { trackQuestProgress } from '../lib/questService';
 import {
@@ -128,10 +129,11 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
   if (!user?.sun_sign) return <SignSelectionScreen onNavigate={onNavigate} />;
 
+  /* ✅ გლობალური ბრენდირებული ლოადერი — ჩნდება ლამაზი მანდალა */
   if (loading && !horoscope) {
     return (
       <>
-        <LoadingScreen message="Reading the stars" />
+        <AppLoader isLoading={true} context="horoscope" />
         {isAdmin && (
           <DebugPanel logs={debug.debugLogs} metrics={debug.performanceMetrics} diagnostics={debug.diagnostics}
             isVisible={debug.debugVisible} onToggle={() => debug.setDebugVisible(!debug.debugVisible)}
@@ -266,6 +268,9 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
   return (
     <>
+      {/* ✅ AppLoader ფონურ რეჟიმში (როცა tab იცვლება და refreshing ხდება) */}
+      <AppLoader isLoading={loading && !horoscope} context="horoscope" />
+
       <div className="horoscope-screen premium-design">
         <div className="cosmic-background" style={{ backgroundImage: `url(${BACKGROUND_IMAGE})` }} />
         <div className="aurora-layer" />
