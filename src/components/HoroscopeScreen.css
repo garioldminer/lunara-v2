@@ -629,7 +629,7 @@
   color: rgba(247, 243, 235, 0.75); letter-spacing: 1.5px; line-height: 1.1;
 }
 
-/* SCROLL — scrollbar დამალულია */
+/* SCROLL — scrollbar დამალულია, padding-top შემცირებულია */
 .rf-scroll {
   position: relative;
   z-index: 2;
@@ -638,7 +638,7 @@
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  padding-top: calc(env(safe-area-inset-top, 0px) + 92px);
+  padding-top: calc(env(safe-area-inset-top, 0px) + 102px);
   padding-bottom: 70px;
   padding-left: 16px;
   padding-right: 16px;
@@ -679,6 +679,58 @@
   transform: translateX(-3px) scale(0.92);
 }
 
+/* ✅ ENERGY OVERVIEW — back ღილაკის გვერდით, იგივე სიმაღლეზე */
+.rf-energy-overview {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 49px);
+  left: 62px;
+  right: 14px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  background: rgba(217, 182, 111, 0.08);
+  border: 1px solid rgba(217, 182, 111, 0.2);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 5;
+  box-sizing: border-box;
+}
+
+.rf-energy-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  justify-content: center;
+}
+
+.rf-energy-emoji {
+  font-size: 12px;
+}
+
+.rf-energy-level {
+  font-family: 'Cinzel', serif;
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.rf-energy-cat {
+  display: none;
+}
+
+.rf-energy-divider {
+  width: 1px;
+  height: 20px;
+  background: linear-gradient(to bottom, transparent, rgba(217, 182, 111, 0.3), transparent);
+  flex-shrink: 0;
+}
+
 .rf-header { text-align: center; margin-bottom: 24px; position: relative; }
 .rf-sign-icon { font-size: 36px; color: var(--gold); filter: drop-shadow(0 0 15px rgba(217, 182, 111, 0.6)); margin-bottom: 8px; animation: rfSignFloat 3s ease-in-out infinite; }
 @keyframes rfSignFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
@@ -693,13 +745,6 @@
 .rf-date-row { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 8px; }
 .rf-divider-line { width: 40px; height: 1px; background: linear-gradient(90deg, transparent, rgba(217, 182, 111, 0.5), transparent); }
 .rf-date { font-family: 'Cinzel', serif; font-size: 9px; font-weight: 600; color: var(--gold); letter-spacing: 1.5px; text-transform: uppercase; }
-
-.rf-energy-overview { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 16px 20px; background: rgba(217, 182, 111, 0.06); border: 1px solid rgba(217, 182, 111, 0.15); border-radius: 14px; margin-bottom: 24px; }
-.rf-energy-item { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
-.rf-energy-emoji { font-size: 16px; letter-spacing: 2px; }
-.rf-energy-level { font-family: 'Cinzel', serif; font-size: 11px; font-weight: 700; color: var(--gold); letter-spacing: 0.5px; }
-.rf-energy-cat { font-family: 'Cinzel', serif; font-size: 8px; font-weight: 600; color: rgba(247, 243, 235, 0.5); letter-spacing: 1.5px; text-transform: uppercase; }
-.rf-energy-divider { width: 1px; height: 36px; background: linear-gradient(to bottom, transparent, rgba(217, 182, 111, 0.3), transparent); }
 
 .rf-sections { display: flex; flex-direction: column; gap: 20px; margin-bottom: 24px; }
 .rf-section { padding: 18px 16px; background: rgba(217, 182, 111, 0.04); border: 1px solid rgba(217, 182, 111, 0.12); border-radius: 12px; transition: all 0.3s var(--ease-smooth); }
@@ -1092,6 +1137,19 @@ nav[class*="nav"].rf-revealed {
   .rf-topbar { padding: env(safe-area-inset-top, 0px) 56px 0; }
   .rf-topbar-sign { font-size: 12px; letter-spacing: 2px; }
   .rf-topbar-date { font-size: 7px; }
+  
+  /* ✅ Energy Overview responsive */
+  .rf-energy-overview {
+    left: 56px;
+    right: 12px;
+    height: 36px;
+    padding: 3px 8px;
+    gap: 6px;
+  }
+  .rf-energy-emoji { font-size: 11px; }
+  .rf-energy-level { font-size: 7px; }
+  .rf-energy-divider { height: 18px; }
+  
   .rf-back {
     top: calc(env(safe-area-inset-top, 0px) + 47px);
     left: 12px;
@@ -1103,7 +1161,7 @@ nav[class*="nav"].rf-revealed {
     height: 18px;
   }
   .rf-scroll {
-    padding: calc(env(safe-area-inset-top, 0px) + 90px) 16px 65px;
+    padding: calc(env(safe-area-inset-top, 0px) + 98px) 16px 65px;
   }
   .rf-accordion-header { padding: 12px 14px; }
   .rf-accordion-title { font-size: 11px; gap: 8px; }
