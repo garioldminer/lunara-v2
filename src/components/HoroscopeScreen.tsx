@@ -5,7 +5,6 @@ import { useUser } from '../context/UserContext';
 import { ZODIAC_SIGNS, BACKGROUND_IMAGE } from '../data/zodiacData';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Moon, RotateCcw, Ruler } from 'lucide-react';
-import LoadingScreen from './LoadingScreen';
 import SignSelectionScreen from './SignSelectionScreen';
 import HoroscopeLayoutDebugger from './HoroscopeLayoutDebugger';
 import { AppLoader } from './AppLoader';
