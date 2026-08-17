@@ -219,18 +219,9 @@ export function ReadFullModal({ isOpen, onClose, userSign, zodiacSymbol, safeDat
             </button>
 
             <div className="rf-scroll" ref={scrollRef}>
-              {/* HEADER */}
-              <div className="rf-header">
-                <div className="rf-sign-icon">{zodiacSymbol}</div>
-                <h1 className="rf-sign-name">{userSign.toUpperCase()}</h1>
-                <div className="rf-date-row">
-                  <span className="rf-divider-line" />
-                  <span className="rf-date">{formattedDate}</span>
-                  <span className="rf-divider-line" />
-                </div>
-              </div>
+              {/* ✅ HEADER ამოღებულია — დუბლირება აღარ არის */}
 
-              {/* ENERGY OVERVIEW */}
+              {/* ✅ პირდაპირ ENERGY OVERVIEW-დან იწყება */}
               <div className="rf-energy-overview">
                 <div className="rf-energy-item">
                   <span className="rf-energy-emoji">{getEnergyEmojis(safeString(horoscope?.cosmic_energy_level), '⚡')}</span>
