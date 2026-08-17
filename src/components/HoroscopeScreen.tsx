@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { useHoroscope } from '../hooks/useHoroscope';
+import { useHoroscopeQuery } from '../hooks/useHoroscopeQuery';
 import { useUser } from '../context/UserContext';
 import { ZODIAC_SIGNS, BACKGROUND_IMAGE } from '../data/zodiacData';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Moon, RotateCcw, Ruler } from 'lucide-react';
 import SignSelectionScreen from './SignSelectionScreen';
 import HoroscopeLayoutDebugger from './HoroscopeLayoutDebugger';
-import { AppLoader } from './AppLoader';
+import { ScreenLoader } from './ScreenLoader';
 import { logReading } from '../lib/adminService';
 import { trackQuestProgress } from '../lib/questService';
 import {
@@ -49,7 +49,12 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const loggedReadingsRef = useRef<Set<string>>(new Set());
   const isInitialLoadRef = useRef(true);
 
-  const { horoscope, loading, refreshing, error, refetch } = useHoroscope(user?.id || '', user?.sun_sign || '', activeTab);
+  // 🌙 React Query hook — memory cache + ლაივ მონაცემები
+  const { horoscope, loading, refreshing, error, refetch } = useHoroscopeQuery(
+    user?.id || '',
+    user?.sun_sign || '',
+    activeTab
+  );
 
   const debug = useHoroscopeDebug(isAdmin, user, horoscope, loading, error, activeTab);
 
@@ -126,26 +131,14 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [horoscope, loading, user, activeTab, userSign]);
 
+  // ✅ ადრეული return — sun_sign არ არის (ScreenLoader-ის გარეთ)
   if (!user?.sun_sign) return <SignSelectionScreen onNavigate={onNavigate} />;
 
-  /* ✅ გლობალური ბრენდირებული ლოადერი — ჩნდება ლამაზი მანდალა */
-  if (loading && !horoscope) {
-    return (
-      <>
-        <AppLoader isLoading={true} context="horoscope" />
-        {isAdmin && (
-          <DebugPanel logs={debug.debugLogs} metrics={debug.performanceMetrics} diagnostics={debug.diagnostics}
-            isVisible={debug.debugVisible} onToggle={() => debug.setDebugVisible(!debug.debugVisible)}
-            onCopy={() => navigator.clipboard.writeText(JSON.stringify(debug.handleCopyDebug(), null, 2))}
-            signValidation={debug.signValidation} horoscopeData={null} />
-        )}
-      </>
-    );
-  }
-
-  if (error && !horoscope) {
-    return (
-      <>
+  // ✅ მთავარი return — ScreenLoader wrap-ავს ყველაფერს
+  return (
+    <ScreenLoader isLoading={loading && !horoscope} context="horoscope">
+      {/* 🔴 ERROR STATE */}
+      {error && !horoscope ? (
         <div className="horoscope-screen">
           <div className="cosmic-background" style={{ backgroundImage: `url(${BACKGROUND_IMAGE})` }} />
           <div className="aurora-layer" />
@@ -159,19 +152,8 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
             </motion.button>
           </div>
         </div>
-        {isAdmin && (
-          <DebugPanel logs={debug.debugLogs} metrics={debug.performanceMetrics} diagnostics={debug.diagnostics}
-            isVisible={debug.debugVisible} onToggle={() => debug.setDebugVisible(!debug.debugVisible)}
-            onCopy={() => navigator.clipboard.writeText(JSON.stringify(debug.handleCopyDebug(), null, 2))}
-            signValidation={debug.signValidation} horoscopeData={null} />
-        )}
-      </>
-    );
-  }
-
-  if (!horoscope) {
-    return (
-      <>
+      ) : !horoscope ? (
+        /* 🟡 EMPTY STATE */
         <div className="horoscope-screen">
           <div className="cosmic-background" style={{ backgroundImage: `url(${BACKGROUND_IMAGE})` }} />
           <div className="aurora-layer" />
@@ -180,15 +162,106 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
             <p>The cosmos has no message for you today.</p>
           </div>
         </div>
-        {isAdmin && (
-          <DebugPanel logs={debug.debugLogs} metrics={debug.performanceMetrics} diagnostics={debug.diagnostics}
-            isVisible={debug.debugVisible} onToggle={() => debug.setDebugVisible(!debug.debugVisible)}
-            onCopy={() => navigator.clipboard.writeText(JSON.stringify(debug.handleCopyDebug(), null, 2))}
-            signValidation={debug.signValidation} horoscopeData={null} />
-        )}
-      </>
-    );
-  }
+      ) : (
+        /* 🟢 MAIN CONTENT */
+        <HoroscopeContent
+          userSign={userSign}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          horoscope={horoscope}
+          refreshing={refreshing}
+          onNavigate={onNavigate}
+          heroLeftRef={heroLeftRef}
+          subtitleRef={subtitleRef}
+          titleRef={titleRef}
+          openModal={openModal}
+          setOpenModal={setOpenModal}
+          isShareModalOpen={isShareModalOpen}
+          setIsShareModalOpen={setIsShareModalOpen}
+          isReadFullOpen={isReadFullOpen}
+          setIsReadFullOpen={setIsReadFullOpen}
+          toast={toast}
+          setToast={setToast}
+          showToast={showToast}
+        />
+      )}
+
+      {/* 🛠️ ADMIN PANELS — ყოველთვის ჩანს (loading-ის დროსაც) */}
+      {isAdmin && createPortal(
+        <button
+          onClick={() => setShowHoroDebug(true)}
+          style={{
+            position: 'fixed',
+            top: '50%',
+            right: '10px',
+            transform: 'translateY(-50%)',
+            width: 56,
+            height: 56,
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #D9B66F 0%, #F4D47C 50%, #D9B66F 100%)',
+            border: '3px solid #fff',
+            color: '#0a0600',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            zIndex: 2147483647,
+            boxShadow: '0 6px 24px rgba(217,182,111,0.9), 0 0 40px rgba(217,182,111,0.5)',
+            animation: 'horoDebugPulse 2s ease-in-out infinite',
+          }}
+          title="Horoscope Layout Debugger"
+        >
+          <Ruler size={24} strokeWidth={2.5} />
+        </button>,
+        document.body
+      )}
+
+      {isAdmin && (
+        <HoroscopeLayoutDebugger open={showHoroDebug} onClose={() => setShowHoroDebug(false)} />
+      )}
+
+      {isAdmin && (
+        <DebugPanel logs={debug.debugLogs} metrics={debug.performanceMetrics} diagnostics={debug.diagnostics}
+          isVisible={debug.debugVisible} onToggle={() => debug.setDebugVisible(!debug.debugVisible)}
+          onCopy={() => navigator.clipboard.writeText(JSON.stringify(debug.handleCopyDebug(), null, 2))}
+          signValidation={debug.signValidation} horoscopeData={horoscope} />
+      )}
+    </ScreenLoader>
+  );
+}
+
+/* ============================================
+   📦 HoroscopeContent — მთავარი კონტენტი
+   გამოყოფილია კომპონენტად სისუფთავისთვის
+   ============================================ */
+interface HoroscopeContentProps {
+  userSign: string;
+  activeTab: TabType;
+  setActiveTab: (tab: TabType) => void;
+  horoscope: any;
+  refreshing: boolean;
+  onNavigate?: (screen: string) => void;
+  heroLeftRef: React.RefObject<HTMLDivElement>;
+  subtitleRef: React.RefObject<HTMLDivElement>;
+  titleRef: React.RefObject<HTMLHeadingElement>;
+  openModal: string | null;
+  setOpenModal: (m: string | null) => void;
+  isShareModalOpen: boolean;
+  setIsShareModalOpen: (v: boolean) => void;
+  isReadFullOpen: boolean;
+  setIsReadFullOpen: (v: boolean) => void;
+  toast: { message: string; type: 'success' | 'error' | 'info' } | null;
+  setToast: (t: any) => void;
+  showToast: (message: string, type: 'success' | 'error' | 'info') => void;
+}
+
+function HoroscopeContent(props: HoroscopeContentProps) {
+  const {
+    userSign, activeTab, setActiveTab, horoscope, refreshing, onNavigate,
+    heroLeftRef, subtitleRef, titleRef,
+    openModal, setOpenModal, isShareModalOpen, setIsShareModalOpen,
+    isReadFullOpen, setIsReadFullOpen, toast, setToast, showToast,
+  } = props;
 
   const zodiacData = ZODIAC_SIGNS[userSign] || ZODIAC_SIGNS['leo'];
 
@@ -252,12 +325,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     showToast('Opening Telegram...', 'info');
   };
 
-  const handleCopyDebugPanel = () => {
-    navigator.clipboard.writeText(JSON.stringify(debug.handleCopyDebug(), null, 2))
-      .then(() => showToast('Debug data copied! 📋', 'success'))
-      .catch(() => showToast('Copy failed', 'error'));
-  };
-
   const tabs: { id: TabType; label: string }[] = [
     { id: 'today', label: 'TODAY' },
     { id: 'tomorrow', label: 'TOMORROW' },
@@ -267,9 +334,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
   return (
     <>
-      {/* ✅ AppLoader ფონურ რეჟიმში (როცა tab იცვლება და refreshing ხდება) */}
-      <AppLoader isLoading={loading && !horoscope} context="horoscope" />
-
       <div className="horoscope-screen premium-design">
         <div className="cosmic-background" style={{ backgroundImage: `url(${BACKGROUND_IMAGE})` }} />
         <div className="aurora-layer" />
@@ -337,35 +401,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         </div>
       </div>
 
-      {isAdmin && createPortal(
-        <button
-          onClick={() => setShowHoroDebug(true)}
-          style={{
-            position: 'fixed',
-            top: '50%',
-            right: '10px',
-            transform: 'translateY(-50%)',
-            width: 56,
-            height: 56,
-            borderRadius: '50%',
-            background: 'linear-gradient(135deg, #D9B66F 0%, #F4D47C 50%, #D9B66F 100%)',
-            border: '3px solid #fff',
-            color: '#0a0600',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            zIndex: 2147483647,
-            boxShadow: '0 6px 24px rgba(217,182,111,0.9), 0 0 40px rgba(217,182,111,0.5)',
-            animation: 'horoDebugPulse 2s ease-in-out infinite',
-          }}
-          title="Horoscope Layout Debugger"
-        >
-          <Ruler size={24} strokeWidth={2.5} />
-        </button>,
-        document.body
-      )}
-
       <PredictionModal openModal={openModal} horoscope={fixedHoroscope} onClose={() => setOpenModal(null)} />
 
       <ShareModal
@@ -382,16 +417,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         activeTab={activeTab} onCopyAffirmation={handleCopyAffirmation}
         onShareAffirmation={() => { setIsReadFullOpen(false); setIsShareModalOpen(true); }}
       />
-
-      {isAdmin && (
-        <HoroscopeLayoutDebugger open={showHoroDebug} onClose={() => setShowHoroDebug(false)} />
-      )}
-
-      {isAdmin && (
-        <DebugPanel logs={debug.debugLogs} metrics={debug.performanceMetrics} diagnostics={debug.diagnostics}
-          isVisible={debug.debugVisible} onToggle={() => debug.setDebugVisible(!debug.debugVisible)}
-          onCopy={handleCopyDebugPanel} signValidation={debug.signValidation} horoscopeData={horoscope} />
-      )}
     </>
   );
 }
