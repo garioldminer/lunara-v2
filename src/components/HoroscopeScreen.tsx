@@ -34,13 +34,13 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [showHoroDebug, setShowHoroDebug] = useState(false);
 
-  // 🆕 Unified Debugger states
   const [showUnifiedDebug, setShowUnifiedDebug] = useState(false);
   const [unifiedTab, setUnifiedTab] = useState<'status' | 'layout' | 'logs' | 'raw'>('status');
   const [statusData, setStatusData] = useState<any>({});
   const [statusLoading, setStatusLoading] = useState(false);
   const [statusGenerating, setStatusGenerating] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string>('');
+  const [expandedSign, setExpandedSign] = useState<string | null>(null);
 
   const ADMIN_IDS = [
     ADMIN_USER_ID,
@@ -70,7 +70,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => setToast({ message, type });
 
-  // 🆕 Status fetch + generation
   const fetchStatus = async () => {
     if (!supabase) return;
     setStatusLoading(true);
@@ -81,17 +80,31 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
       dates.push(d.toISOString().split('T')[0]);
     }
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('daily_horoscopes')
-        .select('zodiac_sign,date,ai_model_used,tokens_used,general_prediction')
-        .in('date', dates);
+        .select('zodiac_sign, date, created_at, ai_model_used, tokens_used, generation_time_ms, general_prediction, love_prediction, career_prediction, lucky_color, lucky_number, affirmation')
+        .in('date', dates)
+        .order('date', { ascending: false });
+
+      if (error) throw error;
+
       const grouped: any = {};
       ZODIAC_SIGNS_LIST.forEach(s => { grouped[s] = []; });
       (data || []).forEach((r: any) => {
-        const age = Math.floor((today.getTime() - new Date(r.date).getTime()) / (1000*60*60*24));
+        const age = Math.floor((today.getTime() - new Date(r.date + 'T00:00:00').getTime()) / (1000*60*60*24));
         grouped[r.zodiac_sign]?.push({
-          date: r.date, age, model: r.ai_model_used, tokens: r.tokens_used,
-          preview: (r.general_prediction || '').substring(0, 60)
+          date: r.date,
+          age,
+          createdAt: r.created_at,
+          model: r.ai_model_used,
+          tokens: r.tokens_used,
+          genMs: r.generation_time_ms,
+          preview: (r.general_prediction || '').substring(0, 80),
+          love: (r.love_prediction || '').substring(0, 60),
+          career: (r.career_prediction || '').substring(0, 60),
+          luckyColor: r.lucky_color,
+          luckyNumber: r.lucky_number,
+          affirmation: (r.affirmation || '').substring(0, 60)
         });
       });
       Object.keys(grouped).forEach(s => grouped[s].sort((a: any, b: any) => b.date.localeCompare(a.date)));
@@ -116,11 +129,16 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     setStatusGenerating(false);
   };
 
-  // 🆕 Copy functions for all tabs
   const copyStatus = () => {
     const data = {
       timestamp: new Date().toISOString(),
-      status: statusData
+      today: new Date().toISOString().split('T')[0],
+      summary: {
+        fresh: ZODIAC_SIGNS_LIST.filter(s => (statusData[s] || [])[0]?.age === 0).length,
+        old: ZODIAC_SIGNS_LIST.filter(s => { const l = (statusData[s] || [])[0]; return !!l && l.age > 0; }).length,
+        missing: ZODIAC_SIGNS_LIST.filter(s => (statusData[s] || []).length === 0).length
+      },
+      signs: statusData
     };
     navigator.clipboard.writeText(JSON.stringify(data, null, 2));
     showToast('Status data copied! 📋', 'success');
@@ -231,6 +249,13 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
   if (!user?.sun_sign) return <SignSelectionScreen onNavigate={onNavigate} />;
 
+  // 📊 Status stats
+  const todayStr = new Date().toISOString().split('T')[0];
+  const freshCount = ZODIAC_SIGNS_LIST.filter(s => (statusData[s] || [])[0]?.age === 0).length;
+  const oldCount = ZODIAC_SIGNS_LIST.filter(s => { const l = (statusData[s] || [])[0]; return !!l && l.age > 0; }).length;
+  const missingCount = ZODIAC_SIGNS_LIST.filter(s => (statusData[s] || []).length === 0).length;
+  const missingSigns = ZODIAC_SIGNS_LIST.filter(s => (statusData[s] || []).length === 0);
+
   return (
     <ScreenLoader isLoading={loading && !horoscope} context="horoscope">
       {error && !horoscope ? (
@@ -279,7 +304,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         />
       )}
 
-      {/* 🆕 UNIFIED DEBUGGER — ერთი 🌙 ღილაკი 4 ტაბით */}
       {isAdmin && createPortal(
         <button
           onClick={() => { setShowUnifiedDebug(true); fetchStatus(); }}
@@ -308,7 +332,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         document.body
       )}
 
-      {/* 🆕 UNIFIED DEBUGGER MODAL */}
       {isAdmin && showUnifiedDebug && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -331,7 +354,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
               background: 'linear-gradient(135deg, #1a1410, #0f0a06)',
               border: '2px solid #D9B66F',
               borderRadius: '16px',
-              width: '100%', maxWidth: '800px', maxHeight: '85vh',
+              width: '100%', maxWidth: '900px', maxHeight: '90vh',
               display: 'flex', flexDirection: 'column',
               color: '#fff',
               fontFamily: 'system-ui, sans-serif',
@@ -339,7 +362,10 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
             }}
           >
             <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(217,182,111,0.3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ margin: 0, fontSize: '18px', color: '#D9B66F', fontWeight: 'bold' }}>🌙 Horoscope Debugger</h2>
+              <div>
+                <h2 style={{ margin: 0, fontSize: '18px', color: '#D9B66F', fontWeight: 'bold' }}>🌙 Horoscope Debugger</h2>
+                <p style={{ margin: '4px 0 0', fontSize: '11px', color: '#888' }}>Today: {todayStr}</p>
+              </div>
               <button onClick={() => setShowUnifiedDebug(false)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', width: 32, height: 32, borderRadius: '50%', cursor: 'pointer' }}>
                 ✕
               </button>
@@ -365,6 +391,18 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
             <div style={{ flex: 1, overflowY: 'auto' }}>
               {unifiedTab === 'status' && (
                 <div>
+                  {/* 🆕 Summary bar */}
+                  <div style={{ padding: '10px 20px', display: 'flex', gap: '14px', fontSize: '12px', borderBottom: '1px solid rgba(217,182,111,0.15)', flexWrap: 'wrap', background: 'rgba(0,0,0,0.3)' }}>
+                    <span><span style={{ color: '#10b981' }}>●</span> Fresh today: <b style={{ color: '#10b981' }}>{freshCount}/12</b></span>
+                    <span><span style={{ color: '#f59e0b' }}>●</span> Old (fallback): <b style={{ color: '#f59e0b' }}>{oldCount}</b></span>
+                    <span><span style={{ color: '#ef4444' }}>●</span> Missing: <b style={{ color: '#ef4444' }}>{missingCount}</b></span>
+                    {missingSigns.length > 0 && missingSigns.length < 12 && (
+                      <span style={{ color: '#888', fontSize: '10px' }}>
+                        Next: <b style={{ color: '#60a5fa' }}>{missingSigns[0]}</b>
+                      </span>
+                    )}
+                  </div>
+
                   <div style={{ padding: '12px 20px', display: 'flex', gap: '8px' }}>
                     <button onClick={fetchStatus} disabled={statusLoading} style={{
                       flex: 1, padding: '10px', background: 'rgba(217,182,111,0.15)',
@@ -395,12 +433,14 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
                     <thead>
-                      <tr style={{ borderBottom: '2px solid rgba(217,182,111,0.3)' }}>
+                      <tr style={{ borderBottom: '2px solid rgba(217,182,111,0.3)', background: 'rgba(0,0,0,0.2)' }}>
                         <th style={{ padding: '8px', textAlign: 'left', color: '#D9B66F' }}>Sign</th>
                         <th style={{ padding: '8px', textAlign: 'left', color: '#D9B66F' }}>Latest</th>
                         <th style={{ padding: '8px', textAlign: 'center', color: '#D9B66F' }}>Age</th>
+                        <th style={{ padding: '8px', textAlign: 'left', color: '#D9B66F' }}>Created At</th>
                         <th style={{ padding: '8px', textAlign: 'center', color: '#D9B66F' }}>Model</th>
                         <th style={{ padding: '8px', textAlign: 'right', color: '#D9B66F' }}>Tokens</th>
+                        <th style={{ padding: '8px', textAlign: 'right', color: '#D9B66F' }}>Gen</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -408,24 +448,107 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                         const entries = statusData[sign] || [];
                         const latest = entries[0];
                         const ageColor = !latest ? '#ef4444' : latest.age === 0 ? '#10b981' : latest.age <= 2 ? '#f59e0b' : '#ef4444';
+                        const isExpanded = expandedSign === sign;
                         return (
-                          <tr key={sign} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                            <td style={{ padding: '10px 8px', fontWeight: 'bold' }}>{sign}</td>
-                            <td style={{ padding: '10px 8px', color: latest ? '#ddd' : '#666', fontSize: '10px' }}>
-                              {latest ? latest.date : <em>missing</em>}
-                            </td>
-                            <td style={{ padding: '10px 8px', textAlign: 'center' }}>
-                              <span style={{ color: ageColor, fontWeight: 'bold' }}>
-                                {latest ? `${latest.age}d` : '—'}
-                              </span>
-                            </td>
-                            <td style={{ padding: '10px 8px', textAlign: 'center', color: '#aaa', fontSize: '10px' }}>
-                              {latest?.model || '—'}
-                            </td>
-                            <td style={{ padding: '10px 8px', textAlign: 'right', color: '#aaa' }}>
-                              {latest?.tokens || '—'}
-                            </td>
-                          </tr>
+                          <>
+                            <tr
+                              key={sign + '-row'}
+                              onClick={() => setExpandedSign(isExpanded ? null : sign)}
+                              style={{
+                                borderBottom: '1px solid rgba(255,255,255,0.05)',
+                                cursor: 'pointer',
+                                background: isExpanded ? 'rgba(217,182,111,0.08)' : 'transparent',
+                                transition: 'background 0.15s'
+                              }}
+                            >
+                              <td style={{ padding: '10px 8px', fontWeight: 'bold' }}>
+                                {sign}
+                                {entries.length > 1 && (
+                                  <span style={{ color: '#888', fontSize: '9px', marginLeft: '4px' }}>
+                                    ({entries.length})
+                                  </span>
+                                )}
+                              </td>
+                              <td style={{ padding: '10px 8px', color: latest ? '#ddd' : '#666', fontSize: '10px' }}>
+                                {latest ? latest.date : <em>missing</em>}
+                              </td>
+                              <td style={{ padding: '10px 8px', textAlign: 'center' }}>
+                                <span style={{ color: ageColor, fontWeight: 'bold' }}>
+                                  {latest ? `${latest.age}d` : '—'}
+                                </span>
+                              </td>
+                              <td style={{ padding: '10px 8px', color: '#aaa', fontSize: '10px' }}>
+                                {latest?.createdAt ? (
+                                  <span title={latest.createdAt}>
+                                    {new Date(latest.createdAt).toLocaleString('en-US', {
+                                      month: 'short', day: 'numeric',
+                                      hour: '2-digit', minute: '2-digit',
+                                      hour12: false
+                                    })}
+                                  </span>
+                                ) : '—'}
+                              </td>
+                              <td style={{ padding: '10px 8px', textAlign: 'center', color: '#aaa', fontSize: '10px' }}>
+                                {latest?.model || '—'}
+                              </td>
+                              <td style={{ padding: '10px 8px', textAlign: 'right', color: '#aaa' }}>
+                                {latest?.tokens || '—'}
+                              </td>
+                              <td style={{ padding: '10px 8px', textAlign: 'right', color: '#aaa', fontSize: '10px' }}>
+                                {latest?.genMs ? `${(latest.genMs / 1000).toFixed(1)}s` : '—'}
+                              </td>
+                            </tr>
+                            {isExpanded && (
+                              <tr key={sign + '-expand'}>
+                                <td colSpan={7} style={{ padding: '10px 16px', background: 'rgba(0,0,0,0.5)', fontSize: '10px' }}>
+                                  {entries.length === 0 ? (
+                                    <div style={{ color: '#666', padding: '8px 0' }}>No data in last 7 days</div>
+                                  ) : (
+                                    <div>
+                                      <div style={{ marginBottom: '10px', paddingBottom: '10px', borderBottom: '1px dashed rgba(255,255,255,0.1)' }}>
+                                        <div style={{ color: '#D9B66F', fontSize: '11px', fontWeight: 'bold', marginBottom: '6px' }}>
+                                          📋 Current Content ({latest.date})
+                                        </div>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '4px 10px' }}>
+                                          <span style={{ color: '#888' }}>Color:</span>
+                                          <span style={{ color: '#ddd' }}>{latest.luckyColor || <em style={{ color: '#666' }}>missing</em>}</span>
+                                          <span style={{ color: '#888' }}>Number:</span>
+                                          <span style={{ color: '#ddd' }}>{latest.luckyNumber || <em style={{ color: '#666' }}>missing</em>}</span>
+                                          <span style={{ color: '#888' }}>General:</span>
+                                          <span style={{ color: '#bbb', fontStyle: 'italic' }}>"{latest.preview}..."</span>
+                                          <span style={{ color: '#888' }}>Love:</span>
+                                          <span style={{ color: '#bbb', fontStyle: 'italic' }}>"{latest.love || '—'}..."</span>
+                                          <span style={{ color: '#888' }}>Career:</span>
+                                          <span style={{ color: '#bbb', fontStyle: 'italic' }}>"{latest.career || '—'}..."</span>
+                                          <span style={{ color: '#888' }}>Affirmation:</span>
+                                          <span style={{ color: '#bbb', fontStyle: 'italic' }}>"{latest.affirmation || '—'}..."</span>
+                                        </div>
+                                      </div>
+                                      <div style={{ color: '#888', fontSize: '10px', marginBottom: '6px' }}>
+                                        📜 All versions in last 7 days ({entries.length}):
+                                      </div>
+                                      {entries.map((e: any, i: number) => (
+                                        <div key={i} style={{ padding: '6px 0', borderBottom: i < entries.length - 1 ? '1px dashed rgba(255,255,255,0.08)' : 'none' }}>
+                                          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', fontSize: '10px' }}>
+                                            <span style={{ color: '#D9B66F', fontWeight: 'bold' }}>{e.date}</span>
+                                            <span style={{ color: e.age === 0 ? '#10b981' : e.age <= 2 ? '#f59e0b' : '#ef4444' }}>
+                                              age {e.age}d
+                                            </span>
+                                            <span style={{ color: '#aaa' }}>{e.model}</span>
+                                            <span style={{ color: '#aaa' }}>{e.tokens} tok</span>
+                                            <span style={{ color: '#888' }}>gen: {e.genMs ? `${(e.genMs / 1000).toFixed(1)}s` : '—'}</span>
+                                          </div>
+                                          <div style={{ color: '#777', marginTop: '2px', fontSize: '9px' }}>
+                                            created: {e.createdAt ? new Date(e.createdAt).toLocaleString() : '—'}
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </td>
+                              </tr>
+                            )}
+                          </>
                         );
                       })}
                     </tbody>
