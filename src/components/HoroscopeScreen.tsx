@@ -94,6 +94,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           preview: (r.general_prediction || '').substring(0, 60)
         });
       });
+      Object.keys(grouped).forEach(s => grouped[s].sort((a: any, b: any) => b.date.localeCompare(a.date)));
       setStatusData(grouped);
     } catch (e: any) { setStatusMessage(`❌ ${e.message}`); }
     setStatusLoading(false);
@@ -113,6 +114,47 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
       setTimeout(fetchStatus, 1500);
     } catch (e: any) { setStatusMessage(`❌ ${e.message}`); }
     setStatusGenerating(false);
+  };
+
+  // 🆕 Copy functions for all tabs
+  const copyStatus = () => {
+    const data = {
+      timestamp: new Date().toISOString(),
+      status: statusData
+    };
+    navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+    showToast('Status data copied! 📋', 'success');
+  };
+
+  const copyLayout = () => {
+    const data = {
+      timestamp: new Date().toISOString(),
+      message: 'Layout debugger - use 📐 button to open full layout inspector'
+    };
+    navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+    showToast('Layout info copied! 📋', 'success');
+  };
+
+  const copyLogs = () => {
+    const data = {
+      timestamp: new Date().toISOString(),
+      logs: debug.debugLogs,
+      metrics: debug.performanceMetrics,
+      diagnostics: debug.diagnostics
+    };
+    navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+    showToast('Debug logs copied! 📋', 'success');
+  };
+
+  const copyRaw = () => {
+    const data = {
+      timestamp: new Date().toISOString(),
+      userSign,
+      activeTab,
+      horoscope
+    };
+    navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+    showToast('Raw data copied! 📋', 'success');
   };
 
   useEffect(() => {
@@ -335,6 +377,12 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                       border: 'none', color: '#0a0600', borderRadius: '8px',
                       cursor: 'pointer', fontSize: '12px', fontWeight: 'bold'
                     }}>{statusGenerating ? 'Generating...' : '⚡ Generate Next'}</button>
+                    <button onClick={copyStatus} style={{
+                      padding: '10px 16px',
+                      background: 'rgba(96,165,250,0.15)',
+                      border: '1px solid #60a5fa', color: '#60a5fa', borderRadius: '8px',
+                      cursor: 'pointer', fontSize: '12px', fontWeight: 'bold'
+                    }}>📋 Copy</button>
                   </div>
 
                   {statusMessage && (
@@ -388,32 +436,56 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
               {unifiedTab === 'layout' && (
                 <div style={{ padding: '40px 20px', textAlign: 'center' }}>
                   <p style={{ color: '#aaa', marginBottom: '20px' }}>Inspect hero, sections, and responsive behavior.</p>
-                  <button onClick={() => { setShowUnifiedDebug(false); setShowHoroDebug(true); }} style={{
-                    padding: '14px 32px',
-                    background: 'linear-gradient(135deg, #D9B66F, #F4D47C)',
-                    border: 'none', color: '#0a0600', borderRadius: '10px',
-                    cursor: 'pointer', fontSize: '14px', fontWeight: 'bold'
-                  }}>📐 Open Layout Debugger</button>
+                  <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                    <button onClick={() => { setShowUnifiedDebug(false); setShowHoroDebug(true); }} style={{
+                      padding: '14px 32px',
+                      background: 'linear-gradient(135deg, #D9B66F, #F4D47C)',
+                      border: 'none', color: '#0a0600', borderRadius: '10px',
+                      cursor: 'pointer', fontSize: '14px', fontWeight: 'bold'
+                    }}>📐 Open Layout Debugger</button>
+                    <button onClick={copyLayout} style={{
+                      padding: '14px 24px',
+                      background: 'rgba(96,165,250,0.15)',
+                      border: '1px solid #60a5fa', color: '#60a5fa', borderRadius: '10px',
+                      cursor: 'pointer', fontSize: '14px', fontWeight: 'bold'
+                    }}>📋 Copy Info</button>
+                  </div>
                 </div>
               )}
 
               {unifiedTab === 'logs' && (
                 <div style={{ padding: '40px 20px', textAlign: 'center' }}>
                   <p style={{ color: '#aaa', marginBottom: '20px' }}>See reading, quest, and performance diagnostics.</p>
-                  <button onClick={() => { setShowUnifiedDebug(false); debug.setDebugVisible(true); }} style={{
-                    padding: '14px 32px',
-                    background: 'linear-gradient(135deg, #60a5fa, #93c5fd)',
-                    border: 'none', color: '#fff', borderRadius: '10px',
-                    cursor: 'pointer', fontSize: '14px', fontWeight: 'bold'
-                  }}>📝 Open Debug Logs</button>
+                  <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                    <button onClick={() => { setShowUnifiedDebug(false); debug.setDebugVisible(true); }} style={{
+                      padding: '14px 32px',
+                      background: 'linear-gradient(135deg, #60a5fa, #93c5fd)',
+                      border: 'none', color: '#fff', borderRadius: '10px',
+                      cursor: 'pointer', fontSize: '14px', fontWeight: 'bold'
+                    }}>📝 Open Debug Logs</button>
+                    <button onClick={copyLogs} style={{
+                      padding: '14px 24px',
+                      background: 'rgba(96,165,250,0.15)',
+                      border: '1px solid #60a5fa', color: '#60a5fa', borderRadius: '10px',
+                      cursor: 'pointer', fontSize: '14px', fontWeight: 'bold'
+                    }}>📋 Copy Logs</button>
+                  </div>
                 </div>
               )}
 
               {unifiedTab === 'raw' && (
                 <div style={{ padding: '16px' }}>
-                  <h3 style={{ margin: '0 0 12px', fontSize: '14px', color: '#D9B66F' }}>
-                    Current: {userSign?.toUpperCase() || '—'} • Tab: {activeTab}
-                  </h3>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <h3 style={{ margin: 0, fontSize: '14px', color: '#D9B66F' }}>
+                      Current: {userSign?.toUpperCase() || '—'} • Tab: {activeTab}
+                    </h3>
+                    <button onClick={copyRaw} style={{
+                      padding: '8px 16px',
+                      background: 'rgba(96,165,250,0.15)',
+                      border: '1px solid #60a5fa', color: '#60a5fa', borderRadius: '6px',
+                      cursor: 'pointer', fontSize: '11px', fontWeight: 'bold'
+                    }}>📋 Copy JSON</button>
+                  </div>
                   <pre style={{
                     background: 'rgba(0,0,0,0.5)', padding: '12px', borderRadius: '8px',
                     fontSize: '10px', color: '#10b981', overflowX: 'auto',
