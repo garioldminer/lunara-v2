@@ -51,7 +51,7 @@ async function fetchHoroscope(
   }
 
   const capitalizedSign = sunSign.charAt(0).toUpperCase() + sunSign.slice(1).toLowerCase();
-  const today = getTodayString();
+
 
   console.log(`🔍 [Query] Fetching horoscope for ${capitalizedSign}`);
 
