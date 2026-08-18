@@ -4,12 +4,13 @@ import { useHoroscopeQuery } from '../hooks/useHoroscopeQuery';
 import { useUser } from '../context/UserContext';
 import { ZODIAC_SIGNS, BACKGROUND_IMAGE } from '../data/zodiacData';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Moon, RotateCcw, Ruler } from 'lucide-react';
+import { ArrowLeft, Moon, RotateCcw } from 'lucide-react';
 import SignSelectionScreen from './SignSelectionScreen';
 import HoroscopeLayoutDebugger from './HoroscopeLayoutDebugger';
 import { ScreenLoader } from './ScreenLoader';
 import { logReading } from '../lib/adminService';
 import { trackQuestProgress } from '../lib/questService';
+import { supabase } from '../lib/supabase';
 import {
   TabType, ADMIN_USER_ID, ERROR_MESSAGES, TAB_HERO_FALLBACK,
   safeString, safeExtractTransit, fixHoroscopeText, getMoonDescription
@@ -19,6 +20,8 @@ import { ToastNotification, DebugPanel } from './horoscope/DebugPanel';
 import { HeroBanner, EnergyGrid, MoonCard, PredictionsGrid } from './horoscope/HoroscopeSections';
 import { PredictionModal, ShareModal, ReadFullModal } from './horoscope/HoroscopeModals';
 import './HoroscopeScreen.css';
+
+const ZODIAC_SIGNS_LIST = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
 
 interface Props { onNavigate?: (screen: string) => void; }
 
@@ -30,6 +33,14 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const [isReadFullOpen, setIsReadFullOpen] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [showHoroDebug, setShowHoroDebug] = useState(false);
+
+  // 🆕 Unified Debugger states
+  const [showUnifiedDebug, setShowUnifiedDebug] = useState(false);
+  const [unifiedTab, setUnifiedTab] = useState<'status' | 'layout' | 'logs' | 'raw'>('status');
+  const [statusData, setStatusData] = useState<any>({});
+  const [statusLoading, setStatusLoading] = useState(false);
+  const [statusGenerating, setStatusGenerating] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string>('');
 
   const ADMIN_IDS = [
     ADMIN_USER_ID,
@@ -49,7 +60,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const loggedReadingsRef = useRef<Set<string>>(new Set());
   const isInitialLoadRef = useRef(true);
 
-  // 🌙 React Query hook — memory cache + ლაივ მონაცემები
   const { horoscope, loading, refreshing, error, refetch } = useHoroscopeQuery(
     user?.id || '',
     user?.sun_sign || '',
@@ -60,7 +70,55 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => setToast({ message, type });
 
-  /* ✅ ჭკვიანი ტექსტი — title-ის span-ზეც ამოწმებს scrollWidth-ს */
+  // 🆕 Status fetch + generation
+  const fetchStatus = async () => {
+    if (!supabase) return;
+    setStatusLoading(true);
+    const today = new Date();
+    const dates: string[] = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(today); d.setDate(d.getDate() - i);
+      dates.push(d.toISOString().split('T')[0]);
+    }
+    try {
+      const { data } = await supabase
+        .from('daily_horoscopes')
+        .select('zodiac_sign,date,ai_model_used,tokens_used,general_prediction')
+        .in('date', dates);
+      const grouped: any = {};
+      ZODIAC_SIGNS_LIST.forEach(s => { grouped[s] = []; });
+      (data || []).forEach((r: any) => {
+        const age = Math.floor((today.getTime() - new Date(r.date).getTime()) / (1000*60*60*24));
+        grouped[r.zodiac_sign]?.push({
+          date: r.date, age, model: r.ai_model_used, tokens: r.tokens_used,
+          preview: (r.general_prediction || '').substring(0, 60)
+        });
+      });
+      setStatusData(grouped);
+    } catch (e: any) { setStatusMessage(`❌ ${e.message}`); }
+    setStatusLoading(false);
+  };
+
+  const triggerGeneration = async () => {
+    setStatusGenerating(true);
+    setStatusMessage('⚡ Triggering...');
+    try {
+      const url = (import.meta as any).env?.VITE_SUPABASE_URL || 'https://eutavdhcxpfhpfsyaskb.supabase.co';
+      const key = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY;
+      const res = await fetch(`${url}/functions/v1/generate-all-horoscopes`, {
+        method: 'POST', headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' }
+      });
+      const r = await res.json();
+      setStatusMessage(r.success ? `✅ ${r.sign} (${r.progress})` : `❌ ${r.error || 'Unknown error'}`);
+      setTimeout(fetchStatus, 1500);
+    } catch (e: any) { setStatusMessage(`❌ ${e.message}`); }
+    setStatusGenerating(false);
+  };
+
+  useEffect(() => {
+    if (showUnifiedDebug && unifiedTab === 'status') fetchStatus();
+  }, [showUnifiedDebug, unifiedTab]);
+
   useEffect(() => {
     const fit = () => {
       const left = heroLeftRef.current;
@@ -95,7 +153,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); window.removeEventListener('resize', fit); };
   }, [activeTab, horoscope]);
 
-  /* ✅ ბანერების კიდეები = nav კიდეები */
   useEffect(() => {
     const apply = () => {
       const nav = document.querySelector('.bottom-nav-container') as HTMLElement;
@@ -111,7 +168,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     return () => { clearTimeout(t1); clearTimeout(t2); window.removeEventListener('resize', apply); };
   }, []);
 
-  /* ✅ Reading log + quest */
   useEffect(() => {
     if (!user || !horoscope || loading || !userSign) return;
     if (!isInitialLoadRef.current) return;
@@ -131,13 +187,10 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [horoscope, loading, user, activeTab, userSign]);
 
-  // ✅ ადრეული return — sun_sign არ არის (ScreenLoader-ის გარეთ)
   if (!user?.sun_sign) return <SignSelectionScreen onNavigate={onNavigate} />;
 
-  // ✅ მთავარი return — ScreenLoader wrap-ავს ყველაფერს
   return (
     <ScreenLoader isLoading={loading && !horoscope} context="horoscope">
-      {/* 🔴 ERROR STATE */}
       {error && !horoscope ? (
         <div className="horoscope-screen">
           <div className="cosmic-background" style={{ backgroundImage: `url(${BACKGROUND_IMAGE})` }} />
@@ -153,7 +206,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           </div>
         </div>
       ) : !horoscope ? (
-        /* 🟡 EMPTY STATE */
         <div className="horoscope-screen">
           <div className="cosmic-background" style={{ backgroundImage: `url(${BACKGROUND_IMAGE})` }} />
           <div className="aurora-layer" />
@@ -163,7 +215,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           </div>
         </div>
       ) : (
-        /* 🟢 MAIN CONTENT */
         <HoroscopeContent
           userSign={userSign}
           activeTab={activeTab}
@@ -186,10 +237,10 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         />
       )}
 
-      {/* 🛠️ ADMIN PANELS — ყოველთვის ჩანს (loading-ის დროსაც) */}
+      {/* 🆕 UNIFIED DEBUGGER — ერთი 🌙 ღილაკი 4 ტაბით */}
       {isAdmin && createPortal(
         <button
-          onClick={() => setShowHoroDebug(true)}
+          onClick={() => { setShowUnifiedDebug(true); fetchStatus(); }}
           style={{
             position: 'fixed',
             top: '50%',
@@ -198,22 +249,183 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
             width: 56,
             height: 56,
             borderRadius: '50%',
-            background: 'linear-gradient(135deg, #D9B66F 0%, #F4D47C 50%, #D9B66F 100%)',
+            background: 'linear-gradient(135deg, #60a5fa 0%, #D9B66F 50%, #60a5fa 100%)',
             border: '3px solid #fff',
-            color: '#0a0600',
+            color: '#fff',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
             zIndex: 2147483647,
-            boxShadow: '0 6px 24px rgba(217,182,111,0.9), 0 0 40px rgba(217,182,111,0.5)',
-            animation: 'horoDebugPulse 2s ease-in-out infinite',
+            boxShadow: '0 6px 24px rgba(96,165,250,0.7), 0 6px 24px rgba(217,182,111,0.5)',
           }}
-          title="Horoscope Layout Debugger"
+          title="Unified Horoscope Debugger"
         >
-          <Ruler size={24} strokeWidth={2.5} />
+          <Moon size={24} strokeWidth={2.5} />
         </button>,
         document.body
+      )}
+
+      {/* 🆕 UNIFIED DEBUGGER MODAL */}
+      {isAdmin && showUnifiedDebug && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={() => setShowUnifiedDebug(false)}
+          style={{
+            position: 'fixed', inset: 0,
+            background: 'rgba(0,0,0,0.85)',
+            zIndex: 99998,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '20px'
+          }}
+        >
+          <motion.div
+            initial={{ scale: 0.95 }}
+            animate={{ scale: 1 }}
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: 'linear-gradient(135deg, #1a1410, #0f0a06)',
+              border: '2px solid #D9B66F',
+              borderRadius: '16px',
+              width: '100%', maxWidth: '800px', maxHeight: '85vh',
+              display: 'flex', flexDirection: 'column',
+              color: '#fff',
+              fontFamily: 'system-ui, sans-serif',
+              overflow: 'hidden'
+            }}
+          >
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(217,182,111,0.3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ margin: 0, fontSize: '18px', color: '#D9B66F', fontWeight: 'bold' }}>🌙 Horoscope Debugger</h2>
+              <button onClick={() => setShowUnifiedDebug(false)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', width: 32, height: 32, borderRadius: '50%', cursor: 'pointer' }}>
+                ✕
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', borderBottom: '1px solid rgba(217,182,111,0.2)' }}>
+              {([
+                { id: 'status', label: '📊 Status' },
+                { id: 'layout', label: '📐 Layout' },
+                { id: 'logs', label: '📝 Logs' },
+                { id: 'raw', label: '🔍 Raw' }
+              ] as const).map(t => (
+                <button key={t.id} onClick={() => setUnifiedTab(t.id)} style={{
+                  flex: 1, padding: '12px', border: 'none', cursor: 'pointer',
+                  background: unifiedTab === t.id ? 'rgba(217,182,111,0.15)' : 'transparent',
+                  color: unifiedTab === t.id ? '#D9B66F' : '#888',
+                  fontSize: '12px', fontWeight: unifiedTab === t.id ? 'bold' : 'normal',
+                  borderBottom: unifiedTab === t.id ? '2px solid #D9B66F' : '2px solid transparent'
+                }}>{t.label}</button>
+              ))}
+            </div>
+
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              {unifiedTab === 'status' && (
+                <div>
+                  <div style={{ padding: '12px 20px', display: 'flex', gap: '8px' }}>
+                    <button onClick={fetchStatus} disabled={statusLoading} style={{
+                      flex: 1, padding: '10px', background: 'rgba(217,182,111,0.15)',
+                      border: '1px solid #D9B66F', color: '#D9B66F', borderRadius: '8px',
+                      cursor: 'pointer', fontSize: '12px', fontWeight: 'bold'
+                    }}>{statusLoading ? 'Loading...' : '🔄 Refresh'}</button>
+                    <button onClick={triggerGeneration} disabled={statusGenerating} style={{
+                      flex: 1, padding: '10px',
+                      background: 'linear-gradient(135deg, #D9B66F, #F4D47C)',
+                      border: 'none', color: '#0a0600', borderRadius: '8px',
+                      cursor: 'pointer', fontSize: '12px', fontWeight: 'bold'
+                    }}>{statusGenerating ? 'Generating...' : '⚡ Generate Next'}</button>
+                  </div>
+
+                  {statusMessage && (
+                    <div style={{
+                      padding: '8px 20px', fontSize: '12px',
+                      background: statusMessage.startsWith('✅') ? 'rgba(16,185,129,0.15)' : 'rgba(251,191,36,0.15)',
+                      color: statusMessage.startsWith('✅') ? '#10b981' : '#fbbf24'
+                    }}>{statusMessage}</div>
+                  )}
+
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '2px solid rgba(217,182,111,0.3)' }}>
+                        <th style={{ padding: '8px', textAlign: 'left', color: '#D9B66F' }}>Sign</th>
+                        <th style={{ padding: '8px', textAlign: 'left', color: '#D9B66F' }}>Latest</th>
+                        <th style={{ padding: '8px', textAlign: 'center', color: '#D9B66F' }}>Age</th>
+                        <th style={{ padding: '8px', textAlign: 'center', color: '#D9B66F' }}>Model</th>
+                        <th style={{ padding: '8px', textAlign: 'right', color: '#D9B66F' }}>Tokens</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {ZODIAC_SIGNS_LIST.map(sign => {
+                        const entries = statusData[sign] || [];
+                        const latest = entries[0];
+                        const ageColor = !latest ? '#ef4444' : latest.age === 0 ? '#10b981' : latest.age <= 2 ? '#f59e0b' : '#ef4444';
+                        return (
+                          <tr key={sign} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                            <td style={{ padding: '10px 8px', fontWeight: 'bold' }}>{sign}</td>
+                            <td style={{ padding: '10px 8px', color: latest ? '#ddd' : '#666', fontSize: '10px' }}>
+                              {latest ? latest.date : <em>missing</em>}
+                            </td>
+                            <td style={{ padding: '10px 8px', textAlign: 'center' }}>
+                              <span style={{ color: ageColor, fontWeight: 'bold' }}>
+                                {latest ? `${latest.age}d` : '—'}
+                              </span>
+                            </td>
+                            <td style={{ padding: '10px 8px', textAlign: 'center', color: '#aaa', fontSize: '10px' }}>
+                              {latest?.model || '—'}
+                            </td>
+                            <td style={{ padding: '10px 8px', textAlign: 'right', color: '#aaa' }}>
+                              {latest?.tokens || '—'}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {unifiedTab === 'layout' && (
+                <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+                  <p style={{ color: '#aaa', marginBottom: '20px' }}>Inspect hero, sections, and responsive behavior.</p>
+                  <button onClick={() => { setShowUnifiedDebug(false); setShowHoroDebug(true); }} style={{
+                    padding: '14px 32px',
+                    background: 'linear-gradient(135deg, #D9B66F, #F4D47C)',
+                    border: 'none', color: '#0a0600', borderRadius: '10px',
+                    cursor: 'pointer', fontSize: '14px', fontWeight: 'bold'
+                  }}>📐 Open Layout Debugger</button>
+                </div>
+              )}
+
+              {unifiedTab === 'logs' && (
+                <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+                  <p style={{ color: '#aaa', marginBottom: '20px' }}>See reading, quest, and performance diagnostics.</p>
+                  <button onClick={() => { setShowUnifiedDebug(false); debug.setDebugVisible(true); }} style={{
+                    padding: '14px 32px',
+                    background: 'linear-gradient(135deg, #60a5fa, #93c5fd)',
+                    border: 'none', color: '#fff', borderRadius: '10px',
+                    cursor: 'pointer', fontSize: '14px', fontWeight: 'bold'
+                  }}>📝 Open Debug Logs</button>
+                </div>
+              )}
+
+              {unifiedTab === 'raw' && (
+                <div style={{ padding: '16px' }}>
+                  <h3 style={{ margin: '0 0 12px', fontSize: '14px', color: '#D9B66F' }}>
+                    Current: {userSign?.toUpperCase() || '—'} • Tab: {activeTab}
+                  </h3>
+                  <pre style={{
+                    background: 'rgba(0,0,0,0.5)', padding: '12px', borderRadius: '8px',
+                    fontSize: '10px', color: '#10b981', overflowX: 'auto',
+                    maxHeight: '500px', whiteSpace: 'pre-wrap', wordBreak: 'break-all'
+                  }}>
+                    {horoscope ? JSON.stringify(horoscope, null, 2) : 'No horoscope loaded'}
+                  </pre>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </motion.div>
       )}
 
       {isAdmin && (
@@ -230,10 +442,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   );
 }
 
-/* ============================================
-   📦 HoroscopeContent — მთავარი კონტენტი
-   გამოყოფილია კომპონენტად სისუფთავისთვის
-   ============================================ */
 interface HoroscopeContentProps {
   userSign: string;
   activeTab: TabType;
