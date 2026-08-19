@@ -1,5 +1,4 @@
 import { ReactNode } from 'react';
-import { AppLoader } from './AppLoader';
 
 type LoaderContext = 'horoscope' | 'tarot' | 'astro' | 'numerology' | 'profile' | 'default';
 
@@ -11,28 +10,18 @@ interface ScreenLoaderProps {
 }
 
 /**
- * 🌙 ScreenLoader — უნივერსალური wrapper ყველა გვერდისთვის.
+ * 🌙 ScreenLoader — loader გამორთულია
  *
- * ლოგიკა:
- * ─ isLoading=true  → AppLoader (მანდალა) ჩანს,
- *   children რჩება mounted მაგრამ უხილავი
- *   (მონაცემები იტვირთება ფონში, layout მზადდება)
- * ─ isLoading=false → AppLoader გლუვად ქრება (exit ანიმაცია),
- *   children ჩანს — ეკრანი უკვე "მოერგა"
+ * რატომ:
+ * ─ ძველი AppLoader exit animation (0.5s) ანელებდა გვერდის გახსნას
+ * ─ useHoroscopeQuery-ს აქვს 2-წუთიანი cache (staleTime: 2min)
+ * ─ fetch ~200ms-ში სრულდება — loader ზედმეტია
+ *
+ * ქცევა:
+ * ─ children ყოველთვის ჩანს, loader-ის გარეშე
+ * ─ თუ მონაცემები ჯერ არ არის — skeleton/loading state იქნება children-ში
+ * ─ თუ cache-შია — ეგრევე ჩანს
  */
-export function ScreenLoader({ isLoading, context = 'default', children }: ScreenLoaderProps) {
-  return (
-    <>
-      <AppLoader isLoading={isLoading} context={context} />
-      <div
-        aria-hidden={isLoading}
-        style={{
-          visibility: isLoading ? 'hidden' : 'visible',
-          height: '100%',
-        }}
-      >
-        {children}
-      </div>
-    </>
-  );
+export function ScreenLoader({ children }: ScreenLoaderProps) {
+  return <>{children}</>;
 }
