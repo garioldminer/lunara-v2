@@ -16,14 +16,15 @@ interface HeroBannerProps {
   titleRef: Ref<HTMLHeadingElement>;
 }
 
+/**
+ * 🌙 HeroBanner — entrance animation მოცილებულია.
+ * loader-ის გაქრობისას გვერდი მყისიერად, სრულად ჩანს.
+ */
 export function HeroBanner({ activeTab, refreshing, userSign, heroTitle, onReadFull, heroLeftRef, subtitleRef, titleRef }: HeroBannerProps) {
   const zodiacData = ZODIAC_SIGNS[userSign] || ZODIAC_SIGNS['leo'];
   return (
-    <motion.div
+    <div
       className="premium-hero-banner"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
       style={{ opacity: refreshing ? 0.7 : 1 }}
     >
       <div className="premium-hero-cosmic-bg">
@@ -40,11 +41,11 @@ export function HeroBanner({ activeTab, refreshing, userSign, heroTitle, onReadF
           <span className="subtitle-star">✦</span>
         </div>
 
-        {/* ✅ span wrapper-ით white-space: nowrap იმუშავებს */}
         <h2 className="premium-hero-title" ref={titleRef}>
           <span>{heroTitle}</span>
         </h2>
 
+        {/* ინტერაქციული hover/tap დავტოვეთ — ეს კარგია */}
         <motion.button
           className="premium-read-full-btn"
           whileHover={{ scale: 1.02, x: 3 }}
@@ -56,12 +57,8 @@ export function HeroBanner({ activeTab, refreshing, userSign, heroTitle, onReadF
       </div>
 
       <div className="premium-hero-right">
-        <motion.div
-          className="premium-tarot-card"
-          initial={{ opacity: 0, rotateY: -20, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, rotateY: 0, scale: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 1, ease: "easeOut" }}
-        >
+        {/* CSS cardFloat animation მუშაობს — entrance აღარ არის */}
+        <div className="premium-tarot-card">
           <div className="premium-card-glow" />
           <div className="premium-card-frame">
             <div className="premium-card-inner">
@@ -71,15 +68,15 @@ export function HeroBanner({ activeTab, refreshing, userSign, heroTitle, onReadF
               <div className="premium-card-sign-name">{userSign.toUpperCase()}</div>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
-function EnergyCard({ type, icon, level, subtitle, delay }: { type: string; icon: React.ReactNode; level: string; subtitle: string; delay: number }) {
+function EnergyCard({ type, icon, level, subtitle }: { type: string; icon: React.ReactNode; level: string; subtitle: string }) {
   return (
-    <motion.div className={`premium-energy-card ${type}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay }}>
+    <div className={`premium-energy-card ${type}`}>
       <div className="premium-energy-icon">{icon}</div>
       <p className="premium-energy-level">{safeString(level || 'MEDIUM').toUpperCase()}</p>
       <p className="premium-energy-subtitle">{subtitle}</p>
@@ -90,23 +87,23 @@ function EnergyCard({ type, icon, level, subtitle, delay }: { type: string; icon
           return <div key={i} className={`dot ${active ? 'active' : ''}`} />;
         })}
       </div>
-    </motion.div>
+    </div>
   );
 }
 
 export function EnergyGrid({ horoscope }: { horoscope: any }) {
   return (
     <div className="premium-energy-grid">
-      <EnergyCard type="energy" icon={<Zap size={32} />} level={horoscope?.cosmic_energy_level} subtitle="Energy" delay={0.1} />
-      <EnergyCard type="love" icon={<Heart size={32} />} level={horoscope?.love_energy_level} subtitle="Emotions" delay={0.2} />
-      <EnergyCard type="career" icon={<BriefcaseIcon size={32} />} level={horoscope?.career_energy_level} subtitle="Opportunities" delay={0.3} />
+      <EnergyCard type="energy" icon={<Zap size={32} />} level={horoscope?.cosmic_energy_level} subtitle="Energy" />
+      <EnergyCard type="love" icon={<Heart size={32} />} level={horoscope?.love_energy_level} subtitle="Emotions" />
+      <EnergyCard type="career" icon={<BriefcaseIcon size={32} />} level={horoscope?.career_energy_level} subtitle="Opportunities" />
     </div>
   );
 }
 
 export function MoonCard({ horoscope, moonDescription }: { horoscope: any; moonDescription: string }) {
   return (
-    <motion.div className="premium-moon-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+    <div className="premium-moon-card">
       <div className="premium-moon-image-container">
         <div className="premium-moon-image" />
       </div>
@@ -116,28 +113,28 @@ export function MoonCard({ horoscope, moonDescription }: { horoscope: any; moonD
         <p className="premium-moon-sign">IN {safeString(horoscope?.moon_sign).toUpperCase()}</p>
         <p className="premium-moon-desc">{moonDescription}</p>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
-function PredictionCard({ type, icon, label, subtitle, delay, onClick }: { type: string; icon: React.ReactNode; label: string; subtitle: string; delay: number; onClick: () => void }) {
+function PredictionCard({ type, icon, label, subtitle, onClick }: { type: string; icon: React.ReactNode; label: string; subtitle: string; onClick: () => void }) {
   return (
-    <motion.div className={`premium-prediction-card ${type}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay }} onClick={onClick} whileHover={{ y: -5, scale: 1.02 }}>
+    <div className={`premium-prediction-card ${type}`} onClick={onClick}>
       <div className="premium-prediction-icon">{icon}</div>
       <h4>{label}</h4>
       <p>{subtitle}</p>
-    </motion.div>
+    </div>
   );
 }
 
 export function PredictionsGrid({ safeDate, onSelect }: { safeDate: string; onSelect: (key: string) => void }) {
   return (
     <div className="premium-predictions-grid">
-      <PredictionCard type="general" icon={<Sparkles size={28} />} label="GENERAL" subtitle={getPredictionSubtitle('general', safeDate)} delay={0.5} onClick={() => onSelect('general')} />
-      <PredictionCard type="love" icon={<Heart size={28} />} label="LOVE" subtitle={getPredictionSubtitle('love', safeDate)} delay={0.6} onClick={() => onSelect('love')} />
-      <PredictionCard type="career" icon={<BriefcaseIcon size={28} />} label="CAREER" subtitle={getPredictionSubtitle('career', safeDate)} delay={0.7} onClick={() => onSelect('career')} />
-      <PredictionCard type="health" icon={<Activity size={28} />} label="HEALTH" subtitle={getPredictionSubtitle('health', safeDate)} delay={0.8} onClick={() => onSelect('health')} />
-      <PredictionCard type="finance" icon={<DollarSign size={28} />} label="FINANCE" subtitle={getPredictionSubtitle('finance', safeDate)} delay={0.9} onClick={() => onSelect('finance')} />
+      <PredictionCard type="general" icon={<Sparkles size={28} />} label="GENERAL" subtitle={getPredictionSubtitle('general', safeDate)} onClick={() => onSelect('general')} />
+      <PredictionCard type="love" icon={<Heart size={28} />} label="LOVE" subtitle={getPredictionSubtitle('love', safeDate)} onClick={() => onSelect('love')} />
+      <PredictionCard type="career" icon={<BriefcaseIcon size={28} />} label="CAREER" subtitle={getPredictionSubtitle('career', safeDate)} onClick={() => onSelect('career')} />
+      <PredictionCard type="health" icon={<Activity size={28} />} label="HEALTH" subtitle={getPredictionSubtitle('health', safeDate)} onClick={() => onSelect('health')} />
+      <PredictionCard type="finance" icon={<DollarSign size={28} />} label="FINANCE" subtitle={getPredictionSubtitle('finance', safeDate)} onClick={() => onSelect('finance')} />
     </div>
   );
 }
