@@ -5,12 +5,14 @@ import { TabType } from '../components/horoscope/horoscopeData';
 import type { UseHoroscopeResult } from './useHoroscope';
 
 /**
- * 🌙 useHoroscopeQuery — React Query ვერსია (Self-Healing)
+ * 🌙 useHoroscopeQuery — ოპტიმიზებული ვერსია
  *
- * ლოგიკა:
- * ─ ცდის ბოლო 7 დღეს (დღეს → გუშინ → ...)
- * ─ არცერთი არ არის? → ფონურად იძახებს generation-ს + აბრუნებს null (არა error)
- * ─ არასდროს აგდებს error-ს — გვერდი ყოველთვის იხსნება
+ * რა გაუმჯობესდა:
+ * ─ 1 query (7 sequential-ის ნაცვლად) → ~200ms, ეგრევე იხსნება
+ * ─ 2-წუთიანი cache → ტაბებზე გადასვლა = 0ms
+ * ─ ფონური განახლება → ლაივ მონაცემები
+ * ─ 7-დღიანი fallback → გვერდი ყოველთვის იხსნება
+ * ─ არასდროს აგდებს error-ს
  */
 
 const getTodayString = (): string => new Date().toISOString().split('T')[0];
@@ -21,7 +23,7 @@ const getDateString = (daysAgo: number): string => {
   return d.toISOString().split('T')[0];
 };
 
-// ✅ Throttle: ფონური generation გამოიძახება მაქს. ერთხელ 5 წუთში (spam-ის თავიდან ასაცილებლად)
+// ✅ Throttle: ფონური generation მაქს. ერთხელ 5 წუთში
 let lastTriggerTime = 0;
 
 async function triggerBackgroundGeneration() {
@@ -59,51 +61,61 @@ async function triggerBackgroundGeneration() {
   }
 }
 
+// ✅ 1 query: ბოლო 7 დღიდან უახლესი (7 sequential-ის ნაცვლად)
 async function fetchHoroscope(
   userId: string,
   sunSign: string,
   readingType: string
 ): Promise<Horoscope | null> {
   if (!userId || !sunSign || !supabase) {
-    return null; // ❌ აღარ ვაგდებთ error-ს
+    return null;
   }
 
   const capitalizedSign = sunSign.charAt(0).toUpperCase() + sunSign.slice(1).toLowerCase();
+  const today = getTodayString();
+  const weekAgo = getDateString(6);
 
-  console.log(`🔍 [Query] Fetching horoscope for ${capitalizedSign}`);
+  console.log(`🔍 [Query] Fetching ${capitalizedSign} (range: ${weekAgo} → ${today})`);
 
-  // ✅ ცადე ბოლო 7 დღე (თანმიმდევრობით: დღეს → გუშინ → ...)
-  for (let daysAgo = 0; daysAgo < 7; daysAgo++) {
-    const targetDate = getDateString(daysAgo);
+  // ✅ ერთი query — ბაზა ალაგებს, არა ფრონტენდი
+  const { data, error } = await supabase
+    .from('daily_horoscopes')
+    .select('*')
+    .ilike('zodiac_sign', capitalizedSign)
+    .gte('date', weekAgo)
+    .lte('date', today)
+    .order('date', { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
-    const { data, error } = await supabase
-      .from('daily_horoscopes')
-      .select('*')
-      .ilike('zodiac_sign', capitalizedSign)
-      .eq('date', targetDate)
-      .maybeSingle();
-
-    if (data && !error) {
-      const age = daysAgo === 0 ? 'today' : `${daysAgo}d old`;
-      console.log(`✅ [Query] Found: ${age} (${targetDate})`);
-
-      return {
-        ...data,
-        reading_type: readingType,
-        _dataAge: daysAgo // UI-სთვის: 0=დღევანდელი, 1=გუშინდელი, ...
-      } as Horoscope & { _dataAge: number };
-    }
+  if (error) {
+    console.warn(`⚠️ [Query] error: ${error.message}`);
+    return null;
   }
 
-  // ⚡ საერთოდ არ არის 7 დღეში — გამოიძახე function ფონურად
-  console.warn(`⚠️ [Query] No horoscope in last 7 days for ${capitalizedSign} → triggering generation`);
-  triggerBackgroundGeneration();
+  if (!data) {
+    console.warn(`⚠️ [Query] No horoscope in last 7 days for ${capitalizedSign} → triggering generation`);
+    triggerBackgroundGeneration();
+    return null;
+  }
 
-  return null; // ❌ error-ის ნაცვლად — null (გვერდი მაინც იხსნება)
+  // გამოვთვალოთ age (რამდენი დღის წინანდელია)
+  const age = Math.floor(
+    (new Date(today + 'T00:00:00').getTime() - new Date(data.date + 'T00:00:00').getTime())
+    / (1000 * 60 * 60 * 24)
+  );
+  
+  console.log(`✅ [Query] Found: ${data.date} (age ${age}d)`);
+
+  return {
+    ...data,
+    reading_type: readingType,
+    _dataAge: age
+  } as Horoscope & { _dataAge: number };
 }
 
 /**
- * 🎯 მთავარი hook — 100% compatible ძველ useHoroscope-თან
+ * 🎯 მთავარი hook
  */
 export function useHoroscopeQuery(
   userId: string,
@@ -119,11 +131,23 @@ export function useHoroscopeQuery(
   } = useQuery({
     queryKey: ['horoscope', userId, sunSign, readingType, getTodayString()],
     queryFn: () => fetchHoroscope(userId, sunSign, readingType),
-    staleTime: 0,
+
+    // ✅ 2 წუთი cache — ტაბებზე ეგრევე ჩანს, ფონში ახლდება
+    staleTime: 2 * 60 * 1000,
+    
+    // ✅ 10 წუთი გარანტირებული memory-ში (გასვლის მერე)
     gcTime: 10 * 60 * 1000,
-    refetchOnMount: 'always',
+
+    // ✅ mount-ზე მხოლოდ თუ stale-ა (>2 წთ) — არა ყოველ ჯერზე
+    refetchOnMount: true,
+
+    // ❌ app-switch-ზე არ ჭედოს (cache გვაქვს)
     refetchOnWindowFocus: false,
+
+    // ✅ 1 retry (self-healing-ია, არ გვჭირდება ბევრი)
     retry: 1,
+
+    // ✅ ჩართული მხოლოდ როცა ყველა პარამეტრი მზადაა
     enabled: Boolean(userId && sunSign && supabase),
   });
 
