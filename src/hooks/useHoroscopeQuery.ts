@@ -163,12 +163,15 @@ async function fetchHoroscope(
     return null;
   }
 
-  if (!data) {
+  // ✅ Unpack: handle both single object (maybeSingle) and array (limit(1))
+  const row: any = Array.isArray(data) ? data[0] : data;
+
+  if (!row) {
     console.warn(`⚠️ [Query] No ${readingType} data for ${capitalizedSign} → triggering generation`);
     
     // Self-heal: რომელი ტიპის გენერაცია ჩავრთოთ
     if (readingType === 'tomorrow') {
-      triggerBackgroundGeneration('daily'); // tomorrow-ს daily ფუნქცია აკეთებს
+      triggerBackgroundGeneration('daily');
     } else if (readingType === 'weekly') {
       triggerBackgroundGeneration('weekly');
     } else if (readingType === 'monthly') {
@@ -181,9 +184,9 @@ async function fetchHoroscope(
 
   // age გამოთვლა (დღეებში)
   let age = 0;
-  if (readingType === 'today') {
+  if (readingType === 'today' && row.date) {
     age = Math.floor(
-      (new Date(getTodayString() + 'T00:00:00').getTime() - new Date(data.date + 'T00:00:00').getTime())
+      (new Date(getTodayString() + 'T00:00:00').getTime() - new Date(row.date + 'T00:00:00').getTime())
       / (1000 * 60 * 60 * 24)
     );
   } else if (readingType === 'tomorrow') {
@@ -191,10 +194,10 @@ async function fetchHoroscope(
   }
   // weekly/monthly age არ გვჭირდება
 
-  console.log(`✅ [Query] Found ${readingType} for ${capitalizedSign}`);
+  console.log(`✅ [Query] Found ${readingType} for ${capitalizedSign} (${row.date || row.week_start || row.month_start})`);
 
   return {
-    ...data,
+    ...row,
     reading_type: readingType,
     _dataAge: age
   } as Horoscope & { _dataAge: number };
@@ -215,7 +218,6 @@ export function useHoroscopeQuery(
     error,
     refetch
   } = useQuery({
-    // ✅ queryKey-ში readingType — ყველა ტაბს თავისი cache
     queryKey: ['horoscope', userId, sunSign, readingType, getTodayString()],
     queryFn: () => fetchHoroscope(userId, sunSign, readingType),
 
