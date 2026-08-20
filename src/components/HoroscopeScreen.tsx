@@ -35,12 +35,19 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const [showHoroDebug, setShowHoroDebug] = useState(false);
 
   const [showUnifiedDebug, setShowUnifiedDebug] = useState(false);
-  const [unifiedTab, setUnifiedTab] = useState<'status' | 'layout' | 'logs' | 'raw'>('status');
+  const [unifiedTab, setUnifiedTab] = useState<'status' | 'summaries' | 'layout' | 'logs' | 'raw'>('status');
   const [statusData, setStatusData] = useState<any>({});
   const [statusLoading, setStatusLoading] = useState(false);
   const [statusGenerating, setStatusGenerating] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string>('');
   const [expandedSign, setExpandedSign] = useState<string | null>(null);
+
+  // 📅 Summaries tab state
+  const [summariesTab, setSummariesTab] = useState<'weekly' | 'monthly'>('weekly');
+  const [summariesData, setSummariesData] = useState<{ weekly: any; monthly: any }>({ weekly: {}, monthly: {} });
+  const [summariesLoading, setSummariesLoading] = useState(false);
+  const [summariesGenerating, setSummariesGenerating] = useState(false);
+  const [summariesMessage, setSummariesMessage] = useState<string>('');
 
   const ADMIN_IDS = [
     ADMIN_USER_ID,
@@ -113,6 +120,70 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     setStatusLoading(false);
   };
 
+  // 📅 Fetch weekly/monthly summaries
+  const fetchSummaries = async () => {
+    if (!supabase) return;
+    setSummariesLoading(true);
+    try {
+      const weekStart = (() => {
+        const d = new Date();
+        const day = d.getDay();
+        const diff = day === 0 ? 6 : day - 1;
+        d.setDate(d.getDate() - diff);
+        return d.toISOString().split('T')[0];
+      })();
+      const monthStart = (() => {
+        const d = new Date();
+        d.setDate(1);
+        return d.toISOString().split('T')[0];
+      })();
+
+      const [weeklyRes, monthlyRes] = await Promise.all([
+        supabase.from('weekly_summaries').select('*').eq('week_start', weekStart).order('zodiac_sign'),
+        supabase.from('monthly_summaries').select('*').eq('month_start', monthStart).order('zodiac_sign')
+      ]);
+
+      const weeklyGrouped: any = {};
+      const monthlyGrouped: any = {};
+      ZODIAC_SIGNS_LIST.forEach(s => { weeklyGrouped[s] = null; monthlyGrouped[s] = null; });
+      
+      (weeklyRes.data || []).forEach((r: any) => { weeklyGrouped[r.zodiac_sign] = r; });
+      (monthlyRes.data || []).forEach((r: any) => { monthlyGrouped[r.zodiac_sign] = r; });
+
+      setSummariesData({ weekly: weeklyGrouped, monthly: monthlyGrouped });
+      setSummariesMessage(`✅ Loaded ${Object.values(weeklyGrouped).filter(Boolean).length}/12 weekly, ${Object.values(monthlyGrouped).filter(Boolean).length}/12 monthly`);
+    } catch (e: any) {
+      setSummariesMessage(`❌ ${e.message}`);
+    }
+    setSummariesLoading(false);
+  };
+
+  // ⚡ Trigger summary generation
+  const triggerSummaryGeneration = async (type: 'weekly' | 'monthly') => {
+    setSummariesGenerating(true);
+    setSummariesMessage(`⚡ Triggering ${type}...`);
+    try {
+      const url = (import.meta as any).env?.VITE_SUPABASE_URL || 'https://eutavdhcxpfhpfsyaskb.supabase.co';
+      const res = await fetch(`${url}/functions/v1/generate-summaries?type=${type}`, { method: 'POST' });
+      const r = await res.json();
+      setSummariesMessage(r.success ? `✅ ${r.sign} (${r.progress})` : `❌ ${r.error || r.reason || 'Unknown'}`);
+      setTimeout(fetchSummaries, 2000);
+    } catch (e: any) {
+      setSummariesMessage(`❌ ${e.message}`);
+    }
+    setSummariesGenerating(false);
+  };
+
+  const copySummaries = () => {
+    const data = {
+      timestamp: new Date().toISOString(),
+      weekly: summariesData.weekly,
+      monthly: summariesData.monthly
+    };
+    navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+    showToast('Summaries data copied! 📋', 'success');
+  };
+
   const triggerGeneration = async () => {
     setStatusGenerating(true);
     setStatusMessage('⚡ Triggering...');
@@ -177,6 +248,11 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
   useEffect(() => {
     if (showUnifiedDebug && unifiedTab === 'status') fetchStatus();
+  }, [showUnifiedDebug, unifiedTab]);
+
+  useEffect(() => {
+    if (showUnifiedDebug && unifiedTab === 'summaries') fetchSummaries();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showUnifiedDebug, unifiedTab]);
 
   useEffect(() => {
@@ -374,6 +450,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
             <div style={{ display: 'flex', borderBottom: '1px solid rgba(217,182,111,0.2)' }}>
               {([
                 { id: 'status', label: '📊 Status' },
+                { id: 'summaries', label: '📅 Summaries' },
                 { id: 'layout', label: '📐 Layout' },
                 { id: 'logs', label: '📝 Logs' },
                 { id: 'raw', label: '🔍 Raw' }
@@ -382,7 +459,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                   flex: 1, padding: '12px', border: 'none', cursor: 'pointer',
                   background: unifiedTab === t.id ? 'rgba(217,182,111,0.15)' : 'transparent',
                   color: unifiedTab === t.id ? '#D9B66F' : '#888',
-                  fontSize: '12px', fontWeight: unifiedTab === t.id ? 'bold' : 'normal',
+                  fontSize: '11px', fontWeight: unifiedTab === t.id ? 'bold' : 'normal',
                   borderBottom: unifiedTab === t.id ? '2px solid #D9B66F' : '2px solid transparent'
                 }}>{t.label}</button>
               ))}
@@ -544,6 +621,147 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                                       ))}
                                     </div>
                                   )}
+                                </td>
+                              </tr>
+                            )}
+                          </>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {unifiedTab === 'summaries' && (
+                <div>
+                  {/* Sub-tabs: Weekly / Monthly */}
+                  <div style={{ display: 'flex', borderBottom: '1px solid rgba(217,182,111,0.2)', background: 'rgba(0,0,0,0.3)' }}>
+                    <button onClick={() => setSummariesTab('weekly')} style={{
+                      flex: 1, padding: '10px', border: 'none', cursor: 'pointer',
+                      background: summariesTab === 'weekly' ? 'rgba(217,182,111,0.15)' : 'transparent',
+                      color: summariesTab === 'weekly' ? '#D9B66F' : '#888',
+                      fontSize: '12px', fontWeight: summariesTab === 'weekly' ? 'bold' : 'normal'
+                    }}>📅 WEEKLY</button>
+                    <button onClick={() => setSummariesTab('monthly')} style={{
+                      flex: 1, padding: '10px', border: 'none', cursor: 'pointer',
+                      background: summariesTab === 'monthly' ? 'rgba(217,182,111,0.15)' : 'transparent',
+                      color: summariesTab === 'monthly' ? '#D9B66F' : '#888',
+                      fontSize: '12px', fontWeight: summariesTab === 'monthly' ? 'bold' : 'normal'
+                    }}>🗓️ MONTHLY</button>
+                  </div>
+
+                  {/* Stats bar */}
+                  {(() => {
+                    const current = summariesData[summariesTab];
+                    const count = Object.values(current).filter(Boolean).length;
+                    const missing = 12 - count;
+                    return (
+                      <div style={{ padding: '10px 20px', display: 'flex', gap: '14px', fontSize: '12px', borderBottom: '1px solid rgba(217,182,111,0.15)', flexWrap: 'wrap', background: 'rgba(0,0,0,0.3)' }}>
+                        <span><span style={{ color: '#10b981' }}>●</span> Generated: <b style={{ color: '#10b981' }}>{count}/12</b></span>
+                        <span><span style={{ color: '#ef4444' }}>●</span> Missing: <b style={{ color: '#ef4444' }}>{missing}</b></span>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Action buttons */}
+                  <div style={{ padding: '12px 20px', display: 'flex', gap: '8px' }}>
+                    <button onClick={fetchSummaries} disabled={summariesLoading} style={{
+                      flex: 1, padding: '10px', background: 'rgba(217,182,111,0.15)',
+                      border: '1px solid #D9B66F', color: '#D9B66F', borderRadius: '8px',
+                      cursor: 'pointer', fontSize: '12px', fontWeight: 'bold'
+                    }}>{summariesLoading ? 'Loading...' : '🔄 Refresh'}</button>
+                    <button onClick={() => triggerSummaryGeneration(summariesTab)} disabled={summariesGenerating} style={{
+                      flex: 1, padding: '10px',
+                      background: 'linear-gradient(135deg, #D9B66F, #F4D47C)',
+                      border: 'none', color: '#0a0600', borderRadius: '8px',
+                      cursor: 'pointer', fontSize: '12px', fontWeight: 'bold'
+                    }}>{summariesGenerating ? 'Generating...' : `⚡ Next ${summariesTab === 'weekly' ? 'Weekly' : 'Monthly'}`}</button>
+                    <button onClick={copySummaries} style={{
+                      padding: '10px 16px',
+                      background: 'rgba(96,165,250,0.15)',
+                      border: '1px solid #60a5fa', color: '#60a5fa', borderRadius: '8px',
+                      cursor: 'pointer', fontSize: '12px', fontWeight: 'bold'
+                    }}>📋 Copy</button>
+                  </div>
+
+                  {summariesMessage && (
+                    <div style={{
+                      padding: '8px 20px', fontSize: '12px',
+                      background: summariesMessage.startsWith('✅') ? 'rgba(16,185,129,0.15)' : summariesMessage.startsWith('⚡') ? 'rgba(96,165,250,0.15)' : 'rgba(251,191,36,0.15)',
+                      color: summariesMessage.startsWith('✅') ? '#10b981' : summariesMessage.startsWith('⚡') ? '#60a5fa' : '#fbbf24'
+                    }}>{summariesMessage}</div>
+                  )}
+
+                  {/* Table */}
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '2px solid rgba(217,182,111,0.3)', background: 'rgba(0,0,0,0.2)' }}>
+                        <th style={{ padding: '8px', textAlign: 'left', color: '#D9B66F' }}>Sign</th>
+                        <th style={{ padding: '8px', textAlign: 'left', color: '#D9B66F' }}>Hero</th>
+                        <th style={{ padding: '8px', textAlign: 'center', color: '#D9B66F' }}>Energy</th>
+                        <th style={{ padding: '8px', textAlign: 'left', color: '#D9B66F' }}>Sources</th>
+                        <th style={{ padding: '8px', textAlign: 'right', color: '#D9B66F' }}>Tok</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {ZODIAC_SIGNS_LIST.map(sign => {
+                        const entry = summariesData[summariesTab][sign];
+                        const isExpanded = expandedSign === sign + '-' + summariesTab;
+                        return (
+                          <>
+                            <tr
+                              key={sign + '-' + summariesTab + '-row'}
+                              onClick={() => setExpandedSign(isExpanded ? null : sign + '-' + summariesTab)}
+                              style={{
+                                borderBottom: '1px solid rgba(255,255,255,0.05)',
+                                cursor: entry ? 'pointer' : 'default',
+                                background: isExpanded ? 'rgba(217,182,111,0.08)' : 'transparent',
+                                transition: 'background 0.15s'
+                              }}
+                            >
+                              <td style={{ padding: '10px 8px', fontWeight: 'bold', color: entry ? '#fff' : '#666' }}>
+                                {sign}
+                              </td>
+                              <td style={{ padding: '10px 8px', color: entry ? '#D9B66F' : '#444', fontSize: '10px', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {entry ? (entry.hero_description || '—') : <em>missing</em>}
+                              </td>
+                              <td style={{ padding: '10px 8px', textAlign: 'center', color: '#aaa', fontSize: '10px' }}>
+                                {entry ? entry.overall_energy : '—'}
+                              </td>
+                              <td style={{ padding: '10px 8px', color: '#aaa', fontSize: '10px' }}>
+                                {entry && entry.source_dates ? `${entry.source_dates.length}d` : '—'}
+                              </td>
+                              <td style={{ padding: '10px 8px', textAlign: 'right', color: '#aaa' }}>
+                                {entry ? entry.tokens_used : '—'}
+                              </td>
+                            </tr>
+                            {isExpanded && entry && (
+                              <tr key={sign + '-' + summariesTab + '-expand'}>
+                                <td colSpan={5} style={{ padding: '12px 16px', background: 'rgba(0,0,0,0.5)', fontSize: '11px' }}>
+                                  <div style={{ marginBottom: '10px' }}>
+                                    <div style={{ color: '#D9B66F', fontSize: '11px', fontWeight: 'bold', marginBottom: '4px' }}>
+                                      ✨ Hero: <span style={{ fontWeight: 'normal', color: '#ddd' }}>{entry.hero_description}</span>
+                                    </div>
+                                    <div style={{ color: '#888', fontSize: '10px', marginBottom: '8px' }}>
+                                      📚 Sources: {entry.source_dates?.join(', ')}
+                                    </div>
+                                  </div>
+                                  <div style={{ display: 'grid', gridTemplateColumns: '90px 1fr', gap: '4px 10px' }}>
+                                    <span style={{ color: '#D9B66F', fontWeight: 'bold' }}>General:</span>
+                                    <span style={{ color: '#bbb', fontStyle: 'italic' }}>"{entry.general_summary?.substring(0, 150)}..."</span>
+                                    <span style={{ color: '#D9B66F', fontWeight: 'bold' }}>Key Factors:</span>
+                                    <span style={{ color: '#bbb', fontStyle: 'italic' }}>"{entry.key_factors?.substring(0, 120)}..."</span>
+                                    <span style={{ color: '#E8738A', fontWeight: 'bold' }}>Love:</span>
+                                    <span style={{ color: '#bbb', fontStyle: 'italic' }}>"{entry.love_summary?.substring(0, 120)}..."</span>
+                                    <span style={{ color: '#7CB3E8', fontWeight: 'bold' }}>Career:</span>
+                                    <span style={{ color: '#bbb', fontStyle: 'italic' }}>"{entry.career_summary?.substring(0, 120)}..."</span>
+                                    <span style={{ color: '#888' }}>Lucky Color:</span>
+                                    <span style={{ color: '#ddd' }}>{entry.lucky_color || '—'}</span>
+                                    <span style={{ color: '#888' }}>Lucky Number:</span>
+                                    <span style={{ color: '#ddd' }}>{entry.lucky_number || '—'}</span>
+                                    <span style={{ color: '#888' }}>Model:</span>
+                                    <span style={{ color: '#aaa' }}>{entry.ai_model_used} • {entry.tokens_used} tok • {(entry.generation_time_ms / 1000).toFixed(1)}s</span>
+                                  </div>
                                 </td>
                               </tr>
                             )}
