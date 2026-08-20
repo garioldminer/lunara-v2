@@ -42,7 +42,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   const [statusMessage, setStatusMessage] = useState<string>('');
   const [expandedSign, setExpandedSign] = useState<string | null>(null);
 
-  // 📅 Summaries tab state
   const [summariesTab, setSummariesTab] = useState<'weekly' | 'monthly'>('weekly');
   const [summariesData, setSummariesData] = useState<{ weekly: any; monthly: any }>({ weekly: {}, monthly: {} });
   const [summariesLoading, setSummariesLoading] = useState(false);
@@ -120,7 +119,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     setStatusLoading(false);
   };
 
-  // 📅 Fetch weekly/monthly summaries
   const fetchSummaries = async () => {
     if (!supabase) return;
     setSummariesLoading(true);
@@ -158,7 +156,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     setSummariesLoading(false);
   };
 
-  // ⚡ Trigger summary generation
   const triggerSummaryGeneration = async (type: 'weekly' | 'monthly') => {
     setSummariesGenerating(true);
     setSummariesMessage(`⚡ Triggering ${type}...`);
@@ -252,7 +249,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
   useEffect(() => {
     if (showUnifiedDebug && unifiedTab === 'summaries') fetchSummaries();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showUnifiedDebug, unifiedTab]);
 
   useEffect(() => {
@@ -320,12 +316,10 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           .catch(err => console.error('❌ [Quest] Error updating horoscope quest:', err));
       })
       .catch((readingError: any) => { if (isAdmin) debug.addLog('error', 'READING', '❌ Failed to log reading', readingError); });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [horoscope, loading, user, activeTab, userSign]);
 
   if (!user?.sun_sign) return <SignSelectionScreen onNavigate={onNavigate} />;
 
-  // 📊 Status stats
   const todayStr = new Date().toISOString().split('T')[0];
   const freshCount = ZODIAC_SIGNS_LIST.filter(s => (statusData[s] || [])[0]?.age === 0).length;
   const oldCount = ZODIAC_SIGNS_LIST.filter(s => { const l = (statusData[s] || [])[0]; return !!l && l.age > 0; }).length;
@@ -993,7 +987,6 @@ function HoroscopeContent(props: HoroscopeContentProps) {
           </AnimatePresence>
 
           <div className="horoscope-content premium-content">
-            {/* ✅ HeroBanner ყველა ტაბზე ჩანს */}
             <HeroBanner
               activeTab={activeTab} refreshing={refreshing} userSign={userSign}
               heroTitle={heroTitle}
@@ -1012,10 +1005,7 @@ function HoroscopeContent(props: HoroscopeContentProps) {
                 </div>
               </>
             ) : (
-              <SummaryView 
-                summary={fixedHoroscope} 
-                type={activeTab as 'weekly' | 'monthly'}
-              />
+              <SummaryView summary={fixedHoroscope} />
             )}
           </div>
         </div>

@@ -4,31 +4,40 @@ import { supabase } from '../lib/supabase';
 export interface Horoscope {
   id: string;
   zodiac_sign: string;
-  date: string;
+  date?: string;
+  week_start?: string;           // ✅ Weekly summary
+  month_start?: string;          // ✅ Monthly summary
+  source_dates?: string[];       // ✅ Summary-ის წყარო დღეები
   reading_type?: string;
-  general_prediction: string;
-  love_prediction: string;
-  career_prediction: string;
-  health_prediction: string;
-  finance_prediction: string;
-  moon_phase: string;
-  moon_sign: string;
-  key_transits: any[];
-  lucky_color: string;
-  lucky_number: number;
-  lucky_time: string | null;
-  affirmation: string;
-  ritual_suggestion: string | null;
-  ai_model_used: string;
-  tokens_used: number;
-  generation_time_ms: number;
-  created_at: string;
+  general_prediction?: string;
+  love_prediction?: string;
+  career_prediction?: string;
+  health_prediction?: string;
+  finance_prediction?: string;
+  general_summary?: string;      // ✅ Weekly/Monthly narrative
+  key_factors?: string;          // ✅ Weekly/Monthly key factors
+  love_summary?: string;         // ✅ Weekly/Monthly love narrative
+  career_summary?: string;       // ✅ Weekly/Monthly career narrative
+  overall_energy?: string;       // ✅ Summary energy level
+  moon_phase?: string;
+  moon_sign?: string;
+  key_transits?: any[];
+  lucky_color?: string;
+  lucky_number?: number;
+  lucky_time?: string | null;
+  affirmation?: string;
+  ritual_suggestion?: string | null;
+  ai_model_used?: string;
+  tokens_used?: number;
+  generation_time_ms?: number;
+  created_at?: string;
   cosmic_energy_level?: string;
   love_energy_level?: string;
   career_energy_level?: string;
   lucky_crystal?: string;
   lucky_planet?: string;
   hero_description?: string;
+  [key: string]: any;            // ✅ Flexibility for additional fields
 }
 
 export interface UseHoroscopeResult {
@@ -77,24 +86,21 @@ export function useHoroscope(
       }
       setError(null);
 
-      // 🆕 Capitalize sunSign (Virgo, Aries, etc.)
       const capitalizedSign = sunSign.charAt(0).toUpperCase() + sunSign.slice(1).toLowerCase();
       
       const today = new Date().toISOString().split('T')[0];
 
       console.log(`🔍 Fetching horoscope for ${capitalizedSign} on ${today}`);
 
-      // 🆕 ვცდილობთ დღევანდელ horoscope-ს (ilike - case-insensitive)
       let { data, error: fetchError } = await supabase
         .from('daily_horoscopes')
         .select('*')
-        .ilike('zodiac_sign', capitalizedSign)  // 🆕 ilike instead of eq
+        .ilike('zodiac_sign', capitalizedSign)
         .eq('date', today)
-        .maybeSingle();  // 🆕 maybeSingle instead of single
+        .maybeSingle();
 
       console.log(`📊 Today's query result:`, { data, error: fetchError });
 
-      // 🆕 Fallback: თუ დღევანდელი არ არის, ვცდილობთ გუშინდელს
       if (!data) {
         console.warn(`⚠️ No horoscope for ${today}, trying yesterday...`);
         
@@ -105,9 +111,9 @@ export function useHoroscope(
         const { data: yesterdayData, error: yesterdayError } = await supabase
           .from('daily_horoscopes')
           .select('*')
-          .ilike('zodiac_sign', capitalizedSign)  // 🆕 ilike
+          .ilike('zodiac_sign', capitalizedSign)
           .eq('date', yesterdayStr)
-          .maybeSingle();  // 🆕 maybeSingle
+          .maybeSingle();
         
         console.log(`📊 Yesterday's query result:`, { data: yesterdayData, error: yesterdayError });
         
@@ -125,7 +131,7 @@ export function useHoroscope(
 
       console.log(`✅ Horoscope loaded for ${capitalizedSign}`);
 
-      const horoscopeData = {
+      const horoscopeData: Horoscope = {
         ...data,
         reading_type: readingType
       };

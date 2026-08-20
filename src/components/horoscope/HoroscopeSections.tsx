@@ -141,14 +141,13 @@ export function PredictionsGrid({ safeDate, onSelect }: { safeDate: string; onSe
 // ═══════════════════════════════════════════
 // 📅 SUMMARY VIEW (WEEKLY / MONTHLY)
 // Hero section ამოღებულია — HeroBanner უკვე ჩანს ზემოდან
+// type prop ამოღებულია (გამოუყენებელი)
 // ═══════════════════════════════════════════
 
 export function SummaryView({ 
-  summary, 
-  type 
+  summary 
 }: { 
-  summary: any; 
-  type: 'weekly' | 'monthly';
+  summary: any;
 }) {
   const energyLevel = safeString(summary?.overall_energy || 'Medium');
 
