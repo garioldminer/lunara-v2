@@ -17,7 +17,7 @@ import {
 } from './horoscope/horoscopeData';
 import { useHoroscopeDebug } from './horoscope/useHoroscopeDebug';
 import { ToastNotification, DebugPanel } from './horoscope/DebugPanel';
-import { HeroBanner, EnergyGrid, MoonCard, PredictionsGrid } from './horoscope/HoroscopeSections';
+import { HeroBanner, EnergyGrid, MoonCard, PredictionsGrid, SummaryView } from './horoscope/HoroscopeSections';
 import { PredictionModal, ShareModal, ReadFullModal } from './horoscope/HoroscopeModals';
 import './HoroscopeScreen.css';
 
@@ -391,7 +391,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
             <div style={{ flex: 1, overflowY: 'auto' }}>
               {unifiedTab === 'status' && (
                 <div>
-                  {/* 🆕 Summary bar */}
                   <div style={{ padding: '10px 20px', display: 'flex', gap: '14px', fontSize: '12px', borderBottom: '1px solid rgba(217,182,111,0.15)', flexWrap: 'wrap', background: 'rgba(0,0,0,0.3)' }}>
                     <span><span style={{ color: '#10b981' }}>●</span> Fresh today: <b style={{ color: '#10b981' }}>{freshCount}/12</b></span>
                     <span><span style={{ color: '#f59e0b' }}>●</span> Old (fallback): <b style={{ color: '#f59e0b' }}>{oldCount}</b></span>
@@ -679,11 +678,15 @@ function HoroscopeContent(props: HoroscopeContentProps) {
     health_prediction: fixHoroscopeText(horoscope.health_prediction, userSign, detectWrongSign),
     finance_prediction: fixHoroscopeText(horoscope.finance_prediction, userSign, detectWrongSign),
     affirmation: fixHoroscopeText(horoscope.affirmation, userSign, detectWrongSign),
-    hero_description: fixHoroscopeText(horoscope.hero_description, userSign, detectWrongSign)
+    hero_description: fixHoroscopeText(horoscope.hero_description, userSign, detectWrongSign),
+    general_summary: fixHoroscopeText(horoscope.general_summary, userSign, detectWrongSign),
+    love_summary: fixHoroscopeText(horoscope.love_summary, userSign, detectWrongSign),
+    career_summary: fixHoroscopeText(horoscope.career_summary, userSign, detectWrongSign),
+    key_factors: fixHoroscopeText(horoscope.key_factors, userSign, detectWrongSign)
   };
 
   const safeTransits = Array.isArray(fixedHoroscope.key_transits) ? fixedHoroscope.key_transits.map(safeExtractTransit) : [];
-  const safeDate = safeString(fixedHoroscope.date);
+  const safeDate = safeString(fixedHoroscope.date || fixedHoroscope.week_start || fixedHoroscope.month_start);
   const formattedDate = new Date(safeDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
   const heroTitle = fixedHoroscope.hero_description
@@ -776,19 +779,29 @@ function HoroscopeContent(props: HoroscopeContentProps) {
           </AnimatePresence>
 
           <div className="horoscope-content premium-content">
-            <HeroBanner
-              activeTab={activeTab} refreshing={refreshing} userSign={userSign}
-              heroTitle={heroTitle}
-              onReadFull={() => setIsReadFullOpen(true)}
-              heroLeftRef={heroLeftRef} subtitleRef={subtitleRef} titleRef={titleRef}
-            />
-            <div className="premium-section energy-section">
-              <EnergyGrid horoscope={fixedHoroscope} />
-            </div>
-            <MoonCard horoscope={fixedHoroscope} moonDescription={moonDescription} />
-            <div className="premium-section predictions-section">
-              <PredictionsGrid safeDate={safeDate} onSelect={setOpenModal} />
-            </div>
+            {(activeTab === 'today' || activeTab === 'tomorrow') ? (
+              <>
+                <HeroBanner
+                  activeTab={activeTab} refreshing={refreshing} userSign={userSign}
+                  heroTitle={heroTitle}
+                  onReadFull={() => setIsReadFullOpen(true)}
+                  heroLeftRef={heroLeftRef} subtitleRef={subtitleRef} titleRef={titleRef}
+                />
+                <div className="premium-section energy-section">
+                  <EnergyGrid horoscope={fixedHoroscope} />
+                </div>
+                <MoonCard horoscope={fixedHoroscope} moonDescription={moonDescription} />
+                <div className="premium-section predictions-section">
+                  <PredictionsGrid safeDate={safeDate} onSelect={setOpenModal} />
+                </div>
+              </>
+            ) : (
+              <SummaryView 
+                summary={fixedHoroscope} 
+                type={activeTab as 'weekly' | 'monthly'} 
+                userSign={userSign} 
+              />
+            )}
           </div>
         </div>
       </div>

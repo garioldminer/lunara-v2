@@ -138,3 +138,115 @@ export function PredictionsGrid({ safeDate, onSelect }: { safeDate: string; onSe
     </div>
   );
 }
+
+// ═══════════════════════════════════════════
+// 📅 SUMMARY VIEW (WEEKLY / MONTHLY)
+// ═══════════════════════════════════════════
+
+export function SummaryView({ 
+  summary, 
+  type, 
+  userSign 
+}: { 
+  summary: any; 
+  type: 'weekly' | 'monthly'; 
+  userSign: string;
+}) {
+  const title = type === 'weekly' ? "This Week's Cosmic Narrative" : "This Month's Cosmic Narrative";
+  const energyLevel = safeString(summary?.overall_energy || 'Medium');
+
+  return (
+    <div className="summary-view">
+      {/* Hero Section */}
+      <div className="summary-hero">
+        <div className="summary-hero-icon">
+          <Sparkles size={32} />
+        </div>
+        <h2 className="summary-hero-title">
+          {safeString(summary?.hero_description || title)}
+        </h2>
+        <p className="summary-hero-subtitle">{title}</p>
+      </div>
+
+      {/* General Summary */}
+      <div className="summary-section summary-general">
+        <div className="summary-section-header">
+          <div className="summary-section-icon">
+            <Sparkles size={20} />
+          </div>
+          <h3>OVERALL NARRATIVE</h3>
+        </div>
+        <p className="summary-text">
+          {safeString(summary?.general_summary || 'The cosmic narrative is unfolding...')}
+        </p>
+      </div>
+
+      {/* Key Factors */}
+      {summary?.key_factors && (
+        <div className="summary-section summary-factors">
+          <div className="summary-section-header">
+            <div className="summary-section-icon">
+              <Activity size={20} />
+            </div>
+            <h3>KEY INFLUENCES</h3>
+          </div>
+          <p className="summary-text">
+            {safeString(summary.key_factors)}
+          </p>
+        </div>
+      )}
+
+      {/* Love Summary */}
+      {summary?.love_summary && (
+        <div className="summary-section summary-love">
+          <div className="summary-section-header">
+            <div className="summary-section-icon summary-love-icon">
+              <Heart size={20} />
+            </div>
+            <h3>LOVE & RELATIONSHIPS</h3>
+          </div>
+          <p className="summary-text">
+            {safeString(summary.love_summary)}
+          </p>
+        </div>
+      )}
+
+      {/* Career Summary */}
+      {summary?.career_summary && (
+        <div className="summary-section summary-career">
+          <div className="summary-section-header">
+            <div className="summary-section-icon summary-career-icon">
+              <BriefcaseIcon size={20} />
+            </div>
+            <h3>CAREER & FOCUS</h3>
+          </div>
+          <p className="summary-text">
+            {safeString(summary.career_summary)}
+          </p>
+        </div>
+      )}
+
+      {/* Lucky Items + Energy */}
+      <div className="summary-footer">
+        <div className="summary-lucky-grid">
+          {summary?.lucky_color && (
+            <div className="summary-lucky-item">
+              <span className="summary-lucky-label">LUCKY COLOR</span>
+              <span className="summary-lucky-value">{summary.lucky_color}</span>
+            </div>
+          )}
+          {summary?.lucky_number && (
+            <div className="summary-lucky-item">
+              <span className="summary-lucky-label">LUCKY NUMBER</span>
+              <span className="summary-lucky-value">{summary.lucky_number}</span>
+            </div>
+          )}
+          <div className="summary-lucky-item">
+            <span className="summary-lucky-label">ENERGY</span>
+            <span className="summary-lucky-value summary-energy">{energyLevel}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

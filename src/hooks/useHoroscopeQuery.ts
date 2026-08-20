@@ -5,17 +5,22 @@ import { TabType } from '../components/horoscope/horoscopeData';
 import type { UseHoroscopeResult } from './useHoroscope';
 
 /**
- * 🌙 useHoroscopeQuery — ოპტიმიზებული ვერსია
+ * 🌙 useHoroscopeQuery — ტაბის მიხედვით სხვადასხვა ცხრილი
  *
- * რა გაუმჯობესდა:
- * ─ 1 query (7 sequential-ის ნაცვლად) → ~200ms, ეგრევე იხსნება
- * ─ 2-წუთიანი cache → ტაბებზე გადასვლა = 0ms
- * ─ ფონური განახლება → ლაივ მონაცემები
- * ─ 7-დღიანი fallback → გვერდი ყოველთვის იხსნება
- * ─ არასდროს აგდებს error-ს
+ * ტაბი → ცხრილი:
+ * ─ today    → daily_horoscopes (დღეს)
+ * ─ tomorrow → daily_horoscopes (ხვალ)
+ * ─ weekly   → weekly_summaries (მიმდინარე კვირის ორშაბათი)
+ * ─ monthly  → monthly_summaries (მიმდინარე თვის 1-ლი)
  */
 
 const getTodayString = (): string => new Date().toISOString().split('T')[0];
+
+const getTomorrowString = (): string => {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  return d.toISOString().split('T')[0];
+};
 
 const getDateString = (daysAgo: number): string => {
   const d = new Date();
@@ -23,10 +28,26 @@ const getDateString = (daysAgo: number): string => {
   return d.toISOString().split('T')[0];
 };
 
+// კვირის ორშაბათი
+const getWeekStart = (): string => {
+  const d = new Date();
+  const day = d.getDay();
+  const diff = day === 0 ? 6 : day - 1;
+  d.setDate(d.getDate() - diff);
+  return d.toISOString().split('T')[0];
+};
+
+// თვის 1 რიცხვი
+const getMonthStart = (): string => {
+  const d = new Date();
+  d.setDate(1);
+  return d.toISOString().split('T')[0];
+};
+
 // ✅ Throttle: ფონური generation მაქს. ერთხელ 5 წუთში
 let lastTriggerTime = 0;
 
-async function triggerBackgroundGeneration() {
+async function triggerBackgroundGeneration(type: 'daily' | 'weekly' | 'monthly' = 'daily') {
   const now = Date.now();
   if (now - lastTriggerTime < 5 * 60 * 1000) {
     console.log('⏳ [Self-Heal] Already triggered recently, skipping');
@@ -44,68 +65,133 @@ async function triggerBackgroundGeneration() {
       return;
     }
 
-    console.log('⚡ [Self-Heal] Triggering background horoscope generation...');
+    const endpoint = type === 'daily'
+      ? 'generate-all-horoscopes'
+      : `generate-summaries?type=${type}`;
 
-    // fire-and-forget: არ ველოდებით პასუხს
-    fetch(`${supabaseUrl}/functions/v1/generate-all-horoscopes`, {
+    console.log(`⚡ [Self-Heal] Triggering ${type} generation...`);
+
+    fetch(`${supabaseUrl}/functions/v1/${endpoint}`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${supabaseAnonKey}`,
         'Content-Type': 'application/json'
       }
     }).catch(err => {
-      console.warn('⚠️ [Self-Heal] Background generation failed (non-critical):', err.message);
+      console.warn(`⚠️ [Self-Heal] ${type} generation failed:`, err.message);
     });
   } catch (e) {
     console.warn('⚠️ [Self-Heal] Background generation error:', e);
   }
 }
 
-// ✅ 1 query: ბოლო 7 დღიდან უახლესი (7 sequential-ის ნაცვლად)
+// ✅ ფუნქცია ტაბის მიხედვით query-სთვის
 async function fetchHoroscope(
   userId: string,
   sunSign: string,
-  readingType: string
+  readingType: TabType
 ): Promise<Horoscope | null> {
   if (!userId || !sunSign || !supabase) {
     return null;
   }
 
   const capitalizedSign = sunSign.charAt(0).toUpperCase() + sunSign.slice(1).toLowerCase();
-  const today = getTodayString();
-  const weekAgo = getDateString(6);
 
-  console.log(`🔍 [Query] Fetching ${capitalizedSign} (range: ${weekAgo} → ${today})`);
+  let query;
+  let targetDate = '';
+  let table = 'daily_horoscopes';
 
-  // ✅ ერთი query — ბაზა ალაგებს, არა ფრონტენდი
-  const { data, error } = await supabase
-    .from('daily_horoscopes')
-    .select('*')
-    .ilike('zodiac_sign', capitalizedSign)
-    .gte('date', weekAgo)
-    .lte('date', today)
-    .order('date', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  switch (readingType) {
+    case 'tomorrow': {
+      table = 'daily_horoscopes';
+      targetDate = getTomorrowString();
+      query = supabase
+        .from(table)
+        .select('*')
+        .ilike('zodiac_sign', capitalizedSign)
+        .eq('date', targetDate)
+        .maybeSingle();
+      console.log(`🔍 [Query] Tomorrow for ${capitalizedSign} (${targetDate})`);
+      break;
+    }
+    case 'weekly': {
+      table = 'weekly_summaries';
+      targetDate = getWeekStart();
+      query = supabase
+        .from(table)
+        .select('*')
+        .ilike('zodiac_sign', capitalizedSign)
+        .eq('week_start', targetDate)
+        .maybeSingle();
+      console.log(`🔍 [Query] Weekly for ${capitalizedSign} (week ${targetDate})`);
+      break;
+    }
+    case 'monthly': {
+      table = 'monthly_summaries';
+      targetDate = getMonthStart();
+      query = supabase
+        .from(table)
+        .select('*')
+        .ilike('zodiac_sign', capitalizedSign)
+        .eq('month_start', targetDate)
+        .maybeSingle();
+      console.log(`🔍 [Query] Monthly for ${capitalizedSign} (month ${targetDate})`);
+      break;
+    }
+    case 'today':
+    default: {
+      table = 'daily_horoscopes';
+      const today = getTodayString();
+      const weekAgo = getDateString(6);
+      query = supabase
+        .from(table)
+        .select('*')
+        .ilike('zodiac_sign', capitalizedSign)
+        .gte('date', weekAgo)
+        .lte('date', today)
+        .order('date', { ascending: false })
+        .limit(1);
+      console.log(`🔍 [Query] Today for ${capitalizedSign} (${weekAgo} → ${today})`);
+      break;
+    }
+  }
+
+  const { data, error } = await query;
 
   if (error) {
-    console.warn(`⚠️ [Query] error: ${error.message}`);
+    console.warn(`⚠️ [Query] ${readingType} error: ${error.message}`);
     return null;
   }
 
   if (!data) {
-    console.warn(`⚠️ [Query] No horoscope in last 7 days for ${capitalizedSign} → triggering generation`);
-    triggerBackgroundGeneration();
+    console.warn(`⚠️ [Query] No ${readingType} data for ${capitalizedSign} → triggering generation`);
+    
+    // Self-heal: რომელი ტიპის გენერაცია ჩავრთოთ
+    if (readingType === 'tomorrow') {
+      triggerBackgroundGeneration('daily'); // tomorrow-ს daily ფუნქცია აკეთებს
+    } else if (readingType === 'weekly') {
+      triggerBackgroundGeneration('weekly');
+    } else if (readingType === 'monthly') {
+      triggerBackgroundGeneration('monthly');
+    } else {
+      triggerBackgroundGeneration('daily');
+    }
     return null;
   }
 
-  // გამოვთვალოთ age (რამდენი დღის წინანდელია)
-  const age = Math.floor(
-    (new Date(today + 'T00:00:00').getTime() - new Date(data.date + 'T00:00:00').getTime())
-    / (1000 * 60 * 60 * 24)
-  );
-  
-  console.log(`✅ [Query] Found: ${data.date} (age ${age}d)`);
+  // age გამოთვლა (დღეებში)
+  let age = 0;
+  if (readingType === 'today') {
+    age = Math.floor(
+      (new Date(getTodayString() + 'T00:00:00').getTime() - new Date(data.date + 'T00:00:00').getTime())
+      / (1000 * 60 * 60 * 24)
+    );
+  } else if (readingType === 'tomorrow') {
+    age = -1; // ხვალინდელი
+  }
+  // weekly/monthly age არ გვჭირდება
+
+  console.log(`✅ [Query] Found ${readingType} for ${capitalizedSign}`);
 
   return {
     ...data,
@@ -129,25 +215,15 @@ export function useHoroscopeQuery(
     error,
     refetch
   } = useQuery({
+    // ✅ queryKey-ში readingType — ყველა ტაბს თავისი cache
     queryKey: ['horoscope', userId, sunSign, readingType, getTodayString()],
     queryFn: () => fetchHoroscope(userId, sunSign, readingType),
 
-    // ✅ 2 წუთი cache — ტაბებზე ეგრევე ჩანს, ფონში ახლდება
     staleTime: 2 * 60 * 1000,
-    
-    // ✅ 10 წუთი გარანტირებული memory-ში (გასვლის მერე)
     gcTime: 10 * 60 * 1000,
-
-    // ✅ mount-ზე მხოლოდ თუ stale-ა (>2 წთ) — არა ყოველ ჯერზე
     refetchOnMount: true,
-
-    // ❌ app-switch-ზე არ ჭედოს (cache გვაქვს)
     refetchOnWindowFocus: false,
-
-    // ✅ 1 retry (self-healing-ია, არ გვჭირდება ბევრი)
     retry: 1,
-
-    // ✅ ჩართული მხოლოდ როცა ყველა პარამეტრი მზადაა
     enabled: Boolean(userId && sunSign && supabase),
   });
 
