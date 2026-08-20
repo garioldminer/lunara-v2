@@ -307,10 +307,10 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   useEffect(() => {
     if (!user || !horoscope || loading || !userSign) return;
     if (!isInitialLoadRef.current) return;
-    const readingKey = `${user.id}-${activeTab}-${horoscope.date}`;
+    const readingKey = `${user.id}-${activeTab}-${horoscope.date || horoscope.week_start || horoscope.month_start}`;
     if (loggedReadingsRef.current.has(readingKey)) return;
 
-    logReading(user.id, 'horoscope', [], `${activeTab} - ${userSign} - ${horoscope.date}`)
+    logReading(user.id, 'horoscope', [], `${activeTab} - ${userSign} - ${horoscope.date || horoscope.week_start || horoscope.month_start}`)
       .then(() => {
         loggedReadingsRef.current.add(readingKey);
         isInitialLoadRef.current = false;
@@ -634,7 +634,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
               {unifiedTab === 'summaries' && (
                 <div>
-                  {/* Sub-tabs: Weekly / Monthly */}
                   <div style={{ display: 'flex', borderBottom: '1px solid rgba(217,182,111,0.2)', background: 'rgba(0,0,0,0.3)' }}>
                     <button onClick={() => setSummariesTab('weekly')} style={{
                       flex: 1, padding: '10px', border: 'none', cursor: 'pointer',
@@ -650,7 +649,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                     }}>🗓️ MONTHLY</button>
                   </div>
 
-                  {/* Stats bar */}
                   {(() => {
                     const current = summariesData[summariesTab];
                     const count = Object.values(current).filter(Boolean).length;
@@ -663,7 +661,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                     );
                   })()}
 
-                  {/* Action buttons */}
                   <div style={{ padding: '12px 20px', display: 'flex', gap: '8px' }}>
                     <button onClick={fetchSummaries} disabled={summariesLoading} style={{
                       flex: 1, padding: '10px', background: 'rgba(217,182,111,0.15)',
@@ -692,7 +689,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                     }}>{summariesMessage}</div>
                   )}
 
-                  {/* Table */}
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
                     <thead>
                       <tr style={{ borderBottom: '2px solid rgba(217,182,111,0.3)', background: 'rgba(0,0,0,0.2)' }}>
@@ -929,7 +925,7 @@ function HoroscopeContent(props: HoroscopeContentProps) {
         if (!blob) { showToast('Failed to generate image!', 'error'); return; }
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
-        link.download = `lunara-${userSign}-${fixedHoroscope.date}.png`;
+        link.download = `lunara-${userSign}-${fixedHoroscope.date || fixedHoroscope.week_start || fixedHoroscope.month_start}.png`;
         link.href = url;
         link.click();
         URL.revokeObjectURL(url);
@@ -942,7 +938,7 @@ function HoroscopeContent(props: HoroscopeContentProps) {
 
   const handleShareToTelegram = () => {
     const shareText = `Check out my ${userSign} horoscope on Lunara! 🔮✨`;
-    const shareUrl = `https://lunara.app/horoscope?sign=${userSign}&date=${fixedHoroscope.date}`;
+    const shareUrl = `https://lunara.app/horoscope?sign=${userSign}&date=${fixedHoroscope.date || fixedHoroscope.week_start || fixedHoroscope.month_start}`;
     const telegram = (window as any).Telegram?.WebApp;
     if (telegram) telegram.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`);
     else window.open(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`, '_blank');
@@ -997,14 +993,16 @@ function HoroscopeContent(props: HoroscopeContentProps) {
           </AnimatePresence>
 
           <div className="horoscope-content premium-content">
+            {/* ✅ HeroBanner ყველა ტაბზე ჩანს */}
+            <HeroBanner
+              activeTab={activeTab} refreshing={refreshing} userSign={userSign}
+              heroTitle={heroTitle}
+              onReadFull={() => setIsReadFullOpen(true)}
+              heroLeftRef={heroLeftRef} subtitleRef={subtitleRef} titleRef={titleRef}
+            />
+
             {(activeTab === 'today' || activeTab === 'tomorrow') ? (
               <>
-                <HeroBanner
-                  activeTab={activeTab} refreshing={refreshing} userSign={userSign}
-                  heroTitle={heroTitle}
-                  onReadFull={() => setIsReadFullOpen(true)}
-                  heroLeftRef={heroLeftRef} subtitleRef={subtitleRef} titleRef={titleRef}
-                />
                 <div className="premium-section energy-section">
                   <EnergyGrid horoscope={fixedHoroscope} />
                 </div>

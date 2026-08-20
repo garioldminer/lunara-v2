@@ -19,6 +19,7 @@ interface HeroBannerProps {
 /**
  * 🌙 HeroBanner — entrance animation მოცილებულია.
  * loader-ის გაქრობისას გვერდი მყისიერად, სრულად ჩანს.
+ * ჩანს ყველა ტაბზე (today, tomorrow, weekly, monthly).
  */
 export function HeroBanner({ activeTab, refreshing, userSign, heroTitle, onReadFull, heroLeftRef, subtitleRef, titleRef }: HeroBannerProps) {
   const zodiacData = ZODIAC_SIGNS[userSign] || ZODIAC_SIGNS['leo'];
@@ -139,6 +140,7 @@ export function PredictionsGrid({ safeDate, onSelect }: { safeDate: string; onSe
 
 // ═══════════════════════════════════════════
 // 📅 SUMMARY VIEW (WEEKLY / MONTHLY)
+// Hero section ამოღებულია — HeroBanner უკვე ჩანს ზემოდან
 // ═══════════════════════════════════════════
 
 export function SummaryView({ 
@@ -148,22 +150,10 @@ export function SummaryView({
   summary: any; 
   type: 'weekly' | 'monthly';
 }) {
-  const title = type === 'weekly' ? "This Week's Cosmic Narrative" : "This Month's Cosmic Narrative";
   const energyLevel = safeString(summary?.overall_energy || 'Medium');
 
   return (
     <div className="summary-view">
-      {/* Hero Section */}
-      <div className="summary-hero">
-        <div className="summary-hero-icon">
-          <Sparkles size={32} />
-        </div>
-        <h2 className="summary-hero-title">
-          {safeString(summary?.hero_description || title)}
-        </h2>
-        <p className="summary-hero-subtitle">{title}</p>
-      </div>
-
       {/* General Summary */}
       <div className="summary-section summary-general">
         <div className="summary-section-header">

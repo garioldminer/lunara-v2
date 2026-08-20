@@ -94,13 +94,14 @@ interface ReadFullModalProps {
   onShareAffirmation: () => void;
 }
 
-// ✅ zodiacSymbol ამოღებულია destructuring-დან (interface-ში რჩება parent-ისთვის)
 export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, safeTransits, moonDescription, activeTab, onCopyAffirmation, onShareAffirmation }: ReadFullModalProps) {
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const toggleAccordion = (s: string) => setOpenAccordion(openAccordion === s ? null : s);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // ✅ თარიღი ფორმატირებული ზედა ბარისთვის (Telegram close/settings შორის)
+  // ✅ Summary ტაბების დეტექცია
+  const isSummary = activeTab === 'weekly' || activeTab === 'monthly';
+
   const formattedDate = (() => {
     try {
       return new Date(safeDate).toLocaleDateString('en-US', {
@@ -113,7 +114,6 @@ export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, 
     }
   })();
 
-  // ✅ Helper: ვპოულობთ nav-ს ყველა შესაძლო selector-ით
   const findNav = (): HTMLElement | null => {
     const selectors = [
       '.bottom-nav-container',
@@ -133,7 +133,6 @@ export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, 
     return null;
   };
 
-  // ✅ Bottom nav: იმალება როცა modal ღიაა, ბრუნდება დახურვისას
   useEffect(() => {
     if (!isOpen) return;
     const nav = findNav();
@@ -148,7 +147,6 @@ export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, 
     };
   }, [isOpen]);
 
-  // ✅ Bottom nav reveal: ამოდის ბოლომდე სქროლვისას (footer ჩანს ბოლომდე)
   useEffect(() => {
     if (!isOpen) return;
     const el = scrollRef.current;
@@ -170,7 +168,13 @@ export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, 
     return () => el.removeEventListener('scroll', onScroll);
   }, [isOpen]);
 
-  const sections = [
+  // ✅ CONDITIONAL SECTIONS — daily vs summary
+  const sections = isSummary ? [
+    { key: 'general', icon: <Sparkles size={18} className="rf-section-icon" />, cls: '', title: 'Overall Narrative', text: horoscope?.general_summary },
+    { key: 'factors', icon: <Activity size={18} className="rf-section-icon" />, cls: 'health', title: 'Key Influences', text: horoscope?.key_factors },
+    { key: 'love', icon: <Heart size={18} className="rf-section-icon" />, cls: 'love', title: 'Love & Relationships', text: horoscope?.love_summary },
+    { key: 'career', icon: <Briefcase size={18} className="rf-section-icon" />, cls: 'career', title: 'Career & Focus', text: horoscope?.career_summary },
+  ] : [
     { key: 'general', icon: <Sparkles size={18} className="rf-section-icon" />, cls: '', title: 'General Energy', text: horoscope?.general_prediction },
     { key: 'love', icon: <Heart size={18} className="rf-section-icon" />, cls: 'love', title: 'Love & Relationships', text: horoscope?.love_prediction },
     { key: 'career', icon: <Briefcase size={18} className="rf-section-icon" />, cls: 'career', title: 'Career & Work', text: horoscope?.career_prediction },
@@ -206,7 +210,6 @@ export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, 
           >
             <div className="rf-glow" />
 
-            {/* ✅ TOPBAR — ნიშანი + თარიღი Telegram close/settings შორის */}
             <div className="rf-topbar">
               <div className="rf-topbar-text">
                 <span className="rf-topbar-sign">{userSign.toUpperCase()}</span>
@@ -214,27 +217,35 @@ export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, 
               </div>
             </div>
 
-            {/* ✅ მხოლოდ Back ღილაკი */}
             <button className="rf-back" onClick={onClose} aria-label="Back">
               <ArrowLeft size={20} />
             </button>
 
-            {/* ✅ ENERGY OVERVIEW — გადატანილია scroll-ის გარეთ, back ღილაკის გვერდით */}
+            {/* ✅ CONDITIONAL ENERGY OVERVIEW */}
             <div className="rf-energy-overview">
-              <div className="rf-energy-item">
-                <span className="rf-energy-emoji">{getEnergyEmojis(safeString(horoscope?.cosmic_energy_level), '⚡')}</span>
-                <span className="rf-energy-level">{safeString(horoscope?.cosmic_energy_level || 'MEDIUM').toUpperCase()}</span>
-              </div>
-              <div className="rf-energy-divider" />
-              <div className="rf-energy-item">
-                <span className="rf-energy-emoji">{getEnergyEmojis(safeString(horoscope?.love_energy_level), '💕')}</span>
-                <span className="rf-energy-level">{safeString(horoscope?.love_energy_level || 'MEDIUM').toUpperCase()}</span>
-              </div>
-              <div className="rf-energy-divider" />
-              <div className="rf-energy-item">
-                <span className="rf-energy-emoji">{getEnergyEmojis(safeString(horoscope?.career_energy_level), '💼')}</span>
-                <span className="rf-energy-level">{safeString(horoscope?.career_energy_level || 'MEDIUM').toUpperCase()}</span>
-              </div>
+              {isSummary ? (
+                <div className="rf-energy-item">
+                  <span className="rf-energy-emoji">{getEnergyEmojis(safeString(horoscope?.overall_energy), '⚡')}</span>
+                  <span className="rf-energy-level">OVERALL: {safeString(horoscope?.overall_energy || 'MEDIUM').toUpperCase()}</span>
+                </div>
+              ) : (
+                <>
+                  <div className="rf-energy-item">
+                    <span className="rf-energy-emoji">{getEnergyEmojis(safeString(horoscope?.cosmic_energy_level), '⚡')}</span>
+                    <span className="rf-energy-level">{safeString(horoscope?.cosmic_energy_level || 'MEDIUM').toUpperCase()}</span>
+                  </div>
+                  <div className="rf-energy-divider" />
+                  <div className="rf-energy-item">
+                    <span className="rf-energy-emoji">{getEnergyEmojis(safeString(horoscope?.love_energy_level), '💕')}</span>
+                    <span className="rf-energy-level">{safeString(horoscope?.love_energy_level || 'MEDIUM').toUpperCase()}</span>
+                  </div>
+                  <div className="rf-energy-divider" />
+                  <div className="rf-energy-item">
+                    <span className="rf-energy-emoji">{getEnergyEmojis(safeString(horoscope?.career_energy_level), '💼')}</span>
+                    <span className="rf-energy-level">{safeString(horoscope?.career_energy_level || 'MEDIUM').toUpperCase()}</span>
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="rf-scroll" ref={scrollRef}>
@@ -257,8 +268,8 @@ export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, 
                 ))}
               </div>
 
-              {/* AFFIRMATION */}
-              {horoscope?.affirmation && (
+              {/* AFFIRMATION — მხოლოდ daily */}
+              {!isSummary && horoscope?.affirmation && (
                 <motion.div
                   className="rf-affirmation"
                   initial={{ opacity: 0, y: 10 }}
@@ -279,8 +290,8 @@ export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, 
 
               {/* ACCORDIONS */}
               <div className="rf-accordion-container">
-                {/* TRANSITS */}
-                {safeTransits.length > 0 && (
+                {/* TRANSITS — მხოლოდ daily */}
+                {!isSummary && safeTransits.length > 0 && (
                   <div className="rf-accordion">
                     <button className="rf-accordion-header" onClick={() => toggleAccordion('transits')}>
                       <div className="rf-accordion-title">
@@ -352,11 +363,13 @@ export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, 
                             <span className="rf-lucky-label">Number</span>
                             <span className="rf-lucky-value">{Number(horoscope?.lucky_number) || 7}</span>
                           </div>
-                          <div className="rf-lucky-item">
-                            <div className="rf-lucky-icon-wrapper color-amber"><Sun size={20} /></div>
-                            <span className="rf-lucky-label">Planet</span>
-                            <span className="rf-lucky-value">{safeString(horoscope?.lucky_planet)}</span>
-                          </div>
+                          {horoscope?.lucky_planet && (
+                            <div className="rf-lucky-item">
+                              <div className="rf-lucky-icon-wrapper color-amber"><Sun size={20} /></div>
+                              <span className="rf-lucky-label">Planet</span>
+                              <span className="rf-lucky-value">{safeString(horoscope.lucky_planet)}</span>
+                            </div>
+                          )}
                           {horoscope?.lucky_crystal && (
                             <div className="rf-lucky-item">
                               <div className="rf-lucky-icon-wrapper color-emerald"><Star size={20} /></div>
@@ -370,42 +383,44 @@ export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, 
                   </AnimatePresence>
                 </div>
 
-                {/* MOON INFO */}
-                <div className="rf-accordion">
-                  <button className="rf-accordion-header" onClick={() => toggleAccordion('moon')}>
-                    <div className="rf-accordion-title">
-                      <Moon size={16} />
-                      <span>Moon Info</span>
-                    </div>
-                    <div className={`rf-accordion-arrow ${openAccordion === 'moon' ? 'open' : ''}`}>
-                      <ChevronDown size={18} />
-                    </div>
-                  </button>
-                  <AnimatePresence>
-                    {openAccordion === 'moon' && (
-                      <motion.div
-                        className="rf-accordion-content"
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3, ease: 'easeInOut' }}
-                      >
-                        <div className="rf-moon-info-expanded">
-                          <Moon size={24} className="rf-moon-icon-large" />
-                          <div className="rf-moon-details-expanded">
-                            <span className="rf-moon-phase-large">{safeString(horoscope?.moon_phase)}</span>
-                            <span className="rf-moon-sign-large">Moon in {safeString(horoscope?.moon_sign)}</span>
-                            <p className="rf-moon-desc-expanded">{moonDescription}</p>
+                {/* MOON INFO — მხოლოდ daily */}
+                {!isSummary && (
+                  <div className="rf-accordion">
+                    <button className="rf-accordion-header" onClick={() => toggleAccordion('moon')}>
+                      <div className="rf-accordion-title">
+                        <Moon size={16} />
+                        <span>Moon Info</span>
+                      </div>
+                      <div className={`rf-accordion-arrow ${openAccordion === 'moon' ? 'open' : ''}`}>
+                        <ChevronDown size={18} />
+                      </div>
+                    </button>
+                    <AnimatePresence>
+                      {openAccordion === 'moon' && (
+                        <motion.div
+                          className="rf-accordion-content"
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3, ease: 'easeInOut' }}
+                        >
+                          <div className="rf-moon-info-expanded">
+                            <Moon size={24} className="rf-moon-icon-large" />
+                            <div className="rf-moon-details-expanded">
+                              <span className="rf-moon-phase-large">{safeString(horoscope?.moon_phase)}</span>
+                              <span className="rf-moon-sign-large">Moon in {safeString(horoscope?.moon_sign)}</span>
+                              <p className="rf-moon-desc-expanded">{moonDescription}</p>
+                            </div>
                           </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                )}
               </div>
 
-              {/* SHARE BOTTOM */}
-              {horoscope?.affirmation && (
+              {/* SHARE BOTTOM — მხოლოდ daily */}
+              {!isSummary && horoscope?.affirmation && (
                 <div className="rf-share-bottom">
                   <button className="share-affirmation-btn" onClick={onShareAffirmation}>
                     <Share2 size={12} />
