@@ -45,7 +45,6 @@ export function HeroBanner({ activeTab, refreshing, userSign, heroTitle, onReadF
           <span>{heroTitle}</span>
         </h2>
 
-        {/* ინტერაქციული hover/tap დავტოვეთ — ეს კარგია */}
         <motion.button
           className="premium-read-full-btn"
           whileHover={{ scale: 1.02, x: 3 }}
@@ -57,7 +56,6 @@ export function HeroBanner({ activeTab, refreshing, userSign, heroTitle, onReadF
       </div>
 
       <div className="premium-hero-right">
-        {/* CSS cardFloat animation მუშაობს — entrance აღარ არის */}
         <div className="premium-tarot-card">
           <div className="premium-card-glow" />
           <div className="premium-card-frame">
@@ -145,12 +143,10 @@ export function PredictionsGrid({ safeDate, onSelect }: { safeDate: string; onSe
 
 export function SummaryView({ 
   summary, 
-  type, 
-  userSign 
+  type 
 }: { 
   summary: any; 
-  type: 'weekly' | 'monthly'; 
-  userSign: string;
+  type: 'weekly' | 'monthly';
 }) {
   const title = type === 'weekly' ? "This Week's Cosmic Narrative" : "This Month's Cosmic Narrative";
   const energyLevel = safeString(summary?.overall_energy || 'Medium');

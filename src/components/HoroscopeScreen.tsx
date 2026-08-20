@@ -798,8 +798,7 @@ function HoroscopeContent(props: HoroscopeContentProps) {
             ) : (
               <SummaryView 
                 summary={fixedHoroscope} 
-                type={activeTab as 'weekly' | 'monthly'} 
-                userSign={userSign} 
+                type={activeTab as 'weekly' | 'monthly'}
               />
             )}
           </div>
