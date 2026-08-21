@@ -5,7 +5,7 @@ import {
   Star, Moon, Palette, Hash, Sun, ChevronDown, Copy, ArrowLeft
 } from 'lucide-react';
 import ShareCardPreview from '../ShareCardPreview';
-import { TabType, safeString, getEnergyEmojis } from './horoscopeData';
+import { TabType, safeString } from './horoscopeData';
 
 /* ---------- Prediction Modal ---------- */
 interface PredictionModalProps {
