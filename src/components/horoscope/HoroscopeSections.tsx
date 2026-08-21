@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ChevronRight, Zap, Heart, Briefcase as BriefcaseIcon, Sparkles, Activity, DollarSign, Star } from 'lucide-react';
+import { ChevronRight, Zap, Heart, Briefcase as BriefcaseIcon, Sparkles, Activity, DollarSign } from 'lucide-react';
 import { ZODIAC_SIGNS } from '../../data/zodiacData';
 import { TabType, TAB_LABELS, safeString, getPredictionSubtitle } from './horoscopeData';
 
@@ -85,7 +85,6 @@ function EnergyCard({ type, icon, level, subtitle }: { type: string; icon: React
   );
 }
 
-// ✅ ახალი: isSummary prop — summary-სთვის overall_energy-ს ვიყენებთ სამივე card-ზე
 interface EnergyGridProps {
   horoscope: any;
   isSummary?: boolean;
@@ -113,7 +112,6 @@ export function EnergyGrid({ horoscope, isSummary = false }: EnergyGridProps) {
 }
 
 export function MoonCard({ horoscope, moonDescription }: { horoscope: any; moonDescription: string }) {
-  // ✅ თუ moon data არ არის (summary) — არ ვაჩვენოთ
   if (!horoscope?.moon_phase && !horoscope?.moon_sign) {
     return null;
   }
@@ -143,7 +141,6 @@ function PredictionCard({ type, icon, label, subtitle, onClick }: { type: string
   );
 }
 
-// ✅ ახალი: isSummary prop — summary-სთვის 4 cards (general, key_factors, love, career)
 interface PredictionsGridProps {
   safeDate: string;
   onSelect: (key: string) => void;
@@ -196,11 +193,6 @@ export function PredictionsGrid({ safeDate, onSelect, isSummary = false }: Predi
     </div>
   );
 }
-
-// ═══════════════════════════════════════════
-// 📅 SUMMARY VIEW (legacy — ახლა აღარ გამოიყენება main flow-ში)
-// დარჩენილია compatibility-სთვის
-// ═══════════════════════════════════════════
 
 export function SummaryView({ 
   summary 
