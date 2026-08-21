@@ -8,14 +8,31 @@ import ShareCardPreview from '../ShareCardPreview';
 import { TabType, safeString, getEnergyEmojis } from './horoscopeData';
 
 /* ---------- Prediction Modal ---------- */
-export function PredictionModal({ openModal, horoscope, onClose }: { openModal: string | null; horoscope: any; onClose: () => void }) {
-  const content: Record<string, { icon: React.ReactNode; title: string; text: string; color?: string }> = {
-    general: { icon: <Sparkles size={28} />, title: 'General Energy', text: safeString(horoscope?.general_prediction) },
-    love: { icon: <Heart size={28} />, title: 'Love & Relationships', text: safeString(horoscope?.love_prediction), color: '#E8738A' },
-    career: { icon: <Briefcase size={28} />, title: 'Career & Work', text: safeString(horoscope?.career_prediction), color: '#7CB3E8' },
-    health: { icon: <Activity size={28} />, title: 'Health & Wellness', text: safeString(horoscope?.health_prediction) },
-    finance: { icon: <DollarSign size={28} />, title: 'Finance & Money', text: safeString(horoscope?.finance_prediction), color: '#7CE8A6' },
-  };
+interface PredictionModalProps {
+  openModal: string | null;
+  horoscope: any;
+  onClose: () => void;
+  activeTab?: TabType;
+}
+
+export function PredictionModal({ openModal, horoscope, onClose, activeTab }: PredictionModalProps) {
+  const isSummary = activeTab === 'weekly' || activeTab === 'monthly';
+
+  const content: Record<string, { icon: React.ReactNode; title: string; text: string; color?: string }> = isSummary
+    ? {
+        general: { icon: <Sparkles size={28} />, title: 'Overall Narrative', text: safeString(horoscope?.general_summary) },
+        key_factors: { icon: <Activity size={28} />, title: 'Key Influences', text: safeString(horoscope?.key_factors), color: '#7CB3E8' },
+        love: { icon: <Heart size={28} />, title: 'Love & Relationships', text: safeString(horoscope?.love_summary), color: '#E8738A' },
+        career: { icon: <Briefcase size={28} />, title: 'Career & Focus', text: safeString(horoscope?.career_summary), color: '#7CB3E8' },
+      }
+    : {
+        general: { icon: <Sparkles size={28} />, title: 'General Energy', text: safeString(horoscope?.general_prediction) },
+        love: { icon: <Heart size={28} />, title: 'Love & Relationships', text: safeString(horoscope?.love_prediction), color: '#E8738A' },
+        career: { icon: <Briefcase size={28} />, title: 'Career & Work', text: safeString(horoscope?.career_prediction), color: '#7CB3E8' },
+        health: { icon: <Activity size={28} />, title: 'Health & Wellness', text: safeString(horoscope?.health_prediction) },
+        finance: { icon: <DollarSign size={28} />, title: 'Finance & Money', text: safeString(horoscope?.finance_prediction), color: '#7CE8A6' },
+      };
+
   const item = openModal ? content[openModal] : null;
 
   return (
@@ -99,7 +116,6 @@ export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, 
   const toggleAccordion = (s: string) => setOpenAccordion(openAccordion === s ? null : s);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // ✅ Summary ტაბების დეტექცია
   const isSummary = activeTab === 'weekly' || activeTab === 'monthly';
 
   const formattedDate = (() => {
@@ -168,7 +184,6 @@ export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, 
     return () => el.removeEventListener('scroll', onScroll);
   }, [isOpen]);
 
-  // ✅ CONDITIONAL SECTIONS — daily vs summary
   const sections = isSummary ? [
     { key: 'general', icon: <Sparkles size={18} className="rf-section-icon" />, cls: '', title: 'Overall Narrative', text: horoscope?.general_summary },
     { key: 'factors', icon: <Activity size={18} className="rf-section-icon" />, cls: 'health', title: 'Key Influences', text: horoscope?.key_factors },
@@ -221,7 +236,6 @@ export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, 
               <ArrowLeft size={20} />
             </button>
 
-            {/* ✅ CONDITIONAL ENERGY OVERVIEW */}
             <div className="rf-energy-overview">
               {isSummary ? (
                 <div className="rf-energy-item">
@@ -249,7 +263,6 @@ export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, 
             </div>
 
             <div className="rf-scroll" ref={scrollRef}>
-              {/* SECTIONS */}
               <div className="rf-sections">
                 {sections.filter(s => s.text).map(s => (
                   <motion.div
@@ -268,7 +281,6 @@ export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, 
                 ))}
               </div>
 
-              {/* AFFIRMATION — მხოლოდ daily */}
               {!isSummary && horoscope?.affirmation && (
                 <motion.div
                   className="rf-affirmation"
@@ -288,9 +300,7 @@ export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, 
                 </motion.div>
               )}
 
-              {/* ACCORDIONS */}
               <div className="rf-accordion-container">
-                {/* TRANSITS — მხოლოდ daily */}
                 {!isSummary && safeTransits.length > 0 && (
                   <div className="rf-accordion">
                     <button className="rf-accordion-header" onClick={() => toggleAccordion('transits')}>
@@ -332,7 +342,6 @@ export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, 
                   </div>
                 )}
 
-                {/* LUCKY ELEMENTS */}
                 <div className="rf-accordion">
                   <button className="rf-accordion-header" onClick={() => toggleAccordion('lucky')}>
                     <div className="rf-accordion-title">
@@ -383,7 +392,6 @@ export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, 
                   </AnimatePresence>
                 </div>
 
-                {/* MOON INFO — მხოლოდ daily */}
                 {!isSummary && (
                   <div className="rf-accordion">
                     <button className="rf-accordion-header" onClick={() => toggleAccordion('moon')}>
@@ -419,7 +427,6 @@ export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, 
                 )}
               </div>
 
-              {/* SHARE BOTTOM — მხოლოდ daily */}
               {!isSummary && horoscope?.affirmation && (
                 <div className="rf-share-bottom">
                   <button className="share-affirmation-btn" onClick={onShareAffirmation}>
@@ -429,7 +436,6 @@ export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, 
                 </div>
               )}
 
-              {/* FOOTER */}
               <div className="rf-footer">
                 <div className="rf-footer-divider">
                   <span className="rf-fd-star">✦</span>

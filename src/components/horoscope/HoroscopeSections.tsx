@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ChevronRight, Zap, Heart, Briefcase as BriefcaseIcon, Sparkles, Activity, DollarSign } from 'lucide-react';
+import { ChevronRight, Zap, Heart, Briefcase as BriefcaseIcon, Sparkles, Activity, DollarSign, Star } from 'lucide-react';
 import { ZODIAC_SIGNS } from '../../data/zodiacData';
 import { TabType, TAB_LABELS, safeString, getPredictionSubtitle } from './horoscopeData';
 
@@ -16,11 +16,6 @@ interface HeroBannerProps {
   titleRef: Ref<HTMLHeadingElement>;
 }
 
-/**
- * 🌙 HeroBanner — entrance animation მოცილებულია.
- * loader-ის გაქრობისას გვერდი მყისიერად, სრულად ჩანს.
- * ჩანს ყველა ტაბზე (today, tomorrow, weekly, monthly).
- */
 export function HeroBanner({ activeTab, refreshing, userSign, heroTitle, onReadFull, heroLeftRef, subtitleRef, titleRef }: HeroBannerProps) {
   const zodiacData = ZODIAC_SIGNS[userSign] || ZODIAC_SIGNS['leo'];
   return (
@@ -90,7 +85,24 @@ function EnergyCard({ type, icon, level, subtitle }: { type: string; icon: React
   );
 }
 
-export function EnergyGrid({ horoscope }: { horoscope: any }) {
+// ✅ ახალი: isSummary prop — summary-სთვის overall_energy-ს ვიყენებთ სამივე card-ზე
+interface EnergyGridProps {
+  horoscope: any;
+  isSummary?: boolean;
+}
+
+export function EnergyGrid({ horoscope, isSummary = false }: EnergyGridProps) {
+  if (isSummary) {
+    const overallEnergy = safeString(horoscope?.overall_energy || 'MEDIUM');
+    return (
+      <div className="premium-energy-grid">
+        <EnergyCard type="energy" icon={<Zap size={32} />} level={overallEnergy} subtitle="Overall" />
+        <EnergyCard type="love" icon={<Heart size={32} />} level={overallEnergy} subtitle="Love" />
+        <EnergyCard type="career" icon={<BriefcaseIcon size={32} />} level={overallEnergy} subtitle="Career" />
+      </div>
+    );
+  }
+
   return (
     <div className="premium-energy-grid">
       <EnergyCard type="energy" icon={<Zap size={32} />} level={horoscope?.cosmic_energy_level} subtitle="Energy" />
@@ -101,6 +113,11 @@ export function EnergyGrid({ horoscope }: { horoscope: any }) {
 }
 
 export function MoonCard({ horoscope, moonDescription }: { horoscope: any; moonDescription: string }) {
+  // ✅ თუ moon data არ არის (summary) — არ ვაჩვენოთ
+  if (!horoscope?.moon_phase && !horoscope?.moon_sign) {
+    return null;
+  }
+
   return (
     <div className="premium-moon-card">
       <div className="premium-moon-image-container">
@@ -126,7 +143,49 @@ function PredictionCard({ type, icon, label, subtitle, onClick }: { type: string
   );
 }
 
-export function PredictionsGrid({ safeDate, onSelect }: { safeDate: string; onSelect: (key: string) => void }) {
+// ✅ ახალი: isSummary prop — summary-სთვის 4 cards (general, key_factors, love, career)
+interface PredictionsGridProps {
+  safeDate: string;
+  onSelect: (key: string) => void;
+  isSummary?: boolean;
+}
+
+export function PredictionsGrid({ safeDate, onSelect, isSummary = false }: PredictionsGridProps) {
+  if (isSummary) {
+    return (
+      <div className="premium-predictions-grid">
+        <PredictionCard 
+          type="general" 
+          icon={<Sparkles size={28} />} 
+          label="NARRATIVE" 
+          subtitle="Overall cosmic story for this period" 
+          onClick={() => onSelect('general')} 
+        />
+        <PredictionCard 
+          type="career" 
+          icon={<Activity size={28} />} 
+          label="KEY FACTORS" 
+          subtitle="Major planetary influences at play" 
+          onClick={() => onSelect('key_factors')} 
+        />
+        <PredictionCard 
+          type="love" 
+          icon={<Heart size={28} />} 
+          label="LOVE" 
+          subtitle="Relationships & emotional currents" 
+          onClick={() => onSelect('love')} 
+        />
+        <PredictionCard 
+          type="career" 
+          icon={<BriefcaseIcon size={28} />} 
+          label="CAREER" 
+          subtitle="Work, focus & opportunities" 
+          onClick={() => onSelect('career')} 
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="premium-predictions-grid">
       <PredictionCard type="general" icon={<Sparkles size={28} />} label="GENERAL" subtitle={getPredictionSubtitle('general', safeDate)} onClick={() => onSelect('general')} />
@@ -139,9 +198,8 @@ export function PredictionsGrid({ safeDate, onSelect }: { safeDate: string; onSe
 }
 
 // ═══════════════════════════════════════════
-// 📅 SUMMARY VIEW (WEEKLY / MONTHLY)
-// Hero section ამოღებულია — HeroBanner უკვე ჩანს ზემოდან
-// type prop ამოღებულია (გამოუყენებელი)
+// 📅 SUMMARY VIEW (legacy — ახლა აღარ გამოიყენება main flow-ში)
+// დარჩენილია compatibility-სთვის
 // ═══════════════════════════════════════════
 
 export function SummaryView({ 
@@ -153,7 +211,6 @@ export function SummaryView({
 
   return (
     <div className="summary-view">
-      {/* General Summary */}
       <div className="summary-section summary-general">
         <div className="summary-section-header">
           <div className="summary-section-icon">
@@ -166,7 +223,6 @@ export function SummaryView({
         </p>
       </div>
 
-      {/* Key Factors */}
       {summary?.key_factors && (
         <div className="summary-section summary-factors">
           <div className="summary-section-header">
@@ -181,7 +237,6 @@ export function SummaryView({
         </div>
       )}
 
-      {/* Love Summary */}
       {summary?.love_summary && (
         <div className="summary-section summary-love">
           <div className="summary-section-header">
@@ -196,7 +251,6 @@ export function SummaryView({
         </div>
       )}
 
-      {/* Career Summary */}
       {summary?.career_summary && (
         <div className="summary-section summary-career">
           <div className="summary-section-header">
@@ -211,7 +265,6 @@ export function SummaryView({
         </div>
       )}
 
-      {/* Lucky Items + Energy */}
       <div className="summary-footer">
         <div className="summary-lucky-grid">
           {summary?.lucky_color && (

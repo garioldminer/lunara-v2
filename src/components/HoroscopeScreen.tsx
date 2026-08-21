@@ -17,7 +17,7 @@ import {
 } from './horoscope/horoscopeData';
 import { useHoroscopeDebug } from './horoscope/useHoroscopeDebug';
 import { ToastNotification, DebugPanel } from './horoscope/DebugPanel';
-import { HeroBanner, EnergyGrid, MoonCard, PredictionsGrid, SummaryView } from './horoscope/HoroscopeSections';
+import { HeroBanner, EnergyGrid, MoonCard, PredictionsGrid } from './horoscope/HoroscopeSections';
 import { PredictionModal, ShareModal, ReadFullModal } from './horoscope/HoroscopeModals';
 import './HoroscopeScreen.css';
 
@@ -946,6 +946,9 @@ function HoroscopeContent(props: HoroscopeContentProps) {
     { id: 'monthly', label: 'MONTHLY' },
   ];
 
+  // ✅ Summary ტაბების დეტექცია
+  const isSummary = activeTab === 'weekly' || activeTab === 'monthly';
+
   return (
     <>
       <div className="horoscope-screen premium-design">
@@ -987,6 +990,7 @@ function HoroscopeContent(props: HoroscopeContentProps) {
           </AnimatePresence>
 
           <div className="horoscope-content premium-content">
+            {/* ✅ HeroBanner — ყველა ტაბზე */}
             <HeroBanner
               activeTab={activeTab} refreshing={refreshing} userSign={userSign}
               heroTitle={heroTitle}
@@ -994,24 +998,31 @@ function HoroscopeContent(props: HoroscopeContentProps) {
               heroLeftRef={heroLeftRef} subtitleRef={subtitleRef} titleRef={titleRef}
             />
 
-            {(activeTab === 'today' || activeTab === 'tomorrow') ? (
-              <>
-                <div className="premium-section energy-section">
-                  <EnergyGrid horoscope={fixedHoroscope} />
-                </div>
-                <MoonCard horoscope={fixedHoroscope} moonDescription={moonDescription} />
-                <div className="premium-section predictions-section">
-                  <PredictionsGrid safeDate={safeDate} onSelect={setOpenModal} />
-                </div>
-              </>
-            ) : (
-              <SummaryView summary={fixedHoroscope} />
+            {/* ✅ EnergyGrid — ყველა ტაბზე (isSummary summary-სთვის) */}
+            <div className="premium-section energy-section">
+              <EnergyGrid horoscope={fixedHoroscope} isSummary={isSummary} />
+            </div>
+
+            {/* ✅ MoonCard — მხოლოდ daily (summary-ს არ აქვს moon data) */}
+            {!isSummary && (
+              <MoonCard horoscope={fixedHoroscope} moonDescription={moonDescription} />
             )}
+
+            {/* ✅ PredictionsGrid — ყველა ტაბზე (isSummary summary-სთვის) */}
+            <div className="premium-section predictions-section">
+              <PredictionsGrid safeDate={safeDate} onSelect={setOpenModal} isSummary={isSummary} />
+            </div>
           </div>
         </div>
       </div>
 
-      <PredictionModal openModal={openModal} horoscope={fixedHoroscope} onClose={() => setOpenModal(null)} />
+      {/* ✅ PredictionModal — გადაცემული activeTab-ით summary field-ებისთვის */}
+      <PredictionModal 
+        openModal={openModal} 
+        horoscope={fixedHoroscope} 
+        onClose={() => setOpenModal(null)}
+        activeTab={activeTab}
+      />
 
       <ShareModal
         isOpen={isShareModalOpen} onClose={() => setIsShareModalOpen(false)}
