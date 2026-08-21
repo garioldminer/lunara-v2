@@ -845,8 +845,8 @@
   transform: translateX(-3px) scale(0.92);
 }
 
-/* ✅ ENERGY OVERVIEW — back ღილაკის გვერდით, იგივე სიმაღლეზე */
-.rf-energy-overview {
+/* 💊 PILL TAGS — Energy Overview (ოთხივე ტაბისთვის ერთნაირი) */
+.rf-pill-tags {
   position: absolute;
   top: calc(env(safe-area-inset-top, 0px) + 49px);
   left: 62px;
@@ -854,47 +854,88 @@
   height: 38px;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 4px 10px;
-  background: rgba(217, 182, 111, 0.08);
-  border: 1px solid rgba(217, 182, 111, 0.2);
-  border-radius: 12px;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   z-index: 5;
   box-sizing: border-box;
 }
 
-.rf-energy-item {
+.rf-pill {
   display: flex;
   align-items: center;
-  gap: 4px;
-  flex: 1;
-  justify-content: center;
-}
-
-.rf-energy-emoji {
-  font-size: 12px;
-}
-
-.rf-energy-level {
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
   font-family: 'Cinzel', serif;
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 700;
-  color: var(--gold);
-  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: default;
   white-space: nowrap;
 }
 
-.rf-energy-cat {
-  display: none;
+.rf-pill-icon {
+  font-size: 12px;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
 }
 
-.rf-energy-divider {
-  width: 1px;
-  height: 20px;
-  background: linear-gradient(to bottom, transparent, rgba(217, 182, 111, 0.3), transparent);
-  flex-shrink: 0;
+.rf-pill-value {
+  color: #fff;
+  font-weight: 800;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+/* ⚡ Energy — Purple/Violet */
+.rf-pill-energy {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(167, 139, 250, 0.15));
+  border: 1px solid rgba(167, 139, 250, 0.45);
+  box-shadow: 
+    0 2px 8px rgba(139, 92, 246, 0.25),
+    inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+.rf-pill-energy:hover {
+  box-shadow: 
+    0 4px 14px rgba(139, 92, 246, 0.4),
+    inset 0 1px 0 rgba(255,255,255,0.15);
+  transform: translateY(-1px);
+}
+
+/* 💕 Love — Pink/Rose */
+.rf-pill-love {
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.25), rgba(244, 114, 182, 0.15));
+  border: 1px solid rgba(244, 114, 182, 0.45);
+  box-shadow: 
+    0 2px 8px rgba(236, 72, 153, 0.25),
+    inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+.rf-pill-love:hover {
+  box-shadow: 
+    0 4px 14px rgba(236, 72, 153, 0.4),
+    inset 0 1px 0 rgba(255,255,255,0.15);
+  transform: translateY(-1px);
+}
+
+/* 💼 Career — Blue */
+.rf-pill-career {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(96, 165, 250, 0.15));
+  border: 1px solid rgba(96, 165, 250, 0.45);
+  box-shadow: 
+    0 2px 8px rgba(59, 130, 246, 0.25),
+    inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+.rf-pill-career:hover {
+  box-shadow: 
+    0 4px 14px rgba(59, 130, 246, 0.4),
+    inset 0 1px 0 rgba(255,255,255,0.15);
+  transform: translateY(-1px);
 }
 
 .rf-header { text-align: center; margin-bottom: 24px; position: relative; }
@@ -1313,17 +1354,22 @@ nav[class*="nav"].rf-revealed {
   .rf-topbar-sign { font-size: 12px; letter-spacing: 2px; }
   .rf-topbar-date { font-size: 7px; }
   
-  /* ✅ Energy Overview responsive */
-  .rf-energy-overview {
+  /* 💊 Pill Tags responsive */
+  .rf-pill-tags {
     left: 56px;
     right: 12px;
     height: 36px;
-    padding: 3px 8px;
-    gap: 6px;
+    gap: 5px;
   }
-  .rf-energy-emoji { font-size: 11px; }
-  .rf-energy-level { font-size: 7px; }
-  .rf-energy-divider { height: 18px; }
+  .rf-pill {
+    padding: 5px 9px;
+    font-size: 8px;
+    gap: 4px;
+    letter-spacing: 0.4px;
+  }
+  .rf-pill-icon {
+    font-size: 11px;
+  }
   
   .rf-back {
     top: calc(env(safe-area-inset-top, 0px) + 47px);
@@ -1373,6 +1419,23 @@ nav[class*="nav"].rf-revealed {
   .rf-moon-sign-large { font-size: 10px; }
   .rf-moon-desc-expanded { font-size: 12px; }
   .share-affirmation-btn { padding: 7px 14px; font-size: 9px; }
+}
+
+/* 📱 Extra small screens — pill tags wrapping */
+@media (max-width: 360px) {
+  .rf-pill-tags {
+    height: auto;
+    flex-wrap: wrap;
+    padding: 6px 0;
+  }
+  .rf-pill {
+    padding: 4px 8px;
+    font-size: 7px;
+    gap: 3px;
+  }
+  .rf-pill-icon {
+    font-size: 10px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

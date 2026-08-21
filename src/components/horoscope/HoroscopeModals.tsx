@@ -205,6 +205,19 @@ export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, 
     return '⚪';
   };
 
+  // ✅ Pill Tags-ის მონაცემები — ერთნაირი layout ოთხივე ტაბისთვის
+  const energyPills = isSummary
+    ? [
+        { icon: '⚡', value: safeString(horoscope?.overall_energy || 'MEDIUM'), cls: 'rf-pill-energy' },
+        { icon: '💕', value: safeString(horoscope?.overall_energy || 'MEDIUM'), cls: 'rf-pill-love' },
+        { icon: '💼', value: safeString(horoscope?.overall_energy || 'MEDIUM'), cls: 'rf-pill-career' },
+      ]
+    : [
+        { icon: '⚡', value: safeString(horoscope?.cosmic_energy_level || 'MEDIUM'), cls: 'rf-pill-energy' },
+        { icon: '💕', value: safeString(horoscope?.love_energy_level || 'MEDIUM'), cls: 'rf-pill-love' },
+        { icon: '💼', value: safeString(horoscope?.career_energy_level || 'MEDIUM'), cls: 'rf-pill-career' },
+      ];
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -236,30 +249,14 @@ export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, 
               <ArrowLeft size={20} />
             </button>
 
-            <div className="rf-energy-overview">
-              {isSummary ? (
-                <div className="rf-energy-item">
-                  <span className="rf-energy-emoji">{getEnergyEmojis(safeString(horoscope?.overall_energy), '⚡')}</span>
-                  <span className="rf-energy-level">OVERALL: {safeString(horoscope?.overall_energy || 'MEDIUM').toUpperCase()}</span>
+            {/* ✅ PILL TAGS — Energy Overview (ერთნაირი ოთხივე ტაბზე) */}
+            <div className="rf-pill-tags">
+              {energyPills.map((pill, idx) => (
+                <div key={idx} className={`rf-pill ${pill.cls}`}>
+                  <span className="rf-pill-icon">{pill.icon}</span>
+                  <span className="rf-pill-value">{pill.value.toUpperCase()}</span>
                 </div>
-              ) : (
-                <>
-                  <div className="rf-energy-item">
-                    <span className="rf-energy-emoji">{getEnergyEmojis(safeString(horoscope?.cosmic_energy_level), '⚡')}</span>
-                    <span className="rf-energy-level">{safeString(horoscope?.cosmic_energy_level || 'MEDIUM').toUpperCase()}</span>
-                  </div>
-                  <div className="rf-energy-divider" />
-                  <div className="rf-energy-item">
-                    <span className="rf-energy-emoji">{getEnergyEmojis(safeString(horoscope?.love_energy_level), '💕')}</span>
-                    <span className="rf-energy-level">{safeString(horoscope?.love_energy_level || 'MEDIUM').toUpperCase()}</span>
-                  </div>
-                  <div className="rf-energy-divider" />
-                  <div className="rf-energy-item">
-                    <span className="rf-energy-emoji">{getEnergyEmojis(safeString(horoscope?.career_energy_level), '💼')}</span>
-                    <span className="rf-energy-level">{safeString(horoscope?.career_energy_level || 'MEDIUM').toUpperCase()}</span>
-                  </div>
-                </>
-              )}
+              ))}
             </div>
 
             <div className="rf-scroll" ref={scrollRef}>
