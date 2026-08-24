@@ -348,7 +348,57 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
           <div className="aurora-layer" />
           <div className="horoscope-empty">
             <Moon size={48} className="empty-moon" />
-            <p>The cosmos has no message for you today.</p>
+            {activeTab === 'weekly' ? (
+              <>
+                <p style={{ fontSize: '40px', marginBottom: '12px', filter: 'drop-shadow(0 0 12px rgba(217, 182, 111, 0.5))' }}>📅</p>
+                <p style={{ fontFamily: 'Cinzel, serif', fontSize: '18px', fontWeight: 700, color: '#D9B66F', marginBottom: '10px', letterSpacing: '1.5px' }}>
+                  Weekly Narrative
+                </p>
+                <p style={{ fontSize: '14px', opacity: 0.7, lineHeight: 1.6, fontStyle: 'italic' }}>
+                  No weekly summary available yet.<br />
+                  It will be generated automatically<br />
+                  when you view this tab.
+                </p>
+              </>
+            ) : activeTab === 'monthly' ? (
+              <>
+                <p style={{ fontSize: '40px', marginBottom: '12px', filter: 'drop-shadow(0 0 12px rgba(217, 182, 111, 0.5))' }}>🗓️</p>
+                <p style={{ fontFamily: 'Cinzel, serif', fontSize: '18px', fontWeight: 700, color: '#D9B66F', marginBottom: '10px', letterSpacing: '1.5px' }}>
+                  Monthly Narrative
+                </p>
+                <p style={{ fontSize: '14px', opacity: 0.7, lineHeight: 1.6, fontStyle: 'italic' }}>
+                  The cosmic narrative for this month<br />
+                  will be generated on the last day.
+                </p>
+              </>
+            ) : (
+              <p>The cosmos has no message for you today.</p>
+            )}
+            <motion.button 
+              onClick={refetch}
+              whileHover={{ scale: 1.05, boxShadow: '0 4px 15px rgba(217, 182, 111, 0.3)' }}
+              whileTap={{ scale: 0.95 }}
+              style={{
+                marginTop: '20px',
+                padding: '10px 24px',
+                background: 'rgba(217, 182, 111, 0.15)',
+                border: '1px solid rgba(217, 182, 111, 0.4)',
+                borderRadius: '20px',
+                color: '#D9B66F',
+                cursor: 'pointer',
+                fontSize: '12px',
+                fontFamily: 'Cinzel, serif',
+                fontWeight: 600,
+                letterSpacing: '0.8px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                backdropFilter: 'blur(10px)'
+              }}
+            >
+              <RotateCcw size={14} />
+              Try Again
+            </motion.button>
           </div>
         </div>
       ) : (

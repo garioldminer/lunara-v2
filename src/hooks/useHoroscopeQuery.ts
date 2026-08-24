@@ -117,25 +117,83 @@ async function fetchHoroscope(
     case 'weekly': {
       table = 'weekly_summaries';
       targetDate = getWeekStart();
+      console.log(`🔍 [Query] Weekly for ${capitalizedSign}`);
+      console.log(`   📅 Looking for week_start: ${targetDate}`);
+      console.log(`   📊 Table: ${table}`);
+      
+      // ✅ Debug: შევამოწმოთ რა არის table-ში
+      try {
+        const { data: allWeekly, error: checkError } = await supabase
+          .from(table)
+          .select('week_start, zodiac_sign')
+          .limit(5);
+        
+        if (checkError) {
+          console.error(`   ❌ Cannot read ${table}:`, checkError);
+        } else {
+          console.log(`   📋 Sample data in ${table}:`, allWeekly);
+          if (allWeekly && allWeekly.length > 0) {
+            const availableWeeks = [...new Set(allWeekly.map((r: any) => r.week_start))];
+            console.log(`   ✅ Available weeks:`, availableWeeks);
+            if (!availableWeeks.includes(targetDate)) {
+              console.warn(`   ⚠️ Requested week "${targetDate}" NOT FOUND in table!`);
+              console.warn(`   💡 Most recent week in table:`, availableWeeks[0]);
+            }
+          } else {
+            console.warn(`   ⚠️ Table ${table} is EMPTY!`);
+          }
+        }
+      } catch (debugErr) {
+        console.error(`   ❌ Debug query failed:`, debugErr);
+      }
+      
       query = supabase
         .from(table)
         .select('*')
         .ilike('zodiac_sign', capitalizedSign)
         .eq('week_start', targetDate)
         .maybeSingle();
-      console.log(`🔍 [Query] Weekly for ${capitalizedSign} (week ${targetDate})`);
       break;
     }
     case 'monthly': {
       table = 'monthly_summaries';
       targetDate = getMonthStart();
+      console.log(`🔍 [Query] Monthly for ${capitalizedSign}`);
+      console.log(`   📅 Looking for month_start: ${targetDate}`);
+      console.log(`   📊 Table: ${table}`);
+      
+      // ✅ Debug: შევამოწმოთ რა არის table-ში
+      try {
+        const { data: allMonthly, error: checkError } = await supabase
+          .from(table)
+          .select('month_start, zodiac_sign')
+          .limit(5);
+        
+        if (checkError) {
+          console.error(`   ❌ Cannot read ${table}:`, checkError);
+        } else {
+          console.log(`   📋 Sample data in ${table}:`, allMonthly);
+          if (allMonthly && allMonthly.length > 0) {
+            const availableMonths = [...new Set(allMonthly.map((r: any) => r.month_start))];
+            console.log(`   ✅ Available months:`, availableMonths);
+            if (!availableMonths.includes(targetDate)) {
+              console.warn(`   ⚠️ Requested month "${targetDate}" NOT FOUND in table!`);
+              console.warn(`   💡 Most recent month in table:`, availableMonths[0]);
+            }
+          } else {
+            console.warn(`   ⚠️ Table ${table} is EMPTY!`);
+          }
+        }
+      } catch (debugErr) {
+        console.error(`   ❌ Debug query failed:`, debugErr);
+      }
+      
       query = supabase
         .from(table)
         .select('*')
         .ilike('zodiac_sign', capitalizedSign)
         .eq('month_start', targetDate)
         .maybeSingle();
-      console.log(`🔍 [Query] Monthly for ${capitalizedSign} (month ${targetDate})`);
       break;
     }
     case 'today':
