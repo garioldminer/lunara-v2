@@ -655,6 +655,51 @@
   letter-spacing: 0.5px;
 }
 
+/* 📅 SUMMARY EMPTY STATE (MONTHLY/WEEKLY ცარიელი სტატუსისთვის) */
+.summary-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 24px;
+  background: linear-gradient(135deg, rgba(100, 80, 180, 0.08), rgba(100, 80, 180, 0.03));
+  border: 1px solid rgba(100, 80, 180, 0.2);
+  border-radius: 16px;
+  margin: 8px 0;
+}
+
+.summary-empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 0 12px rgba(100, 80, 180, 0.4));
+  animation: emptyIconFloat 3s ease-in-out infinite;
+}
+
+@keyframes emptyIconFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.summary-empty-title {
+  font-family: 'Cinzel', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 1.5px;
+  margin: 0 0 10px 0;
+}
+
+.summary-empty-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 14px;
+  font-style: italic;
+  color: rgba(247, 243, 235, 0.7);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 280px;
+}
+
 /* REFRESHING & TOAST */
 .refreshing-indicator {
   position: fixed; top: 20px; left: 50%;
@@ -936,6 +981,27 @@
     0 4px 14px rgba(59, 130, 246, 0.4),
     inset 0 1px 0 rgba(255,255,255,0.15);
   transform: translateY(-1px);
+}
+
+/* 📅 Info — Gold (Summary-სთვის: 7 DAYS, 3 SOURCES) */
+.rf-pill-info {
+  background: linear-gradient(135deg, rgba(217, 182, 111, 0.2), rgba(217, 182, 111, 0.1));
+  border: 1px solid rgba(217, 182, 111, 0.4);
+  box-shadow: 
+    0 2px 8px rgba(217, 182, 111, 0.2),
+    inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+.rf-pill-info:hover {
+  box-shadow: 
+    0 4px 14px rgba(217, 182, 111, 0.35),
+    inset 0 1px 0 rgba(255,255,255,0.15);
+  transform: translateY(-1px);
+}
+
+.rf-pill-info .rf-pill-value {
+  color: var(--gold);
+  font-weight: 700;
 }
 
 .rf-header { text-align: center; margin-bottom: 24px; position: relative; }
@@ -1343,6 +1409,12 @@ nav[class*="nav"].rf-revealed {
   .summary-lucky-item { padding: 12px 6px; }
   .summary-lucky-value { font-size: 14px; }
   
+  /* Summary Empty State responsive */
+  .summary-empty-state { padding: 32px 20px; }
+  .summary-empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .summary-empty-title { font-size: 14px; letter-spacing: 1.2px; }
+  .summary-empty-text { font-size: 13px; max-width: 260px; }
+  
   .toast { min-width: 240px; padding: 10px 14px; font-size: 10px; bottom: 80px; }
   .toast-icon { font-size: 14px; }
   
@@ -1441,7 +1513,7 @@ nav[class*="nav"].rf-revealed {
 @media (prefers-reduced-motion: reduce) {
   .premiumGlowPulse, .moonRotate, .iconGlowPulse, .rfSignFloat, .rfMoonGlow,
   .aurora-layer, .particle, .cardFloat, .cardGlowPulse, .ringPulse,
-  .starTwinkle, .edgeGlowPulse, .horoDebugPulse, .rfStarPulse { animation: none !important; }
+  .starTwinkle, .edgeGlowPulse, .horoDebugPulse, .rfStarPulse, .emptyIconFloat { animation: none !important; }
 }
 
 /* DEBUG BUTTON PULSE */

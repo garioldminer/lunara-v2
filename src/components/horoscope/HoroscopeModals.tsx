@@ -65,6 +65,9 @@ interface ShareModalProps {
 }
 
 export function ShareModal({ isOpen, onClose, userSign, safeDate, horoscope, safeTransits, zodiacPlanet, onDownload, onShare }: ShareModalProps) {
+  // ✅ Summary-სთვის affirmation-ის fallback — hero_description
+  const shareAffirmation = safeString(horoscope?.affirmation || horoscope?.hero_description || '');
+  
   return (
     <AnimatePresence>
       {isOpen && (
@@ -76,7 +79,7 @@ export function ShareModal({ isOpen, onClose, userSign, safeDate, horoscope, saf
               <ShareCardPreview
                 userSign={String(userSign)}
                 date={safeDate}
-                affirmation={safeString(horoscope?.affirmation)}
+                affirmation={shareAffirmation}
                 moonPhase={safeString(horoscope?.moon_phase)}
                 luckyNumber={Number(horoscope?.lucky_number) || 7}
                 luckyColor={safeString(horoscope?.lucky_color)}
@@ -205,17 +208,17 @@ export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, 
     return '⚪';
   };
 
-  // ✅ Pill Tags-ის მონაცემები — ერთნაირი layout ოთხივე ტაბისთვის
+  // ✅ Pill Tags — Summary-სთვის სხვადასხვა ინფორმაცია (არა redundancy)
   const energyPills = isSummary
     ? [
-        { icon: '⚡', value: safeString(horoscope?.overall_energy || 'MEDIUM'), cls: 'rf-pill-energy' },
-        { icon: '💕', value: safeString(horoscope?.overall_energy || 'MEDIUM'), cls: 'rf-pill-love' },
-        { icon: '💼', value: safeString(horoscope?.overall_energy || 'MEDIUM'), cls: 'rf-pill-career' },
+        { icon: '⚡', value: safeString(horoscope?.overall_energy || 'MEDIUM').toUpperCase(), cls: 'rf-pill-energy' },
+        { icon: '📅', value: activeTab === 'weekly' ? '7 DAYS' : '30 DAYS', cls: 'rf-pill-info' },
+        { icon: '🎯', value: `${horoscope?.source_dates?.length || 0} SOURCES`, cls: 'rf-pill-info' },
       ]
     : [
-        { icon: '⚡', value: safeString(horoscope?.cosmic_energy_level || 'MEDIUM'), cls: 'rf-pill-energy' },
-        { icon: '💕', value: safeString(horoscope?.love_energy_level || 'MEDIUM'), cls: 'rf-pill-love' },
-        { icon: '💼', value: safeString(horoscope?.career_energy_level || 'MEDIUM'), cls: 'rf-pill-career' },
+        { icon: '⚡', value: safeString(horoscope?.cosmic_energy_level || 'MEDIUM').toUpperCase(), cls: 'rf-pill-energy' },
+        { icon: '💕', value: safeString(horoscope?.love_energy_level || 'MEDIUM').toUpperCase(), cls: 'rf-pill-love' },
+        { icon: '💼', value: safeString(horoscope?.career_energy_level || 'MEDIUM').toUpperCase(), cls: 'rf-pill-career' },
       ];
 
   return (
@@ -249,12 +252,12 @@ export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, 
               <ArrowLeft size={20} />
             </button>
 
-            {/* ✅ PILL TAGS — Energy Overview (ერთნაირი ოთხივე ტაბზე) */}
+            {/* ✅ PILL TAGS — Energy Overview */}
             <div className="rf-pill-tags">
               {energyPills.map((pill, idx) => (
                 <div key={idx} className={`rf-pill ${pill.cls}`}>
                   <span className="rf-pill-icon">{pill.icon}</span>
-                  <span className="rf-pill-value">{pill.value.toUpperCase()}</span>
+                  <span className="rf-pill-value">{pill.value}</span>
                 </div>
               ))}
             </div>
