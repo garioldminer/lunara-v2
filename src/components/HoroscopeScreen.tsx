@@ -946,8 +946,6 @@ function HoroscopeContent(props: HoroscopeContentProps) {
     { id: 'monthly', label: 'MONTHLY' },
   ];
 
-  const isSummary = activeTab === 'weekly' || activeTab === 'monthly';
-
   return (
     <>
       <div className="horoscope-screen premium-design">
@@ -1012,7 +1010,6 @@ function HoroscopeContent(props: HoroscopeContentProps) {
                   <EnergyGrid horoscope={fixedHoroscope} isSummary={true} />
                 </div>
 
-                {/* ✅ Empty state თუ summary არ არის */}
                 {!fixedHoroscope?.general_summary ? (
                   <div className="summary-empty-state">
                     <div className="summary-empty-icon">
