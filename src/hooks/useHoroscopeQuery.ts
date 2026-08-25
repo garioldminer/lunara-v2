@@ -10,8 +10,8 @@ import type { UseHoroscopeResult } from './useHoroscope';
  * ტაბი → ცხრილი:
  * ─ today    → daily_horoscopes (დღეს)
  * ─ tomorrow → daily_horoscopes (ხვალ)
- * ─ weekly   → weekly_summaries (მიმდინარე კვირის ორშაბათი)
- * ─ monthly  → monthly_summaries (მიმდინარე თვის 1-ლი)
+ * ─ weekly   → weekly_summaries (მიმდინარე კვირის ორშაბათი, fallback: ბოლო ხელმისაწვდომი)
+ * ─ monthly  → monthly_summaries (მიმდინარე თვის 1-ლი, fallback: ბოლო ხელმისაწვდომი)
  */
 
 const getTodayString = (): string => new Date().toISOString().split('T')[0];
@@ -97,168 +97,158 @@ async function fetchHoroscope(
 
   const capitalizedSign = sunSign.charAt(0).toUpperCase() + sunSign.slice(1).toLowerCase();
 
-  let query;
-  let targetDate = '';
-  let table = 'daily_horoscopes';
-
   switch (readingType) {
     case 'tomorrow': {
-      table = 'daily_horoscopes';
-      targetDate = getTomorrowString();
-      query = supabase
-        .from(table)
+      const targetDate = getTomorrowString();
+      const query = supabase
+        .from('daily_horoscopes')
         .select('*')
         .ilike('zodiac_sign', capitalizedSign)
         .eq('date', targetDate)
         .maybeSingle();
-      console.log(`🔍 [Query] Tomorrow for ${capitalizedSign} (${targetDate})`);
-      break;
-    }
-    case 'weekly': {
-      table = 'weekly_summaries';
-      targetDate = getWeekStart();
-      console.log(`🔍 [Query] Weekly for ${capitalizedSign}`);
-      console.log(`   📅 Looking for week_start: ${targetDate}`);
-      console.log(`   📊 Table: ${table}`);
       
-      // ✅ Debug: შევამოწმოთ რა არის table-ში
-      try {
-        const { data: allWeekly, error: checkError } = await supabase
-          .from(table)
-          .select('week_start, zodiac_sign')
-          .limit(5);
-        
-        if (checkError) {
-          console.error(`   ❌ Cannot read ${table}:`, checkError);
-        } else {
-          console.log(`   📋 Sample data in ${table}:`, allWeekly);
-          if (allWeekly && allWeekly.length > 0) {
-            const availableWeeks = [...new Set(allWeekly.map((r: any) => r.week_start))];
-            console.log(`   ✅ Available weeks:`, availableWeeks);
-            if (!availableWeeks.includes(targetDate)) {
-              console.warn(`   ⚠️ Requested week "${targetDate}" NOT FOUND in table!`);
-              console.warn(`   💡 Most recent week in table:`, availableWeeks[0]);
-            }
-          } else {
-            console.warn(`   ⚠️ Table ${table} is EMPTY!`);
-          }
-        }
-      } catch (debugErr) {
-        console.error(`   ❌ Debug query failed:`, debugErr);
+      console.log(`🔍 [Query] Tomorrow for ${capitalizedSign} (${targetDate})`);
+      const { data, error } = await query;
+      
+      if (error) {
+        console.warn(`⚠️ [Query] tomorrow error: ${error.message}`);
+        return null;
       }
       
-      query = supabase
-        .from(table)
+      const row: any = Array.isArray(data) ? data[0] : data;
+      if (!row) {
+        console.warn(`⚠️ [Query] No tomorrow data for ${capitalizedSign} → triggering generation`);
+        triggerBackgroundGeneration('daily');
+        return null;
+      }
+      
+      console.log(`✅ [Query] Found tomorrow for ${capitalizedSign} (${row.date})`);
+      return { ...row, reading_type: readingType, _dataAge: -1 } as Horoscope & { _dataAge: number };
+    }
+
+    case 'weekly': {
+      const targetDate = getWeekStart();
+      console.log(`🔍 [Query] Weekly for ${capitalizedSign}`);
+      console.log(`   📅 Looking for week_start: ${targetDate}`);
+      
+      // ✅ Primary query: მიმდინარე კვირა
+      let { data: weeklyData } = await supabase
+        .from('weekly_summaries')
         .select('*')
         .ilike('zodiac_sign', capitalizedSign)
         .eq('week_start', targetDate)
         .maybeSingle();
-      break;
-    }
-    case 'monthly': {
-      table = 'monthly_summaries';
-      targetDate = getMonthStart();
-      console.log(`🔍 [Query] Monthly for ${capitalizedSign}`);
-      console.log(`   📅 Looking for month_start: ${targetDate}`);
-      console.log(`   📊 Table: ${table}`);
       
-      // ✅ Debug: შევამოწმოთ რა არის table-ში
-      try {
-        const { data: allMonthly, error: checkError } = await supabase
-          .from(table)
-          .select('month_start, zodiac_sign')
-          .limit(5);
+      // ✅ Fallback: თუ მიმდინარე კვირა არ არის, ეძებე ბოლო ხელმისაწვდომი
+      if (!weeklyData) {
+        console.warn(`   ⚠️ No data for week ${targetDate}, trying fallback...`);
         
-        if (checkError) {
-          console.error(`   ❌ Cannot read ${table}:`, checkError);
+        const { data: fallbackData } = await supabase
+          .from('weekly_summaries')
+          .select('*')
+          .ilike('zodiac_sign', capitalizedSign)
+          .order('week_start', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        
+        if (fallbackData) {
+          console.log(`   ✅ Using fallback week: ${fallbackData.week_start}`);
+          weeklyData = fallbackData;
         } else {
-          console.log(`   📋 Sample data in ${table}:`, allMonthly);
-          if (allMonthly && allMonthly.length > 0) {
-            const availableMonths = [...new Set(allMonthly.map((r: any) => r.month_start))];
-            console.log(`   ✅ Available months:`, availableMonths);
-            if (!availableMonths.includes(targetDate)) {
-              console.warn(`   ⚠️ Requested month "${targetDate}" NOT FOUND in table!`);
-              console.warn(`   💡 Most recent month in table:`, availableMonths[0]);
-            }
-          } else {
-            console.warn(`   ⚠️ Table ${table} is EMPTY!`);
-          }
+          console.warn(`   ❌ No weekly data at all for ${capitalizedSign}`);
         }
-      } catch (debugErr) {
-        console.error(`   ❌ Debug query failed:`, debugErr);
       }
       
-      query = supabase
-        .from(table)
+      if (!weeklyData) {
+        console.warn(`⚠️ [Query] No weekly data for ${capitalizedSign} → triggering generation`);
+        triggerBackgroundGeneration('weekly');
+        return null;
+      }
+      
+      console.log(`✅ [Query] Found weekly for ${capitalizedSign} (week ${weeklyData.week_start})`);
+      return { ...weeklyData, reading_type: readingType, _dataAge: 0 } as Horoscope & { _dataAge: number };
+    }
+
+    case 'monthly': {
+      const targetDate = getMonthStart();
+      console.log(`🔍 [Query] Monthly for ${capitalizedSign}`);
+      console.log(`   📅 Looking for month_start: ${targetDate}`);
+      
+      // ✅ Primary query: მიმდინარე თვე
+      let { data: monthlyData } = await supabase
+        .from('monthly_summaries')
         .select('*')
         .ilike('zodiac_sign', capitalizedSign)
         .eq('month_start', targetDate)
         .maybeSingle();
-      break;
+      
+      // ✅ Fallback: თუ მიმდინარე თვე არ არის, ეძებე ბოლო ხელმისაწვდომი
+      if (!monthlyData) {
+        console.warn(`   ⚠️ No data for month ${targetDate}, trying fallback...`);
+        
+        const { data: fallbackData } = await supabase
+          .from('monthly_summaries')
+          .select('*')
+          .ilike('zodiac_sign', capitalizedSign)
+          .order('month_start', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        
+        if (fallbackData) {
+          console.log(`   ✅ Using fallback month: ${fallbackData.month_start}`);
+          monthlyData = fallbackData;
+        } else {
+          console.warn(`   ❌ No monthly data at all for ${capitalizedSign}`);
+        }
+      }
+      
+      if (!monthlyData) {
+        console.warn(`⚠️ [Query] No monthly data for ${capitalizedSign} → triggering generation`);
+        triggerBackgroundGeneration('monthly');
+        return null;
+      }
+      
+      console.log(`✅ [Query] Found monthly for ${capitalizedSign} (month ${monthlyData.month_start})`);
+      return { ...monthlyData, reading_type: readingType, _dataAge: 0 } as Horoscope & { _dataAge: number };
     }
+
     case 'today':
     default: {
-      table = 'daily_horoscopes';
       const today = getTodayString();
       const weekAgo = getDateString(6);
-      query = supabase
-        .from(table)
+      const query = supabase
+        .from('daily_horoscopes')
         .select('*')
         .ilike('zodiac_sign', capitalizedSign)
         .gte('date', weekAgo)
         .lte('date', today)
         .order('date', { ascending: false })
         .limit(1);
+      
       console.log(`🔍 [Query] Today for ${capitalizedSign} (${weekAgo} → ${today})`);
-      break;
+      const { data, error } = await query;
+      
+      if (error) {
+        console.warn(`⚠️ [Query] today error: ${error.message}`);
+        return null;
+      }
+      
+      const row: any = Array.isArray(data) ? data[0] : data;
+      if (!row) {
+        console.warn(`⚠️ [Query] No today data for ${capitalizedSign} → triggering generation`);
+        triggerBackgroundGeneration('daily');
+        return null;
+      }
+      
+      const age = Math.floor(
+        (new Date(getTodayString() + 'T00:00:00').getTime() - new Date(row.date + 'T00:00:00').getTime())
+        / (1000 * 60 * 60 * 24)
+      );
+      
+      console.log(`✅ [Query] Found today for ${capitalizedSign} (${row.date}, age ${age}d)`);
+      return { ...row, reading_type: readingType, _dataAge: age } as Horoscope & { _dataAge: number };
     }
   }
-
-  const { data, error } = await query;
-
-  if (error) {
-    console.warn(`⚠️ [Query] ${readingType} error: ${error.message}`);
-    return null;
-  }
-
-  // ✅ Unpack: handle both single object (maybeSingle) and array (limit(1))
-  const row: any = Array.isArray(data) ? data[0] : data;
-
-  if (!row) {
-    console.warn(`⚠️ [Query] No ${readingType} data for ${capitalizedSign} → triggering generation`);
-    
-    // Self-heal: რომელი ტიპის გენერაცია ჩავრთოთ
-    if (readingType === 'tomorrow') {
-      triggerBackgroundGeneration('daily');
-    } else if (readingType === 'weekly') {
-      triggerBackgroundGeneration('weekly');
-    } else if (readingType === 'monthly') {
-      triggerBackgroundGeneration('monthly');
-    } else {
-      triggerBackgroundGeneration('daily');
-    }
-    return null;
-  }
-
-  // age გამოთვლა (დღეებში)
-  let age = 0;
-  if (readingType === 'today' && row.date) {
-    age = Math.floor(
-      (new Date(getTodayString() + 'T00:00:00').getTime() - new Date(row.date + 'T00:00:00').getTime())
-      / (1000 * 60 * 60 * 24)
-    );
-  } else if (readingType === 'tomorrow') {
-    age = -1; // ხვალინდელი
-  }
-  // weekly/monthly age არ გვჭირდება
-
-  console.log(`✅ [Query] Found ${readingType} for ${capitalizedSign} (${row.date || row.week_start || row.month_start})`);
-
-  return {
-    ...row,
-    reading_type: readingType,
-    _dataAge: age
-  } as Horoscope & { _dataAge: number };
 }
 
 /**
