@@ -17,10 +17,11 @@ interface PredictionModalProps {
 
 export function PredictionModal({ openModal, horoscope, onClose, activeTab }: PredictionModalProps) {
   const isSummary = activeTab === 'weekly' || activeTab === 'monthly';
+  const periodLabel = activeTab === 'weekly' ? 'Weekly' : activeTab === 'monthly' ? 'Monthly' : '';
 
   const content: Record<string, { icon: React.ReactNode; title: string; text: string; color?: string }> = isSummary
     ? {
-        general: { icon: <Sparkles size={28} />, title: 'Overall Narrative', text: safeString(horoscope?.general_summary) },
+        general: { icon: <Sparkles size={28} />, title: `${periodLabel} Narrative`, text: safeString(horoscope?.general_summary) },
         key_factors: { icon: <Activity size={28} />, title: 'Key Influences', text: safeString(horoscope?.key_factors), color: '#7CB3E8' },
         love: { icon: <Heart size={28} />, title: 'Love & Relationships', text: safeString(horoscope?.love_summary), color: '#E8738A' },
         career: { icon: <Briefcase size={28} />, title: 'Career & Focus', text: safeString(horoscope?.career_summary), color: '#7CB3E8' },
@@ -65,7 +66,6 @@ interface ShareModalProps {
 }
 
 export function ShareModal({ isOpen, onClose, userSign, safeDate, horoscope, safeTransits, zodiacPlanet, onDownload, onShare }: ShareModalProps) {
-  // ✅ Summary-სთვის affirmation-ის fallback — hero_description
   const shareAffirmation = safeString(horoscope?.affirmation || horoscope?.hero_description || '');
   
   return (
@@ -114,12 +114,13 @@ interface ReadFullModalProps {
   onShareAffirmation: () => void;
 }
 
-export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, safeTransits, moonDescription, activeTab, onCopyAffirmation, onShareAffirmation }: ReadFullModalProps) {
+export function ReadFullModal({ isOpen, onClose, userSign, zodiacSymbol, safeDate, horoscope, safeTransits, moonDescription, activeTab, onCopyAffirmation, onShareAffirmation }: ReadFullModalProps) {
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const toggleAccordion = (s: string) => setOpenAccordion(openAccordion === s ? null : s);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const isSummary = activeTab === 'weekly' || activeTab === 'monthly';
+  const periodLabel = activeTab === 'weekly' ? 'Weekly' : activeTab === 'monthly' ? 'Monthly' : 'Daily';
 
   const formattedDate = (() => {
     try {
@@ -188,7 +189,7 @@ export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, 
   }, [isOpen]);
 
   const sections = isSummary ? [
-    { key: 'general', icon: <Sparkles size={18} className="rf-section-icon" />, cls: '', title: 'Overall Narrative', text: horoscope?.general_summary },
+    { key: 'general', icon: <Sparkles size={18} className="rf-section-icon" />, cls: '', title: `${periodLabel} Narrative`, text: horoscope?.general_summary },
     { key: 'factors', icon: <Activity size={18} className="rf-section-icon" />, cls: 'health', title: 'Key Influences', text: horoscope?.key_factors },
     { key: 'love', icon: <Heart size={18} className="rf-section-icon" />, cls: 'love', title: 'Love & Relationships', text: horoscope?.love_summary },
     { key: 'career', icon: <Briefcase size={18} className="rf-section-icon" />, cls: 'career', title: 'Career & Focus', text: horoscope?.career_summary },
@@ -200,15 +201,12 @@ export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, 
     { key: 'finance', icon: <DollarSign size={18} className="rf-section-icon" />, cls: 'finance', title: 'Finance & Money', text: horoscope?.finance_prediction },
   ];
 
-  const tabLabel = activeTab === 'weekly' ? 'Weekly' : activeTab === 'monthly' ? 'Monthly' : 'Daily';
-
   const getInfluenceIcon = (influence: string) => {
     if (influence === 'harmonious') return '🟢';
     if (influence === 'challenging') return '🔴';
     return '⚪';
   };
 
-  // ✅ Pill Tags — Summary-სთვის სხვადასხვა ინფორმაცია (არა redundancy)
   const energyPills = isSummary
     ? [
         { icon: '⚡', value: safeString(horoscope?.overall_energy || 'MEDIUM').toUpperCase(), cls: 'rf-pill-energy' },
@@ -243,7 +241,10 @@ export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, 
 
             <div className="rf-topbar">
               <div className="rf-topbar-text">
-                <span className="rf-topbar-sign">{userSign.toUpperCase()}</span>
+                <span className="rf-topbar-sign">
+                  <span style={{ marginRight: '6px', fontSize: '16px' }}>{zodiacSymbol}</span>
+                  {userSign.toUpperCase()}
+                </span>
                 <span className="rf-topbar-date">{formattedDate}</span>
               </div>
             </div>
@@ -252,7 +253,6 @@ export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, 
               <ArrowLeft size={20} />
             </button>
 
-            {/* ✅ PILL TAGS — Energy Overview */}
             <div className="rf-pill-tags">
               {energyPills.map((pill, idx) => (
                 <div key={idx} className={`rf-pill ${pill.cls}`}>
@@ -291,7 +291,7 @@ export function ReadFullModal({ isOpen, onClose, userSign, safeDate, horoscope, 
                   <div className="rf-aff-glow" />
                   <div className="rf-aff-icon">✨</div>
                   <div className="rf-aff-header">
-                    <h3 className="rf-aff-title">{tabLabel} Affirmation</h3>
+                    <h3 className="rf-aff-title">{periodLabel} Affirmation</h3>
                     <button className="rf-aff-copy-btn" onClick={onCopyAffirmation} aria-label="Copy affirmation">
                       <Copy size={14} />
                     </button>
