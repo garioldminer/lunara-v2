@@ -1044,7 +1044,6 @@ function HoroscopeContent(props: HoroscopeContentProps) {
               heroLeftRef={heroLeftRef} subtitleRef={subtitleRef} titleRef={titleRef}
             />
 
-            {/* ✅ EnergyGrid — ყველა ტაბზე */}
             <div className="premium-section energy-section">
               <EnergyGrid 
                 horoscope={fixedHoroscope} 
@@ -1052,8 +1051,12 @@ function HoroscopeContent(props: HoroscopeContentProps) {
               />
             </div>
 
-            {/* ✅ MoonCard — ყველა ტაბზე (იგივე დიზაინი) */}
-            <MoonCard horoscope={fixedHoroscope} moonDescription={moonDescription} />
+            {/* ✅ MoonCard — isSummary prop-ით (summary-ზე Key Influences-ს აჩვენებს) */}
+            <MoonCard 
+              horoscope={fixedHoroscope} 
+              moonDescription={moonDescription}
+              isSummary={activeTab === 'weekly' || activeTab === 'monthly'}
+            />
 
             {(activeTab === 'today' || activeTab === 'tomorrow') ? (
               <div className="premium-section predictions-section">

@@ -111,7 +111,60 @@ export function EnergyGrid({ horoscope, isSummary = false }: EnergyGridProps) {
   );
 }
 
-export function MoonCard({ horoscope, moonDescription }: { horoscope: any; moonDescription: string }) {
+interface MoonCardProps {
+  horoscope: any;
+  moonDescription: string;
+  isSummary?: boolean;
+}
+
+export function MoonCard({ horoscope, moonDescription, isSummary = false }: MoonCardProps) {
+  // ✅ Summary mode — აჩვენე "KEY INFLUENCES" card (იგივე ვიზუალი)
+  if (isSummary) {
+    if (!horoscope?.key_factors) return null;
+    
+    return (
+      <div className="premium-moon-card summary-mode">
+        <div 
+          className="premium-moon-image-container"
+          style={{
+            background: 'linear-gradient(135deg, rgba(217, 182, 111, 0.25), rgba(217, 182, 111, 0.1))',
+            border: '2px solid rgba(217, 182, 111, 0.5)'
+          }}
+        >
+          <Sparkles 
+            size={24} 
+            style={{ 
+              color: 'var(--gold)', 
+              filter: 'drop-shadow(0 0 8px rgba(217, 182, 111, 0.6))' 
+            }} 
+          />
+        </div>
+        <div className="premium-moon-content">
+          <h4 className="premium-moon-label">KEY INFLUENCES</h4>
+          <h3 
+            className="premium-moon-phase"
+            style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.8px' }}
+          >
+            Major Cosmic Themes
+          </h3>
+          <p 
+            className="premium-moon-desc"
+            style={{ 
+              WebkitLineClamp: 3,
+              fontSize: '10px',
+              lineHeight: 1.5,
+              color: 'rgba(247, 243, 235, 0.85)',
+              marginTop: '2px'
+            }}
+          >
+            {safeString(horoscope.key_factors)}
+          </p>
+        </div>
+      </div>
+    );
+  }
+  
+  // Daily mode — normal moon card
   if (!horoscope?.moon_phase && !horoscope?.moon_sign) {
     return null;
   }
