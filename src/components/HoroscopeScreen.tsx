@@ -1044,22 +1044,23 @@ function HoroscopeContent(props: HoroscopeContentProps) {
               heroLeftRef={heroLeftRef} subtitleRef={subtitleRef} titleRef={titleRef}
             />
 
+            {/* ✅ EnergyGrid — ყველა ტაბზე */}
+            <div className="premium-section energy-section">
+              <EnergyGrid 
+                horoscope={fixedHoroscope} 
+                isSummary={activeTab === 'weekly' || activeTab === 'monthly'} 
+              />
+            </div>
+
+            {/* ✅ MoonCard — ყველა ტაბზე (იგივე დიზაინი) */}
+            <MoonCard horoscope={fixedHoroscope} moonDescription={moonDescription} />
+
             {(activeTab === 'today' || activeTab === 'tomorrow') ? (
-              <>
-                <div className="premium-section energy-section">
-                  <EnergyGrid horoscope={fixedHoroscope} isSummary={false} />
-                </div>
-                <MoonCard horoscope={fixedHoroscope} moonDescription={moonDescription} />
-                <div className="premium-section predictions-section">
-                  <PredictionsGrid safeDate={safeDate} onSelect={setOpenModal} isSummary={false} />
-                </div>
-              </>
+              <div className="premium-section predictions-section">
+                <PredictionsGrid safeDate={safeDate} onSelect={setOpenModal} isSummary={false} />
+              </div>
             ) : (
               <>
-                <div className="premium-section energy-section">
-                  <EnergyGrid horoscope={fixedHoroscope} isSummary={true} />
-                </div>
-
                 {!fixedHoroscope?.general_summary ? (
                   <div className="summary-empty-state">
                     <div className="summary-empty-icon">
