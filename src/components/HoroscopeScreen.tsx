@@ -87,7 +87,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
       dates.push(d.toISOString().split('T')[0]);
     }
     
-    // ხვალ + კვირის დასაწყისი + თვის დასაწყისი
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
     const tomorrowStr = tomorrow.toISOString().split('T')[0];
@@ -107,7 +106,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     })();
     
     try {
-      // 1. Daily history (ბოლო 7 დღე)
       const { data, error } = await supabase
         .from('daily_horoscopes')
         .select('zodiac_sign, date, created_at, ai_model_used, tokens_used, generation_time_ms, general_prediction, love_prediction, career_prediction, lucky_color, lucky_number, affirmation')
@@ -116,21 +114,18 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
       if (error) throw error;
 
-      // 2. Tomorrow (ცალკე)
       const { data: tomorrowData } = await supabase
         .from('daily_horoscopes')
         .select('zodiac_sign, date, general_prediction, affirmation')
         .eq('date', tomorrowStr)
         .order('zodiac_sign');
       
-      // 3. Weekly summaries (მიმდინარე კვირა)
       const { data: weeklyData } = await supabase
         .from('weekly_summaries')
         .select('zodiac_sign, week_start, hero_description, overall_energy, general_summary')
         .eq('week_start', weekStart)
         .order('zodiac_sign');
       
-      // 4. Monthly summaries (მიმდინარე თვე)
       const { data: monthlyData } = await supabase
         .from('monthly_summaries')
         .select('zodiac_sign, month_start, hero_description, overall_energy, general_summary')
@@ -270,7 +265,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     setStatusGenerating(false);
   };
 
-  // ✅ განახლებული copyStatus
   const copyStatus = () => {
     const data = {
       timestamp: new Date().toISOString(),
@@ -390,11 +384,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   if (!user?.sun_sign) return <SignSelectionScreen onNavigate={onNavigate} />;
 
   const todayStr = new Date().toISOString().split('T')[0];
-  const dailyData = statusData.daily || {};
-  const freshCount = ZODIAC_SIGNS_LIST.filter(s => (dailyData[s] || [])[0]?.age === 0).length;
-  const oldCount = ZODIAC_SIGNS_LIST.filter(s => { const l = (dailyData[s] || [])[0]; return !!l && l.age > 0; }).length;
-  const missingCount = ZODIAC_SIGNS_LIST.filter(s => (dailyData[s] || []).length === 0).length;
-  const missingSigns = ZODIAC_SIGNS_LIST.filter(s => (dailyData[s] || []).length === 0);
 
   return (
     <ScreenLoader isLoading={loading && !horoscope} context="horoscope">
@@ -448,7 +437,6 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
               onClick={async () => {
                 await refetch();
                 
-                // Trigger generation for summary tabs
                 if (activeTab === 'weekly' || activeTab === 'monthly') {
                   const url = (import.meta as any).env?.VITE_SUPABASE_URL || 'https://eutavdhcxpfhpfsyaskb.supabase.co';
                   const key = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY;
