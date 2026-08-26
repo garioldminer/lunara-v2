@@ -76,6 +76,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => setToast({ message, type });
 
+  // ✅ განახლებული fetchStatus — კითხულობს 4 ცხრილს
   const fetchStatus = async () => {
     if (!supabase) return;
     setStatusLoading(true);
@@ -85,7 +86,28 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
       const d = new Date(today); d.setDate(d.getDate() - i);
       dates.push(d.toISOString().split('T')[0]);
     }
+    
+    // ხვალ + კვირის დასაწყისი + თვის დასაწყისი
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+    
+    const weekStart = (() => {
+      const d = new Date();
+      const day = d.getDay();
+      const diff = day === 0 ? 6 : day - 1;
+      d.setDate(d.getDate() - diff);
+      return d.toISOString().split('T')[0];
+    })();
+    
+    const monthStart = (() => {
+      const d = new Date();
+      d.setDate(1);
+      return d.toISOString().split('T')[0];
+    })();
+    
     try {
+      // 1. Daily history (ბოლო 7 დღე)
       const { data, error } = await supabase
         .from('daily_horoscopes')
         .select('zodiac_sign, date, created_at, ai_model_used, tokens_used, generation_time_ms, general_prediction, love_prediction, career_prediction, lucky_color, lucky_number, affirmation')
@@ -93,6 +115,27 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         .order('date', { ascending: false });
 
       if (error) throw error;
+
+      // 2. Tomorrow (ცალკე)
+      const { data: tomorrowData } = await supabase
+        .from('daily_horoscopes')
+        .select('zodiac_sign, date, general_prediction, affirmation')
+        .eq('date', tomorrowStr)
+        .order('zodiac_sign');
+      
+      // 3. Weekly summaries (მიმდინარე კვირა)
+      const { data: weeklyData } = await supabase
+        .from('weekly_summaries')
+        .select('zodiac_sign, week_start, hero_description, overall_energy, general_summary')
+        .eq('week_start', weekStart)
+        .order('zodiac_sign');
+      
+      // 4. Monthly summaries (მიმდინარე თვე)
+      const { data: monthlyData } = await supabase
+        .from('monthly_summaries')
+        .select('zodiac_sign, month_start, hero_description, overall_energy, general_summary')
+        .eq('month_start', monthStart)
+        .order('zodiac_sign');
 
       const grouped: any = {};
       ZODIAC_SIGNS_LIST.forEach(s => { grouped[s] = []; });
@@ -114,8 +157,38 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
         });
       });
       Object.keys(grouped).forEach(s => grouped[s].sort((a: any, b: any) => b.date.localeCompare(a.date)));
-      setStatusData(grouped);
-    } catch (e: any) { setStatusMessage(`❌ ${e.message}`); }
+      
+      setStatusData({
+        daily: grouped,
+        tomorrow: {
+          date: tomorrowStr,
+          count: (tomorrowData || []).length,
+          signs: (tomorrowData || []).map((r: any) => r.zodiac_sign)
+        },
+        weekly: {
+          weekStart: weekStart,
+          count: (weeklyData || []).length,
+          signs: (weeklyData || []).map((r: any) => ({
+            sign: r.zodiac_sign,
+            hero: (r.hero_description || '').substring(0, 50),
+            energy: r.overall_energy
+          }))
+        },
+        monthly: {
+          monthStart: monthStart,
+          count: (monthlyData || []).length,
+          signs: (monthlyData || []).map((r: any) => ({
+            sign: r.zodiac_sign,
+            hero: (r.hero_description || '').substring(0, 50),
+            energy: r.overall_energy
+          }))
+        }
+      });
+      
+      setStatusMessage(`✅ Daily: ${Object.values(grouped).filter((a: any) => a[0]?.age === 0).length}/12 | Tomorrow: ${(tomorrowData || []).length}/12 | Weekly: ${(weeklyData || []).length}/12 | Monthly: ${(monthlyData || []).length}/12`);
+    } catch (e: any) { 
+      setStatusMessage(`❌ ${e.message}`); 
+    }
     setStatusLoading(false);
   };
 
@@ -197,16 +270,12 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
     setStatusGenerating(false);
   };
 
+  // ✅ განახლებული copyStatus
   const copyStatus = () => {
     const data = {
       timestamp: new Date().toISOString(),
       today: new Date().toISOString().split('T')[0],
-      summary: {
-        fresh: ZODIAC_SIGNS_LIST.filter(s => (statusData[s] || [])[0]?.age === 0).length,
-        old: ZODIAC_SIGNS_LIST.filter(s => { const l = (statusData[s] || [])[0]; return !!l && l.age > 0; }).length,
-        missing: ZODIAC_SIGNS_LIST.filter(s => (statusData[s] || []).length === 0).length
-      },
-      signs: statusData
+      ...statusData
     };
     navigator.clipboard.writeText(JSON.stringify(data, null, 2));
     showToast('Status data copied! 📋', 'success');
@@ -321,10 +390,11 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
   if (!user?.sun_sign) return <SignSelectionScreen onNavigate={onNavigate} />;
 
   const todayStr = new Date().toISOString().split('T')[0];
-  const freshCount = ZODIAC_SIGNS_LIST.filter(s => (statusData[s] || [])[0]?.age === 0).length;
-  const oldCount = ZODIAC_SIGNS_LIST.filter(s => { const l = (statusData[s] || [])[0]; return !!l && l.age > 0; }).length;
-  const missingCount = ZODIAC_SIGNS_LIST.filter(s => (statusData[s] || []).length === 0).length;
-  const missingSigns = ZODIAC_SIGNS_LIST.filter(s => (statusData[s] || []).length === 0);
+  const dailyData = statusData.daily || {};
+  const freshCount = ZODIAC_SIGNS_LIST.filter(s => (dailyData[s] || [])[0]?.age === 0).length;
+  const oldCount = ZODIAC_SIGNS_LIST.filter(s => { const l = (dailyData[s] || [])[0]; return !!l && l.age > 0; }).length;
+  const missingCount = ZODIAC_SIGNS_LIST.filter(s => (dailyData[s] || []).length === 0).length;
+  const missingSigns = ZODIAC_SIGNS_LIST.filter(s => (dailyData[s] || []).length === 0);
 
   return (
     <ScreenLoader isLoading={loading && !horoscope} context="horoscope">
@@ -375,7 +445,25 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
               <p>The cosmos has no message for you today.</p>
             )}
             <motion.button 
-              onClick={refetch}
+              onClick={async () => {
+                await refetch();
+                
+                // Trigger generation for summary tabs
+                if (activeTab === 'weekly' || activeTab === 'monthly') {
+                  const url = (import.meta as any).env?.VITE_SUPABASE_URL || 'https://eutavdhcxpfhpfsyaskb.supabase.co';
+                  const key = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY;
+                  
+                  if (key) {
+                    showToast(`⚡ Triggering ${activeTab} generation...`, 'info');
+                    fetch(`${url}/functions/v1/generate-summaries?type=${activeTab}`, {
+                      method: 'POST',
+                      headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' }
+                    }).catch(() => {});
+                    
+                    setTimeout(refetch, 3000);
+                  }
+                }
+              }}
               whileHover={{ scale: 1.05, boxShadow: '0 4px 15px rgba(217, 182, 111, 0.3)' }}
               whileTap={{ scale: 0.95 }}
               style={{
@@ -397,7 +485,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
               }}
             >
               <RotateCcw size={14} />
-              Try Again
+              {activeTab === 'weekly' || activeTab === 'monthly' ? 'Generate & Retry' : 'Try Again'}
             </motion.button>
           </div>
         </div>
@@ -512,16 +600,22 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
             <div style={{ flex: 1, overflowY: 'auto' }}>
               {unifiedTab === 'status' && (
                 <div>
-                  <div style={{ padding: '10px 20px', display: 'flex', gap: '14px', fontSize: '12px', borderBottom: '1px solid rgba(217,182,111,0.15)', flexWrap: 'wrap', background: 'rgba(0,0,0,0.3)' }}>
-                    <span><span style={{ color: '#10b981' }}>●</span> Fresh today: <b style={{ color: '#10b981' }}>{freshCount}/12</b></span>
-                    <span><span style={{ color: '#f59e0b' }}>●</span> Old (fallback): <b style={{ color: '#f59e0b' }}>{oldCount}</b></span>
-                    <span><span style={{ color: '#ef4444' }}>●</span> Missing: <b style={{ color: '#ef4444' }}>{missingCount}</b></span>
-                    {missingSigns.length > 0 && missingSigns.length < 12 && (
-                      <span style={{ color: '#888', fontSize: '10px' }}>
-                        Next: <b style={{ color: '#60a5fa' }}>{missingSigns[0]}</b>
-                      </span>
-                    )}
-                  </div>
+                  {(() => {
+                    const daily = statusData.daily || {};
+                    const tmrw = statusData.tomorrow || { count: 0 };
+                    const wk = statusData.weekly || { count: 0 };
+                    const mo = statusData.monthly || { count: 0 };
+                    const freshDaily = Object.values(daily).filter((a: any) => a[0]?.age === 0).length;
+                    
+                    return (
+                      <div style={{ padding: '10px 20px', display: 'flex', gap: '12px', fontSize: '12px', borderBottom: '1px solid rgba(217,182,111,0.15)', flexWrap: 'wrap', background: 'rgba(0,0,0,0.3)' }}>
+                        <span>📅 Today: <b style={{ color: freshDaily === 12 ? '#10b981' : '#f59e0b' }}>{freshDaily}/12</b></span>
+                        <span>🔮 Tomorrow: <b style={{ color: tmrw.count === 12 ? '#10b981' : tmrw.count > 0 ? '#f59e0b' : '#ef4444' }}>{tmrw.count}/12</b></span>
+                        <span>📆 Weekly: <b style={{ color: wk.count === 12 ? '#10b981' : wk.count > 0 ? '#f59e0b' : '#ef4444' }}>{wk.count}/12</b></span>
+                        <span>🗓️ Monthly: <b style={{ color: mo.count === 12 ? '#10b981' : mo.count > 0 ? '#f59e0b' : '#ef4444' }}>{mo.count}/12</b></span>
+                      </div>
+                    );
+                  })()}
 
                   <div style={{ padding: '12px 20px', display: 'flex', gap: '8px' }}>
                     <button onClick={fetchStatus} disabled={statusLoading} style={{
@@ -565,7 +659,7 @@ export default function HoroscopeScreen({ onNavigate }: Props) {
                     </thead>
                     <tbody>
                       {ZODIAC_SIGNS_LIST.map(sign => {
-                        const entries = statusData[sign] || [];
+                        const entries = (statusData.daily || {})[sign] || [];
                         const latest = entries[0];
                         const ageColor = !latest ? '#ef4444' : latest.age === 0 ? '#10b981' : latest.age <= 2 ? '#f59e0b' : '#ef4444';
                         const isExpanded = expandedSign === sign;
@@ -1051,7 +1145,6 @@ function HoroscopeContent(props: HoroscopeContentProps) {
               />
             </div>
 
-            {/* ✅ MoonCard — isSummary prop-ით (summary-ზე Key Influences-ს აჩვენებს) */}
             <MoonCard 
               horoscope={fixedHoroscope} 
               moonDescription={moonDescription}
