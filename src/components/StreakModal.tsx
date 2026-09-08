@@ -13,11 +13,11 @@ import {
   type StreakInfo,
   type CalendarDay
 } from '../lib/streakService';
-import { StreakHeader } from './streak/StreakHeader';
-import { StreakProgress } from './streak/StreakProgress';
-import { StreakCalendar } from './streak/StreakCalendar';
-import { MilestonesList } from './streak/MilestonesList';
-import { CelebrationModal } from './streak/CelebrationModal';
+import { StreakHeader } from './home/components/streak/StreakHeader';
+import { StreakProgress } from './home/components/streak/StreakProgress';
+import { StreakCalendar } from './home/components/streak/StreakCalendar';
+import { MilestonesList } from './home/components/streak/MilestonesList';
+import { CelebrationModal } from './home/components/streak/CelebrationModal';
 
 interface StreakModalProps {
   isOpen: boolean;
@@ -57,7 +57,6 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
       setMessage(null);
       
       try {
-        // Parallel load
         const [info, msList, claimed, cal] = await Promise.all([
           getStreakInfo(user.id),
           getStreakMilestones(),
@@ -71,7 +70,6 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
         setAchievedNotClaimedIds(new Set((info?.achieved_not_claimed || []).map(m => m.id)));
         setCalendar(cal);
         
-        // Auto-check for unclaimed milestones
         if (info && info.achieved_not_claimed.length > 0) {
           setMessage({
             type: 'success',
@@ -100,7 +98,6 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
       const result = await claimStreakMilestone();
       
       if (result.success && result.data) {
-        // Confetti celebration!
         confetti({
           particleCount: 150,
           spread: 80,
@@ -108,24 +105,20 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
           colors: ['#fbbf24', '#f59e0b', '#10b981', '#ffe566']
         });
         
-        // Show celebration modal
         setCelebration({
           milestones: result.data.milestones_claimed,
           total_coins: result.data.total_coins,
           total_xp: result.data.total_xp
         });
         
-        // Update local state
         const newClaimedIds = new Set(claimedMilestoneIds);
         result.data.milestones_claimed.forEach(m => newClaimedIds.add(m.milestone_id));
         setClaimedMilestoneIds(newClaimedIds);
         setAchievedNotClaimedIds(new Set());
         
-        // Refresh streak info
         const updatedInfo = await getStreakInfo(user.id);
         if (updatedInfo) setStreakInfo(updatedInfo);
         
-        // Callback to parent
         onMilestoneClaimed?.({
           total_coins: result.data.total_coins,
           total_xp: result.data.total_xp,
@@ -194,7 +187,6 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
 
             {/* Scrollable Content */}
             <div style={{ flex: 1, overflowY: 'auto' }}>
-              {/* Progress to Next Milestone */}
               <StreakProgress
                 nextMilestone={streakInfo?.next_milestone}
                 streak={streak}
@@ -202,10 +194,8 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
                 daysToNext={streakInfo?.days_to_next ?? 0}
               />
 
-              {/* Calendar Section */}
               <StreakCalendar calendar={calendar} loading={loading} />
 
-              {/* Message Banner */}
               {message && (
                 <div style={{ padding: '0 16px 8px 16px' }}>
                   <div style={{
@@ -223,7 +213,6 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
                 </div>
               )}
 
-              {/* Milestones List */}
               <MilestonesList
                 milestones={milestones}
                 claimedMilestoneIds={claimedMilestoneIds}
@@ -272,7 +261,6 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
             </div>
           </motion.div>
 
-          {/* 🎉 CELEBRATION MODAL */}
           <CelebrationModal celebration={celebration} onClose={() => setCelebration(null)} />
         </motion.div>
       )}

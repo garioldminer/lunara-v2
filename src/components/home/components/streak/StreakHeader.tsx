@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { X, Flame } from 'lucide-react';
+import { X } from 'lucide-react';
 
 interface StreakHeaderProps {
   streak: number;
