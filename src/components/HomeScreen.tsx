@@ -24,8 +24,8 @@ import StreakModal from './StreakModal';
 import LeaderboardModal from './LeaderboardModal';
 import HomeLayoutDebugger from './HomeLayoutDebugger';
 import { CountdownTimer } from './home/components/CountdownTimer';
-import { getZodiacSymbol, hexToRgbVars, hexToRgba, getXPToNextLevel, getLevelFromTotalXP } from './home/lib/helpers';
 import './HomeScreen.css';
+import { getZodiacSymbol, hexToRgbVars, hexToRgba, getLevelFromTotalXP } from './home/lib/helpers';
 
 interface Toast {
   message: string;
