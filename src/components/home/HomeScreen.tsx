@@ -72,7 +72,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     questsLoading,
     dailyQuests,
     activeDailyQuest,
-    loadQuests,
     claimQuest
   } = useQuests(user?.id);
 
@@ -217,7 +216,7 @@ export default function HomeScreen({ onNavigate }: Props) {
   };
 
   // Handle quick action
-  const handleQuickAction = async (action: string, isPremium?: boolean) => {
+  const handleQuickAction = async (action: string) => {
     if (action === 'Placeholder10') {
       showToast(t('home.comingSoon'), 'info');
       return;

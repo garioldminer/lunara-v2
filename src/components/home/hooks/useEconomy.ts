@@ -91,6 +91,8 @@ export const useEconomy = (userId: string | undefined) => {
     if (!userId || !supabase) return;
 
     const calculateRealEnergy = async () => {
+      if (!supabase) return;
+      
       try {
         const { data: economyData } = await supabase
           .from('user_economy')
