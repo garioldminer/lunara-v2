@@ -6,7 +6,7 @@ import { lazy } from 'react';
    ============================================ */
 
 // Main tabs
-export const HomeScreen = lazy(() => import('./home/HomeScreen'));  // ← შეცვლილია
+export const HomeScreen = lazy(() => import('./HomeScreen'));
 export const CardsScreen = lazy(() => import('./CardsScreen'));
 export const AstroScreen = lazy(() => import('./AstroScreen'));
 export const ProfileScreen = lazy(() => import('./ProfileScreen'));
