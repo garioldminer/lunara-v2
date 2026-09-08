@@ -10,7 +10,7 @@ import { getTodayReading } from '../lib/dailyCardService';
 import { getStreakMilestones, getClaimedMilestones } from '../lib/streakService';
 import { logger } from '../lib/logger';
 import { 
-  Gem, Trophy, Flame, X, CheckCircle,
+  Gem, Trophy,
   Sparkles, LayoutGrid, Moon, 
   Crown, Scroll, Gift, Infinity as InfinityIcon, RefreshCw, TrendingUp
 } from 'lucide-react';
@@ -19,7 +19,6 @@ import DiamondShopModal from './DiamondShopModal';
 import StreakModal from './StreakModal';
 import LeaderboardModal from './LeaderboardModal';
 import HomeLayoutDebugger from './HomeLayoutDebugger';
-import { CountdownTimer } from './home/components/CountdownTimer';
 import './HomeScreen.css';
 import { getLevelFromTotalXP } from './home/lib/helpers';
 import { ToastNotification, type Toast } from './home/components/ToastNotification';
@@ -29,6 +28,7 @@ import { AdminButtons } from './home/components/AdminButtons';
 import { UserHeader } from './home/components/UserHeader';
 import { CardOfDayBanner } from './home/components/CardOfDayBanner';
 import { QuickActionsGrid } from './home/components/QuickActionsGrid';
+import { QuestsPanel } from './home/components/QuestsPanel';
 import { useDebugTools } from './home/hooks/useDebugTools';
 
 
@@ -624,18 +624,6 @@ export default function HomeScreen({ onNavigate }: Props) {
     return '🔥';
   };
 
-  const getQuestIcon = (actionType: string): React.ReactNode => {
-    switch (actionType) {
-      case 'draw_daily_card': return <Scroll size={16} />;
-      case 'check_horoscope': return <Sparkles size={16} />;
-      case 'complete_reading': return <LayoutGrid size={16} />;
-      case 'discover_card': return <Gem size={16} />;
-      case 'maintain_streak': return <Flame size={16} />;
-      case 'view_gallery': return <LayoutGrid size={16} />;
-      default: return <Scroll size={16} />;
-    }
-  };
-
   return (
     <div className="home-screen" ref={screenRef}>
       <AnimatePresence>
@@ -672,47 +660,17 @@ export default function HomeScreen({ onNavigate }: Props) {
       />
 
       <div className="quests-and-actions-split" style={{ display: 'flex', flexDirection: 'row', gap: '2px', marginBottom: '2px', width: '100%', alignItems: 'stretch' }}>
-        <div className="daily-quests-compact" style={{ flex: '0 0 60%', minWidth: 0 }} onClick={() => setShowQuestModal(true)}>
-          <div className="quests-header-compact">
-            <h3>{t('home.dailyQuests')}</h3>
-            <CountdownTimer style={{ fontSize: '9px', color: '#b3a68c', fontFamily: 'monospace' }} />
-          </div>
-          <div className="quest-list-compact">
-            {questsLoading ? (
-              <div style={{ textAlign: 'center', color: '#b3a68c', fontSize: '9px', padding: '10px' }}>{t('home.loading')}</div>
-            ) : dailyQuests.length === 0 ? (
-              <div style={{ textAlign: 'center', color: '#b3a68c', fontSize: '9px', padding: '10px' }}>{t('home.noQuests')}</div>
-            ) : activeDailyQuest ? (
-              <div className="quest-item-compact">
-                <div className="quest-icon-compact" style={{ color: activeDailyQuest.isClaimable ? '#10b981' : '#C5A059' }}>
-                  {getQuestIcon(activeDailyQuest.quest?.action_type || '')}
-                </div>
-                <div className="quest-info-compact">
-                  <span className="quest-name-compact">
-                    {activeDailyQuest.quest?.title || t('home.quest')}
-                  </span>
-                  <div className="quest-progress-compact">
-                    <div className="progress-bar-compact">
-                      <div className="progress-fill-compact" style={{ width: `${Math.min((activeDailyQuest.current_progress / (activeDailyQuest.quest?.target_count || 1)) * 100, 100)}%` }}></div>
-                    </div>
-                    <span style={{ fontSize: '8px', color: '#b3a68c', minWidth: '18px' }}>{activeDailyQuest.current_progress}/{activeDailyQuest.quest?.target_count}</span>
-                  </div>
-                </div>
-                <div className="quest-reward-compact" style={{ color: activeDailyQuest.isClaimable ? '#10b981' : '#C5A059' }}>
-                  {activeDailyQuest.isClaimable ? (
-                    <button onClick={(e) => { e.stopPropagation(); handleClaimQuest(activeDailyQuest); }} disabled={isClaimingQuest} className="quest-claim-btn-compact">
-                      {isClaimingQuest ? <RefreshCw size={10} className="spin" /> : t('home.claim')}
-                    </button>
-                  ) : (
-                    <><Gem size={9} /> +{activeDailyQuest.quest?.reward_coins}</>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div style={{ textAlign: 'center', color: '#10b981', fontSize: '9px', padding: '10px' }}>{t('home.allComplete')}</div>
-            )}
-          </div>
-        </div>
+        <QuestsPanel
+          quests={dailyQuests}
+          loading={questsLoading}
+          activeQuest={activeDailyQuest}
+          isClaiming={isClaimingQuest}
+          showModal={showQuestModal}
+          onOpenModal={() => setShowQuestModal(true)}
+          onCloseModal={() => setShowQuestModal(false)}
+          onClaim={handleClaimQuest}
+          t={t}
+        />
 
         <div className="action-buttons-panel" style={{ flex: '0 0 calc(40% - 2px)', minWidth: 0 }}>
           <div className="action-grid-vertical">
@@ -766,69 +724,6 @@ export default function HomeScreen({ onNavigate }: Props) {
           </div>
         </div>
       </div>
-
-      {showQuestModal && (
-        <div className="quest-modal-overlay" onClick={() => setShowQuestModal(false)}>
-          <div className="quest-modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="quest-modal-header">
-              <h3>
-                <Trophy size={18} /> {t('home.questModal.title')}
-              </h3>
-              <button onClick={() => setShowQuestModal(false)} className="quest-modal-close">
-                <X size={20} />
-              </button>
-            </div>
-            <div className="quest-modal-body">
-              {dailyQuests.length === 0 ? (
-                <div style={{ textAlign: 'center', color: '#94a3b8', padding: '20px' }}>{t('home.questModal.noQuests')}</div>
-              ) : (
-                dailyQuests.map((q) => (
-                  <div key={q.id} className={`quest-modal-item ${q.is_claimed ? 'claimed' : ''}`}>
-                    <div className="quest-modal-top">
-                      <div className="quest-modal-info">
-                        <div className="quest-modal-icon" style={{ color: q.isClaimable ? '#10b981' : '#C5A059' }}>
-                          {getQuestIcon(q.quest?.action_type || '')}
-                        </div>
-                        <div>
-                          <div className="quest-modal-title">{q.quest?.title}</div>
-                          <div className="quest-modal-desc">{q.quest?.description}</div>
-                        </div>
-                      </div>
-                      <div className="quest-modal-reward">
-                        <Gem size={12} /> +{q.quest?.reward_coins}
-                      </div>
-                    </div>
-                    <div className="quest-modal-progress">
-                      <div className="progress-bar-modal">
-                        <div className="progress-fill-modal" style={{ width: `${Math.min((q.current_progress / (q.quest?.target_count || 1)) * 100, 100)}%` }}></div>
-                      </div>
-                      <span className="quest-modal-progress-text">{q.current_progress}/{q.quest?.target_count}</span>
-                    </div>
-                    {q.isClaimable && (
-                      <button onClick={() => handleClaimQuest(q)} disabled={isClaimingQuest} className="quest-modal-claim-btn">
-                        {isClaimingQuest ? <RefreshCw size={14} className="spin" /> : <><CheckCircle size={14} /> {t('home.questModal.claimReward')}</>}
-                      </button>
-                    )}
-                    {q.is_claimed && (
-                      <div className="quest-modal-completed">
-                        <CheckCircle size={14} /> {t('home.questModal.completed')}
-                      </div>
-                    )}
-                  </div>
-                ))
-              )}
-              {dailyQuests.length > 0 && dailyQuests.every(q => q.is_claimed) && (
-                <div className="quest-modal-all-complete">
-                  <div className="quest-modal-all-complete-title">{t('home.questModal.allCompleteTitle')}</div>
-                  <div className="quest-modal-comeback">
-                    {t('home.questModal.comeBack', { time: '' })} <CountdownTimer style={{ fontFamily: 'monospace', fontWeight: 'bold' }} />
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       <CardOfDayBanner
         dailyCard={dailyCard}
