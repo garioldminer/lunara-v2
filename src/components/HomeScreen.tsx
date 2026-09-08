@@ -10,9 +10,9 @@ import { getTodayReading } from '../lib/dailyCardService';
 import { getStreakMilestones, getClaimedMilestones } from '../lib/streakService';
 import { logger } from '../lib/logger';
 import { 
-  Gem, Trophy,
+  Trophy,
   Sparkles, LayoutGrid, Moon, 
-  Crown, Scroll, Gift, Infinity as InfinityIcon, RefreshCw, TrendingUp
+  Crown, Scroll, Gift, Infinity as InfinityIcon, TrendingUp
 } from 'lucide-react';
 import DebugPanel from './DebugPanel';
 import DiamondShopModal from './DiamondShopModal';
