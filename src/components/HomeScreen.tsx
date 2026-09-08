@@ -15,8 +15,7 @@ import { logger } from '../lib/logger';
 import { 
   Gem, Zap, Trophy, Flame, X, CheckCircle,
   Sparkles, LayoutGrid, Moon, 
-  Crown, Scroll, ChevronRight, Gift, Shield, Infinity as InfinityIcon, RefreshCw, TrendingUp,
-  Bug, Ruler
+  Crown, Scroll, ChevronRight, Gift, Infinity as InfinityIcon, RefreshCw, TrendingUp
 } from 'lucide-react';
 import DebugPanel from './DebugPanel';
 import DiamondShopModal from './DiamondShopModal';
