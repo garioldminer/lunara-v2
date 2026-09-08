@@ -1,5 +1,6 @@
-import { Trophy, X, CheckCircle, RefreshCw, Gem } from 'lucide-react';
+import { Trophy, X, CheckCircle, RefreshCw, Gem, Scroll, Sparkles, LayoutGrid, Flame } from 'lucide-react';
 import { CountdownTimer } from './CountdownTimer';
+import type { ReactNode } from 'react';
 
 interface Quest {
   id: string;
@@ -31,8 +32,7 @@ interface QuestsPanelProps {
   t: (key: string, params?: any) => string;
 }
 
-const getQuestIcon = (actionType: string, libs: { Scroll: any; Sparkles: any; LayoutGrid: any; Gem: any; Flame: any }) => {
-  const { Scroll, Sparkles, LayoutGrid, Gem, Flame } = libs;
+function getQuestIcon(actionType: string): ReactNode {
   switch (actionType) {
     case 'draw_daily_card': return <Scroll size={16} />;
     case 'check_horoscope': return <Sparkles size={16} />;
@@ -42,7 +42,7 @@ const getQuestIcon = (actionType: string, libs: { Scroll: any; Sparkles: any; La
     case 'view_gallery': return <LayoutGrid size={16} />;
     default: return <Scroll size={16} />;
   }
-};
+}
 
 export function QuestsPanel({
   quests,
@@ -55,9 +55,6 @@ export function QuestsPanel({
   onClaim,
   t
 }: QuestsPanelProps) {
-  // Lazy import icons to avoid circular deps
-  const libs = require('lucide-react');
-
   return (
     <>
       <div className="quests-and-actions-split" style={{ display: 'flex', flexDirection: 'row', gap: '2px', marginBottom: '2px', width: '100%', alignItems: 'stretch' }}>
@@ -74,7 +71,7 @@ export function QuestsPanel({
             ) : activeQuest ? (
               <div className="quest-item-compact">
                 <div className="quest-icon-compact" style={{ color: activeQuest.isClaimable ? '#10b981' : '#C5A059' }}>
-                  {getQuestIcon(activeQuest.quest?.action_type || '', libs)}
+                  {getQuestIcon(activeQuest.quest?.action_type || '')}
                 </div>
                 <div className="quest-info-compact">
                   <span className="quest-name-compact">
@@ -124,7 +121,7 @@ export function QuestsPanel({
                     <div className="quest-modal-top">
                       <div className="quest-modal-info">
                         <div className="quest-modal-icon" style={{ color: q.isClaimable ? '#10b981' : '#C5A059' }}>
-                          {getQuestIcon(q.quest?.action_type || '', libs)}
+                          {getQuestIcon(q.quest?.action_type || '')}
                         </div>
                         <div>
                           <div className="quest-modal-title">{q.quest?.title}</div>
