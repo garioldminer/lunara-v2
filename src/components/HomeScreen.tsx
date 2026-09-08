@@ -92,8 +92,32 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [streakBannerDismissed, setStreakBannerDismissed] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
   const [showLayoutDebug, setShowLayoutDebug] = useState(false);
+  const [dbStatus, setDbStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
 
   const screenRef = useRef<HTMLDivElement>(null);
+
+  // ✅ loadQuests განმარტებულია hook-ის გამოძახებამდე
+  const loadQuests = async () => {
+    if (!user) return;
+    setQuestsLoading(true);
+    const { loadUserQuests } = await import('../lib/questService');
+    const quests = await loadUserQuests(user.id);
+    const dQuests = quests.filter((q: any) => q.quest?.quest_type === 'daily') as DailyQuestDisplay[];
+    const processedQuests = dQuests.map(q => ({ ...q, isClaimable: q.is_completed && !q.is_claimed }));
+    setDailyQuests(processedQuests);
+    const unclaimed = processedQuests.filter(q => !q.is_claimed);
+    if (unclaimed.length > 0) {
+      const randomIndex = Math.floor(Math.random() * unclaimed.length);
+      setActiveDailyQuest(unclaimed[randomIndex]);
+    } else {
+      setActiveDailyQuest(null);
+    }
+    setQuestsLoading(false);
+  };
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+    setToast({ message, type });
+  };
 
   // Debug tools hook
   const debugTools = useDebugTools({
@@ -102,7 +126,7 @@ export default function HomeScreen({ onNavigate }: Props) {
     setEconomy,
     setCurrentStreak,
     setUser,
-    showToast: (message: string, type: 'success' | 'error' | 'info') => setToast({ message, type }),
+    showToast,
     loadQuests
   });
 
@@ -124,7 +148,6 @@ export default function HomeScreen({ onNavigate }: Props) {
       if (h > 0) el.style.height = `${h}px`;
     };
     applyHeight();
-    // ✅ ყოველ 500ms გაზომვა პირველი 10 წამი — სანამ layout სრულად დაჯდება
     const interval = setInterval(applyHeight, 500);
     const stop = setTimeout(() => clearInterval(interval), 10000);
     const onScroll = () => requestAnimationFrame(applyHeight);
@@ -139,28 +162,6 @@ export default function HomeScreen({ onNavigate }: Props) {
       window.removeEventListener('orientationchange', onScroll);
     };
   }, []);
-
-  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
-    setToast({ message, type });
-  };
-
-  const loadQuests = async () => {
-    if (!user) return;
-    setQuestsLoading(true);
-    const { loadUserQuests } = await import('../lib/questService');
-    const quests = await loadUserQuests(user.id);
-    const dQuests = quests.filter((q: any) => q.quest?.quest_type === 'daily') as DailyQuestDisplay[];
-    const processedQuests = dQuests.map(q => ({ ...q, isClaimable: q.is_completed && !q.is_claimed }));
-    setDailyQuests(processedQuests);
-    const unclaimed = processedQuests.filter(q => !q.is_claimed);
-    if (unclaimed.length > 0) {
-      const randomIndex = Math.floor(Math.random() * unclaimed.length);
-      setActiveDailyQuest(unclaimed[randomIndex]);
-    } else {
-      setActiveDailyQuest(null);
-    }
-    setQuestsLoading(false);
-  };
 
   const handleClaimQuest = async (quest: DailyQuestDisplay) => {
     if (!user || !supabase || isClaimingQuest) return;
@@ -431,16 +432,18 @@ export default function HomeScreen({ onNavigate }: Props) {
         addDebugLog('error', 'ECONOMY', 'Supabase client is null');
         return;
       }
-      debugTools.addToDbDebugHistory('user_economy', 'SELECT', {}, null, null);
+      setDbStatus('connecting');
       addDebugLog('info', 'ECONOMY', '📡 Starting economy data load', { userId: user.id });
       try {
         const queryParams = { table: 'user_economy', columns: 'cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus', userId: user.id };
         const { data, error } = await supabase.from('user_economy').select('cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus').eq('user_id', user.id).single();
         if (error) {
+          setDbStatus('error');
           debugTools.addToDbDebugHistory('user_economy', 'SELECT', queryParams, null, error);
           addDebugLog('error', 'ECONOMY', '❌ Database query failed', { error: error.message, code: error.code, details: error.details });
           return;
         }
+        setDbStatus('connected');
         debugTools.addToDbDebugHistory('user_economy', 'SELECT', queryParams, data);
         addDebugLog('success', 'ECONOMY', '✅ Economy data loaded successfully', data);
         if (data) {
@@ -460,6 +463,7 @@ export default function HomeScreen({ onNavigate }: Props) {
           addDebugLog('warning', 'ECONOMY', '⚠️ No economy data found for user');
         }
       } catch (error: any) {
+        setDbStatus('error');
         addDebugLog('error', 'ECONOMY', '💥 Exception during economy load', { message: error.message, stack: error.stack });
       }
     };
@@ -1186,7 +1190,7 @@ export default function HomeScreen({ onNavigate }: Props) {
           economy={economy}
           dbDebugInfo={debugTools.dbDebugInfo}
           debugLogs={debugTools.debugLogs}
-          dbStatus={debugTools.dbStatus}
+          dbStatus={dbStatus}
           activeSubscription={activeSubscription}
           questsLoading={questsLoading}
           dailyQuests={dailyQuests}

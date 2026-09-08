@@ -49,7 +49,6 @@ interface UseDebugToolsProps {
 
 export function useDebugTools({ user, economy, setEconomy, setCurrentStreak, setUser, showToast, loadQuests }: UseDebugToolsProps) {
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([]);
-  const [dbStatus, setDbStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
   const [dbDebugInfo, setDbDebugInfo] = useState<DatabaseDebugInfo>({
     lastQuery: null, lastResponse: null, economyData: null, queryHistory: []
   });
@@ -327,7 +326,6 @@ export function useDebugTools({ user, economy, setEconomy, setCurrentStreak, set
   return {
     debugLogs,
     setDebugLogs,
-    dbStatus,
     dbDebugInfo,
     xpTestLogs,
     addDebugLog,
