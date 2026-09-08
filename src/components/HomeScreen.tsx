@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { useUser } from '../context/UserContext';
 import { useTranslation } from '../i18n/TranslationContext';
@@ -10,9 +10,8 @@ import { getTodayReading } from '../lib/dailyCardService';
 import { getStreakMilestones, getClaimedMilestones } from '../lib/streakService';
 import { logger } from '../lib/logger';
 import { 
-  Trophy,
   Sparkles, LayoutGrid, Moon, 
-  Crown, Scroll, Gift, Infinity as InfinityIcon, TrendingUp
+  Scroll, TrendingUp, Crown
 } from 'lucide-react';
 import DebugPanel from './DebugPanel';
 import DiamondShopModal from './DiamondShopModal';
@@ -29,6 +28,7 @@ import { UserHeader } from './home/components/UserHeader';
 import { CardOfDayBanner } from './home/components/CardOfDayBanner';
 import { QuickActionsGrid } from './home/components/QuickActionsGrid';
 import { QuestsPanel } from './home/components/QuestsPanel';
+import { ActionButtons } from './home/components/ActionButtons';
 import { useDebugTools } from './home/hooks/useDebugTools';
 
 
@@ -672,57 +672,18 @@ export default function HomeScreen({ onNavigate }: Props) {
           t={t}
         />
 
-        <div className="action-buttons-panel" style={{ flex: '0 0 calc(40% - 2px)', minWidth: 0 }}>
-          <div className="action-grid-vertical">
-            <button className={`action-btn-vertical ${rewardClaimed ? 'claimed' : ''}`} onClick={handleClaimReward} disabled={rewardClaimed || isClaiming}>
-              {isClaiming ? (
-                <svg className="animate-spin" style={{ width: '20px', height: '20px', color: '#C5A059' }} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              ) : (
-                <Gift size={22} style={{ filter: 'drop-shadow(0 0 6px #C5A059)', color: '#C5A059', width: '20px', height: '20px' }} />
-              )}
-              {!rewardClaimed && !isClaiming && <div className="action-badge">50</div>}
-            </button>
-            
-            <button 
-              className="action-btn-vertical streak-btn-v" 
-              onClick={() => setShowStreakModal(true)}
-            >
-              <div style={{ fontSize: '22px', lineHeight: 1, filter: 'drop-shadow(0 0 6px #ff6b35)' }}>
-                {getStreakTierIcon()}
-              </div>
-              <div className="action-badge">{currentStreak}</div>
-              
-              {unclaimedMilestoneCount > 0 && (
-                <motion.div
-                  animate={{ scale: [1, 1.15, 1] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                  className="milestone-badge"
-                >
-                  🎁 {unclaimedMilestoneCount}
-                </motion.div>
-              )}
-            </button>
-            
-            <button 
-              className="action-btn-vertical rank-btn-v" 
-              onClick={() => setShowLeaderboardModal(true)}
-            >
-              <Trophy size={22} style={{ filter: 'drop-shadow(0 0 6px #ffd700)', color: '#ffd700', width: '20px', height: '20px' }} />
-              <div className="action-badge">TOP</div>
-            </button>
-            
-            <button className={`action-btn-vertical ${activeSubscription ? 'subscription-btn-v' : 'upgrade-btn-v'}`} onClick={() => onNavigate && onNavigate(activeSubscription ? 'subscription' : 'pricing')}>
-              {activeSubscription ? (
-                <><InfinityIcon size={22} style={{ filter: 'drop-shadow(0 0 6px #FFD700)', color: '#FFD700', width: '20px', height: '20px' }} /><div className="action-badge premium">VIP</div></>
-              ) : (
-                <><Crown size={22} style={{ filter: 'drop-shadow(0 0 6px #a78bfa)', color: '#a78bfa', width: '20px', height: '20px' }} /><div className="action-badge">PRO</div></>
-              )}
-            </button>
-          </div>
-        </div>
+        <ActionButtons
+          currentStreak={currentStreak}
+          rewardClaimed={rewardClaimed}
+          isClaiming={isClaiming}
+          activeSubscription={activeSubscription}
+          unclaimedMilestoneCount={unclaimedMilestoneCount}
+          onClaimReward={handleClaimReward}
+          onOpenStreakModal={() => setShowStreakModal(true)}
+          onOpenLeaderboard={() => setShowLeaderboardModal(true)}
+          onNavigateSubscription={() => onNavigate && onNavigate(activeSubscription ? 'subscription' : 'pricing')}
+          getStreakTierIcon={getStreakTierIcon}
+        />
       </div>
 
       <CardOfDayBanner
