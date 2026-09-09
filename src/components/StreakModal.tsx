@@ -61,7 +61,7 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
           getStreakInfo(user.id),
           getStreakMilestones(),
           getClaimedMilestones(user.id),
-          getStreakCalendar(user.id, 30)
+          getStreakCalendar(user.id, 21)
         ]);
         
         setStreakInfo(info);
@@ -156,7 +156,7 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '16px',
+            padding: '12px',
             background: 'rgba(0,0,0,0.85)',
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)'
@@ -171,9 +171,9 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
             style={{
               position: 'relative',
               width: '100%',
-              maxWidth: '400px',
-              maxHeight: '90vh',
-              borderRadius: '20px',
+              maxWidth: '360px',
+              maxHeight: '75vh',
+              borderRadius: '16px',
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
@@ -197,11 +197,11 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
               <StreakCalendar calendar={calendar} loading={loading} />
 
               {message && (
-                <div style={{ padding: '0 16px 8px 16px' }}>
+                <div style={{ padding: '0 12px 6px 12px' }}>
                   <div style={{
-                    padding: '8px 12px',
+                    padding: '6px 10px',
                     borderRadius: '8px',
-                    fontSize: '11px',
+                    fontSize: '10px',
                     fontWeight: 700,
                     textAlign: 'center',
                     background: message.type === 'success' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
@@ -222,14 +222,14 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
             </div>
 
             {/* Footer - Claim Button */}
-            <div style={{ padding: '12px 16px 16px 16px', flexShrink: 0, borderTop: '1px solid rgba(197, 160, 89, 0.15)' }}>
+            <div style={{ padding: '10px 12px 12px 12px', flexShrink: 0, borderTop: '1px solid rgba(197, 160, 89, 0.15)' }}>
               {achievedCount > 0 ? (
                 <button
                   onClick={handleClaimAll}
                   disabled={claiming}
                   style={{
-                    width: '100%', padding: '12px', borderRadius: '10px', border: 'none',
-                    fontSize: '13px', fontWeight: 800, letterSpacing: '0.5px',
+                    width: '100%', padding: '10px', borderRadius: '10px', border: 'none',
+                    fontSize: '12px', fontWeight: 800, letterSpacing: '0.5px',
                     cursor: claiming ? 'not-allowed' : 'pointer',
                     background: 'linear-gradient(135deg, #fbbf24 0%, #d97706 100%)',
                     color: '#0f0c08',
@@ -238,23 +238,23 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
                   }}
                 >
                   {claiming ? (
-                    <><RefreshCw size={14} className="animate-spin" /> Claiming...</>
+                    <><RefreshCw size={12} className="animate-spin" /> Claiming...</>
                   ) : (
-                    <><CheckCircle size={14} /> Claim {achievedCount} Reward{achievedCount > 1 ? 's' : ''}</>
+                    <><CheckCircle size={12} /> Claim {achievedCount} Reward{achievedCount > 1 ? 's' : ''}</>
                   )}
                 </button>
               ) : (
                 <button
                   onClick={onClose}
                   style={{
-                    width: '100%', padding: '12px', borderRadius: '10px', border: 'none',
-                    fontSize: '13px', fontWeight: 700, letterSpacing: '0.3px', cursor: 'pointer',
+                    width: '100%', padding: '10px', borderRadius: '10px', border: 'none',
+                    fontSize: '12px', fontWeight: 700, letterSpacing: '0.3px', cursor: 'pointer',
                     background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)',
                     color: '#0f0c08',
                     boxShadow: '0 4px 15px rgba(197, 160, 89, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
                   }}
                 >
-                  <Flame size={14} style={{ display: 'inline-block', marginRight: '6px', verticalAlign: 'middle' }} />
+                  <Flame size={12} style={{ display: 'inline-block', marginRight: '6px', verticalAlign: 'middle' }} />
                   Keep the Streak Alive
                 </button>
               )}

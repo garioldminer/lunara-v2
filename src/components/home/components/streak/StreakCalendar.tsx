@@ -16,34 +16,42 @@ interface StreakCalendarProps {
 }
 
 export function StreakCalendar({ calendar, loading }: StreakCalendarProps) {
+  // ბოლო 21 დღე ნაცვლად 30-ისა
+  const recentDays = calendar.slice(-21);
+
   return (
-    <div style={{ padding: '16px 16px 8px 16px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px', fontSize: '12px', fontWeight: 600, color: '#C5A059' }}>
-        <CalendarIcon size={14} />
-        <span>Last 30 Days</span>
+    <div style={{ padding: '10px 14px 8px 14px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 600, color: '#C5A059' }}>
+          <CalendarIcon size={12} />
+          <span>Last 21 Days</span>
+        </div>
+        <div style={{ fontSize: '9px', color: '#94a3b8' }}>
+          {calendar.filter(d => d.has_reading).length}/{calendar.filter(d => !d.is_future).length} days
+        </div>
       </div>
       
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '20px', color: '#94a3b8', fontSize: '11px' }}>
-          Loading calendar...
+        <div style={{ textAlign: 'center', padding: '12px', color: '#94a3b8', fontSize: '10px' }}>
+          Loading...
         </div>
       ) : (
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(7, 1fr)',
-          gap: '4px'
+          gap: '3px'
         }}>
-          {calendar.map((day, idx) => (
+          {recentDays.map((day, idx) => (
             <div
               key={idx}
               title={day.date}
               style={{
                 aspectRatio: '1',
-                borderRadius: '4px',
+                borderRadius: '3px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '9px',
+                fontSize: '8px',
                 fontWeight: day.is_today ? 700 : 500,
                 background: day.is_today
                   ? 'linear-gradient(135deg, #fbbf24, #d97706)'
@@ -53,8 +61,7 @@ export function StreakCalendar({ calendar, loading }: StreakCalendarProps) {
                   ? 'rgba(255,255,255,0.02)'
                   : 'rgba(239, 68, 68, 0.25)',
                 color: day.is_future ? '#64748b' : day.has_reading || day.is_today ? '#fff' : '#fca5a5',
-                border: day.is_today ? '1.5px solid #ffe566' : day.has_reading ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid transparent',
-                boxShadow: day.is_today ? '0 0 8px rgba(251, 191, 36, 0.5)' : 'none'
+                border: day.is_today ? '1px solid #ffe566' : day.has_reading ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid transparent'
               }}
             >
               {day.has_reading ? '✓' : day.is_today ? '★' : day.is_future ? '' : '✗'}
@@ -63,17 +70,18 @@ export function StreakCalendar({ calendar, loading }: StreakCalendarProps) {
         </div>
       )}
       
-      <div style={{ display: 'flex', gap: '12px', marginTop: '10px', fontSize: '9px', color: '#94a3b8', justifyContent: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: '#10b981' }} />
+      {/* Compact Legend */}
+      <div style={{ display: 'flex', gap: '10px', marginTop: '6px', fontSize: '8px', color: '#94a3b8', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+          <div style={{ width: '6px', height: '6px', borderRadius: '1px', background: '#10b981' }} />
           <span>Read</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: '#ef4444' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+          <div style={{ width: '6px', height: '6px', borderRadius: '1px', background: '#ef4444' }} />
           <span>Missed</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: '#fbbf24' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+          <div style={{ width: '6px', height: '6px', borderRadius: '1px', background: '#fbbf24' }} />
           <span>Today</span>
         </div>
       </div>
