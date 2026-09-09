@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
-import { getStreakTierIcon } from '../lib/helpers';
+import { getStreakTierIcon } from '../../lib/helpers';
 
 interface StreakHeaderProps {
   streak: number;
