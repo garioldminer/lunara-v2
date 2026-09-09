@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { X } from 'lucide-react';
+import { X, Trophy } from 'lucide-react';
 import { getStreakTier } from '../../lib/helpers';
 
 interface StreakHeaderProps {
@@ -15,8 +15,7 @@ export function StreakHeader({ streak, longest, onClose }: StreakHeaderProps) {
     <div
       style={{
         position: 'relative',
-        padding: '14px 16px 12px 16px',
-        textAlign: 'center',
+        padding: '14px 16px',
         flexShrink: 0,
         overflow: 'hidden',
         background: `radial-gradient(120% 100% at 50% 0%, ${tier.glowColor} 0%, rgba(15,12,8,0) 65%)`,
@@ -26,8 +25,8 @@ export function StreakHeader({ streak, longest, onClose }: StreakHeaderProps) {
       <button
         onClick={onClose}
         style={{
-          position: 'absolute', top: '10px', right: '10px', zIndex: 10,
-          padding: '5px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)',
+          position: 'absolute', top: '8px', right: '8px', zIndex: 10,
+          padding: '4px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)',
           background: 'rgba(0,0,0,0.4)', color: '#94a3b8', cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center'
         }}
@@ -35,8 +34,8 @@ export function StreakHeader({ streak, longest, onClose }: StreakHeaderProps) {
         <X size={14} />
       </button>
 
-      {/* Compact Layout: Icon + Info side by side */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+      {/* Horizontal Layout: Icon | Info */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
         {/* Tier Icon */}
         <motion.div
           key={tier.icon}
@@ -44,16 +43,16 @@ export function StreakHeader({ streak, longest, onClose }: StreakHeaderProps) {
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', damping: 15, stiffness: 200 }}
           style={{
-            width: 52,
-            height: 52,
+            width: 48,
+            height: 48,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             borderRadius: '50%',
             background: `radial-gradient(circle at 35% 30%, ${tier.color}40, ${tier.color}20 55%, transparent)`,
             border: `2px solid ${tier.color}60`,
-            boxShadow: `0 0 20px ${tier.glowColor}`,
-            fontSize: '28px',
+            boxShadow: `0 0 16px ${tier.glowColor}`,
+            fontSize: '24px',
             flexShrink: 0
           }}
         >
@@ -65,29 +64,37 @@ export function StreakHeader({ streak, longest, onClose }: StreakHeaderProps) {
           </motion.span>
         </motion.div>
 
-        {/* Text Info */}
-        <div style={{ textAlign: 'left' }}>
-          <div style={{
-            fontSize: '9px',
-            fontWeight: 700,
-            color: tier.color,
-            letterSpacing: '1px',
-            textTransform: 'uppercase',
-            marginBottom: '2px'
-          }}>
-            {tier.name}
+        {/* Info */}
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginBottom: '2px' }}>
+            <span style={{
+              fontSize: '20px',
+              fontWeight: 800,
+              color: '#fff',
+              fontFamily: 'Georgia, serif',
+              lineHeight: 1
+            }}>
+              {streak}
+            </span>
+            <span style={{ fontSize: '12px', color: '#94a3b8' }}>
+              day{streak !== 1 ? 's' : ''}
+            </span>
           </div>
-          <div style={{
-            fontSize: '18px',
-            fontWeight: 800,
-            color: '#fff',
-            fontFamily: 'Georgia, serif',
-            lineHeight: 1.1
-          }}>
-            {streak} Day{streak !== 1 ? 's' : ''}
-          </div>
-          <div style={{ fontSize: '9px', color: '#94a3b8' }}>
-            Best: {longest}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{
+              fontSize: '9px',
+              fontWeight: 700,
+              color: tier.color,
+              letterSpacing: '0.5px',
+              textTransform: 'uppercase'
+            }}>
+              {tier.name}
+            </span>
+            <span style={{ fontSize: '9px', color: '#64748b' }}>•</span>
+            <span style={{ fontSize: '9px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '2px' }}>
+              <Trophy size={8} />
+              Best: {longest}
+            </span>
           </div>
         </div>
       </div>

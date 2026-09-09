@@ -7,15 +7,12 @@ import {
   getStreakInfo, 
   getStreakMilestones, 
   getClaimedMilestones, 
-  getStreakCalendar,
   claimStreakMilestone,
   type StreakMilestone,
-  type StreakInfo,
-  type CalendarDay
+  type StreakInfo
 } from '../lib/streakService';
 import { StreakHeader } from './home/components/streak/StreakHeader';
 import { StreakProgress } from './home/components/streak/StreakProgress';
-import { StreakCalendar } from './home/components/streak/StreakCalendar';
 import { MilestonesList } from './home/components/streak/MilestonesList';
 import { CelebrationModal } from './home/components/streak/CelebrationModal';
 
@@ -29,14 +26,10 @@ interface StreakModalProps {
 export default function StreakModal({ isOpen, onClose, currentStreak, onMilestoneClaimed }: StreakModalProps) {
   const { user } = useUser();
   
-  // ============================================
-  // STATE
-  // ============================================
   const [streakInfo, setStreakInfo] = useState<StreakInfo | null>(null);
   const [milestones, setMilestones] = useState<StreakMilestone[]>([]);
   const [claimedMilestoneIds, setClaimedMilestoneIds] = useState<Set<number>>(new Set());
   const [achievedNotClaimedIds, setAchievedNotClaimedIds] = useState<Set<number>>(new Set());
-  const [calendar, setCalendar] = useState<CalendarDay[]>([]);
   const [loading, setLoading] = useState(true);
   const [claiming, setClaiming] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -46,9 +39,6 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
     total_xp: number;
   } | null>(null);
 
-  // ============================================
-  // LOAD DATA WHEN MODAL OPENS
-  // ============================================
   useEffect(() => {
     if (!isOpen || !user) return;
     
@@ -57,18 +47,16 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
       setMessage(null);
       
       try {
-        const [info, msList, claimed, cal] = await Promise.all([
+        const [info, msList, claimed] = await Promise.all([
           getStreakInfo(user.id),
           getStreakMilestones(),
-          getClaimedMilestones(user.id),
-          getStreakCalendar(user.id, 21)
+          getClaimedMilestones(user.id)
         ]);
         
         setStreakInfo(info);
         setMilestones(msList);
         setClaimedMilestoneIds(new Set(claimed.map(c => c.milestone_id)));
         setAchievedNotClaimedIds(new Set((info?.achieved_not_claimed || []).map(m => m.id)));
-        setCalendar(cal);
         
         if (info && info.achieved_not_claimed.length > 0) {
           setMessage({
@@ -86,9 +74,6 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
     loadData();
   }, [isOpen, user]);
 
-  // ============================================
-  // CLAIM ALL ACHIEVED MILESTONES
-  // ============================================
   const handleClaimAll = async () => {
     if (!user || claiming) return;
     setClaiming(true);
@@ -134,9 +119,6 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
     setClaiming(false);
   };
 
-  // ============================================
-  // PROGRESS CALCULATION
-  // ============================================
   const streak = streakInfo?.current_streak ?? currentStreak;
   const longest = streakInfo?.longest_streak ?? 0;
   const achievedCount = achievedNotClaimedIds.size;
@@ -172,7 +154,7 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
               position: 'relative',
               width: '100%',
               maxWidth: '360px',
-              maxHeight: '75vh',
+              maxHeight: '70vh',
               borderRadius: '16px',
               overflow: 'hidden',
               display: 'flex',
@@ -182,10 +164,8 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
               boxShadow: '0 25px 80px rgba(0,0,0,0.9), 0 0 40px rgba(197, 160, 89, 0.1)'
             }}
           >
-            {/* Header */}
             <StreakHeader streak={streak} longest={longest} onClose={onClose} />
 
-            {/* Scrollable Content */}
             <div style={{ flex: 1, overflowY: 'auto' }}>
               <StreakProgress
                 nextMilestone={streakInfo?.next_milestone}
@@ -193,8 +173,6 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
                 percentToNext={streakInfo?.percent_to_next ?? 0}
                 daysToNext={streakInfo?.days_to_next ?? 0}
               />
-
-              <StreakCalendar calendar={calendar} loading={loading} />
 
               {message && (
                 <div style={{ padding: '0 12px 6px 12px' }}>
@@ -221,7 +199,6 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
               />
             </div>
 
-            {/* Footer - Claim Button */}
             <div style={{ padding: '10px 12px 12px 12px', flexShrink: 0, borderTop: '1px solid rgba(197, 160, 89, 0.15)' }}>
               {achievedCount > 0 ? (
                 <button
