@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertTriangle, Clock, Zap } from 'lucide-react';
-import { getStreakWarning, type StreakWarning } from '../../lib/helpers';
+import { Clock, Zap } from 'lucide-react';
+import { getStreakWarning, type StreakWarning } from '../lib/helpers';
 
 interface StreakWarningBannerProps {
   lastActiveDate: string | null;
