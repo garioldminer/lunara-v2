@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bug, RefreshCw, AlertTriangle, CheckCircle, XCircle, Clock, Database, Zap, TrendingUp, Trophy, Calendar, Info } from 'lucide-react';
+import { Bug, RefreshCw, AlertTriangle, CheckCircle, XCircle, Clock, Database, TrendingUp, Trophy } from 'lucide-react';
 import { 
   getStreakInfo, 
   getStreakMilestones, 
@@ -46,7 +46,6 @@ export function StreakDebugPanel({ userId, isOpen, onClose }: StreakDebugPanelPr
   const [diagnostics, setDiagnostics] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [logIdCounter, setLogIdCounter] = useState(0);
-  const [testResults, setTestResults] = useState<{ name: string; passed: boolean; details: string }[]>([]);
 
   const addLog = (level: LogEntry['level'], category: string, message: string, duration?: number) => {
     const newLog: LogEntry = {
@@ -58,20 +57,17 @@ export function StreakDebugPanel({ userId, isOpen, onClose }: StreakDebugPanelPr
       duration
     };
     setLogIdCounter(prev => prev + 1);
-    setLogs(prev => [newLog, ...prev].slice(0, 50)); // Keep last 50 logs
+    setLogs(prev => [newLog, ...prev].slice(0, 50));
   };
 
   const runAllChecks = async () => {
     setLoading(true);
     setValidations([]);
-    setTestResults([]);
     const checks: ValidationCheck[] = [];
 
     addLog('info', 'START', '🚀 Starting full streak system diagnostic...');
 
-    // ========================================
     // TEST 1: User Economy Data
-    // ========================================
     try {
       const startTime = performance.now();
       const info = await getStreakInfo(userId);
@@ -81,64 +77,52 @@ export function StreakDebugPanel({ userId, isOpen, onClose }: StreakDebugPanelPr
         setStreakInfo(info);
         addLog('success', 'STREAK_INFO', `✅ Loaded in ${duration}ms`, duration);
         
-        // Validate current_streak
-        const streakCheck: ValidationCheck = {
+        checks.push({
           id: 'streak_value',
           label: 'Current Streak Value',
           status: info.current_streak >= 0 ? 'pass' : 'fail',
           details: `Value: ${info.current_streak} days`
-        };
-        checks.push(streakCheck);
+        });
 
-        // Validate longest_streak
-        const longestCheck: ValidationCheck = {
+        checks.push({
           id: 'longest_value',
           label: 'Longest Streak',
           status: info.longest_streak >= info.current_streak ? 'pass' : 'warning',
           details: `Longest: ${info.longest_streak}, Current: ${info.current_streak}`
-        };
-        checks.push(longestCheck);
+        });
 
-        // Validate last_active_date
-        const dateCheck: ValidationCheck = {
+        checks.push({
           id: 'last_active_date',
           label: 'Last Active Date',
           status: info.last_active_date ? 'pass' : 'warning',
           details: info.last_active_date || 'NULL - will show as safe'
-        };
-        checks.push(dateCheck);
+        });
 
-        // Validate warning system
         if (info.last_active_date) {
           const warning = getStreakWarning(info.last_active_date);
-          const warningCheck: ValidationCheck = {
+          checks.push({
             id: 'warning_system',
             label: 'Warning System',
             status: warning.dangerLevel === 'safe' ? 'pass' : warning.dangerLevel === 'warning' ? 'warning' : 'fail',
             details: `${warning.icon} ${warning.message} (${warning.hoursRemaining}h left)`
-          };
-          checks.push(warningCheck);
+          });
         }
 
-        // Validate next milestone
         if (info.next_milestone) {
-          const nextCheck: ValidationCheck = {
+          checks.push({
             id: 'next_milestone',
             label: 'Next Milestone',
             status: info.days_to_next >= 0 ? 'pass' : 'fail',
             details: `${info.next_milestone.name} in ${info.days_to_next} days (${info.percent_to_next.toFixed(1)}%)`
-          };
-          checks.push(nextCheck);
+          });
         }
 
-        // Validate achieved_not_claimed
-        const unclaimedCheck: ValidationCheck = {
+        checks.push({
           id: 'unclaimed_rewards',
           label: 'Unclaimed Rewards',
           status: info.achieved_not_claimed.length > 0 ? 'warning' : 'pass',
           details: `${info.achieved_not_claimed.length} unclaimed milestone(s)`
-        };
-          checks.push(unclaimedCheck);
+        });
 
       } else {
         addLog('error', 'STREAK_INFO', '❌ Failed to load streak info');
@@ -159,9 +143,7 @@ export function StreakDebugPanel({ userId, isOpen, onClose }: StreakDebugPanelPr
       });
     }
 
-    // ========================================
     // TEST 2: Milestones Config
-    // ========================================
     try {
       const startTime = performance.now();
       const msList = await getStreakMilestones();
@@ -171,32 +153,27 @@ export function StreakDebugPanel({ userId, isOpen, onClose }: StreakDebugPanelPr
       if (msList.length > 0) {
         addLog('success', 'MILESTONES', `✅ Loaded ${msList.length} milestones in ${duration}ms`, duration);
         
-        const msCheck: ValidationCheck = {
+        checks.push({
           id: 'milestones_config',
           label: 'Milestones Configuration',
           status: msList.length >= 5 ? 'pass' : 'warning',
           details: `${msList.length} milestones defined`
-        };
-        checks.push(msCheck);
+        });
 
-        // Check for duplicate days
         const daysSet = new Set(msList.map(m => m.days_required));
-        const dupeCheck: ValidationCheck = {
+        checks.push({
           id: 'milestone_duplicates',
           label: 'Milestone Duplicates',
           status: daysSet.size === msList.length ? 'pass' : 'fail',
           details: daysSet.size === msList.length ? 'No duplicates found' : 'Duplicate days detected!'
-        };
-        checks.push(dupeCheck);
+        });
 
-        // Check sort order
-        const sortedCheck: ValidationCheck = {
+        checks.push({
           id: 'milestone_sort',
           label: 'Milestone Sort Order',
           status: msList.every((m, i) => i === 0 || m.days_required > msList[i-1].days_required) ? 'pass' : 'fail',
           details: msList.map(m => m.days_required).join(' → ')
-        };
-        checks.push(sortedCheck);
+        });
       } else {
         addLog('warning', 'MILESTONES', '⚠️ No milestones found');
         checks.push({
@@ -210,9 +187,7 @@ export function StreakDebugPanel({ userId, isOpen, onClose }: StreakDebugPanelPr
       addLog('error', 'MILESTONES', `❌ Exception: ${error.message}`);
     }
 
-    // ========================================
     // TEST 3: Claimed Milestones
-    // ========================================
     try {
       const startTime = performance.now();
       const claimedList = await getClaimedMilestones(userId);
@@ -221,31 +196,26 @@ export function StreakDebugPanel({ userId, isOpen, onClose }: StreakDebugPanelPr
 
       addLog('success', 'CLAIMED', `✅ Loaded ${claimedList.length} claimed milestones in ${duration}ms`, duration);
       
-      const claimedCheck: ValidationCheck = {
+      checks.push({
         id: 'claimed_count',
         label: 'Claimed Milestones',
         status: 'pass',
         details: `${claimedList.length} milestones claimed`
-      };
-      checks.push(claimedCheck);
+      });
 
-      // Check for duplicates in claimed
       const claimedIds = claimedList.map(c => c.milestone_id);
       const uniqueClaimedIds = new Set(claimedIds);
-      const claimedDupeCheck: ValidationCheck = {
+      checks.push({
         id: 'claimed_duplicates',
         label: 'Claimed Duplicates',
         status: uniqueClaimedIds.size === claimedIds.length ? 'pass' : 'fail',
         details: uniqueClaimedIds.size === claimedIds.length ? 'No duplicate claims' : 'DUPLICATE CLAIMS DETECTED!'
-      };
-      checks.push(claimedDupeCheck);
+      });
     } catch (error: any) {
       addLog('error', 'CLAIMED', `❌ Exception: ${error.message}`);
     }
 
-    // ========================================
     // TEST 4: Calendar Data
-    // ========================================
     try {
       const startTime = performance.now();
       const calData = await getStreakCalendar(userId, 30);
@@ -257,30 +227,25 @@ export function StreakDebugPanel({ userId, isOpen, onClose }: StreakDebugPanelPr
 
       addLog('success', 'CALENDAR', `✅ Loaded ${calData.length} days in ${duration}ms (${activeDays} active, ${missedDays} missed)`, duration);
       
-      const calCheck: ValidationCheck = {
+      checks.push({
         id: 'calendar_data',
         label: 'Calendar Data',
         status: calData.length === 30 ? 'pass' : 'warning',
         details: `${calData.length} days loaded (${activeDays} active, ${missedDays} missed)`
-      };
-      checks.push(calCheck);
+      });
 
-      // Check for future dates (shouldn't exist)
       const futureDates = calData.filter(d => d.is_future);
-      const futureCheck: ValidationCheck = {
+      checks.push({
         id: 'future_dates',
         label: 'Future Dates in Calendar',
         status: futureDates.length === 0 ? 'pass' : 'warning',
         details: futureDates.length === 0 ? 'No future dates' : `${futureDates.length} future dates found`
-      };
-      checks.push(futureCheck);
+      });
     } catch (error: any) {
       addLog('error', 'CALENDAR', `❌ Exception: ${error.message}`);
     }
 
-    // ========================================
     // TEST 5: Full Diagnostics
-    // ========================================
     try {
       const startTime = performance.now();
       const diag = await getStreakDiagnostics(userId);
@@ -290,62 +255,49 @@ export function StreakDebugPanel({ userId, isOpen, onClose }: StreakDebugPanelPr
         setDiagnostics(diag);
         addLog('success', 'DIAGNOSTICS', `✅ Full diagnostics loaded in ${duration}ms`, duration);
         
-        const diagCheck: ValidationCheck = {
+        checks.push({
           id: 'diagnostics',
           label: 'Full Diagnostics',
           status: 'pass',
           details: `Achieved: ${diag.stats.achieved_count}, Claimed: ${diag.stats.claimed_count}, Unclaimed: ${diag.stats.unclaimed_count}`
-        };
-        checks.push(diagCheck);
+        });
       }
     } catch (error: any) {
       addLog('error', 'DIAGNOSTICS', `❌ Exception: ${error.message}`);
     }
 
-    // ========================================
     // TEST 6: Logic Consistency
-    // ========================================
     if (streakInfo && milestones.length > 0 && claimed.length > 0) {
-      // Check if claimed milestones match streak
       const claimedIds = new Set(claimed.map(c => c.milestone_id));
       const achievableMilestones = milestones.filter(m => m.days_required <= (streakInfo.current_streak || 0));
-      const shouldBeClaimed = achievableMilestones.filter(m => claimedIds.has(m.id));
       const notClaimed = achievableMilestones.filter(m => !claimedIds.has(m.id));
 
-      const consistencyCheck: ValidationCheck = {
+      checks.push({
         id: 'consistency',
         label: 'Data Consistency',
         status: notClaimed.length === 0 ? 'pass' : 'warning',
         details: notClaimed.length === 0 
           ? 'All achievable milestones claimed' 
           : `${notClaimed.length} achievable milestone(s) not claimed yet`
-      };
-      checks.push(consistencyCheck);
+      });
     }
 
-    // ========================================
     // TEST 7: Edge Cases
-    // ========================================
-    // Test negative streak
-    const negativeStreakCheck: ValidationCheck = {
+    checks.push({
       id: 'negative_streak',
       label: 'Negative Streak Handling',
       status: (streakInfo?.current_streak || 0) >= 0 ? 'pass' : 'fail',
       details: `Current streak: ${streakInfo?.current_streak || 0}`
-    };
-    checks.push(negativeStreakCheck);
+    });
 
-    // Test tier function
     const tier = getStreakTier(streakInfo?.current_streak || 0);
-    const tierCheck: ValidationCheck = {
+    checks.push({
       id: 'tier_function',
       label: 'Tier Function',
       status: tier && tier.icon ? 'pass' : 'fail',
       details: `Tier: ${tier.icon} ${tier.name} (${tier.color})`
-    };
-    checks.push(tierCheck);
+    });
 
-    // Set all validations
     setValidations(checks);
     
     const passCount = checks.filter(c => c.status === 'pass').length;
@@ -488,12 +440,13 @@ export function StreakDebugPanel({ userId, isOpen, onClose }: StreakDebugPanelPr
                   <span>Status Overview</span>
                 </div>
                 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
                   <div style={{
                     padding: '10px',
                     borderRadius: '8px',
                     background: 'rgba(16, 185, 129, 0.08)',
-                    border: '1px solid rgba(16, 185, 129, 0.2)'
+                    border: '1px solid rgba(16, 185, 129, 0.2)',
+                    textAlign: 'center'
                   }}>
                     <div style={{ fontSize: '9px', color: '#64748b', marginBottom: '2px' }}>PASS</div>
                     <div style={{ fontSize: '18px', fontWeight: 800, color: '#10b981' }}>{passCount}</div>
@@ -501,8 +454,19 @@ export function StreakDebugPanel({ userId, isOpen, onClose }: StreakDebugPanelPr
                   <div style={{
                     padding: '10px',
                     borderRadius: '8px',
+                    background: 'rgba(251, 191, 36, 0.08)',
+                    border: '1px solid rgba(251, 191, 36, 0.2)',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '9px', color: '#64748b', marginBottom: '2px' }}>WARN</div>
+                    <div style={{ fontSize: '18px', fontWeight: 800, color: '#fbbf24' }}>{warnCount}</div>
+                  </div>
+                  <div style={{
+                    padding: '10px',
+                    borderRadius: '8px',
                     background: 'rgba(239, 68, 68, 0.08)',
-                    border: '1px solid rgba(239, 68, 68, 0.2)'
+                    border: '1px solid rgba(239, 68, 68, 0.2)',
+                    textAlign: 'center'
                   }}>
                     <div style={{ fontSize: '9px', color: '#64748b', marginBottom: '2px' }}>FAIL</div>
                     <div style={{ fontSize: '18px', fontWeight: 800, color: '#ef4444' }}>{failCount}</div>
@@ -548,7 +512,7 @@ export function StreakDebugPanel({ userId, isOpen, onClose }: StreakDebugPanelPr
                         <span style={{ color: '#fff', fontWeight: 700 }}>{streakInfo.last_active_date || 'NULL'}</span>
                       </div>
                       <div>
-                        <span style={{ color: '#64748b' }}>Next Milestone: </span>
+                        <span style={{ color: '#64748b' }}>Next: </span>
                         <span style={{ color: '#fff', fontWeight: 700 }}>{streakInfo.next_milestone?.name || 'None'}</span>
                       </div>
                       <div>
@@ -558,6 +522,101 @@ export function StreakDebugPanel({ userId, isOpen, onClose }: StreakDebugPanelPr
                       <div>
                         <span style={{ color: '#64748b' }}>Progress: </span>
                         <span style={{ color: '#fff', fontWeight: 700 }}>{streakInfo.percent_to_next.toFixed(1)}%</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Calendar Info */}
+              {calendar.length > 0 && (
+                <div style={{ marginBottom: '16px' }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '6px', 
+                    marginBottom: '10px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    color: '#10b981',
+                    letterSpacing: '1px',
+                    textTransform: 'uppercase'
+                  }}>
+                    <Database size={12} />
+                    <span>Calendar Data</span>
+                  </div>
+                  
+                  <div style={{
+                    padding: '12px',
+                    borderRadius: '8px',
+                    background: 'rgba(16, 185, 129, 0.05)',
+                    border: '1px solid rgba(16, 185, 129, 0.2)'
+                  }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', fontSize: '11px' }}>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '9px', color: '#64748b' }}>Active</div>
+                        <div style={{ fontSize: '14px', fontWeight: 700, color: '#10b981' }}>
+                          {calendar.filter(d => d.has_reading).length}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '9px', color: '#64748b' }}>Missed</div>
+                        <div style={{ fontSize: '14px', fontWeight: 700, color: '#ef4444' }}>
+                          {calendar.filter(d => !d.has_reading && !d.is_future && !d.is_today).length}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '9px', color: '#64748b' }}>Future</div>
+                        <div style={{ fontSize: '14px', fontWeight: 700, color: '#64748b' }}>
+                          {calendar.filter(d => d.is_future).length}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Diagnostics Info */}
+              {diagnostics && (
+                <div style={{ marginBottom: '16px' }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '6px', 
+                    marginBottom: '10px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    color: '#a78bfa',
+                    letterSpacing: '1px',
+                    textTransform: 'uppercase'
+                  }}>
+                    <Database size={12} />
+                    <span>Diagnostics Summary</span>
+                  </div>
+                  
+                  <div style={{
+                    padding: '12px',
+                    borderRadius: '8px',
+                    background: 'rgba(167, 139, 250, 0.05)',
+                    border: '1px solid rgba(167, 139, 250, 0.2)',
+                    fontSize: '11px'
+                  }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                      <div>
+                        <span style={{ color: '#64748b' }}>Total Milestones: </span>
+                        <span style={{ color: '#fff', fontWeight: 700 }}>{diagnostics.stats.total_milestones}</span>
+                      </div>
+                      <div>
+                        <span style={{ color: '#64748b' }}>Achieved: </span>
+                        <span style={{ color: '#10b981', fontWeight: 700 }}>{diagnostics.stats.achieved_count}</span>
+                      </div>
+                      <div>
+                        <span style={{ color: '#64748b' }}>Claimed: </span>
+                        <span style={{ color: '#fbbf24', fontWeight: 700 }}>{diagnostics.stats.claimed_count}</span>
+                      </div>
+                      <div>
+                        <span style={{ color: '#64748b' }}>Unclaimed: </span>
+                        <span style={{ color: '#ef4444', fontWeight: 700 }}>{diagnostics.stats.unclaimed_count}</span>
                       </div>
                     </div>
                   </div>
@@ -661,7 +720,7 @@ export function StreakDebugPanel({ userId, isOpen, onClose }: StreakDebugPanelPr
                           [{log.category}]
                         </span>
                         <span style={{ color: '#e2e8f0', flex: 1 }}>{log.message}</span>
-                        {log.duration && (
+                        {log.duration !== undefined && (
                           <span style={{ color: '#64748b' }}>{log.duration}ms</span>
                         )}
                       </div>
