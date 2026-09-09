@@ -196,6 +196,7 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
                 claimedMilestoneIds={claimedMilestoneIds}
                 achievedNotClaimedIds={achievedNotClaimedIds}
                 loading={loading}
+                currentStreak={streak}
               />
             </div>
 
