@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bug, RefreshCw, AlertTriangle, CheckCircle, XCircle, Clock, Database, TrendingUp, Trophy } from 'lucide-react';
+import { Bug, RefreshCw, AlertTriangle, CheckCircle, XCircle, Clock, Database, TrendingUp, Trophy, Copy } from 'lucide-react';
 import { 
   getStreakInfo, 
   getStreakMilestones, 
@@ -46,6 +46,7 @@ export function StreakDebugPanel({ userId, isOpen, onClose }: StreakDebugPanelPr
   const [diagnostics, setDiagnostics] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [logIdCounter, setLogIdCounter] = useState(0);
+  const [copied, setCopied] = useState(false);
 
   const addLog = (level: LogEntry['level'], category: string, message: string, duration?: number) => {
     const newLog: LogEntry = {
@@ -58,6 +59,56 @@ export function StreakDebugPanel({ userId, isOpen, onClose }: StreakDebugPanelPr
     };
     setLogIdCounter(prev => prev + 1);
     setLogs(prev => [newLog, ...prev].slice(0, 50));
+  };
+
+  const copyToClipboard = async (currentValidations: ValidationCheck[], currentLogs: LogEntry[]) => {
+    const report = {
+      timestamp: new Date().toISOString(),
+      userId,
+      streakInfo: streakInfo ? {
+        current_streak: streakInfo.current_streak,
+        longest_streak: streakInfo.longest_streak,
+        last_active_date: streakInfo.last_active_date,
+        last_daily_claim: streakInfo.last_daily_claim,
+        next_milestone: streakInfo.next_milestone?.name || null,
+        days_to_next: streakInfo.days_to_next,
+        percent_to_next: streakInfo.percent_to_next,
+        achieved_not_claimed_count: streakInfo.achieved_not_claimed.length
+      } : null,
+      summary: {
+        pass: currentValidations.filter(v => v.status === 'pass').length,
+        fail: currentValidations.filter(v => v.status === 'fail').length,
+        warning: currentValidations.filter(v => v.status === 'warning').length,
+        total_checks: currentValidations.length
+      },
+      validations: currentValidations.map(v => ({
+        check: v.label,
+        status: v.status,
+        details: v.details
+      })),
+      calendar: {
+        active_days: calendar.filter(d => d.has_reading).length,
+        missed_days: calendar.filter(d => !d.has_reading && !d.is_future && !d.is_today).length,
+        future_days: calendar.filter(d => d.is_future).length
+      },
+      diagnostics: diagnostics?.stats || null,
+      recentLogs: currentLogs.slice(0, 20).map(l => ({
+        time: l.timestamp,
+        level: l.level,
+        category: l.category,
+        message: l.message,
+        duration: l.duration
+      }))
+    };
+
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(report, null, 2));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      addLog('success', 'COPY', '📋 Debug report copied to clipboard');
+    } catch (err) {
+      addLog('error', 'COPY', `❌ Failed to copy: ${(err as Error).message}`);
+    }
   };
 
   const runAllChecks = async () => {
@@ -757,7 +808,37 @@ export function StreakDebugPanel({ userId, isOpen, onClose }: StreakDebugPanelPr
                 }}
               >
                 <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
-                {loading ? 'Running...' : 'Re-run All Checks'}
+                {loading ? 'Running...' : 'Re-run'}
+              </button>
+              <button
+                onClick={() => copyToClipboard(validations, logs)}
+                disabled={validations.length === 0}
+                style={{
+                  padding: '10px 14px',
+                  borderRadius: '8px',
+                  border: copied 
+                    ? '1px solid rgba(16, 185, 129, 0.5)' 
+                    : '1px solid rgba(59, 130, 246, 0.3)',
+                  background: copied 
+                    ? 'rgba(16, 185, 129, 0.2)' 
+                    : 'rgba(59, 130, 246, 0.1)',
+                  color: copied ? '#10b981' : '#3b82f6',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: validations.length === 0 ? 'not-allowed' : 'pointer',
+                  opacity: validations.length === 0 ? 0.5 : 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {copied ? (
+                  <><CheckCircle size={12} /> Copied!</>
+                ) : (
+                  <><Copy size={12} /> Copy</>
+                )}
               </button>
               <button
                 onClick={() => {
@@ -766,17 +847,21 @@ export function StreakDebugPanel({ userId, isOpen, onClose }: StreakDebugPanelPr
                   setLogIdCounter(0);
                 }}
                 style={{
-                  padding: '10px 16px',
+                  padding: '10px 14px',
                   borderRadius: '8px',
                   border: '1px solid rgba(239, 68, 68, 0.3)',
                   background: 'rgba(239, 68, 68, 0.1)',
                   color: '#ef4444',
                   fontSize: '11px',
                   fontWeight: 700,
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '4px'
                 }}
               >
-                🗑️ Clear
+                🗑️
               </button>
             </div>
           </motion.div>
