@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
+import { getStreakTierIcon } from '../lib/helpers';
 
 interface StreakHeaderProps {
   streak: number;
@@ -8,16 +9,6 @@ interface StreakHeaderProps {
 }
 
 export function StreakHeader({ streak, longest, onClose }: StreakHeaderProps) {
-  const getCurrentTierIcon = () => {
-    if (streak >= 100) return '💎';
-    if (streak >= 60) return '🏆';
-    if (streak >= 30) return '👑';
-    if (streak >= 14) return '⭐';
-    if (streak >= 7) return '🔥';
-    if (streak >= 3) return '🌱';
-    return '🔥';
-  };
-
   return (
     <div
       style={{
@@ -61,7 +52,7 @@ export function StreakHeader({ streak, longest, onClose }: StreakHeaderProps) {
             fontSize: '24px'
           }}
         >
-          {getCurrentTierIcon()}
+          {getStreakTierIcon(streak)}
         </motion.div>
       </div>
 

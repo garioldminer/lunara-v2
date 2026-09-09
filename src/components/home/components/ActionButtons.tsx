@@ -11,7 +11,7 @@ interface ActionButtonsProps {
   onOpenStreakModal: () => void;
   onOpenLeaderboard: () => void;
   onNavigateSubscription: () => void;
-  getStreakTierIcon: () => string;
+  getStreakTierIcon: (streak: number) => string;
 }
 
 export function ActionButtons({
@@ -46,7 +46,7 @@ export function ActionButtons({
           onClick={onOpenStreakModal}
         >
           <div style={{ fontSize: '22px', lineHeight: 1, filter: 'drop-shadow(0 0 6px #ff6b35)' }}>
-            {getStreakTierIcon()}
+            {getStreakTierIcon(currentStreak)}
           </div>
           <div className="action-badge">{currentStreak}</div>
           

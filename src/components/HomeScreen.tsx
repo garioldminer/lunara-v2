@@ -19,7 +19,7 @@ import StreakModal from './StreakModal';
 import LeaderboardModal from './LeaderboardModal';
 import HomeLayoutDebugger from './HomeLayoutDebugger';
 import './HomeScreen.css';
-import { getLevelFromTotalXP } from './home/lib/helpers';
+import { getLevelFromTotalXP, getStreakTierIcon } from './home/lib/helpers';
 import { ToastNotification, type Toast } from './home/components/ToastNotification';
 import { LevelUpModal } from './home/components/LevelUpModal';
 import { StreakBanner } from './home/components/StreakBanner';
@@ -612,17 +612,6 @@ export default function HomeScreen({ onNavigate }: Props) {
   const dailyCardName = dailyCard?.name || 'THE FOOL';
   const dailyCardMeaning = isDailyReversed ? (dailyCard?.reversed_keywords?.[0] || 'Reflection') : (dailyCard?.keywords?.[0] || 'New Beginnings');
   const dailyCardElement = dailyCard ? getCardMeta(dailyCard) : '';
-
-  const getStreakTierIcon = (): string => {
-    const streak = currentStreak;
-    if (streak >= 100) return '💎';
-    if (streak >= 60) return '🏆';
-    if (streak >= 30) return '👑';
-    if (streak >= 14) return '⭐';
-    if (streak >= 7) return '🔥';
-    if (streak >= 3) return '🌱';
-    return '🔥';
-  };
 
   return (
     <div className="home-screen" ref={screenRef}>
