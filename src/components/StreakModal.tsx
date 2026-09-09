@@ -1,6 +1,6 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Flame, CheckCircle, RefreshCw, Bug } from 'lucide-react';
+import { Flame, CheckCircle, RefreshCw } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useUser } from '../context/UserContext';
 import { 
@@ -15,11 +15,6 @@ import { StreakHeader } from './home/components/streak/StreakHeader';
 import { StreakProgress } from './home/components/streak/StreakProgress';
 import { MilestonesList } from './home/components/streak/MilestonesList';
 import { CelebrationModal } from './home/components/streak/CelebrationModal';
-
-// Lazy load - ჩაიტვირთება მხოლოდ მაშინ როცა საჭიროა
-const StreakDebugPanel = lazy(() => 
-  import('./home/components/streak/StreakDebugPanel').then(m => ({ default: m.StreakDebugPanel }))
-);
 
 interface StreakModalProps {
   isOpen: boolean;
@@ -43,7 +38,6 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
     total_coins: number;
     total_xp: number;
   } | null>(null);
-  const [showDebugPanel, setShowDebugPanel] = useState(false);
 
   useEffect(() => {
     if (!isOpen || !user) return;
@@ -170,33 +164,6 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
               boxShadow: '0 25px 80px rgba(0,0,0,0.9), 0 0 40px rgba(197, 160, 89, 0.1)'
             }}
           >
-            {/* Admin Debug Button */}
-            {user?.is_admin && (
-              <button
-                onClick={() => setShowDebugPanel(true)}
-                style={{
-                  position: 'absolute',
-                  top: '10px',
-                  left: '10px',
-                  zIndex: 20,
-                  padding: '6px',
-                  borderRadius: '8px',
-                  border: '1px solid rgba(59, 130, 246, 0.3)',
-                  background: 'rgba(59, 130, 246, 0.15)',
-                  color: '#3b82f6',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  fontSize: '10px',
-                  fontWeight: 700
-                }}
-              >
-                <Bug size={12} />
-                DEBUG
-              </button>
-            )}
-
             <StreakHeader streak={streak} longest={longest} onClose={onClose} />
 
             <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
@@ -271,31 +238,6 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
               )}
             </div>
           </motion.div>
-
-          {/* Debug Panel - Lazy Loaded (მხოლოდ ადმინისთვის და მხოლოდ მაშინ როცა ღილაკს დააჭერს) */}
-          {user?.is_admin && showDebugPanel && (
-            <Suspense fallback={
-              <div style={{
-                position: 'fixed',
-                inset: 0,
-                zIndex: 10010,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: 'rgba(0,0,0,0.9)',
-                color: '#3b82f6',
-                fontSize: '14px'
-              }}>
-                Loading Debug Panel...
-              </div>
-            }>
-              <StreakDebugPanel
-                userId={user.id}
-                isOpen={showDebugPanel}
-                onClose={() => setShowDebugPanel(false)}
-              />
-            </Suspense>
-          )}
 
           <CelebrationModal celebration={celebration} onClose={() => setCelebration(null)} />
         </motion.div>
