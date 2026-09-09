@@ -63,13 +63,13 @@ const ZODIAC_SYMBOLS: Record<string, string> = {
   }
 
   export const STREAK_TIERS: StreakTier[] = [
-    { min: 0, max: 2, icon: '🔥', name: 'Newcomer', color: '#94a3b8', glowColor: 'rgba(148, 163, 184, 0.5)' },
-    { min: 3, max: 6, icon: '🌱', name: 'Seedling', color: '#10b981', glowColor: 'rgba(16, 185, 129, 0.5)' },
-    { min: 7, max: 13, icon: '🔥', name: 'Flame', color: '#f97316', glowColor: 'rgba(249, 115, 22, 0.5)' },
-    { min: 14, max: 29, icon: '⭐', name: 'Star', color: '#fbbf24', glowColor: 'rgba(251, 191, 36, 0.5)' },
-    { min: 30, max: 59, icon: '👑', name: 'Crown', color: '#fbbf24', glowColor: 'rgba(251, 191, 36, 0.6)' },
-    { min: 60, max: 99, icon: '🏆', name: 'Trophy', color: '#fbbf24', glowColor: 'rgba(251, 191, 36, 0.7)' },
-    { min: 100, max: Infinity, icon: '💎', name: 'Diamond', color: '#a78bfa', glowColor: 'rgba(167, 139, 250, 0.7)' }
+    { min: 0, max: 2, icon: '🌱', name: 'Seedling', color: '#10b981', glowColor: 'rgba(16, 185, 129, 0.4)' },
+    { min: 3, max: 6, icon: '🔥', name: 'Flame', color: '#f97316', glowColor: 'rgba(249, 115, 22, 0.4)' },
+    { min: 7, max: 13, icon: '⭐', name: 'Star', color: '#fbbf24', glowColor: 'rgba(251, 191, 36, 0.5)' },
+    { min: 14, max: 29, icon: '👑', name: 'Crown', color: '#eab308', glowColor: 'rgba(234, 179, 8, 0.5)' },
+    { min: 30, max: 59, icon: '🏆', name: 'Trophy', color: '#d97706', glowColor: 'rgba(217, 119, 6, 0.5)' },
+    { min: 60, max: 99, icon: '💎', name: 'Diamond', color: '#8b5cf6', glowColor: 'rgba(139, 92, 246, 0.5)' },
+    { min: 100, max: Infinity, icon: '🌟', name: 'Legend', color: '#ec4899', glowColor: 'rgba(236, 72, 153, 0.6)' }
   ];
 
   export function getStreakTier(streak: number): StreakTier {
@@ -107,10 +107,7 @@ const ZODIAC_SYMBOLS: Record<string, string> = {
     const lastActive = new Date(lastActiveDate);
     const now = new Date();
     
-    // Calculate hours since last activity
     const hoursSince = (now.getTime() - lastActive.getTime()) / (1000 * 60 * 60);
-    
-    // Assume streak resets after 24 hours of inactivity
     const hoursRemaining = Math.max(0, 24 - hoursSince);
     
     return Math.floor(hoursRemaining);

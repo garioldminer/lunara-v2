@@ -61,7 +61,7 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
         if (info && info.achieved_not_claimed.length > 0) {
           setMessage({
             type: 'success',
-            text: `🎉 You have ${info.achieved_not_claimed.length} unclaimed reward${info.achieved_not_claimed.length > 1 ? 's' : ''}!`
+            text: `🎉 ${info.achieved_not_claimed.length} unclaimed reward${info.achieved_not_claimed.length > 1 ? 's' : ''}!`
           });
         }
       } catch (error: any) {
@@ -138,7 +138,7 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '12px',
+            padding: '16px',
             background: 'rgba(0,0,0,0.85)',
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)'
@@ -154,19 +154,19 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
               position: 'relative',
               width: '100%',
               maxWidth: '360px',
-              maxHeight: '70vh',
-              borderRadius: '16px',
+              maxHeight: '85vh',
+              borderRadius: '18px',
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
               background: 'linear-gradient(180deg, #171209 0%, #0c0a06 100%)',
-              border: '1px solid rgba(197, 160, 89, 0.35)',
+              border: '1px solid rgba(197, 160, 89, 0.3)',
               boxShadow: '0 25px 80px rgba(0,0,0,0.9), 0 0 40px rgba(197, 160, 89, 0.1)'
             }}
           >
             <StreakHeader streak={streak} longest={longest} onClose={onClose} />
 
-            <div style={{ flex: 1, overflowY: 'auto' }}>
+            <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
               <StreakProgress
                 nextMilestone={streakInfo?.next_milestone}
                 streak={streak}
@@ -175,9 +175,9 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
               />
 
               {message && (
-                <div style={{ padding: '0 12px 6px 12px' }}>
+                <div style={{ padding: '8px 12px 4px 12px' }}>
                   <div style={{
-                    padding: '6px 10px',
+                    padding: '7px 10px',
                     borderRadius: '8px',
                     fontSize: '10px',
                     fontWeight: 700,
@@ -200,13 +200,13 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
               />
             </div>
 
-            <div style={{ padding: '10px 12px 12px 12px', flexShrink: 0, borderTop: '1px solid rgba(197, 160, 89, 0.15)' }}>
+            <div style={{ padding: '10px 14px 14px 14px', flexShrink: 0, borderTop: '1px solid rgba(197, 160, 89, 0.12)' }}>
               {achievedCount > 0 ? (
                 <button
                   onClick={handleClaimAll}
                   disabled={claiming}
                   style={{
-                    width: '100%', padding: '10px', borderRadius: '10px', border: 'none',
+                    width: '100%', padding: '11px', borderRadius: '11px', border: 'none',
                     fontSize: '12px', fontWeight: 800, letterSpacing: '0.5px',
                     cursor: claiming ? 'not-allowed' : 'pointer',
                     background: 'linear-gradient(135deg, #fbbf24 0%, #d97706 100%)',
@@ -216,23 +216,23 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
                   }}
                 >
                   {claiming ? (
-                    <><RefreshCw size={12} className="animate-spin" /> Claiming...</>
+                    <><RefreshCw size={13} className="animate-spin" /> Claiming...</>
                   ) : (
-                    <><CheckCircle size={12} /> Claim {achievedCount} Reward{achievedCount > 1 ? 's' : ''}</>
+                    <><CheckCircle size={13} /> Claim {achievedCount} Reward{achievedCount > 1 ? 's' : ''}</>
                   )}
                 </button>
               ) : (
                 <button
                   onClick={onClose}
                   style={{
-                    width: '100%', padding: '10px', borderRadius: '10px', border: 'none',
+                    width: '100%', padding: '11px', borderRadius: '11px', border: 'none',
                     fontSize: '12px', fontWeight: 700, letterSpacing: '0.3px', cursor: 'pointer',
                     background: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)',
                     color: '#0f0c08',
                     boxShadow: '0 4px 15px rgba(197, 160, 89, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
                   }}
                 >
-                  <Flame size={12} style={{ display: 'inline-block', marginRight: '6px', verticalAlign: 'middle' }} />
+                  <Flame size={13} style={{ display: 'inline-block', marginRight: '6px', verticalAlign: 'middle' }} />
                   Keep the Streak Alive
                 </button>
               )}

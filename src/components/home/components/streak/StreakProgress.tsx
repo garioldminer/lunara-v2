@@ -24,28 +24,54 @@ export function StreakProgress({ nextMilestone, streak, percentToNext, daysToNex
   if (!nextMilestone) return null;
 
   return (
-    <div style={{ padding: '10px 14px', borderBottom: '1px solid rgba(197, 160, 89, 0.12)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
-        <span style={{ fontSize: '10px', fontWeight: 600, color: '#C5A059', display: 'flex', alignItems: 'center', gap: '4px' }}>
-          Next: {nextMilestone.icon_emoji} {nextMilestone.name}
+    <div style={{ padding: '14px 16px 12px 16px', borderBottom: '1px solid rgba(197, 160, 89, 0.1)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ fontSize: '16px' }}>{nextMilestone.icon_emoji}</span>
+          <span style={{ fontSize: '11px', fontWeight: 700, color: '#fff' }}>
+            {nextMilestone.name}
+          </span>
+        </div>
+        <span style={{ fontSize: '10px', color: '#fbbf24', fontWeight: 700 }}>
+          {daysToNext}d to go
         </span>
-        <span style={{ fontSize: '10px', color: '#94a3b8' }}>{streak}/{nextMilestone.days_required}</span>
       </div>
-      <div style={{ height: '4px', borderRadius: '999px', overflow: 'hidden', backgroundColor: 'rgba(255,255,255,0.05)' }}>
+      
+      {/* Progress bar */}
+      <div style={{ position: 'relative', height: '6px', borderRadius: '999px', backgroundColor: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
         <motion.div 
           initial={{ width: 0 }}
           animate={{ width: `${percentToNext}%` }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
+          transition={{ duration: 1, ease: 'easeOut' }}
           style={{ 
             height: '100%', 
             borderRadius: '999px', 
-            background: 'linear-gradient(90deg, #ff6b35, #ffe566)',
-            boxShadow: '0 0 6px rgba(255, 229, 102, 0.5)'
+            background: 'linear-gradient(90deg, #C5A059, #ffe566)',
+            boxShadow: '0 0 8px rgba(255, 229, 102, 0.6)'
+          }}
+        />
+        {/* Milestone marker */}
+        <motion.div
+          animate={{ scale: [1, 1.3, 1] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+          style={{
+            position: 'absolute',
+            right: '-4px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            width: '12px',
+            height: '12px',
+            borderRadius: '50%',
+            background: '#ffe566',
+            boxShadow: '0 0 10px rgba(255, 229, 102, 0.8)',
+            border: '2px solid #0c0a06'
           }}
         />
       </div>
-      <div style={{ fontSize: '9px', color: '#94a3b8', marginTop: '4px', textAlign: 'center' }}>
-        {daysToNext} more days
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px', fontSize: '9px', color: '#94a3b8' }}>
+        <span>{streak} days</span>
+        <span>{nextMilestone.days_required} days</span>
       </div>
     </div>
   );
