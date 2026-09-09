@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
-import { getStreakTierIcon } from '../../lib/helpers';
+import { getStreakTier } from '../../lib/helpers';
 
 interface StreakHeaderProps {
   streak: number;
@@ -9,6 +9,8 @@ interface StreakHeaderProps {
 }
 
 export function StreakHeader({ streak, longest, onClose }: StreakHeaderProps) {
+  const tier = getStreakTier(streak);
+  
   return (
     <div
       style={{
@@ -17,7 +19,7 @@ export function StreakHeader({ streak, longest, onClose }: StreakHeaderProps) {
         textAlign: 'center',
         flexShrink: 0,
         overflow: 'hidden',
-        background: 'radial-gradient(120% 100% at 50% 0%, rgba(255, 107, 53, 0.15) 0%, rgba(15,12,8,0) 65%)',
+        background: `radial-gradient(120% 100% at 50% 0%, ${tier.glowColor} 0%, rgba(15,12,8,0) 65%)`,
         borderBottom: '1px solid rgba(197, 160, 89, 0.18)'
       }}
     >
@@ -33,44 +35,83 @@ export function StreakHeader({ streak, longest, onClose }: StreakHeaderProps) {
         <X size={16} />
       </button>
 
-      {/* Pulsing Flame Icon with Tier */}
-      <div style={{ position: 'relative', width: 72, height: 72, margin: '0 auto 12px auto' }}>
-        <motion.div
+      {/* Tier Icon with Dynamic Glow */}
+      <motion.div
+        key={tier.icon}
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: 'spring', damping: 15, stiffness: 200 }}
+        style={{
+          position: 'relative',
+          width: 80,
+          height: 80,
+          margin: '0 auto 12px auto',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: '50%',
+          background: `radial-gradient(circle at 35% 30%, ${tier.color}40, ${tier.color}20 55%, transparent)`,
+          border: `2px solid ${tier.color}60`,
+          boxShadow: `0 0 30px ${tier.glowColor}, inset 0 0 20px ${tier.glowColor}`,
+          fontSize: '40px'
+        }}
+      >
+        <motion.span
           animate={{
-            boxShadow: [
-              '0 0 10px rgba(255, 107, 53, 0.45)',
-              '0 0 20px rgba(255, 107, 53, 0.75)',
-              '0 0 10px rgba(255, 107, 53, 0.45)'
-            ]
+            scale: [1, 1.1, 1],
+            rotate: [0, -5, 5, 0]
           }}
-          transition={{ duration: 3.2, repeat: Infinity }}
-          style={{
-            position: 'absolute', inset: 16, borderRadius: '50%',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'radial-gradient(circle at 35% 30%, #ffcc80, #ff6b35 55%, #b84a00)',
-            border: '1px solid rgba(255, 107, 53, 0.6)',
-            fontSize: '24px'
-          }}
+          transition={{ duration: 2, repeat: Infinity }}
         >
-          {getStreakTierIcon(streak)}
-        </motion.div>
-      </div>
+          {tier.icon}
+        </motion.span>
+      </motion.div>
 
+      {/* Tier Name */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        style={{
+          fontSize: '11px',
+          fontWeight: 700,
+          color: tier.color,
+          letterSpacing: '1px',
+          textTransform: 'uppercase',
+          marginBottom: '4px',
+          textShadow: `0 0 10px ${tier.glowColor}`
+        }}
+      >
+        {tier.name}
+      </motion.div>
+
+      {/* Streak Count */}
       <h2
         style={{
           margin: '0 0 6px 0',
-          fontSize: '20px',
-          fontWeight: 700,
+          fontSize: '24px',
+          fontWeight: 800,
           letterSpacing: '0.3px',
-          color: '#ffe566',
+          color: '#fff',
           fontFamily: 'Georgia, serif',
-          textShadow: '0 0 20px rgba(255, 229, 102, 0.3)'
+          textShadow: `0 0 20px ${tier.glowColor}`
         }}
       >
         {streak} Day{streak !== 1 ? 's' : ''} Streak!
       </h2>
-      <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0 }}>
-        Longest: {longest} days
+      
+      {/* Longest Streak */}
+      <p style={{ 
+        fontSize: '11px', 
+        color: '#94a3b8', 
+        margin: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '4px'
+      }}>
+        <span style={{ fontSize: '14px' }}>🏆</span>
+        Best: {longest} days
       </p>
     </div>
   );
