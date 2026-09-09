@@ -49,9 +49,6 @@ export function MilestonesList({
   const claimedMilestones = milestones.filter(m => claimedMilestoneIds.has(m.id));
   const claimableMilestones = milestones.filter(m => achievedNotClaimedIds.has(m.id));
   const lockedMilestones = milestones.filter(m => !claimedMilestoneIds.has(m.id) && !achievedNotClaimedIds.has(m.id));
-  
-  // Find next locked milestone (closest to current streak)
-  const nextMilestone = lockedMilestones[0]; // already sorted by sort_order
 
   return (
     <div style={{ padding: '8px 12px 12px 12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
