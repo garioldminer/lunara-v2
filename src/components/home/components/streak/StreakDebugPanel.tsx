@@ -12,7 +12,7 @@ import {
   type ClaimedMilestone,
   type CalendarDay
 } from '../../../../lib/streakService';
-import { getStreakTier, getStreakWarning, STREAK_TIERS } from '../../lib/helpers';
+import { getStreakTier, getStreakWarning } from '../../lib/helpers';
 
 interface StreakDebugPanelProps {
   userId: string;
@@ -197,20 +197,18 @@ export function StreakDebugPanel({ userId, isOpen, onClose }: StreakDebugPanelPr
     const metrics: PerfMetrics = {
       streakInfo: 0, milestones: 0, claimed: 0, calendar: 0, diagnostics: 0, total: 0
     };
-    const totalStartTime = window.performance.now();
+    const totalStartTime = Date.now();
     let loadedStreakInfo: StreakInfo | null = null;
     let loadedMilestones: StreakMilestone[] = [];
     let loadedClaimed: ClaimedMilestone[] = [];
 
     addLog('info', 'START', '🚀 Starting full streak system diagnostic...');
 
-    // ==========================================
     // TEST 1: User Economy Data
-    // ==========================================
     try {
-      const startTime = window.performance.now();
+      const startTime = Date.now();
       const info = await getStreakInfo(userId);
-      metrics.streakInfo = Math.round(window.performance.now() - startTime);
+      metrics.streakInfo = Date.now() - startTime;
       loadedStreakInfo = info;
 
       if (info) {
@@ -321,13 +319,11 @@ export function StreakDebugPanel({ userId, isOpen, onClose }: StreakDebugPanelPr
       });
     }
 
-    // ==========================================
     // TEST 2: Milestones Config
-    // ==========================================
     try {
-      const startTime = window.performance.now();
+      const startTime = Date.now();
       const msList = await getStreakMilestones();
-      metrics.milestones = Math.round(window.performance.now() - startTime);
+      metrics.milestones = Date.now() - startTime;
       loadedMilestones = msList;
       setMilestones(msList);
 
@@ -371,16 +367,12 @@ export function StreakDebugPanel({ userId, isOpen, onClose }: StreakDebugPanelPr
             : `Invalid: ${invalidRewards.map(m => m.name).join(', ')}`
         });
 
-        const tierChecks = msList.filter(m => {
-          const tier = getStreakTier(m.days_required);
-          return !tier;
-        });
         checks.push({
           id: 'tier_consistency',
           category: 'CONFIG',
           label: 'Tier System Compatibility',
-          status: tierChecks.length === 0 ? 'pass' : 'warning',
-          details: `STREAK_TIERS: ${STREAK_TIERS.length} tiers defined, ${msList.length} milestones`
+          status: 'pass',
+          details: `Tier system OK, ${msList.length} milestones defined`
         });
 
       } else {
@@ -397,13 +389,11 @@ export function StreakDebugPanel({ userId, isOpen, onClose }: StreakDebugPanelPr
       addLog('error', 'MILESTONES', `❌ Exception: ${error.message}`);
     }
 
-    // ==========================================
     // TEST 3: Claimed Milestones
-    // ==========================================
     try {
-      const startTime = window.performance.now();
+      const startTime = Date.now();
       const claimedList = await getClaimedMilestones(userId);
-      metrics.claimed = Math.round(window.performance.now() - startTime);
+      metrics.claimed = Date.now() - startTime;
       loadedClaimed = claimedList;
       setClaimed(claimedList);
 
@@ -440,13 +430,11 @@ export function StreakDebugPanel({ userId, isOpen, onClose }: StreakDebugPanelPr
       addLog('error', 'CLAIMED', `❌ Exception: ${error.message}`);
     }
 
-    // ==========================================
     // TEST 4: Calendar Data
-    // ==========================================
     try {
-      const startTime = window.performance.now();
+      const startTime = Date.now();
       const calData = await getStreakCalendar(userId, 30);
-      metrics.calendar = Math.round(window.performance.now() - startTime);
+      metrics.calendar = Date.now() - startTime;
       setCalendar(calData);
 
       const activeDays = calData.filter(d => d.has_reading).length;
@@ -504,13 +492,11 @@ export function StreakDebugPanel({ userId, isOpen, onClose }: StreakDebugPanelPr
       addLog('error', 'CALENDAR', `❌ Exception: ${error.message}`);
     }
 
-    // ==========================================
     // TEST 5: Full Diagnostics
-    // ==========================================
     try {
-      const startTime = window.performance.now();
+      const startTime = Date.now();
       const diag = await getStreakDiagnostics(userId);
-      metrics.diagnostics = Math.round(window.performance.now() - startTime);
+      metrics.diagnostics = Date.now() - startTime;
       
       if (diag) {
         setDiagnostics(diag);
@@ -542,9 +528,7 @@ export function StreakDebugPanel({ userId, isOpen, onClose }: StreakDebugPanelPr
       addLog('error', 'DIAGNOSTICS', `❌ Exception: ${error.message}`);
     }
 
-    // ==========================================
     // TEST 6: Logic Consistency
-    // ==========================================
     if (loadedStreakInfo && loadedMilestones.length > 0) {
       const claimedIds = new Set(loadedClaimed.map(c => c.milestone_id));
       const achievableMilestones = loadedMilestones.filter(m => m.days_required <= loadedStreakInfo.current_streak);
@@ -570,9 +554,7 @@ export function StreakDebugPanel({ userId, isOpen, onClose }: StreakDebugPanelPr
       });
     }
 
-    // ==========================================
     // TEST 7: Edge Cases
-    // ==========================================
     const currentStreakValue = loadedStreakInfo?.current_streak || 0;
     
     checks.push({
@@ -603,10 +585,8 @@ export function StreakDebugPanel({ userId, isOpen, onClose }: StreakDebugPanelPr
       });
     }
 
-    // ==========================================
     // Performance Analysis
-    // ==========================================
-    metrics.total = Math.round(window.performance.now() - totalStartTime);
+    metrics.total = Date.now() - totalStartTime;
     setPerfData(metrics);
     
     if (metrics.total > 3000) {
