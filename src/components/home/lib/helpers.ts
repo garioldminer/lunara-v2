@@ -87,3 +87,77 @@ const ZODIAC_SYMBOLS: Record<string, string> = {
   export function getStreakTierColor(streak: number): string {
     return getStreakTier(streak).color;
   }
+
+  // ============================================
+  // ⚠️ STREAK WARNING SYSTEM
+  // ============================================
+  export interface StreakWarning {
+    hoursRemaining: number;
+    dangerLevel: 'safe' | 'warning' | 'critical';
+    message: string;
+    icon: string;
+    color: string;
+    bgColor: string;
+    borderColor: string;
+  }
+
+  export function getStreakHoursRemaining(lastActiveDate: string | null): number {
+    if (!lastActiveDate) return 24;
+    
+    const lastActive = new Date(lastActiveDate);
+    const now = new Date();
+    
+    // Calculate hours since last activity
+    const hoursSince = (now.getTime() - lastActive.getTime()) / (1000 * 60 * 60);
+    
+    // Assume streak resets after 24 hours of inactivity
+    const hoursRemaining = Math.max(0, 24 - hoursSince);
+    
+    return Math.floor(hoursRemaining);
+  }
+
+  export function getStreakWarning(lastActiveDate: string | null): StreakWarning {
+    const hoursRemaining = getStreakHoursRemaining(lastActiveDate);
+    
+    if (hoursRemaining > 12) {
+      return {
+        hoursRemaining,
+        dangerLevel: 'safe',
+        message: 'Your streak is safe for now',
+        icon: '✅',
+        color: '#10b981',
+        bgColor: 'rgba(16, 185, 129, 0.08)',
+        borderColor: 'rgba(16, 185, 129, 0.2)'
+      };
+    } else if (hoursRemaining > 6) {
+      return {
+        hoursRemaining,
+        dangerLevel: 'warning',
+        message: `⚠️ ${hoursRemaining} hours left to save your streak!`,
+        icon: '⚠️',
+        color: '#fbbf24',
+        bgColor: 'rgba(251, 191, 36, 0.08)',
+        borderColor: 'rgba(251, 191, 36, 0.3)'
+      };
+    } else if (hoursRemaining > 0) {
+      return {
+        hoursRemaining,
+        dangerLevel: 'critical',
+        message: `🚨 ${hoursRemaining} hours left! Draw a card NOW!`,
+        icon: '🚨',
+        color: '#ef4444',
+        bgColor: 'rgba(239, 68, 68, 0.1)',
+        borderColor: 'rgba(239, 68, 68, 0.4)'
+      };
+    } else {
+      return {
+        hoursRemaining: 0,
+        dangerLevel: 'critical',
+        message: 'Your streak is about to break!',
+        icon: '💀',
+        color: '#ef4444',
+        bgColor: 'rgba(239, 68, 68, 0.1)',
+        borderColor: 'rgba(239, 68, 68, 0.5)'
+      };
+    }
+  }
