@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Flame, CheckCircle, RefreshCw, Bug } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -15,7 +15,11 @@ import { StreakHeader } from './home/components/streak/StreakHeader';
 import { StreakProgress } from './home/components/streak/StreakProgress';
 import { MilestonesList } from './home/components/streak/MilestonesList';
 import { CelebrationModal } from './home/components/streak/CelebrationModal';
-import { StreakDebugPanel } from './home/components/streak/StreakDebugPanel';
+
+// Lazy load - ჩაიტვირთება მხოლოდ მაშინ როცა საჭიროა
+const StreakDebugPanel = lazy(() => 
+  import('./home/components/streak/StreakDebugPanel').then(m => ({ default: m.StreakDebugPanel }))
+);
 
 interface StreakModalProps {
   isOpen: boolean;
@@ -268,13 +272,29 @@ export default function StreakModal({ isOpen, onClose, currentStreak, onMileston
             </div>
           </motion.div>
 
-          {/* Debug Panel (Admin Only) */}
-          {user?.is_admin && (
-            <StreakDebugPanel
-              userId={user.id}
-              isOpen={showDebugPanel}
-              onClose={() => setShowDebugPanel(false)}
-            />
+          {/* Debug Panel - Lazy Loaded (მხოლოდ ადმინისთვის და მხოლოდ მაშინ როცა ღილაკს დააჭერს) */}
+          {user?.is_admin && showDebugPanel && (
+            <Suspense fallback={
+              <div style={{
+                position: 'fixed',
+                inset: 0,
+                zIndex: 10010,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'rgba(0,0,0,0.9)',
+                color: '#3b82f6',
+                fontSize: '14px'
+              }}>
+                Loading Debug Panel...
+              </div>
+            }>
+              <StreakDebugPanel
+                userId={user.id}
+                isOpen={showDebugPanel}
+                onClose={() => setShowDebugPanel(false)}
+              />
+            </Suspense>
           )}
 
           <CelebrationModal celebration={celebration} onClose={() => setCelebration(null)} />
