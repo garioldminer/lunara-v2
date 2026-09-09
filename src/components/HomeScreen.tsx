@@ -23,6 +23,7 @@ import { getLevelFromTotalXP, getStreakTierIcon } from './home/lib/helpers';
 import { ToastNotification, type Toast } from './home/components/ToastNotification';
 import { LevelUpModal } from './home/components/LevelUpModal';
 import { StreakBanner } from './home/components/StreakBanner';
+import { StreakWarningBanner } from './home/components/StreakWarningBanner';
 import { AdminButtons } from './home/components/AdminButtons';
 import { UserHeader } from './home/components/UserHeader';
 import { CardOfDayBanner } from './home/components/CardOfDayBanner';
@@ -43,6 +44,7 @@ interface EconomyData {
   current_streak: number;
   cosmic_focus: number;
   max_focus: number;
+  last_active_date?: string | null;
 }
 
 interface DailyQuestDisplay {
@@ -77,7 +79,7 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [activeSubscription, setActiveSubscription] = useState<any>(null);
   
   const [economy, setEconomy] = useState<EconomyData>({ 
-    cosmic_coins: 0, xp: 0, level: 1, current_streak: 0, cosmic_focus: 20, max_focus: 20 
+    cosmic_coins: 0, xp: 0, level: 1, current_streak: 0, cosmic_focus: 20, max_focus: 20, last_active_date: null
   });
   const [questsLoading, setQuestsLoading] = useState(true);
   const [dailyQuests, setDailyQuests] = useState<DailyQuestDisplay[]>([]);
@@ -435,8 +437,12 @@ export default function HomeScreen({ onNavigate }: Props) {
       setDbStatus('connecting');
       addDebugLog('info', 'ECONOMY', '📡 Starting economy data load', { userId: user.id });
       try {
-        const queryParams = { table: 'user_economy', columns: 'cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus', userId: user.id };
-        const { data, error } = await supabase.from('user_economy').select('cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus').eq('user_id', user.id).single();
+        const queryParams = { table: 'user_economy', columns: 'cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus, last_active_date', userId: user.id };
+        const { data, error } = await supabase
+          .from('user_economy')
+          .select('cosmic_coins, xp, level, current_streak, cosmic_focus, max_focus, last_active_date')
+          .eq('user_id', user.id)
+          .single();
         if (error) {
           setDbStatus('error');
           debugTools.addToDbDebugHistory('user_economy', 'SELECT', queryParams, null, error);
@@ -448,13 +454,14 @@ export default function HomeScreen({ onNavigate }: Props) {
         addDebugLog('success', 'ECONOMY', '✅ Economy data loaded successfully', data);
         if (data) {
           const levelData = getLevelFromTotalXP(data.xp || 0);
-          const economyData = { 
+          const economyData: EconomyData = { 
             cosmic_coins: data.cosmic_coins || 0, 
             xp: data.xp || 0, 
             level: levelData.level, 
             current_streak: data.current_streak || 0,
             cosmic_focus: data.cosmic_focus || 20,
-            max_focus: data.max_focus || 20
+            max_focus: data.max_focus || 20,
+            last_active_date: (data as any).last_active_date || null
           };
           setEconomy(economyData);
           setCurrentStreak(economyData.current_streak);
@@ -613,6 +620,9 @@ export default function HomeScreen({ onNavigate }: Props) {
   const dailyCardMeaning = isDailyReversed ? (dailyCard?.reversed_keywords?.[0] || 'Reflection') : (dailyCard?.keywords?.[0] || 'New Beginnings');
   const dailyCardElement = dailyCard ? getCardMeta(dailyCard) : '';
 
+  // ⚠️ Show warning banner only when streak is active and card not yet drawn today
+  const showStreakWarning = currentStreak > 0 && !isDailyRevealed;
+
   return (
     <div className="home-screen" ref={screenRef}>
       <AnimatePresence>
@@ -636,6 +646,16 @@ export default function HomeScreen({ onNavigate }: Props) {
           onDismiss={() => setStreakBannerDismissed(true)}
           onNavigate={onNavigate || (() => {})}
         />
+      </AnimatePresence>
+
+      {/* ⚠️ STREAK WARNING BANNER - Shows when streak is in danger */}
+      <AnimatePresence>
+        {showStreakWarning && (
+          <StreakWarningBanner
+            lastActiveDate={economy.last_active_date || null}
+            onNavigate={onNavigate || (() => {})}
+          />
+        )}
       </AnimatePresence>
 
       <UserHeader
