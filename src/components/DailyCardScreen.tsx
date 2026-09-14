@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Share2, Bookmark, BookOpen, ArrowLeft, Shield, Copy, CheckCircle, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { Sparkles, Share2, Bookmark, BookOpen, ArrowLeft, Shield } from 'lucide-react';
 import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards';
 import { logReading } from '../lib/adminService';
 import { trackQuestProgress } from '../lib/questService';
@@ -120,22 +120,20 @@ interface MysticalDeckRevealProps {
 function MysticalDeckReveal({ card, isReversed, cardBackUrl, onComplete }: MysticalDeckRevealProps) {
   const [phase, setPhase] = useState<RevealPhase>('shuffle');
 
-  // Phase timing sequence
   useEffect(() => {
     const timers = [
-      setTimeout(() => setPhase('spread'), 400),   // 0 → 400ms
-      setTimeout(() => setPhase('select'), 700),   // 400 → 700ms
-      setTimeout(() => setPhase('flip'), 1000),    // 700 → 1000ms
-      setTimeout(() => setPhase('burst'), 1600),   // 1000 → 1600ms
-      setTimeout(() => setPhase('settle'), 2000),  // 1600 → 2000ms
-      setTimeout(() => { setPhase('done'); onComplete(); }, 2300) // 2000 → 2300ms
+      setTimeout(() => setPhase('spread'), 400),
+      setTimeout(() => setPhase('select'), 700),
+      setTimeout(() => setPhase('flip'), 1000),
+      setTimeout(() => setPhase('burst'), 1600),
+      setTimeout(() => setPhase('settle'), 2000),
+      setTimeout(() => { setPhase('done'); onComplete(); }, 2300)
     ];
     return () => timers.forEach(t => clearTimeout(t));
   }, [onComplete]);
 
-  // 5 cards arc positions (spread phase)
   const deckCards = [0, 1, 2, 3, 4].map(i => {
-    const angle = ((i - 2) / 2) * 60; // -60° to +60°
+    const angle = ((i - 2) / 2) * 60;
     const rad = (angle * Math.PI) / 180;
     const radius = 180;
     return {
@@ -143,15 +141,12 @@ function MysticalDeckReveal({ card, isReversed, cardBackUrl, onComplete }: Mysti
       x: Math.sin(rad) * radius,
       y: (1 - Math.cos(rad)) * radius * 0.5,
       rotation: angle * 0.5,
-      isChosen: i === 2 // middle card
+      isChosen: i === 2
     };
   });
 
-  // Spring config
-  const spring = { type: 'spring', stiffness: 260, damping: 22 };
-  const springGentle = { type: 'spring', stiffness: 140, damping: 18 };
+  const spring = { type: 'spring' as const, stiffness: 260, damping: 22 };
 
-  // 12 sparkle particles for burst
   const sparkles = useMemo(() => {
     return Array.from({ length: 12 }, (_, i) => ({
       id: i,
@@ -172,30 +167,20 @@ function MysticalDeckReveal({ card, isReversed, cardBackUrl, onComplete }: Mysti
       justifyContent: 'center',
       perspective: '1200px'
     }}>
-      {/* === DECK CARDS (back side) - visible during shuffle, spread, select === */}
-      {phase !== 'flip' && phase !== 'burst' && phase !== 'settle' && phase !== 'done' && (
+      {/* === DECK CARDS (back side) === */}
+      {!['flip', 'burst', 'settle', 'done'].includes(phase) && (
         <div style={{ position: 'relative', width: '220px', height: '330px' }}>
           {deckCards.map((deckCard) => {
             const isChosen = deckCard.isChosen;
-            const hideInSelect = phase === 'select' && !isChosen;
-            const showCard = !(hideInSelect);
 
             return (
               <motion.div
                 key={deckCard.id}
-                initial={{
-                  x: 0, y: 0, rotate: 0, scale: 0.3, opacity: 0
-                }}
+                initial={{ x: 0, y: 0, rotate: 0, scale: 0.3, opacity: 0 }}
                 animate={
-                  phase === 'shuffle' ? {
-                    x: 0, y: 0, rotate: 0, scale: 1, opacity: 1
-                  } : phase === 'spread' ? {
-                    x: deckCard.x, y: deckCard.y, rotate: deckCard.rotation, scale: 1, opacity: 1
-                  } : phase === 'select' ? {
-                    x: 0, y: 0, rotate: 0,
-                    scale: isChosen ? 1.1 : 0.3,
-                    opacity: isChosen ? 1 : 0
-                  } : {}
+                  phase === 'shuffle' ? { x: 0, y: 0, rotate: 0, scale: 1, opacity: 1 } :
+                  phase === 'spread' ? { x: deckCard.x, y: deckCard.y, rotate: deckCard.rotation, scale: 1, opacity: 1 } :
+                  phase === 'select' ? { x: 0, y: 0, rotate: 0, scale: isChosen ? 1.1 : 0.3, opacity: isChosen ? 1 : 0 } : {}
                 }
                 transition={spring}
                 style={{
@@ -213,10 +198,7 @@ function MysticalDeckReveal({ card, isReversed, cardBackUrl, onComplete }: Mysti
                 }}
               >
                 <img src={cardBackUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                <div style={{
-                  position: 'absolute', inset: 0,
-                  background: 'linear-gradient(135deg, rgba(197, 160, 89, 0.1), transparent)'
-                }} />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(197, 160, 89, 0.1), transparent)' }} />
               </motion.div>
             );
           })}
@@ -232,7 +214,7 @@ function MysticalDeckReveal({ card, isReversed, cardBackUrl, onComplete }: Mysti
               rotateY: 0,
               scale: phase === 'flip' ? 1 : (phase === 'burst' ? 1.05 : 1),
               opacity: 1,
-              y: phase === 'settle' || phase === 'done' ? [0, -8, 0] : 0
+              y: (phase === 'settle' || phase === 'done') ? [0, -8, 0] : 0
             }}
             transition={
               phase === 'flip' ? { rotateY: { duration: 0.6, ease: [0.4, 0, 0.2, 1] }, scale: spring } :
@@ -247,7 +229,7 @@ function MysticalDeckReveal({ card, isReversed, cardBackUrl, onComplete }: Mysti
               willChange: 'transform'
             }}
           >
-            {/* FRONT side (the actual card) */}
+            {/* FRONT side */}
             <div style={{
               position: 'absolute', inset: 0,
               borderRadius: '12px',
@@ -277,7 +259,7 @@ function MysticalDeckReveal({ card, isReversed, cardBackUrl, onComplete }: Mysti
               )}
             </div>
 
-            {/* BACK side (visible before flip) */}
+            {/* BACK side */}
             <div style={{
               position: 'absolute', inset: 0,
               borderRadius: '12px',
@@ -291,7 +273,7 @@ function MysticalDeckReveal({ card, isReversed, cardBackUrl, onComplete }: Mysti
             </div>
           </motion.div>
 
-          {/* GLOW BURST - radial glow behind the card */}
+          {/* GLOW BURST */}
           {['burst', 'settle', 'done'].includes(phase) && (
             <motion.div
               initial={{ scale: 0, opacity: 0 }}
@@ -332,11 +314,7 @@ function MysticalDeckReveal({ card, isReversed, cardBackUrl, onComplete }: Mysti
                   opacity: phase === 'burst' ? [0, 1, 0] : 0,
                   rotate: phase === 'burst' ? 360 : 0
                 }}
-                transition={{
-                  duration: 0.8,
-                  delay: s.delay,
-                  ease: 'easeOut'
-                }}
+                transition={{ duration: 0.8, delay: s.delay, ease: 'easeOut' }}
                 style={{
                   position: 'absolute',
                   top: '50%', left: '50%',
@@ -358,7 +336,7 @@ function MysticalDeckReveal({ card, isReversed, cardBackUrl, onComplete }: Mysti
         </div>
       )}
 
-      {/* === PHASE INDICATOR (subtle text) === */}
+      {/* === PHASE INDICATOR === */}
       <motion.div
         key={phase}
         initial={{ opacity: 0, y: 10 }}
@@ -508,9 +486,7 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         setCustomQuestion(existing.question || '');
         setNotes(existing.notes || '');
         setSelectedMood(existing.mood || null);
-        if (existing.reflection_prompt) {
-          addLog('info', 'Reflection prompt loaded', { prompt: existing.reflection_prompt });
-        }
+        if (existing.reflection_prompt) addLog('info', 'Reflection prompt loaded', { prompt: existing.reflection_prompt });
         setStage('revealed');
       } else {
         addLog('info', 'No reading for today - showing focus selection');
@@ -599,12 +575,9 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     setIsCreating(false);
   };
 
-  // When MysticalDeckReveal completes
   const handleRevealComplete = () => {
     setStage('revealed');
-    if (dailyReading) {
-      showToast(`Your card: ${dailyReading.cards[0].name} ✨`, 'success');
-    }
+    if (dailyReading) showToast(`Your card: ${dailyReading.cards[0].name} ✨`, 'success');
   };
 
   const handleShare = () => {
@@ -740,7 +713,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
               <p style={{ fontSize: '13px', color: '#94a3b8', margin: 0 }}>Choose a focus for today's reading</p>
             </div>
 
-            {/* 🃏 PLAYING-CARD STYLE FOCUS BANNERS */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px', marginBottom: '16px' }}>
               {FOCUS_AREAS.map((focus) => {
                 const isSelected = selectedFocus === focus.id;
@@ -775,7 +747,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
           </motion.div>
         )}
 
-        {/* 🎴 MYSTICAL DECK REVEAL STAGE */}
         {stage === 'revealing' && currentCard && (
           <motion.div key="revealing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ flex: 1, position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column' }}>
             <MysticalDeckReveal
@@ -790,7 +761,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         {stage === 'revealed' && currentCard && (
           <motion.div key="revealed" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: 'easeOut' }} style={{ display: 'flex', flexDirection: 'column', flex: 1, position: 'relative', zIndex: 1, padding: '0 10px' }}>
 
-            {/* Card with floating animation */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '20px' }}>
               <motion.div
                 animate={{ y: [0, -8, 0] }}
@@ -811,7 +781,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                 )}
               </motion.div>
 
-              {/* ACTION BUTTONS */}
               <div style={{ display: 'flex', gap: '12px', marginTop: '16px', zIndex: 1 }}>
                 <motion.button whileTap={{ scale: 0.9 }} onClick={handleAIInsight} style={{ ...actionBtnStyle, background: hasPremium ? 'rgba(167, 139, 250, 0.2)' : 'rgba(255, 215, 0, 0.15)', borderColor: hasPremium ? 'rgba(167, 139, 250, 0.5)' : 'rgba(255, 215, 0, 0.5)', color: hasPremium ? '#a78bfa' : '#FFD700' }} title="AI Insight"><Sparkles size={22} /></motion.button>
                 <motion.button whileTap={{ scale: 0.9 }} onClick={handleToggleBookmark} style={{ ...actionBtnStyle, color: dailyReading?.is_bookmarked ? '#C5A059' : '#94a3b8', boxShadow: dailyReading?.is_bookmarked ? '0 0 15px rgba(197, 160, 89, 0.4)' : '0 4px 15px rgba(0,0,0,0.3)' }}><Bookmark size={22} fill={dailyReading?.is_bookmarked ? '#C5A059' : 'none'} /></motion.button>
@@ -820,7 +789,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
               </div>
             </div>
 
-            {/* CARD INFO */}
             <div style={{ background: 'rgba(10, 8, 20, 0.6)', border: '1px solid rgba(197, 160, 89, 0.2)', borderRadius: '16px', padding: '16px', backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)', marginBottom: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>
               <div style={{ textAlign: 'center', marginBottom: '12px' }}>
                 <div style={{ fontSize: '11px', color: '#94a3b8', letterSpacing: '1px', textTransform: 'uppercase' }}>{getCardMeta(currentCard)}</div>
