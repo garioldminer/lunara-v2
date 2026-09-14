@@ -55,7 +55,6 @@ const logIcons: Record<LogType, string> = {
 // CSS COSMIC BACKGROUND (უფრო სწრაფი ვიდრე Three.js)
 // ============================================
 function CosmicBackground() {
-  // 60 static + animated stars
   const stars = useMemo(() => {
     const list = [];
     for (let i = 0; i < 60; i++) {
@@ -78,7 +77,6 @@ function CosmicBackground() {
       background: 'radial-gradient(ellipse at top, #1a0a2e 0%, #0a0600 40%, #000002 100%)',
       overflow: 'hidden'
     }}>
-      {/* Nebula glows */}
       <div style={{
         position: 'absolute', top: '10%', left: '20%', width: '400px', height: '400px',
         background: 'radial-gradient(circle, rgba(139, 92, 246, 0.15), transparent 70%)',
@@ -95,7 +93,6 @@ function CosmicBackground() {
         filter: 'blur(40px)', borderRadius: '50%'
       }} />
 
-      {/* Twinkling stars */}
       {stars.map(star => (
         <motion.div
           key={star.id}
@@ -549,7 +546,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
           <ArrowLeft size={20} />
         </button>
 
-        {/* Date badge - integrated into header */}
         <div style={{
           padding: '6px 10px',
           background: 'rgba(10, 8, 20, 0.6)',
@@ -609,93 +605,120 @@ export default function DailyCardScreen({ onNavigate }: Props) {
               <p style={{ fontSize: '13px', color: '#94a3b8', margin: 0 }}>Choose a focus for today's reading</p>
             </div>
 
-            {/* HORIZONTAL FOCUS BANNERS */}
+            {/* 🃏 PLAYING-CARD STYLE FOCUS BANNERS - ოთხივე ჩანს, სქროლის გარეშე */}
             <div style={{ 
-              display: 'flex', 
-              gap: '8px', 
-              overflowX: 'auto',
-              paddingBottom: '8px',
-              marginBottom: '16px',
-              scrollSnapType: 'x mandatory'
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(4, 1fr)', 
+              gap: '6px',
+              marginBottom: '16px'
             }}>
               {FOCUS_AREAS.map((focus) => {
                 const isSelected = selectedFocus === focus.id;
                 return (
                   <motion.button
                     key={focus.id}
-                    whileTap={{ scale: 0.95 }}
+                    whileTap={{ scale: 0.94 }}
                     onClick={() => handleFocusSelect(focus.id)}
+                    title={focus.description}
                     style={{
-                      flex: '1 1 0',
-                      minWidth: '90px',
-                      padding: '16px 8px',
+                      position: 'relative',
+                      aspectRatio: '5 / 7',
+                      padding: 0,
                       background: isSelected 
                         ? focus.gradient 
-                        : 'rgba(10, 8, 20, 0.6)',
+                        : 'linear-gradient(160deg, rgba(22, 16, 38, 0.92) 0%, rgba(10, 8, 20, 0.96) 100%)',
                       border: isSelected 
-                        ? 'none'
-                        : '1px solid rgba(197, 160, 89, 0.2)',
-                      borderRadius: '14px',
+                        ? `2px solid ${focus.color}` 
+                        : '1.5px solid rgba(197, 160, 89, 0.35)',
+                      borderRadius: '10px',
                       color: '#fff',
+                      cursor: 'pointer',
+                      boxShadow: isSelected 
+                        ? `0 6px 20px ${focus.color}50, inset 0 1px 0 rgba(255,255,255,0.25)` 
+                        : '0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)',
+                      overflow: 'hidden',
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
-                      gap: '6px',
-                      cursor: 'pointer',
-                      backdropFilter: 'blur(8px)',
-                      WebkitBackdropFilter: 'blur(8px)',
-                      scrollSnapAlign: 'start',
-                      boxShadow: isSelected 
-                        ? `0 8px 25px ${focus.color}40, 0 0 0 2px ${focus.color}` 
-                        : 'none',
-                      transition: 'all 0.2s ease',
-                      position: 'relative',
-                      overflow: 'hidden'
+                      justifyContent: 'center',
+                      gap: '5px',
+                      transition: 'all 0.2s ease'
                     }}
                   >
-                    {isSelected && (
-                      <motion.div
-                        animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        style={{
-                          position: 'absolute',
-                          inset: 0,
-                          background: `radial-gradient(circle at center, ${focus.color}40, transparent)`,
-                          pointerEvents: 'none'
-                        }}
-                      />
-                    )}
+                    {/* შიდა ჩარჩო - როგორც ბანქოს კარტზე */}
+                    <div style={{
+                      position: 'absolute',
+                      inset: '4px',
+                      border: `1px solid ${isSelected ? 'rgba(255,255,255,0.35)' : 'rgba(197, 160, 89, 0.22)'}`,
+                      borderRadius: '7px',
+                      pointerEvents: 'none'
+                    }} />
+
+                    {/* კუთხის ინდექსი - ზედა მარცხენა */}
+                    <div style={{
+                      position: 'absolute',
+                      top: '7px',
+                      left: '8px',
+                      fontSize: '9px',
+                      lineHeight: 1,
+                      color: isSelected ? '#fff' : focus.color,
+                      opacity: 0.9
+                    }}>
+                      {focus.icon}
+                    </div>
+
+                    {/* კუთხის ინდექსი - ქვედა მარჯვენა (ამოტრიალებული) */}
+                    <div style={{
+                      position: 'absolute',
+                      bottom: '7px',
+                      right: '8px',
+                      fontSize: '9px',
+                      lineHeight: 1,
+                      color: isSelected ? '#fff' : focus.color,
+                      opacity: 0.9,
+                      transform: 'rotate(180deg)'
+                    }}>
+                      {focus.icon}
+                    </div>
+
+                    {/* ცენტრალური icon */}
                     <motion.div
-                      animate={isSelected ? { scale: [1, 1.15, 1] } : {}}
-                      transition={{ duration: 1, repeat: isSelected ? Infinity : 0 }}
-                      style={{ 
-                        fontSize: '28px',
-                        position: 'relative',
-                        zIndex: 1,
-                        filter: isSelected ? `drop-shadow(0 0 8px ${focus.color})` : 'none'
+                      animate={isSelected ? { scale: [1, 1.12, 1] } : {}}
+                      transition={{ duration: 1.2, repeat: isSelected ? Infinity : 0 }}
+                      style={{
+                        fontSize: '26px',
+                        filter: isSelected ? `drop-shadow(0 0 6px ${focus.color})` : 'none',
+                        zIndex: 1
                       }}
                     >
                       {focus.icon}
                     </motion.div>
-                    <div style={{ 
-                      fontSize: '12px', 
-                      fontWeight: '700',
-                      position: 'relative',
+
+                    {/* Label */}
+                    <div style={{
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      letterSpacing: '0.3px',
+                      color: isSelected ? '#fff' : '#e2e8f0',
                       zIndex: 1,
-                      textShadow: isSelected ? '0 1px 2px rgba(0,0,0,0.5)' : 'none'
+                      textShadow: '0 1px 2px rgba(0,0,0,0.6)'
                     }}>
                       {focus.label}
                     </div>
-                    <div style={{ 
-                      fontSize: '9px', 
-                      color: isSelected ? 'rgba(255,255,255,0.9)' : '#94a3b8',
-                      position: 'relative',
-                      zIndex: 1,
-                      textAlign: 'center',
-                      lineHeight: 1.2
-                    }}>
-                      {focus.description}
-                    </div>
+
+                    {/* არჩეულის glow ეფექტი */}
+                    {isSelected && (
+                      <motion.div
+                        animate={{ opacity: [0.2, 0.45, 0.2] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        style={{
+                          position: 'absolute',
+                          inset: 0,
+                          background: `radial-gradient(circle at 50% 40%, ${focus.color}50, transparent 70%)`,
+                          pointerEvents: 'none'
+                        }}
+                      />
+                    )}
                   </motion.button>
                 );
               })}
@@ -783,7 +806,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                   transformStyle: 'preserve-3d'
                 }}
               >
-                {/* Front (back of card) */}
                 <div style={{
                   position: 'absolute',
                   inset: 0,
@@ -795,7 +817,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                 }}>
                   <img src={CARD_BACK_URL} alt="Card Back" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                 </div>
-                {/* Back (hidden side during flip) */}
                 <div style={{
                   position: 'absolute',
                   inset: 0,
@@ -821,7 +842,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
         {stage === 'revealed' && currentCard && (
           <motion.div key="revealed" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} style={{ display: 'flex', flexDirection: 'column', flex: 1, position: 'relative', zIndex: 1, padding: '0 10px' }}>
             
-            {/* CARD + GLOW */}
             <div style={{ 
               display: 'flex', 
               flexDirection: 'column', 
@@ -829,7 +849,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
               marginBottom: '20px',
               perspective: '1000px'
             }}>
-              {/* Glow burst */}
               <motion.div
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 2, opacity: [0, 0.8, 0] }}
@@ -898,7 +917,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
                 )}
               </motion.div>
 
-              {/* ACTION BUTTONS - ქვემოთ ერთ ხაზზე */}
               <div style={{ 
                 display: 'flex', 
                 gap: '12px', 
@@ -937,7 +955,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
               </div>
             </div>
 
-            {/* CARD INFO */}
             <div style={{ background: 'rgba(10, 8, 20, 0.6)', border: '1px solid rgba(197, 160, 89, 0.2)', borderRadius: '16px', padding: '16px', backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)', marginBottom: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>
               <div style={{ textAlign: 'center', marginBottom: '12px' }}>
                 <div style={{ fontSize: '11px', color: '#94a3b8', letterSpacing: '1px', textTransform: 'uppercase' }}>{getCardMeta(currentCard)}</div>
