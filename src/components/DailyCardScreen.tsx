@@ -1,8 +1,6 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Heart, Briefcase, Star, Share2, Bookmark, BookOpen, ArrowLeft, Shield, Copy, CheckCircle, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
 import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards';
 import { logReading } from '../lib/adminService';
 import { trackQuestProgress } from '../lib/questService';
@@ -54,189 +52,68 @@ const logIcons: Record<LogType, string> = {
 };
 
 // ============================================
-// PROCEDURAL STAR FIELD
+// CSS COSMIC BACKGROUND (უფრო სწრაფი ვიდრე Three.js)
 // ============================================
-function StarField() {
-  const starsRef = useRef<THREE.Points>(null);
-  const { positions, colors, sizes } = useMemo(() => {
-    const count = 8000;
-    const positions = new Float32Array(count * 3);
-    const colors = new Float32Array(count * 3);
-    const sizes = new Float32Array(count);
-    for (let i = 0; i < count; i++) {
-      const i3 = i * 3;
-      const radius = 50 + Math.random() * 100;
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
-      positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
-      positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-      positions[i3 + 2] = radius * Math.cos(phi);
-      const starType = Math.random();
-      if (starType < 0.6) {
-        colors[i3] = 1.0; colors[i3 + 1] = 0.95 + Math.random() * 0.05; colors[i3 + 2] = 0.8 + Math.random() * 0.2;
-      } else if (starType < 0.85) {
-        colors[i3] = 0.7 + Math.random() * 0.3; colors[i3 + 1] = 0.8 + Math.random() * 0.2; colors[i3 + 2] = 1.0;
-      } else {
-        colors[i3] = 1.0; colors[i3 + 1] = 0.6 + Math.random() * 0.2; colors[i3 + 2] = 0.4 + Math.random() * 0.2;
-      }
-      sizes[i] = Math.log(1 - Math.random()) * -1;
-    }
-    return { positions, colors, sizes };
-  }, []);
-
-  useFrame((_state, delta) => {
-    if (starsRef.current) {
-      starsRef.current.rotation.y += delta * 0.015;
-      starsRef.current.rotation.x += delta * 0.005;
-    }
-  });
-
-  return (
-    <points ref={starsRef}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" count={positions.length / 3} array={positions} itemSize={3} />
-        <bufferAttribute attach="attributes-color" count={colors.length / 3} array={colors} itemSize={3} />
-        <bufferAttribute attach="attributes-size" count={sizes.length} array={sizes} itemSize={1} />
-      </bufferGeometry>
-      <pointsMaterial size={0.5} vertexColors={true} transparent={true} opacity={0.8} sizeAttenuation={true} blending={THREE.AdditiveBlending} depthWrite={false} />
-    </points>
-  );
-}
-
-// ============================================
-// NEBULA WITH PERLIN NOISE
-// ============================================
-function Nebula({ position, color, scale = 30, opacity = 0.3 }: any) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const uniforms = useMemo(() => ({
-    uTime: { value: 0 },
-    uColor: { value: new THREE.Color(color) },
-    uScale: { value: scale },
-    uOpacity: { value: opacity }
-  }), [color, scale, opacity]);
-
-  useFrame((_state, delta) => {
-    if (meshRef.current) {
-      const material = meshRef.current.material as THREE.ShaderMaterial;
-      material.uniforms.uTime.value += delta * 0.1;
-      meshRef.current.rotation.z += delta * 0.02;
-      meshRef.current.rotation.y += delta * 0.01;
-    }
-  });
-
-  const vertexShader = `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
-  const fragmentShader = `
-    uniform float uTime; uniform vec3 uColor; uniform float uScale; uniform float uOpacity; varying vec2 vUv;
-    vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-    vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-    vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
-    vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
-    float snoise(vec3 v) {
-      const vec2 C = vec2(1.0/6.0, 1.0/3.0); const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
-      vec3 i = floor(v + dot(v, C.yyy)); vec3 x0 = v - i + dot(i, C.xxx);
-      vec3 g = step(x0.yzx, x0.xyz); vec3 l = 1.0 - g;
-      vec3 i1 = min(g.xyz, l.zxy); vec3 i2 = max(g.xyz, l.zxy);
-      vec3 x1 = x0 - i1 + C.xxx; vec3 x2 = x0 - i2 + C.yyy; vec3 x3 = x0 - D.yyy;
-      i = mod289(i);
-      vec4 p = permute(permute(permute(i.z + vec4(0.0, i1.z, i2.z, 1.0)) + i.y + vec4(0.0, i1.y, i2.y, 1.0)) + i.x + vec4(0.0, i1.x, i2.x, 1.0));
-      float n_ = 0.142857142857; vec3 ns = n_ * D.wyz - D.xzx;
-      vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
-      vec4 x_ = floor(j * ns.z); vec4 y_ = floor(j - 7.0 * x_);
-      vec4 x = x_ *ns.x + ns.yyyy; vec4 y = y_ *ns.x + ns.yyyy;
-      vec4 h = 1.0 - abs(x) - abs(y);
-      vec4 b0 = vec4(x.xy, y.xy); vec4 b1 = vec4(x.zw, y.zw);
-      vec4 s0 = floor(b0)*2.0 + 1.0; vec4 s1 = floor(b1)*2.0 + 1.0;
-      vec4 sh = -step(h, vec4(0.0));
-      vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy; vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
-      vec3 p0 = vec3(a0.xy, h.x); vec3 p1 = vec3(a0.zw, h.y);
-      vec3 p2 = vec3(a1.xy, h.z); vec3 p3 = vec3(a1.zw, h.w);
-      vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
-      p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
-      vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
-      m = m * m;
-      return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
-    }
-    float fbm(vec3 p) {
-      float value = 0.0; float amplitude = 0.5; float frequency = 1.0;
-      for (int i = 0; i < 5; i++) { value += amplitude * snoise(p * frequency); amplitude *= 0.5; frequency *= 2.0; }
-      return value;
-    }
-    void main() {
-      vec3 p = vec3(vUv * uScale, uTime);
-      float n1 = fbm(p); float n2 = fbm(p * 1.5 + 100.0); float n3 = fbm(p * 2.0 + 200.0);
-      float noise = (n1 + n2 * 0.5 + n3 * 0.25) / 1.75;
-      noise = noise * 0.5 + 0.5;
-      float density = pow(noise, 2.0);
-      float edgeFade = 1.0 - smoothstep(0.3, 0.7, length(vUv - 0.5));
-      vec3 finalColor = uColor * density * edgeFade;
-      float alpha = density * edgeFade * uOpacity;
-      gl_FragColor = vec4(finalColor, alpha);
-    }
-  `;
-
-  return (
-    <mesh ref={meshRef} position={position}>
-      <planeGeometry args={[40, 40]} />
-      <shaderMaterial transparent={true} depthWrite={false} blending={THREE.AdditiveBlending} vertexShader={vertexShader} fragmentShader={fragmentShader} uniforms={uniforms} side={THREE.DoubleSide} />
-    </mesh>
-  );
-}
-
-// ============================================
-// BRIGHT STARS WITH GLOW
-// ============================================
-function BrightStars() {
-  const groupRef = useRef<THREE.Group>(null);
+function CosmicBackground() {
+  // 60 static + animated stars
   const stars = useMemo(() => {
-    const data: Array<{ position: [number, number, number]; coreColor: [number, number, number]; haloColor: [number, number, number]; size: number }> = [];
-    for (let i = 0; i < 200; i++) {
-      const x = (Math.random() - 0.5) * 80;
-      const y = (Math.random() - 0.5) * 80;
-      const z = (Math.random() - 0.5) * 80 - 30;
-      const colorType = Math.random();
-      let coreColor: [number, number, number], haloColor: [number, number, number];
-      if (colorType < 0.4) { coreColor = [1.0, 0.95, 0.8]; haloColor = [1.0, 0.9, 0.7]; }
-      else if (colorType < 0.7) { coreColor = [0.8, 0.9, 1.0]; haloColor = [0.6, 0.8, 1.0]; }
-      else { coreColor = [1.0, 0.7, 0.5]; haloColor = [1.0, 0.5, 0.3]; }
-      data.push({ position: [x, y, z], coreColor, haloColor, size: Math.random() * 0.5 + 0.3 });
+    const list = [];
+    for (let i = 0; i < 60; i++) {
+      list.push({
+        id: i,
+        top: `${Math.random() * 100}%`,
+        left: `${Math.random() * 100}%`,
+        size: Math.random() * 2 + 0.5,
+        delay: Math.random() * 3,
+        duration: 2 + Math.random() * 3,
+        opacity: 0.3 + Math.random() * 0.7
+      });
     }
-    return data;
+    return list;
   }, []);
 
-  useFrame((state, delta) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += delta * 0.01;
-      groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.2) * 1.5;
-    }
-  });
-
   return (
-    <group ref={groupRef}>
-      {stars.map((star, i) => (
-        <group key={i} position={star.position}>
-          <mesh><sphereGeometry args={[star.size * 0.3, 16, 16]} /><meshBasicMaterial color={star.coreColor} /></mesh>
-          <mesh><sphereGeometry args={[star.size, 16, 16]} /><meshBasicMaterial color={star.haloColor} transparent={true} opacity={0.3} /></mesh>
-        </group>
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
+      background: 'radial-gradient(ellipse at top, #1a0a2e 0%, #0a0600 40%, #000002 100%)',
+      overflow: 'hidden'
+    }}>
+      {/* Nebula glows */}
+      <div style={{
+        position: 'absolute', top: '10%', left: '20%', width: '400px', height: '400px',
+        background: 'radial-gradient(circle, rgba(139, 92, 246, 0.15), transparent 70%)',
+        filter: 'blur(40px)', borderRadius: '50%'
+      }} />
+      <div style={{
+        position: 'absolute', bottom: '20%', right: '10%', width: '350px', height: '350px',
+        background: 'radial-gradient(circle, rgba(236, 72, 153, 0.12), transparent 70%)',
+        filter: 'blur(50px)', borderRadius: '50%'
+      }} />
+      <div style={{
+        position: 'absolute', top: '50%', left: '60%', width: '300px', height: '300px',
+        background: 'radial-gradient(circle, rgba(59, 130, 246, 0.1), transparent 70%)',
+        filter: 'blur(40px)', borderRadius: '50%'
+      }} />
+
+      {/* Twinkling stars */}
+      {stars.map(star => (
+        <motion.div
+          key={star.id}
+          animate={{ opacity: [star.opacity * 0.3, star.opacity, star.opacity * 0.3] }}
+          transition={{ duration: star.duration, delay: star.delay, repeat: Infinity, ease: 'easeInOut' }}
+          style={{
+            position: 'absolute',
+            top: star.top,
+            left: star.left,
+            width: `${star.size}px`,
+            height: `${star.size}px`,
+            borderRadius: '50%',
+            background: star.size > 1.5 ? '#fff' : 'rgba(255, 255, 255, 0.8)',
+            boxShadow: star.size > 1.5 ? `0 0 ${star.size * 3}px rgba(255,255,255,0.6)` : 'none'
+          }}
+        />
       ))}
-    </group>
-  );
-}
-
-// ============================================
-// REALISTIC COSMIC SCENE
-// ============================================
-function CosmicScene() {
-  return (
-    <>
-      <color attach="background" args={['#000002']} />
-      <StarField />
-      <BrightStars />
-      <Nebula position={[-30, 15, -50]} color="#3b82f6" scale={25} opacity={0.25} />
-      <Nebula position={[35, -10, -45]} color="#ec4899" scale={30} opacity={0.2} />
-      <Nebula position={[0, 25, -55]} color="#8b5cf6" scale={28} opacity={0.2} />
-      <Nebula position={[-25, -20, -40]} color="#10b981" scale={22} opacity={0.15} />
-      <Nebula position={[40, 20, -60]} color="#f59e0b" scale={20} opacity={0.18} />
-    </>
+    </div>
   );
 }
 
@@ -279,6 +156,32 @@ function ToastNotification({ toast, onClose }: { toast: Toast; onClose: () => vo
     </div>
   );
 }
+
+// ============================================
+// FOCUS AREA CONFIG
+// ============================================
+const FOCUS_AREAS: { id: FocusArea; label: string; icon: string; gradient: string; color: string; description: string }[] = [
+  { 
+    id: 'general', label: 'General', icon: '⭐',
+    gradient: 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)',
+    color: '#C5A059', description: 'Overall guidance'
+  },
+  { 
+    id: 'love', label: 'Love', icon: '❤️',
+    gradient: 'linear-gradient(135deg, #ec4899 0%, #be185d 100%)',
+    color: '#ec4899', description: 'Relationships'
+  },
+  { 
+    id: 'career', label: 'Career', icon: '💼',
+    gradient: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
+    color: '#3b82f6', description: 'Work & Goals'
+  },
+  { 
+    id: 'custom', label: 'Custom', icon: '✨',
+    gradient: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
+    color: '#8b5cf6', description: 'Your question'
+  }
+];
 
 // ============================================
 // MAIN COMPONENT
@@ -555,15 +458,6 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     return 'Minor Arcana';
   };
 
-  const getFocusIcon = (focus: FocusArea) => {
-    switch (focus) {
-      case 'love': return <Heart size={18} />;
-      case 'career': return <Briefcase size={18} />;
-      case 'custom': return <Sparkles size={18} />;
-      default: return <Star size={18} />;
-    }
-  };
-
   const copyAllLogs = () => {
     const authInfo = `Auth Status: ${authStatus}\nAuth UID: ${authUid || 'NULL'}\nUser ID: ${user?.id || 'NULL'}\n\n`;
     const text = authInfo + debugLogs.map(l => `[${l.timestamp}] [${l.type.toUpperCase()}] ${l.message}${l.data ? '\n' + JSON.stringify(l.data, null, 2) : ''}`).join('\n\n');
@@ -580,12 +474,11 @@ export default function DailyCardScreen({ onNavigate }: Props) {
 
   const filteredLogs = logFilter === 'all' ? debugLogs : debugLogs.filter(l => l.type === logFilter);
 
+  // LOADING SCREEN (lightweight - no Three.js)
   if (!user || stage === 'loading') {
     return (
       <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', background: '#000002' }}>
-        <Canvas dpr={[1, 1.5]} style={{ position: 'absolute', inset: 0 }}>
-          <CosmicScene />
-        </Canvas>
+        <CosmicBackground />
         <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', color: '#C5A059' }}>
           <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}>
             <Sparkles size={32} />
@@ -605,12 +498,12 @@ export default function DailyCardScreen({ onNavigate }: Props) {
     paddingLeft: '5px', paddingRight: '5px',
     display: 'flex', flexDirection: 'column',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-    overflowY: 'auto', WebkitOverflowScrolling: 'touch', background: '#000002'
+    overflowY: 'auto', WebkitOverflowScrolling: 'touch'
   };
 
   const actionBtnStyle: React.CSSProperties = {
-    width: '48px', height: '48px', borderRadius: '50%',
-    background: 'rgba(10, 8, 20, 0.5)',
+    width: '52px', height: '52px', borderRadius: '50%',
+    background: 'rgba(10, 8, 20, 0.6)',
     border: '1px solid rgba(197, 160, 89, 0.4)',
     backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -620,47 +513,65 @@ export default function DailyCardScreen({ onNavigate }: Props) {
 
   return (
     <div style={containerStyle}>
-      <Canvas dpr={[1, 1.5]} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, pointerEvents: 'none' }} camera={{ position: [0, 0, 35], fov: 60 }}>
-        <CosmicScene />
-      </Canvas>
+      <CosmicBackground />
 
       <AnimatePresence>
         {toast && <ToastNotification toast={toast} onClose={() => setToast(null)} />}
       </AnimatePresence>
 
-      {/* 🎯 DATE - Fixed between Telegram Close & Menu buttons */}
+      {/* 🎯 HEADER ROW: Back + Date + Streak (ერთ ხაზზე, არაფერი ეჯახება) */}
       <div style={{ 
-        position: 'fixed', 
-        top: '50px', 
-        left: '50%', 
-        transform: 'translateX(-50%)', 
-        zIndex: 100, 
-        fontSize: '11px', 
-        color: '#94a3b8', 
-        letterSpacing: '1px', 
-        textTransform: 'uppercase', 
-        background: 'rgba(10, 8, 20, 0.6)', 
-        padding: '6px 12px', 
-        borderRadius: '20px', 
-        backdropFilter: 'blur(8px)', 
-        WebkitBackdropFilter: 'blur(8px)',
-        pointerEvents: 'none',
-        border: '1px solid rgba(197, 160, 89, 0.15)'
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: '10px', 
+        marginBottom: '16px', 
+        paddingLeft: '5px', 
+        paddingRight: '10px', 
+        position: 'relative', 
+        zIndex: 1,
+        marginTop: '10px'
       }}>
-        {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
-      </div>
-
-      {/* 🎯 HEADER ROW - Back button + compact streak banner (no marginTop - global 70px padding handles spacing) */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px', paddingLeft: '5px', paddingRight: '10px', position: 'relative', zIndex: 1 }}>
-        <button onClick={() => onNavigate?.('home')} style={{ background: 'rgba(10, 8, 20, 0.5)', border: '1px solid rgba(197, 160, 89, 0.4)', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C5A059', cursor: 'pointer', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', flexShrink: 0 }}>
+        <button onClick={() => onNavigate?.('home')} style={{ 
+          background: 'rgba(10, 8, 20, 0.5)', 
+          border: '1px solid rgba(197, 160, 89, 0.4)', 
+          borderRadius: '50%', 
+          width: '40px', 
+          height: '40px', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          color: '#C5A059', 
+          cursor: 'pointer', 
+          backdropFilter: 'blur(12px)', 
+          WebkitBackdropFilter: 'blur(12px)', 
+          flexShrink: 0 
+        }}>
           <ArrowLeft size={20} />
         </button>
 
+        {/* Date badge - integrated into header */}
+        <div style={{
+          padding: '6px 10px',
+          background: 'rgba(10, 8, 20, 0.6)',
+          border: '1px solid rgba(197, 160, 89, 0.2)',
+          borderRadius: '10px',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          flexShrink: 0
+        }}>
+          <div style={{ fontSize: '9px', color: '#94a3b8', letterSpacing: '1px', textTransform: 'uppercase' }}>
+            {new Date().toLocaleDateString('en-US', { month: 'short' })}
+          </div>
+          <div style={{ fontSize: '14px', color: '#C5A059', fontWeight: '700', lineHeight: 1 }}>
+            {new Date().getDate()}
+          </div>
+        </div>
+
         {streakInfo && streakInfo.current_streak > 0 ? (
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'rgba(10, 8, 20, 0.6)', border: '1px solid rgba(251, 146, 60, 0.3)', borderRadius: '12px', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'rgba(10, 8, 20, 0.6)', border: '1px solid rgba(251, 146, 60, 0.3)', borderRadius: '12px', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', minWidth: 0 }}>
             <span style={{ fontSize: '14px', flexShrink: 0 }}>🔥</span>
             <span style={{ fontSize: '12px', fontWeight: 800, color: '#fb923c', flexShrink: 0 }}>
-              {streakInfo.current_streak} day{streakInfo.current_streak !== 1 ? 's' : ''}
+              {streakInfo.current_streak}d
             </span>
             <div style={{ flex: 1, height: '4px', borderRadius: '999px', overflow: 'hidden', background: 'rgba(255,255,255,0.08)', minWidth: '40px' }}>
               <motion.div
@@ -671,8 +582,8 @@ export default function DailyCardScreen({ onNavigate }: Props) {
               />
             </div>
             {streakInfo.next_milestone && (
-              <span style={{ fontSize: '9px', color: '#94a3b8', flexShrink: 0, whiteSpace: 'nowrap' }}>
-                {streakInfo.days_to_next}d → {streakInfo.next_milestone.icon_emoji}
+              <span style={{ fontSize: '12px', flexShrink: 0 }}>
+                {streakInfo.next_milestone.icon_emoji}
               </span>
             )}
           </div>
@@ -686,83 +597,348 @@ export default function DailyCardScreen({ onNavigate }: Props) {
       <AnimatePresence mode="wait">
         {stage === 'selecting' && (
           <motion.div key="selecting" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} style={{ padding: '0 10px', position: 'relative', zIndex: 1 }}>
-            <div style={{ textAlign: 'center', marginBottom: '20px', background: 'rgba(10, 8, 20, 0.6)', padding: '20px', borderRadius: '16px', backdropFilter: 'blur(12px)', border: '1px solid rgba(197, 160, 89, 0.15)' }}>
-              <div style={{ fontSize: '40px', marginBottom: '8px' }}>🌙</div>
-              <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#C5A059' }}>Set Your Intention</h2>
-              <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>Choose a focus for today's reading</p>
+            <div style={{ textAlign: 'center', marginBottom: '24px', background: 'rgba(10, 8, 20, 0.6)', padding: '24px 16px', borderRadius: '20px', backdropFilter: 'blur(12px)', border: '1px solid rgba(197, 160, 89, 0.2)' }}>
+              <motion.div 
+                animate={{ rotate: [0, 5, -5, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                style={{ fontSize: '48px', marginBottom: '12px' }}
+              >
+                🌙
+              </motion.div>
+              <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#C5A059', margin: '0 0 6px 0' }}>Set Your Intention</h2>
+              <p style={{ fontSize: '13px', color: '#94a3b8', margin: 0 }}>Choose a focus for today's reading</p>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-              {(['general', 'love', 'career', 'custom'] as FocusArea[]).map((focus) => (
-                <motion.button key={focus} whileTap={{ scale: 0.96 }} onClick={() => handleFocusSelect(focus)} style={{ padding: '14px', background: selectedFocus === focus ? 'rgba(197, 160, 89, 0.2)' : 'rgba(10, 8, 20, 0.6)', border: selectedFocus === focus ? '1.5px solid #C5A059' : '1px solid rgba(197, 160, 89, 0.2)', borderRadius: '10px', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', cursor: 'pointer', backdropFilter: 'blur(8px)' }}>
-                  <div style={{ color: selectedFocus === focus ? '#C5A059' : '#94a3b8' }}>{getFocusIcon(focus)}</div>
-                  <span style={{ fontSize: '13px', fontWeight: '600' }}>{focus.charAt(0).toUpperCase() + focus.slice(1)}</span>
-                </motion.button>
-              ))}
+
+            {/* HORIZONTAL FOCUS BANNERS */}
+            <div style={{ 
+              display: 'flex', 
+              gap: '8px', 
+              overflowX: 'auto',
+              paddingBottom: '8px',
+              marginBottom: '16px',
+              scrollSnapType: 'x mandatory'
+            }}>
+              {FOCUS_AREAS.map((focus) => {
+                const isSelected = selectedFocus === focus.id;
+                return (
+                  <motion.button
+                    key={focus.id}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleFocusSelect(focus.id)}
+                    style={{
+                      flex: '1 1 0',
+                      minWidth: '90px',
+                      padding: '16px 8px',
+                      background: isSelected 
+                        ? focus.gradient 
+                        : 'rgba(10, 8, 20, 0.6)',
+                      border: isSelected 
+                        ? 'none'
+                        : '1px solid rgba(197, 160, 89, 0.2)',
+                      borderRadius: '14px',
+                      color: '#fff',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '6px',
+                      cursor: 'pointer',
+                      backdropFilter: 'blur(8px)',
+                      WebkitBackdropFilter: 'blur(8px)',
+                      scrollSnapAlign: 'start',
+                      boxShadow: isSelected 
+                        ? `0 8px 25px ${focus.color}40, 0 0 0 2px ${focus.color}` 
+                        : 'none',
+                      transition: 'all 0.2s ease',
+                      position: 'relative',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    {isSelected && (
+                      <motion.div
+                        animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        style={{
+                          position: 'absolute',
+                          inset: 0,
+                          background: `radial-gradient(circle at center, ${focus.color}40, transparent)`,
+                          pointerEvents: 'none'
+                        }}
+                      />
+                    )}
+                    <motion.div
+                      animate={isSelected ? { scale: [1, 1.15, 1] } : {}}
+                      transition={{ duration: 1, repeat: isSelected ? Infinity : 0 }}
+                      style={{ 
+                        fontSize: '28px',
+                        position: 'relative',
+                        zIndex: 1,
+                        filter: isSelected ? `drop-shadow(0 0 8px ${focus.color})` : 'none'
+                      }}
+                    >
+                      {focus.icon}
+                    </motion.div>
+                    <div style={{ 
+                      fontSize: '12px', 
+                      fontWeight: '700',
+                      position: 'relative',
+                      zIndex: 1,
+                      textShadow: isSelected ? '0 1px 2px rgba(0,0,0,0.5)' : 'none'
+                    }}>
+                      {focus.label}
+                    </div>
+                    <div style={{ 
+                      fontSize: '9px', 
+                      color: isSelected ? 'rgba(255,255,255,0.9)' : '#94a3b8',
+                      position: 'relative',
+                      zIndex: 1,
+                      textAlign: 'center',
+                      lineHeight: 1.2
+                    }}>
+                      {focus.description}
+                    </div>
+                  </motion.button>
+                );
+              })}
             </div>
+
             {showQuestionInput && (
-              <textarea value={customQuestion} onChange={(e) => setCustomQuestion(e.target.value)} placeholder="Your question..." style={{ width: '100%', marginTop: '12px', padding: '12px', background: 'rgba(10, 8, 20, 0.6)', border: '1px solid rgba(197, 160, 89, 0.3)', borderRadius: '10px', color: '#fff', fontSize: '13px', minHeight: '60px', boxSizing: 'border-box', backdropFilter: 'blur(8px)' }} />
+              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
+                <textarea 
+                  value={customQuestion} 
+                  onChange={(e) => setCustomQuestion(e.target.value)} 
+                  placeholder="What's on your mind today?" 
+                  style={{ 
+                    width: '100%', 
+                    marginBottom: '16px', 
+                    padding: '14px', 
+                    background: 'rgba(10, 8, 20, 0.6)', 
+                    border: '1.5px solid rgba(139, 92, 246, 0.4)', 
+                    borderRadius: '12px', 
+                    color: '#fff', 
+                    fontSize: '13px', 
+                    minHeight: '70px', 
+                    boxSizing: 'border-box', 
+                    backdropFilter: 'blur(8px)',
+                    outline: 'none',
+                    fontFamily: 'inherit',
+                    resize: 'none'
+                  }} 
+                />
+              </motion.div>
             )}
-            <motion.button whileTap={{ scale: 0.98 }} onClick={handleReveal} disabled={isCreating} style={{ width: '100%', marginTop: '16px', padding: '14px', background: isCreating ? 'rgba(197, 160, 89, 0.5)' : 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)', border: 'none', borderRadius: '10px', color: '#0f0c08', fontSize: '15px', fontWeight: '700', cursor: isCreating ? 'not-allowed' : 'pointer', boxShadow: '0 4px 20px rgba(197, 160, 89, 0.4)' }}>
-              {isCreating ? 'Drawing your card...' : 'Reveal My Card'}
+
+            <motion.button 
+              whileTap={{ scale: 0.98 }} 
+              whileHover={{ scale: 1.01 }}
+              onClick={handleReveal} 
+              disabled={isCreating} 
+              style={{ 
+                width: '100%', 
+                padding: '16px', 
+                background: isCreating 
+                  ? 'rgba(197, 160, 89, 0.5)' 
+                  : 'linear-gradient(135deg, #C5A059 0%, #8B6914 100%)', 
+                border: 'none', 
+                borderRadius: '14px', 
+                color: '#0f0c08', 
+                fontSize: '16px', 
+                fontWeight: '800', 
+                letterSpacing: '0.5px',
+                cursor: isCreating ? 'not-allowed' : 'pointer', 
+                boxShadow: isCreating ? 'none' : '0 8px 30px rgba(197, 160, 89, 0.5)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
+            >
+              {isCreating ? (
+                <>
+                  <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
+                    <Sparkles size={18} />
+                  </motion.div>
+                  Drawing your card...
+                </>
+              ) : (
+                <>
+                  <Sparkles size={18} />
+                  Reveal My Card
+                </>
+              )}
             </motion.button>
           </motion.div>
         )}
 
         {stage === 'revealing' && (
-          <motion.div key="revealing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, position: 'relative', zIndex: 1 }}>
-            <motion.div initial={{ rotateY: 0 }} animate={{ rotateY: 180 }} transition={{ duration: 1.2 }} style={{ width: '220px', height: '330px', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 0 50px rgba(197, 160, 89, 0.4)', border: '2px solid #C5A059' }}>
-              <img src={CARD_BACK_URL} alt="Card Back" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          <motion.div key="revealing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, minHeight: '400px', position: 'relative', zIndex: 1 }}>
+            <div style={{ perspective: '1000px', width: '220px', height: '330px' }}>
+              <motion.div
+                initial={{ rotateY: 0 }}
+                animate={{ rotateY: 180 }}
+                transition={{ duration: 1.2, ease: 'easeInOut' }}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  position: 'relative',
+                  transformStyle: 'preserve-3d'
+                }}
+              >
+                {/* Front (back of card) */}
+                <div style={{
+                  position: 'absolute',
+                  inset: 0,
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  backfaceVisibility: 'hidden',
+                  border: '2px solid #C5A059',
+                  boxShadow: '0 0 50px rgba(197, 160, 89, 0.4)'
+                }}>
+                  <img src={CARD_BACK_URL} alt="Card Back" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                </div>
+                {/* Back (hidden side during flip) */}
+                <div style={{
+                  position: 'absolute',
+                  inset: 0,
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  backfaceVisibility: 'hidden',
+                  transform: 'rotateY(180deg)',
+                  background: '#0a0600'
+                }} />
+              </motion.div>
+            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              style={{ marginTop: '20px', color: '#C5A059', fontSize: '13px', fontWeight: '600', letterSpacing: '1px' }}
+            >
+              ✨ The universe is choosing your card...
             </motion.div>
           </motion.div>
         )}
 
         {stage === 'revealed' && currentCard && (
-          <motion.div key="revealed" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} style={{ display: 'flex', flexDirection: 'column', flex: 1, position: 'relative', zIndex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
+          <motion.div key="revealed" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} style={{ display: 'flex', flexDirection: 'column', flex: 1, position: 'relative', zIndex: 1, padding: '0 10px' }}>
+            
+            {/* CARD + GLOW */}
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              marginBottom: '20px',
+              perspective: '1000px'
+            }}>
+              {/* Glow burst */}
               <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 2, opacity: [0, 0.8, 0] }}
+                transition={{ duration: 1.5, ease: 'easeOut' }}
                 style={{
-                  width: '220px', height: '330px', borderRadius: '12px', overflow: 'hidden', position: 'relative',
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: '300px',
+                  height: '300px',
+                  borderRadius: '50%',
+                  background: isReversed 
+                    ? 'radial-gradient(circle, rgba(167, 139, 250, 0.5), transparent 70%)'
+                    : 'radial-gradient(circle, rgba(197, 160, 89, 0.5), transparent 70%)',
+                  pointerEvents: 'none',
+                  zIndex: 0
+                }}
+              />
+
+              <motion.div
+                initial={{ rotateY: 180, scale: 0.8 }}
+                animate={{ rotateY: 0, scale: 1, y: [0, -10, 0] }}
+                transition={{ 
+                  rotateY: { duration: 0.8, ease: 'easeOut' },
+                  scale: { duration: 0.5, ease: 'easeOut' },
+                  y: { duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 0.8 }
+                }}
+                style={{
+                  width: '220px', 
+                  height: '330px', 
+                  borderRadius: '12px', 
+                  overflow: 'hidden', 
+                  position: 'relative',
                   border: '2px solid rgba(197, 160, 89, 0.9)',
-                  boxShadow: isReversed ? '0 0 40px rgba(167, 139, 250, 0.6), 0 0 80px rgba(167, 139, 250, 0.3), 0 10px 30px rgba(0,0,0,0.8)' : '0 0 40px rgba(197, 160, 89, 0.6), 0 0 80px rgba(197, 160, 89, 0.3), 0 10px 30px rgba(0,0,0,0.8)',
+                  boxShadow: isReversed 
+                    ? '0 0 40px rgba(167, 139, 250, 0.6), 0 0 80px rgba(167, 139, 250, 0.3), 0 10px 30px rgba(0,0,0,0.8)' 
+                    : '0 0 40px rgba(197, 160, 89, 0.6), 0 0 80px rgba(197, 160, 89, 0.3), 0 10px 30px rgba(0,0,0,0.8)',
                   transform: isReversed ? 'rotate(180deg)' : 'rotate(0deg)',
-                  background: '#0a0600'
+                  background: '#0a0600',
+                  zIndex: 1
                 }}
               >
                 <img src={currentCard.image_url} alt={currentCard.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                 {isReversed && (
-                  <div style={{ position: 'absolute', top: '12px', right: '12px', width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '900', background: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)', color: '#fff', border: '2px solid #fff', boxShadow: '0 0 10px rgba(167,139,250,0.8)', transform: 'rotate(-180deg)' }}>
+                  <div style={{ 
+                    position: 'absolute', 
+                    top: '12px', 
+                    right: '12px', 
+                    width: '28px', 
+                    height: '28px', 
+                    borderRadius: '50%', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    fontSize: '12px', 
+                    fontWeight: '900', 
+                    background: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)', 
+                    color: '#fff', 
+                    border: '2px solid #fff', 
+                    boxShadow: '0 0 10px rgba(167,139,250,0.8)', 
+                    transform: 'rotate(-180deg)' 
+                  }}>
                     R
                   </div>
                 )}
               </motion.div>
 
-              <div style={{ width: '48px', display: 'flex', flexDirection: 'column', gap: '14px', marginLeft: '12px' }}>
+              {/* ACTION BUTTONS - ქვემოთ ერთ ხაზზე */}
+              <div style={{ 
+                display: 'flex', 
+                gap: '12px', 
+                marginTop: '16px',
+                zIndex: 1
+              }}>
                 <motion.button
                   whileTap={{ scale: 0.9 }}
                   onClick={handleAIInsight}
-                  style={{ ...actionBtnStyle, background: hasPremium ? 'rgba(167, 139, 250, 0.2)' : 'rgba(255, 215, 0, 0.15)', borderColor: hasPremium ? 'rgba(167, 139, 250, 0.5)' : 'rgba(255, 215, 0, 0.5)', color: hasPremium ? '#a78bfa' : '#FFD700' }}
+                  style={{ 
+                    ...actionBtnStyle, 
+                    background: hasPremium ? 'rgba(167, 139, 250, 0.2)' : 'rgba(255, 215, 0, 0.15)', 
+                    borderColor: hasPremium ? 'rgba(167, 139, 250, 0.5)' : 'rgba(255, 215, 0, 0.5)', 
+                    color: hasPremium ? '#a78bfa' : '#FFD700' 
+                  }}
                   title="AI Insight"
                 >
-                  <Sparkles size={20} />
+                  <Sparkles size={22} />
                 </motion.button>
 
-                <motion.button whileTap={{ scale: 0.9 }} onClick={handleToggleBookmark} style={{ ...actionBtnStyle, color: dailyReading?.is_bookmarked ? '#C5A059' : '#94a3b8' }}>
-                  <Bookmark size={20} fill={dailyReading?.is_bookmarked ? '#C5A059' : 'none'} />
+                <motion.button whileTap={{ scale: 0.9 }} onClick={handleToggleBookmark} style={{ 
+                  ...actionBtnStyle, 
+                  color: dailyReading?.is_bookmarked ? '#C5A059' : '#94a3b8',
+                  boxShadow: dailyReading?.is_bookmarked ? '0 0 15px rgba(197, 160, 89, 0.4)' : '0 4px 15px rgba(0,0,0,0.3)'
+                }}>
+                  <Bookmark size={22} fill={dailyReading?.is_bookmarked ? '#C5A059' : 'none'} />
                 </motion.button>
 
                 <motion.button whileTap={{ scale: 0.9 }} onClick={handleShare} style={actionBtnStyle}>
-                  <Share2 size={20} />
+                  <Share2 size={22} />
                 </motion.button>
 
                 <motion.button whileTap={{ scale: 0.9 }} onClick={() => onNavigate?.('reading-history')} style={actionBtnStyle} title="Reading History">
-                  <BookOpen size={20} />
+                  <BookOpen size={22} />
                 </motion.button>
               </div>
             </div>
 
-            <div style={{ background: 'rgba(10, 8, 20, 0.6)', border: '1px solid rgba(197, 160, 89, 0.2)', borderRadius: '16px', padding: '16px', backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)', marginLeft: '5px', marginRight: '5px', marginBottom: '5px', boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>
+            {/* CARD INFO */}
+            <div style={{ background: 'rgba(10, 8, 20, 0.6)', border: '1px solid rgba(197, 160, 89, 0.2)', borderRadius: '16px', padding: '16px', backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)', marginBottom: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>
               <div style={{ textAlign: 'center', marginBottom: '12px' }}>
                 <div style={{ fontSize: '11px', color: '#94a3b8', letterSpacing: '1px', textTransform: 'uppercase' }}>{getCardMeta(currentCard)}</div>
                 <h2 style={{ margin: '4px 0', fontSize: '22px', color: '#C5A059', fontWeight: '700' }}>{currentCard.name}</h2>
