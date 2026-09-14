@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, Zap, X } from 'lucide-react';
 import { getStreakWarning, type StreakWarning } from '../lib/helpers';
@@ -6,15 +5,15 @@ import { getStreakWarning, type StreakWarning } from '../lib/helpers';
 interface StreakWarningBannerProps {
   lastActiveDate: string | null;
   onNavigate: (screen: string) => void;
+  onDismiss: () => void;
 }
 
-export function StreakWarningBanner({ lastActiveDate, onNavigate }: StreakWarningBannerProps) {
-  const [dismissed, setDismissed] = useState(false);
+export function StreakWarningBanner({ lastActiveDate, onNavigate, onDismiss }: StreakWarningBannerProps) {
   const warning: StreakWarning = getStreakWarning(lastActiveDate);
 
   return (
     <AnimatePresence>
-      {warning.dangerLevel !== 'safe' && !dismissed && (
+      {warning.dangerLevel !== 'safe' && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -49,7 +48,6 @@ export function StreakWarningBanner({ lastActiveDate, onNavigate }: StreakWarnin
               position: 'relative'
             }}
           >
-            {/* Pulsing top line (critical-ზე) */}
             {warning.dangerLevel === 'critical' && (
               <motion.div
                 animate={{ opacity: [0.5, 1, 0.5] }}
@@ -63,9 +61,8 @@ export function StreakWarningBanner({ lastActiveDate, onNavigate }: StreakWarnin
               />
             )}
 
-            {/* Dismiss button */}
             <button
-              onClick={(e) => { e.stopPropagation(); setDismissed(true); }}
+              onClick={(e) => { e.stopPropagation(); onDismiss(); }}
               style={{
                 position: 'absolute', top: '8px', right: '8px', zIndex: 2,
                 padding: '4px', borderRadius: '50%', border: 'none',
@@ -76,7 +73,6 @@ export function StreakWarningBanner({ lastActiveDate, onNavigate }: StreakWarnin
               <X size={12} />
             </button>
 
-            {/* Content - tap გადადის daily card-ზე */}
             <div
               onClick={() => onNavigate('daily-card')}
               style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}

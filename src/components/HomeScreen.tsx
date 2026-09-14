@@ -95,6 +95,7 @@ export default function HomeScreen({ onNavigate }: Props) {
   const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
   const [unclaimedMilestoneCount, setUnclaimedMilestoneCount] = useState(0);
   const [streakBannerDismissed, setStreakBannerDismissed] = useState(false);
+  const [dismissedNotifications, setDismissedNotifications] = useState<string[]>([]);
   const [showDebug, setShowDebug] = useState(false);
   const [showLayoutDebug, setShowLayoutDebug] = useState(false);
   const [dbStatus, setDbStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
@@ -620,8 +621,20 @@ export default function HomeScreen({ onNavigate }: Props) {
   const dailyCardMeaning = isDailyReversed ? (dailyCard?.reversed_keywords?.[0] || 'Reflection') : (dailyCard?.keywords?.[0] || 'New Beginnings');
   const dailyCardElement = dailyCard ? getCardMeta(dailyCard) : '';
 
-  // ⚠️ Show warning banner only when streak is active and card not yet drawn today
-  const showStreakWarning = currentStreak > 0 && !isDailyRevealed;
+  // 📬 NOTIFICATION QUEUE - ერთდროულად მხოლოდ ერთი ნოტიფიკაცია ჩანს
+  const dismissNotification = (id: string) => {
+    setDismissedNotifications(prev => prev.includes(id) ? prev : [...prev, id]);
+  };
+
+  const streakAlertCondition = currentStreak > 0 && !isDailyRevealed;
+
+  const notificationQueue = [
+    { id: 'streak-warning', active: streakAlertCondition },
+    { id: 'streak-banner', active: streakAlertCondition && !streakBannerDismissed },
+    // მომავალში ახალი ნოტიფიკაციები აქ დაემატება
+  ];
+
+  const activeNotification = notificationQueue.find(n => n.active && !dismissedNotifications.includes(n.id))?.id || null;
 
   return (
     <div className="home-screen" ref={screenRef}>
@@ -638,25 +651,26 @@ export default function HomeScreen({ onNavigate }: Props) {
         />
       )}
 
-      <AnimatePresence>
-        <StreakBanner
-          currentStreak={currentStreak}
-          isDailyRevealed={isDailyRevealed}
-          isDismissed={streakBannerDismissed}
-          onDismiss={() => setStreakBannerDismissed(true)}
-          onNavigate={onNavigate || (() => {})}
-        />
-      </AnimatePresence>
-
-      {/* ⚠️ STREAK WARNING BANNER - Shows when streak is in danger */}
-      <AnimatePresence>
-        {showStreakWarning && (
-          <StreakWarningBanner
-            lastActiveDate={economy.last_active_date || null}
+      {/* 📬 NOTIFICATION QUEUE - ერთდროულად მხოლოდ ერთი ჩანს */}
+      {activeNotification === 'streak-banner' && (
+        <AnimatePresence>
+          <StreakBanner
+            currentStreak={currentStreak}
+            isDailyRevealed={isDailyRevealed}
+            isDismissed={streakBannerDismissed}
+            onDismiss={() => setStreakBannerDismissed(true)}
             onNavigate={onNavigate || (() => {})}
           />
-        )}
-      </AnimatePresence>
+        </AnimatePresence>
+      )}
+
+      {activeNotification === 'streak-warning' && (
+        <StreakWarningBanner
+          lastActiveDate={economy.last_active_date || null}
+          onNavigate={onNavigate || (() => {})}
+          onDismiss={() => dismissNotification('streak-warning')}
+        />
+      )}
 
       <UserHeader
         user={user}
