@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Heart, Briefcase, Star, Share2, Bookmark, BookOpen, ArrowLeft, Shield, Copy, CheckCircle, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { Sparkles, Share2, Bookmark, BookOpen, ArrowLeft, Shield, Copy, CheckCircle, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import { tarotCards, TarotCard, SUITS, CARD_BACK_URL } from '../data/tarotCards';
 import { logReading } from '../lib/adminService';
 import { trackQuestProgress } from '../lib/questService';
